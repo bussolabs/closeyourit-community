@@ -1,0 +1,41 @@
+name: Bug report
+description: Report a reproducible problem.
+title: "[Bug]: "
+assignees: [bussolarialessio]
+body:
+  - type: markdown
+    attributes:
+      value: "For vulnerabilities, use the private security reporting link instead. Remove credentials and personal data before submitting."
+  - type: input
+    id: version
+    attributes:
+      label: Version and environment
+      description: Include the release, operating system and relevant browser or runtime.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What is the starting situation, and which actions trigger the problem?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Relevant logs or screenshots without credentials or private data.
