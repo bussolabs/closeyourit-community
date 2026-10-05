@@ -1,0 +1,13 @@
+<%# locals: (ticket:, voted:, test_id: nil) %>
+<%#
+  Upvote di un ticket, nell'header della show. Idempotente: PUT vota, DELETE rimuove (button_to → form).
+  CYRA-883 — icon and count only; the words stay as aria-label and tooltip.
+%>
+<% test_id ||= "ticket-vote-#{ticket.id}" %>
+<% words = t(voted ? "member.tickets.vote.voted" : "member.tickets.vote.upvote") %>
+<%= render Ui::ButtonComponent.new(label: "",
+      href: member_ticket_vote_path(ticket), method: (voted ? :delete : :put),
+      variant: (voted ? :tinted : :secondary_muted), size: :sm, icon: "chevron-up", test_id: test_id,
+      title: t(voted ? "member.tickets.vote.remove_title" : "member.tickets.vote.upvote"), aria: { label: words }) do |b| %>
+  <% b.with_trailing { tag.span(ticket.votes_count, class: "font-mono font-semibold") } %>
+<% end %>

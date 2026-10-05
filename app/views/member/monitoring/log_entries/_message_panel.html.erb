@@ -1,0 +1,8 @@
+<%# CYRA-577 — il messaggio per intero, reso come testo tecnico: si legge riga per riga, tiene
+    l'andatura del backtrace e scorre nel suo riquadro invece di allungare la pagina. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="log-message-full">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.logs.show.message") %></h2></div>
+  <%# tabindex: un riquadro che scorre dev'essere raggiungibile anche senza mouse, altrimenti da
+      tastiera il messaggio si legge solo fino a dove arriva l'altezza massima (WCAG 2.1.1). %>
+  <pre class="px-4 py-4 max-h-96 overflow-auto font-mono text-[12px] leading-relaxed text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap break-words" tabindex="0" aria-label="<%= t("member.monitoring.logs.show.message") %>" data-test="log-message-text"><%= @entry.message %></pre>
+</div>

@@ -1,0 +1,28 @@
+<%# locals: list, url, method, title, submit_label %>
+<% content_for :title, title %>
+
+<div class="p-7">
+  <%= form_with url: url, method: method, class: "space-y-6", data: { test: "todo-list-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: title,
+          breadcrumb: (list.persisted? ?
+            [ { label: t("member.todo_lists.title"), href: member_todo_lists_path },
+              { label: list.name, href: member_todo_list_path(list) },
+              { label: t("member.breadcrumb.edit") } ] :
+            [ { label: t("member.todo_lists.title"), href: member_todo_lists_path },
+              { label: t("member.breadcrumb.new") } ])) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.todo_lists.form.cancel"), href: member_todo_lists_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: submit_label, type: "submit", icon: "check", size: :sm, test_id: "todo-list-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+        <%= render Ui::InputComponent.new(name: "name", label: t("member.todo_lists.form.name"), required: true,
+              value: list.name, placeholder: t("member.todo_lists.form.name_placeholder"),
+              test_id: "todo-list-name", error: @errors&.dig(:name)&.first) %>
+        <%= render "member/todo_lists/color_swatches", list: list %>
+      </div>
+    </div>
+  <% end %>
+</div>

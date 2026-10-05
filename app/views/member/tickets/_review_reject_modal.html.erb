@@ -1,0 +1,51 @@
+<%# Rifiuto della review: bottone rosso nella riga del titolo + <dialog> col motivo obbligatorio.
+    Wrapper display:contents → il bottone resta un item diretto della flex row dell'header.
+    Il submit POSTa a review/rejection (Ticketing::RejectReview: status → in progress,
+    evento review_rejected + commento col motivo). %>
+<div class="contents" data-controller="ui--dialog">
+  <%= render Ui::ButtonComponent.new(label: t("member.tickets.review.reject"),
+        type: "button", variant: :danger_outline, size: :sm, icon: "rotate-ccw",
+        data: { action: "ui--dialog#open" }, test_id: "ticket-review-reject") %>
+
+  <%# Two different rejections, and the dialog is the right place to tell them apart: the choice
+      comes after writing the reason. "Send back" queues the phase again (the agent reads the reason
+      on its next run); "Stop" leaves the ticket to a person. The value travels with the pressed submit. %>
+  <%= render Ui::ModalComponent.new(title: t("member.tickets.review.reject_title"), test_id: "ticket-review-reject-modal",
+        form: { url: member_ticket_review_rejection_path(ticket), method: :post },
+        data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+    <% modal.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.tickets.review.cancel"), variant: :secondary_muted, size: :sm,
+            data: { action: "ui--dialog#close" }) %>
+      <% if ticket.agent_workflow.present? %>
+        <%= render Ui::ButtonComponent.new(label: t("member.tickets.review.confirm_hold"), type: "submit", name: "mode", value: "hold",
+              variant: :danger_outline, size: :sm, icon: "hand", test_id: "ticket-review-reject-hold") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.tickets.review.confirm_rework"), type: "submit", name: "mode", value: "rework",
+              variant: :danger, size: :sm, icon: "rotate-ccw", test_id: "ticket-review-reject-rework") %>
+      <% else %>
+        <%= render Ui::ButtonComponent.new(label: t("member.tickets.review.confirm"), type: "submit", name: "mode", value: "hold",
+              variant: :danger, size: :sm, icon: "rotate-ccw", test_id: "ticket-review-reject-submit") %>
+      <% end %>
+    <% end %>
+
+    <%# CYRA-389 — il tetto dichiarato qui è quello del RESOCONTO, non quello del commento: una
+        motivazione lunga non viene troncata né persa, viene salvata nel resoconto del ticket (vedi
+        Ticketing::RejectReview#publish_reason). Il contatore è un avviso e non un gate — nessun
+        maxlength, come sulla casella dei commenti: il troncamento del browser farebbe sparire
+        testo senza dirlo, e l'autorità sulla misura resta il service. %>
+    <div data-controller="char-counter"
+         data-char-counter-max-value="<%= ::Ticketing::Constants::REVIEW_REASON_MAX_CHARS %>"
+         data-char-counter-warn-ratio-value="<%= ::App::Constants::LENGTH_WARN_RATIO %>"
+         data-char-counter-unit-value="<%= t("shared.char_counter.unit") %>">
+      <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.tickets.review.reason_label") %></p>
+      <%= text_area_tag :reason, nil, rows: 4, required: true,
+            placeholder: t("member.tickets.review.reason_placeholder"),
+            data: { test: "ticket-review-reject-reason", char_counter_target: "field", action: "input->char-counter#update" },
+            class: "w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] text-zinc-900 dark:text-zinc-100 leading-relaxed focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+      <div class="mt-2 flex items-start justify-between gap-3">
+        <p class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="ticket-review-reject-hint"><%= t("member.tickets.review.reason_hint") %></p>
+        <p class="shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400 tabular-nums" data-char-counter-target="output"
+           data-test="ticket-review-reject-counter"></p>
+      </div>
+    </div>
+  <% end %>
+</div>

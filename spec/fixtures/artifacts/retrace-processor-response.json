@@ -1,0 +1,37 @@
+{
+  "processor": {
+    "processor": "r8-retrace",
+    "version": "9.4.28",
+    "schema_version": 1,
+    "outbound_syscalls_denied": true
+  },
+  "image": "sha256:bb3fbfc51f7803ac2d3c1d5a816dcd5f9144689f1405456d551d3551b1185a0d",
+  "input_sha256": "3860f17a51f18968f54a598512505d9b04653841f76073d2552a2b6e96e2512c",
+  "response": {
+    "schema_version": 1,
+    "groups": [
+      {
+        "index": 0,
+        "ambiguous": false,
+        "alternatives": [
+          {
+            "lines": [
+              "java.lang.IllegalStateException: demo"
+            ]
+          }
+        ]
+      },
+      {
+        "index": 1,
+        "ambiguous": false,
+        "alternatives": [
+          {
+            "lines": [
+              "\tat a.a.a(SourceFile:1)"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,101 @@
+<%# locals: () %>
+<%# Labels follow the topbar width, not the screen: the assistant column can take 392px of it. %>
+<header class="@container sticky top-0 z-30 h-14 flex items-center gap-2.5 px-4 bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 md:static md:h-[34px] md:shrink-0 md:px-0 md:bg-transparent dark:md:bg-transparent md:border-0"
+        <%= tag.attributes(data: { controller: "ui--global-search" }) if current_organization %>>
+  <% if current_organization %>
+    <%# CYRA-898 — whole name up to 220px, one color per organization, no menu with a single entry. %>
+    <% organizations = switchable_organizations.to_a %>
+    <% swatch = capture do %><span class="w-2 h-2 shrink-0 rounded-[3px] <%= organization_swatch_class(current_organization) %>" data-test="member-org-swatch"></span><span class="truncate"><%= current_organization.name %></span><% end %>
+    <% if organizations.size > 1 %>
+      <details class="relative hidden text-left md:@min-[600px]:inline-block" data-controller="ui--dismissable">
+        <summary class="list-none cursor-pointer inline-flex max-w-[220px] items-center gap-2 px-3 h-[34px] rounded-md text-[13px] font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800" title="<%= current_organization.name %>" data-test="member-org-switcher">
+          <%= swatch %>
+          <%= render Ui::IconComponent.new(name: "chevron-down", class: "text-gray-400 dark:text-zinc-500 text-xs") %>
+        </summary>
+        <div class="absolute left-0 top-10 z-10 w-56 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-1">
+          <% organizations.each do |org| %>
+            <%= button_to member_organization_switches_path(organization_id: org.id), method: :post, class: "w-full text-left flex items-center gap-2.5 px-3 h-8 text-[13px] #{org.id == current_organization.id ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-gray-500 dark:text-zinc-400'} hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "member-org-switch-#{org.id}" } do %>
+              <span class="w-2 h-2 shrink-0 rounded-[3px] <%= organization_swatch_class(org) %>"></span><span class="truncate"><%= org.name %></span>
+            <% end %>
+          <% end %>
+        </div>
+      </details>
+    <% else %>
+      <span class="hidden max-w-[220px] items-center gap-2 px-3 h-[34px] text-[13px] font-medium text-zinc-900 dark:text-zinc-100 md:@min-[600px]:inline-flex" title="<%= current_organization.name %>" data-test="member-org-switcher"><%= swatch %></span>
+    <% end %>
+    <div class="hidden h-5 w-px shrink-0 bg-stone-200 dark:bg-zinc-700 md:@min-[600px]:block" aria-hidden="true"></div>
+  <% end %>
+
+  <%# La presenza resta sempre in alto: su mobile è l'informazione principale della barra,
+      su desktop segue il selettore organizzazione come nel draft approvato. %>
+  <div class="flex min-w-0 flex-1 items-center md:flex-none">
+    <% if current_organization %>
+      <%# A2 — agganci presenza: stream PER-VIEWER (org+account) + contenitore avatar online.
+           La lista è filtrata (Presence::Cohort): solo online con cui l'account condivide un
+           contesto (progetto/gruppo/team) + owner; owner/god vedono tutti. %>
+      <%= turbo_stream_from Realtime::Streams.presence_for(current_organization, Current.account) %>
+      <div data-controller="connection-status"
+           data-test="connection-presence-control"
+           data-connection-status-connected-label-value="<%= t('member.connection.connected') %>"
+           data-connection-status-reconnecting-label-value="<%= t('member.connection.reconnecting') %>"
+           data-connection-status-offline-label-value="<%= t('member.connection.offline') %>"
+           data-connection-status-debug-value="<%= Rails.env.development? %>">
+        <div data-controller="presence" data-test="presence"><%= render Ui::PresenceMenuComponent.new(accounts: presence_online_for(current_organization, Current.account), viewer: Current.account) %></div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Lente mobile: target 44px, intenzionalmente SENZA bordo. Apre lo stesso dialog usato
+      dal segmento ricerca desktop, ma in modalità full-screen. %>
+  <% if current_organization %>
+    <button type="button"
+            class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border-0 bg-white dark:bg-zinc-900 text-gray-500 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 md:hidden"
+            aria-label="<%= t('member.search.open') %>" aria-haspopup="dialog"
+            aria-controls="member-global-search" aria-expanded="false"
+            data-ui--global-search-target="trigger" data-action="ui--global-search#open"
+            data-test="global-search-trigger-mobile">
+      <%= render Ui::IconComponent.new(name: "search", class: "text-base") %>
+    </button>
+  <% end %>
+
+  <% if current_organization && Coworkers.available_to?(account: Current.account, organization: Current.organization) %>
+    <%= render "member/coworkers/entry" %>
+  <% end %>
+  <%# CYRA-908 — microphone and assistant side by side: speak, the text lands in the right-hand column. %>
+  <% if current_organization %>
+    <div class="flex shrink-0 items-center md:overflow-hidden md:rounded-md md:border md:border-stone-200 dark:md:border-zinc-800 md:bg-white dark:md:bg-zinc-900" data-test="assistant-controls">
+      <%= render Ui::VoiceComponent.new %>
+      <% if show_assistant_dock? %>
+        <button type="button" data-assistant-trigger aria-expanded="false" aria-controls="assistant-dock"
+                aria-label="<%= t("member.assistant.panel.open") %>" title="<%= t("member.assistant.panel.open") %>" data-test="assistant-trigger"
+                class="inline-grid h-11 w-11 shrink-0 place-items-center rounded-md bg-white dark:bg-zinc-900 text-gray-500 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100
+                       aria-expanded:bg-indigo-50 dark:aria-expanded:bg-indigo-500/15 aria-expanded:text-indigo-700 dark:aria-expanded:text-indigo-300 md:h-8 md:w-[34px] md:rounded-none
+                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600">
+          <%= render Ui::IconComponent.new(name: "wand-sparkles", class: "text-base md:text-[14px]") %>
+        </button>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Un solo nav nel DOM: l'ordine sorgente è quello mobile richiesto. Le utility md:order-*
+      lo ricompongono su desktop in Aggiungi → Ricerca → Liste → Chat → Notifiche. %>
+  <%= render "member/bottom_nav" %>
+
+  <div class="hidden h-5 w-px shrink-0 bg-stone-200 dark:bg-zinc-700 md:block" aria-hidden="true"></div>
+  <div class="hidden md:flex items-center" data-test="member-user-menu-wrapper">
+    <%= render Ui::UserMenuComponent.new(
+          name: account_display_name,
+          email: Current.account&.email,
+          account_path: (current_organization ? member_preferences_path : nil),
+          account_label: t("member.nav.preferences"),
+          valhalla_path: (Current.account&.god? ? valhalla_root_path : nil),
+          valhalla_label: t("member.nav.valhalla"),
+          valhalla_test_id: "member-nav-valhalla",
+          logout_path: logout_path,
+          trigger_test_id: "member-user-menu",
+          account_test_id: "member-nav-preferences",
+          logout_test_id: "logout") %>
+  </div>
+
+  <%= render "member/global_search_dialog" if current_organization %>
+</header>

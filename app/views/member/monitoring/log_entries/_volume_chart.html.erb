@@ -1,0 +1,27 @@
+<% peak = @volume_buckets.map(&:count).max.to_i %>
+<%# F074 — the axes: a value scale on the left, and under the bars the time (the day on a window
+    longer than two days). %>
+<% axis_range = (@chart_to - @chart_from) > 2.days ? "7d" : "24h" %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="logs-volume-chart">
+  <div class="flex items-center gap-2 px-4 py-2.5 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.logs.chart_title") %></h2>
+    <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.logs.chart_window", from: l(@chart_from, format: :short), to: l(@chart_to, format: :short)) %></span>
+    <% if params[:from].present? || params[:to].present? %>
+      <%# CYRA-340: togliere la finestra cliccata riporta al PERIODO (quello scelto o quello
+          ricordato), non a «tutto»: per questo cade anche `range=custom`, che senza estremi
+          vorrebbe dire nessun limite. %>
+      <%= link_to t("member.monitoring.logs.chart_reset"),
+            member_monitoring_log_entries_path(request.query_parameters.except("from", "to", "page", "range")),
+            class: "ml-auto text-[11.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline",
+            data: { test: "logs-chart-reset" } %>
+    <% end %>
+  </div>
+  <%= render Ui::HistogramComponent.new(
+        bars: log_volume_bars(@volume_buckets, peak,
+                href_for: ->(bucket) { member_monitoring_log_entries_path(request.query_parameters.merge(from: bucket.from.iso8601, to: bucket.to.iso8601).except("page")) }),
+        gridlines: chart_gridlines(peak),
+        xticks: chart_xticks(@volume_buckets.map { |bucket| { at: bucket.from } }, axis_range),
+        buckets_test_id: "logs-volume-buckets",
+        summary: t("member.monitoring.logs.chart_summary", count: peak),
+        empty_label: t("member.monitoring.logs.chart_empty")) %>
+</div>

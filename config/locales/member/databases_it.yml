@@ -1,0 +1,44 @@
+it:
+  member:
+    nav:
+      databases: Database
+    databases:
+      title: Database
+      subtitle: Tutti i database PostgreSQL trovati sulle macchine monitorate
+      stat_databases: Database
+      stat_servers: Server
+      stat_size: Spazio totale
+      stat_freshness: Dato più vecchio
+      count: "%{count} database"
+      search_placeholder: Cerca per nome del database o del server…
+      filter_server: Server
+      col_database: Database
+      col_server: Server
+      col_size: Dimensione
+      col_change: "Variazione 7 giorni"
+      col_share: "% dei database del server"
+      share_title: "%{size} su %{total} di database su %{host}"
+      change_new_title: "Non c'è ancora abbastanza storia per la variazione: compare dopo qualche giorno di misure."
+      range_label:
+        "24h": 24 ore
+        "7d": 7 giorni
+        "30d": 30 giorni
+      replica_count:
+        one: "+%{count} copia"
+        other: "+%{count} copie"
+      no_match: Nessun database corrisponde ai filtri.
+      empty: Nessun database rilevato
+      empty_host: Nessun database su questo server
+      empty_body: L'elenco compare quando l'agent installato su un server trova un database e riesce a interrogarlo.
+      show:
+        help_title: "Spazio occupato, crescita, macchine e tabelle più pesanti."
+        stat_change: "Variazione (%{period})"
+        stat_project: Progetto
+        project_guessed: progetto ricavato dal nome del database
+        change_none: invariato
+        growth: Crescita
+        growth_summary: "Spazio occupato da %{name} nel periodo, oggi %{size}."
+        growth_empty: Nessuna misura in questo periodo — la crescita compare dopo qualche ora di dati.
+        presences: Dove si trova
+        tables: Tabelle più grandi
+        tables_empty: L'agent non riporta tabelle di questo database — sono elencate solo le più grandi della macchina.

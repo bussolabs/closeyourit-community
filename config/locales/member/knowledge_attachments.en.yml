@@ -1,0 +1,46 @@
+en:
+  member:
+    knowledge:
+      attachments:
+        title: "Attachments"
+        count:
+          one: "%{count} attachment"
+          other: "%{count} attachments"
+        upload:
+          add: "Upload files"
+          pick: "Choose a file"
+          add_hint: "Documents, images, video, archives and scripts — max 25 MB each"
+          selected: "Selected:"
+          uploading: "Uploading…"
+        uploaded:
+          one: "%{count} file uploaded"
+          other: "%{count} files uploaded"
+        updated: "Attachment updated"
+        deleted: "Attachment deleted"
+        delete_confirm: "Delete this attachment? The file will be removed."
+        empty: "No attachments"
+        download: "Download"
+        edit: "Rename"
+        delete: "Delete"
+        script_badge: "script"
+        script_note: "Storage only: these files are never executed."
+        form:
+          title_edit: "Rename attachment"
+          name: "Name"
+          description: "Description"
+          cancel: "Cancel"
+          save: "Save"
+        errors:
+          no_files: "Select at least one file to upload"
+          invalid_file: "One or more files are not allowed (type or size)"
+  activerecord:
+    errors:
+      models:
+        knowledge/attachment:
+          attributes:
+            title:
+              blank: "Name is required"
+            file:
+              blank: "File is required"
+              too_large: "File exceeds the 25 MB limit"
+              invalid_type: "File type not allowed"

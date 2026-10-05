@@ -1,0 +1,43 @@
+<% content_for :title, t(".title", name: @subject.label) %>
+
+<%# CYRA-879 — step one of a move: the destination, among the organizations the actor owns. The
+    form only reads (GET): what the move would do is shown on the next page, before any confirmation. %>
+<div class="p-7">
+  <%= form_with url: preview_project_move_path_for(@subject), method: :get, class: "space-y-6",
+        data: { test: "move-destination-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(
+          title: t(".title", name: @subject.label),
+          breadcrumb: project_move_breadcrumb(@subject, t("member.project_moves.open")),
+          test_id: "move-header",
+          counts_test_id: "move-counts") do |header| %>
+      <% header.with_counts do %>
+        <%= render Ui::StatLabelComponent.new(label: t("stats.projects", count: @subject.project_ids.size), value: @subject.project_ids.size,
+              test_id: "move-count-projects") %>
+        <%= render Ui::StatLabelComponent.new(label: t(".destinations"), value: @destinations.size,
+              test_id: "move-count-destinations") %>
+      <% end %>
+      <% header.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t(".back"), href: project_move_origin_path(@subject),
+              variant: :secondary_muted, size: :sm, icon: "arrow-left", test_id: "move-back") %>
+        <% if @destinations.any? %>
+          <%= render Ui::ButtonComponent.new(label: t(".submit"), type: "submit", variant: :primary, size: :sm,
+                icon: "eye", test_id: "move-preview-submit") %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <% if @destinations.any? %>
+      <%= render Ui::SectionComponent.new(title: t(".destination"), test_id: "move-destination") do %>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%= render Ui::SelectComponent.new(name: "destination_id", label: t(".destination"),
+                options: @destinations.map { |organization| [ organization.name, organization.id ] },
+                selected: @destinations.first.id, required: true, hint: t(".destination_hint"),
+                test_id: "move-destination-select") %>
+        </div>
+      <% end %>
+    <% else %>
+      <%= render Ui::EmptyStateComponent.new(title: t(".none"), body: t(".none_body"), icon: "building",
+            test_id: "move-no-destination") %>
+    <% end %>
+  <% end %>
+</div>

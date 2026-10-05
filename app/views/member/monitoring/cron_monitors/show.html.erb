@@ -1,0 +1,118 @@
+<% content_for :title, @monitor.name %>
+<div class="p-7 space-y-6" data-test="cron-monitor-show">
+  <%# Live: header di stato (replace #cron_monitor_labels_<id>) + nuovi check-in (prepend nel tbody). %>
+  <%= turbo_stream_from Realtime::Streams.cron_monitor(@monitor) %>
+  <%= render Ui::PageHeaderComponent.new(title: @monitor.name,
+        breadcrumb: [ { label: t("member.crons.title"), href: member_monitoring_cron_monitors_path },
+                      { label: @monitor.name } ]) do |h| %>
+    <%# Stato e cadenza sopra le azioni, come in ogni header (docs/regole-pagine.md). %>
+    <% h.with_meta do %><%= render "member/monitoring/cron_monitors/labels", monitor: @monitor %><% end %>
+    <%# CYRA-484 — le azioni che la pagina di un sito ha da sempre: correggere il nome e le soglie,
+        sospendere durante una manutenzione, eliminare. La creazione no: un lavoro programmato esiste
+        perché batte, non perché qualcuno lo ha dichiarato. %>
+    <% if @can_manage %>
+      <% h.with_actions do %>
+        <div class="flex items-center gap-2" data-test="cron-monitor-actions">
+          <%= render Ui::ButtonComponent.new(label: t("member.crons.edit"), href: edit_member_monitoring_cron_monitor_path(@monitor), variant: :secondary, size: :sm, icon: "pen", test_id: "cron-edit") %>
+          <% if @monitor.enabled? %>
+            <%= render Ui::ButtonComponent.new(label: t("member.crons.pause"), href: member_monitoring_cron_monitor_pause_path(@monitor), method: :put, variant: :secondary, size: :sm, icon: "pause", test_id: "cron-pause") %>
+          <% else %>
+            <%= render Ui::ButtonComponent.new(label: t("member.crons.resume"), href: member_monitoring_cron_monitor_pause_path(@monitor), method: :delete, variant: :secondary, size: :sm, icon: "play", test_id: "cron-resume") %>
+          <% end %>
+          <%= render Ui::ButtonComponent.new(label: t("member.crons.delete"), href: member_monitoring_cron_monitor_path(@monitor), method: :delete, variant: :danger, size: :sm, icon: "trash", test_id: "cron-delete", confirm: t("member.crons.delete_confirm")) %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-484 — «da quanto dura questo stato»: un lavoro fermo da quattro giorni era presentato come
+      una riga di tabella, e i giorni bisognava contarli da soli. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3.5" data-test="cron-status-duration">
+    <% if @monitor.enabled? %>
+      <% if @status_since %>
+        <p class="text-[13px] text-zinc-900 dark:text-zinc-100">
+          <%= t("member.crons.status_for", status: t("member.crons.status.#{@monitor.status}"),
+                duration: distance_of_time_in_words(@status_since, Time.current)) %>
+        </p>
+        <p class="mt-0.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.crons.status_since", time: l(@status_since, format: :short)) %></p>
+      <% else %>
+        <p class="text-[13px] text-gray-600 dark:text-zinc-400" data-test="cron-never-seen"><%= t("member.crons.never_seen") %></p>
+      <% end %>
+    <% else %>
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400" data-test="cron-paused"><%= t("member.crons.paused_body") %></p>
+    <% end %>
+  </div>
+
+  <%# CYRA-485 — l'indirizzo a cui QUESTO lavoro batte, sulla sua pagina: chi deve rimetterlo in piedi
+      su un'altra macchina non deve ricostruirselo né cercarlo altrove. Nessun segreto: il token
+      viaggia nell'intestazione, non nell'indirizzo. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="cron-check-in-url">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.crons.check_in_url_title") %></h2></div>
+    <div class="px-4 py-4 space-y-2">
+      <%= render "member/secrets/usage_snippet", label: t("member.crons.setup_url_label"),
+            lines: [ cron_check_in_url(@monitor.project, @monitor.slug) ] %>
+      <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.crons.check_in_url_hint") %></p>
+      <%= link_to t("member.crons.setup_guide_link"), member_guides_crons_path,
+            class: "inline-flex items-center gap-1.5 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300",
+            data: { test: "cron-show-guide-link" } %>
+    </div>
+  </div>
+
+  <%# CYRA-484 — «mancato» e «fallito» convivevano nella stessa pagina senza che la differenza fosse
+      spiegata da nessuna parte. Sta qui, dove le due parole compaiono. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-4 py-3" data-test="cron-legend">
+    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-[12px]">
+      <div><dt class="inline font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.crons.status.missed") %>:</dt>
+        <dd class="inline text-gray-600 dark:text-zinc-400"><%= t("member.crons.legend_missed") %></dd></div>
+      <div><dt class="inline font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.crons.check_status.fail") %>:</dt>
+        <dd class="inline text-gray-600 dark:text-zinc-400"><%= t("member.crons.legend_fail") %></dd></div>
+    </dl>
+  </div>
+
+  <%# CYRA-484 — i guasti passati, ricostruiti dai check-in: una serie di fallimenti di fila è UN
+      guasto con la sua durata, non venti righe da contare. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="cron-incidents">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.crons.incidents_title") %></h2></div>
+    <% if @incidents.empty? %>
+      <p class="px-4 py-6 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="cron-incidents-empty"><%= t("member.crons.incidents_empty") %></p>
+    <% else %>
+      <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+        <% @incidents.each do |incident| %>
+          <li class="px-4 py-3" data-test="cron-incident">
+            <div class="flex items-start justify-between gap-4">
+              <div class="min-w-0">
+                <p class="text-[12.5px] text-zinc-900 dark:text-zinc-100">
+                  <%= t("member.crons.incident_span", from: l(incident.started_at, format: :short),
+                        duration: distance_of_time_in_words(incident.started_at, incident.ended_at || Time.current)) %>
+                  <% if incident.open? %><span class="ml-1.5 inline-flex items-center rounded px-1.5 py-0.5 text-[10px] bg-rose-50 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300" data-test="cron-incident-open"><%= t("member.crons.incident_open") %></span><% end %>
+                </p>
+                <% if incident.reason.present? %>
+                  <p class="mt-0.5 text-[12px] text-gray-600 dark:text-zinc-400" data-test="cron-incident-reason"><%= incident.reason %></p>
+                <% end %>
+              </div>
+              <span class="shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.crons.incident_attempts", count: incident.attempts) %></span>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.crons.check_ins") %></h2></div>
+    <%# Il container del tbody esiste SEMPRE (anche a lista vuota): è il target di prepend dei
+        check-in live. Lo stato vuoto resta sotto la tabella (pattern metric_groups/show). %>
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("member.crons.check_ins"), body_id: "cron_monitor_check_ins_#{@monitor.id}", body_test_id: "cron-check-ins")) do |t| %>
+      <% t.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.crons.col_check_status"), sort: "status") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.crons.col_duration"), sort: "duration", initial: :desc, align: :right, classes: "w-28") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.crons.col_reason"), sort: "reason") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.crons.col_at"), sort: "at", initial: :desc, align: :right, classes: "w-40") %>
+      <% end %>
+      <%= render partial: "member/monitoring/cron_monitors/check_in_row", collection: @check_ins, as: :check_in %>
+    <% end %>
+    <% if @check_ins.empty? %>
+      <p class="px-4 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="cron-check-ins-empty"><%= t("member.crons.no_check_ins") %></p>
+    <% end %>
+  </div>
+</div>

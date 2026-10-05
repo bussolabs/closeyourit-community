@@ -1,0 +1,149 @@
+<% content_for :title, @account.name %>
+<% has_secrets = @grants.any? { |p| p.permission_key == "secrets.manage" && p.effect == "allow" } %>
+
+<div class="p-7 space-y-6" data-test="member-service-account">
+  <%= render Ui::PageHeaderComponent.new(title: @account.name,
+        subtitle: t("member.service_accounts.help_show"),
+        breadcrumb: [ { label: t("member.service_accounts.title"), href: member_service_accounts_path },
+                      { label: @account.name } ]) do |h| %>
+    <% h.with_meta do %>
+      <%= render Ui::BadgeComponent.new(label: t("member.service_accounts.badge_service"), color: :indigo, dot: true) %>
+      <span class="font-mono text-[12px] text-gray-500 dark:text-zinc-400">@<%= @account.handle %></span>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.service_accounts.manage_access"), href: access_member_member_path(@membership),
+            variant: :secondary_muted, size: :sm, icon: "sliders", test_id: "service-account-manage-access") %>
+      <%= button_to t("member.service_accounts.delete"), member_service_account_path(@account), method: :delete, params: { confirm: 1 },
+            form: { data: { turbo_confirm: t("member.service_accounts.delete_confirm") } },
+            class: "inline-flex items-center h-7 px-3 rounded-md text-[12px] font-medium text-red-600 dark:text-red-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-red-50 dark:hover:bg-red-500/15",
+            data: { test: "service-account-delete" } %>
+    <% end %>
+  <% end %>
+
+  <%# REVEAL-ONCE: il segreto del token cyi_u_ è mostrato UNA sola volta %>
+  <% if @revealed %>
+    <div data-test="service-account-token-reveal" class="rounded-lg border border-indigo-200 dark:border-indigo-500/40 bg-indigo-50/40 dark:bg-indigo-500/10">
+      <div class="flex items-center gap-2 px-4 py-3 border-b border-indigo-200 dark:border-indigo-500/40 flex-wrap">
+        <%= render Ui::IconComponent.new(name: "circle-check", class: "text-indigo-600 dark:text-indigo-400 text-[13px]") %>
+        <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.service_accounts.tokens.reveal_created", name: @revealed[:token].name) %></h3>
+        <span class="ml-auto inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-medium bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300"><%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[10px]") %><%= t("member.service_accounts.tokens.copy_now") %></span>
+      </div>
+      <div class="px-4 py-4">
+        <div data-controller="clipboard" data-clipboard-copied-value="<%= t('member.service_accounts.tokens.copied') %>">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.service_accounts.tokens.secret") %></p>
+          <div class="mt-1.5 flex items-stretch gap-2">
+            <code data-clipboard-target="source" data-test="service-account-token-secret" class="flex-1 min-w-0 truncate rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 font-mono text-[12px] text-zinc-800 dark:text-zinc-200"><%= @revealed[:secret] %></code>
+            <button type="button" data-action="clipboard#copy" class="inline-flex items-center gap-1.5 h-[37px] px-3 rounded-md text-[12px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800 shrink-0"><%= render Ui::IconComponent.new(name: "copy", class: "text-[12px] text-gray-400 dark:text-zinc-500") %><span data-clipboard-target="label"><%= t("member.service_accounts.tokens.copy") %></span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <%# ACCESSO CONCESSO %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="service-account-access">
+      <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.service_accounts.access_title") %></h3></div>
+      <div class="px-4 py-4 space-y-4">
+        <div>
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.service_accounts.access_secrets") %></p>
+          <%= render Ui::BadgeComponent.new(label: has_secrets ? t("member.service_accounts.secrets_rw") : t("member.service_accounts.secrets_none"), color: has_secrets ? :indigo : :gray, dot: true) %>
+        </div>
+        <div>
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.service_accounts.access_projects") %></p>
+          <% if @visible_projects.any? %>
+            <div class="flex flex-wrap gap-1.5">
+              <% @visible_projects.each do |project| %>
+                <span class="inline-flex items-center rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2 py-0.5 text-[11.5px] text-zinc-700 dark:text-zinc-300"><%= project.key %> · <%= project.name %></span>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-[12px] text-gray-400 dark:text-zinc-500"><%= t("member.service_accounts.access_none") %></p>
+          <% end %>
+        </div>
+        <div>
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.service_accounts.access_roles") %></p>
+          <% if @roles.any? %>
+            <div class="flex flex-wrap gap-1.5">
+              <% @roles.each do |role| %>
+                <span class="inline-flex items-center rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2 py-0.5 text-[11.5px] text-zinc-700 dark:text-zinc-300"><%= role.name %></span>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-[12px] text-gray-400 dark:text-zinc-500"><%= t("member.service_accounts.access_none") %></p>
+          <% end %>
+        </div>
+        <div data-test="service-account-secret-environments">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.service_accounts.access_secret_environments") %></p>
+          <% if @secret_environment_codes.present? %>
+            <div class="flex flex-wrap gap-1.5 mb-2">
+              <% @secret_environment_codes.each do |code| %>
+                <span class="inline-flex items-center rounded-md border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 px-2 py-0.5 text-[11.5px] text-amber-800 dark:text-amber-200"><%= code %></span>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-[12px] text-gray-400 dark:text-zinc-500 mb-2"><%= t("member.service_accounts.secret_environments_all") %></p>
+          <% end %>
+          <% if @grantable_environments.any? %>
+            <%= form_with url: member_service_account_path(@account), method: :patch, class: "flex flex-wrap items-end gap-2", data: { test: "service-account-env-form" } do %>
+              <div class="flex-1 min-w-[10rem]">
+                <%= render Ui::SelectComponent.new(name: "secret_environment_codes", multiple: true,
+                      options: @grantable_environments.map { |env| [ env.label.presence || env.code, env.code ] },
+                      selected: @secret_environment_codes, placeholder: t("member.service_accounts.secret_environments_all"),
+                      test_id: "service-account-env-select") %>
+              </div>
+              <%= render Ui::ButtonComponent.new(label: t("member.service_accounts.secret_environments_save"), type: "submit", size: :sm, variant: :secondary, test_id: "service-account-env-save") %>
+            <% end %>
+          <% end %>
+        </div>
+        <p class="text-[11.5px] text-gray-500 dark:text-zinc-400 pt-1"><%= t("member.service_accounts.access_hint_html", link: link_to(t("member.service_accounts.manage_access"), access_member_member_path(@membership), class: "text-indigo-600 dark:text-indigo-400 hover:underline")) %></p>
+      </div>
+    </div>
+
+    <%# TOKEN CLI %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="service-account-tokens">
+      <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.service_accounts.tokens.title") %></h3></div>
+      <div class="px-4 py-4 space-y-4">
+        <%= form_with url: member_service_account_tokens_path(@account), method: :post, class: "flex flex-wrap items-end gap-3" do %>
+          <div class="flex-1 min-w-[12rem]">
+            <label for="token_name" class="block font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.service_accounts.tokens.form_name") %> <span class="text-rose-500">*</span></label>
+            <input type="text" name="name" id="token_name" value="<%= params[:name] %>" data-test="service-account-token-name" placeholder="ci-deploy" class="w-full h-[34px] px-3 rounded-md border <%= @errors&.dig(:name) ? 'border-rose-300 dark:border-rose-500/50' : 'border-stone-200 dark:border-zinc-800' %> text-[13px] focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400">
+            <% if @errors&.dig(:name) %><p class="mt-1 text-[11px] text-rose-600 dark:text-rose-400"><%= @errors[:name].first %></p><% end %>
+          </div>
+          <%= render Ui::ButtonComponent.new(label: t("member.service_accounts.tokens.form_submit"), type: "submit", icon: "plus", size: :sm, test_id: "service-account-token-submit") %>
+        <% end %>
+
+        <% if @tokens.empty? %>
+          <%= render Ui::EmptyNoteComponent.new(text: t("member.service_accounts.tokens.empty"), test_id: "service-account-tokens-empty") %>
+        <% else %>
+          <div class="divide-y divide-stone-100 dark:divide-zinc-800 border-t border-stone-100 dark:border-zinc-800">
+            <% @tokens.each do |token| %>
+              <div class="flex items-center gap-3 py-2.5" data-test="service-account-token-row">
+                <div class="min-w-0 flex-1">
+                  <p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100 truncate"><%= token.name %></p>
+                  <%# CYRA-717: la scadenza sta accanto all'ultimo uso perché sono la stessa domanda
+                      («questo token vale ancora?»). Un service account nasce senza scadenza e la riga
+                      lo dice: uno spazio vuoto si legge come «non lo so». %>
+                  <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="service-account-token-expiry"><%= token.token_prefix %>… · <%= token.last_used_at ? t("member.service_accounts.tokens.last_used", when: l(token.last_used_at, format: :short)) : t("member.service_accounts.tokens.never_used") %> · <%= token.expires_at.nil? ? t("member.service_accounts.tokens.no_expiry") : t(token.expired? ? "member.service_accounts.tokens.expired_on" : "member.service_accounts.tokens.expires_on", date: l(token.expires_at.to_date, format: :long)) %></p>
+                </div>
+                <% if token.revoked? %>
+                  <%= render Ui::BadgeComponent.new(label: t("member.service_accounts.tokens.status_revoked"), color: :gray, dot: true) %>
+                <% elsif token.expired? %>
+                  <%= render Ui::BadgeComponent.new(label: t("member.service_accounts.tokens.status_expired"), color: :red, dot: true) %>
+                <% else %>
+                  <%= render Ui::BadgeComponent.new(label: t("member.service_accounts.tokens.status_active"), color: :emerald, dot: true) %>
+                <% end %>
+                <% unless token.revoked? %>
+                  <%= button_to t("member.service_accounts.tokens.revoke"), member_service_account_token_path(@account, token), method: :delete, params: { confirm: 1 },
+                        form: { data: { turbo_confirm: t("member.service_accounts.tokens.revoke_confirm") } },
+                        class: "inline-flex items-center h-[28px] px-2.5 rounded-md text-[11.5px] font-medium text-rose-700 dark:text-rose-300 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-rose-50 dark:hover:bg-rose-500/15",
+                        data: { test: "service-account-token-revoke-#{token.id}" } %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

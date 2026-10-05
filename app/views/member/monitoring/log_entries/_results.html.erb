@@ -1,0 +1,19 @@
+<%# CYRA-821 — i risultati, e soltanto loro: sfogliare e riordinare chiedono questo frame e ricevono
+    questo frammento. Il controller risponde direttamente da qui (`render_results_frame`), quindi il
+    grafico del volume, i campi della sidebar, le chip dei conteggi e le viste salvate — che stanno
+    tutti fuori dal frame e che girare pagina non cambia — non vengono nemmeno calcolati.
+
+    `turbo_action: advance` come ogni altro elenco a frame del prodotto: l'indirizzo segue i
+    risultati; `class: block` perché un elemento personalizzato nasce inline e senza quello il
+    riquadro perderebbe la sua forma. Filtri, periodo, ricerca e interruttore del raggruppamento
+    restano fuori: cambiano l'insieme, e con esso i numeri che stanno qui intorno. Le risposte senza
+    questo frame (login scaduta, pagina d'errore) le apre a schermo intero `frame_missing.js`. %>
+<%= turbo_frame_tag "logs-results", class: "block", data: { turbo_action: "advance" } do %>
+  <% if @grouped %>
+    <%= render "member/monitoring/log_entries/grouped_list" %>
+  <% elsif @entries.empty? %>
+    <%= render "member/monitoring/log_entries/no_match" %>
+  <% else %>
+    <%= render "member/monitoring/log_entries/entries_table" %>
+  <% end %>
+<% end %>

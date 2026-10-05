@@ -1,0 +1,46 @@
+<%# locals: host, rules, last_triggered, thresholds, muted_here
+    CYRA-458: le regole di avviso che riguardano QUESTA macchina (eventi server_*, org-scoped: una regola
+    qualsiasi copre già tutta l'org). Per ognuna: l'evento, la soglia d'allarme delle metriche di
+    occupazione (per-macchina o di regola), l'ultimo scatto su questo host e il link alla regola. Vuoto =
+    nessuna regola la copre: lo dichiara e offre (a chi gestisce gli avvisi) il link per crearne una. %>
+<% can_manage_alerts = can?("alerts.manage") %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-alert-rules">
+  <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800 flex items-center gap-2">
+    <%= render Ui::IconComponent.new(name: "bell", class: "text-gray-400 dark:text-zinc-500 text-[12px]") %>
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.alerts.title") %></h2>
+    <% if rules.any? %><span class="ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.alerts.count", count: rules.size) %></span><% end %>
+  </div>
+
+  <% if rules.any? %>
+    <%# One row per rule: name and event, alert limit, last alert here, channels, mute on this machine. %>
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("member.servers.alerts.title"))) do |table| %>
+      <% table.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.alerts.col_rule")) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.alerts.col_limit"), classes: "w-24") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.alerts.col_last"), classes: "w-40") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.alerts.col_channels"), classes: "w-40") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.alerts.col_action"), align: :right, classes: "w-44", visible: can_manage_alerts) %>
+      <% end %>
+      <% rules.each do |rule| %>
+        <%= render "member/monitoring/servers/alert_rule_row", host: host, rule: rule, can_manage: can_manage_alerts,
+              limit: server_rule_threshold(rule, thresholds), last_at: last_triggered[rule.id], muted: muted_here.include?(rule.id) %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="px-5 py-4" data-test="server-alert-rules-empty">
+      <div class="flex items-start gap-2.5">
+        <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-amber-500 dark:text-amber-400 text-[13px] mt-0.5 shrink-0") %>
+        <div class="min-w-0">
+          <p class="text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.servers.alerts.empty_body") %></p>
+          <% if can_manage_alerts %>
+            <%= link_to new_member_alerting_rule_path(event_type: :server_down),
+                  class: "mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300",
+                  data: { test: "server-alert-rules-empty-link" } do %>
+              <%= render Ui::IconComponent.new(name: "plus", class: "text-[11px]") %><%= t("member.servers.alerts.empty_link") %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

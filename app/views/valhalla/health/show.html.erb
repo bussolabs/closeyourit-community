@@ -1,0 +1,160 @@
+<% content_for :title, t("valhalla.health.title") %>
+
+<div class="p-7 space-y-6" data-test="valhalla-health">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("valhalla.health.title"),
+        title_tooltip: t("valhalla.health.help_title"),
+        breadcrumb: [ { label: t("valhalla.health.title") } ],
+        root_href: valhalla_root_path) %>
+
+  <section class="space-y-3">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("valhalla.health.section_queues") %></h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="rounded-[10px] border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-[18px] py-[15px]">
+        <div class="flex items-center justify-between"><span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.health.ready_total") %></span><%= render Ui::IconComponent.new(name: "layers", class: "text-gray-400 dark:text-zinc-500 text-[13px]") %></div>
+        <p class="mt-2 font-mono text-[28px] font-semibold <%= @system_health.ready_total.positive? ? "text-amber-600 dark:text-amber-400" : "text-zinc-900 dark:text-zinc-100" %> leading-none" data-test="stat-ready-total"><%= @system_health.ready_total %></p>
+      </div>
+      <div class="rounded-[10px] border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-[18px] py-[15px]">
+        <div class="flex items-center justify-between"><span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.health.scheduled_total") %></span><%= render Ui::IconComponent.new(name: "clock", class: "text-gray-400 dark:text-zinc-500 text-[13px]") %></div>
+        <p class="mt-2 font-mono text-[28px] font-semibold text-zinc-900 dark:text-zinc-100 leading-none" data-test="stat-scheduled-total"><%= @system_health.scheduled_total %></p>
+      </div>
+      <div class="rounded-[10px] border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-[18px] py-[15px]">
+        <div class="flex items-center justify-between"><span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.health.claimed_total") %></span><%= render Ui::IconComponent.new(name: "cog", class: "text-gray-400 dark:text-zinc-500 text-[13px]") %></div>
+        <p class="mt-2 font-mono text-[28px] font-semibold text-zinc-900 dark:text-zinc-100 leading-none" data-test="stat-claimed-total"><%= @system_health.claimed_total %></p>
+      </div>
+      <div class="rounded-[10px] border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-[18px] py-[15px]">
+        <div class="flex items-center justify-between"><span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.health.blocked_total") %></span><%= render Ui::IconComponent.new(name: "ban", class: "text-gray-400 dark:text-zinc-500 text-[13px]") %></div>
+        <p class="mt-2 font-mono text-[28px] font-semibold text-zinc-900 dark:text-zinc-100 leading-none" data-test="stat-blocked-total"><%= @system_health.blocked_total %></p>
+      </div>
+    </div>
+
+    <% workers_alive = @system_health.workers_alive? %>
+    <div class="rounded-[10px] border <%= workers_alive ? "border-stone-200 dark:border-zinc-800" : "border-amber-300 dark:border-amber-500/50" %> bg-white dark:bg-zinc-900 px-[18px] py-[15px]" data-test="valhalla-health-workers">
+      <div class="flex items-center justify-between">
+        <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.health.workers_title") %></span>
+        <%= render Ui::IconComponent.new(name: workers_alive ? "circle-check" : "triangle-alert", class: "#{workers_alive ? "text-emerald-500" : "text-amber-500 dark:text-amber-400"} text-[13px]") %>
+      </div>
+      <p class="mt-2 text-[15px] font-semibold <%= workers_alive ? "text-zinc-900 dark:text-zinc-100" : "text-amber-600 dark:text-amber-400" %>" data-test="stat-workers-alive"><%= workers_alive ? t("valhalla.health.workers_alive") : t("valhalla.health.workers_down") %></p>
+      <p class="mt-1 font-mono text-[10.5px] text-gray-400 dark:text-zinc-500" data-test="stat-workers-count"><%= t("valhalla.health.workers_count", count: @system_health.workers_count) %></p>
+      <p class="mt-1 font-mono text-[10.5px] text-gray-400 dark:text-zinc-500" data-test="stat-workers-heartbeat">
+        <% heartbeat = @system_health.last_worker_heartbeat_at %>
+        <%= t("valhalla.health.last_heartbeat", time: heartbeat ? l(heartbeat, format: :long) : t("valhalla.health.never")) %>
+      </p>
+    </div>
+
+    <% backlog = @backlog %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="valhalla-health-queue-backlog">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+        <h3 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("valhalla.health.col_backlog") %></h3>
+      </div>
+      <% if backlog.any? %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("valhalla.health.col_backlog"))) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.health.col_queue"), sort: "queue", param: :backlog_sort) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.health.col_backlog"), sort: "backlog", initial: :desc, param: :backlog_sort, align: :right) %>
+          <% end %>
+          <% backlog.each do |row| %>
+            <%= render Ui::TableComponent::RowComponent.new do %>
+              <%= render(Ui::TableComponent::CellComponent.new(header: true, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { row.queue_name } %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.health.col_backlog"), align: :right, mono: true, class: "font-semibold text-amber-600 dark:text-amber-400")) { row.count.to_s } %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% else %>
+        <p class="px-4 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.health.empty_backlog") %></p>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="space-y-3">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("valhalla.health.section_failed") %></h2>
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div class="rounded-[10px] border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-[18px] py-[15px]">
+        <div class="flex items-center justify-between"><span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.health.failed_total") %></span><%= render Ui::IconComponent.new(name: "triangle-alert", class: "#{@system_health.failed_total.positive? ? "text-red-500 dark:text-red-400" : "text-gray-400 dark:text-zinc-500"} text-[13px]") %></div>
+        <p class="mt-2 font-mono text-[28px] font-semibold <%= @system_health.failed_total.positive? ? "text-red-600 dark:text-red-400" : "text-zinc-900 dark:text-zinc-100" %> leading-none" data-test="stat-failed-total"><%= @system_health.failed_total %></p>
+      </div>
+    </div>
+
+    <% failed_breakdown = @failed %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="valhalla-health-failed-breakdown">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+        <h3 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("valhalla.health.col_job_class") %></h3>
+      </div>
+      <% if failed_breakdown.any? %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("valhalla.health.col_job_class"), sort: "job", param: :failed_sort)) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.health.col_job_class")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.health.col_failed_count"), sort: "failed", initial: :desc, param: :failed_sort, align: :right) %>
+          <% end %>
+          <% failed_breakdown.each do |row| %>
+            <%= render Ui::TableComponent::RowComponent.new do %>
+              <%= render(Ui::TableComponent::CellComponent.new(header: true, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { row.class_name } %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.health.col_failed_count"), align: :right, mono: true, class: "font-semibold text-red-600 dark:text-red-400")) { row.count.to_s } %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% else %>
+        <p class="px-4 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.health.empty_failed") %></p>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="space-y-3">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("valhalla.health.section_tables") %></h2>
+    <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.health.section_tables_hint", count: Valhalla::SystemHealth::TOP_TABLES_LIMIT) %></p>
+
+    <% growing_tables = @tables %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="valhalla-health-tables">
+      <% if growing_tables.any? %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("valhalla.health.section_tables"))) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.health.col_table"), sort: "table", param: :tables_sort) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.health.col_size"), sort: "size", initial: :desc, param: :tables_sort, align: :right) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.health.col_est_rows"), sort: "rows", initial: :desc, param: :tables_sort, align: :right) %>
+          <% end %>
+          <% growing_tables.each do |row| %>
+            <%= render Ui::TableComponent::RowComponent.new do %>
+              <%= render(Ui::TableComponent::CellComponent.new(header: true, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { row.table } %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.health.col_size"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400")) { row.size_pretty } %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.health.col_est_rows"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400")) { number_with_delimiter(row.est_rows) } %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% else %>
+        <p class="px-4 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.health.empty_tables") %></p>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="space-y-3">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("valhalla.health.section_services") %></h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <% @system_health.service_statuses.each do |service| %>
+        <% icon, color = case service.status
+             when :up then [ "circle-check", "text-emerald-500" ]
+             when :down then [ "circle-x", "text-red-500 dark:text-red-400" ]
+             when :unconfigured then [ "circle-minus", "text-gray-400 dark:text-zinc-500" ]
+             when :unverifiable then [ "circle-question-mark", "text-amber-500 dark:text-amber-400" ]
+             else [ "circle-question-mark", "text-gray-400 dark:text-zinc-500" ]
+           end %>
+        <div class="rounded-[10px] border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-[18px] py-[15px]" data-test="service-status-<%= service.key %>">
+          <div class="flex items-center justify-between">
+            <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.health.service_#{service.key}") %></span>
+            <%= render Ui::IconComponent.new(name: icon, class: "#{color} text-[13px]") %>
+          </div>
+          <%# CYRA-765: tutti i servizi qui sono di sistema, con una chiave sola. Finché l'AI generativa
+              si collegava per organizzazione (CYRA-549) la card mostrava anche quante ne fossero
+              collegate e quante avessero una chiave rotta: quella domanda oggi non si fa più. %>
+          <p class="mt-2 text-[15px] font-semibold <%= service.status == :down ? "text-red-600 dark:text-red-400" : "text-zinc-900 dark:text-zinc-100" %>" data-test="service-status-<%= service.key %>-label"><%= t("valhalla.health.status_#{service.status}") %></p>
+          <p class="mt-1 font-mono text-[10.5px] text-gray-400 dark:text-zinc-500">
+            <% if service.checked_at %>
+              <%= t("valhalla.health.checked_at", time: l(service.checked_at, format: :long)) %>
+            <% else %>
+              <%= t("valhalla.health.never_checked") %>
+            <% end %>
+          </p>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</div>

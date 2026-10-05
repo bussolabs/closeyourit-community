@@ -1,0 +1,24 @@
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="idea-interest">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
+      <%= t("member.ideas.interest.title") %><span class="ml-1.5 font-mono text-[12px] text-gray-500 dark:text-zinc-400" data-test="idea-votes-count"><%= @idea.votes_count %></span>
+      <%# What a vote does (and does not) stays one hover away, not always open. %>
+      <%= render Ui::TooltipComponent.new(text: t(@idea.status_open? ? "member.ideas.interest.explainer" : "member.ideas.interest.locked"),
+            title: t("member.ideas.interest.info"), tone: :muted, class: "ml-1") %>
+    </h2>
+    <% if @idea.status_open? %>
+      <%= render "member/ideas/vote_button", idea: @idea, voted: @voted, test_id: "idea-vote" %>
+    <% end %>
+  </div>
+  <div class="px-4 py-3.5 space-y-3">
+    <% if @voters.any? %>
+      <div class="flex flex-wrap gap-1.5" data-test="idea-voters">
+        <% @voters.each do |voter| %>
+          <span class="inline-flex items-center h-[24px] px-2.5 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-[12px] font-medium text-indigo-700 dark:text-indigo-300" data-test="idea-voter"><%= voter.name %></span>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-[12.5px] text-gray-400 dark:text-zinc-500" data-test="idea-voters-empty"><%= t("member.ideas.interest.empty") %></p>
+    <% end %>
+  </div>
+</div>

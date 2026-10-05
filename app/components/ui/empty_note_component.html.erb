@@ -1,0 +1,6 @@
+<%= tag.div(**wrapper_options) do %>
+  <p><%= text %></p>
+  <% if hint.present? %>
+    <p class="mt-1 text-[12px] text-gray-400 dark:text-zinc-500" data-test="empty-note-hint"><%= hint %></p>
+  <% end %>
+<% end %>

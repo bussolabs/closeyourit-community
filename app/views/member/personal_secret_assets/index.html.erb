@@ -1,0 +1,66 @@
+<% content_for :title, t("member.personal_secret_assets.title") %>
+
+<div class="p-7 space-y-6" data-test="member-personal-secret-assets">
+  <%# CYRA-428 — stesso titolo e stesse schede della pagina delle variabili: è lo stesso livello, e
+      quale delle due si sta guardando lo dice la scheda accesa, non il titolo. %>
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.vault.levels.personal"),
+        breadcrumb: [ { label: t("member.vault.title"), href: member_vault_path },
+                      { label: t("member.vault.levels.personal") } ],
+        test_id: "personal-secret-assets-header",
+        counts_test_id: "personal-secret-assets-counts", tabs_test_id: "personal-tabs") do |header| %>
+    <% header.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.files", count: @assets.size), value: @assets.size, test_id: "personal-secret-assets-count-files") %>
+    <% end %>
+    <% header.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.personal_secret_assets.upload_cta"), href: new_member_personal_secret_asset_path, variant: :primary, size: :sm, icon: "plus", test_id: "personal-secret-asset-new") %>
+    <% end %>
+    <%= render "member/personal_secrets/tabs", header: header, active_tab: :files %>
+  <% end %>
+
+  <% if @assets.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.personal_secret_assets.empty"), body: t("member.personal_secret_assets.empty_body"),
+          icon: "file-lock", framed: true, test_id: "personal-secret-assets-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 divide-y divide-stone-200 dark:divide-zinc-800" data-test="personal-secret-assets-list">
+      <% @assets.each do |asset| %>
+        <% version = asset.current_version %>
+        <div class="flex items-center gap-3 p-4" data-test="personal-secret-asset-row">
+          <%= render Ui::IconComponent.new(name: "file-lock", class: "text-indigo-500 dark:text-indigo-400 shrink-0") %>
+          <div class="min-w-0">
+            <p class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 truncate" data-test="personal-secret-asset-name-<%= asset.id %>"><%= asset.name %></p>
+            <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= asset.asset_type %> · v<%= version&.number %> · <%= number_to_human_size(version&.byte_size.to_i) %></p>
+            <% if asset.description.present? %><p class="mt-0.5 text-[11px] text-gray-500 dark:text-zinc-400"><%= asset.description %></p><% end %>
+          </div>
+          <div class="ml-auto flex items-center gap-1.5">
+            <%= render Ui::ButtonComponent.new(label: t("member.personal_secret_assets.versions"), href: versions_member_personal_secret_asset_path(asset), variant: :secondary_muted, size: :sm, icon: "history", test_id: "personal-secret-asset-versions-#{asset.id}") %>
+            <%= render Ui::ButtonComponent.new(label: t("member.personal_secret_assets.download"), href: download_member_personal_secret_asset_path(asset), variant: :secondary_muted, size: :sm, icon: "download", test_id: "personal-secret-asset-download-#{asset.id}") %>
+            <%= render Ui::ButtonComponent.new(label: t("member.personal_secret_assets.archive"), href: member_personal_secret_asset_path(asset), method: :delete, variant: :danger_outline, size: :sm, confirm: t("member.personal_secret_assets.archive_confirm"), test_id: "personal-secret-asset-archive-#{asset.id}") %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Attività recente (audit dei file personali: upload/download/versione/archiviazione/eliminazione). %>
+  <% if @events.any? %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="personal-secret-assets-activity">
+      <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+        <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.personal_secret_assets.activity_title") %></h3>
+      </div>
+      <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+        <% @events.each do |event| %>
+          <li class="flex items-center gap-2 px-4 py-2.5 text-[12.5px]" data-test="personal-secret-asset-event">
+            <%= render Ui::IconComponent.new(name: personal_secret_asset_event_icon(event.action), class: "text-[11px] text-gray-400 dark:text-zinc-500 w-4 text-center") %>
+            <span class="text-zinc-700 dark:text-zinc-300"><%= t("member.personal_secret_assets.activity.#{event.action}", name: event.metadata["name"]) %></span>
+            <span class="ml-auto text-[11px] text-gray-400 dark:text-zinc-500"><%= t("member.personal_secret_assets.updated_ago", time: time_ago_in_words(event.created_at)) %></span>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%# CYRA-422 — protezione nel corpo (prima nel suggerimento a scomparsa del titolo): cifratura,
+      visibilità solo tua, tracciamento e retention del registro. %>
+  <%= render SecretProtectionComponent.new(kind: :personal_files) %>
+</div>

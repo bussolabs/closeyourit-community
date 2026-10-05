@@ -1,0 +1,52 @@
+{
+  "en": {
+    "member": {
+      "native_symbols": {
+        "derived": "Original positions",
+        "received": "Received addresses",
+        "thread": "Thread",
+        "thread_option": "Thread %{index} · ID %{id} · %{count} frames",
+        "inline": "Inlined function",
+        "instruction": "Instruction: %{value}",
+        "offset": "Relative address: %{value}",
+        "trust": "Unwinding method: %{value}",
+        "no_source": "Source position unavailable",
+        "no_frames": "No native frames are present in this report.",
+        "report_unavailable": "The retained native crash report is unavailable. Event evidence remains below.",
+        "immutable": "Received addresses, the crash report, event and grouping remain unchanged. Inline locations are ordered from the innermost function to its caller.",
+        "upload_help": "Upload matching native symbols",
+        "build_hint": "Use the CLI with the exact project, format, architecture and debug identity. Debug files stay private; no source text is fetched.",
+        "matching": "Reported build identities and matching",
+        "matching_hint": "These identities come from the crash report. Matching requires the project, format, architecture and debug identity; ELF requires its complete build ID, and PDB uses GUID and age. A filename alone does not identify a build.",
+        "filename": "Module",
+        "debug_id": "Debug ID",
+        "code_id": "Code ID",
+        "base_addr": "Loaded base address",
+        "end_addr": "Loaded end address",
+        "more": {
+          "one": "%{count} more frame",
+          "other": "%{count} more frames"
+        },
+        "reason": {
+          "missing_artifact": "No matching native symbols have been uploaded.",
+          "missing_build_identity": "The module has no usable build identity.",
+          "ambiguous_artifact": "More than one artifact matches; no artifact was selected.",
+          "missing_module": "No module covers this instruction address.",
+          "ambiguous_module": "Module address ranges overlap here; no module was selected.",
+          "invalid_address": "The received address is not usable for this module.",
+          "unsupported_profile": "This native format or architecture is unsupported.",
+          "unmapped": "No source position is available for this address.",
+          "pending": "Native reconstruction is pending.",
+          "artifact_deleted": "Native symbols were deleted or expired. Only received addresses are shown.",
+          "crash_report_unavailable": "The matching retained crash report is unavailable or changed.",
+          "native_budget": "The crash exceeds reconstruction limits. Received addresses remain available within the page limit.",
+          "native_source_budget": "Received native data exceeds the page limit: 500 frames per report or 5 MiB across displayed occurrences.",
+          "symbolication_response_budget": "Reconstructed data exceeds the page limit. Select fewer occurrences.",
+          "processing_unavailable": "The processor is unavailable. Refresh to check the next attempt.",
+          "processing_rejected": "The processor rejected the native data. Check the received build identities.",
+          "unavailable": "No reconstruction is available for this address."
+        }
+      }
+    }
+  }
+}

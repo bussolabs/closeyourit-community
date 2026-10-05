@@ -1,0 +1,22 @@
+<%# locals: () %>
+<%# CYRA-903 — «What you can do here» left the menu: it explains the area, it is not a place to work.
+    The overview lists the features and each one opens its full card on the capabilities page. %>
+<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="vault-overview-capabilities">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.vault.capabilities.title") %></h2>
+    <%= link_to t("member.vault.capabilities.see_all"), member_vault_capabilities_path,
+          class: "text-[12px] text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "vault-overview-capabilities-all" } %>
+  </div>
+  <ul class="px-4 py-3 grid gap-2 sm:grid-cols-2">
+    <% Member::Vault::CapabilitiesController::FEATURES.each do |feature| %>
+      <li>
+        <%= link_to member_vault_capabilities_path(anchor: vault_capability_anchor(feature)),
+              class: "flex items-center gap-2 text-[12.5px] text-gray-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100",
+              data: { test: "vault-overview-capability-#{feature.to_s.dasherize}" } do %>
+          <%= render Ui::IconComponent.new(name: vault_capability_icon(feature), class: "w-[1.25em] text-[12px] text-gray-400 dark:text-zinc-500") %>
+          <span class="truncate"><%= t("member.vault.capabilities.features.#{feature}.title") %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</section>

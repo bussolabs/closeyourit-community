@@ -1,0 +1,15 @@
+<%# locals: list — the colour of a list as swatches; shared by the form page and the new-list dialog. %>
+<%# Swatches, not a dropdown: six choices read faster as colours than as names. %>
+<fieldset data-test="todo-list-color-picker">
+  <legend class="mb-1.5 text-[12.5px] font-medium text-zinc-700 dark:text-zinc-300"><%= t("member.todo_lists.form.color") %></legend>
+  <div class="flex flex-wrap gap-2">
+    <% current = TodoListsHelper::TODO_LIST_COLORS.key?(list.color.to_s) ? list.color.to_s : "indigo" %>
+    <% TodoListsHelper::TODO_LIST_COLORS.each do |key, swatch| %>
+      <label class="cursor-pointer" title="<%= t("member.todo_lists.colors.#{key}") %>">
+        <input type="radio" name="color" value="<%= key %>" class="peer sr-only" <%= "checked" if key == current %>>
+        <span class="block w-7 h-7 rounded-md <%= swatch %> ring-offset-2 peer-checked:ring-2 peer-checked:ring-zinc-900 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 dark:peer-focus-visible:ring-indigo-400"></span>
+        <span class="sr-only"><%= t("member.todo_lists.colors.#{key}") %></span>
+      </label>
+    <% end %>
+  </div>
+</fieldset>

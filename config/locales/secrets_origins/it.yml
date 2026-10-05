@@ -1,0 +1,21 @@
+it:
+  member:
+    secrets:
+      origins:
+        manage_shared: "Gestisci i condivisi"
+        search: "Cerca per nome"
+        filter: "Origine"
+        missing: "Manca"
+        local: "Locale"
+        shared: "Condiviso"
+        apply: "Filtra"
+        reset: "Azzera i filtri"
+        no_match: "Nessuna variabile corrisponde ai filtri"
+        no_match_body: "Prova un altro nome oppure azzera i filtri."
+        source_name: "Sorgente: %{name}"
+        consolidations: "Copie da riordinare"
+        examine:
+          one: "Esamina la proposta"
+          other: "Esamina le %{count} proposte"
+        alias_conflict: "Da correggere prima"
+        alias_conflict_body: "Uno dei progetti usa più nomi per lo stesso valore in un ambiente. Il consolidamento attuale non conserva tutti gli alias. Occorre risolvere i nomi prima di confermare."

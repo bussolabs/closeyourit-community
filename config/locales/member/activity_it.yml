@@ -1,0 +1,88 @@
+it:
+  member:
+    activity:
+      title: Registro attività
+      subtitle: Le azioni delle persone su lavoro, ticket, permessi e Vault, in ordine di tempo.
+      empty: Nessuna attività ancora
+      empty_body: Appena qualcuno crea, modifica o concede qualcosa, l'azione compare qui.
+      no_match: Nessuna attività corrisponde ai filtri.
+      count:
+        one: 1 azione
+        other: "%{count} azioni"
+      stat_events: Azioni
+      filter_source: Registro
+      filter_action: Azione
+      filter_actor: Chi
+      filter_from: Dal
+      filter_to: Al
+      system: Sistema
+      col_when: Quando
+      col_source: Registro
+      col_action: Azione
+      col_subject: Su cosa
+      col_actor: Chi
+      col_project: Progetto
+      impersonated: in impersonation
+      # I quattro registri unificati, coi nomi che una persona riconosce senza sapere come è fatto dentro.
+      sources:
+        work: Lavoro
+        tickets: Ticket
+        permissions: Permessi
+        secrets: Vault
+      actions:
+        unknown: Azione
+        work:
+          created: Creato
+          updated: Modificato
+          moved_in: Spostato qui
+          moved_out: Spostato altrove
+        tickets:
+          created: Ticket aperto
+          updated: Ticket modificato
+          status_changed: Stato cambiato
+          assigned: Assegnato
+          unassigned: Assegnazione tolta
+          reviewer_changed: Revisore cambiato
+          milestone_changed: Traguardo cambiato
+          comment_deleted: Commento eliminato
+          attached: Allegato aggiunto
+          attachment_removed: Allegato rimosso
+          review_rejected: Revisione respinta
+          review_approved: Revisione approvata
+          autopilot_auto_approved: Consegna andata avanti da sola
+          linked: Collegato
+          branch_created: Ramo creato
+          pull_request_opened: Proposta di modifica aperta
+          pull_request_merged: Proposta di modifica unita
+          pull_request_closed: Proposta di modifica chiusa
+          pull_request_autoclose_declined: Chiusura automatica rifiutata
+          agent_eligibility_evaluated: Parere dell'AI
+          agent_eligibility_overridden: Idoneità forzata
+          clarification_requested: Chiarimento chiesto
+          question_asked: Domanda fatta
+          question_answered: Domanda risposta
+          question_closed: Domanda ritirata
+          work_context_captured: Contesto fotografato
+          dependency_added: Prerequisito aggiunto
+          dependency_removed: Prerequisito rimosso
+          dependency_blocked: Fermato da un prerequisito
+          already_done: Già fatto
+        permissions:
+          role_created: Ruolo creato
+          role_updated: Ruolo modificato
+          role_deleted: Ruolo eliminato
+          permission_granted: Permesso concesso
+          permission_revoked: Permesso tolto
+          team_created: Squadra creata
+          team_updated: Squadra modificata
+          team_deleted: Squadra eliminata
+          team_member_added: Persona aggiunta alla squadra
+          team_member_removed: Persona tolta dalla squadra
+          team_role_added: Ruolo dato alla squadra
+          team_role_removed: Ruolo tolto alla squadra
+          team_scope_changed: Progetti della squadra cambiati
+          account_role_added: Ruolo dato a una persona
+          account_role_removed: Ruolo tolto a una persona
+          personal_override_set: Eccezione personale impostata
+          personal_override_cleared: Eccezione personale rimossa
+          dangerous_action_confirmed: Azione delicata confermata

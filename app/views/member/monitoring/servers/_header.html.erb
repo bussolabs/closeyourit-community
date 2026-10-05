@@ -1,0 +1,45 @@
+<%# locals: host:, active_tab:, journal_count: (optional) — header condiviso dalle pagine di UN server (Panoramica + Database):
+    stessi chip e stesse azioni, cambia solo la tab attiva. Pattern member/monitoring/_uptime_header.
+    Wrappato in un div unico così lo space-y del contenitore vede header+tab come un blocco solo. %>
+<% can_manage = can?("servers.manage") %>
+<%= render Ui::PageHeaderComponent.new(
+      title: host.name,
+      breadcrumb: [ { label: t("member.servers.title"), href: member_monitoring_servers_path },
+                    { label: host.name } ],
+      tabs_test_id: "server-tabs") do |h| %>
+  <% if can_manage %>
+    <% h.with_actions do %>
+      <div class="flex items-center gap-2 shrink-0">
+        <%# CYRA-468 — prima fila: solo le azioni ordinarie e reversibili, ognuna con un'etichetta che
+            dice su cosa agisce. «Pausa/Riprendi» diventano «Sospendi/Riattiva gli avvisi» (è ciò che
+            fanno: la raccolta dati continua). %>
+        <% if host.status_paused? %>
+          <%= render Ui::ButtonComponent.new(label: t("member.servers.actions.resume"), href: resume_member_monitoring_server_path(host), method: :patch, variant: :secondary_muted, size: :sm, test_id: "server-resume") %>
+        <% else %>
+          <%= render Ui::ButtonComponent.new(label: t("member.servers.actions.pause"), href: pause_member_monitoring_server_path(host), method: :patch, variant: :secondary_muted, size: :sm, test_id: "server-pause") %>
+        <% end %>
+        <%# Ricollegare è un ripristino sicuro (gemello di «Riattiva gli avvisi»): resta a un clic.
+            Scollegare è invece nel menu delle azioni delicate qui sotto. %>
+        <% if host.revoked? %>
+          <%= render Ui::ButtonComponent.new(label: t("member.servers.actions.unrevoke"), href: unrevoke_member_monitoring_server_path(host), method: :patch, variant: :secondary_muted, size: :sm, test_id: "server-unrevoke") %>
+        <% end %>
+        <%= render Ui::ButtonComponent.new(label: t("member.servers.actions.edit"), href: edit_member_monitoring_server_path(host), variant: :secondary_muted, size: :sm, test_id: "server-edit") %>
+        <%# «Scollega» ed «Elimina» tolte dalla prima fila: nel menu, con conferma per digitazione. %>
+        <%= render "member/monitoring/servers/manage_menu", host: host %>
+      </div>
+    <% end %>
+  <% end %>
+  <%# The page of one machine is split into tabs: a quick overview and one tab per kind of detail.
+      A tab with something to fix carries its count. The databases of the machine are listed on
+      the Disks & hardware tab. %>
+  <% tab_counts = { "workloads" => host.services_failed.to_i,
+                    "operations" => (host.reboot_required? ? 1 : 0) + host.security_updates_available.to_i,
+                    "log" => local_assigns[:journal_count].to_i } %>
+  <% { "overview" => "server", "metrics" => "chart-column", "hardware" => "hard-drive", "workloads" => "boxes",
+       "log" => "scroll-text", "operations" => "wrench", "alerts" => "bell" }.each do |tab, icon| %>
+    <% h.with_tab(label: t("member.servers.tabs.#{tab}"),
+                  href: member_monitoring_server_path(host, tab: (tab unless tab == "overview")),
+                  active: active_tab.to_s == tab, icon: icon, count: tab_counts[tab],
+                  count_test_id: "server-tab-#{tab}-count", test_id: "server-tab-#{tab}") %>
+  <% end %>
+<% end %>

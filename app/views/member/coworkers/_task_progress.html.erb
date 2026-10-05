@@ -1,0 +1,11 @@
+<div id="coworker_task_progress_<%= run.id %>" class="space-y-3" data-test="coworkers-approved-task" data-status="<%= run.status %>"
+     data-coworker-run-id="<%= run.id %>" data-coworker-puck-id="<%= run.puck_id %>" data-coworker-kind="<%= run.kind %>" data-coworker-created-at="<%= run.created_at.iso8601(6) %>">
+  <p class="text-[12px] text-gray-500 dark:text-zinc-400" role="status"><%= t("member.coworkers.status.#{run.status}") %></p>
+  <% if run.output.present? %>
+    <% response_time = run.ended_at || run.started_at || run.created_at %>
+    <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= puck.name %> · <time datetime="<%= response_time.iso8601 %>"><%= l(response_time, format: :short) %></time></p>
+    <%= render Ui::MarkdownComponent.new(text: run.output, short_links: true, class: "dark:prose-invert", test_id: "coworkers-task-output") %>
+  <% end %>
+  <% if run.error_code.present? %><p class="text-[12px] text-red-600 dark:text-red-400"><%= t("member.coworkers.run_failed") %></p><% end %>
+  <%= render "member/coworkers/run_actions", run: run, puck: puck, show_tasks: true %>
+</div>

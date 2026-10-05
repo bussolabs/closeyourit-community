@@ -1,0 +1,22 @@
+<% content_for :title, t("errors.pages.not_found.title") %>
+<%# 404 di prodotto (CYRA-462): resa nel guscio member con le vie d'uscita, non la statica grezza di
+    Rails. CYRA-372: il testo è lo stesso della pagina di errore generica (`errors.pages.*`) — due
+    gusci, una frase sola, altrimenti divergono alla prima riscrittura. %>
+
+<div class="p-7" data-test="member-not-found">
+  <div class="rounded-lg border border-dashed border-stone-300 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+    <div class="flex flex-col items-center justify-center text-center px-6 py-20">
+      <span class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400">
+        <%= render Ui::IconComponent.new(name: "compass", class: "text-[22px]") %>
+      </span>
+      <h1 class="mt-4 font-display text-[22px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("errors.pages.not_found.title") %></h1>
+      <p class="mt-2 text-[13px] text-gray-500 dark:text-zinc-400 max-w-md"><%= t("errors.pages.not_found.body") %></p>
+      <div class="mt-5 flex items-center gap-2">
+        <%= render Ui::ButtonComponent.new(label: t("errors.pages.home"), href: root_path,
+              variant: :primary, size: :sm, icon: "house", test_id: "not-found-home") %>
+        <%= render Ui::ButtonComponent.new(label: t("errors.pages.servers"), href: member_monitoring_servers_path,
+              variant: :secondary_muted, size: :sm, icon: "server", test_id: "not-found-servers") %>
+      </div>
+    </div>
+  </div>
+</div>

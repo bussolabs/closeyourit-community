@@ -1,0 +1,3697 @@
+---
+en:
+  member:
+    no_organization: You don't belong to any organization yet.
+    forbidden: You don't have permission to do that.
+    switched: Switched to %{name}.
+    confirmation_required:
+      title: Confirmation required
+      body: "Check the operation below before confirming. No change has been applied yet."
+      confirm: Yes, go ahead
+      back: Go back
+      from_terminal: "From the terminal, run the same command again adding --yes."
+    suspended:
+      title: Organization suspended
+      body: "Access to %{name} is suspended. While it stays that way you cannot open the organization's pages, nor send or read its data. To have it reactivated, write to whoever administers CloseYourIt."
+      switch_intro: "You can keep working in another organization:"
+      switch_to: Switch to %{name}
+    breadcrumb:
+      # CYRA-335: la radice del percorso si chiama come la voce di menu (member.nav.home): due nomi
+      # per la stessa pagina lasciavano credere che fossero due posti diversi.
+      new: New
+      edit: Edit
+    roles:
+      owner: Owner
+      admin: Admin
+      member: Member
+      customer: Customer
+      god: god
+    keyboard:
+      decision:
+        approve: Approve
+        reject: Reject
+        skip: Skip
+        defer: Defer to tomorrow
+      approvals_board:
+        next: Next row
+        prev: Previous row
+        open: Open the row
+        approve: Approve the row
+        select: Select the row
+      title: Keyboard shortcuts
+      close: Close
+      section_general: General
+      section_nav: Go to
+      section_page: This page
+      help: Show this help
+      global_search: Open global search
+      search: Focus search
+      new: New
+      close_hint: Close / cancel
+      board:
+        select: Move focus
+        grab: Grab / drop card
+        grab_keys: "Space · Enter"
+        move: Move card
+        cancel: Cancel
+    quick_add:
+      title: "What do you want to write?"
+      subtitle: "Four places, one rule: below you find when each one is used."
+      button: "Add"
+      nav_button: "Quick add"
+      ticket:
+        title: "Ticket"
+        when: "Work to do on a project: a problem to fix or a feature to build, with someone reviewing it."
+        not_here: "Not here: personal notes and ideas still to be discussed."
+      idea:
+        title: "Idea"
+        when: "A proposal still to be discussed, which may become a ticket once the team has weighed it."
+        not_here: "Not here: what is already decided and only needs doing."
+      todo:
+        title: "Reminder"
+        when: "Something of yours, for you only: personal notes and lists, no review and no project."
+        not_here: "Not here: work the team needs to see."
+      action:
+        title: "Team activity"
+        when: "Team work that is not development — organisation, sales, admin — assigned to a team."
+        not_here: "Not here: changes to the software, which are tickets."
+    search:
+      title: Search
+      open: Open search
+      trigger: Search…
+      close: Close
+      label: Search CloseYourIt
+      shortcut: ⌘K
+      placeholder: Search pages, tickets, people, errors…
+      prompt_title: Search the workspace
+      prompt_body: Find app pages, tickets, projects, people, errors and everything else you can access.
+      empty_title: No results
+      empty_body: "We couldn't find anything for “%{query}”."
+      knowledge_meta: Knowledge page
+      filters: Filter by type
+      all: All
+      recents: Recent
+      see_all:
+        one: See all (%{count})
+        other: See all (%{count})
+      legend:
+        move: choose
+        open: open
+        close: close
+      meta:
+        page: App page
+        book: Knowledge collection
+        paused: paused
+        group: Project group
+        team: Team
+        person: Send a message
+        conversation: Conversation
+        secret:
+          one: Secret in %{count} project
+          other: Secret in %{count} projects
+      groups:
+        projects: Projects
+        tickets: Tickets
+        error_groups: Errors
+        pages: Knowledge
+        nav: App pages
+        books: Collections
+        ideas: Ideas
+        monitors: Uptime
+        cron_monitors: Scheduled jobs
+        servers: Servers
+        groups: Groups
+        teams: Teams
+        people: People
+        conversations: Conversations
+        secrets: Secrets
+    nav:
+      home: Home
+      valhalla: Valhalla · God mode
+      guides: Guides
+      platforms: Platforms
+      organization: Organization
+      organization_ai: Organization AI
+      # CYRA-338 — the entry carries the name of the page it opens; it used to read «Account».
+      preferences: Preferences
+      helpdesk: Help desk
+      environments: Environments
+      errors: Errors
+      uptime: Uptime
+      performance: Performance
+      status_page: Status page
+      crons: Crons
+      toggle: Open menu
+      menu: Menu
+      lists: Lists
+      bottom_notifications: Notifications
+      bottom_bar: Actions
+      overview: Overview
+      # CYRA-583 — screen readers only, next to the name of the area holding the open page.
+      current_area: Area you are in
+      group_toggle: "Open or close %{group}"
+      compact_collapse: Collapse the menu
+      compact_expand: Expand the menu
+      approvals_pending:
+        one: "%{count} decision waiting for you"
+        other: "%{count} decisions waiting for you"
+      # Content labels, not sidebar ones: a few pages and breadcrumbs use them (CYRA-521).
+      section_organization: Organization
+      section_project: Project
+      section_observability: Observability
+      section_automation: Automation
+      section_work: Work
+      section_system: System
+      section_account: Organization
+      group_home: Home
+      group_approvals: Approvals
+      group_workflows: Workflows
+      group_conversations: Conversations
+      group_todos: Tasks
+      group_guides: Guides
+      group_projects: Projects
+      group_product: Product
+      group_knowledge: Knowledge
+      group_observability: Observability
+      group_infrastructure: Infrastructure
+      group_alerts: Alerts
+      group_automation: Automation
+      group_vault: Vault
+      # CYRA-338 — it read «Settings», the same name as the personal preferences page.
+      group_settings: Administration
+      # CYRA-356 — the three Vault entries carry the name of the page they open.
+      vault_personal: Personal secrets
+      vault_organization: Organization secrets
+      feature_matrix: Feature matrix
+      tickets: Tickets
+      my_work: My work
+      projects: Projects
+      knowledge: Knowledge
+      knowledge_pages: Knowledge pages
+      book: Collections
+      knowledge_review: Review
+      members: Members
+      service_accounts: Service accounts
+      teams: Teams
+      roles: Roles
+      vault_project_secrets: Project secrets
+      vault_capabilities: What you can do here
+      vault_audit: History
+      vault_attention: Needs fixing
+      personal_secret_files: Personal secret files
+      # CYRA-581 — the entry carries the App's own name on GitHub, which is also the title of the
+      # page it opens. CYRA-545: it is no longer in the menu, because the integrations are four now
+      # and the entry is their list. The name stays because it is the area name the changelog uses
+      # for changes to that page (Changelog::Areas).
+      github_app: GitHub App
+      # CYRA-545 — the list of external services the organization connects with its own keys: the
+      # GitHub App page is reached from here too, as the fourth one in the row.
+      integrations: Integrations
+      # CYRA-745 — «who did what and when»: a name that reads without knowing how it works inside.
+      activity: Activity log
+    overviews:
+      counts:
+        errors: Unresolved errors
+        monitors_down: Unreachable
+        monitors: Active checks
+        servers: Machines
+        servers_down: Unreachable
+        projects: Projects
+        environments: Environments
+        tickets_open: Open tickets
+        ideas_open: Open ideas
+        members: People
+        service_accounts: Service accounts
+        seo_issues_open: Open findings
+        seo_issues_critical: Critical
+        seo_sites: Sites
+      overview_empty: No page available in this space with your permissions.
+      infrastructure:
+        matrix:
+          label: Checks by project
+        uptime:
+          label: Uptime
+          set_up: Add a check
+          caption:
+            one: "down out of %{total}"
+            other: "down out of %{total}"
+          zero: "%{total} up"
+        crons:
+          label: Crons
+          set_up: Watch a job
+          caption:
+            one: "late or missed out of %{total}"
+            other: "late or missed out of %{total}"
+          zero: "%{total} on time"
+        certificates:
+          label: Certificates
+          caption:
+            one: about to expire
+            other: about to expire
+          zero: none expiring
+      automation:
+        matrix:
+          label: Automation by project
+        decisions:
+          label: To decide
+          caption:
+            one: waiting in your queue
+            other: waiting in your queue
+          zero: nothing waiting for you
+        active:
+          label: Running
+          caption:
+            one: automation open on a ticket
+            other: automations open on tickets
+          zero: nothing running
+        blocked:
+          label: Stuck
+          caption:
+            one: stopped and waiting for help
+            other: stopped and waiting for help
+          zero: nothing stuck
+        datasets:
+          label: Datasets
+          caption:
+            one: collection of examples
+            other: collections of examples
+          zero: no collection
+      matrix:
+        project: Project
+        all_projects: All projects
+        set_up: Set up
+        search: Search projects…
+        filter_health: Health
+        health_problems: With problems
+        no_match: No project matches the filters.
+        not_available: Not on this project
+      product:
+        matrix:
+          label: Work by project
+        open:
+          label: Open
+          caption:
+            one: ticket still to close
+            other: tickets still to close
+          zero: nothing open
+        in_progress:
+          label: In progress
+          caption:
+            one: being worked on
+            other: being worked on
+          zero: nothing being worked on
+        overdue:
+          label: Late
+          caption:
+            one: past its due date
+            other: past their due date
+          zero: nothing late
+        unassigned:
+          label: Unassigned
+          caption:
+            one: open with nobody on it
+            other: open with nobody on them
+          zero: every ticket has someone
+        ideas:
+          label: Ideas
+          caption:
+            one: waiting for a vote
+            other: waiting for a vote
+          zero: no idea waiting
+      observability:
+        matrix:
+          label: Signals by project
+          rising: More errors than yesterday
+          trend: Errors received in the last 24 hours
+        errors:
+          label: Errors
+          caption:
+            one: still to resolve
+            other: still to resolve
+          zero: nothing to resolve
+        vulnerabilities:
+          label: Vulnerabilities
+          caption:
+            one: open
+            other: open
+          zero: none open
+        logs:
+          label: Logs
+          caption: lines in the last 24 hours
+          zero: nothing in the last 24 hours
+        performance:
+          label: Performance
+          caption:
+            one: operation measured
+            other: operations measured
+          zero: nothing measured yet
+        replays:
+          # CYRA-584 — the card opens the same page as the menu entry: it reads the same, qualifier
+          # included. Otherwise the function would go back to having two names.
+          label: Session replay · recordings
+          caption:
+            one: recording
+            other: recordings
+          zero: no recordings yet
+    shared_secrets:
+      title: Organization secrets
+      variables: Variables
+      delegations: Delegations
+      name: Variable
+      value: Value
+      save: Save
+      col_variable: Variable
+      table_title: Organization variables
+      count:
+        one: 1 variable
+        other: "%{count} variables"
+      new_name: VARIABLE_NAME
+      masked: "••••••••"
+      cell_empty: "—"
+      unlock: Edit
+      save_row: Save row
+      cancel_edit: Cancel
+      copy: Copy
+      copied: Copied
+      copy_failed: Copy failed
+      reveal_failed: Couldn't load
+      add: Add secret
+      create: Create variable
+      saved: Organization secret saved.
+      deleted: Organization secret deleted.
+      delegated: Delegation added.
+      unlinked: Delegation removed.
+      rolled_back: Version restored.
+      stale: Recipients changed. Review the impact and confirm again.
+      projects_count:
+        one: 1 project
+        other: "%{count} projects"
+      choose_project: Select project
+      delegate: Delegate
+      unlink: Revoke
+      unlink_effect: From now on the project can no longer read this secret.
+      unlink_dialog:
+        title: "Revoke the delegation of %{project} on the %{secret} secret?"
+      delegation_help_title: What delegating means
+      delegation_help: "Delegating a secret to a project authorizes that project to read it: only delegated projects can use it. Revoking the delegation removes access instantly."
+      confirm_title: Confirm rotation impact
+      confirm: Confirm and apply
+      effect:
+        rotate: Effective values will be rotated immediately for these recipients.
+        rollback: Effective values will be restored for these recipients.
+        unlink: The secret will no longer be included in the listed recipients' bundles.
+        delete: The secret will be removed from the listed recipients' bundles.
+      activity: Recent activity
+      activity_empty: Nothing has happened to these secrets yet.
+      empty: No organization variables yet. Use the "Add secret" button to create one.
+      history: Versions and actions
+      rollback: Restore
+      rollback_dialog:
+        title: "Restore version %{number} of %{name} in %{environment}?"
+        body: "It becomes a new current version. The bundles and repositories listed in the impact are updated."
+      current: current
+      delete: Delete variable
+      delete_dialog:
+        title: "Delete the %{name} variable?"
+        body: "It disappears from every environment, and bundles and managed repositories are updated. This cannot be undone."
+      delete_impact:
+        one: Deletion affects 1 project.
+        other: "Deletion affects %{count} projects."
+      delegated_title: Read-only delegated values
+      shared_badge: Shared
+      source_link: Manage source
+    crons:
+      title: Crons
+      help_title: "Scheduled jobs: when one is missed, an alert rule warns you."
+      coverage:
+        uncovered_title:
+          one: "1 of %{total} jobs has no alert"
+          other: "%{count} of %{total} jobs have no alert"
+        uncovered_body: "If these scheduled jobs stop, you won't get any alert: no rule covers them."
+        uncovered_link: "Create the rule"
+        covered_title: "All covered"
+        covered_body: "Every scheduled job is covered by an alert rule."
+      back: Back to crons
+      search_placeholder: Search by name or slug…
+      count:
+        one: 1 monitor
+        other: "%{count} monitors"
+      stat_total: Total
+      stat_ok: OK
+      stat_missed: Missed
+      stat_failing: Failing
+      empty: No scheduled job is being watched
+      empty_body: Add a job, then make it report in every time it runs. When it goes quiet or fails, you are warned.
+      no_match: No cron matches the filters.
+      filter_status: Status
+      filter_project: Project
+      col_name: Name
+      col_project: Project
+      col_interval: Cadence
+      col_status: Status
+      col_last_check_in: Last check-in
+      every_minutes: "every %{n} min"
+      every_hours:
+        one: every hour
+        other: "every %{count} hours"
+      every_days:
+        one: every day
+        other: "every %{count} days"
+      n_minutes: "%{n} min"
+      status:
+        unknown: Awaiting
+        ok: OK
+        late: Late
+        missed: Missed
+        failing: Failing
+      check_status:
+        ok: OK
+        fail: Failed
+      check_ins: Recent check-ins
+      no_check_ins: No check-ins recorded.
+      setup_cta: "Connect a job"
+      setup_title: "Put a job under watch"
+      setup_lead: "A scheduled job is not created here: it appears on its own the first time it tells you it ran. These are the instructions to make it do that."
+      setup_no_project: "You cannot see any project: a scheduled job belongs to a project, so that comes first."
+      setup_project: "Project"
+      setup_project_apply: "Change"
+      setup_steps_title: "Four steps"
+      setup_step1: "You need a connection code for the project. If you do not have one yet, create it now."
+      setup_token_link: "Go to the project's connection codes"
+      setup_step2: "This is the address your job must call when it finishes. The last part of the path is the name you give it: change it to something you recognise."
+      setup_url_label: "Address to call"
+      setup_step3: "Add this line at the end of your job. On the first call it shows up in the list, with no further setup."
+      setup_curl_label: "Command"
+      setup_defaults: "You can also say how often it should run and how much delay you accept, by adding expected_interval_minutes and grace_minutes to the call. Otherwise it starts from defaults you can correct later, from its page."
+      setup_step4: "From then on, if a call does not arrive in time the job counts as missed and — if you have an alert rule — someone gets told."
+      setup_fail_title: "Saying why it went wrong"
+      setup_fail_body: "If the job ran but ended badly, say so: its page will show the reason next to the attempt, instead of a plain “failed”."
+      setup_fail_label: "Command when the job fails"
+      setup_guide_link: "Read the scheduled jobs guide"
+      check_in_url_title: "This job's address"
+      check_in_url_hint: "There is no secret in the address: the connection code travels separately, in the call's header."
+      col_reason: Reason
+      status_for: "%{status} for %{duration}."
+      status_since: "Since %{time}"
+      never_seen: "No check-in has ever arrived: until the first one lands there is no state to tell."
+      paused_body: "This job is paused: it is not checked and sends no alerts. The history stays."
+      legend_missed: the check-in never arrived within the expected time.
+      legend_fail: the check-in arrived, but the job reported an error.
+      incidents_title: Outages
+      incidents_empty: No outage among the check-ins we still keep.
+      incident_span: "From %{from}, lasted %{duration}"
+      incident_open: ongoing
+      incident_attempts:
+        one: "1 attempt"
+        other: "%{count} attempts"
+      edit: Edit
+      edit_title: "Edit %{name}"
+      pause: Pause
+      resume: Resume
+      delete: Delete
+      delete_confirm: Delete this scheduled job? Its history is lost. If it keeps checking in it comes back at the next one, with the starting settings.
+      updated: Scheduled job updated.
+      deleted: Scheduled job deleted.
+      paused: Scheduled job paused.
+      resumed: Scheduled job resumed.
+      save: Save
+      cancel: Cancel
+      form_name: Name
+      form_name_hint: What it is called here. The slug the job checks in with does not change.
+      form_interval: Every how many minutes it should run
+      form_interval_hint: The expected time between one check-in and the next.
+      form_grace: Grace minutes
+      form_grace_hint: How much delay is accepted before calling it missed.
+      detail_slug: Slug
+      detail_grace: Grace
+      col_check_status: Result
+      col_duration: Duration
+      col_at: When
+    guides:
+      back: Guides
+      index:
+        title: Guides
+        help_title: "How to connect your apps and use each feature."
+        intro: Connect your apps to CloseYourIt and get the most out of monitoring. Each guide explains what the feature does and the exact steps to wire it up.
+        errors:
+          title: Errors
+        uptime:
+          title: Uptime
+        performance:
+          title: Performance
+        replays:
+          title: Session replay
+      errors:
+        title: Errors
+        subtitle: Collect the errors from your applications, whatever language they are written in.
+        what_title: What it is
+        what_intro: CloseYourIt captures exceptions from your app and groups them into deduplicated issues. Every occurrence rolls up into one issue by fingerprint, so a thousand identical crashes stay one row with counters — not noise.
+        what_levels: Levels — debug, info, warning, error, fatal.
+        what_status: Status — unresolved, resolved, ignored. A resolved issue that recurs reopens automatically.
+        what_promote: Promote to ticket — turn any issue into a bug ticket in one click.
+        connect_title: Connect your app
+        connect_step1: Open your project, create a token in Settings, «Ingest tokens» section, and copy the secret and Project ID — the kit needs both.
+        connect_step3: "Trigger an error. It shows up under %{space} › %{page} within seconds."
+        sdk:
+          ruby:
+            label: Ruby
+            step2: "Add the gem and configure it with the token and Project ID:"
+            published: "Published on RubyGems as closeyourit-ruby, version 0.8.0."
+          js:
+            label: JavaScript
+            step2: "Install the package and initialise it as early as possible at start-up:"
+            published: "Published on npm as @bussolabs/closeyourit-js, version 0.8.0."
+          dart:
+            label: Flutter / Dart
+            step2: "Add the package and initialise it before running the app:"
+            published: "Published on pub.dev as closeyourit, version 0.7.0."
+        sourcemaps_title: Readable browser errors
+        sourcemaps_intro: "Code running in a browser is minified: file and function names become short tokens, and a stack reads like “locale-redirect-yIZlgYBo.mjs”. The error is real and grouping still works, but tracing it back takes a couple of habits."
+        sourcemaps_release: "Always set the release when you initialise the kit: knowing which build an error came from is half the work."
+        sourcemaps_keep: "Keep each build's source maps in a private archive. Upload them with the CLI, matching the project, release and generated filename recorded in the error."
+        sourcemaps_limit: "Use cyi artifacts source-maps upload --help for upload options. The error detail lets you compare received and reconstructed stacks; unresolved frames remain identified, without changing the original event."
+        replays_title: Watching what happened
+        replays_intro: Replays show what a person did on the site before an error. They are off by default and are switched on per project.
+        replays_step1: Open the project and go to its settings.
+        replays_step2: "Turn replays on: the option shows up on projects that have a web platform."
+        replays_step3: "Put the code that asks for recording into your site: the switch alone is not enough, and without the code no session ever arrives."
+        replays_step4: From an error page you can open the recording of the session it happened in, when there is one.
+        replays_note: "Recordings are heavy to store: turn them on where they earn their keep, not everywhere."
+        replays_guide: Go to the recordings guide
+        affected_title: Who's affected
+        affected_intro: "The “Users” column counts the distinct people who hit an error. While it reads “not tracked”, no event carries the identity of whoever hit it: it isn't zero, it simply never arrived."
+        affected_how: "Tell the SDK who the user is before the error is captured. The user id is enough — a stable identifier; email or IP aren't needed and are only sent if you explicitly turn on sending personal data:"
+        affected_count: From then on every error knows who it hit and the “Users” column shows distinct people — so you can sort by real severity, not by noise.
+        affected_privacy: "The count uses an anonymous fingerprint; email, IP and username are never stored. The id you choose stays visible on the occurrence: use one that doesn't reveal personal data."
+        privacy_title: Hidden values (privacy)
+        privacy_intro: Some values (passwords, tokens, emails and the like) are scrubbed before they're stored and show up as “Hidden” on the error page. It's a privacy choice, not a failure — the sensitive value is never kept.
+        privacy_hidden: Where you see “Hidden”, the value was removed on purpose by a privacy rule.
+        privacy_paths: "File paths (the code location) are not scrubbed by CloseYourIt: if you see them hidden, it's your SDK's scrubber configured too aggressively."
+        privacy_where: "What gets hidden is decided in your project's SDK configuration (the data scrubber / before_send): that's where you widen or narrow the rules."
+        triage_title: What to do with an error
+        triage_resolve: Resolve
+        triage_resolve_desc: Mark fixed. Reopens if it recurs.
+        triage_ignore: Ignore
+        triage_ignore_desc: Mute noisy issues you don't care about.
+        triage_reopen: Reopen
+        triage_reopen_desc: Bring a muted issue back to active.
+        triage_promote: Promote
+        triage_promote_desc: Create a bug ticket from the issue.
+        triage_note: "Triaging and turning into a ticket are two permissions of your role: «%{triage}» and «%{promote}»."
+        cta: Go to Errors
+      uptime:
+        title: Uptime
+        subtitle: Checks that your sites answer, and keeps count of when they didn't.
+        what_title: What it is
+        what_intro: A monitor opens an address of your site at regular intervals and records every check. There is one for each environment of the project, so the live site and the test one are followed separately.
+        what_checks: Checks — at every round, whether the site answered and how fast.
+        what_incidents: Incidents — one opens by itself when checks fail in a row (two, unless you choose otherwise) and closes as soon as the site answers again.
+        what_sla: Availability — the share of time the site answered, over the last 24 hours, 7 days, 30 days and a year, with a strip of coloured blocks.
+        setup_title: Set up a monitor
+        setup_step1: Declare the environment on your project (e.g. production) — a monitor can only target a declared environment.
+        setup_step2: "From %{space} › %{page}, click New monitor and fill the fields:"
+        setup_step3: Pause or resume a monitor anytime — paused monitors keep their history but stop checking.
+        field_type: What to check
+        field_type_desc: a website, a port on a server, a domain name (DNS) or whether a machine answers (ping)
+        field_url: URL
+        field_url_desc: the endpoint to ping (https only, public)
+        field_environment: Environment
+        field_environment_desc: one declared environment of the project
+        field_method: Method
+        field_method_desc: GET / HEAD
+        field_status: Expected status
+        field_status_desc: e.g. 200
+        field_interval: Interval
+        field_interval_desc: how often to check (seconds)
+        field_timeout: Timeout
+        field_timeout_desc: when to consider a check failed
+        field_latency: Slow response
+        field_latency_desc: above how many milliseconds we warn you it is slow, even when it answers (blank = no
+          warning)
+        name_note: The monitor name is derived automatically as Project · Environment.
+        embed_title: Show the status on your own site
+        embed_step1: Publish the status page of the monitor (or the group) with the Publish button. Until it is published there is nothing to show outside.
+        embed_step2: "Press Embed: a window opens with two ready-made pieces of code."
+        embed_badge: Badge
+        embed_badge_desc: a small strip with the current status, for your site footer
+        embed_page: Full page
+        embed_page_desc: the whole status page inside one of your own pages
+        embed_step3: Copy the code and paste it into your site wherever you want it. It refreshes itself on every load.
+        embed_note: If you unpublish, code already pasted stops showing anything. The code comes out in the language you are using.
+        alert_title: Get alerted when it goes down
+        alert_intro: "A monitor records outages, but it doesn't alert anyone on its own: the last step is saying who gets alerted if the site goes down."
+        alert_step1: "Open %{page} and create a new rule."
+        alert_step2: Pick the "Site unreachable" event — leave the project empty to cover them all, or choose one.
+        alert_step3: Link the channels (email, Telegram, webhook) where you want to receive the alert.
+        alert_cta: Go to Alert rules
+        cta: Go to Uptime
+      # CYRA-376 — session recording was explained nowhere: not what it captures, not how to turn it
+      # on, not what never makes it into the recording.
+      replays:
+        title: Session replay
+        subtitle: A recording of what a person did on your site, to watch back like a video.
+        what_title: What it is
+        what_intro: "Session replay records how people browse your site and gives it back to you as a video. It is what you need when a report cannot be reproduced: instead of rebuilding the steps from words, you watch them."
+        what_watch: Watch the session — the pages opened one after another, with the duration and when it started.
+        what_errors: Errors in the session — if something broke while browsing, you go from the recording to the error and back.
+        what_filters: Find the right session — filter by project, environment, entry page, or only the ones where something went wrong.
+        setup_title: How to turn it on
+        setup_intro: "Recording does not start by itself, and the switch alone is not enough: two things are needed together, the switch on the project and the code in your site's pages. With only one of them no session ever arrives, and nobody tells you."
+        setup_step1: Pick the project whose sessions you want to record. Only projects with the Web platform appear here, because that is where sessions are recorded.
+        setup_step2: "In its settings flip the «Record sessions» switch: it opens the way to recordings coming from that project."
+        setup_step3: Copy this code and paste it into your site's pages, inside the header. It is already filled in for the project you picked.
+        setup_step4: Sessions show up as people browse. From then on the recordings page lists them, newest first.
+        setup_cta: "%{project} settings"
+        setup_locked: You cannot change this project's settings. Ask whoever manages it to flip the switch.
+        apply: Apply
+        pick_project: Choose a project
+        copy: Copy
+        copied: Copied
+        project_placeholder: YOUR_PROJECT
+        no_project: "None of the projects you can see has the Web platform: sessions are only recorded there. The code below still holds, with your own values in place of the placeholders."
+        no_project_link: Go to projects
+        token_where: The key in the code is the one for the project you picked.
+        token_link: Manage the project keys
+        token_locked: "You get a placeholder instead of the real key: the key is visible to whoever manages that project's keys. Ask them for it and swap it in before you publish."
+        token_missing: "This project has no active key yet, so the box shows a placeholder: create one and put it in its place."
+        snippet_note: "The first line loads the part that actually records the browsing: without it everything else keeps working and the recordings do not, silently. Keep it before the others."
+        errors_title: From the error to the recording
+        errors_intro: On an error page, below the occurrence details, there is the panel of the session recorded when the error happened. From there you watch what the person was doing in the moments before the failure, without hunting for the session by hand.
+        errors_none: "When there is no recording for that error, the panel stays and says so. It is not a fault: either recording was off, or the error does not come from browsing the site."
+        errors_cta: Go to Errors
+        privacy_title: What never makes it into the recording
+        privacy_intro: "A recording is sensitive data: the product treats it as such, and the choices are already made on the cautious side."
+        privacy_masked: Sensitive values (passwords, payment data, fields marked as private) are masked by the kit on your site, before they leave. They arrive here already hidden and are never inspected.
+        privacy_user: Of the person browsing only an anonymous fingerprint is kept, not their name or email. It tells you two sessions belong to the same person, not who they are.
+        privacy_retention: Recordings are kept for 30 days, or as many as you set on the project. After that they are really deleted, videos included.
+        cta: Go to Session replay
+      performance:
+        title: Performance
+        subtitle: Slow queries and slow methods, from your app.
+        what_title: What it is
+        what_intro: "Performance tracks the slow spots in your app and groups them the same way as errors: by fingerprint, into deduplicated groups with duration aggregates."
+        what_query: slow_query — grouped by the templated SQL signature.
+        what_method: slow_method — grouped by the method label.
+        what_aggregates: Aggregates — sample count and min / max / avg / total duration per group.
+        connect_title: Connect with the gem
+        connect_step1: Issue a bearer ingest token from your project, in Settings, «Ingest tokens» section. It's shown once — store it as a secret.
+        connect_step2: "Add the gem and configure it with the token and Project ID:"
+        connect_step3: The gem sends samples fire-and-forget, with PII scrubbed.
+        issues_title: Slowdowns found on their own
+        issues_intro: "Besides the slow queries and methods you measure yourself, monitoring recognises a few typical situations while your app works. They are a third of what you see in the list, and they carry the least obvious names: here is what each one means."
+        issues_note: "The first four come from server applications, the last three from mobile apps: you only see the ones your programs can send."
+        trend_title: Telling whether something is getting worse
+        trend_chart: "Open a slowdown and the first chart is \"Duration over time\": each bar is how long the operation took in that slice of time, and the height is the worst case. The chart below counts how many times it happened instead: two different charts, because something can keep happening just as often while taking twice as long."
+        trend_compare: "Above the chart you get the average for the period you picked and how much it changed against the previous period of the same length: the last 24 hours against the 24 before. When there was nothing to compare with, it says so instead of showing a made-up change."
+        trend_thresholds: "Times are coloured: green when the operation is fast, amber in between, red when it is slow. Hover a time to read the two thresholds that decided that colour, and from the detail you reach the project settings to change them. Every project has its own: for an internal operation \"slow\" can mean something different than for a public page."
+        trend_note: "With no thresholds of your own the defaults apply: fast below %{fast}ms, slow from %{slow}ms up. The duration chart shows the cases still kept, so it looks back as far as the project keeps them."
+        cta: Go to Performance
+    approvals:
+      title: Approvals
+      help_title: "Everything waiting on your decision, one at a time."
+      stack_title: Waiting on you
+      settled:
+        title: This request has already been decided
+        by: "Decided by %{actor} on %{time}."
+        someone: somebody else
+        gone: "It is no longer in the queue: it may have been decided, cancelled, or it may not concern you."
+        open_ticket: "Open %{code}"
+      agent_tip: "The machine that produced this work. Open its page."
+      agent_unknown: "unknown agent"
+      waiting_for_you: "Waiting for you"
+      waiting: Waiting for an answer
+      empty: Nothing left to decide
+      empty_body: When an agent delivers an analysis, or something needs your go-ahead, you will find it here.
+      open_source: Open the original
+      # CYRA-591 — the card of a single run.
+      project: Project
+      state: State
+      decided: Decision recorded.
+      phase_state:
+        done: Done
+        current: Waiting for you
+        failed: Rejected
+        pending: Not started yet
+      kinds:
+        agent_plan: Automated run
+        review: Work to review
+        clarification: Agent question
+        secret_change: Secret change
+      show:
+        back: Back to approvals
+        open_full: Open full page
+      description: Description
+      questions: Agent questions
+      no_plan: The run stopped before producing a plan. You can put it back in the queue or close it.
+      no_plan_retrying: The review rejected an attempt before a plan existed. The run retries on its own — if that is not enough, you can close it.
+      requeue: Put back in the queue
+      attempt:
+        title: Last rejected attempt
+        phase: Phase
+        machine: Machine
+        review: What the review said
+        no_review: The review left no reason.
+        none: This run has no attempt on record.
+      delivered:
+        title: What was delivered
+        none: No work report. Whoever worked the ticket did not write one.
+      compact:
+        in_brief: In brief
+        open_points: Watch out
+        risks: Risks
+        counts:
+          scenarios:
+            one: 1 scenario
+            other: "%{count} scenarios"
+          criteria:
+            one: 1 done criterion
+            other: "%{count} done criteria"
+        full_page: full document on the full page
+        no_brief: "No plain summary: this is the technical synopsis."
+        open_points_count:
+          one: 1 point to check
+          other: "%{count} points to check"
+        risks_count:
+          one: 1 risk
+          other: "%{count} risks"
+        more: description, analysis and criteria on the full page
+      candidate:
+        title: What you are approving
+        onto: "onto %{base}"
+        passing:
+          one: "Checked: 1 automated check, all green."
+          other: "Checked: %{count} automated checks, all green."
+        none_configured: "Checked, but this repository has no automated checks at all: if you approve, you do it without a safety net."
+        unexpected: "The check record is in a state nobody expected here: look at it before deciding."
+        verified_at: "recorded on %{at}"
+        none: "There is no check record for this delivery: there is no way to know which code you are deciding on."
+      note_label: Notes for whoever executes (optional)
+      more_choices: More choices
+      add_note: Add a note
+      note_placeholder: Anything to add before it starts…
+      reject_placeholder: Explain what is wrong…
+      confirm_reject: Confirm
+      ask_placeholder: What do you need to know before deciding?
+      confirm_ask: Send the question
+      ask_hint: The question goes into the ticket. The card waits for the answer.
+      reply_label: Your answer
+      reply_placeholder: Answer the agent…
+      confirm_reply: Send the answer
+      counts:
+        total: To decide
+      board:
+        no_report: no report
+        select_no_report:
+          one: Select the row without a report
+          other: "Select the %{count} rows without a report"
+        agent_label: Agent
+        columns:
+          version: Version
+          ticket: Ticket
+          steps: Steps
+          state: State
+          wait: Waiting
+          agent: Agent
+          project: Project
+          action: Action
+        wait_hint: How long this row has been waiting for a decision.
+        plan_version_hint: "Plan version: it goes up each time the agent rewrites the plan."
+        group_toggle: Open or close this group
+        group_count:
+          one: 1 row
+          other: "%{count} rows"
+        no_project: No project
+        decide: Review
+        open_phase: "Open the report: %{phase}"
+        cell:
+          done: "%{phase}: passed"
+          current: "%{phase}: this is where it is"
+          failed: "%{phase}: it stopped here"
+          pending: "%{phase}: not reached yet"
+        no_agent: not recorded
+        approve: Approve
+        preview_toggle: Show or hide the preview
+        preview_loading: Loading the preview…
+        stuck: Stopped on a step
+        phase_counters:
+          filter: 'Show only: %{phase}'
+          clear: Show every step
+        back: Back to the board
+        freeze:
+          scope: "Work may only start on %{repo} (from %{base})"
+          probe_deploy_smoke: It will count as released when production answers with this version
+          probe_publish: It will count as released when the package shows up on the public registry
+          probe_merge: It will count as released when the code is merged
+          missing_repository: "This project is not linked to any code repository: if you approve, a person will have to call it done at the end."
+          missing_probe: "Nobody has said yet how a release is proved on this project: if you approve, a person will have to call it done at the end."
+          missing_short: No release proof set
+      filters:
+        all: All
+        state: State
+        project: Project
+        agent: Agent
+        all_projects: All projects
+        all_agents: All agents
+        awaiting_approval: Plan to approve
+        awaiting_autopilot_approval: To review
+        review_blocked: Blocked
+        review: In review
+        clarification: Questions
+        secret_change: Secrets
+        waiting: Awaiting reply
+        retrying: Retrying
+        empty: Nothing in this state
+        show_all: Show all
+      actions:
+        ask: Ask for clarification
+        reassess: Re-assess
+        approve:
+          awaiting_approval: Accept the plan
+          awaiting_autopilot_approval: Accept the work
+          review_blocked: Unblock and retry
+          review: Accept
+          secret_change: Accept the change
+        reject:
+          awaiting_approval: Reject
+          awaiting_autopilot_approval: Reject
+          review_blocked: Close the run
+          review: Reject
+          secret_change: Reject
+      reassess_hint: The agent re-checks the code. If it's already done, it closes the ticket.
+      reject_hint:
+        awaiting_approval: Goes back to the agent with your reason.
+        awaiting_autopilot_approval: Goes back in progress with your reason.
+        review_blocked: Closes the run. The ticket returns to people.
+        review: Goes back in progress with your reason.
+        secret_change: Not applied. Whoever asked reads the reason.
+      secret:
+        variable: Variable
+        environment: Environment
+        project: Project
+        requested_by: Requested by
+        reason: Reason
+      bulk:
+        selected: selected
+        approve: Accept
+        done:
+          zero: No card accepted.
+          one: 1 card accepted.
+          other: "%{count} cards accepted."
+        skipped:
+          one: 1 could not be accepted in bulk and stayed in the queue.
+          other: "%{count} could not be accepted in bulk and stayed in the queue."
+        failed:
+          one: "1 did not go through: %{message}"
+          other: "%{count} did not go through. The first one: %{message}"
+      errors:
+        not_found: This request no longer exists, or it is not waiting on you.
+        forbidden: You cannot make this decision.
+        unknown_decision: Unknown decision.
+        missing_reason: A reason is required to reject.
+        missing_text: Write the text before sending.
+        no_selection: You have not selected any card.
+        too_many: You can accept at most %{max} at a time.
+        card_failed: something went wrong, try again
+
+    home:
+      time_ago: "%{time} ago"
+      actions:
+        cancel: Cancel
+        ticket_concluded: "This request is about a ticket that's already closed: there's nothing left to decide."
+        not_reassessable: "The work has moved past planning: this is no longer about whether it is needed, but about whether it is good."
+      approvals:
+        title: Approvals
+      bar:
+        to_decide: "to decide"
+        nothing_queued: "nothing queued"
+        deferred: "deferred to tomorrow"
+        autonomous: "running on their own"
+        back: "Previous one"
+        see_all: "All decisions"
+      decision:
+        no_pipeline: "This request does not belong to a ticket and has no workflow steps: either you approve it, or you reject it."
+        waiting_for: "Waiting for"
+        machine: "Machine"
+        waiting_since: "Waiting for"
+        not_now: "Not now"
+        skip: "Skip"
+        defer: "Defer to tomorrow"
+        open_full: "Open the full card"
+        skip_hint: "Puts the card back in the queue for today. Decides nothing."
+        defer_hint: "Removes the card until tomorrow morning. Decides nothing."
+      cards:
+        deferred: "Deferred to tomorrow morning."
+        nothing_back: "There is nothing to bring back."
+      title: Home
+      subtitle: "The next decision waiting on you."
+      no_org_title: No organization yet
+      no_org_body: You're signed in but not a member of any organization.
+      counts:
+        approvals: To approve
+        conversations: Notifications
+        ideas: Ideas
+      empty:
+        title: Nothing is waiting on you
+        body: You have nothing pending. When something needs your move, it shows up here.
+        body_autonomous:
+          zero: You have cleared the queue, and nothing is running on its own right now.
+          one: "You have cleared the queue. One workflow is running on its own: it will come back here when it needs your word."
+          other: "You have cleared the queue. %{count} workflows are running on their own: they will come back here when they need your word."
+        hidden_title: You have put them all aside
+        hidden_body:
+          one: One decision is still queued, but you skipped or deferred it. Skipped ones come back when you reopen, deferred ones tomorrow morning.
+          other: "%{count} decisions are still queued, but you skipped or deferred them. Skipped ones come back when you reopen, deferred ones tomorrow morning."
+        see_autonomous: See what runs on its own
+        see_all: Show them anyway
+      clarification:
+        title: "The agent needs a clarification on %{code}"
+      review:
+        title: "Review to approve · %{code}"
+      agent_plan:
+        awaiting_approval:
+          title: "Plan to approve · %{code}"
+        awaiting_autopilot_approval:
+          title: "Agent work to approve · %{code}"
+        review_blocked:
+          title: "Agent review blocked · %{code}"
+        retrying:
+          title: "Retrying · %{code}"
+      secret_change:
+        title: "Secret change to approve · %{name}"
+    members:
+      title: Team members
+      help_title: "Your organization's people, invitations and what each one can do."
+      subtitle:
+        one: 1 member · %{invites}
+        other: "%{count} members · %{invites}"
+      pending_count:
+        zero: no pending invitations
+        one: 1 pending invitation
+        other: "%{count} pending invitations"
+      invite: Invite member
+      search_placeholder: Search members…
+      count:
+        one: 1 listed
+        other: "%{count} listed"
+      no_results_body:
+        zero: There is nobody to search yet.
+        one: "There is %{count} person in the organization, but they do not match what you searched for."
+        other: "There are %{count} people in the organization, but none match what you searched for."
+      filter_role: Level
+      col_member: Member
+      col_email: Email
+      col_level: Level
+      col_effective_roles: Roles from teams
+      col_joined: Joined
+      roles_notice_title: "\"Level\" is not the list of permissions"
+      roles_notice_body: "The \"Level\" column only says how a person belongs to the organization. What they can actually do comes from the teams they're in: next to it you'll find the roles it grants and the scope they apply to."
+      no_team_roles: No team
+      scope_prefix: "scope:"
+      you: "(you)"
+      row_menu_label: "Actions for %{name}"
+      last_owner_lock: Last owner — cannot be changed
+      make_admin: Make admin
+      make_member: Make member
+      remove: Remove
+      remove_dialog:
+        title: "Remove %{name} from the organisation?"
+        body: "They lose all access right away: projects, roles, teams and command-line keys. Their account stays."
+      role_changed: Role updated.
+      removed: Member removed.
+      access_updated: Access updated.
+      updated: Member details updated.
+      edit_action: Edit details
+      manage_access: Manage access
+      form:
+        title: Edit member
+        back: Back to members
+        cancel: Cancel
+        save: Save changes
+        name: Name
+        email: Email
+        handle: Handle
+        handle_hint: Global @mention identifier (lowercase letters, numbers, underscore). Applies across all of the user's organizations.
+      access:
+        title: Project access
+        back: Back to members
+        all_access_notice: Admins and owners see every project — access assignment doesn't apply to them.
+        groups: Groups
+        groups_hint: Access to a group grants all its projects — now and in the future.
+        projects: Projects
+        projects_hint: Grant access to individual projects, on top of any groups above.
+        save: Save access
+        cancel: Cancel
+      empty: No members yet.
+      pending_title: Pending invitations
+      col_invited: Invited
+      col_actions: Actions
+      resend: Resend
+      revoke: Revoke
+      revoke_dialog:
+        title: "Revoke the invitation to %{email}?"
+        body: "The invitation link stops working. You can send a new one whenever you like."
+      invitation_link: Link
+      invitation_link_hint: Send this link to the person you invited. Useful when the email doesn't arrive.
+      invitation_link_copy: Copy
+      invitation_link_copied: Copied
+    invitations:
+      new_title: Invite a member
+      back: Back to members
+      org_label: Organization
+      email: Email
+      role: Role
+      role_hint_html: "<b>member</b> can work on tickets · <b>admin</b> can also manage members."
+      submit: Send invitation
+      cancel: Cancel
+      sent: Invitation sent.
+      resent: Invitation resent.
+      revoked: Invitation revoked.
+    organization:
+      edit_title: Organization settings
+      name: Name
+      slug: Slug
+      slug_hint: Used in URLs. Lowercase, hyphens only. Changing it changes the address of the public status pages, and the old links stop working.
+      sections:
+        identity: Identity
+        retention: How long data is kept
+        people: People and defaults
+      save: Save changes
+      updated: Organization updated.
+      meta: Created %{created} · %{count} members
+      default_view_label: Default projects view
+      default_view_hint: Applied to members who haven't picked their own.
+      cto_label: Organization CTO
+      cto_none: No CTO set
+      cto_hint: Approves the plans when the project does not set its own CTO.
+    platforms:
+      title: Platforms
+      help_title: "What a project is: website, app, service, command line."
+      # CYRA-441 — the page opened straight onto the table with no word on what a platform is.
+      intro:
+        title: "What a platform is"
+        what: "A platform says what a project is made of: a website, a phone app, a service with no interface, a command line program."
+        where: "Every project declares its own, a ticket flags the ones it hit, and some features only turn on where the platform supports them — checking that a site responds, for instance."
+      new: New platform
+      count: "%{count} platforms"
+      search_placeholder: Search platforms…
+      filter_status: Status
+      no_match: No platform matches the filters.
+      col_platform: Platform
+      col_code: Code
+      col_status: Status
+      col_uptime: Uptime
+      uptime_yes: "Yes"
+      uptime_no: "No"
+      col_projects: Projects
+      status_active: Active
+      status_inactive: Inactive
+      active_hint: Inactive platforms stay on existing tickets but can't be selected on new ones.
+      edit: Edit
+      delete: Delete
+      delete_dialog:
+        title: "Delete the %{label} platform?"
+        body: "It can be deleted only when no project, ticket or feature uses it, and then only the platform disappears. This cannot be undone."
+      empty: No platforms yet.
+      empty_body: Add the platforms your projects run on — iOS, Android, Web…
+      created: Platform created.
+      updated: Platform saved.
+      deleted: Platform deleted.
+      delete_blocked: This platform is in use — deactivate it instead of deleting.
+      form:
+        new_title: New platform
+        edit_title: Edit platform
+        back: Back to platforms
+        label: Label
+        code: Code
+        code_hint: Lowercase, unique per organization. Matches user profiles across organizations.
+        color: Color
+        active: Active
+        supports_uptime: Uptime monitoring
+        supports_uptime_hint: Web/server platforms only — shows the uptime section on projects that use it.
+        save_new: Create platform
+        save_edit: Save changes
+        cancel: Cancel
+    preferences:
+      title: Preferences
+      platforms_title: My platforms
+      platforms_lead: The platforms you work on. New tickets pre-select these when the project supports them.
+      platforms_label: Platforms I use
+      platforms_hint: They apply across all your organizations.
+      platforms_empty: No platforms available in this organization yet.
+      display_title: Display
+      display_lead: "How the list of projects looks for you: cards or table."
+      projects_view: Projects view
+      theme_title: Theme
+      theme_lead: Light, dark, or the same as your system.
+      theme_options:
+        light: Light
+        dark: Dark
+        system: System
+      language_title: Language
+      language_lead: Choose the language for your interface.
+      language_options:
+        en: English
+        it: Italiano
+      save: Save
+      saved: Preferences saved.
+    projects:
+      next_steps:
+        title: "What to do next"
+        error_to_ticket: "There are open errors and no tickets. The most frequent one is: %{title}"
+        error_to_ticket_cta: "Open a ticket"
+        first_monitor: "No availability check is active on this project."
+        first_monitor_cta: "Set one up"
+        environment_monitor: "The %{environment} environment has no availability check."
+        setup_environment: "No environment declared: tokens, availability checks and releases all attach to one."
+        setup_environment_cta: "Declare an environment"
+        setup_token: "No active token: until there is one, this project cannot receive errors and signals from your applications."
+        setup_token_cta: "Create the first token"
+        setup_repository: "Repository not connected: connect it and branches, pull requests and releases attach to your tickets."
+        setup_repository_cta: "Connect the repository"
+      title: Projects
+      help_title: "Your organization's projects and their settings."
+      subtitle:
+        one: 1 project · %{tickets} tickets · %{open} open
+        other: "%{count} projects · %{tickets} tickets · %{open} open"
+      new: New project
+      count: "%{count} projects"
+      search_placeholder: Search projects…
+      filter_platform: Platform
+      filter_health: Health
+      health_problems: With problems
+      no_match: No project matches the filters.
+      view_cards: Cards
+      view_table: Table
+      card:
+        errors:
+          one: 1 open error
+          other: "%{count} open errors"
+        no_errors: No errors
+        uptime:
+          up: Online
+          down: Offline
+          unknown: Status unknown
+        release: "%{version} · released %{time} ago"
+        open: "Open project →"
+      filter_group: Group
+      group_by_group: By group
+      group_by_none: None
+      sort:
+        label: Sort
+        name: Name
+        errors: Most errors
+        open: Most to do
+        release: Latest release
+        tickets: Most tickets
+        from_table: From the table
+      col_project: Project
+      col_key: Key
+      col_description: Description
+      col_tickets: Tickets
+      col_todo: To do
+      col_group: Group
+      tickets_summary: "%{tickets} tickets"
+      open_summary: "%{open} open"
+      edit: Edit
+      delete: Delete
+      row_menu_label: "Actions for project %{name}"
+      delete_confirm: Delete this project and all its tickets? This cannot be undone.
+      delete_dialog:
+        title: "Delete the %{name} project?"
+        body: "All its tickets, comments and settings disappear with the project. This cannot be undone."
+      empty: No projects yet.
+      empty_body: Create the first project to group your tickets.
+      created: Project created.
+      updated: Project saved.
+      deleted: Project deleted.
+      form:
+        new_title: New project
+        edit_title: Edit project
+        back: Back to projects
+        name: Name
+        key: Key
+        key_hint: "Used in ticket codes, e.g. STOR-1. Up to 4 letters or numbers; start with a letter. Unique per organization."
+        color: Color
+        icon: Icon
+        icon_hint: Pick a Font Awesome icon, or upload a custom image below — an uploaded image takes precedence.
+        icon_image: Or upload an image
+        icon_image_hint: "PNG, JPG or WEBP · max 1 MB"
+        description: Description
+        quick_bug_report_enabled: Quick problem report
+        quick_bug_report_enabled_hint: Shows the AI assistant that turns free text into a structured report.
+        secret_approval_enabled: Require two-person approval for secrets
+        secret_approval_enabled_hint: Secret changes or deletions in protected environments stay pending until a second approver confirms them.
+        group: Group
+        group_none: No group
+        group_hint: Optionally bundle this project under a group, so group members can see it. Use + to create a new group. A group with a color gives it to its projects.
+        platforms: Platforms
+        platforms_hint: The platforms this project runs on. Tickets can only flag platforms selected here.
+        save_new: Create project
+        save_edit: Save changes
+        cancel: Cancel
+        environments: Environments
+        environments_hint: The deploy environments this project receives errors from. Ingest tokens bind to one of these.
+      health:
+        errors: Open errors
+        uptime: Uptime
+        uptime_24h: last 24h
+        logs: Logs
+        logs_7d: last 7d
+        tickets_unresolved: Unresolved
+        tickets_total: "of %{n} total"
+        slow_queries: Slowest queries
+        none: No data
+        last_release: Last release
+        release_when: "%{time} ago · %{environment}"
+      show:
+        back: Back to projects
+        about: About this project
+        books: Collections
+        color: Color
+        group: Group
+        repository: Repository
+        created_by: Created by
+        created_on: Created on
+        platforms: Platforms
+        stat_total: Total
+        stat_todo: To do
+        stat_in_progress: In progress
+        stat_done: Done
+        tickets: Tickets
+        ticket_key: Ticket prefix
+        tickets_count: "%{count} tickets"
+        new_ticket: New ticket
+        new_idea: New idea
+        ask_assistant: Ask the assistant about this project
+        col_code: Code
+        col_title: Title
+        col_status: Status
+        col_priority: Priority
+        col_assignee: Assignee
+        no_tickets: No tickets yet
+        no_tickets_body: A ticket is something to do on this project — a problem to fix, a feature to add — with its own status, priority and the person taking care of it.
+        no_tickets_example: 'For example: "Saving a profile drops the photo" or "Add CSV export".'
+        tickets_no_match: No ticket matches the filters.
+        unassigned: Unassigned
+        tab_overview: Overview
+        monitoring: Monitoring
+        monitoring_uptime: Availability in the last 24h
+        monitoring_tools: Tools sending data
+        tab_milestones: Milestones
+        environments: Environments
+        manage_tokens: Manage tokens →
+        token_count: "·%{count}"
+        no_active_tokens: No active tokens
+        no_environments: No environments declared yet.
+        capabilities_title: Capabilities per environment
+        capability_servers: Servers
+        capability_uptime: Uptime
+        capability_secrets: Secrets
+        capability_approval: Approval
+        capability_inherit: Inherit
+        capability_reset: Reset to inherit
+        capability_on: "On"
+        capability_off: "Off"
+        capability_updated: Capability updated.
+        uptime_disabled_note: Uptime disabled on this environment.
+        servers_disabled_note: Servers disabled on this environment.
+        secrets_disabled_note: Secrets disabled on this environment.
+        releases: Releases
+        releases_events: events
+        releases_all: See all
+        releases_count:
+          one: "1 release"
+          other: "%{count} releases"
+        uptime_view_all: View all →
+        uptime_add: Add monitor →
+        uptime_no: No monitor
+        servers: Servers
+        servers_add: Link a server…
+        servers_link: Link
+        servers_link_add: Link server
+        servers_link_title: Link a server
+        servers_modal_close: Close
+        servers_none: No servers linked
+        servers_linked: Server linked.
+        servers_unlinked: Server unlinked.
+        servers_unlink_label: Unlink server
+        servers_link_failed: Could not link the server.
+        tools_none: No tool has sent data yet.
+        tool_history: History
+        tool_no_signal: No signal
+        tool_last_seen: last seen
+        tool_status:
+          ok: Reporting
+          stale: Quiet
+          missing: Dropped
+        danger_title: Danger zone
+        danger_desc: Deleting this project permanently removes it and all of its tickets. This action cannot be undone.
+        delete_project: Delete project
+      history:
+        title: "Activity history · %{project}"
+        back: Back to project
+        count: Events
+      tool_versions:
+        title: "Version history · %{tool}"
+        back: Back to project
+        count: Versions
+        empty: No version recorded for this source yet.
+        adopted: Adopted
+        last_seen: last seen
+        current: Current
+    groups:
+      title: Groups
+      help_title: "Projects gathered by product, with each member's access."
+      back: Back to projects
+      subtitle:
+        one: 1 group
+        other: "%{count} groups"
+      new: New group
+      manage: Manage group
+      ungrouped: Ungrouped
+      count: "%{count} groups"
+      projects_count:
+        one: 1 project
+        other: "%{count} projects"
+      search_placeholder: Search groups…
+      col_group: Group
+      col_projects: Projects
+      edit: Edit
+      delete: Delete
+      row_menu_label: "Actions for group %{name}"
+      delete_confirm: Delete this group? Its projects stay but become ungrouped.
+      delete_dialog:
+        title: "Delete the %{name} group?"
+        body: "Its projects stay, but become ungrouped. This cannot be undone."
+      empty: No groups yet.
+      empty_body: Bundle related projects under a group — e.g. DriverOne for its apps.
+      created: Group created.
+      updated: Group saved.
+      deleted: Group deleted.
+      form:
+        new_title: New group
+        edit_title: Edit group
+        back: Back to groups
+        name: Name
+        color: Color
+        icon: Icon
+        icon_hint: Pick a Font Awesome icon, or upload a custom image below — an uploaded image takes precedence.
+        icon_image: Or upload an image
+        icon_image_hint: "PNG, JPG or WEBP · max 1 MB"
+        save_new: Create group
+        save_edit: Save changes
+        cancel: Cancel
+      show:
+        back: Back to groups
+        projects: Projects in this group
+        no_projects: No projects in this group yet.
+      # CYRA-362 — see the Italian file: `scope_hint` states which moment each number refers to.
+      rollup:
+        release: Last release
+        release_none: No release
+        release_project: "in %{project}"
+        release_when: "%{time} ago"
+        scope_hint: Errors and tickets are the ones open right now; availability covers the last 24 hours; the release is the most recent one across the projects of the group.
+    milestones:
+      title: Milestones
+      new: New milestone
+      col_milestone: Milestone
+      col_code: Code
+      col_due: Due
+      col_progress: Progress
+      col_status: Status
+      col_tickets: Tickets
+      status_active: Active
+      status_inactive: Inactive
+      edit: Edit
+      delete: Delete
+      delete_confirm: Delete this milestone? Its tickets stay but lose the milestone.
+      delete_dialog:
+        title: "Delete the %{label} milestone?"
+        body: "Its tickets stay, but lose the milestone. This cannot be undone."
+      empty: No milestones yet
+      empty_body: Group this project's epics and stories into release targets like v2.0 to plan and track them.
+      empty_body_viewer: No planned delivery yet. When the team sets a release target, the planned work will show up here.
+      created: Milestone created.
+      updated: Milestone saved.
+      deleted: Milestone deleted.
+      search_placeholder: Search milestones…
+      apply: Apply
+      count:
+        one: "%{count} milestone"
+        other: "%{count} milestones"
+      no_results_body:
+        one: There is %{count} milestone in this project.
+        other: There are %{count} milestones in this project.
+      inactive_group:
+        one: Inactive (%{count})
+        other: Inactive (%{count})
+      progress_count: "%{done} of %{total} tickets"
+      due_today: today
+      due_in:
+        one: in %{count} day
+        other: in %{count} days
+      due_ago:
+        one: "%{count} day ago"
+        other: "%{count} days ago"
+      form:
+        new_title: New milestone
+        edit_title: Edit milestone
+        lead: A release target scoped to %{project} — group its epics and stories.
+        label: Label
+        label_placeholder: e.g. v2.0
+        code: Code
+        code_placeholder: e.g. v2_0
+        code_hint: Lowercase, unique within this project.
+        due: Due date
+        due_hint: Optional target date — leave empty for an unscheduled milestone.
+        color: Color
+        active: Active
+        active_hint: "— inactive milestones stay on existing tickets but can't be selected on new ones."
+        save_new: Create milestone
+        save_edit: Save changes
+        cancel: Cancel
+      show:
+        back: Back to milestones
+        edit: Edit milestone
+        completion: Completion
+        points: "%{done} of %{total} points"
+        tickets_closed: "%{done} of %{total} tickets closed"
+        details: Details
+        more_menu: More actions
+        active_hint: An inactive milestone stays on its tickets but cannot be picked for new ones.
+        closed_group:
+          one: Closed (%{count})
+          other: Closed (%{count})
+        tickets_title: Tickets in this milestone
+        tickets_count: "%{count} tickets"
+        no_tickets: No tickets in this milestone yet.
+        col_code: Code
+        col_title: Title
+        col_kind: Kind
+        col_status: Status
+        col_weight: Weight
+        col_assignee: Assignee
+        rollup_note: Completion = points of closed tickets ÷ total points. Tickets without a weight count as 1 point.
+    tickets:
+      connections:
+        title: Connections
+      context:
+        title: Context
+      recent_comments:
+        title: Latest comments
+        view_all: See the discussion →
+        ago: "%{time} ago"
+      evidence:
+        title: Delivery record
+        subtitle: "What the system saw with its own eyes. It cannot be edited and it moves nothing forward."
+        code: Delivered code
+        onto: "onto %{base}"
+        checks_passing: "Automated checks on that code: %{count} passed."
+        checks_none: "There were no automated checks on that code: nobody looked."
+        checks_unexpected: "The checks on that code did not pass (%{count} seen)."
+        observed_at: "seen on %{at}"
+        release: Production release
+        no_candidate: "No evidence attached: this work was accepted on trust, before the system learned to look."
+        no_release: "No release seen up yet."
+      hidden_columns: "Columns hidden because they are empty for these results: %{columns}."
+      same_incident:
+        title:
+          one: The same title appears on another project
+          other: "The same title appears on %{count} other projects"
+        body: It is nearly always one fault seen by several applications. Worth looking at them together before working them separately.
+      title: Tickets
+      help_title: "The team's bugs, stories, tasks and epics."
+      subtitle: 'N° Tickets: %{count}'
+      new: New ticket
+      in_progress_hint: "Sum of statuses: %{statuses}"
+      search_placeholder: Search tickets…
+      semantic:
+        toggle_label: Semantic search
+        degraded_hint: Semantic search unavailable — showing title matches.
+        using_semantic: Searching by meaning.
+        using_exact: Searching by exact words.
+        switch_to_exact: Search by exact words instead
+        switch_to_semantic: Search by meaning instead
+      duplicates:
+        title: Similar tickets
+        hint: Tick the ones to link to the ticket you are opening.
+        open: Open in a new tab
+        created_linked:
+          one: Ticket created and linked to %{codes}.
+          other: Ticket created and linked to %{codes}.
+        created_not_linked: "Ticket created, but no link was written: the tickets you picked are no longer available. You can link them from their own page."
+      ask:
+        capabilities: "It answers by reading the tickets you can see: it counts, compares, summarises and cites what it based the answer on. It changes nothing and does not see what is not written in a ticket."
+        history: "Recent questions"
+        examples:
+          - "Which tickets are waiting for my decision?"
+          - "What changed this week?"
+          - "Have we had this error before?"
+        title: Ask the tickets
+        label: Your question
+        placeholder: "E.g. have we ever had checkout issues on Safari?"
+        hint: The answer is based only on tickets you can see.
+        submit: Ask
+        pending: Searching, one moment…
+        citations: Cited tickets
+        insufficient: No relevant tickets found for this question.
+        # CYRA-831 — the note only shows up if access changed while the question was queued.
+        scope_reduced: "Your access changed after you asked: the answer only uses the projects you can see now, so it may be incomplete."
+        failed: Assistant unavailable right now. Try again later.
+        errors:
+          blank: Write a question.
+          unavailable: AI assistant unavailable.
+          unreadable: Unreadable assistant response.
+      count: "%{count} tickets"
+      list_view: List view
+      view_switch:
+        label: View
+        board: Board
+        list: List
+      board:
+        title: Board
+        empty_column: Nothing here
+        # CYRA-390 — each column loads a first block of cards; «show more» requests the rest.
+        show_more: Show more
+        # CYRA-390 — completed-work columns only show a recent window, stated here.
+        recent_window: "Only the last %{days} days here"
+        empty_recent: "None in the last %{days} days"
+        # CYRA-390 — columns can be collapsed to free up space; the choice is remembered.
+        # CYRA-390 — from completed columns, for history beyond the recent window.
+        view_all_in_list: See all in list
+        a11y:
+          grabbed: "Picked up {title}. Use the left and right arrows to move it, Space to drop, Esc to cancel."
+          grabbed_label: "{title} — moving. Arrow keys to move it, Space to drop, Esc to cancel."
+          moving: "{title} → {status}"
+          dropped: "Moved to {status}"
+          cancelled: "{title} returned to {status}"
+      filter_kind: Type
+      filter_project: Project
+      filter_status: Status
+      filter_priority: Priority
+      filter_assignee: Assignee
+      filter_reviewer: Reviewer
+      filter_group: Group
+      # CYRA-374 — the counter on top of the board and the list, and the badge marking the row: the
+      # tickets in review where you are the reviewer. Short and true — if it is there, it waits on you.
+      awaiting:
+        badge: Waiting on you
+        chip_title: "Tickets in review where you are the reviewer: the decisions waiting on you. Click to see only those — same number as the Approvals page."
+      # CYRA-844 — the counter on top of the board and the list, and the badge on the row: tickets
+      # with questions nobody has answered yet. An answered or withdrawn question does not count.
+      open_questions:
+        badge:
+          one: "1 open question"
+          other: "%{count} open questions"
+        badge_title:
+          one: "One unanswered question: open the Questions tab"
+          other: "%{count} unanswered questions: open the Questions tab"
+        chip_title: "Tickets with questions nobody has answered yet. Click to see only those."
+      apply: Filter
+      any: Any
+      col_code: Code
+      col_title: Title
+      col_kind: Type
+      col_project: Project
+      col_priority: Priority
+      col_status: Status
+      col_created: Created
+      col_due: Due
+      col_assignee: Assignee
+      unassigned: Unassigned
+      empty: No tickets yet.
+      empty_body: Create the first ticket to start tracking bugs and tasks.
+      # CYRA-387 — «no results» empty state: distinct from «no tickets», cites the criteria and
+      # offers to clear them instead of implying the organization has no tickets.
+      no_results:
+        title: No results
+        body_query: No ticket matches «%{query}».
+        body_filters: No ticket matches the active filters.
+        reset: Clear the search
+        ask: Ask the tickets
+      created: Ticket created.
+      updated: Ticket saved.
+      deleted: Ticket deleted.
+      status_changed: Status updated.
+      assignee_changed: Assignee updated.
+      reviewer_changed: Reviewer updated.
+      review_rejected: Review rejected, ticket sent back to work.
+      review_approved: Review approved.
+      watch:
+        added: Now watching this ticket.
+        removed: Stopped watching this ticket.
+        watch: Watch
+        watching: Watching
+      lease:
+        badge: "Being worked on by %{name}, until %{time}"
+        held_by: "This ticket is already being worked on by %{name}, until %{time}."
+        release: Release
+        released: You released the ticket.
+        take: Take over
+        taken: You took over the ticket.
+        unknown_holder: someone else
+      review:
+        approve: Approve review
+        banner_title: "The work is done and waiting for your approval"
+        banner_body: "Look at what was done, then approve it or ask for a fix."
+        banner_see: "See what was done"
+        plan_first: "The automation first waits for your decision on the plan: approve or reject it from the card."
+        plan_first_link: "Go to the plan"
+        nothing_title: "There is nothing to approve yet"
+        nothing_body: "The ticket is in review but nobody has told what was done yet. Once the work report arrives, you will decide here."
+        approve_confirm: Approve the review? The ticket moves to the done status.
+        reject: Reject review
+        reject_title: Reject the review
+        reason_label: Reason
+        reason_placeholder: Explain what is wrong and what is needed to complete the work.
+        reason_hint: "Write as much as you need. If it is longer than a short message, the reason is saved in the ticket work report."
+        cancel: Cancel
+        confirm: Reject and send back to work
+        confirm_rework: Send back to the agent
+        confirm_hold: Hold for a person
+      vote:
+        added: Vote added.
+        removed: Vote removed.
+        upvote: Upvote
+        voted: Voted
+        remove_title: Remove your vote
+        count:
+          zero: No votes
+          one: "%{count} vote"
+          other: "%{count} votes"
+      edit: Edit
+      delete: Delete
+      delete_confirm: Delete this ticket? This cannot be undone.
+      errors:
+        project_not_found: Select a valid project.
+        invalid_status: Invalid status.
+        workflow_owns_status: The automated run owns this ticket's status until it finishes. To move it by hand, take the ticket over from its page; if a machine is working on it, cancel the run first.
+        invalid_milestone: Invalid milestone.
+        not_in_review: The ticket is not in review.
+        approval_needs_a_person: "A person signs off the delivered work. You are using the identity %{account}, which belongs to a machine: sign off again with your own account."
+        code_changed_after_check: "The code changed after the check: you looked at %{approved}, now it is %{current}. Nothing was approved. The system will check the new code and come back to you."
+        check_unreachable: "The code could not be checked right now: try again shortly. Nothing was approved and nothing was lost."
+        pull_request_gone: "The pull request no longer exists: it was deleted or closed. There is nothing to approve."
+        reason_required: Provide a reason for the rejection.
+        reason_too_long: "The reason is over %{count} characters (now it is %{actual}). Shorten it: a whole work report fits in here."
+        no_target_status: No destination status available. Configure the organization statuses.
+        blocked_by_dependencies:
+          one: 'You can''t start or close this ticket: it depends on another open ticket.'
+          other: 'You can''t start or close this ticket: it depends on %{count} other open tickets.'
+      kind:
+        bug: Bug
+        story: Story
+        task: Task
+        epic: Epic
+      analyze:
+        label: Describe the bug
+        hint: Write what happened in your own words. The assistant sorts it out.
+        placeholder: e.g. On Safari, when I click Checkout after changing the quantity nothing happens,
+          and I expected to go to payment.
+        button: Is my report effective?
+        analyzing: Analyzing…
+        manual: Fill the fields manually
+        complete: Done — I filled the fields below. Review and tweak them if needed.
+        questions_title: A couple more details would help
+        failed: Couldn't analyze right now. Try again shortly or fill the fields manually.
+        errors:
+          project: Select a valid project.
+          disabled: Quick mode is not enabled for this project.
+          blank: Write your report first.
+          unreadable: The assistant replied unexpectedly. Try again or fill the fields manually.
+      compose:
+        label: "Write the ticket for me — tell me what you need"
+        hint: "Explain in your own words what you need: the assistant writes the full ticket."
+        placeholder: e.g. On mobile the checkout times out after 30s and users can't pay.
+        button: "Write it for me"
+        generating: Writing your ticket…
+        complete: "Done — the assistant filled the ticket below. Check it and fix it before saving."
+        failed: Couldn't write the ticket right now. Try again shortly or fill the form manually.
+        no_project: "Pick a project first, then let the assistant write the ticket."
+        explain: "Describe in your own words what you need and the assistant writes the whole ticket — title, kind and body. Check the draft beside it, then fill the form: you can change everything before saving."
+        ask: "Write the draft"
+        rewrite: Start over
+        fill_now: Fill the form
+        review: Draft ready — review it, then fill the form.
+        assistant: Assistant
+        preview: Draft preview
+        preview_empty: "The draft will show up here: title, kind, description, scenarios and definition of done. You get to check it before it touches the form."
+        project_label: Project
+        project_hint: It says where the ticket goes and which knowledge to read.
+        project_required: "Pick the project first: without it the assistant knows neither where the ticket goes nor which knowledge to read."
+        project_changed: "You switched project: the earlier draft no longer fits here. Write it again for this one."
+        keep_editing: You can still change everything in the form.
+        correction_divider: Not right?
+        correction_label: Tell me what to change
+        correction_hint: The assistant rewrites the draft taking this correction into account.
+        correction_placeholder: "e.g. it's a story, not a bug: that payment was never meant for a slow connection."
+        rerun: Rewrite with the correction
+        rewritten: Rewritten with your correction
+        knowledge_used:
+          one: "Knowledge used · 1 page"
+          other: "Knowledge used · %{count} pages"
+        knowledge_none: "Knowledge used · none"
+        knowledge_none_hint: No page of this project turned out relevant to what you wrote. I sent only your text.
+        errors:
+          project: Select a valid project.
+          blank: Describe what you need first.
+          previous_missing: The draft you wanted to correct is gone. Write a new one, then correct it.
+          unreadable: The assistant replied unexpectedly. Try again or fill the form manually.
+          too_long: The draft came out too long and stopped halfway. Try describing what you need more briefly, or split it into two tickets.
+      form:
+        tabs:
+          manual: "Write it myself"
+        new_title: New ticket
+        edit_title: Edit ticket
+        back: Back to tickets
+        kind: Type
+        description: Description
+        description_placeholder: Describe the issue or request in your own words…
+        bug_body_hint: A description alone is enough to save. Optionally, structure your report with the
+          fields below.
+        bug_report: Bug report
+        bug_report_optional: Bug report (optional)
+        project: Project
+        select_project: Select a project…
+        title: Title
+        title_placeholder: Short summary of the bug
+        given: Given — context
+        given_placeholder: Safari 17 with items in the cart…
+        step_when: When — action
+        when_placeholder: I click Checkout after changing the quantity…
+        step_then: Then — what happened
+        then_placeholder: Nothing happens, the button is unresponsive…
+        expected: Expected — but I expected
+        expected_placeholder: Checkout should proceed to payment…
+        steps:
+          given: Given
+          when: When
+          then: Then
+          expected: Expected
+        body_hint: A description alone is enough to save — or add at least one scenario. Technical detail
+          goes in the Technical analysis field below.
+        scenarios: Scenarios
+        scenarios_hint: Describe one or more scenarios (happy path, edge case, error). Keep it simple and human.
+        scenario_add: Add scenario
+        scenario_remove: Remove scenario
+        scenario_title: Scenario
+        scenario_title_placeholder: Short label, e.g. "I buy and no email arrives"
+        conditions: Definition of Done
+        conditions_hint: Simple, checkable lines that say when the work is done. Optional.
+        condition: Condition
+        condition_add: Add condition
+        condition_remove: Remove condition
+        condition_placeholder: e.g. The confirmation email is delivered
+        technical_analysis: Technical analysis
+        technical_analysis_hint: Technical detail — stack, components, likely cause. Keep it out of the
+          description and scenarios.
+        # The labels themselves stay in Italian: they are the literal strings written into the
+        # ticket, read by Italian-speaking humans and parsed downstream. Only the hints translate.
+        technical_analysis_placeholder: |-
+          Approccio: the files to touch, with path and line.
+          Perché: the choice made and the alternative rejected.
+          Rischi: what can break.
+          Aperto: what is still undecided.
+        priority: Priority
+        status: Status
+        status_initial_hint: "Every new ticket starts here: the state changes later, from the ticket or the board."
+        triage_notice: "Saved tickets wait for the automation eligibility decision. Once approved for automated work, an available agent can take them. You can assign a person at any time."
+        assignee: Assignee
+        unassigned: Unassigned
+        platforms: Affected platforms
+        platforms_hint: Pre-filled from your profile. Only the project's platforms can be selected — leave empty if platform-agnostic.
+        milestone: Milestone
+        milestone_none: No milestone
+        error_group: Error
+        error_group_none: No error
+        metric_group: Slow operation
+        metric_group_none: No slow operation
+        signals_hint: "Only for bugs: the open ones of the selected project, without a ticket yet."
+        milestone_hint: Milestones belong to a project — select a project first.
+        parent: Epic
+        parent_none: No epic
+        parent_hint: Group this ticket under an epic of the same project — select a project first.
+          An epic cannot sit under another epic.
+        weight: Weight
+        weight_placeholder: "—"
+        weight_hint: Points for the milestone rollup (optional).
+        due_at: Due date
+        due_at_hint: Optional deadline (day and time).
+        save_new: Create ticket
+        save_edit: Save changes
+        cancel: Cancel
+      show:
+        back: Back to tickets
+        scenarios: Scenarios
+        scenario_n: "Scenario %{n}"
+        conditions: Definition of Done
+        advice: Advice
+        advice_create: Open a ticket
+        report: Work report
+        report_rejection: Why the work was sent back
+        report_version: "Version %{version}"
+        report_versions: Previous versions
+        report_changes: "What changed since version %{version}"
+        report_change_added: "Added:"
+        report_change_removed: "Removed:"
+        report_read: Read
+        report_back: Back to the report
+        report_unknown_author: Author no longer available
+        report_outdated: You are reading version %{version}; the current one is %{current}.
+        technical_analysis: Technical analysis
+        show_all: Show all
+        show_less: Show less
+        written_by: "written by %{name} on %{date}"
+        written_by_system: the system
+        technical_analysis_empty: No technical analysis on this ticket.
+        technical_analysis_empty_hint: Add the technical detail by editing the ticket.
+        analysis_edit: "Edit"
+        analysis_copy: "Copy Markdown"
+        analysis_copied: "Copied"
+        analysis_sections: "Sections of the analysis"
+        steps:
+          given: Given
+          when: When
+          then: Then
+          expected: Expected
+        details: Details
+        people: People
+        classification: Classification
+        context: Context
+        created_on: "created on %{date}"
+        code_title: "Tickets starting with %{key} belong to the %{project} project"
+        in_status_since: "in this status for %{time}"
+        kind: Type
+        idea: Idea
+        status: Status
+        priority: Priority
+        assignee: Assignee
+        reviewer: Reviewer
+        milestone: Milestone
+        parent: Epic
+        weight: Weight
+        weight_points:
+          one: 1 pt
+          other: "%{count} pts"
+        due_at: Due date
+        platforms: Affected platforms
+        reporter: Reporter
+        created: Created
+        dev_menu: "Development"
+        more_menu: "More actions"
+        edit: Edit
+        delete: Delete
+        unassigned: Unassigned
+        no_reviewer: No reviewer
+        origin_error: Origin error
+        origin_performance: Linked slow operation
+      filter_agent_eligibility: AI agents
+      agent_eligibility:
+        title: AI agents
+        pending: To assess
+        allowed: Workable by agents
+        blocked: For a person only
+        not_evaluated_yet: Nobody has decided yet whether an agent can work on this ticket. Until a person decides, no agent picks it up.
+        advice:
+          summary: "AI opinion: %{verdict}. A person still decides."
+          allowed: an agent could take it
+          blocked: better keep it with a person
+          evaluated_at: "Opinion given on %{when}"
+        decided_by: "Decided by %{name} on %{when}"
+        unknown_actor: Someone
+        manual_reason: "Decision made manually by %{name}."
+        actions:
+          allow: Allow agents
+          allow_confirm: Do you want to let an AI agent work on this ticket on its own?
+          block: Keep for a person
+          reset: Back to automatic evaluation
+        updated:
+          allowed: Agents can now work on this ticket.
+          blocked: The ticket stays with a person.
+          auto: The ticket will be evaluated again automatically.
+        errors:
+          invalid: Invalid choice.
+      tabs:
+        detail: Detail
+        analysis: Technical analysis
+        report: Work report
+        automation: Automation
+        questions: Questions
+        discussion: Discussion
+        automation_attention: "Waiting for you"
+      automation:
+        none: No automated work on this ticket.
+        # CYRA-602 — the EIGHT words of the journey, the only ones a reader ever meets. Sixteen
+        # internal phases, eight words: the detail does not vanish, it lives in the sentence
+        # below (`phase_hint`). Before, the same moment had three different names one click apart.
+        stage:
+          to_plan: To plan
+          plan_to_approve: Plan to approve
+          in_progress: In progress
+          to_review: To review
+          closing: Closing
+          done: Done
+          blocked: Blocked
+          cancelled: Cancelled
+        phase:
+          inactive: Inactive
+          triage_queued: Triage queued
+          triaging: Triaging
+          planning: Planning
+          awaiting_approval: Plan to approve
+          autopilot_queued: Autopilot queued
+          autopilot: Autopilot running
+          verifying_candidate: Checking the pull request
+          verifying_staging: Checking the release proof
+          awaiting_production_proof: Checking the production release
+          awaiting_autopilot_approval: Work delivered
+          closer_staging_queued: Staging release queued
+          closer_staging: Staging release
+          closer_production_queued: Production release queued
+          closer_production: Production release
+          review_blocked: Run blocked
+          completed: Completed
+          cancelled: Cancelled
+        # CYRA-384 — one sentence per phase, next to the label: the label says what the state is
+        # called, not what it means for you nor who has to move.
+        phase_hint:
+          inactive: Automated work was never requested on this ticket.
+          triage_queued: Waiting for a free machine to read the ticket. It usually starts within a few minutes.
+          triaging: A machine is reading the ticket to decide whether it can be worked as it stands.
+          planning: A machine is writing the work plan.
+          awaiting_approval: The plan is ready and waiting for a person to approve it or ask for changes.
+          autopilot_queued: "The plan is approved: waiting for a free machine to carry it out."
+          autopilot: A machine is doing the work the plan describes.
+          verifying_candidate: "The system is opening the pull request and reading the automated checks on that code. It carries on by itself: nothing is needed from you."
+          verifying_staging: "The system is checking whether the code you approved really landed on the main line. It carries on by itself: nothing is needed from you."
+          awaiting_production_proof: "The system is checking whether the production release is really up. It carries on by itself: nothing is needed from you."
+          awaiting_autopilot_approval: The work is delivered and waiting for a person to read it.
+          closer_staging_queued: "The work is approved: waiting for a machine to put it on the test environment."
+          closer_staging: A machine is putting the work on the test environment.
+          closer_production_queued: "The staging check went through: waiting for a machine to put the work on the live site. Nothing is needed from you."
+          closer_production: A machine is putting the work on the live site.
+          review_blocked: The work stopped retrying on its own and is waiting for a decision.
+          completed: "The work reached the end: there is nothing left to do here."
+          cancelled: A person stopped the work, and it never resumes on this ticket.
+        # Execution phases (Agents::Attempt#phase, a different vocabulary from Workflow#phase):
+        # rendered by the retry banner and by the summary's "what it did" line. They used to live
+        # under `phase`, where three of the five would have clashed with a workflow phase of the
+        # same name meaning something else.
+        execution_phase:
+          triage: Triage
+          planner: Planning
+          autopilot: Delivery
+          closer_staging: Test environment release
+          closer_production: Live site release
+        # CYRA-384 — the three lines at the top of the card. They come from structured fields (phase,
+        # attempt outcomes, open questions): a summary guessed from the machine's free text can lie
+        # exactly where the decision is made.
+        summary:
+          done:
+            label: What it did
+            none: It has not finished any step yet.
+            last: "%{phase}: %{outcome}, %{ago} ago."
+          stopped:
+            label: Why it stopped
+            blocked: "It stopped on %{phase} %{count} times in a row: it will not retry on its own."
+            agent_blocked: "It stopped by itself on %{phase} and wrote why: «%{reason}» It will not retry on its own."
+            agent_blocked_no_reason: "it did not write the reason"
+            candidate_check: "It stopped while checking the pull request: \"%{reason}\" It will not retry on its own."
+            release_probe: "It stopped while checking the release: «%{reason}» It will not retry by itself."
+            held_by_person: "Held before production: %{name} stopped it. No release of this repository goes to production until it resumes."
+            retrying: "It is not stopped: the last step was rejected and is already retrying."
+            verifying_candidate: "It is not stuck: the system is opening the pull request and reading the checks on that code."
+            verifying_staging: "It is not stuck: the system is checking whether the approved code landed on the main line."
+            awaiting_production_proof: "It is not stuck: the system is checking whether the production release is really up."
+            retry_hint: "It is not stuck: the system cannot read something on GitHub (%{code}). Retrying at %{at}. Nothing is needed from you."
+            awaiting_approval: "It is stopped on the plan: waiting for a person to approve it."
+            awaiting_autopilot_approval: "It is stopped on the delivered work: waiting for a person to read it."
+            cancelled: "A person stopped it: %{reason}"
+            dependencies: "Held by %{codes}: that work has to come first. The queue leaves it alone until it is sorted."
+            dependencies_anonymous: "Held by a prerequisite on a project you cannot see. The queue leaves it alone until it is sorted."
+            missing_release_probe: "It cannot start: the project does not declare how one can tell that a release of its own succeeded, and without that the machine does not know where to open the proposal nor when to call itself done. Set it from the project's GitHub panel, then it starts again on its own."
+            cancelled_no_reason: A person stopped it, without giving a reason.
+            completed: "It is not stopped: it reached the end."
+            inactive: "It never started: nobody requested it on this ticket."
+            queued: "It is not stopped: it is waiting for a free machine."
+            production_busy: "Not stuck: waiting for the release of %{code} to finish. One release at a time per repository, so production never goes backwards."
+            production_busy_anonymous: "Not stuck: waiting for another release on this repository to finish. One at a time, so production never goes backwards."
+            production_soak: "Not stuck: the code is being tried on staging. If no new errors show up, it goes to production from %{at}."
+            production_staging_error: "Held before production: a new error showed up on staging, “%{title}”. Resolve or ignore it and the release resumes on its own."
+            production_staging_error_anonymous: "Held before production: a new error showed up on staging. The release resumes once it is resolved or ignored."
+            working: "It is not stopped: it is working on it right now."
+          needs:
+            label: What it needs from you
+            answer_questions:
+              one: Answer the question below.
+              other: "Answer the %{count} questions below."
+            approve_plan: Approve the plan, or ask for changes.
+            decided_by: "%{name} has to decide."
+            no_decider: "Nobody can decide: the project does not say who decides."
+            review_delivery: Read the delivered work and decide at the top of the ticket.
+            unblock: Get the work going again, or stop it.
+            nothing: "Nothing: the work carries on by itself."
+            finished: "Nothing: the work is over."
+          retrying_hint: "A step was rejected and the machine is redoing it by itself: nothing needed from you."
+        effective_cto: Who decides
+        no_cto: Not configured
+        running_on: Running on
+        cancel: Close the run
+        proof:
+          title: "Release check"
+          body: "The system is checking whether the production release is really up. It carries on by itself: nothing is needed from you."
+          checks: "Checked %{count} times. Last outcome: %{code}."
+          mark: "Mark as released"
+          marked: "Marked as released."
+        cancel_reason: Reason for cancelling
+        cancel_effect: "The automated work stops here and never resumes on this ticket: from then on a person carries it forward."
+        cancel_open: "Close the work…"
+        cancelled: "Automation cancelled: %{reason}"
+        cancelled_notice: Automation cancelled.
+        production_hold:
+          held: Release stopped before production.
+        reassess:
+          requested: "Re-assessment requested: planning starts again from today's code."
+        blocked:
+          title: Stopped — a decision is needed
+          body: "It stopped on %{phase} %{count} times in a row. The work will not retry on its own."
+          body_agent: "The machine stopped by itself on %{phase}: «%{reason}» The work will not retry on its own."
+          body_held: "%{name} stopped the release before production. The code is already on main: while it stays stopped, no release of this repository goes to production."
+          retry: Unblock and retry
+          retried: Work put back in the queue.
+          waiting_on_cto: "Only %{name} can decide."
+          retrying_title: In review — retrying on its own
+          retrying_body: "%{phase} was rejected and is already retrying. No action needed."
+        steps:
+          title: Work steps
+          empty: No steps yet. The work has not started.
+          queued: "It usually starts within a few minutes: until it does there are no steps to read, and nothing to fix."
+          queued_since: "Waiting for %{ago} (%{time})."
+          count:
+            one: 1 attempt
+            other: "%{count} attempts"
+          unknown_host: unknown machine
+          review: review
+          failure_no_reason: The machine reported a failure without a reason.
+          # CYRA-384 — consecutive attempts with the same outcome folded into a single row: in a row
+          # they buried the rest of the card, and reaching the plan meant scrolling past every one.
+          group: "%{attempts} %{outcome} between %{from} and %{to}"
+          group_open: open the detail
+          scenarios: scenarios
+          definition_of_done: definition of done
+          notes: notes
+          already_done_sources: code references
+          capabilities: Capabilities
+          cycles: cycles
+          human_approval: needs human approval
+          gate_passed: checks passed
+          outcome:
+            approved: approved
+            rejected: rejected
+            failed: failed
+            interrupted: interrupted
+            running: running
+            awaiting_review: in review
+            blocked: blocked
+          # CYRA-384 — the row that folds several attempts talks about several attempts.
+          outcome_plural:
+            approved: approved
+            rejected: rejected
+            failed: failed
+            interrupted: interrupted
+            running: running
+            awaiting_review: in review
+            blocked: blocked
+          # CYRA-384 — one sentence per outcome. "Interrupted" and "failed" are two different things,
+          # and the difference decides whether there is something to fix or only to retry.
+          outcome_hint:
+            approved: "Review accepted the delivered work: the step is closed."
+            rejected: "Review did not accept the work: the step has to be done again."
+            failed: The attempt broke on a machine failure, delivering nothing.
+            interrupted: "The attempt ended without delivering: the machine went down or lost its connection."
+            running: A machine is working on it right now.
+            awaiting_review: The work is delivered and another machine is reading it.
+            blocked: "The machine delivered a block instead of the work: the reason is in the step details."
+          state:
+            workable: workable
+            needs_clarification: needs clarification
+            waiting: waiting
+            escalated: escalated
+            submitted_for_approval: submitted for approval
+            delivered: delivered
+            blocked: blocked
+            already_delivered: already delivered
+            already_done: already done
+            staging_released: staging released
+            production_released: production released
+            approved: approved
+            changes_requested: changes requested
+            unavailable: unavailable
+          # CYRA-384 — translated they already were (CYRA-392), but "blocked" alone says neither what
+          # happened nor whether it resumes by itself. One sentence per label, shown next to it.
+          state_hint:
+            workable: The ticket can be worked as it stands.
+            needs_clarification: An answer is needed before going further.
+            waiting: The attempt stopped waiting for something.
+            escalated: The attempt handed over to a person.
+            submitted_for_approval: The plan was delivered and is waiting for approval.
+            delivered: The work was delivered.
+            blocked: "The attempt stopped and does not resume by itself: a person is needed."
+            already_delivered: The work had already been delivered by an earlier attempt.
+            already_done: "The work was already written in the code: there was nothing to plan."
+            staging_released: The work reached the test environment.
+            production_released: The work reached the live site.
+            approved: Whoever read the work accepted it.
+            changes_requested: Whoever read the work asked for changes.
+            unavailable: The work could not be read.
+        # CYRA-384 — the security finding used to sit inside the long text of a secondary card, and
+        # nobody saw it. The machine writes it in a dedicated field of the delivered result: looking
+        # for it in free text means guessing, and here guessing wrong costs both ways.
+        security:
+          clear: The automated work checked and found no security anomalies.
+          title:
+            one: Security finding from the automated work
+            other: "%{count} security findings from the automated work"
+          severity:
+            low: low severity
+            medium: medium severity
+            high: high severity
+            critical: critical severity
+        work_report:
+          title: Work report
+          moved: "The agent's work report is in the Report tab."
+          moved_link: "Open the report"
+          reported: reported by the agent
+          attested: verified by the system
+          files: Changed files
+          tests: Checks run
+          criteria: Evidence by criterion
+          exceptions: Deviations and residual risks
+        failure:
+          human_action: "What a person needs to do:"
+          category: Category
+          retryable: the system can retry
+          not_retryable: human action required
+        plan:
+          title: Current plan
+          download: Download Markdown
+          approved: approved
+          awaiting: awaiting approval
+          written: "version %{version}, written on %{date}"
+          technical_analysis: Technical analysis
+          summary: Summary
+          work_items: Changes
+          dependencies: Dependencies
+          rationale: Rationale
+          risks: Risks
+          mitigation: Mitigation
+          open_points: Open points
+          sources: Verified sources
+          scenarios: Scenarios
+          sentence:
+            given: Given
+            when: when
+            then: then
+            expected: I expect
+          definition_of_done: Definition of done
+          notes: Notes
+          change_request: "Changes requested:"
+          # CYRA-630 — same words as the run card: it was the same service under two names.
+          approve: Accept the plan
+          request_changes: Reject
+          change_reason: Reason for the changes
+          approved_notice: Plan approved.
+          changes_notice: Changes requested.
+          # CYRA-384 — the buttons moved up into the summary. This line says where they went.
+          decide_above: When you are done reading, the decision is at the top of the card.
+        questions:
+          title: Questions awaiting an answer
+          answered_title: Answered questions
+          cycle: "clarification %{number}"
+          placeholder: Write your answer here
+          submit: Send answers
+          hint: Answers become a single comment on the ticket and put the work back in the queue.
+          answered: "Clarification %{number} · answered"
+          sent: Answers sent. The work resumes.
+          pending:
+            one: 1 question awaiting an answer
+            other: "%{count} questions awaiting an answer"
+          errors:
+            blank: Write at least one answer.
+            gone: There are no questions awaiting an answer.
+      comments:
+        title: Discussion
+        empty: No comments yet. Start the discussion.
+        placeholder: Write a comment…
+        filter_label: "Show"
+        filter:
+          all: "Everything"
+          only_comments: "Comments only"
+        event_group:
+          one: "1 system change"
+          other: "%{count} system changes"
+        length_hint: "A comment is a short message. For a long text use the ticket work report."
+        attach: Attach
+        submit: Comment
+        delete: Delete comment
+        delete_confirm: Delete this comment?
+        created: Comment added.
+        deleted: Comment deleted.
+        automation: Automation
+        role:
+          reporter: reporter
+          assignee: assignee
+        errors:
+          invalid: Invalid comment. Check the text and attachments.
+          too_long: "The comment is over %{count} characters (currently %{actual}). For a long text use the work report."
+      questions:
+        title: Questions
+        open_count: Open
+        placeholder: "Ask a short question: answers go here, not in the discussion…"
+        submit: Ask
+        blocking_label: Work cannot continue without an answer
+        settled:
+          one: "1 answered or withdrawn"
+          other: "%{count} answered or withdrawn"
+        shared_label: Visible to the client too
+        blocking: Blocks the work
+        shared: Shared
+        withdrawn: Withdrawn
+        covers_round: answer to the whole round
+        answer_placeholder: Write the answer…
+        answer_submit: Answer
+        close: Withdraw
+        close_confirm: Withdraw this question without an answer?
+        delete_confirm: Delete this question?
+        asked: Question sent.
+        answered: Answer sent.
+        closed: Question withdrawn.
+        deleted: Question deleted.
+        empty_title: No questions
+        empty_body: When something is unclear, ask it here instead of in the discussion.
+        blocked:
+          one: This ticket is waiting for the answer to a question.
+          other: This ticket is waiting for the answers to %{count} questions.
+        blocked_link: Go to questions
+        from_automation: The automation questions live in the Questions tab, with their answers.
+        errors:
+          invalid: Invalid question. It must read as a question in plain words, not a command or a URL.
+          answer_invalid: Invalid answer. Check the text.
+          closed: "This question was withdrawn: it can no longer be answered."
+          already_answered: "This question already has an answer: it cannot be withdrawn."
+      attachments:
+        indicator: Has attachments
+        title: Attachments
+        empty: No attachments.
+        add: Add files
+        add_hint: Drop files or browse · PNG, JPG, GIF, WEBP, PDF, TXT, MD — max 10 MB · video MOV, MP4, WEBM — max 20 MB
+        selected: "Selected:"
+        uploading: "Uploading…"
+        download: Download
+        remove: Remove
+        remove_confirm: Remove this attachment?
+        added: Attachment added.
+        removed: Attachment removed.
+        errors:
+          no_files: Select at least one file.
+          invalid_attachment: 'Invalid file: type not allowed or too large (max 10 MB).'
+      activity:
+        impersonated: impersonating
+        unknown_actor: Unrecorded author
+        system:
+          analysis: Automation (technical analysis)
+          github: GitHub
+          autopilot: System
+        automated:
+          status_changed: "The automation moved the ticket to %{to}"
+          review_approved: "The automation approved the review and moved the ticket to %{to}"
+          review_rejected: "The automation rejected the review and moved the ticket back to %{to}"
+        created: "%{actor} created the ticket"
+        updated: "%{actor} updated: %{fields}"
+        updated_generic: "%{actor} updated the ticket"
+        status_changed: "%{actor} changed status from %{from} to %{to}"
+        assigned: "%{actor} assigned the ticket to %{to}"
+        unassigned: "%{actor} unassigned the ticket"
+        reviewer_changed: "%{actor} set the reviewer to %{to}"
+        reviewer_removed: "%{actor} removed the reviewer"
+        milestone_changed: "%{actor} changed the milestone"
+        comment_deleted: "%{actor} deleted a comment by %{author}"
+        attached: "%{actor} attached %{filenames}"
+        attachment_removed: "%{actor} removed attachment %{filename}"
+        review_rejected: "%{actor} rejected the review and moved the status from %{from} to %{to}"
+        review_approved: "%{actor} approved the review: status from %{from} to %{to}"
+        linked: "%{actor} linked ticket %{ticket} (%{kind})"
+        linked_hidden: "%{actor} linked another ticket (%{kind})"
+        branch_created: "%{actor} created branch %{branch}"
+        pull_request_opened: "%{actor} opened PR #%{number}"
+        pull_request_merged: "PR #%{number} merged"
+        pull_request_autoclose_declined: "PR #%{number} merged: the automated run decides when to close the ticket"
+        pull_request_closed: "PR #%{number} closed"
+        agent_eligibility_evaluated: "The AI gave an opinion: %{to} for AI agents. A person still decides"
+        agent_eligibility_overridden: "%{actor} set the ticket to %{to} for AI agents"
+        clarification_requested: "%{actor} asked for clarification before deciding"
+        question_asked: "%{actor} asked a question"
+        question_answered: "%{actor} answered a question"
+        question_closed: "%{actor} withdrew a question"
+        work_context_captured: "Work context captured on pickup"
+        dependency_blocked: "Automated work stopped: %{count} prerequisites are not finished yet (%{dependencies})"
+        already_done: "The work was already written in the code: the ticket closes without planning (%{files})"
+        autopilot_auto_approved: "The delivered work moved on by itself: %{count} checks passed (%{checks}) and the code re-read is positive"
+        more_files: "and %{count} more"
+        dependency_added: "%{actor} added a dependency on ticket %{ticket}"
+        dependency_removed: "%{actor} removed the dependency on ticket %{ticket}"
+        agent_eligibility_value:
+          pending: to assess
+          allowed: workable
+          blocked: not workable
+        field:
+          title: title
+          kind: type
+          description: description
+          weight: weight
+          scenarios: scenarios
+          conditions: definition of done
+          technical_analysis: technical analysis
+          step_given: context
+          step_when: action
+          step_then: result
+          step_expected: expected
+          status: status
+          priority: priority
+          assignee: assignee
+          milestone: milestone
+          parent: epic
+          platforms: platforms
+      children:
+        title: Tickets under this epic
+        progress: "%{closed}/%{total} closed"
+        empty: No tickets under this epic yet. Open one and pick this epic in the Epic field.
+      links:
+        title: Linked tickets
+        kind:
+          duplicate: duplicate
+          related: related
+        remove: Remove link
+        remove_confirm: Remove this link?
+        removed: Link removed.
+        not_found: Link not found.
+        hidden_ticket: Ticket in another project
+      dependencies:
+        title: Dependencies
+        help: Tickets that must be resolved before this one.
+        empty: No dependencies. Pick a ticket that must be resolved before this one.
+        readonly_empty: No dependencies.
+        hidden_blocker: Prerequisite in another project
+        add: Add
+        select_label: Depends on ticket
+        select_placeholder: Pick a ticket
+        no_candidates: No other tickets available in this project.
+        remove: Remove dependency
+        remove_confirm: Remove this dependency?
+        added: Dependency added.
+        removed: Dependency removed.
+        blocked_badge: blocked
+        state:
+          open: open
+          done: resolved
+        errors:
+          blocker_not_found: Ticket not found.
+          not_found: Dependency not found.
+          cycle: "You can't add this ticket: it would create a circular dependency."
+          invalid: Could not add this dependency.
+          human_only: "Prerequisites are decided by a person: add and remove them from the ticket page, or from the command line with your own access. A program cannot change them."
+      comparison:
+        title: Possible duplicate
+        match_count:
+          one: "%{count} similar ticket"
+          other: "%{count} similar tickets"
+        existing: Existing ticket
+        draft: New ticket (not created yet)
+        no_value: —
+        others: Other similar tickets
+        similarity: Similarity
+        back: Back to form
+        create_anyway: Create anyway
+        create_anyway_title: Create despite the possible duplicate
+        reason_label: Reason
+        reason_placeholder: Why this ticket is not a duplicate…
+        reason_prefix: Created despite a possible duplicate — reason
+        link_action: Create and link
+        link_title: Create and link to the existing ticket
+        link_kind_label: Link type
+        link_target_label: Ticket to link
+        comment_label: Comment on the existing ticket
+        comment_placeholder: Add context from the new report (optional)…
+        confirm: Confirm
+        cancel: Cancel
+        errors:
+          reason_required: A reason is required to create anyway.
+          invalid_kind: Invalid link type.
+          no_target_selected: Pick at least one ticket to link.
+          target_not_found: Ticket to link not found.
+          invalid_ack: Invalid action.
+    knowledge:
+      title: Knowledge
+      plain_warning_author: "Saved. The text reads fairly technical: a non-technical reader will struggle. Move the details into the technical section and keep plain words here."
+      help_title: "Notes, decisions and guides of each project, with search and questions."
+      overview:
+        title: Knowledge base
+        help_title: "Approve proposals, read pages, gather them into collections."
+        stat_pages: Pages
+        stat_decisions: Decisions
+        stat_books: Collections
+        stat_review: In review
+        review_title: Review
+        review_desc: "Pages an assistant proposes while you work: they stay out of search and answers until you accept them. Start here."
+        review_action: Go to review
+        review_stat_waiting: to approve
+        review_stat_to_file: to add to the documents
+        pages_title: Knowledge
+        pages_desc: "Your projects' notes, decisions and guides, with meaning-based search and natural-language answers."
+        pages_action: Open the pages
+        pages_stat_pages: pages
+        pages_stat_decisions: decisions
+        books_title: Collections
+        books_desc: "Several pages joined into an index, to read in order like a manual."
+        books_action: Open the collections
+        books_stat_books: collections
+      new: New page
+      created: Page created.
+      updated: Page updated.
+      deleted: Page deleted.
+      delete_confirm: Delete this page?
+      count:
+        one: "%{count} page"
+        other: "%{count} pages"
+      search_placeholder: Search pages…
+      apply: Apply
+      filter_kind: Kind
+      filter_project: Project
+      filter_tag: Tag
+      empty: No pages
+      empty_body: The knowledge base of your projects is empty. Create the first page for notes, decisions or guides.
+      no_results:
+        title: "No results for “%{query}”"
+        title_filtered: No results with these filters
+        body:
+          one: "There is %{count} page in the knowledge base, but it does not match your search."
+          other: "There are %{count} pages in the knowledge base, but none match your search."
+        clear: Clear search
+        ask: Ask a question
+        create: "Create “%{query}”"
+      col_title: Title
+      col_kind: Kind
+      col_projects: Projects
+      col_tags: Tags
+      col_author: Author
+      col_updated: Updated
+      org_wide: General (whole organization)
+      filter_author: Written by
+      author:
+        agent: Written by an assistant
+        agent_with_origin: "Written by an assistant (%{origin})"
+        agent_short: Assistant
+        agent_short_with_origin: "Assistant (%{origin})"
+        human: Written by a person
+        unregistered: We do not know who wrote it
+        unregistered_hint: This page predates the moment the product started tracking who writes.
+        agent_hint: "The mark stays until a person rewrites the text: changing a comma, a tag or the project is not enough."
+        on_behalf_of: "using %{account}'s access"
+        account_unknown: a removed account
+        filter_agent: An assistant
+        filter_human: A person
+        filter_unregistered: We do not know
+      stats:
+        pages: Pages
+        decisions: Decisions
+        without_simple: Without a simple version
+        written_by_agent: Written by an assistant
+        needs_review: To review
+      needs_review:
+        short: To review
+        hint: The time after which it should be reread has passed. You can still find it, but somebody has to say whether it is still true.
+      kind:
+        note: Note
+        decision: Decision
+        guide: Guide
+      ask:
+        title: Ask a question
+        label: Your question
+        placeholder: "E.g. what did we decide about the database?"
+        hint: Answers using only your projects' pages, with citations.
+        submit: Ask
+        pending: Searching, one moment…
+        citations: Cited pages
+        pages_heading: Relevant pages
+        answer_heading: Generated answer
+        insufficient: The knowledge base doesn't contain enough information to answer.
+        # CYRA-831 — the note only shows up if access changed while the question was queued.
+        scope_reduced: "Your access changed after you asked: the answer only uses the pages you can see now, so it may be incomplete."
+        failed: Request failed. Try again shortly.
+        errors:
+          blank: Write a question.
+          unavailable: Assistant unavailable right now.
+          unreadable: Assistant response was unreadable.
+        samples:
+          note: "What do we know about “%{title}”?"
+          decision: "What did we decide about “%{title}”?"
+          guide: "How does “%{title}” work?"
+        samples_heading: Try asking
+        scope_heading: What it answers on
+        scope_projects:
+          zero: No projects
+          one: 1 project
+          other: "%{count} projects"
+        scope_pages:
+          zero: no pages available
+          one: 1 page available
+          other: "%{count} pages available"
+        scope_more: "and %{count} more"
+        history_heading: Team's recent questions
+        history_reuse: Put back in the field
+        history_insufficient: No answer from the knowledge base
+      related:
+        title: Related knowledge
+        loading: Looking for related pages…
+        empty: No related pages.
+        reason_terms: "In common: %{terms}"
+        reason_section: "Covered by the “%{section}” section"
+      semantic:
+        toggle_label: Semantic search
+        degraded_hint: Search by meaning is unavailable right now — results by exact words.
+        using_semantic: Searching by meaning.
+        using_exact: Searching for the exact words, anywhere in the page text.
+        switch_to_exact: Search by exact words instead
+        switch_to_semantic: Search by meaning instead
+      show:
+        back: Knowledge
+        edit: Edit
+        delete: Delete
+        specs_title: Specifications
+        projects: Projects
+        book_label: Collection
+        tags_label: Tags
+        kind_label: Type
+        format_label: Format
+        written_by_label: Who wrote it
+        review_after_label: Reread by
+        assistant_ready: The assistant can use this page to answer
+        assistant_not_yet: The assistant cannot use this page to answer yet
+        assistant_not_yet_hint: It happens on its own shortly after saving.
+        length_label: Length
+        length_value: "%{words} words · ~%{minutes} min"
+        id_copy: Copy identifier
+        id_copied: Identifier copied
+        id_copy_failed: Could not copy it
+        more_menu: More actions
+        tabs:
+          simple: Simple
+          tech: Technical
+        tech_empty: No technical section for this page.
+        tech_empty_hint: Add the technical details by editing the page.
+        links_title: Links
+        links_outgoing: Links to
+        links_incoming: Linked from
+        links_empty: This page isn't linked to any other.
+        links_syntax: "Write another page's title between double square brackets in the content: the pages it links and the ones citing it show up here."
+      versions:
+        title: Versions
+        help_title: "Every change is a version: read it again or restore it."
+        link: Version history
+        stats_label: Versions
+        count:
+          one: "%{count} version"
+          other: "%{count} versions"
+        col_number: Version
+        col_author: Author
+        col_date: Date
+        col_status: Status
+        live: Live
+        historical: Historical version
+        status_label: Status
+        kind_label: Type
+        author_label: Author
+        created_label: Created
+        version_label: "Version %{number}"
+        number_short: "v%{number}"
+        restore: Restore
+        restore_confirm: Restore this version as the current one?
+        restore_dialog:
+          title: "Restore version %{number}?"
+          body: "Its text becomes a new current version. Today's version stays in the history."
+        restored: Version restored.
+        back_to_page: Back to page
+        empty: No versions
+        empty_body: This page has no version history yet.
+      form:
+        new_title: New page
+        edit_title: Edit page
+        title: Title
+        projects: Projects
+        projects_placeholder: Choose projects…
+        groups: Groups
+        groups_placeholder: Choose groups…
+        kind: Kind
+        body: Content
+        body_placeholder: Write in markdown…
+        body_hint: "Write plainly, for anyone: technical detail belongs in the Technical section. Markdown supported."
+        body_limit: "Up to %{max} characters."
+        links_hint: "To point at another page, write its title between double square brackets — existing titles are suggested as you type:"
+        links_hint_example: Page title
+        tech_spec: Technical section
+        tech_spec_placeholder: Technical values and explanations (markdown)…
+        tech_spec_hint: "Optional: jargon is fine here. It's searchable like the simple content."
+        tags: Tags
+        tags_hint: "Comma-separated, e.g. flutter, flutter-flavor"
+        cancel: Cancel
+        save: Save
+        decision_template: |
+          ## Context
+
+          ## Decision
+
+          ## Consequences
+      books:
+        title: Collections
+        help_title: "Pages from several projects gathered into one read."
+        new: New collection
+        created: Collection created.
+        updated: Collection updated.
+        deleted: Collection deleted.
+        delete_confirm: Delete this collection? The pages stay and become free again.
+        count:
+          one: "%{count} collection"
+          other: "%{count} collections"
+        search_placeholder: Search collections…
+        empty: No collections
+        empty_body: You haven't gathered any pages into a collection yet. Create the first one to read several pages as one path.
+        no_results_body:
+          zero: There are no collections to search yet.
+          one: "There is %{count} collection, but it does not match what you asked for."
+          other: "There are %{count} collections, but none match what you asked for."
+        pages_link: Pages
+        stats:
+          books: Collections
+        col_title: Title
+        col_projects: Projects
+        col_pages: Pages
+        open_page: Open page
+        add_pages: Add pages
+        empty_content_title: Empty collection
+        empty_content_body: This collection has no pages yet. Edit it to add pages from the project's knowledge base.
+        show:
+          edit: Edit
+          delete: Delete
+        form:
+          new_title: New collection
+          edit_title: Edit collection
+          title: Title
+          projects: Projects
+          projects_placeholder: Choose projects…
+          groups: Groups
+          groups_placeholder: Choose groups…
+          description: Description
+          description_placeholder: What is this collection for?
+          pages: Collection pages
+          pages_placeholder: Choose pages…
+          pages_hint: The selection order defines the order in the index.
+          pages_none: The selected projects have no pages to add yet.
+          cancel: Cancel
+          save: Save
+      reviews:
+        title: Review
+        help_title: "Pages proposed by an assistant: they reach search only once you accept them."
+        stat_waiting: Waiting
+        stat_demoted: Sent back by the reviewer
+        stat_needs_review: To review
+        stat_to_file: To add to the documents
+        stat_rejected: Discarded
+        all_pages: All pages
+        waiting_title: Waiting for you
+        waiting_note: "While they wait here, these pages stay out of search and answers: nobody finds them."
+        pages_count:
+          one: "%{count} page"
+          other: "%{count} pages"
+        search_placeholder: Search the waiting proposals…
+        no_results_body:
+          one: "There is %{count} proposal waiting, and this is not it."
+          other: "There are %{count} waiting: none matches this search."
+        read_page: Read the proposed text
+        hide_page: Hide the text
+        accept: Accept
+        reject: Discard
+        accept_hint: "Makes it visible to everyone: it enters search and answers."
+        reject_hint: "Deletes nothing: it stays aside and won't be proposed again."
+        accept_confirm: Accept this page? It will enter search and answers.
+        reject_confirm: Discard this page? It stays aside and won't be proposed again.
+        approved: Page accepted.
+        rejected: Page discarded.
+        empty: Nothing waiting
+        empty_body: Pages proposed while you work show up here. Until you accept one, it stays out of search and answers.
+        empty_example: "For example: once an error is solved, the assistant proposes a page with the symptom and the fix."
+        needs_review_title: To reread
+        needs_review_note: already visible to everyone · nobody has said they are still true
+        needs_review_hint: "Only confirm what you have reread. If something changed, open the page and fix it: the countdown restarts on its own."
+        confirm: Still true
+        confirm_hint: "The countdown restarts. The text does not change."
+        confirm_confirm: Confirm that this page is still true?
+        confirmed: Page confirmed.
+        col_review_after: Due for rereading
+        col_still_true: Still true?
+        to_file_title: Accepted, not written into the documents yet
+        to_file_note: already visible to everyone · still missing from the documents
+        to_file_search_placeholder: Search the accepted ones still to write…
+        to_file_no_results_body:
+          one: "%{count} is waiting, and it is not this one."
+          other: "%{count} are waiting: none matches the search."
+        to_file_hint: "Once the page is written into the documents, the document name shows up here."
+        not_filed: Missing from the documents
+        rejected_title: Recently discarded
+        rejected_note: kept so the same note isn't proposed again
+        org_wide: General
+        col_page: Page
+        col_accepted: Accepted
+        col_document: Document
+        col_rejected: Discarded
+        col_by: By
+      errors:
+        project_not_found: Project not found.
+        project_required: Tell us which project you want the context for.
+        page_not_in_book: The page does not belong to this collection's projects.
+        page_in_another_book: The page already belongs to another collection.
+        scope_required: "Pick at least one project or group: only full-access members can create general pages."
+        two_levels_required: "The proposal has a single level: the body reads technical. Send a body in plain words and keep the technical details in the technical section."
+        scope_forbidden: "You don't have permission to link the page to one of the chosen projects or groups."
+        publication_ambiguous: "Publication blocked: multiple legacy pages are titled “%{title}”."
+        publication_key_invalid: The publication key is invalid.
+        publication_kind_invalid: The publication kind is invalid.
+        publication_forbidden: "This publication key belongs to a page you can't manage."
+        review_forbidden: You don't have permission to decide on this page.
+        review_machine: "Only a person can accept or discard a proposal: an automated login can't decide for you."
+        not_in_review: This page is not waiting for review.
+        ai_review_rejected: "The automatic reviewer rejected this page: fix and save it, then accept it."
+        not_published: This page has not been accepted yet.
+        nothing_to_confirm: This page is not due for rereading yet.
+        source_path_required: Provide the document path.
+        status_invalid: Invalid status.
+        review_unavailable: "The automatic reviewer is not available: the page was not saved. Try again shortly; an administrator can switch the reviewer off in system settings."
+        review_unreadable: "The automatic reviewer answered in a way we cannot read: the page was not saved. Try again."
+        quality_rejected: "The page does not follow the knowledge base rules: %{violations}"
+      review:
+        rejected_title: "The automatic reviewer rejected the page: fix these points and save again."
+        demoted_note: "Sent back by the automatic reviewer: %{violations}"
+        format: "Recognised format: %{name}"
+        suggested_title: "Suggested title:"
+        duplicate_of: "Looks like a duplicate of:"
+        split_suggestion: "To split into:"
+        formats:
+          troubleshooting: Troubleshooting
+          procedure: Procedure
+          test_access: Test access
+          decision: Decision
+          reference: Reference
+          overview: Overview
+      review_rules:
+        K00: "The reviewer did not recognise any of the allowed formats."
+        K01: "The first line «Formato: …» is missing. Allowed formats: %{formats}."
+        K02: "The title must read «Area — subject», with an em dash (—) between spaces."
+        K02_dash: "The title needs an em dash (—, U+2014) between spaces, not «-» or «–»."
+        K02_bundle: "A «N traps/things» title bundles several topics: one page each."
+        K07: "Write addresses and emails in full between backticks, not «punto» and «chiocciola» as words."
+        K08_url: "There is an address with user and password inside: remove them, never credentials in a URL."
+        K08_key: "There is a key, token or password with its value: outside the «test access» format they are not allowed."
+        A01: "Production access never enters the knowledge base: declare a test environment or drop the page."
+        A01_missing: "The line «Ambiente: staging» or «Ambiente: development» is missing."
+        K10: "Format «%{format_name}» requires kind «%{expected}»."
+        K11: "At least %{min} tags are needed; the first is the area (rails, flutter, ci, …)."
+        K12_body: "The body exceeds %{max} characters: split into several pages."
+        K12_tech: "The technical section exceeds %{max} characters: split into several pages."
+        K12_squeezed: "The technical section is at the limit: if you squeezed it to fit, split the page into parts instead."
+        K14: "The link [[%{title}]] does not point to any page of the project."
+        P05_numbers: "The «(parte N/M)» suffix has impossible numbers: N from 1 to M, M at least 2."
+        P05_total: "The other parts of this guide declare a different total: align «(parte N/M)» everywhere."
+        P05_missing: "Parts %{missing} of the series are still missing: the page gets in, remember to write them."
+    errors:
+      invalid_role: Invalid role.
+      last_owner: You can't remove or demote the last owner.
+      already_member: That person is already a member.
+      pending_invitation: There is already a pending invitation for that email.
+    environments:
+      title: Environments
+      help_title: "Where projects run: production, staging, development."
+      new: New environment
+      count: "%{count} environments"
+      search_placeholder: Search environments…
+      filter_status: Status
+      no_match: No environment matches the filters.
+      col_environment: Environment
+      col_code: Code
+      col_status: Status
+      col_projects: Projects
+      status_active: Active
+      status_inactive: Inactive
+      active_hint: Inactive environments stay on existing tokens but can't be selected on new ones.
+      edit: Edit
+      delete: Delete
+      delete_dialog:
+        title: "Delete the %{label} environment?"
+        body: "It can be deleted only when no project, token, secret or check uses it, and then only the environment disappears. This cannot be undone."
+      empty: No environments yet.
+      empty_body: Add the deploy environments your projects run in — production, staging, development…
+      created: Environment created.
+      updated: Environment saved.
+      deleted: Environment deleted.
+      delete_blocked: This environment is in use — deactivate it instead of deleting.
+      form:
+        new_title: New environment
+        edit_title: Edit environment
+        back: Back to environments
+        lead_new: The code is the stable identifier; the label is what people see.
+        lead_edit: The code is the stable identifier; the label is what people see.
+        label: Label
+        code: Code
+        code_hint: Lowercase, unique per organization. Matches across SDK environments.
+        color: Color
+        active: Active
+        capabilities: Default capabilities
+        capabilities_hint: What projects can enable on this environment. Each project can override.
+        servers_enabled: Servers
+        servers_hint: Link server monitoring.
+        uptime_enabled: Uptime
+        uptime_hint: Enable uptime monitors (HTTP ping).
+        secrets_enabled: Secrets
+        secrets_hint: Manage encrypted environment variables.
+        save_new: Create environment
+        save_edit: Save changes
+        cancel: Cancel
+    tokens:
+      title: "%{project} · Ingest tokens"
+      breadcrumb: Tokens
+      section_title: Ingest tokens
+      help_ingest: The bearer secret authenticates CI and API (shown only once); the DSN public key is for SDK ingest and is not secret.
+      section_lead_html: >-
+        Credentials to send errors and signals to this project, per environment. Point the <span class="font-mono text-[12px]
+        text-zinc-800">closeyourit-ruby</span> gem at the bearer token and Project ID below. The secret is shown <span class="font-medium
+        text-zinc-800">only once</span> at creation.
+      no_environments: This project has no environments declared yet — a token must bind to one.
+      declare_environments: Declare environments →
+      empty: No tokens yet
+      empty_body: Create the first token to start receiving errors from this project.
+      count: "%{count} tokens"
+      col_name: Name
+      col_environment: Environment
+      col_prefix: Prefix
+      col_scopes: Scopes
+      col_last_used: Last used
+      col_expiry: Expiry
+      col_status: Status
+      col_actions: Actions
+      used_ago: "%{time} ago"
+      never_used: Never used
+      status_active: Active
+      status_revoked: Revoked
+      status_expired: Expired
+      expiry:
+        never: None
+        due_in_days:
+          zero: Expires today
+          one: Expires tomorrow
+          other: "Expires in %{count} days"
+        expired_days:
+          one: Expired yesterday
+          other: "Expired %{count} days ago"
+      revoke: Revoke
+      revoke_dialog:
+        title: "Revoke the %{name} token?"
+        body: "Apps using it stop sending errors, logs and metrics right away. This cannot be undone."
+      revoked: Token revoked.
+      form:
+        title: New token
+        name: Name
+        name_placeholder: Production SDK
+        environment: Environment
+        expires_at: Expiry
+        expires_at_hint: Empty = never expires
+        create: Create token
+      reveal:
+        expires_at: "Expires on %{date}"
+        created: Token “%{name}” created
+        copy_now: Copy now — won't be shown again
+        project_id: Project ID (for the gem)
+        bearer: Bearer token (for CI / API)
+        copy: Copy
+        copied: Copied
+        close: I copied it, close
+    monitoring:
+      status_pages:
+        title: "Status page"
+        subtitle: "What your customers see and how to put it on your site."
+        stat_monitors: "Public sites"
+        stat_groups: "Public groups"
+        empty_title: "Nothing is public yet"
+        empty_body: "You can publish the status of a monitored site or of a group: from there your customers see whether the service works, without asking."
+        empty_example: "Open a check or a group in Uptime and press Publish: its public link shows up here."
+        go_to_monitors: "Choose what to publish"
+        manage: "Open the public page"
+      public_tab:
+        tab_overview: "Overview"
+        tab_public: "Public page"
+        state_title: "Publication"
+        monitor_on: "Anyone with the address sees the uptime and incidents of this check."
+        monitor_off: "Nobody outside the organization sees this check."
+        group_on: "Anyone with the address sees the status of the checks in the group."
+        group_off: "Nobody outside the organization sees this group."
+        via_group: "Already public through the group %{group}."
+        open_group: "Open the group"
+        preview: "Preview"
+      ticket_bar:
+        unassigned: "unassigned"
+      promote_preview:
+        title: "What will be created"
+        project: "Project"
+        kind: "Kind"
+        ticket_title: "Title"
+        attached: "Attached"
+        attach_culprit: "The code location: %{culprit}"
+        attach_counts: "How often it happened: %{events}, across %{users} people"
+        # CYRA-567: without user context «across 0 people» is not a count, it is data that never
+        # arrived — and here it ends up inside a ticket read far from the error page. Same wording as
+        # the chip at the top (CYRA-380: users_untracked).
+        attach_counts_untracked: "How often it happened: %{events} · People affected: not tracked"
+        attach_link: "The link back to this error"
+        confirm: "Create the ticket"
+      col_environment: Environment
+      same_message_badge: "%{count} with this message"
+      same_message_tip: "The same message appears in several errors, split by the code location they start from."
+      similar_same_message:
+        title: "One problem, in %{count} places"
+        basis: "Same error message, different code location: the same problem seen from different places."
+        no_culprit: "unknown code location"
+      triage_ai:
+        title: AI triage
+        hint: Ask the assistant for a first triage of this issue.
+        suggest: Suggest triage
+        analyzing: Analyzing…
+        category: Category
+        severity: Suggested severity
+        confidence: Confidence
+        action: Suggested action
+        fix: Suggested fix
+        root_cause: Likely cause
+        summary: Summary
+        apply_hint: Apply with one click using the buttons above.
+        actions:
+          resolve: Resolve (suggested)
+          ignore: Ignore (suggested)
+          promote: Promote to ticket (suggested)
+          none: More data needed
+        fixes:
+          add_index: Add an index
+          use_includes: Use includes (eager load)
+          cache: Add a cache
+          batch: Batch the work
+          rewrite: Rewrite the query or method
+          none: No obvious fix
+        severities:
+          low: low
+          medium: medium
+          high: high
+        confidence_levels:
+          low: low
+          medium: medium
+          high: high
+        similar:
+          button: Find similar errors
+          title: Errors with the same cause
+          empty: No other error with a similar cause.
+          analyzing: Searching…
+        failed: Triage unavailable right now. Try again shortly.
+        errors:
+          unreadable: The assistant replied unexpectedly. Try again.
+      title: Errors
+      help_title: "Errors from your apps, grouped by cause."
+      subtitle: Deduplicated issues from your projects. Point the closeyourit-ruby gem at a project token to start receiving.
+      stat_unresolved: Unresolved
+      stat_resolved: Resolved
+      stat_ignored: Ignored
+      stat_issues: Issues
+      empty: No errors yet
+      empty_body: Point the closeyourit-ruby gem at a project token to start capturing. Manage ingest tokens from the project page.
+      search_placeholder: Search errors…
+      count: "%{count} issues"
+      filter_status: Status
+      filter_level: Level
+      filter_project: Project
+      filter_handled: Handling
+      handled_option:
+        unhandled: Unhandled
+      unhandled_badge: Unhandled
+      unhandled_badge_tip: "At least one unhandled crash: not a deliberate capture."
+      no_match: No error matches the filters.
+      # CYRA-883 — the reorganised list.
+      list:
+        sort:
+          label: Sort
+          last_seen: Last seen
+          events: Most events
+          users: Most users
+          level: Level
+          status: Status
+          issue: Issue
+          from_table: From the table
+        trend: Trend
+        trend_tip: "Events over the last %{period}"
+        users_untracked_note: not tracked
+        back_to_project: "%{name} project"
+        last_error: "Last error for these filters: %{time}."
+        never: No error has ever arrived for these filters.
+        widen_to: "Look back to %{date}"
+        ago_short:
+          minutes: "%{count}m ago"
+          hours: "%{count}h ago"
+          days: "%{count}d ago"
+      clear_filters: Clear all filters
+      col_issue: Issue
+      col_project: Project
+      col_ticket: Ticket
+      col_level: Level
+      col_status: Status
+      col_events: Events
+      col_users: Users
+      col_last_seen: Last seen
+      status:
+        unresolved: Unresolved
+        resolved: Resolved
+        ignored: Ignored
+      bulk:
+        done:
+          zero: No group updated.
+          one: 1 group updated.
+          other: "%{count} groups updated."
+        invalid: Invalid triage action.
+      back: Back to errors
+      label_level: Level
+      label_status: Status
+      label_events: Events received
+      label_users: Users
+      # CYRA-380: users_count 0 means user context never sent, not «zero affected».
+      users_untracked: not tracked
+      users_untracked_tip: "No event carries the user's identity: see the guide to count the people affected."
+      label_assignee: Assignee
+      unassigned: Unassigned
+      unassign: Remove assignee
+      assigned: Assignment updated.
+      resolve: Resolve
+      ignore: Ignore
+      reopen: Reopen
+      reopen_now: Reopen now
+      promote: Promote to ticket
+      promote_confirm: Promote this error to a ticket? This creates a linked ticket.
+      shortcuts_title: Keyboard shortcuts
+      shortcut_select: Select occurrence
+      notice_resolve: Error resolved.
+      notice_ignore: Error ignored.
+      notice_reopen: Error reopened.
+      # CYRA-192 — closing an error carries its explanation: why it was there, what closed it.
+      resolution:
+        title: How it was resolved
+        dialog_title: Resolve and explain
+        dialog_hint: Optional, but it is what you will look for if the error comes back in six months.
+        cause: Cause
+        cause_placeholder: What was causing it.
+        fix: Fix
+        fix_placeholder: What was done to close it.
+        in_release: "Resolved in release %{release}"
+        noted: Resolution explained
+      # CYRA-192 — "merge", not "unify": unified downtime windows can be split again, merged groups
+      # cannot. Two words for two different things, as the glossary requires.
+      merge:
+        title: Merge errors
+        back: Back to errors
+        count_selected: Selected
+        count_absorbed: Disappearing
+        count_events: Total occurrences
+        count_project: Project
+        warning_title: Merging cannot be undone.
+        warning_body: >-
+          Occurrences move to the group that stays, counters add up and the other groups disappear
+          from the list. There is no way to split them again.
+        choose_primary: Which group stays
+        choose_primary_hint: It keeps its own message and absorbs everything else. The one with the most occurrences is proposed.
+        events: "%{count} occurrences"
+        first_seen: "first %{when}"
+        last_seen: "last %{when}"
+        confirm: Merge permanently
+        done:
+          zero: No group merged.
+          one: 1 group merged into this one.
+          other: "%{count} groups merged into this one."
+        no_primary: Choose which group stays before merging.
+        refused_too_few: Select at least two errors to merge.
+        refused_unknown: Some selected errors no longer exist. Nothing was merged.
+        refused_cross_project: Only errors from the same project can be merged. Nothing was merged.
+      # CYRA-192 — permanent deletion of the group and all its occurrences.
+      delete:
+        action: Delete
+        title: Delete this error?
+        body: >-
+          The group and its %{count} occurrences disappear, along with everything written about it.
+          There is no going back.
+        confirm: Delete permanently
+        done: Error deleted.
+      promoted: Promoted to ticket %{code}.
+      promote_failed: Couldn't promote this error to a ticket.
+      latest_event: Latest event
+      event: event
+      no_events: No events retained for this issue.
+      occurrences: Recent occurrences
+      occurrences_count: "%{count} retained · showing %{shown}"
+      occurrences_hint: Select a row to inspect that occurrence.
+      occurrences_summary: "All %{count} occurrences on this page:"
+      occurrences_show_all: "Show the other %{count}"
+      occurrences_show_less: "Show only the first %{count}"
+      help_occurrences_retention: "Individual occurrences are kept for %{days} days; older ones are removed. The «Events received» total above stays complete."
+      viewing_occurrence: "Viewing occurrence from %{when}"
+      col_when: When
+      col_environment: Environment
+      col_release: Release
+      col_event: Event
+      frame_in: in
+      frame_line: at line
+      # CYRA-566: the sequence stopped at twenty steps without saying so, and the ones dropped were
+      # exactly those telling where the call started. The command says how many are left and opens them.
+      frames_hidden:
+        one: "Show the other step, the one the call started from"
+        other: "Show the other %{count} steps, the ones the call started from"
+      details: Details
+      detail_project: Project
+      detail_culprit: Code location
+      help_culprit: The code location where the error was raised (file + method).
+      help_fingerprint: A fixed code that groups identical errors together.
+      customer_lede_html:
+        one: "This error has affected <span class=\"font-semibold text-zinc-900\">1 user</span> since %{since}. The team is on it — current status: <span class=\"font-semibold text-zinc-900\">%{status}</span>."
+        other: "This error has affected <span class=\"font-semibold text-zinc-900\">%{count} users</span> since %{since}. The team is on it — current status: <span class=\"font-semibold text-zinc-900\">%{status}</span>."
+      # CYRA-380: without user context, don't promise «0 people affected» — number-free lede.
+      customer_lede_untracked_html: "This error has been showing since %{since} and the team is on it — current status: <span class=\"font-semibold text-zinc-900\">%{status}</span>."
+      detail_ticket: Ticket
+      detail_first_seen: First seen
+      detail_last_seen: Last seen
+      detail_release: Latest release
+      detail_first_release: Introduced in
+      detail_release_same: First seen and still in
+      release_copy: Copy the full code
+      release_copied: Copied
+      release_commit_title: Open the change on GitHub
+      detail_environment: Environment
+      detail_server: Server
+      detail_runtime: Runtime
+      detail_fingerprint: Fingerprint
+      not_promoted: Not promoted yet
+      reopen_note_html: Marked <span class="font-semibold text-emerald-700">%{status}</span> — a new event will reopen it
+        automatically.
+      time_ago: "%{time} ago"
+      chart_title: Occurrences over time
+      now: now
+      timeline_sub: "%{range} · %{count} blocks"
+      chart_peak: "peak %{count}"
+      chart_summary: "Occurrences over time — peak %{count} per block over the last %{range}."
+      # CYRA-562: the chart follows the filters of the table below, and when they let nothing through
+      # it says so instead of drawing empty blocks that look like an ongoing error.
+      chart_no_match: No occurrences with these filters
+      chart_no_match_body: "The chart only counts occurrences that pass the filters below: none did over
+        the last %{range}."
+      chart_empty: "No occurrences retained over the last %{range}."
+      tooltip_count:
+        zero: no occurrences
+        one: "%{count} occurrence"
+        other: "%{count} occurrences"
+      bucket_filter:
+        label: "Occurrences in this window"
+        clear: Clear
+      filter_environment: Environment
+      filter_release: Release
+      apply: Filter
+      occurrence_detail: Occurrence
+      occurrence_tabs:
+        stack: Stack trace
+        details: Details
+        user: User
+        tags: Tags
+        context: Context
+        replay: Session replay
+        logs: Logs of this request
+      detail_request: Request
+      breadcrumbs: Steps before the crash
+      levels:
+        debug: debug
+        info: info
+        warning: warning
+        error: error
+        fatal: fatal
+      breadcrumbs_count: "%{count} before the crash"
+      detail_tags: Tags
+      detail_user: User
+      detail_context: Context
+      detail_params: Params
+      device_breakdown: Devices
+      device_os: OS
+      device_app: App version
+      detail_occurrence: Occurrence details
+      env_transaction: transaction
+      env_server: server
+      env_runtime: runtime
+      env_os: os
+      env_app: app
+      env_sdk: sdk
+      user_pii_note: Email/IP removed (PII)
+      value_scrubbed: Hidden
+      value_scrubbed_title: Hidden by the project's privacy rules — this is sensitive data, not a failure.
+      scrubbed_hint: Some values are hidden by the project's privacy rules.
+      scrubbed_hint_link: How to change them
+      no_breadcrumbs: No step recorded
+      no_request: No request context
+      replay:
+        title: Session replay
+        available: Session replay available
+        loading: Loading replay…
+        error: Replay unavailable
+        empty: No replay for this occurrence
+        none: No session recorded for this occurrence. When there is one, you watch it back here like a video.
+        none_off: "Sessions are not recorded on this project: turn recording on and you will find here what the person did in the moments before the error."
+        none_cta: Turn on recording
+    metrics:
+      title: Performance
+      help_title: "Slow queries and methods, grouped: find what slows things down."
+      empty: No slow queries or methods yet
+      empty_body: Add the closeyourit-ruby gem to a project to start capturing slow queries and methods. Manage ingest tokens from the project page.
+      search_placeholder: Search queries / methods…
+      count: "%{count} groups"
+      filter_kind: Category
+      filter_status: Status
+      filter_project: Project
+      no_match: No metric matches the filters.
+      status:
+        unresolved: Unresolved
+        resolved: Resolved
+        ignored: Ignored
+      bulk:
+        done:
+          zero: No group updated.
+          one: 1 group updated.
+          other: "%{count} groups updated."
+        invalid: Invalid triage action.
+      stat_groups: Groups
+      stat_slow_queries: Slow queries
+      stat_slow_methods: Slow methods
+      stat_total_duration: All-time total
+      stat_total_duration_title: "The time the selected groups have spent since they first appeared. The period picks which groups to count, it does not trim the time."
+      col_signature: Signature
+      col_project: Project
+      col_kind: Kind
+      col_status: Status
+      col_avg: Avg
+      col_max: Max
+      col_total_duration: Total time
+      col_occurrences: Occurrences
+      col_ticket: Ticket
+      col_last_seen: Last seen
+      low_sample: few samples
+      low_sample_title: "Fewer than %{count} cases: the average isn't meaningful."
+      duration_unit:
+        ms: ms
+        s: s
+        min: min
+        h: h
+        d: d
+      back: Back to performance
+      promote: Promote to ticket
+      promoted: Promoted to ticket %{code}.
+      promote_failed: Couldn't promote this metric to a ticket.
+      chart_title: Occurrences over time
+      timeline_sub: "%{range} · %{count} blocks"
+      chart_peak: "peak %{count}"
+      chart_summary: "Occurrences over time — peak %{count} per block over the last %{range}."
+      # CYRA-570: nothing happened in the period — say it, don't draw bars at zero.
+      chart_empty: "No occurrences in this period."
+      now: now
+      # CYRA-341 — "is it getting worse?": duration over time and the comparison with the period before.
+      duration_chart_title: Duration over time
+      duration_chart_hint: "the bar is the worst case (p95), the tooltip also shows the typical case (p50)"
+      duration_chart_summary: "Duration over time — worst case up to %{peak} per block over the last %{range}."
+      duration_chart_empty: "No measurement in this period."
+      duration_chart_peak: "peak %{value}"
+      duration_current: "%{current} on average %{window}"
+      duration_empty: "No case recorded %{window}"
+      duration_retention_note: "The trend shows the cases still kept, that is the last %{days} days."
+      compare_missing: no data in the previous period to compare with
+      delta_up: "%{pct}% more"
+      delta_down: "%{pct}% less"
+      delta_flat: the same as before
+      trend_flat: unchanged
+      stat_window_avg: Average in the period
+      window:
+        30m: in the last 30 minutes
+        24h: in the last 24 hours
+        7d: in the last 7 days
+        30d: in the last 30 days
+      compare:
+        30m: than the 30 minutes before
+        24h: than the 24 hours before
+        7d: than the 7 days before
+        30d: than the 30 days before
+      threshold_hint: "Below %{fast} it is green, up to %{slow} amber, above that red."
+      threshold_help_title: Where the colour comes from
+      threshold_settings_link: Change the thresholds in the project settings
+      threshold_settings_hint: The thresholds can be changed in the project settings.
+      bucket:
+        no_data: No data
+      query: Query
+      query_hint: "obfuscated · binds shown as ?"
+      copy: Copy
+      template_shared: Template shared by all %{count} occurrences — pick one below to see its parameters.
+      parameters: Parameters
+      capture_on: capture on
+      capture_off: "The actual values used by this operation are not collected. To see them, add this line where you connect your application:"
+      capture_snippet_label: Line to add
+      capture_privacy: "Captured values can contain personal data (emails, names, identifiers): they are stored as they are, and stay visible to anyone who can see this page."
+      capture_guide: How to connect an application
+      binds_count: "%{count} binds"
+      source: Source
+      occurred: Occurred
+      sample_label: ID
+      scrub_note: Scrub-list columns (password, token, *_email…) stay redacted even when capture is on.
+      occurrences: Occurrences
+      occurrences_total: "%{total} total"
+      stat_occurrences_total: Total occurrences
+      occurrences_kept:
+        one: 1 sample kept
+        other: "%{count} samples kept"
+      occurrences_retention_note: "It happened %{total} times in all; here are the %{kept} cases still kept. Individual cases are kept for %{days} days, the total count stays forever."
+      occurrences_hint: select one to load its parameters above
+      col_when: When
+      col_duration: Duration
+      col_environment: Environment
+      col_cached: Cached
+      details: Details
+      detail_project: Project
+      detail_ticket: Ticket
+      detail_kind: Category
+      detail_db_system: DB system
+      detail_avg: Avg duration
+      detail_occurrences: Occurrences
+      detail_minmax: Min / Max
+      detail_percentiles: Percentiles
+      detail_last_seen: Last seen
+      detail_first_seen: First seen
+      detail_sdk: SDK
+      detail_fingerprint: Fingerprint
+      help_fingerprint: A fixed code that groups occurrences of the same slow query or method.
+      not_promoted: Not promoted yet
+      time_ago: "%{time} ago"
+      stat_performance_issues: Performance issues
+      filter_subtype: Problem type
+      signature: Signature
+      trace_title: Logs & errors of this request
+      trace_empty: No logs or errors recorded for this request.
+      col_queries: Queries
+      detail_query_count: Queries
+      detail_http_host: External host
+      detail_classification: Problem type
+      kind:
+        slow_query: Slow query
+        slow_method: Slow method
+        performance_issue: Performance issue
+      subtype:
+        n_plus_one: N+1 query
+        high_query_count: High query count
+        slow_request: Slow request
+        slow_external_http: Slow external HTTP
+        repeated_http: Repeated HTTP
+        jank: Jank (slow frame)
+        rebuild_storm: Rebuild storm
+        job_queue_latency: Queue wait
+        slow_job: Slow job
+      kind_hint:
+        slow_query: A database request that takes too long.
+        slow_method: A function in the program that takes too long.
+        performance_issue: A slowdown detected automatically during a request.
+      subtype_hint:
+        n_plus_one: Many near-identical requests in a row instead of a single one.
+        high_query_count: A single request queries the database too many times.
+        slow_request: A page or action that responds too slowly.
+        slow_external_http: A call to an external service that takes too long.
+        repeated_http: The same call to an external service repeated several times.
+        jank: "Stutter in the app: a screen drawn too slowly."
+        rebuild_storm: A screen in the app redraws too many times in a row.
+        job_queue_latency: A background job waits too long before it starts.
+        slow_job: A background job takes too long.
+    uptime:
+      window_coverage: "data over %{covered} of %{window}"
+      window_span:
+        minutes:
+          one: 1 minute
+          other: "%{count} minutes"
+        hours:
+          one: 1 hour
+          other: "%{count} hours"
+        days:
+          one: 1 day
+          other: "%{count} days"
+      window_empty_reason:
+        before_start: "The grey periods come before the check started: there was nothing to record then."
+        no_checks: "No check was recorded in the grey periods. This is not about data retention: for these ranges every check is kept."
+      title: Uptime
+      coverage:
+        uncovered_title:
+          one: "1 of %{total} sites has no alert"
+          other: "%{count} of %{total} sites have no alert"
+        uncovered_body: "If these monitored sites go down, you won't get any alert: no rule covers them."
+        uncovered_link: "Create the rule"
+        covered_title: "All covered"
+        covered_body: "Every monitored site is covered by an alert rule."
+      alerts:
+        title: Who gets alerted
+        count:
+          one: "1 rule"
+          other: "%{count} rules"
+        via_app: In the app
+        empty_body: "No rule alerts when this site goes down: if it does, you won't get any alert."
+        empty_link: Create the alert rule
+      check_types:
+        http: HTTP
+        tcp: Port (TCP)
+        dns: DNS
+        ping: Ping
+      stat_up: Up
+      stat_down: Down
+      stat_monitors: Monitors
+      new: New monitor
+      empty: No monitors yet
+      empty_body: Add an HTTP monitor on a project URL — we'll ping it on a schedule and open an incident when it goes down.
+      empty_example: "For example: a check named Public site on https://www.example.com, verified every minute."
+      search_placeholder: Search monitors…
+      count: "%{count} monitors"
+      filter_status: Status
+      filter_project: Project
+      no_match: No monitor matches the filters.
+      col_monitor: Project · Environment
+      col_status: Status
+      col_uptime: Uptime %{range}
+      col_response: Response
+      col_last_check: Last check
+      last_checks: last %{count} checks
+      time_ago: "%{time} ago"
+      down_since: "Down for %{duration}"
+      duration_unit:
+        seconds: s
+        minutes: m
+        hours: h
+        days: d
+      sort_health_hint: "By default unhealthy sites are listed first."
+      back: Back to uptime
+      label_status: Status
+      label_response: Avg response
+      label_last_check: Last check
+      pause: Pause
+      resume: Resume
+      pause_confirm: Pause this check? You'll stop watching the site and won't get alerts until you resume it.
+      edit: Edit
+      delete: Delete
+      delete_confirm: Delete this monitor and all its history? This cannot be undone.
+      created: Monitor created.
+      updated: Monitor saved.
+      deleted: Monitor deleted.
+      paused: Monitor paused.
+      resumed: Monitor resumed.
+      publish: Publish
+      unpublish: Unpublish
+      publish_confirm: Publish the status page? This check's data becomes visible to anyone with the link.
+      more_menu: More actions
+      label_publication: Publication
+      publication_on: Public
+      publication_off: Private
+      published: Public status page published.
+      unpublished: Public status page unpublished.
+      public_link_label: Public status page
+      public_link_open: Open
+      public_link_copy: Copy
+      public_link_copied: Copied
+      embed: Embed
+      embed_title: Embed in your site
+      embed_close: Close
+      embed_preview: Status preview
+      embed_frame_title: Service status
+      embed_badge: Compact badge
+      embed_badge_hint: A small strip for your site footer. It shows the current status and opens the full page when clicked.
+      embed_page: Full page
+      embed_page_hint: Puts the whole status page inside one of your own pages.
+      range_sla: "%{range} · SLA"
+      sla_1y: 1y SLA
+      help_sla: The share of uptime checks that succeeded within the window (24h, 7 days, 30 days, 1 year).
+      ongoing_incident: Ongoing incident
+      started_ago: started %{time} ago
+      response_time: Response time
+      no_checks: No checks yet for this range.
+      now: now
+      timeline_sub: "%{range} · %{count} blocks"
+      buckets_partial:
+        one: "%{count} partial"
+        other: "%{count} partial"
+      buckets_summary: "Uptime timeline for the last %{range}: %{up} up, %{partial}, %{down} down, %{empty} no data, out of %{total} blocks."
+      bucket:
+        no_data: No data
+        up: Up
+        partial: Partial
+        down: Down
+      incidents: Incidents
+      incidents_count: "%{count} shown"
+      col_started: Started
+      col_resolved: Resolved
+      col_duration: Duration
+      col_incident_status: Status
+      ongoing: ongoing
+      incident_open: Open
+      incident_resolved: Resolved
+      tab_monitors: Monitors
+      tab_incidents: Incidents
+      incidents_empty: No incidents yet
+      incidents_empty_body: When a monitor goes down we open an incident here, with its downtime window and resolution.
+      incidents_no_match: No incident matches the filters.
+      incidents_count_total: "%{count} incidents"
+      filter_incident_status: Status
+      incident:
+        phases:
+          detected: Detected
+          investigating: Investigating
+          fixing: Applying fix
+          monitoring: Monitoring
+          resolved: Resolved
+        default_body:
+          detected: "We've detected a disruption and are checking."
+          investigating: "We're investigating the cause of the problem."
+          fixing: "We've identified the cause and are applying a fix."
+          monitoring: "The fix is deployed; we're monitoring stability."
+          resolved: "The service is back to normal. [describe what happened]"
+        select_all: Select all
+        # CYRA-495 — accessible names of the row controls: without them a screen reader falls back to
+        # the checkbox value (a UUID) and reads every manage button the same way.
+        select_row: Select the incident of %{started_at}
+        manage_row: Manage the incident of %{started_at}
+        selected: selected
+        update_status: Update status
+        group_hint: Selected windows are unified into one incident.
+        phase: Step
+        message: Message
+        message_placeholder: Optional — a standard message is prefilled.
+        post: Post update
+        add_step: Add step
+        ungroup: Ungroup
+        ungroup_confirm: Split this grouped incident back into separate windows?
+        ungroup_title: Split grouped incident
+        ungroup_keep_hint: Which window keeps the status (phase + timeline)?
+        keep_current: current
+        windows_count: "%{count} windows"
+        timeline: Timeline
+        delete_step: Delete
+        delete_step_confirm: Delete this update?
+        no_updates: No updates yet.
+        grouped_note: Unified incident
+        grouped: Incident updated.
+        step_added: Update posted.
+        step_deleted: Update deleted.
+        ungrouped: Incident split.
+        manage: Manage incident
+        close: Close
+        delete: Delete incident
+        delete_confirm: Delete the whole incident and its history? This cannot be undone.
+        deleted: Incident deleted.
+        window: "%{started} → %{resolved}"
+        window_ongoing: "%{started} → ongoing"
+      announcement:
+        title: Status banner
+        hint: Shown on the public status page for maintenance or notices.
+        level: Level
+        levels:
+          info: Info
+          maintenance: Maintenance
+          warning: Warning
+        message: Message
+        message_placeholder: "e.g. Scheduled maintenance from 2 to 4 AM."
+        starts_at: Starts at
+        ends_at: Ends at
+        active: Active
+        save: Save banner
+        clear: Remove banner
+        preview: Preview
+        none: No banner set.
+        saved: Status banner saved.
+        cleared: Status banner removed.
+      config: Configuration
+      config_target: Target
+      config_type: Type
+      config_project_env: Project · Environment
+      config_method: Method
+      config_interval: Interval
+      config_expected: Expected
+      config_timeout: Timeout
+      config_latency: Slow threshold
+      config_failure_threshold: Checks before alert
+      form:
+        back: Back to uptime
+        new_title: New monitor
+        edit_title: Edit monitor
+        lead_new: We'll ping this URL on a schedule and open an incident when it goes down.
+        lead_edit: Project and environment are fixed; tune the URL and check settings.
+        project: Project
+        project_placeholder: Select a project
+        project_required: Select a project to see its environments
+        environment: Environment
+        environment_hint: One monitor per environment. Pick an environment declared by the project.
+        environment_invalid: Pick an environment declared by the selected project (or one without a monitor yet).
+        project_env: Project · Environment
+        project_env_locked: Fixed after creation — one monitor per environment.
+        check_type: Check type
+        check_type_hint: "HTTP checks a URL; port, DNS and ping check non-web services."
+        url: URL
+        url_hint: Public http(s) URL. Internal/private addresses are blocked.
+        host: Host
+        host_hint: Hostname or public IP of the service (for port, DNS and ping).
+        port: Port
+        port_hint: TCP port of the service, 1 to 65535 (port type only).
+        method: Method
+        expected: Expected status
+        interval: Interval (s)
+        interval_hint: Seconds between checks.
+        keyword: Expected keyword
+        keyword_hint: If set, the check fails when the body does not contain it (not with HEAD).
+        ssl_warn: SSL expiry warning (days)
+        ssl_warn_hint: "Alert when the certificate has at most N days left. Blank = off."
+        latency: Slow response threshold (ms)
+        latency_hint: "Alert when the response exceeds this many milliseconds. Blank = off."
+        timeout: Timeout (s)
+        failure_threshold: Failed checks before alert
+        failure_threshold_hint: "How many checks in a row must fail before the site is declared down. 1 = right away."
+        save_new: Create monitor
+        save_edit: Save changes
+        cancel: Cancel

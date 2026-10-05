@@ -1,0 +1,30 @@
+---
+it:
+  member:
+    guides:
+      index:
+        feature_matrix:
+          title: Matrice funzionalità
+      feature_matrix:
+        title: Matrice funzionalità
+        subtitle: La mappa di cosa c'è, dove, e da quale versione.
+        what_title: A cosa serve
+        what_intro: Quando un prodotto è fatto da più applicazioni — il sito web, l'app iPhone, l'app Android — è facile perdere il conto di cosa è già stato fatto e dove. La matrice mette tutto in una tabella sola.
+        what_b1: In riga le funzionalità, raggruppate per categoria (per esempio tutte quelle di accesso insieme).
+        what_b2: In colonna le piattaforme del prodotto.
+        what_b3: In ogni incrocio a che punto siamo e, se è già disponibile, da quale versione.
+        setup_title: Come si compila
+        setup_step1: Apri il prodotto dalla matrice e crea una categoria, per esempio «Accesso».
+        setup_step2: "Aggiungi le funzionalità di quella categoria, per esempio «Codice a due fattori». Se esiste una pagina che la spiega, collegala: dalla tabella ci si arriva con un clic."
+        setup_step3: Clicca la casella all'incrocio con una piattaforma e scegli a che punto sei. Se è disponibile, indica anche da quale versione.
+        columns_title: Come nascono le colonne
+        columns_intro: Le colonne sono le piattaforme del prodotto. Compaiono da sole, in due modi.
+        columns_b1: Le piattaforme dichiarate dai progetti del prodotto.
+        columns_b2: Le piattaforme su cui hai segnato almeno una funzionalità — anche se il progetto che le realizza non esiste ancora.
+        columns_b3: Dal menu di una funzionalità puoi segnarla su una piattaforma nuova, e la colonna compare.
+        versions_title: Le versioni
+        versions_intro: "La versione non si scrive a mano: si sceglie tra quelle già rilasciate, così è sempre una versione vera e porta con sé la data e il collegamento al rilascio."
+        versions_b1: Vengono proposte le versioni dei progetti del prodotto che girano su quella piattaforma.
+        versions_b2: Si preferiscono le versioni andate in produzione; quella che gira ora è marcata.
+        versions_b3: Se una funzionalità risulta disponibile ma la versione non è indicata, la tabella lo segnala con un avviso — e in alto trovi quante caselle sono in quella condizione.
+        cta: Apri la matrice

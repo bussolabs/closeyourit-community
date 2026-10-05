@@ -1,0 +1,37 @@
+<%# locals: details %>
+<%# Il verdetto del revisore automatico (CYRA-764): formato riconosciuto, regole violate, e i
+    suggerimenti del modello quando ci sono. Solo testo: la correzione la fa chi scrive. %>
+<section class="rounded-lg border border-amber-300 dark:border-amber-500/50 bg-amber-50/60 dark:bg-amber-500/10 px-5 py-4" data-test="knowledge-form-review-violations">
+  <p class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.knowledge.review.rejected_title") %></p>
+  <% if details[:format].present? && details[:format] != "unknown" %>
+    <p class="mt-0.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.review.format", name: t("member.knowledge.review.formats.#{details[:format]}")) %></p>
+  <% end %>
+  <ul class="mt-2.5 space-y-1.5 text-[12.5px] leading-relaxed text-zinc-900 dark:text-zinc-100">
+    <% Array(details[:violations]).each do |violation| %>
+      <% violation = violation.with_indifferent_access %>
+      <li class="flex items-start gap-2">
+        <span class="font-mono text-[10.5px] px-1 rounded bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 mt-0.5"><%= violation[:code] %></span>
+        <span>
+          <%= violation[:message] %>
+          <%# CYAU-200 — il passaggio della pagina che motiva la violazione, quando c'è: dice DOVE correggere. %>
+          <% if violation[:quote].present? %>
+            <span class="mt-0.5 block font-mono text-[11px] text-gray-500 dark:text-zinc-400">«<%= violation[:quote] %>»</span>
+          <% end %>
+        </span>
+      </li>
+    <% end %>
+  </ul>
+  <% if details[:suggested_title].present? || Array(details[:split_suggestion]).any? || details[:duplicate_of].present? %>
+    <dl class="mt-3 pt-3 border-t border-amber-200 dark:border-amber-500/40 grid gap-1.5 text-[12px]" data-test="knowledge-form-review-suggestions">
+      <% if details[:suggested_title].present? %>
+        <div><dt class="inline text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.review.suggested_title") %></dt> <dd class="inline text-zinc-900 dark:text-zinc-100"><%= details[:suggested_title] %></dd></div>
+      <% end %>
+      <% if details[:duplicate_of].present? %>
+        <div><dt class="inline text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.review.duplicate_of") %></dt> <dd class="inline text-zinc-900 dark:text-zinc-100"><%= details[:duplicate_of] %></dd></div>
+      <% end %>
+      <% if Array(details[:split_suggestion]).any? %>
+        <div><dt class="inline text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.review.split_suggestion") %></dt> <dd class="inline text-zinc-900 dark:text-zinc-100"><%= Array(details[:split_suggestion]).join(" · ") %></dd></div>
+      <% end %>
+    </dl>
+  <% end %>
+</section>

@@ -1,0 +1,103 @@
+<%# locals: item, pending: nil %>
+<%# Una riga della lista «Da sistemare»: sempre la stessa forma qualunque sia la provenienza — quanto
+    rischia, che cosa è, dove, da quando — e in fondo l'azione che quel tipo di riga permette. %>
+<% risk_tone = { high: "border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-300",
+                 medium: "border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300",
+                 low: "border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400" }.fetch(item.risk) %>
+<div class="flex items-start justify-between gap-3 px-4 py-3 border-t border-stone-100 dark:border-zinc-800 first:border-t-0"
+     data-test="vault-attention-row">
+  <div class="min-w-0 space-y-1">
+    <div class="flex items-center flex-wrap gap-2">
+      <span class="inline-flex items-center rounded border px-1.5 py-0.5 font-mono uppercase text-[9.5px] tracking-[1px] <%= risk_tone %>"
+            data-test="vault-attention-risk-<%= item.risk %>"><%= t("member.vault_attention.risk.#{item.risk}") %></span>
+      <%# An empty environment is not about one secret: the kind beside says it, no dash in front. %>
+      <% if item.secret_name.present? %>
+        <span class="font-mono text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100" data-test="vault-attention-secret-name"><%= item.secret_name %></span>
+      <% end %>
+      <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.vault_attention.kind.#{item.kind}") %></span>
+    </div>
+    <p class="text-[12px] text-gray-600 dark:text-zinc-400">
+      <%# CYRA-777 — un valore in comune non è di un progetto solo: al posto del link c'è quanti sono. %>
+      <% if item.project %>
+        <%= link_to item.project.name, member_project_secrets_path(item.project),
+              class: "font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" %>
+      <% else %>
+        <span class="font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.vault_attention.projects_count", count: item.source.projects_count) %></span>
+      <% end %>
+      <span class="text-gray-300 dark:text-zinc-600">·</span>
+      <%= item.environment.label %>
+      <span class="text-gray-300 dark:text-zinc-600">·</span>
+      <%= render "member/vault/attention/detail", item: item %>
+    </p>
+    <p class="text-[11px] text-gray-400 dark:text-zinc-500"><%= t("member.vault_attention.since", time: time_ago_in_words(item.since)) %></p>
+  </div>
+
+  <div class="shrink-0">
+    <% case item.kind %>
+    <% when :anomaly %>
+      <%# Stessa azione della pagina «Cosa non torna»: dichiarare che l'assenza è voluta, con una
+          motivazione obbligatoria (senza motivo non è una decisione, è solo silenziare). Il campo
+          non sta più qui: la riga apre il dialog condiviso della pagina (CYRA-571). %>
+      <div class="inline-flex items-center gap-1.5">
+        <%# F166 — F5: fixing comes before accepting: the project's secrets, already on this name. %>
+        <%= render Ui::ButtonComponent.new(label: t("member.vault_attention.fix"),
+              href: member_project_secrets_path(item.project, q: item.secret_name.presence), variant: :secondary_muted, size: :sm,
+              icon: "wrench", test_id: "vault-attention-fix-#{item.source.id}") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.vault_health.acknowledge.button"),
+              variant: :secondary_muted, size: :sm, icon: "circle-check",
+              test_id: "vault-attention-acknowledge-#{item.source.id}",
+              data: { action: "ui--shared-dialog#open", dialog: "health-acknowledge",
+                      dialog_url: member_acknowledge_vault_health_anomaly_path(item.source.id),
+                      dialog_subject: item.secret_name }) %>
+      </div>
+    <% when :change_request %>
+      <%# Invariante di Secrets::ChangeRequests::Pending: ogni riga mostrata ha sempre esattamente uno
+          fra decidere e ritirare — chi la vede può sempre agirci. %>
+      <div class="inline-flex items-center gap-1.5">
+        <% if pending&.can_decide?(item.source) %>
+          <%= render Ui::ButtonComponent.new(label: t("member.vault_change_requests.approve"),
+                href: approve_member_vault_change_request_path(item.source), method: :post,
+                form_id: "row-actions",
+                variant: :success_outline, size: :sm, icon: "circle-check",
+                test_id: "vault-change-request-approve-#{item.source.id}",
+                confirm: t("member.vault_change_requests.approve_confirm")) %>
+          <%= render Ui::ButtonComponent.new(label: t("member.vault_change_requests.reject"),
+                variant: :danger_outline, size: :sm, icon: "x",
+                test_id: "vault-change-request-reject-#{item.source.id}",
+                data: { action: "ui--shared-dialog#open", dialog: "change-request-reject",
+                        dialog_url: reject_member_vault_change_request_path(item.source),
+                        dialog_subject: item.source.name }) %>
+        <% elsif pending&.can_cancel?(item.source) %>
+          <%= render Ui::ButtonComponent.new(label: t("member.vault_change_requests.withdraw"),
+                href: cancel_member_vault_change_request_path(item.source), method: :post,
+                form_id: "row-actions",
+                variant: :secondary_muted, size: :sm, icon: "rotate-ccw",
+                test_id: "vault-change-request-cancel-#{item.source.id}",
+                confirm: t("member.vault_change_requests.withdraw_confirm")) %>
+        <% end %>
+      </div>
+    <% when :consolidation %>
+      <%# Non si decide da qui: la pagina di conferma elenca cosa sparisce da ogni progetto e con che
+          nome ciascuno continuerà a leggerlo. «Sei sicuro?» non basta per un gesto che tocca più
+          progetti insieme. %>
+      <div class="inline-flex items-center gap-1.5">
+        <%= render Ui::ButtonComponent.new(label: t("member.vault_attention.open_consolidation"),
+              href: member_vault_consolidation_path(item.source), variant: :secondary_muted, size: :sm,
+              icon: "group", test_id: "vault-attention-consolidation-#{item.source.id}") %>
+        <%# Archiviare non ha bisogno della pagina: non cambia niente nei progetti, spegne solo la
+            proposta. La conferma pericolosa (CYRA-728) viaggia nell'indirizzo perché il bottone punta
+            il modulo condiviso della pagina, che non ha campi suoi; il gesto umano è il turbo_confirm. %>
+        <%= render Ui::ButtonComponent.new(label: t("member.vault_attention.dismiss_consolidation"),
+              href: dismiss_member_vault_consolidation_path(item.source, confirm: 1), method: :post,
+              form_id: "row-actions", variant: :secondary_muted, size: :sm, icon: "ban",
+              test_id: "vault-attention-dismiss-consolidation-#{item.source.id}",
+              confirm: t("member.vault_consolidations.dismiss_confirm")) %>
+      </div>
+    <% else %>
+      <%# Rotazione: si cambia il valore dove il valore vive, cioè nei segreti del progetto. %>
+      <%= render Ui::ButtonComponent.new(label: t("member.vault_attention.open_secrets"),
+            href: member_project_secrets_path(item.project), variant: :secondary_muted, size: :sm,
+            test_id: "vault-attention-open-#{item.source.id}") %>
+    <% end %>
+  </div>
+</div>

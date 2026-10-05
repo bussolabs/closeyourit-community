@@ -1,0 +1,34 @@
+<%# CYRA-45 · locals: test_prefix: — "errors"/"metrics" (per i data-test); merge_url: (facoltativo) —
+    se presente aggiunge «Fondi». Barra azioni del triage bulk, dentro il form del controller
+    ui--bulk-select: i bottoni submittano con name="bulk_action". Nascosta (via [hidden], NON classe
+    .hidden — TS-TAILWIND-001) finché nessuna riga è selezionata; ricompare al primo checkbox. Il gate
+    reale è server-side (i gruppi senza permesso vengono scartati dal controller). %>
+<div class="flex items-center gap-2 px-4 py-2 border-b border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800"
+     data-ui--bulk-select-target="bar" hidden data-test="<%= test_prefix %>-bulk-bar">
+  <span class="font-mono text-[11px] text-gray-600 dark:text-zinc-400">
+    <span data-ui--bulk-select-target="count">0</span> <%= t("shared.bulk_triage.selected") %>
+  </span>
+  <div class="ml-auto flex items-center gap-1.5">
+    <button type="submit" name="bulk_action" value="resolve" data-test="<%= test_prefix %>-bulk-resolve"
+            class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] font-medium bg-emerald-600 text-white hover:bg-emerald-700">
+      <%= render Ui::IconComponent.new(name: "check", class: "text-[10px]") %><%= t("shared.bulk_triage.resolve") %>
+    </button>
+    <button type="submit" name="bulk_action" value="ignore" data-test="<%= test_prefix %>-bulk-ignore"
+            class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] font-medium bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100">
+      <%= render Ui::IconComponent.new(name: "bell-off", class: "text-[10px]") %><%= t("shared.bulk_triage.ignore") %>
+    </button>
+    <button type="submit" name="bulk_action" value="reopen" data-test="<%= test_prefix %>-bulk-reopen"
+            class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] font-medium bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100">
+      <%= render Ui::IconComponent.new(name: "rotate-ccw", class: "text-[10px]") %><%= t("shared.bulk_triage.reopen") %>
+    </button>
+    <%# CYRA-192 — «Fondi» non fonde: `formaction` manda la STESSA selezione alla pagina di conferma,
+        che mostra cosa sparisce e fa scegliere il gruppo che resta. Un attributo HTML e nessun JS in
+        più: la barra continua a postare il triage dove ha sempre postato. %>
+    <% if local_assigns[:merge_url].present? %>
+      <button type="submit" formaction="<%= merge_url %>" formmethod="post" data-test="<%= test_prefix %>-bulk-merge"
+              class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] font-medium bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100">
+        <%= render Ui::IconComponent.new(name: "git-merge", class: "text-[10px]") %><%= t("shared.bulk_triage.merge") %>
+      </button>
+    <% end %>
+  </div>
+</div>

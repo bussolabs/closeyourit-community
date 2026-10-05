@@ -1,0 +1,8 @@
+<%# locals: (action:) %>
+<%# Due date, coloured by how close it is (late / soon / on time). Nothing without a due date. %>
+<% state = workload_due_state(action) %>
+<% if state %>
+  <%= render Ui::BadgeComponent.new(label: workload_short_date(action.due_at), color: WorkloadHelper::WORKLOAD_DUE_COLORS.fetch(state),
+        icon: "hourglass", size: :sm, test_id: "workload-due",
+        data: { due_state: state }, title: t("member.workload.actions.due_title.#{state}", date: l(action.due_at.to_date))) %>
+<% end %>

@@ -1,0 +1,86 @@
+<%# locals: (card:, filters:, frame:, from_card:, variant:)
+    Respingi, chiedi precisazioni e rivaluta: in home stanno dentro «Altre scelte». CYRA-861 %>
+  <% if card.can?(:reject) %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
+      <details data-test="approvals-reject">
+        <summary class="inline-flex w-max items-center gap-1.5 h-7 px-3 rounded-md text-[12px] font-medium border border-red-200 dark:border-red-500/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 cursor-pointer list-none">
+          <%= render Ui::IconComponent.new(name: "x", class: "text-[10px]") %> <%= t("member.approvals.actions.reject.#{variant}") %>
+        </summary>
+        <%# CYRA-389 — su un LAVORO CONSEGNATO la motivazione è tutto il valore del gesto, e il campo
+            dichiara la misura del posto in cui viene salvata: il resoconto del ticket, non un messaggio
+            breve (Ticketing::RejectReview#publish_reason). Sulle altre famiglie il motivo finisce in un
+            campo loro (il piano, la lavorazione annullata, la richiesta sul segreto) con un tetto che
+            non è questo: là un contatore direbbe un numero che non vale. %>
+        <%= form_with url: member_home_approvals_decision_path(**filters), method: :post, class: "mt-2.5 space-y-2.5",
+              data: ({ turbo_frame: frame }).merge(
+                     if card.kind == "review"
+                       { controller: "char-counter",
+                         char_counter_max_value: ::Ticketing::Constants::REVIEW_REASON_MAX_CHARS,
+                         char_counter_warn_ratio_value: ::App::Constants::LENGTH_WARN_RATIO,
+                         char_counter_unit_value: t("shared.char_counter.unit") }
+                     else
+                       {}
+                     end
+                   ) do %>
+          <%= hidden_field_tag :item, card.key %>
+        <%= hidden_field_tag :from_card, "1" if from_card %>
+          <%= hidden_field_tag :decision, "reject" %>
+          <%= text_area_tag :text, nil, required: true, rows: 3,
+                placeholder: t("member.approvals.reject_placeholder"),
+                class: "w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[12.5px] text-zinc-900 dark:text-zinc-100 leading-relaxed placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-red-500 focus-visible:ring-2 focus-visible:ring-red-300 dark:focus-visible:ring-red-500/50",
+                data: ({ test: "approvals-reject-reason" }.merge(
+                  card.kind == "review" ? { char_counter_target: "field", action: "input->char-counter#update" } : {}
+                )) %>
+          <div class="flex items-center justify-between gap-3">
+            <%= render Ui::ButtonComponent.new(label: t("member.approvals.confirm_reject"), type: "submit",
+                  variant: :danger, size: :sm, test_id: "approvals-reject-submit") %>
+            <% if card.kind == "review" %>
+              <p class="shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400 tabular-nums" data-char-counter-target="output"
+                 data-test="approvals-reject-counter"></p>
+            <% end %>
+          </div>
+        <% end %>
+      </details>
+      <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.approvals.reject_hint.#{variant}") %></p>
+    </div>
+  <% end %>
+
+  <% if card.can?(:ask) %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
+      <details data-test="approvals-ask">
+        <summary class="inline-flex w-max items-center gap-1.5 h-7 px-3 rounded-md text-[12px] font-medium border border-stone-200 dark:border-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 cursor-pointer list-none">
+          <%= render Ui::IconComponent.new(name: "circle-question-mark", class: "text-[10px]") %> <%= t("member.approvals.actions.ask") %>
+        </summary>
+        <%= form_with url: member_home_approvals_decision_path(**filters), method: :post, class: "mt-2.5 space-y-2.5",
+              data: { turbo_frame: frame } do %>
+          <%= hidden_field_tag :item, card.key %>
+        <%= hidden_field_tag :from_card, "1" if from_card %>
+          <%= hidden_field_tag :decision, "ask" %>
+          <%= text_area_tag :text, nil, required: true, rows: 4,
+                placeholder: t("member.approvals.ask_placeholder"),
+                class: "w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[12.5px] text-zinc-900 dark:text-zinc-100 leading-relaxed placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400",
+                data: { test: "approvals-ask-text" } %>
+          <%= render Ui::ButtonComponent.new(label: t("member.approvals.confirm_ask"), type: "submit",
+                variant: :secondary, size: :sm, icon: "send", test_id: "approvals-ask-submit") %>
+        <% end %>
+      </details>
+      <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.approvals.ask_hint") %></p>
+    </div>
+  <% end %>
+
+  <%# CYRA-675 — «Rivaluta». Un clic, nessun testo da scrivere: non e' un giudizio sul lavoro di
+      nessuno, e' la richiesta di guardare di nuovo. Sta sotto le decisioni vere perche' non decide
+      niente — rimanda alla pianificazione, e la risposta arriva da la'. %>
+  <% if card.can?(:reassess) %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
+      <%= form_with url: member_home_approvals_decision_path(**filters), method: :post,
+            data: { turbo_frame: frame } do %>
+        <%= hidden_field_tag :item, card.key %>
+        <%= hidden_field_tag :from_card, "1" if from_card %>
+        <%= hidden_field_tag :decision, "reassess" %>
+        <%= render Ui::ButtonComponent.new(label: t("member.approvals.actions.reassess"), type: "submit",
+              variant: :secondary, size: :sm, icon: "rotate-cw", test_id: "approvals-reassess") %>
+      <% end %>
+      <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.approvals.reassess_hint") %></p>
+    </div>
+  <% end %>

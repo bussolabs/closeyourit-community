@@ -1,0 +1,154 @@
+<% content_for :title, t("member.guides.agents.title") %>
+
+<%# CYRA-501 — la funzione da cui dipende il valore del prodotto era l'unica senza guida: cosa
+    significa un lavoro rimandato indietro, quando arriva una richiesta di approvazione e cosa
+    succede se non si risponde non si scoprono da soli. I nomi dei passaggi e dei pulsanti vengono
+    dalle STESSE chiavi dell'interfaccia (member.agents.*): guida e schermate non possono divergere. %>
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-agents">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "bot", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.agents.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.agents.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.agents.cta"), href: member_agents_path, variant: :primary, size: :sm, icon: "bot", test_id: "member-guide-agents-cta") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.agents.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-agents-what">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.agents.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.agents.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% %w[what_b1 what_b2 what_b3].each do |key| %>
+          <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.agents.#{key}") %></span></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <%# CYRA-631 — i passaggi e le loro parole vengono da DOVE LE PRENDE LA PLANCIA: `PhaseResolver::STEPS`
+      per l'elenco e l'ordine, `member.tickets.automation.stage.*` per il nome. La guida non tiene più
+      un elenco suo né un conteggio suo — prima annunciava «cinque passaggi» con il numero scritto
+      dentro la frase mentre l'elenco sotto si costruiva da solo, e il giorno del passaggio a sei la
+      frase avrebbe continuato a dire cinque.
+
+      Il segno «Tocca a te» si deriva da `PhaseResolver.waiting_steps`, cioè da quello che il server
+      dichiara in attesa di una persona: quando CYRA-629 ha tolto il terzo permesso i segni sono
+      passati da tre a due senza che nessuno toccasse un testo. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-agents-cycle">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.agents.cycle_title") %></h2>
+      <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.agents.cycle_intro") %></p>
+    </div>
+    <% waiting = Agents::Workflows::PhaseResolver.waiting_steps %>
+    <ol class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% Agents::Workflows::PhaseResolver::STEPS.each_with_index do |step, index| %>
+        <li class="flex gap-3 px-4 py-3.5" data-test="guide-agents-step-<%= step %>">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5"><%= index + 1 %></span>
+          <div class="min-w-0">
+            <p class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.automation.stage.#{step}") %></p>
+            <p class="mt-0.5 text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.agents.steps.#{step}.body") %></p>
+            <% if waiting.include?(step) %>
+              <p class="mt-1 inline-flex items-center gap-1.5 text-[11.5px] font-medium text-amber-700 dark:text-amber-300" data-test="guide-agents-gate-<%= step %>">
+                <%= render Ui::IconComponent.new(name: "hand", class: "text-[10px]") %><%= t("member.guides.agents.steps.#{step}.gate") %>
+              </p>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ol>
+  </div>
+
+  <%# Le due USCITE: non sono tappe, sono modi di uscire dal percorso, e finora non le spiegava
+      nessuna guida. Stesse parole della schermata, stessa sorgente dell'elenco qui sopra. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-agents-exits">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.agents.exits_title") %></h2>
+      <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.agents.exits_intro") %></p>
+    </div>
+    <dl class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% Agents::Workflows::PhaseResolver::EXITS.each do |exit_step| %>
+        <div class="px-4 py-3.5" data-test="guide-agents-exit-<%= exit_step %>">
+          <dt class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.automation.stage.#{exit_step}") %></dt>
+          <dd class="mt-0.5 text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.agents.exits.#{exit_step}.body") %></dd>
+        </div>
+      <% end %>
+    </dl>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-agents-outcomes">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.agents.outcomes_title") %></h2>
+      <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.agents.outcomes_intro") %></p>
+    </div>
+    <dl class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <%# Classi per esteso, mai composte a pezzi: Tailwind legge il sorgente e una classe costruita
+          con l'interpolazione non finirebbe nel foglio di stile. %>
+      <% { "approved" => "text-emerald-700 dark:text-emerald-300", "rejected" => "text-amber-700 dark:text-amber-300",
+           "interrupted" => "text-gray-600 dark:text-zinc-400", "failed" => "text-red-700 dark:text-red-300" }.each do |outcome, color| %>
+        <div class="px-4 py-3.5" data-test="guide-agents-outcome-<%= outcome %>">
+          <dt class="text-[13px] font-semibold <%= color %>"><%= t("member.guides.agents.outcomes.#{outcome}.title") %></dt>
+          <dd class="mt-1 text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.agents.outcomes.#{outcome}.body") %></dd>
+        </div>
+      <% end %>
+    </dl>
+  </div>
+
+  <%# Il cuore del ticket: quando tocca a te, e cosa succede se non rispondi. Nessuna richiesta
+      scade e nessuna si approva da sola — dirlo è più utile che lasciarlo scoprire a lavoro fermo. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-agents-waiting">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.agents.waiting_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.agents.waiting.intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% %w[plan work question].each do |key| %>
+          <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "bell", class: "text-amber-500 dark:text-amber-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.agents.waiting.#{key}") %></span></li>
+        <% end %>
+      </ul>
+      <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3.5 py-3 space-y-1.5">
+        <p class="text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.agents.waiting.no_reply") %></p>
+        <p class="text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.agents.waiting.no_deadline") %></p>
+      </div>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.agents.waiting.cta"), href: member_home_approvals_path,
+            variant: :secondary_muted, size: :sm, icon: "circle-check", test_id: "guide-agents-approvals-cta") %>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-agents-certification">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.agents.certification_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.agents.certification.intro") %></p>
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[12.5px]">
+        <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
+          <dt class="font-medium text-emerald-700 dark:text-emerald-300"><%= t("member.agents.certify") %></dt>
+          <dd class="block text-gray-600 dark:text-zinc-400 mt-0.5 leading-relaxed"><%= t("member.guides.agents.certification.certify_body") %></dd>
+        </div>
+        <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
+          <dt class="font-medium text-amber-700 dark:text-amber-300"><%= t("member.agents.decertify") %></dt>
+          <dd class="block text-gray-600 dark:text-zinc-400 mt-0.5 leading-relaxed"><%= t("member.guides.agents.certification.revoke_body") %></dd>
+        </div>
+      </dl>
+      <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.agents.certification.note") %></p>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-agents-stopped">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.agents.stopped_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.agents.stopped_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% %w[b1 b2 b3].each do |key| %>
+          <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.agents.stopped_#{key}") %></span></li>
+        <% end %>
+      </ul>
+      <p class="text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+        <%= t("member.guides.agents.stopped_versions") %>
+        <%= link_to t("member.guides.agents.stopped_versions_link"), member_guides_skill_bundles_path, class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "guide-agents-skill-bundles" } %>
+      </p>
+    </div>
+  </div>
+</div>

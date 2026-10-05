@@ -1,0 +1,12 @@
+<%# Public page tab of one uptime group (CYRA-990). %>
+<% published = @group.public_status_enabled? %>
+<div class="space-y-6">
+  <%= render "member/monitoring/shared/public_page",
+        published: published,
+        state_text: t(published ? "member.monitoring.public_tab.group_on" : "member.monitoring.public_tab.group_off"),
+        toggle_path: published ? unpublish_member_monitoring_uptime_group_path(@group) : publish_member_monitoring_uptime_group_path(@group),
+        toggle_confirm: nil,
+        public_url: public_group_status_url(@group.organization.slug, @group.slug),
+        badge_url: public_group_status_badge_url(@group.organization.slug, @group.slug),
+        test_prefix: "uptime-group", can_manage: can_manage %>
+</div>

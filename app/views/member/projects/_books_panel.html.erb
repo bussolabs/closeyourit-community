@@ -1,0 +1,14 @@
+<%= render Ui::SectionComponent.new(title: t("member.projects.show.books"), body_class: "divide-y divide-stone-100 dark:divide-zinc-800",
+      test_id: "project-books") do %>
+    <% @project_books.each do |book| %>
+      <% visible_projects = (book.projects.to_a + book.groups.flat_map(&:projects)).uniq(&:id).select { |p| @visible_project_ids.include?(p.id) }.sort_by(&:name) %>
+      <% visible_groups = book.groups.select { |g| @visible_group_ids.include?(g.id) }.sort_by(&:name) %>
+      <div class="px-4 py-3" data-test="project-book-row">
+        <%= link_to book.title, member_knowledge_book_path(book), class: "text-[13px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "project-book-link" } %>
+        <div class="mt-1.5 flex flex-wrap gap-1">
+          <% visible_groups.each do |group| %><%= render Ui::BadgeComponent.new(label: group.name, color: group.color || "gray", size: :sm, icon: "layers") %><% end %>
+          <% visible_projects.each do |project| %><%= render Ui::BadgeComponent.new(label: project.name, color: project.color || "gray", size: :sm) %><% end %>
+        </div>
+      </div>
+    <% end %>
+<% end %>

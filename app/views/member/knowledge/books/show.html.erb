@@ -1,0 +1,66 @@
+<% content_for :title, @book.title %>
+
+<div class="p-7 space-y-6" data-test="knowledge-book">
+  <%= render Ui::PageHeaderComponent.new(
+        title: @book.title,
+        breadcrumb: [ { label: t("member.knowledge.title"), href: member_knowledge_pages_path },
+                      { label: t("member.knowledge.books.title"), href: member_knowledge_books_path },
+                      { label: @book.title } ]) do |h| %>
+    <% h.with_actions do %>
+      <% if @can_edit %>
+        <%= render Ui::ButtonComponent.new(label: t("member.knowledge.books.show.edit"), href: edit_member_knowledge_book_path(@book), variant: :secondary_muted, size: :sm, icon: "pen", test_id: "knowledge-book-edit") %>
+      <% end %>
+      <% if @can_delete %>
+        <%= render Ui::ButtonComponent.new(label: t("member.knowledge.books.show.delete"), href: member_knowledge_book_path(@book), method: :delete, variant: :danger_outline, size: :sm, icon: "trash", confirm: t("member.knowledge.books.delete_confirm"), test_id: "knowledge-book-delete") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# T1 — the groups and projects of the book sit in a panel, not on the page ground. %>
+  <div class="flex flex-wrap items-center gap-1.5 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3" data-test="knowledge-book-scope">
+    <% @visible_groups.each do |group| %><%= render Ui::BadgeComponent.new(label: group.name, color: group.color || "gray", icon: "layers") %><% end %>
+    <% @visible_projects.each do |project| %><%= render Ui::BadgeComponent.new(label: project.name, color: project.color || "gray", dot: true) %><% end %>
+  </div>
+
+  <%# Layout Outline: indice delle pagine a sinistra (w-72, aria-current sull'attiva), contenuto
+      markdown della pagina attiva a destra. Pattern master-detail della chat. %>
+  <div class="flex rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden min-h-[60vh]" data-test="knowledge-book-outline">
+    <% if @pages.any? %>
+      <aside class="w-full md:w-72 shrink-0 md:border-r border-stone-200 dark:border-zinc-800 flex flex-col" data-test="knowledge-book-toc">
+        <div class="flex-1 overflow-y-auto divide-y divide-stone-100 dark:divide-zinc-800">
+          <% @pages.each do |page| %>
+            <%= link_to member_knowledge_book_path(@book, page_id: page.id),
+                        "aria-current": (page == @active_page ? "page" : nil),
+                        data: { test: "knowledge-book-toc-link-#{page.id}" },
+                        class: "block px-3.5 py-2.5 hover:bg-stone-50 dark:hover:bg-zinc-800 #{"bg-stone-100 dark:bg-zinc-800" if page == @active_page}" do %>
+              <span class="block truncate text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= page.title %></span>
+              <span class="mt-0.5 inline-block"><%= render Ui::BadgeComponent.new(label: t("member.knowledge.kind.#{page.kind}"), color: knowledge_kind_color(page.kind), dot: true) %></span>
+            <% end %>
+          <% end %>
+        </div>
+      </aside>
+    <% end %>
+
+    <section class="flex-1 min-w-0 flex flex-col" data-test="knowledge-book-content">
+      <% if @active_page %>
+        <header class="border-b border-stone-200 dark:border-zinc-800 px-5 py-3 flex items-center justify-between gap-3">
+          <h2 class="truncate font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= @active_page.title %></h2>
+          <%= link_to t("member.knowledge.books.open_page"), member_knowledge_page_path(@active_page),
+                      class: "shrink-0 text-[12px] text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "knowledge-book-open-page" } %>
+        </header>
+        <%= render Ui::MarkdownComponent.new(text: @active_page.body, page: @active_page,
+              links: @active_page_links, remote_images: true, test_id: "knowledge-book-body",
+              class: "px-6 py-5 overflow-y-auto max-w-[70ch]") %>
+      <% else %>
+        <%= render Ui::EmptyStateComponent.new(title: t("member.knowledge.books.empty_content_title"), body: t("member.knowledge.books.empty_content_body"),
+              icon: "book-open", test_id: "knowledge-book-empty", class: "flex-1") do |empty| %>
+          <% if @can_edit %>
+            <% empty.with_action do %>
+              <%= render Ui::ButtonComponent.new(label: t("member.knowledge.books.add_pages"), href: edit_member_knowledge_book_path(@book), variant: :primary, size: :sm, icon: "plus", test_id: "knowledge-book-add-pages") %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </section>
+  </div>
+</div>

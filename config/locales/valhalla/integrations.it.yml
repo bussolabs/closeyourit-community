@@ -1,0 +1,43 @@
+it:
+  valhalla:
+    integrations:
+      title: Integrazioni
+      save: Salva
+      updated: Integrazioni salvate.
+      value_hint: "Vuoto = si usa la variabile %{variable} del server."
+      secret_hint: "Non viene mai mostrato. Vuoto = resta quello salvato, oppure la variabile %{variable} del server."
+      sources:
+        valhalla: Valhalla
+        environment: Server
+        missing: Non impostato
+      groups:
+        github:
+          title: GitHub App
+          hint: L'app GitHub con cui le organizzazioni collegano i loro repository. Servono ID, chiave privata, client ID e client secret.
+        telegram:
+          title: Bot Telegram
+          hint: Il bot che manda le notifiche personali su Telegram.
+      fields:
+        gh_app_id: ID dell'app
+        gh_app_slug: Nome dell'app nell'indirizzo
+        gh_app_client_id: Client ID
+        gh_app_client_secret: Client secret
+        gh_app_private_key: Chiave privata (PEM)
+        gh_webhook_secret: Segreto del webhook
+        telegram_bot_username: Nome del bot
+        telegram_bot_token: Token del bot
+        telegram_webhook_secret: Segreto del webhook
+      generate:
+        title: Genera un segreto per i webhook
+        hint: Crea un segreto nuovo e lo mostra una volta sola, da copiare subito.
+        gh_webhook_secret: Genera il segreto del webhook GitHub
+        telegram_webhook_secret: Genera il segreto del webhook Telegram
+        confirm: Genera
+        warning:
+          gh_webhook_secret: Il segreto attuale smette di valere subito. Finché non incolli quello nuovo nelle impostazioni della GitHub App, gli eventi di GitHub vengono rifiutati.
+          telegram_webhook_secret: Il segreto attuale smette di valere subito. Finché non registri di nuovo il webhook del bot, i messaggi da Telegram vengono rifiutati.
+      generated:
+        title: Copia il segreto adesso
+        body:
+          gh_webhook_secret: Incollalo nel campo «Webhook secret» delle impostazioni della GitHub App. Non verrà più mostrato.
+          telegram_webhook_secret: Registra di nuovo il webhook del bot con questo segreto. Non verrà più mostrato.

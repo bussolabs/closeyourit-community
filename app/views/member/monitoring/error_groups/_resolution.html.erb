@@ -1,0 +1,28 @@
+<%# CYRA-192 · locals: group — Errors::Group. La spiegazione della chiusura, in testa alla pagina e
+    non in fondo a una colonna: è quello che si viene a cercare quando l'errore ritorna mesi dopo.
+    Compare solo a gruppo risolto e solo se qualcosa è stato scritto — un riquadro vuoto direbbe che
+    la risoluzione è documentata quando non lo è. La riapertura azzera i due campi (Errors::Triage),
+    quindi qui non resta mai una spiegazione che non vale più. %>
+<section class="rounded-lg border border-emerald-200 dark:border-emerald-500/40 bg-emerald-50/50 dark:bg-emerald-500/10" data-test="error-resolution">
+  <div class="flex items-center gap-2 px-4 py-2.5 border-b border-emerald-100 dark:border-emerald-500/20">
+    <%= render Ui::IconComponent.new(name: "clipboard-check", class: "text-[12px] text-emerald-600 dark:text-emerald-400") %>
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.resolution.title") %></h2>
+    <% if group.resolved_in_release.present? %>
+      <span class="ml-auto font-mono text-[11px] text-gray-600 dark:text-zinc-400" data-test="error-resolution-release"><%= t("member.monitoring.resolution.in_release", release: group.resolved_in_release) %></span>
+    <% end %>
+  </div>
+  <dl class="px-4 py-3 space-y-2.5">
+    <% if group.resolution_cause.present? %>
+      <div class="flex items-start gap-3">
+        <dt class="w-24 shrink-0 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.resolution.cause") %></dt>
+        <dd class="min-w-0 text-[12.5px] text-zinc-900 dark:text-zinc-100 whitespace-pre-line" data-test="error-resolution-cause"><%= group.resolution_cause %></dd>
+      </div>
+    <% end %>
+    <% if group.resolution_fix.present? %>
+      <div class="flex items-start gap-3">
+        <dt class="w-24 shrink-0 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.resolution.fix") %></dt>
+        <dd class="min-w-0 text-[12.5px] text-zinc-900 dark:text-zinc-100 whitespace-pre-line" data-test="error-resolution-fix"><%= group.resolution_fix %></dd>
+      </div>
+    <% end %>
+  </dl>
+</section>

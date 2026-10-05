@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="<%= I18n.locale %>">
+  <head>
+    <title><%= content_for(:title) || "CloseYourIt" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <% if content_for?(:meta_description) %>
+      <meta name="description" content="<%= content_for(:meta_description) %>">
+    <% end %>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= csp_mode_meta_tag %>
+    <%= yield :head %>
+    <%# SEO marketing (canonical/hreflang/og): solo per le pagine del sito, non per la status page. %>
+    <%= website_seo_tags if @website_page %>
+
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+
+    <%# CYRA-238 — niente più preconnect/stylesheet esterni (Google Fonts, Font Awesome da cdnjs):
+        font self-hostati via @font-face in app/assets/tailwind/application.css, icone dallo sprite
+        SVG inline (Ui::IconComponent, CYRA-926). Zero connessioni di terzi sul canale pubblico. %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <%# Shell neutra del canale pubblico: ogni view porta il proprio wrapper (la status page il
+      container stretto + footer powered-by, le pagine marketing header/nav e footer propri). %>
+  <body class="bg-stone-100 font-sans text-zinc-900 antialiased min-h-screen flex flex-col">
+    <%# Skip-link: invisibile finché non riceve focus da tastiera, punta all'id del <main> di
+        ciascuna pagina del canale (id="main-content" su ogni view). %>
+    <a href="#main-content" data-test="skip-link"
+       class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-indigo-600 focus:px-3 focus:py-2 focus:text-[13px] focus:font-medium focus:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300">
+      <%= t("website.skip_to_content") %>
+    </a>
+    <%= yield %>
+    <%# Self-analytics dogfooding (CYRA-238): no-op se la config non è presente, vedi helper. %>
+    <%= website_analytics_beacon_tag %>
+  </body>
+</html>

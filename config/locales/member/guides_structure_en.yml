@@ -1,0 +1,48 @@
+# CYRA-441 — the containers everything else lives in: organisation, groups, projects, environments,
+# platforms. Every page assumed them, none introduced them, and they also cross each other. The set
+# of projects is called «Group» (CYRA-362): never a second name.
+---
+en:
+  member:
+    guides:
+      index:
+        structure:
+          title: Where things live
+      structure:
+        title: Where things live
+        subtitle: The containers everything else sits in, from the largest to the smallest.
+        chain_title: The five containers, in order
+        chain_intro: "Everything you write in here — a ticket, an error, a secret key — hangs off one of these. From the whole to the detail, the order is always the same."
+        chain:
+          organization:
+            title: Organisation
+            body: "The boundary of everything: people, roles, projects and secrets all live inside it. You have one, and whoever is not part of it sees nothing."
+          group:
+            title: Group
+            body: "It collects the projects that belong to the same product — nine pieces, one system — and its page says how they are all doing together. It is optional: a project can stand on its own."
+          project:
+            title: Project
+            body: "The real thing you follow: a website, an application, a service. Tickets, errors, response times and secret keys all hang off it."
+          environment:
+            title: Environment
+            body: "A copy of the project running on its own: the real one your customers use, the test one, the one you develop on. The same project sends data from several environments, and almost every list filters by environment."
+          platform:
+            title: Platform
+            body: "What that project is made of: a website, a phone app, a service with no interface, a command line program. It says which features are worth turning on."
+        cross_title: How they cross each other
+        cross_intro: "The last two words in the chain are not there for the archive: together they decide what a project can do."
+        cross_uptime: "Checking that a site responds takes two things at once: a platform that supports the check and at least one environment declared on the project. Without them the section does not appear, and it looks like the feature is missing."
+        cross_ingest: "Ingest tokens — the codes an application uses to send its data here — are tied to an environment: the one you pick decides which label errors, logs and response times arrive under."
+        cross_ticket: "A ticket also says which platforms it hit: that is how you see whether the fault is everyone's or only for people on a phone."
+        cross_analytics: "Visits only count where there is a site: on a project with no web platform that section has nothing to show."
+        where_title: Where you declare them
+        where_intro: "Platforms and environments are written once for the whole organisation; each project then picks its own from that list."
+        where_platforms: "In %{area} › %{page} you write the list of what the things you follow are made of."
+        where_platforms_cta: Go to platforms
+        where_environments: "In %{area} › %{page} you write the copies your projects run in: usually production, staging, development."
+        where_environments_cta: Go to environments
+        where_projects: "On a project's page you tick which of those platforms and which of those environments apply to it. A project only sees what it has declared."
+        people_title: People are a different matter
+        people_body: "Who gets in, who can look and who can change does not depend on these containers but on roles and permissions, which have a guide of their own."
+        people_cta: Who can do what
+        cta: Go to projects

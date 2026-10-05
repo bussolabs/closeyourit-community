@@ -1,0 +1,16 @@
+<%# locals: host: — CYRA-245. Due stati che riguardano la credenziale della macchina, entrambi
+    invisibili prima di questo ticket: qualcuno si è presentato con il codice della flotta al posto di
+    questa macchina (tentativo registrato, credenziale NON toccata), oppure una riadozione è aperta e
+    sta aspettando la sonda reinstallata. Vive in cima alla scheda perché è lì che si decide cosa fare
+    — e perché un tentativo che non si vede è un tentativo che non è successo, per chi legge. %>
+<% if host.reenrollment_open? %>
+  <%= render Ui::AlertComponent.new(variant: :info, title: t("member.servers.enrollment.reenrollment_open_title"),
+        test_id: "server-reenrollment-open") do %>
+    <%= t("member.servers.enrollment.reenrollment_open_body", time: l(host.reenrollment_expires_at, format: :short)) %>
+  <% end %>
+<% elsif host.enrollment_conflict_at.present? %>
+  <%= render Ui::AlertComponent.new(variant: :warning, title: t("member.servers.enrollment.conflict_title"),
+        test_id: "server-enrollment-conflict") do %>
+    <%= t("member.servers.enrollment.conflict_body", time: l(host.enrollment_conflict_at, format: :short)) %>
+  <% end %>
+<% end %>

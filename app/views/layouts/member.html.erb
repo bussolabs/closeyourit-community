@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<%# DESIGN.md A32 — the person's theme: dark sets the class here, system lets the script below follow the OS. %>
+<% theme = Current.account&.theme.presence || "light" %>
+<html lang="<%= I18n.locale %>" class="<%= "dark" if theme == "dark" %>" data-theme="<%= theme %>">
+  <head>
+    <%# CYRA-690 — safe_join, non interpolazione: content_for torna già escapato, e dentro "#{}" verrebbe
+    escapato due volte (l'apostrofo usciva come &amp;#39; nella scheda del browser). %>
+    <title><%= content_for(:title) ? safe_join([ content_for(:title), "CloseYourIt" ], " · ") : "CloseYourIt" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= csp_mode_meta_tag %>
+    <%= render "layouts/system_theme", theme: theme %>
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-stone-100 dark:bg-zinc-800 dark:bg-zinc-950 font-sans text-zinc-900 dark:text-zinc-100 antialiased">
+    <a href="#main-content" data-test="skip-link"
+       class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:rounded-md focus:bg-indigo-600 focus:px-3 focus:py-2 focus:text-[13px] focus:font-medium focus:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 dark:focus-visible:ring-indigo-500/50">
+      <%= t("shared.skip_to_content") %>
+    </a>
+    <%# CYRA-521 — one sidebar that never changes shape; structure and highlighting live in
+        Member::NavigationHelper, row styling in Ui::NavLinkComponent (CYRA-903). %>
+
+    <%# CYRA-28 — controller tastiera GLOBALE: gli universali (? help, g+lettera, / ricerca, n nuovo,
+        Esc) scattano su ogni pagina member. navValue = destinazioni visibili (helper unico → in sync
+        con l'help). Il modale help condiviso è reso in fondo a questo wrapper. %>
+    <%# CYRA-883 — from md up sidebar and content are panels detached 14px from the window edges. %>
+    <%# CYRA-935 — the Support button slides this whole page up; the support screen waits underneath. %>
+    <div class="relative h-dvh overflow-hidden" data-controller="ui--support" data-ui--support-identity-value="<%= Current.account.id %>:<%= Current.organization&.id %>" data-action="keydown.esc@window->ui--support#closeOnEscape">
+    <div class="relative z-10 flex h-dvh md:gap-3.5 md:p-3.5 bg-stone-100 dark:bg-zinc-950" data-ui--support-target="page" data-controller="ui--mobile-nav keyboard"
+         data-keyboard-nav-value="<%= keyboard_nav_bindings.to_json %>">
+      <% if controller_path == "member/coworkers" && Coworkers.available_to?(account: Current.account, organization: Current.organization) %>
+        <div class="md:hidden"><%= render "member/nav_sidebar", tree: member_nav_tree, compact: false %></div>
+        <%= render "member/coworkers/sidebar" %>
+      <% else %>
+        <%= render "member/nav_sidebar", tree: member_nav_tree, compact: cookies[:sidebar_compact] == "1" %>
+      <% end %>
+
+      <%# Scrim del drawer mobile: chiude al click, mai visibile su md+ %>
+      <div data-ui--mobile-nav-target="overlay" data-action="click->ui--mobile-nav#close" class="fixed inset-0 z-40 bg-black/40 md:hidden" hidden></div>
+
+      <div class="flex-1 flex flex-col min-w-0 md:gap-3.5">
+        <%= render "member/topbar" %>
+
+        <% if impersonating? %>
+          <div class="flex items-center gap-3 px-4 py-2 bg-amber-50 dark:bg-amber-500/15 border-b border-amber-200 dark:border-amber-500/40" data-test="impersonation-banner">
+            <%= render Ui::IconComponent.new(name: "venetian-mask", class: "text-amber-600 dark:text-amber-400 text-[13px]") %>
+            <p class="text-[12.5px] text-amber-800 dark:text-amber-200"><%= t("impersonations.banner", email: Current.account.email) %></p>
+            <%= button_to t("impersonations.exit"), impersonation_path, method: :delete, class: "ml-auto inline-flex items-center h-7 px-2.5 rounded-md text-[12px] font-medium text-amber-800 dark:text-amber-200 bg-white dark:bg-zinc-900 border border-amber-300 dark:border-amber-500/50 hover:bg-amber-100 dark:hover:bg-amber-500/25", data: { test: "impersonation-exit" } %>
+          </div>
+        <% end %>
+
+        <%# CYRA-825 — una pagina che si ridisegna a pezzi si prende il contenitore dei messaggi:
+            l'esito di un'azione deve arrivare col pezzo ridisegnato, e qui fuori resterebbe quello
+            di prima. Chi lo fa lo dichiara con `content_for :page_flash` e lo rende dentro il
+            proprio riquadro; per tutte le altre pagine non cambia niente. Uno solo in ogni caso:
+            due elementi con lo stesso identificativo sono un DOM rotto. %>
+        <%= render "shared/flash" unless content_for?(:page_flash) %>
+
+        <%# La bottom navbar mobile è fixed (64px + safe area) e non deve coprire il contenuto. %>
+        <div class="relative flex-1 min-h-0 overflow-hidden md:rounded-xl md:border md:border-stone-200 dark:md:border-zinc-800">
+          <%# CYRA-911 — the Administration pages share a frame with their section list on the left.
+              T1 — from md up the page wrapper sheds its padding and reaches 1px past the frame, which clips it:
+              the panels touch the frame and its border is the only line on that side. %>
+          <main id="main-content" tabindex="-1" data-panels="flush" data-controller="ui--panel-edges" class="relative h-full overflow-y-auto pb-20 md:pb-0 md:overflow-x-hidden md:[&>.p-7]:-m-px md:[&>.p-7]:max-w-none md:[&>.p-7]:p-0"><% if admin_area? %><%= render layout: "member/admin_shell" do %><%= yield %><% end %><% elsif guides_area? %><%= render layout: "member/guides_shell" do %><%= yield %><% end %><% else %><%= yield %><% end %></main>
+          <%# Ui::FloatingNoticeComponent — over the bottom of the frame, not of the window. %>
+          <%= yield :floating_notice %>
+        </div>
+
+        <%= render "member/footer" %>
+
+        <%= render "shared/remote_modals" %>
+      </div>
+
+      <%= render Ui::AssistantComponent.new if show_assistant_dock? %>
+
+      <%# Help scorciatoie condiviso (CYRA-28): dentro il wrapper `keyboard` per raggiungerne i target. %>
+      <%= render "member/keyboard_help" %>
+
+    </div>
+    <%= render "member/support_requests/screen" if current_organization %>
+    </div>
+    <%= render "shared/icon_templates" %>
+  </body>
+</html>

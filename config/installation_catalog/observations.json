@@ -1,0 +1,718 @@
+{
+  "schema_version": 1,
+  "observations": [
+    {
+      "run_id": "9820000000000001",
+      "profile": "general-v1",
+      "finished_at": "2026-10-03T23:07:31Z",
+      "claim": "implemented",
+      "tuple": {
+        "integration": "ruby-native",
+        "signals": [
+          "errors",
+          "logs",
+          "performance",
+          "usage"
+        ],
+        "auth_mode": "bearer",
+        "framework": null,
+        "runtime": {
+          "name": "ruby",
+          "version": "4.0.6"
+        },
+        "platform": {
+          "os": "Darwin",
+          "version": "27.0.0",
+          "architecture": "arm64",
+          "build_mode": "local_candidate"
+        },
+        "package": {
+          "name": "closeyourit-ruby",
+          "version": "0.10.2",
+          "origin": "local_candidate",
+          "sha256": "174721610bacaf9bb1e23c6c29d55763d6b0e3a34fdaa67f84c7d7c6729e5436",
+          "source": {
+            "commit": "b570cad6e2769eeac9219f5df0dddd1926f36ea7",
+            "dirty": false
+          }
+        },
+        "backend": {
+          "commit": "c1a955591bfc081c2d1f18f7f66e067ecd292d5d",
+          "dirty": true,
+          "identity": {
+            "commit": "c1a955591bfc081c2d1f18f7f66e067ecd292d5d",
+            "version": "local-certification"
+          },
+          "deployment": "local"
+        }
+      },
+      "capabilities": [
+        {
+          "id": "integration",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        },
+        {
+          "id": "errors",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        },
+        {
+          "id": "logs",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        },
+        {
+          "id": "performance",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        },
+        {
+          "id": "usage",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        }
+      ],
+      "limitations": [
+        "Performance samples lack complete trace correlation in the selected SDK; label identity is verified instead",
+        "Server SDK offline recovery required a new application process and new captures; unsent records are not claimed to survive restart",
+        "Package source revision describes the supplied checkout; artifact-to-source provenance was not independently attested",
+        "Backend checkout has uncommitted changes; injected HEAD identity does not identify the exact running source tree",
+        "Local candidate only; package publication and deployment are not verified"
+      ],
+      "manifest_sha256": "e46770edabc2c4c29cee4b1a541c0e57544e6005673174cdfb64e48a53c6294c",
+      "ticket": "CYRA-982"
+    },
+    {
+      "run_id": "9820000000000002",
+      "profile": "general-v1",
+      "finished_at": "2026-10-03T23:10:30Z",
+      "claim": "implemented",
+      "tuple": {
+        "integration": "python-native",
+        "signals": [
+          "errors",
+          "logs",
+          "performance",
+          "usage"
+        ],
+        "auth_mode": "bearer",
+        "framework": null,
+        "runtime": {
+          "name": "python",
+          "version": "3.14.0"
+        },
+        "platform": {
+          "os": "Darwin",
+          "version": "27.0.0",
+          "architecture": "arm64",
+          "build_mode": "local_candidate"
+        },
+        "package": {
+          "name": "closeyourit",
+          "version": "0.3.3",
+          "origin": "local_candidate",
+          "sha256": "4b9d2546c4dbfaf7a17c27fc9c61146696a96e2c549774cd23e36c4b4a8c1312",
+          "source": {
+            "commit": "2f979915fa7e31aac5e84f37b553026c81b07d10",
+            "dirty": false
+          }
+        },
+        "backend": {
+          "commit": "258f68e385601ea9ea85e73dd629dc24981d6452",
+          "dirty": true,
+          "identity": {
+            "commit": "258f68e385601ea9ea85e73dd629dc24981d6452",
+            "version": "local-certification"
+          },
+          "deployment": "local"
+        }
+      },
+      "capabilities": [
+        {
+          "id": "integration",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        },
+        {
+          "id": "errors",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        },
+        {
+          "id": "logs",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        },
+        {
+          "id": "performance",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        },
+        {
+          "id": "usage",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        }
+      ],
+      "limitations": [
+        "Server SDK offline recovery required a new application process and new captures; unsent records are not claimed to survive restart",
+        "Package source revision describes the supplied checkout; artifact-to-source provenance was not independently attested",
+        "Backend checkout has uncommitted changes; injected HEAD identity does not identify the exact running source tree",
+        "Local candidate only; package publication and deployment are not verified"
+      ],
+      "manifest_sha256": "40ab318a3208982b4f909e9a7f0d1053f0da83c6d8948e1719f5555d4dcee909",
+      "ticket": "CYRA-982"
+    },
+    {
+      "run_id": "9820000000000004",
+      "profile": "general-v1",
+      "finished_at": "2026-10-03T23:27:25Z",
+      "claim": "implemented",
+      "tuple": {
+        "integration": "node-native",
+        "signals": [
+          "errors",
+          "logs",
+          "performance",
+          "usage"
+        ],
+        "auth_mode": "bearer",
+        "framework": null,
+        "runtime": {
+          "name": "node",
+          "version": "24.21.0"
+        },
+        "platform": {
+          "os": "Darwin",
+          "version": "27.0.0",
+          "architecture": "arm64",
+          "build_mode": "local_candidate"
+        },
+        "package": {
+          "name": "@bussolabs/closeyourit-js",
+          "version": "0.11.4",
+          "origin": "local_candidate",
+          "sha256": "762fdfc74b2497bbe105fbb462f6a4ad3aa614aea68cec20935b2541273ced8e",
+          "source": {
+            "commit": "78ab214adba58839998193a9a025a1041876762c",
+            "dirty": false
+          }
+        },
+        "backend": {
+          "commit": "9ea969120949bef67c65fc33dc6c78782f689c6f",
+          "dirty": true,
+          "identity": {
+            "commit": "9ea969120949bef67c65fc33dc6c78782f689c6f",
+            "version": "local-certification"
+          },
+          "deployment": "local"
+        }
+      },
+      "capabilities": [
+        {
+          "id": "integration",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        },
+        {
+          "id": "errors",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        },
+        {
+          "id": "logs",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        },
+        {
+          "id": "performance",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        },
+        {
+          "id": "usage",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        }
+      ],
+      "limitations": [
+        "Server SDK offline recovery required a new application process and new captures; unsent records are not claimed to survive restart",
+        "Package source revision describes the supplied checkout; artifact-to-source provenance was not independently attested",
+        "Backend checkout has uncommitted changes; injected HEAD identity does not identify the exact running source tree",
+        "Local candidate only; package publication and deployment are not verified"
+      ],
+      "manifest_sha256": "b3ef920a4e5ee44dbef69015ad48b5e8b21c7e8c16957f1e20bc7a5745cc79a0",
+      "ticket": "CYRA-982"
+    },
+    {
+      "run_id": "9520000000000009",
+      "profile": "sentry-errors-v1",
+      "finished_at": "2026-10-04T00:24:56Z",
+      "claim": "implemented",
+      "tuple": {
+        "integration": "sentry-python",
+        "signals": [
+          "errors"
+        ],
+        "auth_mode": "public_dsn",
+        "framework": null,
+        "runtime": {
+          "name": "python",
+          "version": "3.14.0"
+        },
+        "platform": {
+          "os": "Darwin",
+          "version": "27.0.0",
+          "architecture": "arm64",
+          "build_mode": "local_compatibility"
+        },
+        "package": {
+          "name": "sentry-sdk",
+          "version": "2.71.0",
+          "origin": "registry",
+          "sha256": "9ed36b4c206048aa67b5ddba0a6e28d59fc55cf10d60f5f7aea2c3917184bf4a",
+          "source": {
+            "commit": "7d0255842d0cc41fcb5a80ef172ab164719fbb8b",
+            "dirty": false
+          },
+          "registry": {
+            "url": "https://files.pythonhosted.org/packages/a4/f6/b3e68b2e08e9a52e6c8a279ca2fc0d3a535f3886222375f54ef9efbd694d/sentry_sdk-2.71.0-py3-none-any.whl",
+            "sha256": "9ed36b4c206048aa67b5ddba0a6e28d59fc55cf10d60f5f7aea2c3917184bf4a"
+          }
+        },
+        "backend": {
+          "commit": "d97c99b130ef7a0f7445283f37221e5c31f14a4d",
+          "dirty": true,
+          "identity": {
+            "commit": "d97c99b130ef7a0f7445283f37221e5c31f14a4d",
+            "version": "local-certification"
+          },
+          "deployment": "local"
+        }
+      },
+      "capabilities": [
+        {
+          "id": "integration",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        },
+        {
+          "id": "errors",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        }
+      ],
+      "limitations": [
+        "Sentry error-envelope compatibility only; ignored item types do not certify logs, traces, sessions, profiles, replays or metrics",
+        "Upstream source SHA identifies the official release tag; package-to-source build provenance was not independently attested",
+        "Backend checkout is dirty; injected HEAD identity cannot identify its exact running source",
+        "This local compatibility run does not attest a CloseYourIt release or deployment"
+      ],
+      "manifest_sha256": "7d501025aac7fd863d9401be6406f7376d81e08ece0040622296434a09b912d9",
+      "ticket": "CYRA-952"
+    },
+    {
+      "run_id": "9520000000000010",
+      "profile": "sentry-errors-v1",
+      "finished_at": "2026-10-04T00:25:28Z",
+      "claim": "implemented",
+      "tuple": {
+        "integration": "sentry-node",
+        "signals": [
+          "errors"
+        ],
+        "auth_mode": "public_dsn",
+        "framework": null,
+        "runtime": {
+          "name": "node",
+          "version": "24.19.0"
+        },
+        "platform": {
+          "os": "Darwin",
+          "version": "27.0.0",
+          "architecture": "arm64",
+          "build_mode": "local_compatibility"
+        },
+        "package": {
+          "name": "@sentry/node",
+          "version": "11.4.0",
+          "origin": "registry",
+          "sha256": "d46d6b1315d028c3f3f129696d5c42e03720fba384313bb508d6409a73b85dcb",
+          "source": {
+            "commit": "7f13c61336918fd727f473faa341b9a24f23718e",
+            "dirty": false
+          },
+          "registry": {
+            "url": "https://registry.npmjs.org/@sentry/node/-/node-11.4.0.tgz",
+            "sha256": "d46d6b1315d028c3f3f129696d5c42e03720fba384313bb508d6409a73b85dcb"
+          }
+        },
+        "backend": {
+          "commit": "d97c99b130ef7a0f7445283f37221e5c31f14a4d",
+          "dirty": true,
+          "identity": {
+            "commit": "d97c99b130ef7a0f7445283f37221e5c31f14a4d",
+            "version": "local-certification"
+          },
+          "deployment": "local"
+        }
+      },
+      "capabilities": [
+        {
+          "id": "integration",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        },
+        {
+          "id": "errors",
+          "status": "pass",
+          "required": true,
+          "reason": "Evidence is limited to the executed scenarios"
+        }
+      ],
+      "limitations": [
+        "Sentry error-envelope compatibility only; ignored item types do not certify logs, traces, sessions, profiles, replays or metrics",
+        "Upstream source SHA identifies the official release tag; package-to-source build provenance was not independently attested",
+        "Backend checkout is dirty; injected HEAD identity cannot identify its exact running source",
+        "This local compatibility run does not attest a CloseYourIt release or deployment"
+      ],
+      "manifest_sha256": "69dc2987e69a9a2b0379d0a46a85181457b4fc2e9356563731dfd555416dc6f1",
+      "ticket": "CYRA-952"
+    },
+    {
+      "run_id": "9830000000000003-laravel12.69.3-otlp",
+      "profile": "general-v1",
+      "finished_at": "2026-10-04T09:42:39Z",
+      "claim": "implemented",
+      "tuple": {
+        "integration": "php-laravel-otlp",
+        "signals": [
+          "traces",
+          "logs",
+          "metrics"
+        ],
+        "auth_mode": "bearer",
+        "runtime": {
+          "name": "php",
+          "version": "8.5.11"
+        },
+        "framework": {
+          "name": "laravel",
+          "version": "12.69.3"
+        },
+        "platform": {
+          "os": "Darwin",
+          "version": "27.0.0",
+          "architecture": "arm64",
+          "build_mode": "local_candidate"
+        },
+        "package": {
+          "name": "bussolabs/closeyourit-laravel",
+          "version": "0.1.0",
+          "origin": "local_candidate",
+          "sha256": "1138ed6c7a96af864eb41dd4e23a2de5b19bb2ecac0215e5d07dba9dc51d5d48",
+          "source": {
+            "commit": "a086e52d24f6ed1322e20914cb3ddfd54f1adc5c",
+            "dirty": false
+          }
+        },
+        "backend": {
+          "commit": "e0436551b7c18f43882c7a84d8c9f15d0db6fb34",
+          "dirty": true,
+          "deployment": "local",
+          "identity": {
+            "commit": "e0436551b7c18f43882c7a84d8c9f15d0db6fb34",
+            "version": "local-certification"
+          }
+        }
+      },
+      "capabilities": [
+        {
+          "id": "integration",
+          "required": true,
+          "status": "pass",
+          "reason": "The explicitly named local application observations passed; canonical coverage remains incomplete"
+        },
+        {
+          "id": "traces",
+          "required": true,
+          "status": "pass",
+          "reason": "The explicitly named local application observations passed; canonical coverage remains incomplete"
+        },
+        {
+          "id": "logs",
+          "required": true,
+          "status": "pass",
+          "reason": "The explicitly named local application observations passed; canonical coverage remains incomplete"
+        },
+        {
+          "id": "metrics",
+          "required": true,
+          "status": "pass",
+          "reason": "The explicitly named local application observations passed; canonical coverage remains incomplete"
+        }
+      ],
+      "limitations": [
+        "Local PHP CLI development HTTP server and database queue; no FPM, Octane, Horizon or production deployment claim",
+        "Source hashes identify files observed before and after execution, not loaded-memory or reproducible-build attestation",
+        "Sentry envelopes use direct gateway delivery; only OTLP uses durable JetStream",
+        "Exact dependency locks cover the two observed Laravel tuples only",
+        "Projection 9830000000000003-laravel12.69.3-otlp of common execution 9830000000000003; not an independent run",
+        "Canonical required scenarios marked not_run were not certified; local implemented observation only",
+        "Dependency locks identify versions/references, not byte-identical whole environments",
+        "Business HTTP success is not an observed ingest HTTP status; no complete Verified chain is claimed"
+      ],
+      "manifest_sha256": "8f2e30b0101bd5afe70c762715ee70c4a09edc9cdf4e7f446265042d081c94ef",
+      "ticket": "CYRA-983"
+    },
+    {
+      "run_id": "9830000000000003-laravel12.69.3-sentry",
+      "profile": "general-v1",
+      "finished_at": "2026-10-04T09:42:39Z",
+      "claim": "implemented",
+      "tuple": {
+        "integration": "php-laravel-sentry",
+        "signals": [
+          "errors"
+        ],
+        "auth_mode": "public_dsn",
+        "runtime": {
+          "name": "php",
+          "version": "8.5.11"
+        },
+        "framework": {
+          "name": "laravel",
+          "version": "12.69.3"
+        },
+        "platform": {
+          "os": "Darwin",
+          "version": "27.0.0",
+          "architecture": "arm64",
+          "build_mode": "local_candidate"
+        },
+        "package": {
+          "name": "bussolabs/closeyourit-laravel",
+          "version": "0.1.0",
+          "origin": "local_candidate",
+          "sha256": "1138ed6c7a96af864eb41dd4e23a2de5b19bb2ecac0215e5d07dba9dc51d5d48",
+          "source": {
+            "commit": "a086e52d24f6ed1322e20914cb3ddfd54f1adc5c",
+            "dirty": false
+          }
+        },
+        "backend": {
+          "commit": "e0436551b7c18f43882c7a84d8c9f15d0db6fb34",
+          "dirty": true,
+          "deployment": "local",
+          "identity": {
+            "commit": "e0436551b7c18f43882c7a84d8c9f15d0db6fb34",
+            "version": "local-certification"
+          }
+        }
+      },
+      "capabilities": [
+        {
+          "id": "integration",
+          "required": true,
+          "status": "pass",
+          "reason": "The explicitly named local application observations passed; canonical coverage remains incomplete"
+        },
+        {
+          "id": "errors",
+          "required": true,
+          "status": "pass",
+          "reason": "The explicitly named local application observations passed; canonical coverage remains incomplete"
+        }
+      ],
+      "limitations": [
+        "Local PHP CLI development HTTP server and database queue; no FPM, Octane, Horizon or production deployment claim",
+        "Source hashes identify files observed before and after execution, not loaded-memory or reproducible-build attestation",
+        "Sentry envelopes use direct gateway delivery; only OTLP uses durable JetStream",
+        "Exact dependency locks cover the two observed Laravel tuples only",
+        "Projection 9830000000000003-laravel12.69.3-sentry of common execution 9830000000000003; not an independent run",
+        "Canonical required scenarios marked not_run were not certified; local implemented observation only",
+        "Dependency locks identify versions/references, not byte-identical whole environments",
+        "Business HTTP success is not an observed ingest HTTP status; no complete Verified chain is claimed"
+      ],
+      "manifest_sha256": "9dcd3f957d153de2e9273b8a3c6f57b93740f5dde066f421e81e13438a1f7d00",
+      "ticket": "CYRA-983"
+    },
+    {
+      "run_id": "9830000000000003-laravel13.34.0-otlp",
+      "profile": "general-v1",
+      "finished_at": "2026-10-04T09:42:39Z",
+      "claim": "implemented",
+      "tuple": {
+        "integration": "php-laravel-otlp",
+        "signals": [
+          "traces",
+          "logs",
+          "metrics"
+        ],
+        "auth_mode": "bearer",
+        "runtime": {
+          "name": "php",
+          "version": "8.5.11"
+        },
+        "framework": {
+          "name": "laravel",
+          "version": "13.34.0"
+        },
+        "platform": {
+          "os": "Darwin",
+          "version": "27.0.0",
+          "architecture": "arm64",
+          "build_mode": "local_candidate"
+        },
+        "package": {
+          "name": "bussolabs/closeyourit-laravel",
+          "version": "0.1.0",
+          "origin": "local_candidate",
+          "sha256": "1138ed6c7a96af864eb41dd4e23a2de5b19bb2ecac0215e5d07dba9dc51d5d48",
+          "source": {
+            "commit": "a086e52d24f6ed1322e20914cb3ddfd54f1adc5c",
+            "dirty": false
+          }
+        },
+        "backend": {
+          "commit": "e0436551b7c18f43882c7a84d8c9f15d0db6fb34",
+          "dirty": true,
+          "deployment": "local",
+          "identity": {
+            "commit": "e0436551b7c18f43882c7a84d8c9f15d0db6fb34",
+            "version": "local-certification"
+          }
+        }
+      },
+      "capabilities": [
+        {
+          "id": "integration",
+          "required": true,
+          "status": "pass",
+          "reason": "The explicitly named local application observations passed; canonical coverage remains incomplete"
+        },
+        {
+          "id": "traces",
+          "required": true,
+          "status": "pass",
+          "reason": "The explicitly named local application observations passed; canonical coverage remains incomplete"
+        },
+        {
+          "id": "logs",
+          "required": true,
+          "status": "pass",
+          "reason": "The explicitly named local application observations passed; canonical coverage remains incomplete"
+        },
+        {
+          "id": "metrics",
+          "required": true,
+          "status": "pass",
+          "reason": "The explicitly named local application observations passed; canonical coverage remains incomplete"
+        }
+      ],
+      "limitations": [
+        "Local PHP CLI development HTTP server and database queue; no FPM, Octane, Horizon or production deployment claim",
+        "Source hashes identify files observed before and after execution, not loaded-memory or reproducible-build attestation",
+        "Sentry envelopes use direct gateway delivery; only OTLP uses durable JetStream",
+        "Exact dependency locks cover the two observed Laravel tuples only",
+        "Projection 9830000000000003-laravel13.34.0-otlp of common execution 9830000000000003; not an independent run",
+        "Canonical required scenarios marked not_run were not certified; local implemented observation only",
+        "Dependency locks identify versions/references, not byte-identical whole environments",
+        "Business HTTP success is not an observed ingest HTTP status; no complete Verified chain is claimed"
+      ],
+      "manifest_sha256": "aa08be4bc3de41d458fa51605775d7d8357503de672f328b376112cb3170316a",
+      "ticket": "CYRA-983"
+    },
+    {
+      "run_id": "9830000000000003-laravel13.34.0-sentry",
+      "profile": "general-v1",
+      "finished_at": "2026-10-04T09:42:39Z",
+      "claim": "implemented",
+      "tuple": {
+        "integration": "php-laravel-sentry",
+        "signals": [
+          "errors"
+        ],
+        "auth_mode": "public_dsn",
+        "runtime": {
+          "name": "php",
+          "version": "8.5.11"
+        },
+        "framework": {
+          "name": "laravel",
+          "version": "13.34.0"
+        },
+        "platform": {
+          "os": "Darwin",
+          "version": "27.0.0",
+          "architecture": "arm64",
+          "build_mode": "local_candidate"
+        },
+        "package": {
+          "name": "bussolabs/closeyourit-laravel",
+          "version": "0.1.0",
+          "origin": "local_candidate",
+          "sha256": "1138ed6c7a96af864eb41dd4e23a2de5b19bb2ecac0215e5d07dba9dc51d5d48",
+          "source": {
+            "commit": "a086e52d24f6ed1322e20914cb3ddfd54f1adc5c",
+            "dirty": false
+          }
+        },
+        "backend": {
+          "commit": "e0436551b7c18f43882c7a84d8c9f15d0db6fb34",
+          "dirty": true,
+          "deployment": "local",
+          "identity": {
+            "commit": "e0436551b7c18f43882c7a84d8c9f15d0db6fb34",
+            "version": "local-certification"
+          }
+        }
+      },
+      "capabilities": [
+        {
+          "id": "integration",
+          "required": true,
+          "status": "pass",
+          "reason": "The explicitly named local application observations passed; canonical coverage remains incomplete"
+        },
+        {
+          "id": "errors",
+          "required": true,
+          "status": "pass",
+          "reason": "The explicitly named local application observations passed; canonical coverage remains incomplete"
+        }
+      ],
+      "limitations": [
+        "Local PHP CLI development HTTP server and database queue; no FPM, Octane, Horizon or production deployment claim",
+        "Source hashes identify files observed before and after execution, not loaded-memory or reproducible-build attestation",
+        "Sentry envelopes use direct gateway delivery; only OTLP uses durable JetStream",
+        "Exact dependency locks cover the two observed Laravel tuples only",
+        "Projection 9830000000000003-laravel13.34.0-sentry of common execution 9830000000000003; not an independent run",
+        "Canonical required scenarios marked not_run were not certified; local implemented observation only",
+        "Dependency locks identify versions/references, not byte-identical whole environments",
+        "Business HTTP success is not an observed ingest HTTP status; no complete Verified chain is claimed"
+      ],
+      "manifest_sha256": "2edd794a18617c1e343f15895944062c3e7281a8135a9fcb1c61846ba6c7f480",
+      "ticket": "CYRA-983"
+    }
+  ]
+}

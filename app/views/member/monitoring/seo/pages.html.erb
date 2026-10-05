@@ -1,0 +1,50 @@
+<% content_for :title, t("member.monitoring.seo.titles.pages") %>
+
+<div class="p-7 space-y-6" data-test="member-seo-pages">
+  <%= render "member/monitoring/seo/header", title: t("member.monitoring.seo.titles.pages"),
+        subtitle: t("member.monitoring.seo.pages_help_title"),
+        total_count: @total_count, critical_count: @critical_count, high_count: @high_count,
+        ignored_count: @ignored_count, pages_count: @pages_count, sites_count: @sites_count %>
+
+  <% if @pages.empty? && params[:q].blank? && params[:project_id].blank? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.seo.pages_empty"), body: t("member.monitoring.seo.pages_empty_hint"), icon: "file-text", framed: true, test_id: "seo-pages-empty") do |empty| %>
+      <% empty.with_action do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.monitoring.seo_sites.new"), href: new_member_monitoring_seo_site_path,
+              icon: "plus", variant: :primary, size: :sm, test_id: "seo-empty-new-site") %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="seo-pages-table">
+      <%= render(Ui::TableToolbarComponent.new(framed: true,
+            url: pages_member_monitoring_seo_index_path, query: params[:q],
+            search_placeholder: t("member.monitoring.seo.columns.url"),
+            search_test_id: "seo-pages-search", apply_test_id: "seo-pages-filter",
+            test_id: "seo-pages-toolbar")) do |toolbar| %>
+        <% toolbar.with_filter(key: "project_id", label: t("member.monitoring.seo.columns.project")) do %>
+          <div class="w-40"><%= render Ui::SelectComponent.new(name: "project_id", multiple: true, summary: true,
+            options: @projects.map { |p| [ p.name, p.id, p.color ] }, selected: params[:project_id],
+            placeholder: t("member.monitoring.seo.columns.project"), test_id: "filter-project") %></div>
+        <% end %>
+      <% end %>
+
+        <% if @pages.empty? %>
+          <div class="px-4 py-10 text-center" data-test="seo-pages-no-match">
+            <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.seo.pages_empty") %></p>
+          </div>
+        <% else %>
+          <%= render(Ui::TableComponent.new(stacked: true, label: t("member.monitoring.seo.titles.pages"))) do |t| %>
+            <% t.with_head do %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.url"), sort: "url") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.status"), sort: "status", classes: "w-20") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.title_tag"), classes: "w-64") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.h1"), classes: "w-24") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.words"), sort: "words", classes: "w-20") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.last_seen"), sort: "seen", classes: "w-28") %>
+            <% end %>
+            <%= render partial: "member/monitoring/seo/page", collection: @pages, as: :page %>
+          <% end %>
+          <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "seo-pages-pagination")) %>
+        <% end %>
+    </div>
+  <% end %>
+</div>

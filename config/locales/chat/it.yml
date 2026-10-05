@@ -1,0 +1,93 @@
+it:
+  chat:
+    errors:
+      same_account: "Non puoi avviare una conversazione con te stesso."
+      not_member: "Uno degli account non appartiene a questa organizzazione."
+      no_shared_project: "Puoi scrivere solo ai membri con cui condividi un progetto."
+      invalid_conversation: "Impossibile creare la conversazione."
+      invalid_context: "Questo contesto non può ospitare un canale."
+      not_accessible: "Non hai accesso a questo canale."
+      invalid_message: "Impossibile inviare il messaggio."
+      duplicate_notification: "Notifica già consegnata."
+    notifications:
+      content:
+        message: "Nuovo messaggio da %{name}"
+        mentioned: "%{name} ti ha menzionato"
+    message_notifications:
+      mailer:
+        notify:
+          subject: "Nuovo messaggio da %{name}"
+          cta: "Apri la conversazione"
+    reference:
+      unavailable: "Risorsa non più accessibile"
+      types:
+        project: "Progetto"
+        ticket: "Ticket"
+        error: "Errore"
+        metric: "Performance"
+        log: "Log"
+        uptime: "Uptime"
+  member:
+    nav:
+      # CYRA-356 — l'icona in alto e la voce laterale aprono LA STESSA pagina: un posto, un nome.
+      # CYRA-328 le aveva chiamate in due modi per distinguerle fra loro, ma chi premeva «Conversazioni»
+      # atterrava su una pagina intitolata «Chat» e perdeva la conferma di essere arrivato dove voleva.
+      chat: "Conversazioni"
+      conversations: "Conversazioni"
+      chat_unread:
+        one: "1 conversazione non letta"
+        other: "%{count} conversazioni non lette"
+    chat:
+      title: "Conversazioni"
+      subtitle: "Parli in diretta con i colleghi. Quello che deve restare accanto al lavoro va nei commenti del ticket."
+      # CYRA-447 — il vuoto è il solo momento in cui questo spazio può dire a cosa serve: prima
+      # diceva «Ancora nessuna conversazione» e, nel pannello accanto, «Seleziona una conversazione
+      # per iniziare» — chiedeva di scegliere ciò che aveva appena dichiarato inesistente, senza mai
+      # spiegare in cosa differisca dai commenti su un ticket, che è l'unica domanda che ci si pone.
+      empty: "Ancora nessuna conversazione"
+      empty_body: "Qui si parla in diretta con i colleghi: una domanda veloce, una decisione da prendere adesso."
+      empty_example: "Per esempio: «Chi guarda il calo di stanotte?» va in conversazione; «Succede solo con
+        Safari 17» va come commento sul ticket."
+      new_conversation:
+        button: "Nuova conversazione"
+        short: "Nuova"
+        title: "Nuova conversazione"
+        cancel: "Chiudi"
+        direct_placeholder: "Scegli un membro…"
+        project_placeholder: "Scegli un progetto…"
+        team_placeholder: "Scegli un team…"
+        start: "Avvia"
+        open: "Apri"
+      select_conversation: "Seleziona una conversazione per iniziare."
+      last_activity: "%{time} fa"
+      empty_thread: "Ancora nessun messaggio. Rompi il ghiaccio."
+      compose_placeholder: "Scrivi un messaggio…"
+      send: "Invia"
+      typing: "%{name} sta scrivendo…"
+      read_by: "Letto da %{names}"
+      muted: "Conversazione silenziata."
+      unmuted: "Conversazione riattivata."
+      mute: "Silenzia"
+      unmute: "Riattiva"
+      search_placeholder: "Cerca conversazioni…"
+      search_empty: "Nessuna conversazione trovata."
+      people:
+        one: "1 persona"
+        other: "%{count} persone"
+      days:
+        today: "Oggi"
+        yesterday: "Ieri"
+      delete_confirm: "Eliminare questo messaggio?"
+      delete: "Elimina messaggio"
+      compose_hint: "Invio per inviare · Maiusc+Invio per andare a capo"
+      messages:
+        deleted: "Messaggio eliminato."
+        deleted_placeholder: "Messaggio eliminato"
+      kinds:
+        direct: "Messaggio diretto"
+        project: "Canale progetto"
+        team: "Canale team"
+    alerting:
+      preferences:
+        chat: "Conversazioni"
+        chat_hint: "Nuovi messaggi e menzioni nelle tue conversazioni"

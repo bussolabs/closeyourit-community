@@ -1,0 +1,112 @@
+<% content_for :title, t("member.monitoring.title") %>
+
+<div class="p-7 space-y-6" data-test="member-error-groups">
+  <%# Live: ogni nuova occorrenza (Errors::Ingest::Record) manda un page-refresh Turbo throttlato sullo
+      stream errors dell'org; il browser ri-fetcha QUESTO URL (filtri/paginazione per-viewer) e morpha il
+      DOM, così righe e pill si aggiornano senza aggregazioni org-wide nel path caldo (CYRA-41). La triage
+      (basso volume) resta un replace chirurgico. Stream org-prefissato → niente leak cross-tenant. %>
+  <%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+  <%# CYRA-822 — il segnale di aggiornamento arriva dal solo progetto osservato quando il filtro ne
+      seleziona alcuni (@live_projects), altrimenti da tutta l'organizzazione: così una raffica in un
+      progetto che non si sta guardando non fa più ri-chiedere questa pagina. Il replace della riga
+      (HTML) resta su uno stream per progetto, così non viaggia sul wire a chi il progetto non lo
+      vede (CYRA-271), e segue lo stesso confine: le righe degli altri progetti non sono in pagina. %>
+  <% if @live_projects.any? %>
+    <% @live_projects.each do |stream_project| %>
+      <%= turbo_stream_from Realtime::Streams.project_errors_list(stream_project) %>
+    <% end %>
+  <% else %>
+    <%= turbo_stream_from Realtime::Streams.errors(current_organization) %>
+  <% end %>
+  <% (@live_projects.presence || @projects).each do |stream_project| %>
+    <%= turbo_stream_from Realtime::Streams.project_errors(stream_project) %>
+  <% end %>
+  <%# CYRA-883 — with a single project in view (the way in from the project page) the header says
+      which one, and leads back to it. %>
+  <% breadcrumb = if @focused_project
+       [ { label: t("member.projects.title"), href: member_projects_path },
+         { label: @focused_project.name, href: member_project_path(@focused_project) },
+         { label: t("member.monitoring.title") } ]
+     else
+       [ { label: t("member.monitoring.title") } ]
+     end %>
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.monitoring.title"),
+        subtitle: t("member.monitoring.help_title"),
+        breadcrumb: breadcrumb,
+        counts_test_id: "errors-stats") do |h| %>
+    <% h.with_counts do %>
+      <%= render "member/monitoring/error_groups/stats", unresolved: @unresolved_count, resolved: @resolved_count,
+            ignored: @ignored_count, total: @counts_total, active_status: @active_status %>
+    <% end %>
+    <% if @focused_project %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.monitoring.list.back_to_project", name: @focused_project.name),
+              href: member_project_path(@focused_project), variant: :secondary_muted, size: :sm, icon: "folder-open",
+              test_id: "errors-project-back") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-400: l'ambiente è un filtro come gli altri (ed è quello che si tocca per primo, CYRA-375):
+      senza, chi cercava in un ambiente vuoto leggeva «nessun errore ancora rilevato» — che è un'altra
+      cosa, e non offriva nessuna via d'uscita. CYRA-340: e il periodo restringe SEMPRE (predefinito:
+      ultime 24 ore), quindi «non è ancora arrivato niente» non si deduce più da un elenco vuoto —
+      lo dice @has_records, che guarda oltre il periodo. %>
+  <% filtering = params[:q].present? || params[:status].present? || params[:level].present? ||
+                 params[:handled].present? || params[:project_id].present? || params[:environment].present? %>
+  <% if @error_groups.empty? && !filtering && !@has_records %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.empty"), body: t("member.monitoring.empty_body"), icon: "bug", framed: true, test_id: "errors-empty") %>
+  <% else %>
+    <%# CYRA-924 — one panel: the bar is its header row (framed), the results sit below it. %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="error-groups-table">
+      <%# CYRA-883 — the range is a filter chip like the others, shown once it differs from the
+          default. CYRA-924: no sort menu (the column headers sort) and no count in the bar (the
+          counts line above says it). %>
+      <% range = current_time_range %>
+      <% range_set = range.custom? || range.key != Monitoring::TimeRange::DEFAULT %>
+      <%= render(Ui::TableToolbarComponent.new(framed: true,
+            url: member_monitoring_error_groups_path, query: params[:q],
+            search_placeholder: t("member.monitoring.search_placeholder"),
+            search_test_id: "errors-search", apply_test_id: "errors-filter",
+            test_id: "errors-toolbar")) do |toolbar| %>
+        <% toolbar.with_filter(key: "range", label: t("shared.time_range.label"), active: range_set) do %>
+          <%= render "member/monitoring/range_filter", range:, range_set:, test_prefix: "errors" %>
+        <% end %>
+        <% toolbar.with_filter(key: "status", label: t("member.monitoring.filter_status")) do %>
+          <div class="w-36"><%= render Ui::SelectComponent.new(name: "status", multiple: true, summary: true,
+            options: Errors::Group.statuses.keys.map { |s| [ t("member.monitoring.status.#{s}"), s ] },
+            selected: params[:status], placeholder: t("member.monitoring.filter_status"), test_id: "filter-status") %></div>
+        <% end %>
+        <% toolbar.with_filter(key: "level", label: t("member.monitoring.filter_level")) do %>
+          <div class="w-32"><%= render Ui::SelectComponent.new(name: "level", multiple: true, summary: true,
+            options: Errors::Group.levels.keys.map { |l| [ l.capitalize, l ] },
+            selected: params[:level], placeholder: t("member.monitoring.filter_level"), test_id: "filter-level") %></div>
+        <% end %>
+        <% toolbar.with_filter(key: "handled", label: t("member.monitoring.filter_handled")) do %>
+          <div class="w-36"><%= render Ui::SelectComponent.new(name: "handled", multiple: true, summary: true,
+            options: [ [ t("member.monitoring.handled_option.unhandled"), "unhandled" ] ],
+            selected: params[:handled], placeholder: t("member.monitoring.filter_handled"), test_id: "filter-handled") %></div>
+        <% end %>
+        <%# CYRA-375: l'ambiente sta in cima ai filtri — è il taglio che si fa per primo in emergenza. %>
+        <% toolbar.with_filter(key: "environment", label: t("member.monitoring.filter_environment")) do %>
+          <div class="w-36"><%= render Ui::SelectComponent.new(name: "environment", multiple: true, summary: true,
+            options: @environments.map { |e| [ e, e ] }, selected: (params[:environment] || [ "production" ]),
+            placeholder: t("member.monitoring.filter_environment"), test_id: "filter-environment") %></div>
+        <% end %>
+        <% toolbar.with_filter(key: "project_id", label: t("member.monitoring.filter_project")) do %>
+          <div class="w-40"><%= render Ui::SelectComponent.new(name: "project_id", multiple: true, summary: true,
+            options: @projects.map { |p| [ p.name, p.id, p.color ] }, selected: params[:project_id],
+            placeholder: t("member.monitoring.filter_project"), test_id: "filter-project") %></div>
+        <% end %>
+        <% toolbar.with_views do %>
+          <%= render Ui::SavedViewsComponent.new(resource_type: "error_groups", views: @saved_views,
+                index_helper: :member_monitoring_error_groups_path, current_filters: params) %>
+        <% end %>
+      <% end %>
+      <%# CYRA-821 — i risultati vivono in un frame proprio: sfogliare e riordinare aggiornano
+          soltanto lui, la barra qui sopra e le chip in cima restano quelle. %>
+      <%= render "member/monitoring/error_groups/results" %>
+    </div>
+  <% end %>
+</div>

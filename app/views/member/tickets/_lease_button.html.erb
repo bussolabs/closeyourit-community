@@ -1,0 +1,14 @@
+<%# locals: () %>
+<%# Take over / release (CYRA-295), next to the assignee since CYRA-883: "take" when free, "release"
+    only for whoever holds it. Someone else's lease has no button — the header badge says who. %>
+<% if can?("tickets.assign", scope: @ticket.project) %>
+  <% if @active_lease.nil? %>
+    <%= render Ui::ButtonComponent.new(label: t("member.tickets.lease.take"),
+          href: member_ticket_lease_path(@ticket), method: :post, variant: :secondary_muted, size: :sm,
+          icon: "user-round-search", test_id: "ticket-lease-take") %>
+  <% elsif @active_lease.account_id == Current.account.id %>
+    <%= render Ui::ButtonComponent.new(label: t("member.tickets.lease.release"),
+          href: member_ticket_lease_path(@ticket), method: :delete, variant: :tinted_outline, size: :sm,
+          icon: "user-check", test_id: "ticket-lease-release") %>
+  <% end %>
+<% end %>

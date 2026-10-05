@@ -1,0 +1,42 @@
+<% content_for :title, t("member.confirmation_required.title") %>
+
+<%# CYRA-728 — la pagina che l'area utenti mostra quando un'azione pericolosa arriva senza conferma.
+    Non è un vicolo cieco: rifà la stessa richiesta con la conferma dentro, così chi voleva davvero
+    procedere lo fa da qui e chi ci è finito per sbaglio torna indietro senza aver rotto niente.
+    Guscio semplice come la pagina dell'organizzazione sospesa: qui non c'è una pagina da riprendere,
+    c'è una domanda a cui rispondere. %>
+<div class="p-7" data-test="dangerous-action-confirmation">
+  <div class="mx-auto max-w-lg rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 py-10 text-center">
+    <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400">
+      <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[18px]") %>
+    </span>
+    <h1 class="mt-3 font-display text-[18px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.confirmation_required.title") %></h1>
+    <p class="mt-1.5 text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-sm mx-auto">
+      <%= t("member.confirmation_required.body") %>
+    </p>
+    <p class="mt-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100" data-test="dangerous-action-label">
+      <%= authorization_permission_label(@dangerous_action_key) %>
+      <% if @dangerous_action_params&.dig("name").present? %>
+        · <%= @dangerous_action_params["name"] %>
+      <% end %>
+    </p>
+
+    <div class="mt-5 flex items-center justify-center gap-2">
+      <% if @dangerous_action_params %>
+        <%= button_to request.path,
+              method: request.request_method.downcase.to_sym,
+              class: "inline-flex items-center h-7 px-2.5 rounded-md text-[12px] font-medium text-white bg-red-600 hover:bg-red-700",
+              data: { test: "dangerous-action-confirm" } do %>
+          <% URI.decode_www_form(@dangerous_action_params.to_query).each do |name, value| %>
+            <%= hidden_field_tag name, value, id: nil %>
+          <% end %>
+          <%= hidden_field_tag Authorization::DangerousAction::CONFIRM_PARAM, "1", id: nil %>
+          <%= t("member.confirmation_required.confirm") %>
+        <% end %>
+      <% end %>
+      <%= link_to t("member.confirmation_required.back"), root_path,
+            class: "inline-flex items-center h-7 px-2.5 rounded-md text-[12px] font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800",
+            data: { test: "dangerous-action-cancel" } %>
+    </div>
+  </div>
+</div>

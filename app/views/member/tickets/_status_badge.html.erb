@@ -1,0 +1,5 @@
+<%# Badge stato del ticket per la ticket-show. Root con id="<dom_id>_status": target del broadcast %>
+<%# replace su Realtime::Streams.ticket(ticket) da Ticketing::ChangeStatus. La ticket-show (altro %>
+<%# agente) deve montare un elemento con lo STESSO id — idealmente rendendo questo stesso partial — %>
+<%# perché Turbo possa rimpiazzarlo quando lo stato cambia in tempo reale. %>
+<span id="<%= "#{dom_id(ticket)}_status" %>" data-test="ticket-status-badge"><%= render Ui::BadgeComponent.new(label: ticket.status.display_label, color: ticket.status.color, dot: true) %></span>

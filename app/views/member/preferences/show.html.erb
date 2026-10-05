@@ -1,0 +1,50 @@
+<% content_for :title, t("member.preferences.title") %>
+
+<div class="p-7 space-y-6">
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("member.preferences.title"),
+          breadcrumb: [ { label: t("member.preferences.title") } ]) do |h| %>
+      <%= render "member/preferences/tabs", header: h, active_tab: "display" %>
+    <% end %>
+
+    <%# One list, one Save. DESIGN.md A32 — a full reload, not a Turbo visit: Turbo swaps <body> and keeps the old theme class on <html>. %>
+    <%= form_with url: member_preferences_path, method: :patch, class: "rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900", data: { test: "preferences-list", turbo: false } do %>
+      <%= hidden_field_tag :preferences_form, "1", id: nil %>
+      <ul class="divide-y divide-stone-200 dark:divide-zinc-800">
+        <%= render "member/preferences/row", key: "platforms", title: t("member.preferences.platforms_title"), lead: t("member.preferences.platforms_lead") do %>
+          <% if @platforms.any? %>
+            <input type="hidden" name="platform_codes[]" value="">
+            <%= render Ui::SelectComponent.new(name: "platform_codes", multiple: true,
+                  options: @platforms.map { |p| [ p.label, p.code, p.color ] },
+                  selected: Array(Current.account.platform_codes),
+                  placeholder: t("member.preferences.platforms_label"),
+                  hint: t("member.preferences.platforms_hint"),
+                  test_id: "preferences-platforms-select") %>
+          <% else %>
+            <%= render Ui::EmptyNoteComponent.new(text: t("member.preferences.platforms_empty")) %>
+          <% end %>
+        <% end %>
+
+        <%= render "member/preferences/row", key: "language", title: t("member.preferences.language_title"), lead: t("member.preferences.language_lead") do %>
+          <%= render "member/preferences/choices", name: "locale", values: App::Constants::LOCALES,
+                current: Current.account.locale.presence || "en", test_prefix: "preferences-locale",
+                label: ->(loc) { t("member.preferences.language_options.#{loc}") } %>
+        <% end %>
+
+        <%= render "member/preferences/row", key: "theme", title: t("member.preferences.theme_title"), lead: t("member.preferences.theme_lead") do %>
+          <%= render "member/preferences/choices", name: "theme", values: Accounts::Constants::THEMES,
+                current: Current.account.theme.presence || "light", test_prefix: "preferences-theme",
+                label: ->(theme) { t("member.preferences.theme_options.#{theme}") } %>
+        <% end %>
+
+        <%= render "member/preferences/row", key: "display", title: t("member.preferences.projects_view"), lead: t("member.preferences.display_lead") do %>
+          <%= render "member/preferences/choices", name: "projects_view", values: Projects::Constants::VIEWS,
+                current: Current.account.projects_view.presence || "cards", test_prefix: "preferences-view",
+                label: ->(view) { t("member.projects.view_#{view}") } %>
+        <% end %>
+      </ul>
+      <div class="flex items-center justify-end px-5 py-3 border-t border-stone-200 dark:border-zinc-800">
+        <%= render Ui::ButtonComponent.new(label: t("member.preferences.save"), type: "submit", icon: "check", test_id: "preferences-submit") %>
+      </div>
+    <% end %>
+</div>

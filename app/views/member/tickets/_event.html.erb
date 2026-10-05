@@ -1,0 +1,31 @@
+<%# locals: (event:, ticket:, visible_ticket_ids: nil, compact: false) %>
+<%# Riga di sistema della timeline (distinta dalle bolle-commento): icona + frase + timestamp. %>
+<%# CYRA-789 — `visible_ticket_ids` sono i ticket che CHI LEGGE vede: la riga `linked`
+    nomina un ticket di un altro progetto e il codice esce solo a chi ha accesso. Assente
+    nell'append realtime (lo stream è uno per ticket, condiviso da tutti i lettori) → la
+    frase tace il codice, e chi ha i permessi lo rilegge al ricaricamento della pagina. %>
+<% presenter = Ticketing::ActivityPresenter.new(event, visible_ticket_ids: visible_ticket_ids) %>
+<%# CYRA-883 — `compact` (the discussion): a small grey line under the comments, no icon; the
+    comments-only filter of the discussion hides it. The history page keeps the full row. %>
+<div id="<%= dom_id(event) %>" class="<%= compact ? "pl-[60px] pr-4 py-1.5 group-has-[#timeline-only-comments:checked]/timeline:hidden" : "px-4 py-3" %> flex items-center gap-3" data-test="member-ticket-event-<%= event.id %>">
+  <% unless compact %>
+    <span class="shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500">
+      <%= render Ui::IconComponent.new(name: presenter.icon, class: "text-[10px]") %>
+    </span>
+  <% end %>
+  <div class="min-w-0 flex-1 flex items-center flex-wrap gap-x-2 gap-y-1">
+    <span class="<%= compact ? "text-[11.5px] text-gray-500 dark:text-zinc-400" : "text-[12px] text-zinc-700 dark:text-zinc-300" %>"><%= presenter.sentence %></span>
+    <%# CYRA-385 — attore automatico: badge robot indigo col nome reale (agente/host), distinto dall'umano. %>
+    <% if presenter.automated? %>
+      <%= render Ui::BadgeComponent.new(label: presenter.actor_name, color: :indigo, icon: "bot", size: :sm, test_id: "member-ticket-event-automation-#{event.id}") %>
+    <% end %>
+    <% if event.impersonated? %>
+      <%= render Ui::BadgeComponent.new(label: t("member.tickets.activity.impersonated"), color: :violet, size: :sm) %>
+    <% end %>
+    <% if compact %>
+      <span class="font-mono text-[10.5px] text-gray-400 dark:text-zinc-500" title="<%= event.created_at.strftime("%d/%m · %H:%M") %>"><%= card_time(event.created_at) %></span>
+    <% else %>
+      <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= event.created_at.strftime("%d/%m · %H:%M") %></span>
+    <% end %>
+  </div>
+</div>

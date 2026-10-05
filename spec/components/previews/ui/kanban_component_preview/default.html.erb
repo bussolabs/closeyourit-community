@@ -1,0 +1,30 @@
+<div class="flex h-[460px] flex-col">
+  <%= render Ui::KanbanComponent.new(controller: "ticket-board", test_id: "board-panel") do |board| %>
+    <% board.with_toolbar do %>
+      <%= render Ui::TableToolbarComponent.new(framed: true, url: "#", query: "webhook", search_placeholder: "Cerca ticket…") %>
+    <% end %>
+    <% board.with_column(key: "open", label: "Aperto", color: "amber", total: 5, found: 1, test_prefix: "board",
+          list_id: "board_column_1", count_id: "board_count_1", has_cards: true) do |column| %>
+      <% column.with_footer { render Ui::ButtonComponent.new(label: "Mostra altre", href: "#", variant: :secondary_muted, size: :sm, icon: "chevron-down", class: "mt-2.5 w-full justify-center") } %>
+      <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3" role="listitem">
+        <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400">API-2</p>
+        <p class="mt-1.5 text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= board_card_title("Mancano gli header del webhook sul 429", "webhook") %></p>
+      </div>
+    <% end %>
+    <% board.with_column(key: "in_progress", label: "In corso", color: "indigo", total: 1, found: 1, test_prefix: "board",
+          list_id: "board_column_2", count_id: "board_count_2", has_cards: true) do %>
+      <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3" role="listitem">
+        <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400">API-1</p>
+        <p class="mt-1.5 text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= board_card_title("I retry del webhook duplicano gli ordini", "webhook") %></p>
+      </div>
+    <% end %>
+    <% board.with_column(key: "in_review", label: "In revisione", color: "violet", total: 2, found: 0, test_prefix: "board",
+          list_id: "board_column_3", count_id: "board_count_3", has_cards: false, auto_collapsed: true) do |column| %>
+      <% column.with_empty { render Ui::NoResultsComponent.new(query: "webhook", reset_href: "#", compact: true) } %>
+    <% end %>
+    <% board.with_column(key: "closed", label: "Chiuso", color: "gray", total: 1, found: 0, test_prefix: "board",
+          list_id: "board_column_4", count_id: "board_count_4", has_cards: false, collapsed: true) do |column| %>
+      <% column.with_empty { render Ui::NoResultsComponent.new(query: "webhook", reset_href: "#", compact: true) } %>
+    <% end %>
+  <% end %>
+</div>

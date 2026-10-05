@@ -1,0 +1,66 @@
+<% content_for :title, t("member.guides.vulnerabilities.title") %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-vulnerabilities">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "shield-half", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.vulnerabilities.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.vulnerabilities.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.monitoring.vulnerabilities.title"), href: member_monitoring_vulnerabilities_path, variant: :primary, size: :sm, icon: "shield-half", test_id: "guide-vulnerabilities-open") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.vulnerabilities.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.vulnerabilities.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.vulnerabilities.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "package", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.vulnerabilities.what_libraries") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "hourglass", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.vulnerabilities.what_runtimes") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "bell", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.vulnerabilities.what_alerts") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.vulnerabilities.setup_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ol class="space-y-4">
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-stone-100 dark:bg-zinc-800 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">1</span>
+          <div>
+            <p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.guides.vulnerabilities.step_connect_title") %></p>
+            <p class="mt-0.5 text-[12.5px] text-gray-600 dark:text-zinc-400"><%= t("member.guides.vulnerabilities.step_connect_body") %></p>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-stone-100 dark:bg-zinc-800 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">2</span>
+          <div>
+            <p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.guides.vulnerabilities.step_wait_title") %></p>
+            <p class="mt-0.5 text-[12.5px] text-gray-600 dark:text-zinc-400"><%= t("member.guides.vulnerabilities.step_wait_body") %></p>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-stone-100 dark:bg-zinc-800 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">3</span>
+          <div>
+            <p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.guides.vulnerabilities.step_triage_title") %></p>
+            <p class="mt-0.5 text-[12.5px] text-gray-600 dark:text-zinc-400"><%= t("member.guides.vulnerabilities.step_triage_body") %></p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.vulnerabilities.severity_title") %></h2></div>
+    <div class="px-4 py-4 space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+      <p><%= t("member.guides.vulnerabilities.severity_intro") %></p>
+      <p><%= t("member.guides.vulnerabilities.severity_ticket") %></p>
+      <p><%= t("member.guides.vulnerabilities.severity_ignore") %></p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,127 @@
+<% content_for :title, "#{@group.name} · #{t("member.product.matrices.title")}" %>
+<% can_manage = can?("product_features.manage") %>
+
+<div class="p-7 space-y-6" data-test="member-product-matrix">
+  <%= render Ui::PageHeaderComponent.new(
+        title: @group.name,
+        subtitle: t("member.product.matrices.help"),
+        breadcrumb: [ { label: t("member.product.matrices.title"), href: member_product_matrices_path }, { label: @group.name } ],
+        test_id: "product-matrix-header",
+        counts_test_id: "product-matrix-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.product.matrices.counts.categories"), value: @categories.size, test_id: "product-matrix-count-categories") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.product.matrices.counts.features"), value: @features.size, test_id: "product-matrix-count-features") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.product.matrices.counts.platforms"), value: @platforms.size, test_id: "product-matrix-count-platforms") %>
+      <%# Celle che dicono "disponibile" senza indicare da quale versione: dato incompleto, mostrato
+          invece che impedito (su un progetto senza release registrate non ci sarebbe altra via). %>
+      <% if @missing_release_count.positive? %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.product.matrices.counts.missing_release"), value: @missing_release_count,
+              value_color: :amber, test_id: "product-matrix-count-missing-release",
+              title: t("member.product.matrices.missing_release_hint")) %>
+      <% end %>
+    <% end %>
+    <% h.with_actions do %>
+      <% if can_manage %>
+        <%= render Ui::ButtonComponent.new(label: t("member.product.categories.new"), href: new_member_product_category_path(matrix_id: @group.id), variant: :primary, size: :sm, icon: "plus", test_id: "product-category-new") %>
+        <% if @categories.any? %>
+          <%= render Ui::ButtonComponent.new(label: t("member.product.features.new"), href: new_member_product_feature_path(matrix_id: @group.id), variant: :secondary_muted, size: :sm, icon: "plus", test_id: "product-feature-new") %>
+        <% end %>
+      <% end %>
+      <%# La pagina del macro-progetto ha il suo permesso: senza, il bottone porterebbe a un
+          rimbalzo per chi è abilitato alla sola matrice. %>
+      <% if can_view_groups? %>
+        <%= render Ui::ButtonComponent.new(label: t("member.product.matrices.open_group"), href: member_group_path(@group), variant: :secondary_muted, size: :sm, icon: "layers", test_id: "product-matrix-open-group") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if @platforms.empty? %>
+    <%# Nessuna colonna: i progetti del prodotto non dichiarano piattaforme e nessuna cella ne usa una. %>
+    <div class="rounded-lg border border-amber-200 dark:border-amber-500/40 bg-amber-50/50 dark:bg-amber-500/10 px-4 py-3 flex items-center gap-2 flex-wrap" data-test="product-matrix-no-platforms">
+      <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-amber-600 dark:text-amber-400 text-[12px]") %>
+      <p class="text-[12.5px] text-amber-800 dark:text-amber-200"><%= t("member.product.matrices.no_platforms") %></p>
+    </div>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="product-matrix-table">
+    <%= render(Ui::TableComponent.new(stacked: true, grouped: true, sticky: :first, label: @group.name, body_test_id: "product-matrix-body")) do |t| %>
+      <% t.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.product.matrices.columns.feature")) %>
+        <% @platforms.each do |platform| %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: safe_join([
+                tag.span(class: "w-1.5 h-1.5 rounded-full #{Ui::Colors.swatch(platform.color)}"), platform.label,
+                (tag.span("(#{t("member.product.matrices.inactive_platform")})", class: "text-gray-400 dark:text-zinc-500 normal-case tracking-normal") unless platform.active?)
+              ].compact, " ")) %>
+        <% end %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: tag.span(t("member.product.features.edit"), class: "sr-only"), classes: "w-10", visible: can_manage) %>
+      <% end %>
+
+      <% if @categories.empty? %>
+        <tr data-test="product-matrix-empty">
+          <td colspan="<%= @platforms.size + (can_manage ? 2 : 1) %>">
+            <%= render Ui::EmptyStateComponent.new(title: t("member.product.matrices.empty_matrix_title"), body: t("member.product.matrices.empty_matrix_body"),
+                  icon: "layout-grid") %>
+          </td>
+        </tr>
+      <% end %>
+
+      <% @categories.each do |category| %>
+        <%# Riga-intestazione della categoria: raggruppa le funzionalità e porta le sue azioni. %>
+        <%= render(Ui::TableComponent::GroupRowComponent.new(key: "category-#{category.id}", colspan: t.column_count, label: category.name,
+              count: count_label("member.product.categories.features_count", category.features.size), test_id: "product-category-row-#{category.id}")) do |row| %>
+          <% if can_manage %>
+            <% row.with_actions do %>
+              <%= render Ui::ConfirmDialogComponent.new(title: t("member.product.categories.delete_dialog.title", name: category.name),
+                    url: member_product_category_path(category), confirm_label: t("member.product.categories.delete"),
+                    test_id: "product-category-delete-dialog-#{category.id}") do |dialog| %>
+                <% dialog.with_body { t("member.product.categories.delete_dialog.body") } %>
+                <%= render(Ui::RowMenuComponent.new(test_id: "product-category-menu-#{category.id}", aria_label: category.name)) do %>
+                  <%= link_to edit_member_product_category_path(category), class: Ui::RowMenuComponent.item_class, data: { test: "product-category-edit-#{category.id}" } do %><%= render Ui::IconComponent.new(name: "pen", class: "w-[1.25em] text-gray-400 dark:text-zinc-500 text-[12px]") %><%= t("member.product.categories.edit") %><% end %>
+                  <%= link_to new_member_product_feature_path(category_id: category.id), class: Ui::RowMenuComponent.item_class, data: { test: "product-category-add-feature-#{category.id}" } do %><%= render Ui::IconComponent.new(name: "plus", class: "w-[1.25em] text-gray-400 dark:text-zinc-500 text-[12px]") %><%= t("member.product.features.new") %><% end %>
+                  <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+                  <%= dialog.menu_trigger(label: t("member.product.categories.delete"), icon: "trash", test_id: "product-category-delete-#{category.id}") %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+
+        <% category.features.each do |feature| %>
+          <%= render Ui::TableComponent::RowComponent.new(group: "category-#{category.id}", test_id: "product-feature-row-#{feature.id}") do %>
+            <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+              <span class="inline-flex items-center gap-2">
+                <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= feature.name %></span>
+                <% if feature.knowledge_page %>
+                  <%= link_to member_knowledge_page_path(feature.knowledge_page), class: "text-gray-400 dark:text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400", title: t("member.product.matrices.documented"), data: { test: "product-feature-page-#{feature.id}" } do %>
+                    <%= render Ui::IconComponent.new(name: "book-open", class: "text-[11px]") %>
+                  <% end %>
+                <% end %>
+              </span>
+            <% end %>
+            <% @platforms.each do |platform| %>
+              <%= render Ui::TableComponent::CellComponent.new(label: platform.label, class: "align-top") do %>
+                <%= render "member/product/matrices/cell", feature: feature, platform: platform,
+                           cell: @cells[[ feature.id, platform.id ]], can_manage: can_manage %>
+              <% end %>
+            <% end %>
+            <%= render Ui::TableComponent::CellComponent.new(actions: true, visible: can_manage) do %>
+              <%= render Ui::ConfirmDialogComponent.new(title: t("member.product.features.delete_dialog.title", name: feature.name),
+                    url: member_product_feature_path(feature), confirm_label: t("member.product.features.delete"),
+                    test_id: "product-feature-delete-dialog-#{feature.id}") do |dialog| %>
+                <% dialog.with_body { t("member.product.features.delete_dialog.body") } %>
+                <%= render(Ui::RowMenuComponent.new(test_id: "product-feature-menu-#{feature.id}", aria_label: feature.name)) do %>
+                  <%= link_to edit_member_product_feature_path(feature), class: Ui::RowMenuComponent.item_class, data: { test: "product-feature-edit-#{feature.id}" } do %><%= render Ui::IconComponent.new(name: "pen", class: "w-[1.25em] text-gray-400 dark:text-zinc-500 text-[12px]") %><%= t("member.product.features.edit") %><% end %>
+                  <%# Segna la funzionalità su una piattaforma che non è ancora una colonna: è così
+                      che si traccia iOS prima che esista il progetto iOS. %>
+                  <%= link_to new_member_product_feature_cell_path(feature), class: Ui::RowMenuComponent.item_class, data: { test: "product-feature-add-cell-#{feature.id}" } do %><%= render Ui::IconComponent.new(name: "columns-3", class: "w-[1.25em] text-gray-400 dark:text-zinc-500 text-[12px]") %><%= t("member.product.cells.platform") %><% end %>
+                  <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+                  <%= dialog.menu_trigger(label: t("member.product.features.delete"), icon: "trash", test_id: "product-feature-delete-#{feature.id}") %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

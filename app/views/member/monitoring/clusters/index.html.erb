@@ -1,0 +1,56 @@
+<% content_for :title, t("member.clusters.title") %>
+<% can_manage = can?("servers.manage") %>
+
+<div class="p-7 space-y-6" data-test="member-clusters">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.clusters.title"),
+        subtitle: t("member.clusters.subtitle"),
+        breadcrumb: [ { label: t("member.clusters.title") } ],
+        counts_test_id: "clusters-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.clusters.stat_total"), value: @total_count, test_id: "clusters-stat-total") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.clusters.stat_down"), value: @down_count, value_color: (@down_count.positive? ? :rose : :neutral), test_id: "clusters-stat-down") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.clusters.stat_attention"), value: @attention_count, value_color: (@attention_count.positive? ? :amber : :neutral), test_id: "clusters-stat-attention") %>
+    <% end %>
+    <% if can_manage %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.clusters.new"), href: new_member_monitoring_cluster_path,
+              variant: :primary, size: :sm, icon: "plus", test_id: "clusters-new") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if @clusters.empty? && params[:q].blank? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.clusters.empty"), body: t("member.clusters.empty_body"),
+          example: t("member.clusters.empty_example"), icon: "container", framed: true, test_id: "clusters-empty") do |empty| %>
+      <% if can_manage %>
+        <% empty.with_action do %>
+          <%= render Ui::ButtonComponent.new(label: t("member.clusters.new"), href: new_member_monitoring_cluster_path,
+                variant: :primary, size: :sm, icon: "plus", test_id: "clusters-empty-new") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="clusters-table">
+      <%= render(Ui::TableToolbarComponent.new(framed: true, url: member_monitoring_clusters_path, query: params[:q],
+            search_placeholder: t("member.clusters.search"), search_test_id: "clusters-search", test_id: "clusters-toolbar")) %>
+      <% if @clusters.empty? %>
+        <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_monitoring_clusters_path,
+              icon: "container", test_id: "clusters-no-match", reset_test_id: "clusters-reset") %>
+      <% else %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.clusters.title"))) do |table| %>
+          <% table.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.col_cluster"), sort: "name") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.col_status"), sort: "status", classes: "w-48") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.col_nodes"), align: :right, classes: "w-32") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.col_apps"), align: :right, classes: "w-32") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.col_last_snapshot"), sort: "last_snapshot", initial: :desc, classes: "w-32") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true, classes: "w-10") %>
+          <% end %>
+          <%= render partial: "member/monitoring/clusters/row", collection: @clusters, as: :cluster, locals: { summary: @summary } %>
+        <% end %>
+        <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "clusters-pagination") %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,91 @@
+<% content_for :title, t("member.knowledge.reviews.title") %>
+
+<%# CYRA-560 Scenario 2 — dopo una decisione si torna allo STESSO indirizzo (pagina, ricerca e filtro
+    viaggiano col bottone): per Turbo è un page refresh, quindi la pagina si aggiorna sul posto e lo
+    scorrimento resta dov'era, invece di ricostruirsi da capo e riportare in cima. %>
+<%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+
+<div class="p-7 space-y-6" data-test="member-knowledge-reviews">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.knowledge.reviews.title"),
+        subtitle: t("member.knowledge.reviews.help_title"),
+        breadcrumb: [ { label: t("member.knowledge.title"), href: member_knowledge_pages_path },
+                      { label: t("member.knowledge.reviews.title") } ],
+        counts_test_id: "knowledge-review-counts",
+        test_id: "knowledge-reviews-header") do |h| %>
+    <% h.with_counts do %>
+      <%# Il chip conta TUTTA la coda, mai la pagina o il risultato filtrato (stessa regola dell'index
+          delle pagine): sta fuori dalla ricerca e deve restare un numero stabile.
+          CYRA-817 — e porta al riquadro che conta: la pagina ha quattro sezioni, e per arrivare alla
+          cronologia degli scarti bisognava attraversare l'elenco intero. Il salto c'è solo dove c'è
+          la sezione: un'ancora verso il nulla non porta da nessuna parte. %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.reviews.stat_waiting"), value: @waiting_total,
+            href: (@waiting.any? || @filtering) ? "#knowledge-review-waiting" : nil,
+            value_color: @waiting_total.positive? ? :indigo : :neutral, test_id: "knowledge-review-stat-waiting") %>
+      <%# CYRA-764 — le pagine che il revisore automatico ha rimandato in coda. %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.reviews.stat_demoted"), value: @demoted_total,
+            value_color: @demoted_total.positive? ? :amber : :neutral, test_id: "knowledge-review-stat-demoted") %>
+      <%# CYRA-768 — quante pagine hanno passato la data di rilettura. %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.reviews.stat_needs_review"), value: @needs_review_total,
+            href: @needs_review.any? ? "#knowledge-review-needs-review" : nil,
+            value_color: @needs_review_total.positive? ? :amber : :neutral, test_id: "knowledge-review-stat-needs-review") %>
+      <%# CYRA-817 — il totale è un conteggio, non le righe caricate: il riquadro ne mostra dieci per
+          volta e questo numero resta quello vero. %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.reviews.stat_to_file"), value: @to_file_total,
+            href: @to_file_total.positive? ? "#knowledge-review-to-file" : nil,
+            value_color: @to_file_total.positive? ? :amber : :neutral, test_id: "knowledge-review-stat-to-file") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.reviews.stat_rejected"), value: @rejected_total,
+            href: @rejected.any? ? "#knowledge-review-rejected" : nil,
+            value_color: :gray, test_id: "knowledge-review-stat-rejected") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%# Il rimando alla guida non sta più qui: l'header lo rende da solo accanto al titolo (CYRA-437). %>
+      <%= render Ui::ButtonComponent.new(label: t("member.knowledge.reviews.all_pages"),
+            href: member_knowledge_pages_path, variant: :secondary_muted, size: :sm, icon: "book-open",
+            test_id: "knowledge-review-all-pages") %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-571 — i bottoni delle righe NON costruiscono un modulo a testa: puntano questo, uno per
+      pagina. Con due moduli per riga la coda superava il megabyte, e siccome ogni modulo porta un
+      token diverso dagli altri il peso non si comprimeva nemmeno. Sta QUI, fuori dalle sezioni,
+      perché lo usano sia le decisioni sulle proposte sia le conferme delle pagine da rileggere: se
+      vivesse dentro la sezione delle proposte, a coda vuota i bottoni dell'altra resterebbero senza
+      modulo da inviare. %>
+  <%= render Ui::RowActionsFormComponent.new(test_id: "knowledge-review-actions-form") %>
+
+  <%# 1. In attesa di una decisione: la proposta si legge qui dentro, senza cambiare pagina — la show
+      pubblica non la mostra (è fuori dalle pagine visibili finché non viene accettata).
+
+      CYRA-425 — l'ordine della card È la decisione: prima cosa stai giudicando (motivazione + testo),
+      poi cosa succede se scegli. Coi bottoni in cima e il testo chiuso sotto, la pagina invitava a
+      decidere senza aver letto — e su una coda che si riempie da sola quello è il caso normale. %>
+  <%# CYRA-560 — la sezione resta in piedi anche a zero risultati quando una ricerca o un filtro è
+      attivo: la coda NON è vuota, è la ricerca a non aver trovato. %>
+  <% if @waiting.any? || @filtering %>
+    <%# I param della lista viaggiano coi bottoni: la decisione torna a questa pagina, non alla prima
+        della coda intera (Scenario 2). Stesso elenco di ReviewsController#list_params. %>
+    <% current_list = request.query_parameters.slice("page", "per", "q", "project_id") %>
+    <%= render "member/knowledge/reviews/waiting_section", current_list: current_list %>
+  <% else %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.knowledge.reviews.empty"), body: t("member.knowledge.reviews.empty_body"),
+          example: t("member.knowledge.reviews.empty_example"), icon: "inbox", framed: true, test_id: "knowledge-review-empty") %>
+  <% end %>
+
+  <%# 2. Oltre la data di rilettura: già cercabili, ma nessuno ha più detto che sono vere. %>
+  <% if @needs_review.any? %>
+    <%= render "member/knowledge/reviews/needs_review_section" %>
+  <% end %>
+
+  <%# 3. Accettate ma non ancora scritte fra i documenti versionati: già cercabili, ancora incomplete.
+      CYRA-817 — il riquadro c'è finché ce n'è almeno una, anche quando la ricerca al suo interno non
+      trova niente: sparire sotto le mani di chi sta cercando direbbe «non ne hai», che è falso. %>
+  <% if @to_file_total.positive? %>
+    <%= render "member/knowledge/reviews/to_file_section" %>
+  <% end %>
+
+  <%# 4. Scartate di recente: tenute perché chi propone le ritrovi cercando i duplicati. %>
+  <% if @rejected.any? %>
+    <%= render "member/knowledge/reviews/rejected_section" %>
+  <% end %>
+</div>

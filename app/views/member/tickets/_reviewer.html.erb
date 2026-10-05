@@ -1,0 +1,12 @@
+<%# locals: ticket
+    Display read-only del revisore (avatar + nome, oppure "nessun revisore"). È il target del
+    broadcast realtime (replace) quando il revisore cambia (Ticketing::SetReviewer): viewer-agnostico
+    (niente dropdown di gestione, che è per-viewer e lo riottiene chi gestisce col proprio redirect).
+    id stabile = contratto write↔read-side. Riusato anche nel ramo non-manager della show. %>
+<div id="<%= dom_id(ticket) %>_reviewer" data-test="member-ticket-reviewer-display">
+  <% if ticket.reviewer %>
+    <div class="inline-flex items-center gap-2 text-[12.5px] text-zinc-900 dark:text-zinc-100"><span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-violet-50 dark:bg-violet-500/15 text-violet-600 dark:text-violet-400 text-[10px] font-semibold"><%= avatar_initials(ticket.reviewer.name) %></span><%= ticket.reviewer.name %></div>
+  <% else %>
+    <span class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.show.no_reviewer") %></span>
+  <% end %>
+</div>

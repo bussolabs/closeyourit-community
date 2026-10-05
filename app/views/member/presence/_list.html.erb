@@ -1,0 +1,9 @@
+<%# Lista avatar degli account online nell'organizzazione (header member).
+    Renderizzata IDENTICA da:
+      - Presence::Broadcast            → broadcast_replace_to(target: "presence_list")  [steady-state]
+      - member/presence/_snapshot      → turbo_stream.replace("presence_list")          [join tab]
+    Conserva id + data-test + data-presence-target del contenitore originale del layout member
+    (che NON va editato) così Turbo (replace su #presence_list) e Stimulus si riagganciano.
+    Tutte le classi Tailwind sono LETTERALI (lo scanner purga le interpolate); l'unica
+    interpolazione è in attributi data/title, non in `class`. %>
+<%= render Ui::PresenceMenuComponent.new(accounts: accounts || [], viewer: local_assigns[:viewer]) %>

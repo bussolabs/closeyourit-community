@@ -1,0 +1,78 @@
+<% content_for :title, t("member.guides.overview.title") %>
+
+<%# CYRA-435 — la guida che mancava: le altre raccontano una funzione per volta, questa racconta
+    l'insieme. L'elenco delle aree NON è scritto a mano: viene da Navigation::Group, la stessa
+    sorgente del selettore in alto — una verticale nuova comparirebbe qui da sola, e una guida
+    d'insieme scritta a mano invecchierebbe alla prima aggiunta. %>
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-overview">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "compass", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.overview.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.overview.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.overview.cta"), href: member_projects_path, variant: :primary, size: :sm, icon: "folder-open", test_id: "member-guide-overview-cta") %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.overview.cta_guides"), href: member_guides_path, variant: :secondary_muted, size: :sm, icon: "book", test_id: "member-guide-overview-guides") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.overview.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.overview.what_title") %></h2></div>
+    <div class="px-4 py-4">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.overview.what_intro") %></p>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="guide-overview-spaces">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.overview.spaces_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.overview.spaces_intro") %></p>
+      <ul class="space-y-2.5">
+        <% Navigation::Group.all.reject(&:pinned?).each do |group| %>
+          <li class="flex items-start gap-3" data-test="guide-overview-space" data-space="<%= group.id %>">
+            <span class="shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-md bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 mt-0.5"><%= render Ui::IconComponent.new(name: group.icon, class: "text-[12px]") %></span>
+            <div class="text-[12.5px] leading-relaxed">
+              <span class="font-medium text-zinc-900 dark:text-zinc-100"><%= group.label %></span>
+              <span class="text-gray-600 dark:text-zinc-400"> — <%= t("member.guides.overview.spaces.#{group.id}") %></span>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+      <p class="text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed border-t border-stone-100 dark:border-zinc-800 pt-3" data-test="guide-overview-switch">
+        <%= render Ui::IconComponent.new(name: "move-horizontal", class: "text-[11px] text-gray-400 dark:text-zinc-500 mr-1.5") %><%= t("member.guides.overview.spaces_switch") %>
+      </p>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="guide-overview-chain">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.overview.chain_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.overview.chain_intro") %></p>
+      <ol class="space-y-3">
+        <% 1.upto(5) do |step| %>
+          <li class="flex gap-3">
+            <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5"><%= step %></span>
+            <div class="text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.overview.chain_#{step}") %></div>
+          </li>
+        <% end %>
+      </ol>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-indigo-200 dark:border-indigo-500/40 bg-indigo-50/40 dark:bg-indigo-500/10" data-test="guide-overview-first-day">
+    <div class="px-4 py-3 border-b border-indigo-100 dark:border-indigo-500/20"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.overview.first_day_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ol class="space-y-3">
+        <% 1.upto(3) do |step| %>
+          <li class="flex gap-3">
+            <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-white dark:bg-zinc-900 border border-indigo-200 dark:border-indigo-500/40 text-indigo-600 dark:text-indigo-400 font-mono text-[11px] font-semibold mt-0.5"><%= step %></span>
+            <div class="text-[12.5px] text-gray-700 dark:text-zinc-300 leading-relaxed"><%= t("member.guides.overview.first_day_#{step}") %></div>
+          </li>
+        <% end %>
+      </ol>
+    </div>
+  </div>
+</div>

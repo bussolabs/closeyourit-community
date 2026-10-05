@@ -1,0 +1,84 @@
+<%# locals: (workflow:) %>
+<%# ── CYRA-627 ────────────────────────────────────────────────────────────────────────────────────
+    Il verbale di consegna: quello che il sistema ha guardato con i propri occhi.
+
+    Prima, per sapere quale codice fosse uscito, bisognava uscire dal ticket e andarlo a cercare
+    altrove — oppure fidarsi di una frase scritta da chi aveva lavorato. Accanto ai criteri di
+    accettazione c'era una spunta verde disegnata sempre, su ogni ticket, anche quando nessuno aveva
+    verificato niente: un semaforo verde attaccato a un filo staccato.
+
+    Qui non c'è niente da premere e niente da modificare: è un verbale. Legge SOLO colonne congelate
+    — la riga del candidato e quella della prova di rilascio — e non chiede niente a GitHub mentre
+    disegna: la pagina non rallenta se GitHub è lento, e il verbale non cambia sotto gli occhi.
+
+    Mai `ticket.github_pull_requests`: quell'elenco è ordinato dalla più recente, e con due proposte
+    aperte sullo stesso ticket la prima non è per forza quella che il sistema ha guardato. %>
+<% candidate = workflow&.review_candidate %>
+<% probe = workflow&.probes&.detect { |row| row.closed_at.present? } %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ticket-delivery-evidence">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
+      <%= t("member.tickets.evidence.title") %>
+    </h2>
+    <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.evidence.subtitle") %></p>
+  </div>
+
+  <% if candidate&.head_sha.present? %>
+    <div class="px-4 py-3 border-b border-stone-100 dark:border-zinc-800" data-test="ticket-evidence-candidate">
+      <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400">
+        <%= t("member.tickets.evidence.code") %>
+      </p>
+      <p class="mt-1 flex items-center gap-1.5 flex-wrap font-mono text-[11.5px] text-zinc-700 dark:text-zinc-300">
+        <span data-test="ticket-evidence-repo"><%= candidate.repository_full_name %></span>
+        <span class="text-gray-400 dark:text-zinc-500">·</span>
+        <%= link_to "##{candidate.number}",
+              "https://github.com/#{candidate.repository_full_name}/pull/#{candidate.number}",
+              class: "text-indigo-700 dark:text-indigo-300 hover:underline", target: "_blank", rel: "noopener",
+              data: { test: "ticket-evidence-number" } %>
+        <span class="text-gray-400 dark:text-zinc-500">·</span>
+        <%# Per intero, selezionabile: un abbreviato non identifica niente, e chi vuole controllare
+            deve poterlo incollare da un'altra parte. %>
+        <span class="select-all break-all" data-test="ticket-evidence-sha"><%= candidate.head_sha %></span>
+        <% if candidate.base_ref.present? %>
+          <span class="text-gray-400 dark:text-zinc-500">·</span>
+          <span data-test="ticket-evidence-base"><%= t("member.tickets.evidence.onto", base: candidate.base_ref) %></span>
+        <% end %>
+      </p>
+      <%# Zero controlli falliti non vuol dire verde: vuol dire che nessuno ha guardato. Le due cose
+          si scrivono in chiaro e con parole diverse. %>
+      <p class="mt-1 text-[12px] <%= candidate.state_verified_none_configured? ? "text-red-700 dark:text-red-300" : "text-gray-500 dark:text-zinc-400" %>"
+         data-test="ticket-evidence-checks">
+        <% key = candidate.state_verified_passing? ? "checks_passing" : candidate.state_verified_none_configured? ? "checks_none" : "checks_unexpected" %>
+        <%= t("member.tickets.evidence.#{key}", count: candidate.checks_count) %>
+        <% if candidate.verified_at %>
+          · <%= t("member.tickets.evidence.observed_at", at: l(candidate.verified_at, format: :short)) %>
+        <% end %>
+      </p>
+    </div>
+  <% else %>
+    <%# Il buco si dichiara, non si nasconde: uno spazio vuoto sembrerebbe normale, e chi legge non
+        saprebbe di stare guardando un lavoro accettato sulla parola. %>
+    <div class="px-4 py-3 border-b border-stone-100 dark:border-zinc-800" data-test="ticket-evidence-candidate-none">
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.evidence.no_candidate") %></p>
+    </div>
+  <% end %>
+
+  <% if probe.present? %>
+    <div class="px-4 py-3" data-test="ticket-evidence-release">
+      <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400">
+        <%= t("member.tickets.evidence.release") %>
+      </p>
+      <p class="mt-1 font-mono text-[11.5px] text-zinc-700 dark:text-zinc-300" data-test="ticket-evidence-release-version">
+        <%= probe.expected_version %>
+        <% if probe.closed_at %>
+          <span class="text-gray-400 dark:text-zinc-500">·</span>
+          <span><%= t("member.tickets.evidence.observed_at", at: l(probe.closed_at, format: :short)) %></span>
+        <% end %>
+      </p>
+    </div>
+  <% else %>
+    <div class="px-4 py-3" data-test="ticket-evidence-release-none">
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.evidence.no_release") %></p>
+    </div>
+  <% end %>
+</div>

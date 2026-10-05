@@ -1,0 +1,9 @@
+en:
+  website:
+    analytics:
+      password:
+        title: Password required
+        body: This dashboard is password-protected. Enter the password to view it.
+        placeholder: Password
+        submit: View dashboard
+        error: Wrong password.

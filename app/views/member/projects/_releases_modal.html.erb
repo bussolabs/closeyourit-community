@@ -1,0 +1,12 @@
+<%= render Ui::ModalComponent.new(title: t("member.projects.show.releases"), subtitle: @project.name, padded: false,
+      test_id: "project-releases-modal",
+      data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+  <% modal.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: t("shared.actions.close"), variant: :secondary_muted, size: :sm,
+          data: { action: "ui--dialog#close" }, test_id: "project-releases-close") %>
+  <% end %>
+  <div class="max-h-[60vh] overflow-y-auto divide-y divide-stone-100 dark:divide-zinc-800">
+    <%= render partial: "member/projects/release_row", collection: @releases, as: :release, locals: { test_id: "project-release-all-row" } %>
+  </div>
+  <p class="px-4 py-3 border-t border-stone-100 dark:border-zinc-800 font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="project-releases-count"><%= t("member.projects.show.releases_count", count: @releases.size) %></p>
+<% end %>

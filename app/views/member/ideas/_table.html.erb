@@ -1,0 +1,18 @@
+<%# locals: (ideas:) %>
+<%= render(Ui::TableComponent.new(stacked: true, label: t("member.ideas.title"))) do |t| %>
+  <% t.with_head do %>
+    <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.ideas.col_title"), sort: "title") %>
+    <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.ideas.col_project"), sort: "project") %>
+    <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.ideas.col_author"), sort: "author") %>
+    <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.ideas.col_votes"), sort: "votes", initial: :desc) %>
+    <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.ideas.col_comments"), sort: "comments", initial: :desc) %>
+    <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.ideas.col_status"), sort: "status") %>
+    <%# Where a converted idea ended up. CYRA-370 %>
+    <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.ideas.col_ticket"), sort: "ticket") %>
+    <%# The hint declares the default order, which has no active arrow. CYRA-360 %>
+    <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.ideas.col_last_activity"), sort: "last_activity",
+          initial: :desc, align: :right, hint: t("member.ideas.sort_note")) %>
+    <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+  <% end %>
+  <%= render partial: "member/ideas/idea", collection: ideas, as: :idea %>
+<% end %>

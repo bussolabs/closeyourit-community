@@ -1,0 +1,150 @@
+<%# locals: monitor, url, method, title, lead, submit_label %>
+<% content_for :title, title %>
+
+<div class="p-7">
+  <%= form_with url: url, method: method, class: "space-y-6", data: { test: "monitor-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: title,
+          breadcrumb: (monitor.persisted? ?
+            [ { label: t("member.uptime.title"), href: member_monitoring_monitors_path },
+              { label: "#{monitor.project.name} · #{monitor.environment.label}", href: member_monitoring_monitor_path(monitor) },
+              { label: t("member.breadcrumb.edit") } ] :
+            [ { label: t("member.uptime.title"), href: member_monitoring_monitors_path },
+              { label: t("member.breadcrumb.new") } ])) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.uptime.form.cancel"), href: member_monitoring_monitors_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: submit_label, type: "submit", icon: "check", size: :sm, test_id: "monitor-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%# Banner catch-all: gli errori dei campi mostrati inline (url/numerici) e :environment
+              (stringa friendly sotto) restano fuori; qui finisce tutto il resto — su tutti
+              l'unicità [progetto, environment] su :environment_id, prima silenziosa. %>
+          <% inline_keys = %i[url expected_status interval_seconds timeout_seconds environment] %>
+          <% summary_errors = monitor.errors.reject { |err| inline_keys.include?(err.attribute) } %>
+          <% if summary_errors.any? %>
+            <div class="md:col-span-2 rounded-md border border-rose-200 dark:border-rose-500/40 bg-rose-50 dark:bg-rose-500/15 px-3.5 py-2.5" data-test="monitor-errors">
+              <ul class="space-y-1">
+                <% summary_errors.each do |err| %>
+                  <li class="text-[11.5px] text-rose-700 dark:text-rose-300"><%= err.full_message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+          <% if monitor.new_record? %>
+            <%# Environment dipende dal progetto: solo gli environment DICHIARATI dal progetto scelto
+                (vincolo subset, validato anche server-side). Al cambio progetto, il controller Stimulus
+                ricarica il turbo-frame via new?project_id=X. %>
+            <% selected_project = @projects.find { |p| p.id == (monitor.project_id || params[:project_id]).presence } %>
+            <%# Solo gli environment con la capability uptime abilitata (risolta default+override): sugli altri
+                l'enforcement bloccherebbe comunque la creazione del monitor. %>
+            <% env_options = if selected_project
+                 uptime_caps = selected_project.project_environments.index_by(&:environment_id)
+                 selected_project.environments.active.ordered.select { |e| uptime_caps[e.id]&.uptime_enabled? }.map { |e| [ e.label, e.id ] }
+               else
+                 []
+               end %>
+            <div data-test="monitor-project"
+                 data-controller="monitoring--environment-loader"
+                 data-monitoring--environment-loader-url-value="<%= new_member_monitoring_monitor_path %>"
+                 data-monitoring--environment-loader-frame-value="monitor_environment_field"
+                 data-action="change->monitoring--environment-loader#reload">
+              <%= render Ui::SelectComponent.new(name: "project_id", label: t("member.uptime.form.project"), required: true,
+                    options: @projects.map { |p| [ p.name, p.id, p.color ] }, selected: selected_project&.id,
+                    include_blank: true, placeholder: t("member.uptime.form.project_placeholder"), test_id: "monitor-project") %>
+            </div>
+            <%= turbo_frame_tag "monitor_environment_field" do %>
+              <div data-test="monitor-environment">
+                <%= render Ui::SelectComponent.new(name: "environment_id", label: t("member.uptime.form.environment"), required: true,
+                      options: env_options, selected: monitor.environment_id || params[:environment_id], include_blank: true,
+                      hint: selected_project ? t("member.uptime.form.environment_hint") : t("member.uptime.form.project_required"),
+                      placeholder: t("member.uptime.form.environment"), test_id: "monitor-environment") %>
+              </div>
+            <% end %>
+          <% else %>
+            <div class="md:col-span-2">
+              <label class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.uptime.form.project_env") %></label>
+              <p class="flex items-center gap-1.5 flex-wrap">
+                <span class="w-3 h-3 rounded-[3px] <%= Ui::Colors.swatch(monitor.project.color) %>"></span>
+                <span class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= monitor.project.name %></span>
+                <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 rounded px-1.5 py-0.5"><%= monitor.project.key %></span>
+                <%= render Ui::BadgeComponent.new(label: monitor.environment.label, color: monitor.environment.color, dot: true) %>
+              </p>
+              <p class="mt-1.5 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.form.project_env_locked") %></p>
+            </div>
+          <% end %>
+
+          <%# CYRA-151: il tipo di check governa i campi mostrati (progressive enhancement Stimulus;
+              senza JS tutti i campi restano visibili e la validazione condizionale server-side decide). %>
+          <div class="md:col-span-2" data-controller="monitoring--check-type"
+               data-action="change->monitoring--check-type#update">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+              <div class="md:col-span-2" data-test="monitor-check-type">
+                <%= render Ui::SelectComponent.new(name: "check_type", label: t("member.uptime.form.check_type"),
+                      options: Uptime::Monitor.check_types.keys.map { |k| [ t("member.uptime.check_types.#{k}"), k ] },
+                      selected: monitor.check_type.presence || "http", hint: t("member.uptime.form.check_type_hint"),
+                      test_id: "monitor-check-type-select") %>
+              </div>
+
+              <div class="md:col-span-2" data-monitoring--check-type-target="field" data-check-types="http" data-test="monitor-url-field">
+                <%= render Ui::InputComponent.new(name: "url", label: t("member.uptime.form.url"), value: monitor.url, placeholder: "https://example.com/up", hint: t("member.uptime.form.url_hint"), test_id: "monitor-url", error: @errors&.dig(:url)&.first) %>
+              </div>
+
+              <div data-monitoring--check-type-target="field" data-check-types="tcp dns ping" data-test="monitor-host-field">
+                <%= render Ui::InputComponent.new(name: "host", label: t("member.uptime.form.host"), value: monitor.host, placeholder: "db.example.com", hint: t("member.uptime.form.host_hint"), test_id: "monitor-host", error: @errors&.dig(:host)&.first) %>
+              </div>
+              <div data-monitoring--check-type-target="field" data-check-types="tcp" data-test="monitor-port-field">
+                <%= render Ui::InputComponent.new(name: "port", label: t("member.uptime.form.port"), type: "number", value: monitor.port, placeholder: "5432", hint: t("member.uptime.form.port_hint"), test_id: "monitor-port", error: @errors&.dig(:port)&.first) %>
+              </div>
+
+              <div data-monitoring--check-type-target="field" data-check-types="http" data-test="monitor-method">
+                <%= render Ui::SelectComponent.new(name: "http_method", label: t("member.uptime.form.method"),
+                      options: Uptime::Monitor::HTTP_METHODS.map { |m| [ m, m ] }, selected: monitor.http_method.presence || "GET",
+                      placeholder: t("member.uptime.form.method"), test_id: "monitor-method-select") %>
+              </div>
+              <div data-monitoring--check-type-target="field" data-check-types="http">
+                <%= render Ui::InputComponent.new(name: "expected_status", label: t("member.uptime.form.expected"), type: "number", value: monitor.expected_status || 200, test_id: "monitor-expected", error: @errors&.dig(:expected_status)&.first) %>
+              </div>
+
+              <%= render Ui::InputComponent.new(name: "interval_seconds", label: t("member.uptime.form.interval"), type: "number", value: monitor.interval_seconds || 60, hint: t("member.uptime.form.interval_hint"), test_id: "monitor-interval", error: @errors&.dig(:interval_seconds)&.first) %>
+              <%= render Ui::InputComponent.new(name: "timeout_seconds", label: t("member.uptime.form.timeout"), type: "number", value: monitor.timeout_seconds || 5, test_id: "monitor-timeout", error: @errors&.dig(:timeout_seconds)&.first) %>
+
+              <%# CYRA-776: quanti controlli falliti di fila servono prima di dichiarare il sito giù. %>
+              <div class="md:col-span-2">
+                <%= render Ui::InputComponent.new(name: "failure_threshold", label: t("member.uptime.form.failure_threshold"), type: "number", value: monitor.failure_threshold || 2, hint: t("member.uptime.form.failure_threshold_hint"), test_id: "monitor-failure-threshold", error: @errors&.dig(:failure_threshold)&.first) %>
+              </div>
+
+              <div data-monitoring--check-type-target="field" data-check-types="http">
+                <%= render Ui::InputComponent.new(name: "expected_body_keyword", label: t("member.uptime.form.keyword"), value: monitor.expected_body_keyword, hint: t("member.uptime.form.keyword_hint"), test_id: "monitor-keyword", error: @errors&.dig(:expected_body_keyword)&.first) %>
+              </div>
+              <div data-monitoring--check-type-target="field" data-check-types="http">
+                <%= render Ui::InputComponent.new(name: "ssl_expiry_warn_days", label: t("member.uptime.form.ssl_warn"), type: "number", value: monitor.ssl_expiry_warn_days, hint: t("member.uptime.form.ssl_warn_hint"), test_id: "monitor-ssl-warn", error: @errors&.dig(:ssl_expiry_warn_days)&.first) %>
+              </div>
+
+              <%= render Ui::InputComponent.new(name: "latency_threshold_ms", label: t("member.uptime.form.latency"), type: "number", value: monitor.latency_threshold_ms, hint: t("member.uptime.form.latency_hint"), test_id: "monitor-latency", error: @errors&.dig(:latency_threshold_ms)&.first) %>
+            </div>
+          </div>
+          <div class="md:col-span-2" data-test="monitor-group-field">
+            <label class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.uptime.form.group") %></label>
+            <div class="flex items-center gap-2">
+              <div class="flex-1">
+                <%= render Ui::SelectComponent.new(name: "group_id",
+                      options: @uptime_groups.map { |g| [ g.name, g.id, g.color ] }, selected: monitor.group_id,
+                      include_blank: true, placeholder: t("member.uptime.form.group_placeholder"), test_id: "monitor-group") %>
+              </div>
+              <% if can?("uptime_groups.manage") %>
+                <%= link_to new_member_monitoring_uptime_group_path, class: "inline-flex items-center justify-center h-[38px] w-[38px] rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-500 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 shrink-0", title: t("member.uptime_groups.new"), data: { test: "monitor-group-new" } do %>
+                  <%= render Ui::IconComponent.new(name: "plus", class: "text-[12px]") %>
+                <% end %>
+              <% end %>
+            </div>
+            <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.form.group_hint") %></p>
+          </div>
+          <% if @errors&.dig(:environment) %><p class="md:col-span-2 text-[11px] text-rose-600 dark:text-rose-400" data-test="monitor-environment-error"><%= t("member.uptime.form.environment_invalid") %></p><% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

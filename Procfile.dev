@@ -1,0 +1,4 @@
+web: bin/rails server -p ${PORT:-3011}
+css: bin/rails tailwindcss:watch
+worker: bin/jobs
+agent: bin/demo-agent

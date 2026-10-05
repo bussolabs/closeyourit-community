@@ -1,0 +1,18 @@
+<%# locals: (can_manage:, new_row_errors:) %>
+<%# The panel header: what the table holds, its counts as text (T12), and the actions (T5). %>
+<div class="flex flex-wrap items-start justify-between gap-3 border-b border-stone-200 dark:border-zinc-800 px-4 py-3">
+  <div class="min-w-0">
+    <p class="text-[13px] text-zinc-600 dark:text-zinc-400" data-test="secrets-lead"><%= t("member.secrets.lead") %></p>
+    <%= render "member/project_secrets/counts" %>
+  </div>
+  <% if (can_manage && @environments.any?) || can?("shared_secrets.manage") %>
+    <div class="flex items-center flex-wrap gap-2">
+      <% if can?("shared_secrets.manage") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.secrets.origins.manage_shared"), href: member_shared_secrets_path, variant: :secondary_muted, size: :sm, test_id: "secrets-manage-shared") %>
+      <% end %>
+      <% if can_manage && @environments.any? %>
+        <%= render "member/project_secrets/new_dialog", errors: new_row_errors %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

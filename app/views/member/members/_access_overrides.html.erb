@@ -1,0 +1,40 @@
+<%# Le eccezioni personali, una riga per permesso: da dove arriva oggi e i tre pulsanti che lo
+    ereditano, lo concedono o lo tolgono. Usa gli ivar del controller: @overrides,
+    @effective_role_keys (CYRA-802). %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden" data-test="member-overrides">
+  <div class="px-5 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <p class="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.members.access.overrides_title") %></p>
+    <p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5"><%= t("member.members.access.overrides_hint") %></p>
+  </div>
+  <% states = { "inherit" => "peer-checked:bg-indigo-600 peer-checked:text-white", "allow" => "peer-checked:bg-emerald-600 peer-checked:text-white", "deny" => "peer-checked:bg-rose-600 peer-checked:text-white" } %>
+  <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+    <% Authorization::Catalog.all.each do |entry| %>
+      <% key = entry[:key] %>
+      <% override = @overrides[key] %>
+      <% current = override || "inherit" %>
+      <div class="flex items-center gap-3 px-5 py-2.5" data-test="member-override-<%= key %>">
+        <div class="min-w-0 flex-1">
+          <p class="text-[13px] text-zinc-900 dark:text-zinc-100" id="perm-<%= key %>"><%= authorization_permission_label(key) %></p>
+          <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= key %></p>
+        </div>
+        <% if override == "allow" %>
+          <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"><%= t("member.members.access.origin_personal_allow") %></span>
+        <% elsif override == "deny" %>
+          <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium bg-rose-50 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300"><%= t("member.members.access.origin_personal_deny") %></span>
+        <% elsif @effective_role_keys.include?(key) %>
+          <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400"><%= t("member.members.access.origin_via_roles") %></span>
+        <% else %>
+          <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400"><%= t("member.members.access.origin_not_granted") %></span>
+        <% end %>
+        <div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 overflow-hidden text-[11px] font-medium shrink-0" role="radiogroup" aria-labelledby="perm-<%= key %>">
+          <% states.each_with_index do |(state, cls), i| %>
+            <label class="<%= "border-l border-stone-200 dark:border-zinc-800" unless i.zero? %>">
+              <input type="radio" name="overrides[<%= key %>]" value="<%= state %>" class="sr-only peer" <%= "checked" if current == state %> data-test="member-override-<%= key %>-<%= state %>">
+              <span class="px-2.5 h-7 inline-flex items-center cursor-pointer text-gray-500 dark:text-zinc-400 <%= cls %> hover:bg-stone-50 dark:hover:bg-zinc-800"><%= t("member.members.access.state_#{state}") %></span>
+            </label>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

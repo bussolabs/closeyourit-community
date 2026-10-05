@@ -1,0 +1,40 @@
+<%# locals: (environment:, variable:, can_manage:, can_read:) %>
+<%# CYRA-202: il valore NON è più nel sorgente. La copia lo recupera on-demand dall'endpoint reveal
+    (data-clipboard-url-value) — che registra l'accesso — invece di leggerlo dal DOM.
+    CYRA-721: copia e reveal passano dallo STESSO endpoint gated `secrets.read`, quindi senza quel
+    permesso l'indirizzo non viene nemmeno reso — un pulsante copia che risponde sempre «non
+    riuscita» sarebbe peggio della sua assenza. %>
+<div class="flex items-center gap-1.5"
+     <%= tag.attributes(data: { controller: "clipboard", clipboard_copied_value: t("member.secrets.copied"),
+                                clipboard_error_value: t("member.secrets.copy_failed"),
+                                clipboard_url_value: reveal_member_project_secret_path(@project, variable) }) if can_read %>>
+  <div class="min-w-0 flex-1">
+    <span data-secret-row-target="masked" class="block font-mono text-[12px] text-gray-400 dark:text-zinc-500 select-none"><%= t("member.secrets.masked") %></span>
+    <%# CYRA-924 — 👁 writes the value here as text, read on demand from the audited reveal endpoint. %>
+    <% if can_read %>
+      <span hidden data-secret-row-target="value" data-test="secret-value-<%= variable.id %>"
+            data-secret-reveal-url="<%= reveal_member_project_secret_path(@project, variable) %>"
+            class="block break-all font-mono text-[12px] text-zinc-900 dark:text-zinc-100"></span>
+    <% end %>
+    <%# Badge di rotazione (CYRA-138): visibile SEMPRE, mascherata o no — non è un dato sensibile,
+        solo un avviso. Riusa lo stile del badge drift (icona + testo, ambra/rosso) per coerenza. %>
+    <% if variable.rotation_status.in?(%i[due_soon overdue]) %>
+      <% rotation_overdue = variable.rotation_status == :overdue %>
+      <% rotation_tone_class = rotation_overdue ? "text-red-700 dark:text-red-300" : "text-amber-700 dark:text-amber-300" %>
+      <% rotation_label = rotation_overdue ? t("member.secrets.rotation_overdue", days: variable.rotation_days_until_due.abs) : t("member.secrets.rotation_due_soon", days: variable.rotation_days_until_due) %>
+      <span class="mt-0.5 flex items-center gap-1 text-[10.5px] font-medium <%= rotation_tone_class %>"
+            data-test="secret-cell-rotation-<%= variable.id %>">
+        <%= render Ui::IconComponent.new(name: "refresh-cw", class: "text-[9px]") %><%= rotation_label %>
+      </span>
+    <% end %>
+  </div>
+  <% if can_read %>
+    <button type="button" data-action="clipboard#copy" data-test="secret-copy-<%= variable.id %>"
+            class="inline-flex items-center justify-center h-[26px] w-[26px] rounded-md text-gray-400 dark:text-zinc-500 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400"
+            aria-label="<%= t('member.secrets.copy') %>">
+      <%= render Ui::IconComponent.new(name: "copy", class: "text-[11px]") %><span data-clipboard-target="label" class="sr-only"><%= t('member.secrets.copy') %></span>
+    </button>
+  <% end %>
+      <%= render "member/project_secrets/cell_menu", environment: environment, variable: variable,
+            can_manage: can_manage %>
+    </div>

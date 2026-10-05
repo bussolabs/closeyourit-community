@@ -1,0 +1,35 @@
+it:
+  member:
+    projects:
+      show:
+        tab_environments: "Ambienti"
+        servers_updated: "Server aggiornati."
+      environments:
+        title: "Ambienti"
+        subtitle: "Attiva gli ambienti su cui gira il progetto, poi regola capacità e server collegati."
+        none: "Nessun ambiente definito per questa organizzazione."
+        activate: "Attiva"
+        deactivate: "Disattiva"
+        activated: "Ambiente attivato."
+        deactivated: "Ambiente disattivato."
+        activate_failed: "Impossibile attivare l'ambiente."
+        servers_save: "Salva"
+        servers_unsupported: "Server e monitor uptime valgono solo per i progetti web o server."
+        servers_aria: "Server per %{environment}"
+        servers_open:
+          zero: "Collega un server"
+          one: "1 server collegato"
+          other: "%{count} server collegati"
+        servers_dialog_title: "Server di %{environment}"
+        uptime_view: "Vedi monitor"
+        defaults_link: "Default degli ambienti →"
+        legend: "«Eredita» segue il default dell'ambiente, deciso per tutta l'organizzazione. «Attivo» e «Disattivo» valgono solo per questo progetto."
+        inactive_title: "Non attivi su questo progetto:"
+        capability_column: "Funzione"
+        deactivate_confirm: "Disattivare %{environment} su questo progetto? Token, monitor e server legati restano, ma l'ambiente non sarà più attivo qui."
+        servers_none: "Nessun server nell'organizzazione."
+        servers_go: "Vai ai server →"
+        tokens:
+          zero: "Nessun token attivo"
+          one: "1 token attivo"
+          other: "%{count} token attivi"

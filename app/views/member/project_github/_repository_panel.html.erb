@@ -1,0 +1,66 @@
+<%# locals: (environment_options:, release_probe_options:, registry_options:) %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+  <div class="p-6 space-y-5">
+    <div class="flex items-center gap-2">
+      <%= render Ui::IconComponent.new(name: "github", class: "text-[16px] text-zinc-900 dark:text-zinc-100") %>
+      <span class="font-mono text-[13px] text-zinc-900 dark:text-zinc-100" data-test="github-repo-full-name"><%= @repository.full_name %></span>
+    </div>
+
+    <%= form_with url: member_project_github_path(@project), method: :patch, class: "space-y-5", data: { test: "github-settings-form" } do %>
+      <div class="flex items-center justify-between gap-4">
+        <h2 class="font-display text-[16px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.project_github.rules_section") %></h2>
+        <%= render Ui::ButtonComponent.new(label: t("member.project_github.save"), type: "submit", test_id: "github-settings-submit") %>
+      </div>
+
+      <%= render Ui::InputComponent.new(
+            name: "default_branch", label: t("member.project_github.default_branch_label"),
+            value: @repository.default_branch, test_id: "github-default-branch") %>
+
+      <%= render Ui::SelectComponent.new(
+            name: "production_environment_id", options: environment_options,
+            label: t("member.project_github.production_environment_label"),
+            selected: @repository.production_environment_id, include_blank: true, placeholder: t("member.project_github.no_mapping"),
+            hint: t("member.project_github.production_environment_hint"), test_id: "github-production-env") %>
+
+      <%= render Ui::SelectComponent.new(
+            name: "staging_environment_id", options: environment_options,
+            label: t("member.project_github.staging_environment_label"),
+            selected: @repository.staging_environment_id, include_blank: true, placeholder: t("member.project_github.no_mapping"),
+            hint: t("member.project_github.staging_environment_hint"), test_id: "github-staging-env") %>
+
+      <%= render Ui::SelectComponent.new(
+            name: "preview_environment_id", options: environment_options,
+            label: t("member.project_github.preview_environment_label"),
+            selected: @repository.preview_environment_id, include_blank: true, placeholder: t("member.project_github.no_mapping"),
+            hint: t("member.project_github.preview_environment_hint"), test_id: "github-preview-env") %>
+
+      <%# CYRA-605 — come si capisce che un rilascio di QUESTO progetto è arrivato davvero.
+          Oggi lo indovina uno script durante il rilascio, guardando se dentro il progetto
+          esiste un certo file: il sistema non ha mai la risposta in casa e non può controllare
+          niente da solo. La voce vuota resta e non blocca niente — dice solo che la chiusura
+          del lavoro la decide una persona, come oggi.
+
+          `include_blank` è solo un interruttore: il testo lo prende da `placeholder`. %>
+      <%= render Ui::SelectComponent.new(
+            name: "release_probe", options: release_probe_options,
+            label: t("github.release_probe.label"),
+            selected: @repository.release_probe, include_blank: true,
+            placeholder: t("github.release_probe.undeclared"),
+            hint: t("github.release_probe.hint"), test_id: "github-release-probe") %>
+
+      <%# CYRA-625 — sei progetti non mettono online un sito: pubblicano un pacchetto. Per
+          andarlo a guardare servono due coordinate che il sistema non aveva in casa — su quale
+          scaffale, e con che nome — perché il nome del pacchetto quasi mai è quello del
+          repository. Servono solo a chi ha scelto «Il pacchetto è pubblicato». %>
+      <%= render Ui::SelectComponent.new(
+            name: "registry", options: registry_options,
+            label: t("github.registry.label"),
+            selected: @repository.registry, include_blank: true,
+            placeholder: t("github.registry.undeclared"),
+            hint: t("github.registry.hint"), test_id: "github-registry") %>
+      <%= render Ui::InputComponent.new(
+            name: "package_name", label: t("github.registry.package_label"),
+            value: @repository.package_name, test_id: "github-package-name") %>
+    <% end %>
+  </div>
+</div>

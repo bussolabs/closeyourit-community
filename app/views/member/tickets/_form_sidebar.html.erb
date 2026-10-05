@@ -1,0 +1,95 @@
+<%# locals: (ticket:, locked_project:) %>
+<%= render Ui::SectionComponent.new(title: t("member.tickets.show.details"), heading_size: :md,
+      body_class: "divide-y divide-stone-100 dark:divide-zinc-800") do %>
+
+    <%# §1 Progetto — display bloccato (creazione da progetto) OPPURE picker searchable. %>
+    <div class="px-4 py-3.5">
+      <% if locked_project %>
+        <div data-test="ticket-project-locked">
+          <label class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.tickets.form.project") %></label>
+          <div class="inline-flex items-center gap-2 h-[38px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-[13px]">
+            <span class="w-2.5 h-2.5 rounded-[3px] <%= Ui::Colors.swatch(locked_project.color) %>"></span>
+            <span class="font-medium text-zinc-900 dark:text-zinc-100"><%= locked_project.name %></span>
+            <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= locked_project.key %></span>
+          </div>
+          <input type="hidden" name="project_id" value="<%= locked_project.id %>">
+          <input type="hidden" name="locked_project" value="1">
+        </div>
+      <% else %>
+        <%= render Ui::SelectComponent.new(name: "project_id", label: t("member.tickets.form.project"), required: true,
+              options: @projects.map { |p| [ p.name, p.id ] }, selected: ticket.project_id, include_blank: true,
+              placeholder: t("member.tickets.form.select_project"), test_id: "ticket-project",
+              error: @errors&.dig(:project)&.first) %>
+      <% end %>
+    </div>
+
+    <%# §2 Affected platforms — subset del progetto, aggiornate al cambio progetto (ticket-platforms). %>
+    <div class="px-4 py-3.5" data-test="ticket-platforms">
+      <input type="hidden" name="platform_ids[]" value="">
+      <%= render Ui::SelectComponent.new(name: "platform_ids", multiple: true, label: t("member.tickets.form.platforms"),
+            options: @platforms.map { |p| [ p.label, p.id, p.color ] },
+            selected: Array(ticket.platform_ids.presence || @selected_platform_ids),
+            hint: t("member.tickets.form.platforms_hint"), placeholder: t("member.tickets.form.platforms"), test_id: "ticket-platforms") %>
+    </div>
+
+    <%# §3 Classificazione — Status + Priority (impilati nella sidebar stretta).
+        CYRA-398: in CREAZIONE lo stato non è una scelta — la sola risposta sensata è il
+        primo stato aperto, e chiederla riempiva il modulo di una decisione finta. Il campo
+        resta nel payload (nascosto), così le integrazioni che lo passano non cambiano. %>
+    <div class="px-4 py-3.5 space-y-4">
+      <% if ticket.persisted? %>
+        <%= render Ui::SelectComponent.new(name: "status_id", label: t("member.tickets.form.status"), required: true,
+              options: @statuses.map { |s| [ s.display_label, s.id, s.color ] }, selected: ticket.status_id,
+              test_id: "ticket-status", error: @errors&.dig(:status)&.first) %>
+      <% else %>
+        <% initial = @statuses.find { |s| s.id == ticket.status_id } %>
+        <%= hidden_field_tag :status_id, ticket.status_id, id: "status_id" %>
+        <div data-test="ticket-status-initial">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1"><%= t("member.tickets.form.status") %></p>
+          <% if initial %>
+            <%= render Ui::BadgeComponent.new(label: initial.display_label, color: initial.color, size: :sm) %>
+          <% end %>
+          <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.form.status_initial_hint") %></p>
+        </div>
+      <% end %>
+      <%= render Ui::SelectComponent.new(name: "priority_id", label: t("member.tickets.form.priority"), required: true,
+            options: @priorities.map { |p| [ p.display_label, p.id, p.color ] }, selected: ticket.priority_id,
+            test_id: "ticket-priority", error: @errors&.dig(:priority)&.first) %>
+    </div>
+
+    <%# §4 Assignee. %>
+    <div class="px-4 py-3.5">
+      <%= render Ui::SelectComponent.new(name: "assignee_id", label: t("member.tickets.form.assignee"),
+            options: @assignees.map { |a| [ a.name, a.id ] }, selected: ticket.assignee_id, include_blank: true,
+            placeholder: t("member.tickets.form.unassigned"), test_id: "ticket-assignee") %>
+    </div>
+
+    <%= render "member/tickets/form_signals" unless ticket.persisted? %>
+
+    <%# §5 Pianificazione — Epic padre + Milestone (dipendenti dal progetto, Stimulus) + Weight (punti rollup roadmap). %>
+    <div class="px-4 py-3.5 space-y-4">
+      <%# Un epic non sta sotto un altro epic (validato sul model): niente select quando il tipo è epic. %>
+      <div data-test="ticket-parent-field">
+        <%= render Ui::SelectComponent.new(name: "parent_id", label: t("member.tickets.form.parent"),
+              options: @epics.map { |e| [ "#{e.code} · #{e.title}", e.id ] }, selected: ticket.parent_id, include_blank: true,
+              placeholder: t("member.tickets.form.parent_none"), hint: t("member.tickets.form.parent_hint"),
+              test_id: "ticket-parent", error: @errors&.dig(:parent)&.first) %>
+      </div>
+      <div data-test="ticket-milestone-field">
+        <%# Lo stesso nome di obiettivo esiste in più progetti: senza il progetto accanto le
+            voci erano indistinguibili. %>
+        <%= render Ui::SelectComponent.new(name: "milestone_id", label: t("member.tickets.form.milestone"),
+              options: @milestones.map { |m| [ m.label, m.id ] }, selected: ticket.milestone_id, include_blank: true,
+              descriptions: @milestone_projects,
+              placeholder: t("member.tickets.form.milestone_none"), hint: t("member.tickets.form.milestone_hint"),
+              test_id: "ticket-milestone") %>
+      </div>
+      <%= render Ui::InputComponent.new(name: "weight", type: "number", label: t("member.tickets.form.weight"),
+            value: ticket.weight, placeholder: t("member.tickets.form.weight_placeholder"), test_id: "ticket-weight",
+            hint: t("member.tickets.form.weight_hint"), min: 1, step: 1, error: @errors&.dig(:weight)&.first) %>
+      <%# Scadenza opzionale (giorno + ora). datetime-local vuole il value nel formato %Y-%m-%dT%H:%M. %>
+      <%= render Ui::InputComponent.new(name: "due_at", type: "datetime-local", label: t("member.tickets.form.due_at"),
+            value: ticket.due_at&.strftime("%Y-%m-%dT%H:%M"), test_id: "ticket-due-at",
+            hint: t("member.tickets.form.due_at_hint"), error: @errors&.dig(:due_at)&.first) %>
+    </div>
+<% end %>

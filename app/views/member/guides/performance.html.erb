@@ -1,0 +1,92 @@
+<% content_for :title, t("member.guides.performance.title") %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-performance">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "gauge", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-violet-50 dark:bg-violet-500/15 text-violet-600 dark:text-violet-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.performance.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.performance.title") } ],
+        test_id: "guide-performance-header") do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.performance.cta"), href: member_monitoring_metric_groups_path, variant: :primary, size: :sm, icon: "gauge", test_id: "member-guide-performance-cta") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.performance.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.performance.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.performance.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "database", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.performance.what_query") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "code", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.performance.what_method") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "timer", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.performance.what_aggregates") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.performance.connect_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ol class="space-y-4">
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">1</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.performance.connect_step1") %></div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">2</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed mb-2"><%= t("member.guides.performance.connect_step2") %></p>
+            <pre class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto"><span class="text-gray-500 dark:text-zinc-400"># Gemfile</span>
+gem <span class="text-emerald-700 dark:text-emerald-300">"closeyourit-ruby"</span></pre>
+            <pre class="mt-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto"><span class="text-gray-500 dark:text-zinc-400"># config/initializers/closeyourit.rb</span>
+CloseYourIt.init <span class="text-indigo-700 dark:text-indigo-300">do</span> |c|
+  c.endpoint_url = ENV[<span class="text-emerald-700 dark:text-emerald-300">"CLOSEYOURIT_ENDPOINT_URL"</span>]
+  c.token        = ENV[<span class="text-emerald-700 dark:text-emerald-300">"CLOSEYOURIT_TOKEN"</span>]
+  c.project_id   = ENV[<span class="text-emerald-700 dark:text-emerald-300">"CLOSEYOURIT_PROJECT_ID"</span>]
+<span class="text-indigo-700 dark:text-indigo-300">end</span></pre>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">3</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.performance.connect_step3") %> <span class="font-mono text-[12px]">POST /api/v1/projects/:id/metrics</span></div>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <%# CYRA-349 — la guida documentava solo le query e i metodi lenti, mentre un terzo dei dati sono
+      «problemi di performance» rilevati in automatico: proprio i tipi meno intuitivi (N+1, jank,
+      rebuild storm) non erano spiegati da nessuna parte. I nomi e le spiegazioni sono le STESSE che
+      si leggono sulle schede: la guida non può descrivere qualcosa che nell'elenco si chiama diverso. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-performance-issues">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.performance.issues_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.performance.issues_intro") %></p>
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <% Metrics::Group::PERFORMANCE_SUBTYPES.each do |subtype| %>
+          <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5" data-test="performance-issue-<%= subtype %>">
+            <dt class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.metrics.subtype.#{subtype}") %></dt>
+            <dd class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.metrics.subtype_hint.#{subtype}") %></dd>
+          </div>
+        <% end %>
+      </dl>
+      <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.performance.issues_note") %></p>
+    </div>
+  </div>
+
+  <%# CYRA-341 — la scheda di un rallentamento ora risponde a «sta peggiorando?» e dichiara da che
+      valore in su un numero diventa rosso: le due cose vanno spiegate qui, dove si impara a leggerle. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-performance-trend">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.performance.trend_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.performance.trend_chart") %></p>
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.performance.trend_compare") %></p>
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.performance.trend_thresholds") %></p>
+      <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.performance.trend_note", fast: Metrics::Group::FAST_MS, slow: Metrics::Group::MEDIUM_MS) %></p>
+    </div>
+  </div>
+  <%= render "member/guides/performance_jobs" %>
+</div>

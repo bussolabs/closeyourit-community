@@ -1,0 +1,11 @@
+<%# CYRA-379: avviso (una volta per sezione) accanto ai valori oscurati. Spiega in parole comuni che
+    è una scelta di riservatezza — non un guasto — e linka alla guida dove si configura lo scrubbing
+    lato SDK del progetto. Reso solo quando la sezione contiene almeno un valore nascosto. %>
+<p class="mt-2 flex items-start gap-1.5 text-[11px] text-gray-500 dark:text-zinc-400" data-test="scrubbed-hint">
+  <%= render Ui::IconComponent.new(name: "shield-half", class: "text-[10px] mt-0.5 shrink-0") %>
+  <span>
+    <%= t("member.monitoring.scrubbed_hint") %>
+    <%= link_to t("member.monitoring.scrubbed_hint_link"), member_guides_errors_path,
+          class: "text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 underline", data: { test: "scrubbed-hint-link" } %>
+  </span>
+</p>

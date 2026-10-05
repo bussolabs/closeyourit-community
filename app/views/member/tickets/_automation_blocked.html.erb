@@ -1,0 +1,66 @@
+<%# locals: (ticket:, workflow:, blocked_failures:, retrying_phase:, decides:, can_manage:, cto:) %>
+<section class="rounded-lg border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15" data-test="automation-blocked">
+  <div class="px-4 py-3.5">
+    <div class="flex items-start gap-3">
+      <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-amber-600 dark:text-amber-400 text-[15px] mt-0.5") %>
+      <div class="min-w-0 flex-1">
+        <% if workflow.blocked_at? %>
+          <p class="font-display text-[14px] font-semibold text-amber-900 dark:text-amber-200"><%= t("member.tickets.automation.blocked.title") %></p>
+          <p class="mt-1 text-[12.5px] text-amber-800 dark:text-amber-200 leading-relaxed">
+            <%# CYRA-384 — la fase esce dalla colonna in inglese grezzo («planner»): qui si legge
+                col nome che porta ovunque nel prodotto.
+                CYRA-598 — quando a fermarsi è stata la macchina, la frase del tetto è falsa due
+                volte: nomina la revisione, che non c'entra, e mostra un conteggio che è ZERO —
+                una consegna che dichiara un blocco è valida e si chiude approved. È lo stesso
+                bivio della riga di sintesi, e vale qui perché questo banner è ciò che si legge
+                per primo. %>
+            <% if workflow.held_by_name %>
+              <%= t("member.tickets.automation.blocked.body_held", name: workflow.held_by_name) %>
+            <% elsif workflow.blocked_kind == "agent_blocked" %>
+              <%= t("member.tickets.automation.blocked.body_agent",
+                    phase: automation_execution_phase_label(workflow.blocked_phase),
+                    reason: automation_agent_block_reason(workflow)) %>
+            <% else %>
+              <%= t("member.tickets.automation.blocked.body",
+                    phase: automation_execution_phase_label(workflow.blocked_phase), count: blocked_failures) %>
+            <% end %>
+          </p>
+        <% else %>
+          <p class="font-display text-[14px] font-semibold text-amber-900 dark:text-amber-200"><%= t("member.tickets.automation.blocked.retrying_title") %></p>
+          <p class="mt-1 text-[12.5px] text-amber-800 dark:text-amber-200 leading-relaxed" data-test="automation-retrying">
+            <%= t("member.tickets.automation.blocked.retrying_body",
+                  phase: automation_execution_phase_label(retrying_phase)) %>
+          </p>
+        <% end %>
+      </div>
+      <% if workflow.blocked_at? %>
+        <span class="shrink-0 font-mono text-[11px] text-amber-700 dark:text-amber-300"><%= l(workflow.blocked_at, format: :short) %></span>
+      <% end %>
+    </div>
+
+    <%# Riprovare è la SOLA uscita quando la fase bocciata non ha prodotto un piano — il caso normale,
+        visto che una fase bocciata non produce effetti. I pulsanti sul piano stanno più sotto, sul
+        piano stesso: metterli anche qui li mostrerebbe pure quando non c'è niente da approvare. Senza
+        blocked_at il pulsante non comparirebbe comunque (Unblock è no-op sul non bloccato): non resta
+        altro da offrire oltre all'annullamento, il testo sopra spiega già che riprova da sola. %>
+    <div class="mt-3.5 pt-3.5 border-t border-amber-200 dark:border-amber-500/40 flex flex-wrap items-center gap-2">
+      <% if workflow.blocked_at? && decides %>
+        <%= render Ui::ButtonComponent.new(label: t("member.tickets.automation.blocked.retry"),
+              href: member_ticket_automation_unblock_path(ticket), method: :post,
+              variant: :secondary, size: :sm, icon: "rotate-cw", test_id: "automation-retry") %>
+      <% end %>
+      <% if can_manage %>
+        <%= form_with url: member_ticket_automation_cancellation_path(ticket), method: :post,
+              class: "flex items-center gap-2 grow basis-[280px]" do %>
+          <input name="reason" required placeholder="<%= t("member.tickets.automation.cancel_reason") %>"
+                 class="min-w-0 flex-1 h-[34px] rounded-md border border-amber-200 dark:border-amber-500/40 bg-white dark:bg-zinc-900 px-3 text-[12.5px] placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-400">
+          <%= render Ui::ButtonComponent.new(label: t("member.tickets.automation.cancel"), type: "submit",
+                variant: :danger_outline, size: :sm, icon: "ban", test_id: "automation-cancel") %>
+        <% end %>
+      <% end %>
+      <% if workflow.blocked_at? && !decides && !can_manage %>
+        <p class="text-[11.5px] text-amber-700 dark:text-amber-300"><%= t("member.tickets.automation.blocked.waiting_on_cto", name: cto&.name) %></p>
+      <% end %>
+    </div>
+  </div>
+</section>

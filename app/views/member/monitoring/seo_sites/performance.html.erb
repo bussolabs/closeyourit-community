@@ -1,0 +1,62 @@
+<% content_for :title, t("member.monitoring.seo_sites.tabs.performance") %>
+
+<%# CYRA-824 — stessa storia della scheda di riepilogo: la misura arriva minuti dopo, su una pagina
+    già aperta. Sullo stream viaggia il solo segnale, il riquadro si ri-chiede con la sessione di chi
+    guarda, e l'indirizzo che ricarica è QUESTO — il segnale non sa su quale delle due schede si
+    trovi chi lo riceve, e ognuna ricarica la propria. %>
+<div class="p-7 space-y-6" data-test="member-seo-site-performance"
+     data-controller="live-frame"
+     data-live-frame-frame-value="<%= Member::Monitoring::SeoSitesController::LIVE_FRAME %>"
+     data-live-frame-url-value="<%= performance_member_monitoring_seo_site_path(@site) %>"
+     data-live-frame-interval-value="300000">
+  <%= turbo_stream_from Realtime::Streams.seo_site(@site) %>
+
+  <%= turbo_frame_tag Member::Monitoring::SeoSitesController::LIVE_FRAME, target: "_top", class: "block space-y-6" do %>
+    <%= render "member/monitoring/seo_sites/header", site: @site, active_tab: "performance",
+          open_count: @open_count, critical_count: @critical_count, high_count: @high_count,
+          ignored_count: @ignored_count, pages_count: @site_pages_count %>
+
+    <% if !@lab_configured && @runs.values.compact.empty? %>
+      <%# Servizio non collegato da questa organizzazione e nessuna misura mai fatta: si dice cosa
+          manca e dove si collega, non si mostra una griglia di trattini che sembra un guasto del
+          sito — o peggio uno zero, che si leggerebbe come «lentissimo». %>
+      <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.seo_sites.performance.unconfigured"), body: t("member.monitoring.seo_sites.performance.unconfigured_hint"), icon: "bolt", framed: true, test_id: "seo-performance-unconfigured") %>
+    <% elsif @runs.values.compact.empty? %>
+      <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.seo_sites.performance.empty"), body: t("member.monitoring.seo_sites.performance.empty_hint"), icon: "bolt", framed: true, test_id: "seo-performance-empty") %>
+    <% else %>
+      <%# L'ultima misura non è riuscita: i numeri qui sotto sono del giro precedente e va detto.
+          Nascondere il fallimento farebbe passare per fresco un dato vecchio. %>
+      <% if @site.last_lab_error.present? %>
+        <div class="rounded-lg border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 px-5 py-3" data-test="seo-performance-stale">
+          <p class="text-[12.5px] text-amber-900 dark:text-amber-200">
+            <%= render Ui::IconComponent.new(name: "triangle-alert", class: "mr-1.5") %>
+            <%= t("member.monitoring.seo_sites.performance.stale", error: @site.last_lab_error) %>
+          </p>
+        </div>
+      <% end %>
+
+      <%# CAMPO — quello che è successo davvero a chi ha aperto il sito. Sta PRIMA del laboratorio
+          perché è la domanda che conta: quanto è lento per le persone. %>
+      <section data-test="seo-performance-field">
+        <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("seo.vitals.field") %></h2>
+        <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-3xl"><%= t("seo.vitals.field_explainer") %></p>
+        <div class="mt-3 grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <% @runs.each do |strategy, run| %>
+            <%= render "member/monitoring/seo_sites/field_panel", strategy: strategy, run: run %>
+          <% end %>
+        </div>
+      </section>
+
+      <%# LABORATORIO — un giro di prova, ripetibile: dice perché. %>
+      <section data-test="seo-performance-lab">
+        <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("seo.vitals.lab") %></h2>
+        <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-3xl"><%= t("seo.vitals.lab_explainer") %></p>
+        <div class="mt-3 grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <% @runs.each do |strategy, run| %>
+            <%= render "member/monitoring/seo_sites/lab_panel", strategy: strategy, run: run %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  <% end %>
+</div>

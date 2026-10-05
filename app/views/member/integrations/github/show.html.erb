@@ -1,0 +1,55 @@
+<% content_for :title, t("member.integrations.github.title") %>
+
+<%# CYRA-581 — era l'unica pagina dell'Amministrazione costruita a mano: h1 più piccolo del resto
+    del prodotto, prosa sotto il titolo, nessuna briciola di pane e nessun collegamento per uscirne.
+    Ora ha l'intestazione standard, e la briciola riporta all'area e alla Home. %>
+<div class="p-7 space-y-6 max-w-2xl" data-test="member-integrations-github">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.integrations.github.title"),
+        subtitle: t("member.integrations.github.help_title"),
+        # CYRA-545 — la pagina è la scheda di un servizio dentro l'elenco delle Integrazioni: la
+        # briciola passa da lì, o l'unica via di ritorno sarebbe l'area intera.
+        breadcrumb: [ { label: t("member.integrations.title"), href: member_integrations_path },
+                      { label: t("member.integrations.github.title") } ],
+        counts_test_id: "github-counts",
+        test_id: "github-header") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.integrations.github.status_label"),
+            value: t("member.integrations.github.#{@installation ? 'status_installed' : 'status_missing'}"),
+            value_color: (@installation ? :emerald : :gray), test_id: "github-stat-status") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.integrations.github.repositories_label"),
+            value: @repositories_count, value_color: (:indigo if @repositories_count.positive?),
+            test_id: "github-stat-repositories") %>
+    <% end %>
+    <%# L'azione che INSTALLA sta nell'header, come in tutta l'area. Quella che disinstalla resta
+        dentro la scheda, sotto la riga che dice su quale organizzazione sta: tocca tutti i progetti
+        insieme, e non è il pulsante che si preme di sfuggita entrando nella pagina. %>
+    <% if !@installation && @install_url %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.integrations.github.install"), href: @install_url,
+              variant: :primary, size: :sm, icon: "plug", test_id: "github-install-link") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-4">
+    <p class="text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed" data-test="github-intro"><%= t("member.integrations.github.description") %></p>
+    <% if !@installation && @install_url.nil? %>
+      <%= render Ui::AlertComponent.new(variant: :info, test_id: "github-not-configured") do %>
+        <%= t("member.integrations.github.not_configured") %>
+      <% end %>
+    <% end %>
+
+    <% if @installation %>
+      <div class="flex items-center gap-2" data-test="github-installed">
+        <%= render Ui::IconComponent.new(name: "github", class: "text-[16px] text-zinc-900 dark:text-zinc-100") %>
+        <span class="text-[13px] text-zinc-900 dark:text-zinc-100"><%= t("member.integrations.github.installed_on", login: @installation.account_login) %></span>
+      </div>
+      <%= render Ui::ButtonComponent.new(label: t("member.integrations.github.disconnect"),
+            href: member_integrations_github_path, method: :delete, variant: :danger_outline, size: :sm,
+            confirm: t("member.integrations.github.disconnect_confirm"), test_id: "github-org-disconnect") %>
+    <% else %>
+      <p class="text-[13px] text-zinc-700 dark:text-zinc-300" data-test="github-not-installed"><%= t("member.integrations.github.not_installed") %></p>
+    <% end %>
+  </div>
+</div>

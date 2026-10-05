@@ -1,0 +1,61 @@
+---
+en:
+  member:
+    guides:
+      index:
+        overview:
+          title: How CloseYourIt is built
+        ticket_lifecycle:
+          title: The journey of a ticket
+      overview:
+        title: How CloseYourIt is built
+        subtitle: On day one you need a map, not one feature at a time.
+        what_title: In two lines
+        what_intro: "CloseYourIt keeps the work to do and the health of what you already shipped in one place: reports and tickets on one side, errors, response times, logs, machines and visits on the other. Automations work the tickets for you and ask for your go-ahead where it matters."
+        spaces_title: How the menu is arranged
+        spaces_intro: "There is one menu and it always holds everything. The five things you open daily sit on top; below them the groups, split in three parts — what you build, the system that carries it, your account."
+        spaces_switch: "Groups open and close when you press their name, and stay the way you left them next time too. Open a page and the group holding it opens on its own."
+        spaces:
+          projects: The projects you follow, with their environments, people and settings.
+          product: Tickets, the board, the ideas to weigh and the workload.
+          knowledge: The written knowledge and the map of the product's features.
+          observability: Errors, response times, logs and session replays for what you shipped.
+          infrastructure: The machines, the databases, the reachability checks and the scheduled jobs.
+          alerts: The rules that fire an alert, the notifications you receive and the channels that carry them out.
+          automation: The machines that work the tickets for you and the decisions waiting for your word.
+          seo: "The sites you watch: whether their pages get found by search engines, what keeps them out, and how many visits actually arrive."
+          vault: The sensitive information — keys, passwords, tokens — stored and delegated to the right projects.
+          settings: People, roles, permissions, environments and platforms of the organisation.
+        chain_title: How things are organised
+        chain_intro: "From the whole to the detail, the order is always this:"
+        chain_1: "Organisation: the boundary of everything. People, roles and sensitive information live here."
+        chain_2: "Group: it gathers the projects belonging to the same initiative, and its page sums up how they are all doing together. Optional."
+        chain_3: "Project: the real thing you follow — a site, an application, a service. Tickets and health data hang from here."
+        chain_4: "Environment: the real site, the staging one, development. The same project sends data from several environments, and nearly every list filters by environment."
+        chain_5: "Platform: how that project is built — web, mobile, backend. It decides which features make sense: visits, for one, only apply to the web."
+        first_day_title: The first three things to do
+        first_day_1: Create a project and declare its environments and platforms.
+        first_day_2: Connect the project following the guide of the feature you need first — usually errors, the most useful from day one.
+        first_day_3: "Open the landing page and look at what is waiting for you: that is where every morning starts."
+        cta: Go to projects
+        cta_guides: See all the guides
+      ticket_lifecycle:
+        title: The journey of a ticket
+        subtitle: From report to close, and where to look for what.
+        what_title: What a ticket is
+        what_intro: "A ticket is one thing to do, written once and followed to the end. It has a short code (ALEX-3, say) that identifies it forever: paste it into search and you land on it from any page."
+        what_b1: It is born from a report, from an error turned into a ticket, or from you writing it.
+        what_b2: It has a kind (Bug, Story, Task, Epic) and a priority.
+        what_b3: It lives inside a project and hangs from an environment and a platform.
+        states_title: The states and where you change them
+        states_intro: "These are your organization's statuses, in board order. The status says where a ticket stands, and it changes in two places: from the ticket page, or by dragging the card between columns."
+        where_title: Where you look at tickets
+        where_1: "List: every ticket, with filters by state, priority, project and person. Filters stay in the address, so the link can be saved or sent to a colleague."
+        where_2: "Saved views: a filter you use often, saved with a name and brought back with one click."
+        where_3: "Board: the same things in state columns, to drag around."
+        work_title: What gets written on a ticket
+        work_1: "Assignment: who is working on it. A ticket with nobody on it stays still, and it shows."
+        work_2: "Comments: the conversation. You can attach a file or an image."
+        work_3: "Technical analysis and acceptance criteria: how it is meant to be solved and when it can be called done."
+        work_4: "Report: what was actually done, written at the end — that is what gets read in review."
+        cta: Go to tickets

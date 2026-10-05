@@ -1,0 +1,25 @@
+<%# Overview tab of one uptime group: its monitors. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="uptime-group-monitors">
+  <div class="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.uptime_groups.show.monitors") %></h2>
+    <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime_groups.monitors_count", count: @monitors.size) %></span>
+  </div>
+  <% if @monitors.empty? %>
+    <p class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime_groups.show.no_monitors") %></p>
+  <% else %>
+    <ul class="divide-y divide-stone-200 dark:divide-zinc-800">
+      <% @monitors.each do |monitor| %>
+        <li>
+          <%= link_to member_monitoring_monitor_path(monitor), class: "flex items-center gap-3 px-4 py-3 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "uptime-group-monitor-#{monitor.id}" } do %>
+            <%# Colore non da solo: badge con dot + label testuale dello stato (pattern _monitor_row). %>
+            <%= render Ui::BadgeComponent.new(label: uptime_status_label(monitor), color: uptime_status_color(monitor), dot: true) %>
+            <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= monitor.project.name %></span>
+            <%= render Ui::BadgeComponent.new(label: monitor.environment.label, color: monitor.environment.color, dot: true) %>
+            <%# `target` e non `url`: un monitor tcp/dns/ping non ha url (riga vuota) — pattern _monitor_row. %>
+            <span class="ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400 truncate max-w-[240px]"><%= monitor.target %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>

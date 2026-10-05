@@ -1,0 +1,104 @@
+<% content_for :title, t("member.guides.structure.title") %>
+
+<%# CYRA-441 — i contenitori: le stesse icone del menu, così la parola letta qui si riconosce di
+    fianco. L'indentazione a scalare mostra l'annidamento senza doverlo scrivere. %>
+<%# Classi di indentazione scritte per esteso: Tailwind legge le stringhe nei file, una classe
+    composta a runtime non verrebbe generata. %>
+<% containers = [
+     { key: "organization", icon: "building",        indent: "" },
+     { key: "group",        icon: "workflow",        indent: "pl-4" },
+     { key: "project",      icon: "folder",          indent: "pl-8" },
+     { key: "environment",  icon: "layers",          indent: "pl-12" },
+     { key: "platform",     icon: "shapes",          indent: "pl-12" }
+   ] %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-structure">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "network", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.structure.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.structure.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.structure.cta"), href: member_projects_path, variant: :primary, size: :sm, icon: "folder", test_id: "member-guide-structure-cta") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.structure.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-structure-chain">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.structure.chain_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.structure.chain_intro") %></p>
+      <ul class="space-y-2.5">
+        <% containers.each do |container| %>
+          <li class="flex items-start gap-2.5 <%= container[:indent] %>"
+              data-test="guide-structure-container" data-container="<%= container[:key] %>">
+            <span class="shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-md bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 mt-0.5"><%= render Ui::IconComponent.new(name: container[:icon], class: "text-[12px]") %></span>
+            <div class="min-w-0">
+              <p class="font-display text-[13.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.structure.chain.#{container[:key]}.title") %></p>
+              <p class="mt-0.5 text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.structure.chain.#{container[:key]}.body") %></p>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <%# Il rilievo del ticket: i concetti non stanno in fila, si incrociano — e l'incrocio si scopriva
+      solo sbattendoci contro (un controllo di raggiungibilità che non compare). %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-structure-cross">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.structure.cross_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.structure.cross_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% [ [ "heart-pulse", "cross_uptime" ], [ "key", "cross_ingest" ],
+             [ "ticket", "cross_ticket" ], [ "chart-line", "cross_analytics" ] ].each do |icon_name, key| %>
+          <li class="flex items-start gap-2.5">
+            <%= render Ui::IconComponent.new(name: icon_name, class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %>
+            <span class="leading-relaxed"><%= t("member.guides.structure.#{key}") %></span>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-structure-where">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.structure.where_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.structure.where_intro") %></p>
+      <ol class="space-y-3">
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">1</span>
+          <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+            <%= t("member.guides.structure.where_platforms", area: t("member.nav.group_settings"), page: t("member.nav.platforms")) %>
+            <%= link_to t("member.guides.structure.where_platforms_cta"), member_platforms_path, class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap", data: { test: "guide-structure-platforms" } %>
+          </p>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">2</span>
+          <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+            <%= t("member.guides.structure.where_environments", area: t("member.nav.group_settings"), page: t("member.nav.environments")) %>
+            <%= link_to t("member.guides.structure.where_environments_cta"), member_environments_path, class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap", data: { test: "guide-structure-environments" } %>
+          </p>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">3</span>
+          <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.structure.where_projects") %></p>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <%# Le persone non sono un contenitore: hanno la loro guida, e mandarci di qui evita di ripeterla
+      qui in mezzo alle cose che contengono i dati. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-structure-people">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.structure.people_title") %></h2></div>
+    <div class="px-4 py-4">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.structure.people_body") %></p>
+      <div class="mt-3">
+        <%= render Ui::ButtonComponent.new(label: t("member.guides.structure.people_cta"), href: member_guides_permissions_path, variant: :secondary_muted, size: :sm, icon: "shield-half", test_id: "member-guide-structure-people-cta") %>
+      </div>
+    </div>
+  </div>
+</div>

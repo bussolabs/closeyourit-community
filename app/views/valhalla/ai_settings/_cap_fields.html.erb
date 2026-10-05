@@ -1,0 +1,15 @@
+<% scope = "valhalla.ai_settings.cap" %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ai-cap">
+  <div class="border-b border-stone-200 dark:border-zinc-800 px-6 py-4">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("#{scope}.title") %></h2>
+    <p class="mt-1 text-[13px] text-stone-500 dark:text-zinc-400"><%= t("#{scope}.hint") %></p>
+  </div>
+  <div class="p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+      <%= render Ui::InputComponent.new(
+            name: "ai_org_monthly_token_cap", type: "number", min: 1, inputmode: "numeric",
+            label: t("#{scope}.label"), value: settings.ai_org_monthly_token_cap, hint: t("#{scope}.field_hint"),
+            test_id: "ai-org-monthly-token-cap", error: errors&.dig(:ai_org_monthly_token_cap)&.first) %>
+    </div>
+  </div>
+</div>

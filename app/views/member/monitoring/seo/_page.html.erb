@@ -1,0 +1,33 @@
+<%# locals:
+      page: (required) — Seo::Page con site→project caricato
+      show_project: (optional, default true) — falso dentro la scheda di UN sito, dove sarebbe la
+        stessa chiave su ogni riga (CYRA-536).
+    Riga dell'elenco pagine: lo stato del sito visto pagina per pagina. %>
+<% show_project = local_assigns.fetch(:show_project, true) %>
+<%# Nell'elenco di tutti i siti il solo percorso («/») non distingue una home dall'altra: lì serve anche il dominio. %>
+<% shown_url = show_project ? page.url.sub(%r{\Ahttps?://}, "") : page.display_url %>
+<%= render Ui::TableComponent::RowComponent.new(test_id: "seo-page-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <% href = seo_safe_url(page.url) %>
+    <% if href %>
+      <%= link_to href, class: "font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 break-all",
+            rel: "noopener noreferrer nofollow", target: "_blank" do %><%= truncate(shown_url, length: 60) %><% end %>
+    <% else %>
+      <span class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 break-all"><%= truncate(shown_url, length: 60) %></span>
+    <% end %>
+    <%= link_to t("member.review_fixes.page_findings"), member_monitoring_seo_index_path(ft: 1, q: page.url),
+          class: "block text-[12px] text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "seo-page-findings" } %>
+    <% if show_project %><span class="ml-1.5 text-[11px] text-gray-400 dark:text-zinc-500"><%= page.site.project.key %></span><% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.seo.columns.status"))) { render Ui::BadgeComponent.new(label: (page.status_code || "—").to_s, color: seo_status_color(page.status_code)) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.seo.columns.title_tag"), class: "text-[12px] text-zinc-900 dark:text-zinc-100")) { truncate(page.title.presence || t("member.monitoring.seo.missing"), length: 60) } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.seo.columns.h1")) do %>
+    <% if page.missing_h1? %>
+      <span class="text-[11px] text-rose-600 dark:text-rose-400"><%= t("member.monitoring.seo.missing") %></span>
+    <% else %>
+      <span class="text-[11px] text-gray-500 dark:text-zinc-400"><%= page.h1s.size %></span>
+    <% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.seo.columns.words"), mono: true, class: "text-[11px] text-gray-500 dark:text-zinc-400")) { page.word_count.to_s } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.seo.columns.last_seen"), class: "text-[11px] text-gray-500 dark:text-zinc-400")) { t("member.monitoring.seo_sites.checked_ago", duration: time_ago_in_words(page.last_seen_at)) } %>
+<% end %>

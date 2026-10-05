@@ -1,0 +1,17 @@
+<%# locals: idea, idea_case, can_manage %>
+<div class="px-4 py-4 flex gap-3" data-test="member-idea-case-<%= idea_case.id %>">
+  <span class="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[12px]"><%= render Ui::IconComponent.new(name: "test-tube") %></span>
+  <div class="min-w-0 flex-1">
+    <div class="flex items-center gap-2">
+      <span class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100" data-test="member-idea-case-title-<%= idea_case.id %>"><%= idea_case.title %></span>
+      <% if idea.status_open? && can_manage %>
+        <%= button_to member_idea_case_path(idea, idea_case), method: :delete, class: "ml-auto inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-300 dark:text-zinc-600 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15", data: { test: "member-idea-case-delete-#{idea_case.id}", turbo_confirm: t("member.ideas.cases.delete_confirm") } do %>
+          <%= render Ui::IconComponent.new(name: "trash", class: "text-[11px]") %>
+        <% end %>
+      <% end %>
+    </div>
+    <% if idea_case.description.present? %>
+      <%= render Ui::MarkdownComponent.new(text: idea_case.description, class: "mt-1 text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed") %>
+    <% end %>
+  </div>
+</div>

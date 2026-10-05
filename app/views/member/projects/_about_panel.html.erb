@@ -1,0 +1,53 @@
+<%# locals: (can_manage:) %>
+<%# CYRA-883 — compact: one label/value row per fact. The description is the page subtitle and the key
+    sits next to the name, so neither repeats here. %>
+<%# Closed at first: what the project is changes rarely, so it opens on request. %>
+<%= render Ui::DetailsComponent.new(title: t("member.projects.show.about"), test_id: "project-about",
+      collapsible: true, collapsed: true) do |details| %>
+  <% if @project.group %>
+    <% details.with_row(label: t("member.projects.show.group")) do %>
+      <span class="h-2.5 w-2.5 shrink-0 rounded-[3px] <%= Ui::Colors.swatch(@project.group.color) %>"></span>
+      <% if can_view_groups? %>
+        <%= link_to @project.group.name, member_group_path(@project.group), class: "truncate text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "project-group" } %>
+      <% else %>
+        <span class="truncate text-zinc-900 dark:text-zinc-100" data-test="project-group"><%= @project.group.name %></span>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if @project.github_repository %>
+    <% details.with_row(label: t("member.projects.show.repository"), test_id: "project-repository") do %>
+      <%= link_to @project.github_repository.html_url, target: "_blank", rel: "noopener", class: "inline-flex min-w-0 items-center gap-1.5 text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "project-repository-link" } do %>
+        <%= render Ui::IconComponent.new(name: "github", class: "text-[13px] text-gray-500 dark:text-zinc-400") %>
+        <span class="truncate font-mono text-[12px]"><%= @project.github_repository.full_name %></span>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if @project.platforms.any? %>
+    <% details.with_row(label: t("member.projects.show.platforms"), test_id: "project-platforms") do %>
+      <% @project.platforms.ordered.each do |platform| %>
+        <%= render Ui::BadgeComponent.new(label: platform.label, color: platform.color, dot: true) %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% manage_tokens = can_manage ? link_to(t("member.projects.show.manage_tokens"), member_project_tokens_path(@project), class: "text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "project-manage-tokens" }) : nil %>
+  <% details.with_row(label: t("member.projects.show.environments"), action: manage_tokens, test_id: "project-environments") do %>
+    <% if @project_environments.any? %>
+      <% @project_environments.each do |environment| %>
+        <% count = @environment_token_counts[environment.id].to_i %>
+        <% if count.positive? %>
+          <span class="inline-flex items-center gap-1.5" data-test="project-environment">
+            <%= render Ui::BadgeComponent.new(label: environment.label, color: environment.color, dot: true) %>
+            <span class="font-mono text-[10px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.show.token_count", count: count) %></span>
+          </span>
+        <% else %>
+          <span data-test="project-environment" title="<%= t('member.projects.show.no_active_tokens') %>"><%= render Ui::BadgeComponent.new(label: environment.label, color: "gray", dot: true) %></span>
+        <% end %>
+      <% end %>
+    <% else %>
+      <span class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="project-environments-empty"><%= t("member.projects.show.no_environments") %></span>
+    <% end %>
+  <% end %>
+<% end %>

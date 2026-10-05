@@ -1,0 +1,30 @@
+<%# Tab of one occurrence: its contexts (e.g. the job) and the extra values. %>
+<% extra = event.context["extra"] %>
+<% contexts = event.context["contexts"]&.except("runtime") %>
+<div class="px-4 py-3 space-y-3" data-test="error-context">
+  <% if contexts.is_a?(Hash) %>
+    <% contexts.each do |name, values| %>
+      <% next unless values.is_a?(Hash) && values.any? %>
+      <div>
+        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= name %></p>
+        <div class="mt-1 rounded-md border border-stone-200 dark:border-zinc-800 divide-y divide-stone-200 dark:divide-zinc-800">
+          <% values.each do |k, v| %>
+            <div class="flex px-3 py-1.5"><span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 w-28 shrink-0"><%= k %></span><span class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 break-all"><%= error_value_deep(v) %></span></div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+  <% if extra.is_a?(Hash) && extra.any? %>
+    <div>
+      <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400">extra</p>
+      <div class="mt-1 rounded-md border border-stone-200 dark:border-zinc-800 divide-y divide-stone-200 dark:divide-zinc-800">
+        <% extra.each do |k, v| %>
+          <div class="flex px-3 py-1.5"><span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 w-28 shrink-0"><%= k %></span><span class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 break-all"><%= error_value_deep(v) %></span></div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+  <%# CYRA-379: context/extra oscurati (anche annidati) → spiega e linka una volta per il blocco. %>
+  <% if any_scrubbed?([ contexts, extra ]) %><%= render "member/monitoring/error_groups/scrubbed_hint" %><% end %>
+</div>

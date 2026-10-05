@@ -1,0 +1,44 @@
+<%# locals: session — Replays::Session, errors_count — Integer. Riga della galleria replay (index). %>
+<%= render Ui::TableComponent::RowComponent.new(href: member_monitoring_replay_path(session), link_label: session.replay_session_id, id: dom_id(session), test_id: "replay-session-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <%= link_to member_monitoring_replay_path(session), class: "block", data: { test: "replay-link-#{session.id}" } do %>
+      <span class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400">
+        <%= render Ui::IconComponent.new(name: "film", class: "text-[11px] text-gray-400 dark:text-zinc-500") %><span data-test="replay-title"><%= t("member.monitoring.replays.session_named", day: l(session.started_at, format: :chart_day), time: l(session.started_at, format: :chart_time)) %></span>
+      </span>
+      <span class="block font-mono text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5"><%= session.replay_session_id.truncate(20) %></span>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.replays.col_project")) do %>
+    <span class="inline-flex items-center gap-1.5 text-[12.5px] text-gray-500 dark:text-zinc-400">
+      <span class="w-2 h-2 rounded-[2px] <%= Ui::Colors.swatch(session.project.color) %>"></span>
+      <%= session.project.name %>
+      <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= session.project.key %></span>
+    </span>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.replays.col_user"), mono: true, class: "text-[11px] text-gray-500 dark:text-zinc-400")) do %>
+    <% if session.user_hash.present? %>
+      <%= session.user_hash.first(10) %>
+    <% else %>
+      <span title="<%= t("member.monitoring.replays.user_unknown") %>" data-test="replay-user-unknown">—<span class="sr-only"><%= t("member.monitoring.replays.user_unknown") %></span></span>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.replays.col_entry")) do %>
+    <% if session.entry_path.present? %>
+      <span class="font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= session.entry_path %></span>
+    <% else %>
+      <span class="font-mono text-[12px] text-gray-500 dark:text-zinc-400" title="<%= t("member.monitoring.replays.entry_unknown") %>" data-test="replay-entry-unknown">—<span class="sr-only"><%= t("member.monitoring.replays.entry_unknown") %></span></span>
+    <% end %>
+    <% if session.pages_count > 1 %>
+      <span class="text-[11px] text-gray-400 dark:text-zinc-500 ml-1"><%= t("member.monitoring.replays.pages_count", count: session.pages_count) %></span>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.replays.col_errors"), align: :right) do %>
+    <% if errors_count.positive? %>
+      <%= render Ui::BadgeComponent.new(label: errors_count.to_s, color: :red, dot: true) %>
+    <% else %>
+      <span class="font-mono text-gray-400 dark:text-zinc-500 text-[12px]" data-test="replay-errors-none">0</span>
+    <% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.replays.col_duration"), align: :right, mono: true, class: "text-gray-600 dark:text-zinc-400")) { session.duration_ms ? format("%d:%02d", session.duration_ms / 60_000, (session.duration_ms / 1000) % 60) : "—" } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.replays.col_started"), align: :right, mono: true, class: "whitespace-nowrap text-gray-500 dark:text-zinc-400", test_id: "replay-started-#{session.id}")) { error_time_ago(session.started_at) } %>
+<% end %>

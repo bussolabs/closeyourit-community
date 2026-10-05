@@ -1,0 +1,69 @@
+<% content_for :title, t("member.secrets.versions_title", name: @secret.name) %>
+<% can_manage = can?("secrets.manage", scope: @project) %>
+<%# CYRA-721 — la lista è aperta anche a chi gestisce (gli serve per scegliere la versione da
+    ripristinare), ma «Mostra»/«Copia» chiamano l'endpoint del valore in chiaro: senza `secrets.read`
+    non vengono resi, altrimenti sarebbero due comandi che rispondono sempre di no. %>
+<% can_read = can?("secrets.read", scope: @project) %>
+
+<div class="p-7 space-y-6" data-test="member-secret-versions">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "secrets" %>
+
+  <%# T1 — tabs, title and versions share one panel, as on the other secrets pages. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="border-b border-stone-200 dark:border-zinc-800 px-3 py-2"><%= render "member/project_secrets/subnav", project: @project, active: "variables" %></div>
+    <div class="space-y-1 border-b border-stone-200 dark:border-zinc-800 px-4 py-3">
+      <p class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="versions-environment">
+        <%= link_to t("member.secrets.subnav.variables"), member_project_secrets_path(@project), class: "hover:text-zinc-900 dark:hover:text-zinc-100", data: { test: "versions-back" } %>
+        <span class="text-gray-300 dark:text-zinc-600">/</span> <span class="font-mono text-zinc-700 dark:text-zinc-300"><%= @secret.name %></span> · <%= @secret.environment.label %>
+      </p>
+      <h2 class="font-display text-[16px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.secrets.versions_title", name: @secret.name) %></h2>
+    </div>
+
+    <% if @versions.empty? %>
+      <%= render Ui::EmptyStateComponent.new(title: t("member.secrets.versions_empty"),
+            body: t("member.secrets.versions_empty_body"), icon: "history", test_id: "versions-empty") %>
+    <% else %>
+      <div class="divide-y divide-stone-100 dark:divide-zinc-800" data-test="versions-list">
+        <% @versions.each_with_index do |version, i| %>
+          <div class="flex items-start gap-3 px-4 py-3" data-test="version-row">
+            <span class="font-mono text-[12px] font-medium text-zinc-900 dark:text-zinc-100 w-10 shrink-0"><%= t("member.secrets.version_label", number: version.number) %></span>
+            <%# CYRA-204: il valore NON è più nel sorgente HTML (lo storico lo esporrebbe tutto, corrente
+                compresa, aggirando il reveal della matrice — CYRA-202). "Mostra"/"Copia" lo recuperano
+                on-demand dall'endpoint reveal della versione, che registra l'accesso (audit "read", source web). %>
+            <% if can_read %>
+              <div class="flex items-start gap-2 min-w-0 flex-1" data-controller="secret-reveal clipboard"
+                   data-secret-reveal-url-value="<%= reveal_member_project_secret_version_path(@project, @secret, version) %>"
+                   data-secret-reveal-show-value="<%= t('member.secrets.reveal') %>"
+                   data-secret-reveal-hide-value="<%= t('member.secrets.hide') %>"
+                   data-secret-reveal-error-value="<%= t('member.secrets.reveal_failed') %>"
+                   data-clipboard-copied-value="<%= t('member.secrets.copied') %>"
+                   data-clipboard-error-value="<%= t('member.secrets.copy_failed') %>"
+                   data-clipboard-url-value="<%= reveal_member_project_secret_version_path(@project, @secret, version) %>">
+                <button type="button" data-action="secret-reveal#toggle" data-secret-reveal-target="toggle" data-test="version-reveal-<%= version.id %>"
+                        class="cursor-pointer select-none font-mono text-[12px] text-gray-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"><%= t("member.secrets.reveal") %></button>
+                <code data-secret-reveal-target="value" hidden data-test="version-value-<%= version.id %>"
+                      class="min-w-0 block max-w-md break-all rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2 py-1.5 font-mono text-[12px] text-zinc-800 dark:text-zinc-200"></code>
+                <button type="button" data-action="clipboard#copy" class="shrink-0 text-[11px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+                  <span data-clipboard-target="label"><%= t("member.secrets.copy") %></span>
+                </button>
+              </div>
+            <% else %>
+              <div class="flex items-start gap-2 min-w-0 flex-1">
+                <span class="font-mono text-[12px] text-gray-400 dark:text-zinc-500 select-none" data-test="version-masked-<%= version.id %>"><%= t("member.secrets.masked") %></span>
+                <span class="text-[11.5px] text-gray-400 dark:text-zinc-500"><%= t("member.secrets.value_hidden") %></span>
+              </div>
+            <% end %>
+            <span class="text-[11px] text-gray-400 dark:text-zinc-500 shrink-0 hidden sm:block"><%= version.created_by&.name || t("member.secrets.activity_system") %> · <%= secret_event_time(version.created_at) %></span>
+            <div class="shrink-0 w-28 text-right">
+              <% if i.zero? %>
+                <%= render Ui::BadgeComponent.new(label: t("member.secrets.current"), color: "emerald", dot: true) %>
+              <% elsif can_manage %>
+                <%= button_to t("member.secrets.rollback"), rollback_member_project_secret_version_path(@project, @secret, version), method: :post, params: { confirm: 1 }, form: { data: { turbo_confirm: t("member.secrets.rollback_confirm") } }, class: "inline-flex items-center gap-1.5 h-[28px] px-2.5 rounded-md text-[12px] font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-indigo-50 dark:hover:bg-indigo-500/15", data: { test: "version-rollback-#{version.id}" } %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

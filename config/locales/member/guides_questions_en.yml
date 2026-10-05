@@ -1,0 +1,31 @@
+---
+en:
+  member:
+    guides:
+      index:
+        questions:
+          title: Ticket questions
+      questions:
+        title: Ticket questions
+        subtitle: Ask, answer and unblock — without cluttering the discussion.
+        what_title: What it is for
+        what_intro: "Two different things happen on a ticket: people talk, and people ask. They used to share one place, and whoever answered had to guess which question they were answering. Questions now have a tab of their own, and every answer belongs to the question it answers."
+        what_b1: "Comments stay for talking: reporting, explaining, thanking."
+        what_b2: Questions live in the Questions tab, each with its answer next to it.
+        what_b3: Automated assistants ask from there too, when a decision is missing.
+        ask_title: Asking a question
+        ask_intro: "Open the ticket, go to the Questions tab and write. A question is a short request: if it needs a long text, that is a comment or a work report."
+        ask_b1: "Write it in plain words: no commands, URLs or file paths."
+        ask_b2: "Tick «Visible to the client too» when the question concerns whoever opened the ticket. Without the tick, only the team sees it."
+        ask_b3: "Tick «Work cannot continue without an answer» when that is really the case. Whoever can edit the ticket sees this tick."
+        blocking_title: When a question holds the work
+        blocking_intro: A question marked as blocking puts the ticket on hold. It is not an alarm, it is an honest statement.
+        blocking_b1: A line at the top of the ticket says so, on whichever tab you are looking at.
+        blocking_b2: No automated assistant picks up that ticket while the question stays open.
+        blocking_b3: As soon as the answer arrives the ticket resumes by itself. You do not have to lift anything by hand.
+        blocking_b4: If the question was overtaken by events, withdraw it — the work resumes without inventing an answer.
+        answer_title: Answering
+        answer_intro: Under every open question there is room for the answer. Write there, not in the discussion.
+        answer_b1: The answer stays next to its question and reads together with it.
+        answer_b2: Whoever follows the ticket is notified when a question arrives and when the answer does.
+        answer_b3: "You can answer a question that already has an answer: the new one is added, it does not replace the earlier one."

@@ -1,0 +1,27 @@
+<%# locals: (name:, description:, by_env:, delegated_by_env:, environments:, secrets_enabled:, can_read:, errors:) %>
+<%# CYRA-924 — C64: a row is edited in a dialog, one field per environment; Save writes the whole row.
+    The fields start empty (CYRA-202) and the controller fills them from the reveal endpoint. %>
+<% row_slug = name.parameterize %>
+<% title = safe_join([ t("member.secrets.edit_title"), " ", tag.span(name, class: "font-mono") ]) %>
+<%# F24 — the standard shell; `form:` keeps Save in the header inside the row's form. %>
+<%= render Ui::ModalComponent.new(title: title, padded: false, test_id: "secret-dialog-#{row_slug}", class: "whitespace-normal",
+      aria: { label: "#{t('member.secrets.edit_title')} #{name}" },
+      form: { url: member_project_secrets_path(@project), method: :post, data: { action: "submit->secret-row#prepareSubmission" } },
+      data: { secret_row_target: "dialog", action: "click->secret-row#backdrop close->secret-row#reset" }) do |modal| %>
+  <% modal.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: t("member.secrets.cancel_edit"), variant: :secondary_muted, size: :sm,
+          data: { action: "secret-row#cancel" }) %>
+    <%= render Ui::ButtonComponent.new(label: t("member.secrets.save_row"), type: "submit", variant: :primary, size: :sm,
+          test_id: "secret-save-#{row_slug}") %>
+  <% end %>
+  <div class="space-y-4 px-4 py-4">
+    <% if errors.present? %>
+      <p class="text-[12.5px] text-rose-600 dark:text-rose-400" data-test="secret-row-error-<%= row_slug %>"><%= errors.values.flatten.first %></p>
+    <% end %>
+    <%= render "member/project_secrets/dialog_identity", name: name, description: description, name_editable: false, dom: row_slug %>
+    <% environments.each do |environment| %>
+      <%= render "member/project_secrets/dialog_field", environment: environment, variable: by_env[environment.id],
+            delegation: delegated_by_env[environment.id], enabled: secrets_enabled[environment.id], can_read: can_read %>
+    <% end %>
+  </div>
+<% end %>

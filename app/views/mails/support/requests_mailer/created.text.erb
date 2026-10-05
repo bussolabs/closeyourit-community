@@ -1,0 +1,9 @@
+<%= t("support.mailer.intro", name: @account.name.presence || @account.email) %>
+
+<%= @support_request.body %>
+
+<%= t("support.mailer.organization") %>: <%= @support_request.organization&.name %>
+<%= t("support.mailer.page") %>: <%= @support_request.context["page"] %>
+<%= t("support.mailer.version") %>: <%= @support_request.context["version"] %>
+
+<%= valhalla_support_request_url(@support_request) %>

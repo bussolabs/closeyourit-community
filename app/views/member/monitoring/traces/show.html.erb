@@ -1,0 +1,18 @@
+<% content_for :title, @trace.trace_id %>
+<div class="p-7 space-y-6" data-test="trace-detail">
+  <%= render Ui::PageHeaderComponent.new(title: @selected&.name&.truncate(120) || @trace.trace_id, subtitle: @project.name,
+        breadcrumb: [{ label: t("member.traces.title"), href: member_monitoring_traces_path },
+          { label: tag.span("#{@trace.trace_id.first(8)}…#{@trace.trace_id.last(4)}", title: @trace.trace_id,
+              "aria-label": @trace.trace_id, data: { test: "trace-breadcrumb-id" }) }]) do |header| %>
+    <% header.with_counts do %><%= render Ui::StatLabelComponent.new(label: t("member.traces.spans"), value: @detail.pagination.total) %><% end %>
+  <% end %>
+  <%= render Ui::GridComponent.new(cols: 1, lg: 3, gap: 6) do %>
+    <%= render Ui::StackComponent.new(gap: 6, class: "lg:col-span-2 min-w-0") do %>
+      <%= render "waterfall" %>
+      <%= render "related" %>
+    <% end %>
+    <%= render Ui::StackComponent.new(gap: 6, class: "min-w-0") do %>
+      <%= render "details" %>
+    <% end %>
+  <% end %>
+</div>

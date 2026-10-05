@@ -1,0 +1,102 @@
+<%# CYRA-821 — i risultati, e soltanto loro. Sfogliare e riordinare chiedono questo frame e ricevono
+    questo frammento: né il layout, né la barra dei filtri, né le chip dei conteggi. Il controller
+    risponde direttamente da qui (`render_results_frame`), quindi le query di tutto ciò che sta fuori
+    non partono nemmeno — è la differenza fra chiedere meno byte e fare meno lavoro.
+
+    `turbo_action: advance` come ogni altro elenco a frame del prodotto (ticket, conoscenza, agenti):
+    l'indirizzo segue i risultati e la pagina che si guarda si copia e si riapre. `class: block`
+    perché un elemento personalizzato nasce inline e senza quello il riquadro perderebbe la sua forma.
+
+    Le risposte che NON contengono questo frame — la login quando l'accesso è scaduto, una pagina
+    d'errore — non si trattano qui: `frame_missing.js` (CYRA-827) le apre a schermo intero, per
+    ogni riquadro dell'applicazione.
+
+    DENTRO ci va solo ciò che cambia sfogliando. Filtri, periodo e ricerca cambiano l'INSIEME, e
+    quindi anche le chip e i conteggi che stanno qui fuori: restano una navigazione intera, così i
+    numeri e le righe raccontano sempre la stessa fotografia. Per la stessa ragione il form del
+    triage di massa esce dal frame (`turbo_frame: _top`): risolvere venti gruppi sposta le chip. %>
+<%= turbo_frame_tag "errors-results", class: "block", data: { turbo_action: "advance" } do %>
+  <% if @error_groups.empty? %>
+    <%# CYRA-400 — i filtri si toglievano uno alla volta, e quello dell'ambiente è acceso anche
+        quando nessuno l'ha scelto (l'atterraggio predefinito, CYRA-375): senza questa via
+        d'uscita si resta davanti a un elenco vuoto senza sapere che cosa lo sta svuotando.
+        Il comando spegne ANCHE i predefiniti (stato e ambiente vuoti valgono «tutti»), altrimenti
+        «azzera» riporterebbe su una lista ancora filtrata. %>
+    <div class="px-4 py-10 text-center" data-test="errors-no-match">
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.no_match") %></p>
+      <%# CYRA-340: quando è il periodo a svuotare l'elenco, la via d'uscita è allargarlo — non
+          togliere i filtri, che qui non c'entrano. %>
+      <% unless current_time_range.unbounded? %>
+        <p class="mt-1.5 text-[12px] text-gray-500 dark:text-zinc-400" data-test="errors-no-match-range"><%= t("shared.time_range.empty_window") %></p>
+      <% end %>
+      <%# CYRA-883 — when the last matching error came, or that none ever did: the reader learns
+          whether widening the range can help at all. %>
+      <% if @last_error_at %>
+        <p class="mt-1.5 text-[12px] text-zinc-900 dark:text-zinc-100" data-test="errors-last-error" title="<%= l(@last_error_at, format: :long) %>"><%= t("member.monitoring.list.last_error", time: error_time_ago_short(@last_error_at)) %></p>
+      <% else %>
+        <p class="mt-1.5 text-[12px] text-gray-500 dark:text-zinc-400" data-test="errors-never"><%= t("member.monitoring.list.never") %></p>
+      <% end %>
+      <%# CYRA-821 — le vie d'uscita cambiano periodo e filtri, cioè l'insieme: escono dal frame,
+          altrimenti ricaricherebbero i soli risultati lasciando la barra qui sopra su ciò che
+          hanno appena tolto. %>
+      <div class="mt-4 flex items-center justify-center gap-2">
+        <% unless current_time_range.unbounded? %>
+          <%# CYRA-883 — 30 days, unless the last matching error is older: then back to its day. %>
+          <% widen_from = @last_error_at&.to_date if @last_error_at && @last_error_at < 30.days.ago %>
+          <% widen_query = widen_from ? { range: Monitoring::TimeRange::CUSTOM, from: widen_from.iso8601 } : { range: "30d" } %>
+          <%= render Ui::ButtonComponent.new(label: (widen_from ? t("member.monitoring.list.widen_to", date: l(widen_from, format: :short)) : t("shared.time_range.widen")),
+                href: member_monitoring_error_groups_path(request.query_parameters.except("page", "from", "to").merge(widen_query)),
+                variant: :secondary_muted, size: :sm, icon: "history",
+                test_id: "errors-widen-range", data: { turbo_frame: "_top" }) %>
+        <% end %>
+        <%= render Ui::ButtonComponent.new(label: t("member.monitoring.clear_filters"),
+              href: member_monitoring_error_groups_path(ft: "1", range: params[:range]),
+              variant: :secondary_muted, size: :sm, icon: "funnel-x",
+              test_id: "errors-clear-filters", data: { turbo_frame: "_top" }) %>
+      </div>
+    </div>
+  <% else %>
+    <%# CYRA-45: form del triage bulk. Avvolge barra azioni + tabella coi checkbox `ids[]`. La colonna
+        checkbox è SEMPRE presente (anche nel broadcast Turbo di _group_row) → nessun disallineamento
+        colonne dopo un replace; il gate errors.triage è server-side (bulk_triage scarta i non permessi). %>
+    <%# CYRA-883 — page-wide facts the rows follow through CSS (group-data-*), so a row replaced in
+        real time, rendered without this page's context, still lines up with the header. %>
+    <%= tag.div class: "group", data: { test: "errors-results-layout", single_project: ("" if @single_project),
+                                        users_untracked: ("" if @users_untracked) } do %>
+    <%= form_with url: bulk_triage_member_monitoring_error_groups_path, method: :post,
+                  data: { controller: "ui--bulk-select", turbo_frame: "_top" } do %>
+      <%= render "member/monitoring/bulk_triage_bar", test_prefix: "errors",
+            merge_url: merge_preview_member_monitoring_error_groups_path %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.monitoring.title"), selectable: { test_id: "errors-select-all" })) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.col_issue"), sort: "issue") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.col_project"), classes: "group-data-[single-project]:hidden", test_id: "errors-col-project") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.col_environment"), classes: "w-28") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.col_level"), sort: "level", initial: :desc, classes: "w-24") %>
+          <%# CYRA-883 — the ticket, when there is one, sits next to the status it explains. %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.col_status"), sort: "status", classes: "w-28") %>
+          <th scope="col" class="<%= Ui::TableComponent::HeaderComponent::BASE_CLASS %> w-24" title="<%= t("member.monitoring.list.trend_tip", period: t("shared.time_range.presets.#{@trend_range}")) %>"><%= t("member.monitoring.list.trend") %></th>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.col_events"), sort: "events", initial: :desc, align: :right, classes: "w-20") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.col_users"), sort: "users", initial: :desc, align: :right, classes: "w-20") do %>
+            <% if @users_untracked %>
+              <%= link_to t("member.monitoring.list.users_untracked_note"), member_guides_errors_path,
+                    class: "block normal-case tracking-normal font-sans italic text-[10.5px] text-gray-400 dark:text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline",
+                    title: t("member.monitoring.users_untracked_tip"), data: { test: "errors-users-untracked-note", turbo_frame: "_top" } %>
+            <% end %>
+          <% end %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.col_last_seen"), sort: "last_seen", initial: :desc, align: :right, classes: "w-28") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+        <% end %>
+        <% @error_groups.each do |group| %>
+          <%= render "member/monitoring/error_groups/group_row", group: group,
+                last_environment: @last_environments[group.id],
+                time_range_params: time_range_link_params,
+                same_message_count: @same_message_counts[group.title],
+                trend: @trends[group.id] %>
+        <% end %>
+      <% end %>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "errors-pagination")) %>
+    <% end %>
+    <% end %>
+  <% end %>
+<% end %>

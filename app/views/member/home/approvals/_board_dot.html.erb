@@ -1,0 +1,7 @@
+<%# locals: style, cell — one step dot of the board row, with its name for screen readers (CYRA-904). %>
+<% if style[:icon] %>
+  <%= render Ui::IconComponent.new(name: style[:icon], class: "#{style[:mark]} text-[10px]") %>
+<% else %>
+  <span class="w-1.5 h-1.5 rounded-full <%= style[:mark] %>" aria-hidden="true"></span>
+<% end %>
+<span class="sr-only"><%= approval_cell_title(cell) %></span>

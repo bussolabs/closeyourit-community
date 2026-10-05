@@ -1,0 +1,39 @@
+<%# locals: (telegram_connected:) %>
+<%= render Ui::SectionComponent.new(title: t("member.notifications.channels.heading"), header_padding: :wide,
+      body_class: "divide-y divide-stone-100 dark:divide-zinc-800") do |section| %>
+  <% section.with_subtitle do %>
+    <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.notifications.channels.hint") %></p>
+  <% end %>
+    <!-- In-app: always on -->
+    <div class="flex items-center gap-3 px-5 py-3.5">
+      <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shrink-0"><%= render Ui::IconComponent.new(name: "bell", class: "text-[13px]") %></span>
+      <div class="min-w-0 flex-1"><p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.notifications.channels.in_app") %></p><p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.notifications.channels.in_app_hint") %></p></div>
+      <span class="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 shrink-0" data-test="pref-in-app-always"><%= t("member.notifications.channels.in_app_state") %></span>
+    </div>
+    <!-- Email -->
+    <label class="flex items-center gap-3 px-5 py-3.5 cursor-pointer">
+      <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 shrink-0"><%= render Ui::IconComponent.new(name: "mail", class: "text-[13px]") %></span>
+      <div class="min-w-0 flex-1"><p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.notifications.channels.email") %></p><p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.notifications.channels.email_hint", email: Current.account.email) %></p></div>
+      <input type="hidden" name="email_enabled" value="0">
+      <input type="checkbox" name="email_enabled" value="1" <%= "checked" if @preference.email_enabled %> data-test="pref-email" class="w-4 h-4 rounded accent-indigo-600 shrink-0">
+    </label>
+    <!-- Telegram -->
+    <label class="flex items-center gap-3 px-5 py-3.5 <%= telegram_connected ? "cursor-pointer" : "opacity-70" %>">
+      <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-sky-50 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 shrink-0"><%= render Ui::IconComponent.new(name: "send", class: "text-[14px]") %></span>
+      <div class="min-w-0 flex-1"><p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.notifications.channels.telegram") %></p><p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.notifications.channels.telegram_hint") %></p></div>
+      <input type="hidden" name="telegram_enabled" value="0">
+      <input type="checkbox" name="telegram_enabled" value="1" <%= "checked" if @preference.telegram_enabled %> <%= "disabled" unless telegram_connected %> data-test="pref-telegram" class="w-4 h-4 rounded accent-indigo-600 shrink-0">
+    </label>
+    <%# La CONNESSIONE Telegram vive nella tab dedicata. Qui, se scollegato, solo un hint che spiega
+        perché il canale Telegram è disabilitato e rimanda alla tab. %>
+    <% unless telegram_connected %>
+      <div class="px-5 py-3 bg-stone-50/60 dark:bg-zinc-800/60 flex items-center justify-between gap-3" data-test="pref-telegram-goto">
+        <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= render Ui::IconComponent.new(name: "send", class: "text-sky-500 mr-1.5") %><%= t("member.notifications.telegram.guide_title") %></p>
+        <%= link_to member_telegram_connection_path,
+              class: "inline-flex items-center gap-1.5 h-[30px] px-3 rounded-md text-[12px] font-medium text-sky-600 dark:text-sky-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-sky-50 dark:hover:bg-sky-500/15 shrink-0",
+              data: { test: "pref-telegram-goto-link" } do %>
+          <%= t("member.notifications.telegram.connect") %><%= render Ui::IconComponent.new(name: "arrow-right", class: "text-[10px]") %>
+        <% end %>
+      </div>
+    <% end %>
+<% end %>

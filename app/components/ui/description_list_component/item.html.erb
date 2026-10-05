@@ -1,0 +1,3 @@
+<%= tag.div(**html_options) do %>
+<p class="<%= label_class %>"><%= @label %><% if @hint.present? %><%= render Ui::TooltipComponent.new(text: @hint, title: @hint_title, test_id: @hint_test_id) %><% end %></p><% if @value %><p class="<%= @value_class %>"><%= @value %></p><% else %><%= content %><% end %>
+<% end %>

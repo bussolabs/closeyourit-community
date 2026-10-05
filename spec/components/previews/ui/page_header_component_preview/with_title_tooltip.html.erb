@@ -1,0 +1,9 @@
+<%= render Ui::PageHeaderComponent.new(
+      title: "Tickets",
+      title_tooltip: "Le segnalazioni di bug, feature e improvement del team. Qui filtri per stato, priorità e piattaforma, assegni e apri nuovi ticket.",
+      breadcrumb: [ { label: "Tickets" } ],
+      counts_test_id: "tickets-counts") do |h| %>
+  <% h.with_counts do %>
+    <%= render Ui::StatLabelComponent.new(label: "Tickets", value: 12) %>
+  <% end %>
+<% end %>

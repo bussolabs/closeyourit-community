@@ -1,0 +1,238 @@
+it:
+  website:
+    nav:
+      workflow: Come funziona
+      features: Funzionalità
+      integrations: Integrazioni
+      sign_in: Accedi
+      request_access: Richiedi accesso
+      language: Lingua
+      aria_label: Navigazione principale
+    home:
+      title: "CloseYourIt — error monitoring, ticketing, uptime e log"
+      meta_description: "Bug tracking e observability per team di ingegneria: errori deduplicati, ticket basati su evidenze, uptime con status page pubbliche, verdetti di performance e log strutturati — un unico workspace."
+      guide:
+        path: "field-guide / dalla segnalazione alla risoluzione"
+        heading: "Dal segnale alla risoluzione, senza ricostruire il contesto."
+        subheading: "CloseYourIt collega errori, performance, log e ticket in un unico ciclo operativo. Quando la produzione si rompe, le evidenze restano accanto alla decisione fino alla verifica della correzione."
+        cta_access: Richiedi accesso
+        cta_workflow: Segui un incidente
+      workflow:
+        heading: Un incidente, un solo audit trail
+        summary: "Lo stesso identificativo attraversa l'intero flusso: nessun copia-incolla fra monitor, log e issue tracker."
+        signal: { label: "01 · segnale", heading: "La regressione viene rilevata", body: "Le occorrenze vengono raggruppate in un problema azionabile, con release e ambiente già visibili." }
+        evidence: { label: "02 · evidenze", heading: "Il contesto si ricompone da solo", body: "Il trace_id collega l'errore ai log e ai problemi di performance emessi dalla stessa richiesta." }
+        decision:
+          label: "03 · decisione"
+          heading: L'evidenza diventa lavoro
+          body: "Promuovi il problema a ticket senza perdere stacktrace, cronologia o collegamento all'errore originale."
+          given: "un utente completa il checkout"
+          when: "la release v2.4.1 è in produzione"
+          expected: "l'ordine viene creato senza errori"
+        resolution: { label: "04 · risoluzione", heading: "La correzione resta verificabile", body: "Ticket, errore e nuova release condividono lo stesso audit trail; una regressione riapre il segnale." }
+      capabilities:
+        heading: Le capacità seguono il lavoro
+        detect: { heading: Rileva, body: "Capisci rapidamente che cosa richiede attenzione, senza moltiplicare gli alert.", items: ["Error monitoring e regressioni", "Uptime, cron e server", "Session replay e analytics"] }
+        understand: { heading: Comprendi, body: "Riunisci i segnali tecnici e il contesto del progetto prima di decidere.", items: ["Log e performance correlati", "Ricerca e knowledge base", "Triage AI con conferma umana"] }
+        resolve: { heading: Risolvi, body: "Trasforma l'evidenza in lavoro tracciabile e verifica che il problema non ritorni.", items: ["Ticket, roadmap e GitHub", "Alerting e notification center", "Audit trail e controllo accessi"] }
+      setup: { heading: "Parti dalla strumentazione che hai già", body: "Usa gli SDK Ruby, Dart e JavaScript, la CLI cyi oppure mantieni il tuo SDK Sentry cambiando il DSN per gli error event supportati.", link: "Vedi tutte le integrazioni" }
+      project: { heading: "Costruito e usato sul lavoro reale", body: "CloseYourIt monitora i propri servizi e i progetti che lo compongono. Le funzionalità nascono da incidenti, triage e release reali, non da una checklist commerciale.", evidence: "dogfooding attivo · evidenze prima delle promesse" }
+      hero:
+        heading: "Cattura, smista, risolvi — con le evidenze."
+        subheading: "CloseYourIt è un bug tracker e hub di observability per team di ingegneria. Errori, ticket, uptime, performance e log condividono un workspace, una timeline e un audit trail."
+        cta_app: Inizia ora
+        cta_features: Esplora le funzionalità
+      pillars:
+        heading: Tre strumenti in uno
+        tracker:
+          title: Issue tracker
+          body: "Ticket con corpo bug a quattro clausole (given / when / then / expected), kanban, roadmap con milestone, watcher e menzioni."
+        monitor:
+          title: Monitor di errori e uptime
+          body: "Gruppi di errori deduplicati con stacktrace e breadcrumb, riapertura automatica sulle regressioni, monitor HTTP con SLA e status page pubbliche."
+        observability:
+          title: Performance e log
+          body: "Query e metodi lenti trasformati in verdetti aggregati (N+1, slow request), log strutturati correlati agli errori via trace_id."
+      features:
+        heading: Cosa c'è dentro
+      sentry:
+        heading: Sostituto drop-in di Sentry
+        body: "Già strumentato? Punta il tuo SDK Sentry-compatibile a CloseYourIt cambiando solo il DSN. Gli eventi finiscono nella stessa pipeline degli SDK nativi."
+        scope: "Il drop-in copre gli error event (capture_exception, capture_message). Tracing, sessioni e cron non vengono importati."
+      sdk:
+        heading: SDK, CLI e CI
+        ruby: "closeyourit-ruby — errori, metriche e log da Rails e Ruby puro. Fire-and-forget, scrub della PII di default."
+        dart: "closeyourit — errori, log e metriche da Dart e Flutter, con coda su disco che rispedisce quando la rete torna. Query lente e statistiche del sito restano fuori."
+        cli: "cyi — progetti, errori, ticket, log e todo dal terminale. Login OAuth device-flow."
+        more: Setup completo nella pagina integrazioni
+      cta:
+        heading: Porta un problema reale dentro un solo ciclo operativo
+        body: "CloseYourIt è disponibile su invito per piccoli team tecnici. Raccontaci il tuo stack e il modo in cui gestisci oggi incidenti e issue."
+        button: Richiedi accesso
+    access_request:
+      title: Richiedi accesso
+      meta_description: "Richiedi accesso a CloseYourIt per il tuo team tecnico."
+      path: "access / request"
+      heading: Raccontaci il tuo ciclo operativo
+      summary: "CloseYourIt è disponibile su invito. Ci interessa capire quali strumenti usate oggi e dove perdete contesto tra segnale e risoluzione."
+      fields: { name: Nome, email: "Email di lavoro", team: "Team o organizzazione", context: "Come gestite oggi incidenti e issue?", context_placeholder: "Stack, strumenti attuali e problema che vorreste risolvere." }
+      submit: Invia la richiesta
+      privacy_note_html: "Inviando accetti che trattiamo i dati come descritto nella %{link}."
+      errors: { heading: "Controlla i campi evidenziati" }
+      success: { heading: "Richiesta ricevuta", body: "Grazie. Valuteremo il contesto e ti ricontatteremo via email." }
+    features:
+      shared:
+        cta: Richiedi accesso
+        others: Altre funzionalità
+      error_monitoring:
+        name: Error monitoring
+        card: "Gruppi di errori deduplicati con stacktrace, breadcrumb, tag e regressioni."
+        title: Error monitoring
+        meta_description: "Gruppi di errori deduplicati con stacktrace, contesto request, breadcrumb, tag e utente — triage, riapertura su regressione e promozione a ticket."
+        heading: Error monitoring
+        summary: "Ogni eccezione finisce in un gruppo deduplicato con tutte le evidenze: stacktrace, request, breadcrumb, utente, tag e contesto custom."
+        points:
+          - "Istogrammi delle occorrenze e drill-down per singola occorrenza"
+          - "Azioni di triage — resolve, ignore, reopen — con riapertura automatica sulle regressioni"
+          - "Promuovi un errore a ticket senza perdere il collegamento tra i due"
+          - "Ingest Sentry-compatibile per gli error event: cambi il DSN, tieni il tuo SDK"
+      ticketing:
+        name: Ticketing
+        card: "Bug report basati su evidenze, kanban, roadmap, timeline unificata e menzioni."
+        title: Ticketing
+        meta_description: "Bug tracking costruito sulle evidenze: corpo bug a quattro clausole, kanban, roadmap con milestone, timeline unificata, watcher, menzioni e report assistiti dall'AI."
+        heading: Ticketing
+        summary: "Bug scritti come evidenze: quattro clausole opzionali — given, when, then, expected — che restano usabili anche come testo libero."
+        points:
+          - "Kanban con drag & drop e accessi per membro"
+          - "Roadmap con milestone, opt-in per progetto"
+          - "Timeline unificata di commenti ed eventi — un vero audit trail"
+          - "Watcher e @menzioni, viste salvate su ogni lista"
+          - "Quick bug report assistito dall'AI: lo descrivi, ottieni le clausole strutturate"
+      uptime:
+        name: Uptime monitoring
+        card: "Monitor HTTP con finestre SLA, incidenti e status page pubbliche."
+        title: Uptime monitoring
+        meta_description: "Monitor HTTP per progetto ed environment: timeline degli incidenti, SLA su 24h/7g/30g/1a e status page pubbliche opt-in."
+        heading: Uptime monitoring
+        summary: "Monitor HTTP per progetto ed environment, con uno storico incidenti onesto e finestre SLA su 24 ore, 7 giorni, 30 giorni e 1 anno."
+        points:
+          - "Timeline a blocchi dei check, inizio e risoluzione degli incidenti"
+          - "Status page pubblica opt-in per monitor — condividila con i tuoi utenti"
+          - "Guard anti-SSRF sugli URL monitorati"
+      performance:
+        name: Performance
+        card: "Query e metodi lenti aggregati in verdetti: N+1, slow request, jank."
+        title: Performance
+        meta_description: "Performance issue dal traffico reale: query lente, metodi lenti e verdetti aggregati come N+1, high query count, HTTP esterno lento e jank."
+        heading: Performance
+        summary: "Query e metodi lenti dal traffico reale diventano verdetti aggregati: N+1, high query count, slow request, HTTP esterno ripetuto, jank."
+        points:
+          - "Grafici di durata per query e per metodo"
+          - "Alert a soglia sulle metriche che ti interessano"
+          - "Correlati a errori e log della stessa richiesta via trace_id"
+          - "La cattura dei parametri è opt-in e con scrub — spenta di default"
+      logs:
+        name: Log strutturati
+        card: "Stream append-only con attributi JSON, correlato via trace_id."
+        title: Log strutturati
+        meta_description: "Log strutturati append-only con livelli e attributi JSON, ingest batch, retention a tre livelli e correlazione trace_id con errori e metriche."
+        heading: Log strutturati
+        summary: "Uno stream append-only per app con livelli e attributi JSON, correlato a errori e metriche della stessa richiesta via trace_id."
+        points:
+          - "Ingest batch dagli SDK, ricerca multi-app"
+          - "Retention su tre livelli: globale, organizzazione, progetto"
+          - "Collegamento manuale da una riga di log a un errore o a un ticket"
+      alerting_ai:
+        name: Alerting e triage AI
+        card: "Regole a soglia, notification center, quiet hours e verdetti AI."
+        title: Alerting e triage AI
+        meta_description: "Regole di alert a soglia, notification center in-app con preferenze per utente e quiet hours, più verdetti di triage AI applicabili con un click."
+        heading: Alerting e triage AI
+        summary: "Regole a soglia a livello organizzazione e un notification center in-app con preferenze di consegna per utente e quiet hours."
+        points:
+          - "Consegna email con preferenze per utente"
+          - "Triage AI sui segnali di monitoring: categoria, severità, causa, azione suggerita, confidenza"
+          - "Cluster di errori simili per individuare i recidivi"
+          - "L'AI suggerisce, un umano applica — sempre un click, sempre a audit"
+    integrations:
+      title: Integrazioni
+      meta_description: "Gem Ruby, package Dart/Flutter, CLI cyi, ingest da CI e DSN Sentry-compatibile — come collegare CloseYourIt al tuo stack."
+      heading: Integrazioni
+      summary: "Strumenta un progetto in pochi minuti: scegli un SDK, crea un token di ingest per progetto, rilascia."
+      ruby:
+        heading: Ruby / Rails
+        body: "La gem closeyourit-ruby cattura errori, metriche e log. Trasporto fire-and-forget, scrub della PII di default, integrazione Rails inclusa."
+      dart:
+        heading: Dart / Flutter
+        body: "Il package closeyourit copre errori, breadcrumb, log e metriche su Dart e Flutter, e tiene sul disco ciò che parte mentre la rete manca. Le query lente non ci sono: su mobile non c'è SQL da osservare."
+      cli:
+        heading: CLI — cyi
+        body: "Progetti, errori, ticket, log e todo dal terminale. Login via OAuth 2.0 device flow, pronto per script e CI."
+      ci:
+        heading: Ingest da CI
+        body: "Riporta release ed eventi direttamente dalla CI con il bearer token per progetto — nessun SDK richiesto."
+      sentry:
+        heading: Sentry-compatibile
+        body: "CloseYourIt accetta ingest via DSN Sentry: cambi il DSN nel setup esistente e tieni la strumentazione di cui già ti fidi."
+        scope: "Perimetro: solo error event — capture_exception e capture_message. Tracing, sessioni e cron vengono accettati ma non importati."
+    footer:
+      tagline: "Fast · Transparent · Precise."
+      product: Prodotto
+      project: Il progetto
+      sign_in: Accedi
+      privacy: Privacy
+    # CYRA-698 — BOZZA da far validare: il testo descrive ciò che il prodotto raccoglie davvero
+    # (verificato sul codice), ma non è stato rivisto da un legale. Titolare, indirizzo e contatto
+    # vanno confermati prima di pubblicarlo.
+    privacy:
+      title: Informativa privacy
+      meta_description: "Quali dati personali raccoglie CloseYourIt, perché, per quanto tempo e come chiedere di vederli o cancellarli."
+      heading: Informativa privacy
+      updated: "Ultimo aggiornamento: 31 agosto 2026"
+      summary: "Questa pagina dice in parole semplici quali dati personali tocchiamo, perché li tocchiamo e cosa puoi chiederci. Vale per il sito e per il prodotto."
+      controller_title: Chi tratta i dati
+      controller_body: "Il titolare del trattamento è CloseYourIt. Per qualsiasi domanda su questa informativa, o per esercitare i diritti descritti sotto, scrivi a:"
+      controller_email: "privacy@closeyour.it"
+      sections:
+        collected:
+          title: Quali dati raccogliamo
+          items:
+            - "Richiesta di accesso: se compili il modulo di richiesta accesso, salviamo nome, email di lavoro e il testo che scrivi."
+            - "Account: nome, indirizzo email e password (mai in chiaro: ne conserviamo solo un'impronta cifrata)."
+            - "Quello che scrivi nel prodotto: ticket, commenti, note, allegati e messaggi. Sono contenuti tuoi, e possono contenere dati personali che decidi tu."
+            - "Uso del prodotto: quali pagine e funzioni apri, con il tuo ruolo e la tua organizzazione. Serve a capire cosa funziona e cosa no."
+            - "Diagnostica: errori, tempi di risposta e righe di log delle applicazioni collegate. Filtriamo i dati sensibili prima di salvarli."
+            - "Statistiche del sito: pagine viste, provenienza, tipo di dispositivo e paese. L'indirizzo IP serve solo a ricavare il paese e non viene mai salvato."
+        purposes:
+          title: Perché li trattiamo
+          items:
+            - "Per farti usare il servizio: senza account e senza i contenuti che scrivi, il prodotto non fa niente."
+            - "Per tenerlo in piedi e sicuro: accorgerci dei guasti, capire cosa è successo, fermare gli abusi."
+            - "Per migliorarlo: sapere quali funzioni vengono usate davvero, in forma aggregata."
+            - "Per risponderti: se ci scrivi o chiedi accesso, usiamo i tuoi recapiti per quello."
+        legal_basis:
+          title: Su quale base
+          body: "Il trattamento dei dati dell'account e dei contenuti si basa sul contratto: senza, non possiamo erogare il servizio. Diagnostica, sicurezza e statistiche aggregate si basano sul nostro legittimo interesse a mantenere il servizio funzionante e a migliorarlo. Quando serve il consenso, te lo chiediamo prima."
+        retention:
+          title: Per quanto tempo
+          items:
+            - "Dati dell'account e contenuti: finché l'account esiste. Alla chiusura li cancelliamo o li rendiamo anonimi."
+            - "Richieste di accesso non accolte: fino a 12 mesi."
+            - "Errori, metriche e log: conservati per finestre limitate e poi eliminati automaticamente."
+            - "Statistiche del sito: in forma aggregata, senza dati che identifichino una persona."
+        sharing:
+          title: Con chi li condividiamo
+          body: "Non vendiamo dati personali e non li cediamo a terzi per finalità di marketing. Ci appoggiamo a fornitori che trattano i dati per nostro conto e solo secondo le nostre istruzioni: l'infrastruttura che ospita il servizio, l'archiviazione dei file allegati e il servizio che spedisce le email di sistema. I dati restano nello Spazio economico europeo, salvo trasferimenti coperti dalle garanzie previste dalla legge."
+        cookies:
+          title: Cookie
+          body: "Usiamo un solo cookie tecnico, quello che tiene aperta la sessione dopo il login. Non usiamo cookie di profilazione e non c'è nessun tracciamento pubblicitario. Le statistiche del sito sono raccolte senza cookie e senza seguire la stessa persona fra siti diversi."
+        rights:
+          title: I tuoi diritti
+          body: "Puoi chiederci di vedere i tuoi dati, correggerli, cancellarli, limitarne l'uso, riceverli in un formato leggibile da un'altra applicazione, oppure opporti a un trattamento fondato sul legittimo interesse. Ti rispondiamo entro un mese. Se pensi che qualcosa non vada, puoi rivolgerti al Garante per la protezione dei dati personali."
+        security:
+          title: Come li proteggiamo
+          body: "I dati viaggiano cifrati, le credenziali e i segreti sono conservati cifrati, l'accesso è limitato per ruolo e ogni azione delicata lascia una traccia. Nessuna misura è perfetta: se dovesse accadere una violazione che ti riguarda, te lo diciamo."
+        changes:
+          title: Se questa pagina cambia
+          body: "Quando modifichiamo questa informativa aggiorniamo la data in cima. Se il cambiamento è importante, te lo segnaliamo dentro il prodotto."

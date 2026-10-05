@@ -1,0 +1,74 @@
+<% content_for :title, t("member.tickets.ask.title") %>
+
+<div class="p-7" data-test="tickets-ask">
+  <div class="space-y-5"
+       data-controller="ticket-ask"
+       data-ticket-ask-url-value="<%= ask_member_tickets_path %>"
+       data-ticket-ask-poll-url-value="<%= member_ai_request_path(":id") %>"
+       data-ticket-ask-pending-message-value="<%= t("member.tickets.ask.pending") %>"
+       data-ticket-ask-failed-message-value="<%= t("member.tickets.ask.failed") %>">
+    <%= render Ui::PageHeaderComponent.new(title: t("member.tickets.ask.title"),
+          breadcrumb: [ { label: t("member.tickets.title"), href: member_tickets_path }, { label: t("member.tickets.ask.title") } ]) %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3">
+      <label for="ask-question" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.ask.label") %></label>
+      <%# CYRA-396 — davanti a un campo bianco si scrive una parola sola, si ottiene una risposta
+          mediocre e non si torna più: qui si dice cosa sa fare e cosa no, e si offrono domande
+          già scritte fra quelle a cui risponde bene. %>
+      <p class="text-[12px] text-gray-500 dark:text-zinc-400 leading-relaxed" data-test="tickets-ask-capabilities"><%= t("member.tickets.ask.capabilities") %></p>
+      <%# The microphone dictates into the question: what is said is added to what is already written. %>
+      <% dictation = dictation_available? %>
+      <%= tag.div class: "relative", data: (dictation ? dictation_voice_data : {}) do %>
+        <textarea id="ask-question" rows="3" data-ticket-ask-target="input" data-ui--voice-inline-target="input" data-test="tickets-ask-input"
+                  placeholder="<%= t("member.tickets.ask.placeholder") %>"
+                  class="block w-full <%= dictation ? "pl-3 pr-11" : "px-3" %> py-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400"><%= params[:q] %></textarea>
+        <%= render "member/shared/dictation_controls" if dictation %>
+      <% end %>
+      <div class="flex flex-wrap gap-1.5" data-test="tickets-ask-examples">
+        <% t("member.tickets.ask.examples").each_with_index do |sample, index| %>
+          <button type="button" data-action="ticket-ask#useExample" data-question="<%= sample %>"
+                  data-test="tickets-ask-example-<%= index %>"
+                  class="inline-flex items-center rounded-full border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2.5 h-7 text-[11.5px] text-gray-600 dark:text-zinc-400 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:text-indigo-700 dark:hover:text-indigo-300"><%= sample %></button>
+        <% end %>
+      </div>
+      <div class="flex items-center justify-between gap-3">
+        <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.ask.hint") %></p>
+        <button type="button" data-action="ticket-ask#submit" data-ticket-ask-target="submit" data-test="tickets-ask-submit"
+                class="inline-flex items-center justify-center rounded-md whitespace-nowrap h-[34px] px-3.5 gap-[7px] text-[12.5px] bg-indigo-600 text-white font-semibold hover:bg-indigo-700 disabled:opacity-50">
+          <%= render Ui::IconComponent.new(name: "wand-sparkles", class: "text-[12px]") %><%= t("member.tickets.ask.submit") %>
+        </button>
+      </div>
+      <p hidden data-ticket-ask-target="status" class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="tickets-ask-status"></p>
+    </div>
+
+    <div hidden data-ticket-ask-target="result" class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-4">
+      <%# CYRA-831 — se fra la domanda e la risposta l'accesso a un progetto è stato tolto, la
+          risposta si restringe da sola: la nota lo dice PRIMA del testo, o una risposta più povera
+          si legge come un fatto sull'archivio. %>
+      <p hidden data-ticket-ask-target="scopeNotice" data-test="tickets-ask-scope-reduced"
+         class="rounded-md border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 px-3 py-2 text-[12px] leading-relaxed text-amber-900 dark:text-amber-200"><%= t("member.tickets.ask.scope_reduced") %></p>
+      <div data-ticket-ask-target="answer" data-test="tickets-ask-answer" class="text-[13px] leading-relaxed text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap"></div>
+      <div hidden data-ticket-ask-target="citationsWrapper">
+        <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.tickets.ask.citations") %></p>
+        <ul data-ticket-ask-target="citations" data-test="tickets-ask-citations" class="space-y-1"></ul>
+      </div>
+      <p hidden data-ticket-ask-target="insufficient" data-test="tickets-ask-empty" class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.ask.insufficient") %></p>
+    </div>
+
+    <%# Le domande già fatte restano a portata: prima ogni visita ripartiva dal bianco, e la stessa
+        domanda si riscriveva a memoria. %>
+    <% if @recent_questions.present? %>
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-2" data-test="tickets-ask-history">
+        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.ask.history") %></p>
+        <ul class="space-y-1">
+          <% @recent_questions.each do |mode| %>
+            <li>
+              <button type="button" data-action="ticket-ask#useExample" data-question="<%= mode %>"
+                      class="text-left text-[12.5px] text-zinc-700 dark:text-zinc-300 hover:text-indigo-700 dark:hover:text-indigo-300" data-test="tickets-ask-history-item"><%= mode %></button>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,359 @@
+it:
+  member:
+    nav:
+      # Etichetta del nodo di primo livello (Navigation::Group#label): senza, la briciola di pane
+      # mostra "translation missing" su ogni pagina della sezione.
+      group_seo: SEO
+      # CYRA-535 — le tre pagine del cockpit erano schede dentro una voce sola: ora ognuna ha la sua
+      # voce, e il titolo della pagina che apre ne ripete la parola (nav_page_titles_spec).
+      seo_sites: Siti
+      seo_issues: Rilievi
+      seo_pages: Pagine
+    monitoring:
+      seo:
+        title: SEO
+        help_title: "I problemi trovati sulle pagine dei tuoi siti, con la prova."
+        pages_help_title: "Le pagine visitate durante i controlli, con quello che è stato letto su ciascuna."
+        titles:
+          issues: Rilievi
+          pages: Pagine analizzate
+        stats:
+          total: Aperti
+          critical: Critici
+          high: Gravi
+          ignored: Ignorati
+          pages: Pagine
+          sites: Siti
+        columns:
+          check: Controllo
+          url: Indirizzo
+          severity: Gravità
+          area: Ambito
+          project: Progetto
+          site: Sito
+          status: Stato
+          last_seen: Ultimo controllo
+          first_seen: Prima visto
+          title_tag: Titolo
+          h1: H1
+          words: Parole
+          canonical: Canonical
+          response_time: Tempo di risposta
+          triage_note: Nota
+        severity:
+          low: Bassa
+          medium: Media
+          high: Alta
+          critical: Critica
+        status:
+          open: Aperto
+          resolved: Risolto
+          ignored: Ignorato
+        actions:
+          ignore: Ci convivo
+          reopen: Riapri
+          promote: Apri un ticket
+        notices:
+          ignored: Rilievo ignorato.
+          reopened: Rilievo riaperto.
+          promoted: Ticket aperto dal rilievo.
+          rescan_started: Controllo avviato. Il risultato compare appena il giro è finito.
+        errors:
+          promote_failed: Non è stato possibile aprire il ticket.
+        show:
+          evidence: La prova
+          page_state: Com'è messa la pagina
+          details: Dettagli
+        empty: Nessun rilievo
+        empty_hint: "Dichiara un sito da tenere d'occhio: il sistema lo visita e apre un rilievo per ogni problema che trova."
+        pages_empty: Nessuna pagina
+        pages_empty_hint: Le pagine compaiono dopo il primo giro di controllo.
+        whole_site: Tutto il sito
+        missing: Manca
+        ticket_title: "SEO: %{check} su %{url}"
+        ticket_expected_fallback: Il problema non compare più al controllo successivo.
+      seo_sites:
+        title: Siti controllati
+        help_title: "I siti che vengono visitati, e ogni quanto."
+        new: Aggiungi sito
+        empty: Nessun sito sotto controllo
+        empty_hint: Aggiungi l'indirizzo di un sito e scegli ogni quanto controllarlo.
+        paused: in pausa
+        never_audited: Mai controllato
+        failed: "Ultimo giro fallito (%{error})"
+        pages_seen:
+          one: 1 pagina
+          other: "%{count} pagine"
+        pages_unverified_short:
+          one: 1 non letta
+          other: "%{count} non lette"
+        columns:
+          frequency: Ogni
+          open_issues: Rilievi aperti
+          last_audit: Ultimo controllo
+        frequency:
+          daily: Giorno
+          weekly: Settimana
+        checked_ago: "%{duration} fa"
+        tabs:
+          summary: Riepilogo
+          performance: Prestazioni
+          issues: Rilievi
+          pages: Pagine
+        performance:
+          mobile: Da telefono
+          desktop: Da computer
+          unconfigured: Il servizio che misura la velocità non è collegato
+          unconfigured_hint: "Finché manca il collegamento questo sito non viene misurato: non è lento, è che nessuno lo ha ancora misurato. Chi amministra l'organizzazione può collegare Google PageSpeed dalle Integrazioni."
+          empty: Nessuna misura ancora
+          empty_hint: La prima misura arriva col prossimo controllo, oppure premi «Controlla ora» qui sopra.
+          stale: "L'ultima misura non è riuscita (%{error}). I numeri qui sotto sono del giro precedente."
+          no_field: Google non ha ancora abbastanza visite di questo sito per dire com'è andata alle persone.
+          origin_fallback: Questi numeri riguardano tutto il sito, non solo questa pagina, perché Google non ne ha abbastanza su di lei.
+          no_lab: Nessun giro di prova riuscito per questo dispositivo.
+          no_lab_inp: "La risposta al tocco non si misura in un giro di prova, perché nessuno tocca la pagina: guarda il tempo di blocco qui sopra e la risposta al tocco dei visitatori veri."
+          lab_metrics:
+            lcp: Comparsa del contenuto
+            cls: Salti della pagina
+            tbt: Tempo di blocco
+            fcp: Primo segno di vita
+            ttfb: Attesa del server
+            speed_index: Velocità percepita
+        fields:
+          max_pages: Pagine per giro
+          follow_sitemap: Legge la sitemap
+        show:
+          open_issues: Rilievi aperti
+          issues: Rilievi aperti
+          issues_empty: Nessun rilievo aperto su questo sito.
+          all_issues: "Vedi tutti (%{count})"
+          pages: Pagine viste
+          pages_empty: Nessuna pagina ancora
+          pages_empty_hint: Le pagine compaiono dopo il primo controllo riuscito.
+          all_pages: "Vedi tutte (%{count})"
+          words: "%{count} parole"
+          configuration: Configurazione
+          state: Stato
+          enabled: Attivo
+          paused: In pausa
+          sitemap_on: "Sì"
+          sitemap_off: "No"
+          next_audit: Prossimo controllo
+          in_time: "fra %{duration}"
+          audits: Ultimi controlli
+          audits_empty: Nessun controllo ancora.
+          audit_failed: Fallito
+          pages_unverified:
+            one: "1 pagina non letta: i suoi problemi restano in elenco"
+            other: "%{count} pagine non lette: i loro problemi restano in elenco"
+          audit_running: In corso
+          ago: "%{duration} fa"
+          visits: Visite
+          all_visits: Statistiche complete
+          visits_window: Ultimi 7 giorni, sull'ambiente di questo sito.
+        actions:
+          rescan: Controlla ora
+          edit: Modifica
+          open: Apri il sito
+        notices:
+          created: Sito aggiunto. Il primo controllo è già partito.
+          updated: Sito aggiornato.
+          deleted: Sito rimosso.
+        errors:
+          project_required: Scegli il progetto a cui appartiene il sito.
+        form:
+          new_title: Aggiungi un sito
+          edit_title: Modifica il sito
+          save_new: Aggiungi
+          save_edit: Salva
+          cancel: Annulla
+          project: Progetto
+          project_placeholder: Scegli il progetto
+          project_required: Scegli prima il progetto.
+          environment: Ambiente
+          project_env: Progetto e ambiente
+          project_env_locked: "Non si cambiano dopo la creazione: sono l'identità del sito."
+          base_url: Indirizzo del sito
+          base_url_hint: Da qui parte la visita. Deve essere un indirizzo pubblico.
+          frequency: Ogni quanto controllarlo
+          max_pages: Pagine per giro
+          max_pages_hint: Quante pagine al massimo visitare ogni volta.
+          follow_sitemap: Leggi la sitemap
+          enabled: Attivo
+          manners: "Il sistema visita il sito come farebbe un motore di ricerca: rispetta sempre il file robots.txt, resta sullo stesso indirizzo, si presenta con il nome CloseYourItBot e lascia mezzo secondo fra una pagina e l'altra."
+  seo:
+    vitals:
+      lab: Laboratorio
+      field: Campo
+      lab_explainer: "Un giro di prova su una macchina di Google, con una rete simulata: dice PERCHÉ il sito è lento, e si può ripetere uguale. Non è quello che hanno vissuto i tuoi visitatori."
+      field_explainer: "Quello che è successo davvero a chi ha aperto il sito: dice QUANTO è lento per le persone. È il numero che Google guarda per il posizionamento, e non sa dire perché."
+      percentile: "Su tre visite su quattro il sito ha fatto almeno così bene. Si guarda questo e non la media perché una media nasconde proprio le visite andate male."
+      metrics:
+        lcp: Comparsa del contenuto
+        inp: Risposta al tocco
+        cls: Salti della pagina
+        ttfb: Attesa del server
+        fcp: Primo segno di vita
+      metric_help:
+        lcp: Quanto ci mette a comparire la parte più grande della pagina.
+        inp: Quanto tarda la pagina a reagire quando ci tocchi sopra.
+        cls: Quanto la pagina si sposta sotto gli occhi mentre carica.
+        ttfb: Quanto ci mette il server a mandare la prima risposta.
+        fcp: Quanto ci mette a comparire qualcosa, qualunque cosa.
+      scores:
+        performance: Prestazioni
+        accessibility: Accessibilità
+        best_practices: Buone pratiche
+        seo: SEO
+      ratings:
+        good: Buono
+        needs_improvement: Da migliorare
+        poor: Scarso
+        unknown: Non misurato
+      units:
+        seconds: "%{value} s"
+        milliseconds: "%{value} ms"
+      few_samples: Campioni insufficienti
+      samples: "su %{count} misure"
+      window: Ultimi 28 giorni
+    areas:
+      indexability: Indicizzabilità
+      structure: Struttura
+      content: Contenuto
+      i18n: Lingue
+      performance: Prestazioni
+    evidence:
+      status: Risposta
+      from: Trovata su
+      hops: Salti
+      chain: Percorso
+      canonical: Canonical
+      directives: Direttive
+      found: Trovati
+      words: Parole
+      without_alt: Senza descrizione
+      total: In tutto
+      length: Lunghezza
+      title: Titolo
+      h1s: Titoli H1
+      ms: Millisecondi
+      bytes: Peso
+      groups: Gruppi
+      urls: Indirizzi
+      pairs: Coppie
+      reason: Motivo
+    checks:
+      noindex:
+        label: La pagina dice di non essere indicizzata
+        explanation: Nel codice della pagina c'è l'istruzione «noindex», che chiede ai motori di ricerca di non mostrarla. Se la pagina deve essere trovata, va tolta.
+        expected: La pagina non contiene più l'istruzione noindex.
+      blocked_by_robots:
+        label: Pagina vietata dal robots.txt ma dichiarata nella sitemap
+        explanation: Il sito chiede di indicizzare questa pagina nella sitemap e allo stesso tempo ne vieta la lettura nel robots.txt. Le due istruzioni si contraddicono, e vince quella che la esclude.
+        expected: "La pagina è coerente: o esce dalla sitemap, o non è più vietata dal robots.txt."
+      broken_link:
+        label: La pagina non risponde
+        explanation: All'indirizzo non c'è più niente, o il server dà errore. Chi ci arriva da un link o dai risultati di ricerca trova una porta chiusa.
+        expected: L'indirizzo risponde di nuovo, oppure viene reindirizzato dove il contenuto si è spostato.
+      redirect_loop:
+        label: Rimbalzo infinito
+        explanation: L'indirizzo rimanda a un altro che rimanda indietro, all'infinito. Nessuno arriva alla pagina, nemmeno i motori di ricerca.
+        expected: L'indirizzo porta a una pagina, senza girare in tondo.
+      redirect_chain:
+        label: Troppi rimbalzi prima di arrivare
+        explanation: Per arrivare alla pagina si passa da più indirizzi intermedi. Ogni salto costa tempo e disperde il valore dei link.
+        expected: L'indirizzo porta alla pagina finale con un salto solo.
+      canonical_missing:
+        label: Manca l'indirizzo ufficiale della pagina
+        explanation: Il canonical dice ai motori qual è l'indirizzo buono quando lo stesso contenuto è raggiungibile da più strade. Senza, decidono loro.
+        expected: La pagina dichiara il proprio indirizzo ufficiale.
+      canonical_points_elsewhere:
+        label: L'indirizzo ufficiale porta a un'altra pagina
+        explanation: La pagina è nella sitemap, quindi il sito la vuole nei risultati, ma dichiara come ufficiale un altro indirizzo. Così sparisce dai risultati.
+        expected: La pagina dichiara sé stessa come indirizzo ufficiale, oppure esce dalla sitemap.
+      sitemap_unreachable:
+        label: La sitemap non risponde
+        explanation: La sitemap è l'elenco delle pagine che il sito vuole far trovare. Se non risponde, i motori devono indovinare cosa esiste.
+        expected: La sitemap risponde e contiene le pagine del sito.
+      robots_unreachable:
+        label: Il robots.txt non risponde
+        explanation: È il file che dice ai motori dove possono andare. Senza, ogni crawler decide da sé.
+        expected: Il file robots.txt risponde.
+      missing_from_sitemap:
+        label: Pagina fuori dalla sitemap
+        explanation: La pagina si raggiunge navigando, ma non è nell'elenco che il sito dichiara. Viene trovata più tardi e considerata meno importante.
+        expected: La pagina compare nella sitemap.
+      orphan_page:
+        label: Pagina che nessuno collega
+        explanation: La pagina è nella sitemap ma nessun'altra pagina del sito la linka. Chi naviga non ci arriva mai, e per i motori vale quanto i link che riceve, cioè niente.
+        expected: Almeno una pagina del sito porta a questa.
+      missing_title:
+        label: Manca il titolo
+        explanation: Il titolo è la riga che compare nei risultati di ricerca. Senza, il motore se lo inventa dal contenuto.
+        expected: La pagina ha un titolo che dice di cosa parla.
+      title_too_long:
+        label: Titolo troppo lungo
+        explanation: Oltre una certa lunghezza il titolo viene tagliato nei risultati, e la parte importante può finire fuori.
+        expected: Il titolo sta nella lunghezza mostrata dai motori.
+      duplicate_title:
+        label: Titoli uguali su più pagine
+        explanation: Due o più pagine si presentano con lo stesso titolo. Chi legge i risultati non capisce quale aprire, e i motori le trattano come una copia dell'altra.
+        expected: Ogni pagina ha il suo titolo.
+      missing_meta_description:
+        label: Manca la descrizione
+        explanation: È il testo sotto il titolo nei risultati di ricerca. Senza, il motore prende un pezzo qualsiasi della pagina.
+        expected: La pagina ha una descrizione scritta apposta.
+      duplicate_meta_description:
+        label: Descrizioni uguali su più pagine
+        explanation: "Più pagine mostrano lo stesso testo nei risultati: non aiuta a scegliere quale aprire."
+        expected: Ogni pagina ha la sua descrizione.
+      missing_h1:
+        label: Manca il titolo principale nella pagina
+        explanation: "L'H1 è il titolo grande in cima al contenuto. Dice a chi legge e al motore di cosa parla la pagina. Un punteggio verde non se ne accorge: non è uno dei controlli che fa."
+        expected: La pagina ha un titolo principale.
+      multiple_h1:
+        label: Più di un titolo principale
+        explanation: Con più H1 non è chiaro quale sia l'argomento della pagina.
+        expected: La pagina ha un solo titolo principale.
+      missing_jsonld:
+        label: Manca la scheda dati della home
+        explanation: I dati strutturati dicono ai motori chi sei e cosa fai, e permettono i risultati arricchiti. Sulla home valgono più che altrove.
+        expected: La home dichiara i propri dati strutturati.
+      lang_missing:
+        label: La pagina non dichiara la lingua
+        explanation: Senza la lingua dichiarata, motori e lettori di schermo devono indovinarla.
+        expected: La pagina dichiara la propria lingua.
+      hreflang_not_reciprocal:
+        label: Le versioni in lingua non si rispondono
+        explanation: Una pagina indica l'altra come sua versione in un'altra lingua, ma non riceve lo stesso rimando. I motori scartano la coppia e le due pagine restano a farsi concorrenza.
+        expected: Le pagine collegate si dichiarano a vicenda.
+      hreflang_missing_x_default:
+        label: Manca la versione predefinita
+        explanation: Serve a dire quale pagina mostrare a chi non parla nessuna delle lingue dichiarate.
+        expected: Le pagine multilingua dichiarano una versione predefinita.
+      thin_content:
+        label: Pagina quasi vuota
+        explanation: C'è troppo poco testo perché un motore capisca di cosa parla la pagina e la mostri a qualcuno.
+        expected: La pagina ha contenuto sufficiente a spiegare di cosa parla.
+      images_without_alt:
+        label: Immagini senza descrizione
+        explanation: La descrizione dell'immagine serve a chi non la vede e ai motori per capirla. Senza, l'immagine è muta.
+        expected: Ogni immagine che porta significato ha la sua descrizione.
+      slow_response:
+        label: La pagina risponde lentamente
+        explanation: Il server ci mette troppo a rispondere. Chi arriva se ne va prima di vederla.
+        expected: La pagina risponde in tempi normali.
+      oversized_html:
+        label: Pagina troppo pesante
+        explanation: Il codice della pagina è enorme. Su una connessione lenta diventa un'attesa.
+        expected: La pagina ha un peso ragionevole.
+      mixed_content:
+        label: Risorse non protette in una pagina protetta
+        explanation: La pagina è servita in sicurezza ma carica immagini o script in chiaro. Il browser li blocca o avvisa, e ciò che è bloccato per il motore non esiste.
+        expected: Tutte le risorse della pagina sono servite in sicurezza.
+  errors:
+    messages:
+      site_exists: "ha già un sito SEO per questo progetto"
+      internal_host: "deve essere un indirizzo pubblico: gli indirizzi interni non si possono controllare"
+      not_declared_by_project: "non è tra gli ambienti dichiarati dal progetto"
+      no_web_platform: "non ha una piattaforma web: senza un sito non c'è SEO da controllare"

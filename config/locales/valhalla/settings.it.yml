@@ -1,0 +1,56 @@
+it:
+  valhalla:
+    nav:
+      settings: Impostazioni
+    settings:
+      title: Impostazioni
+      updated: Impostazioni salvate.
+      logs_retention_label: Retention log (giorni)
+      logs_retention_hint: Default globale. Organizzazioni e progetti possono sovrascriverlo.
+      analytics_retention_label: Retention analytics (giorni)
+      analytics_retention_hint: Default globale per i dati pageview. Organizzazioni e progetti possono sovrascriverlo.
+      errors_retention_label: Retention errori (giorni)
+      errors_retention_hint: Default globale. Organizzazioni e progetti possono sovrascriverlo.
+      performance_retention_label: Retention performance (giorni)
+      performance_retention_hint: Default globale. Organizzazioni e progetti possono sovrascriverlo.
+      servers_retention_label: Retention server (giorni)
+      servers_retention_hint: Default globale per i campioni server. Le organizzazioni possono sovrascriverlo (nessun livello progetto).
+      uptime_retention_label: Retention disponibilità (giorni)
+      uptime_retention_hint: Default globale per lo storico giornaliero di uptime. Organizzazioni e progetti possono sovrascriverlo.
+      ai:
+        title: Funzioni AI
+        hint: Spegni una funzione per fermare subito le chiamate al provider, senza rilascio. Vale per tutte le organizzazioni e ha effetto al clic.
+        services:
+          agent_gate:
+            label: Gate di eleggibilità agenti
+            hint: Decide se un ticket può essere lavorato da un agente autonomo. Spento, i ticket restano da valutare e fuori dalla coda.
+          assistant_chat:
+            label: Assistente in chat
+            hint: Le risposte dell'assistente di aiuto. Spento, la chat resta visibile ma non risponde.
+          assistant_tools:
+            label: Assistente che legge i dati
+            hint: Le risposte che contengono numeri veri su ticket, progetti, errori e monitoraggio. Spento, l'assistente di aiuto continua a indicare le pagine.
+          assistant_voice:
+            label: Assistente a voce
+            hint: La trascrizione dei messaggi detti al microfono. Spento, il microfono sparisce e la chat scritta resta.
+          triage:
+            label: Triage di errori e metriche
+            hint: Verdetto AI su un gruppo di errori o metriche e ricerca di errori simili. I pulsanti di triage manuale restano attivi.
+          embeddings:
+            label: Ricerca semantica
+            hint: Indicizzazione e ricerca per significato su ticket, errori e knowledge base. Spenta, la ricerca torna al confronto testuale.
+          ticket_composition:
+            label: Scrittura assistita dei ticket
+            hint: Analisi della segnalazione rapida, composizione dei ticket e sintesi delle idee. I form restano compilabili a mano.
+          dataset_predictions:
+            label: Training e predizioni dataset
+            hint: Allenamento dei prompt e predizioni sui dataset. Spento, i lavori in corso falliscono subito invece di restare in attesa.
+          comment_compaction:
+            label: Riassunto dei commenti storici
+            hint: Riduce i commenti lunghi dei ticket vecchi a una frase, tenendo il testo integrale nel resoconto allegato. Spento, i commenti storici restano lunghi e le compattazioni in coda si fermano senza perdere nulla.
+          analysis_relabel:
+            label: Rietichettatura delle analisi tecniche
+            hint: Riscrive le analisi tecniche già presenti nella forma a etichette (Approccio, Perché, Rischi, Aperto). Spento, le analisi restano come sono e i lavori in coda saltano il ticket.
+          knowledge_review:
+            label: Revisore delle pagine di conoscenza
+            hint: Controlla formato e qualità di ogni pagina nuova o modificata prima che entri. Nasce spento; accendilo solo con la chiave del server AI nel vault, altrimenti nessuna pagina si salva. Spento, le pagine entrano senza controllo (viene scritto nel registro).

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<%# DESIGN.md A32 — no account yet, so the auth pages follow the OS theme. %>
+<html lang="<%= I18n.locale %>" data-theme="system">
+  <head>
+    <title><%= content_for(:title) ? safe_join([ content_for(:title), "CloseYourIt" ], " · ") : "CloseYourIt" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= csp_mode_meta_tag %>
+    <%= yield :head %>
+    <%= render "layouts/system_theme", theme: "system" %>
+
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-stone-100 dark:bg-zinc-950 font-sans text-zinc-900 dark:text-zinc-100 antialiased min-h-screen flex items-center justify-center px-4">
+    <main class="w-full max-w-sm">
+      <div class="flex items-center justify-center gap-2 mb-6">
+        <%= render "shared/brand_mark", size: "w-7 h-7" %>
+        <span class="font-display text-[17px] font-semibold tracking-[0.2px] text-zinc-900 dark:text-zinc-100">CloseYourIt</span>
+      </div>
+
+      <%= render "shared/flash" %>
+
+      <%= yield %>
+    </main>
+    <%= render "shared/icon_templates" %>
+  </body>
+</html>

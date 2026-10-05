@@ -1,0 +1,180 @@
+---
+en:
+  member:
+    nav:
+      ideas: Ideas
+    tickets:
+      show:
+        from_idea: from idea
+    ideas:
+      title: Ideas
+      help_title: "Proposals to vote on, discuss and turn into tickets."
+      new: New idea
+      created: Idea created.
+      updated: Idea updated.
+      deleted: Idea deleted.
+      archived: Idea archived.
+      reopened: Idea reopened.
+      converted: Idea converted to ticket.
+      delete_confirm: Delete this idea? Votes and comments will be lost.
+      delete_confirm_converted: "Delete this idea? The link to ticket %{code}, born from this idea, will be lost, along with votes and comments."
+      author_gone: Former member
+      counts:
+        total: Ideas
+        open: Open
+        converted: Converted
+        archived: Archived
+      search_placeholder: Search ideas…
+      count:
+        one: "%{count} idea"
+        other: "%{count} ideas"
+      apply: Apply
+      filter_status: Status
+      filter_project: Project
+      sort_note: Recently active ideas first
+      status:
+        open: Open
+        converted: Converted
+        archived: Archived
+      col_title: Idea
+      col_project: Project
+      col_author: Author
+      col_comments: Comments
+      col_votes: Votes
+      view_switch:
+        label: View
+        cards: Cards
+        table: Table
+      col_status: Status
+      col_ticket: Ticket
+      col_last_activity: Last activity
+      empty: No ideas yet
+      empty_body: Propose an idea for a project and let the team vote and discuss it.
+      empty_example: "For example: \"Export reports as PDF\", with the problem it solves and who is asking."
+      no_results_body:
+        zero: There are no ideas to search yet.
+        one: "There is %{count} idea in total, but it does not match what you asked for."
+        other: "There are %{count} ideas in total, but none match what you asked for."
+      semantic:
+        degraded_hint: Search by meaning is unavailable right now — showing exact word matches.
+        using_semantic: You are searching by meaning.
+        using_exact: You are searching by exact words.
+        switch_to_exact: Search by exact words instead
+        switch_to_semantic: Search by meaning instead
+      duplicates:
+        title: Similar ideas already proposed
+        hint: If it is the same thing, open that idea and vote for it instead of proposing a new one.
+      show:
+        back: All ideas
+        edit: Edit
+        delete: Delete
+        archive: Archive
+        reopen: Reopen
+        convert: Convert to ticket
+        open_ticket: "Open %{code}"
+        more_menu: More actions
+        problem: Problem
+        solution: Solution
+        monetization: Monetization
+        risks: Risks and constraints
+        stakeholders: Stakeholders
+        status_label: Status
+        kind_label: Type
+        details: Details
+        ticket_label: Ticket
+        project_label: Project
+        author_label: Proposed by
+        converted_date: "· converted on %{date}"
+        archived_hint: This idea is archived — reopen it to resume voting and discussion.
+      interest:
+        info: How voting works
+        title: Interest
+        explainer: A vote only tells how many people want this idea. It does not change the board order, it gives no precedence and it starts nothing on its own.
+        locked: This idea is no longer open — its votes stay as they are, as a record of who wanted it.
+        empty: No votes yet.
+      vote:
+        added: Vote recorded.
+        removed: Vote removed.
+        upvote: Upvote
+        voted: Voted
+        remove_title: Remove your vote
+      comments:
+        title: Discussion
+        created: Comment added.
+        deleted: Comment deleted.
+        placeholder: Add your point of view…
+        submit: Comment
+        empty: No comments yet — start the discussion.
+        locked: The discussion is frozen — the idea is no longer open.
+        delete_confirm: Delete this comment?
+        role_author: author
+        show_all: Show all
+        show_less: Show less
+      links:
+        title: Links
+        evolutions_title: Evolutions
+        evolutions_empty: No evolution yet — propose from here an idea that takes this one further.
+        propose_evolution: Propose evolution
+        evolution_chip: Evolution
+        evolves_from: Evolves from
+        evolution_of: "Evolution of: %{title}"
+        evolution_form_hint: This idea is born as an evolution of the one above and stays linked to its page.
+        related_title: Related ideas
+        related_empty: No related idea.
+        related_hint: An idea sharing mechanism or value with this one, worth assessing together.
+        select_idea: Pick an idea of the project
+        link_submit: Link
+        unlink: Unlink
+        unlink_confirm: Remove the link between the two ideas?
+        created: Ideas linked.
+        deleted: Link removed.
+        none_linkable: There is no other idea to link in this project.
+      cases:
+        title: Use cases
+        created: Use case added.
+        updated: Use case updated.
+        deleted: Use case deleted.
+        field_title: Use case title
+        field_description: Description
+        title_placeholder: E.g. New customer onboarding
+        description_placeholder: Describe the concrete scenario…
+        submit: Add a use case
+        empty: No use case yet — describe a concrete situation where it helps.
+        delete_confirm: Delete this use case?
+        locked: Use cases are frozen — the idea is no longer open.
+      form:
+        back: Back
+        cancel: Cancel
+        new_title: New idea
+        edit_title: Edit idea
+        save_new: Create idea
+        save_edit: Save changes
+        title_label: Title
+        title_placeholder: What would you like to see?
+        project: Project
+        select_project: Select a project
+        problem_label: Problem
+        problem_placeholder: What problem or need do you want to solve?
+        solution_label: Solution
+        solution_placeholder: How would you solve it? (optional)
+        monetization_label: Monetization
+        monetization_placeholder: How does it pay off? Catalog products, indirect levers, what to avoid. (optional)
+        risks_label: Risks and constraints
+        risks_placeholder: What holds it back or makes it delicate? Safety, dependencies, out-of-scope items. (optional)
+        stakeholders_label: Stakeholders
+        stakeholders_placeholder: mobile team, enterprise customers
+        stakeholders_hint: Who it helps. Separate multiple values with a comma.
+      convert:
+        title: Convert to ticket
+        back: Back to the idea
+        submit: Create ticket
+        regenerate: Regenerate with AI
+        generating: The AI is merging the idea and the team discussion into a ticket draft…
+        generated: Draft ready — review and edit it before creating the ticket.
+        failed: AI draft unavailable — the fields contain the original idea, edit them and submit.
+        field_title: Ticket title
+        field_description: Ticket description
+        description_hint: Markdown supported. Generated from the idea and its comments — review before submitting.
+        field_kind: Kind
+        field_status: Status
+        field_priority: Priority

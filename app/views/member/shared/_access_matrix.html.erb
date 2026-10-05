@@ -1,0 +1,84 @@
+<%# locals: subjects (Array<Authorization::MatrixDiff>) — schema permessi effettivi what-if (owner/god). %>
+<%# Chip azione = un permesso concesso su un progetto. Stato: invariata / (nuovo) verde / barrata rossa. %>
+<div class="space-y-4" data-test="access-schema">
+  <div class="flex items-start gap-2">
+    <%= render Ui::IconComponent.new(name: "shield-half", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5") %>
+    <div>
+      <p class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.access_schema.title") %></p>
+      <p class="text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.access_schema.hint") %></p>
+    </div>
+  </div>
+
+  <% subjects.each do |diff| %>
+    <% subject = diff.subject %>
+    <details class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" <%= "open" if subjects.size == 1 || diff.any_change? %> data-test="access-schema-subject">
+      <summary class="flex items-center gap-2.5 px-5 py-3 cursor-pointer select-none">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold shrink-0"><%= avatar_initials(subject.name) %></span>
+        <div class="min-w-0">
+          <p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100 truncate"><%= subject.name %></p>
+          <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 truncate"><%= subject.email %></p>
+        </div>
+        <% if diff.membership_change == :added %>
+          <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" data-test="access-member-added"><%= t("member.access_schema.member_added") %></span>
+        <% elsif diff.membership_change == :removed %>
+          <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium bg-rose-50 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 line-through" data-test="access-member-removed"><%= t("member.access_schema.member_removed") %></span>
+        <% end %>
+        <span class="ml-auto text-[11px] text-gray-500 dark:text-zinc-400 shrink-0"><%= t("member.access_schema.summary", actions: diff.pending_action_count, projects: diff.pending_project_count) %></span>
+      </summary>
+
+      <div class="border-t border-stone-100 dark:border-zinc-800 divide-y divide-stone-100 dark:divide-zinc-800">
+        <% diff.granted_rows.each do |row| %>
+          <div class="flex items-start gap-3 px-5 py-2.5" data-test="access-schema-row">
+            <div class="w-36 shrink-0 min-w-0">
+              <p class="text-[12.5px] text-zinc-900 dark:text-zinc-100 truncate"><%= row.project.name %></p>
+            </div>
+            <div class="flex flex-wrap gap-1.5 min-w-0">
+              <% Authorization::AccessMatrix::SCOPED_KEYS.each do |key| %>
+                <% in_cur = row.current_keys.include?(key); in_pen = row.pending_keys.include?(key) %>
+                <% next unless in_cur || in_pen %>
+                <% if in_cur && in_pen %>
+                  <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400"><%= authorization_permission_label(key) %></span>
+                <% elsif in_pen %>
+                  <span class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200 dark:ring-emerald-500/40" data-test="access-chip-added"><%= authorization_permission_label(key) %><span class="opacity-70">(<%= t("member.access_schema.new_tag") %>)</span></span>
+                <% else %>
+                  <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium bg-rose-50 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400 line-through" data-test="access-chip-removed"><%= authorization_permission_label(key) %></span>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <% if diff.granted_rows.empty? %>
+          <p class="px-5 py-3 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.access_schema.no_project_access") %></p>
+        <% end %>
+      </div>
+
+      <% if diff.empty_rows.any? %>
+        <details class="px-5 py-2 border-t border-stone-100 dark:border-zinc-800">
+          <summary class="text-[11px] text-gray-500 dark:text-zinc-400 cursor-pointer select-none"><%= t("member.access_schema.empty_projects", count: diff.empty_rows.size) %></summary>
+          <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400 leading-relaxed"><%= diff.empty_rows.map { |r| r.project.name }.join(" · ") %></p>
+        </details>
+      <% end %>
+
+      <% granted_org = diff.org_cells.select { |c| c.current || c.pending } %>
+      <div class="px-5 py-3 border-t border-stone-200 dark:border-zinc-800">
+        <p class="text-[11px] font-semibold text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.access_schema.org_title") %></p>
+        <% if granted_org.empty? %>
+          <p class="text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.access_schema.org_none") %></p>
+        <% else %>
+          <div class="flex flex-wrap gap-1.5">
+            <% granted_org.each do |cell| %>
+              <% if cell.current && cell.pending %>
+                <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400"><%= authorization_permission_label(cell.key) %></span>
+              <% elsif cell.pending %>
+                <span class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200 dark:ring-emerald-500/40" data-test="access-chip-added"><%= authorization_permission_label(cell.key) %><span class="opacity-70">(<%= t("member.access_schema.new_tag") %>)</span></span>
+              <% else %>
+                <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium bg-rose-50 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400 line-through" data-test="access-chip-removed"><%= authorization_permission_label(cell.key) %></span>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </details>
+  <% end %>
+</div>

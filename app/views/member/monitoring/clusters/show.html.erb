@@ -1,0 +1,15 @@
+<% content_for :title, @cluster.name %>
+<%= turbo_stream_from Realtime::Streams.cluster(@cluster) %>
+<%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+
+<div class="p-7 space-y-6" data-test="member-cluster">
+  <%= render "member/monitoring/clusters/header", cluster: @cluster, active_tab: :overview, problems: @problems %>
+  <% if @revealed_secret %>
+    <%= render "member/monitoring/clusters/token_reveal", cluster: @cluster, secret: @revealed_secret %>
+  <% end %>
+  <% if @cluster.status_pending? %>
+    <%= render Ui::EmptyNoteComponent.new(text: t("member.clusters.reveal.waiting"), test_id: "cluster-waiting") %>
+  <% end %>
+  <%= render "member/monitoring/clusters/strip", cluster: @cluster, summary: @summary, restarts: @restarts_24h, usage: @usage %>
+  <%= render "member/monitoring/clusters/namespaces", cluster: @cluster, namespaces: @namespaces %>
+</div>

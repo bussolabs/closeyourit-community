@@ -1,0 +1,15 @@
+<%# Gate agenti (CYRA-184) su card e righe: verde lavorabile, ambra da valutare, grigio bloccato.
+    Reso SEMPRE (a differenza della graffetta allegati): lo stato spento è informazione.
+    Niente Current/contesto viewer — la board card è resa anche dal broadcast di ChangeStatus.
+
+    CYRA-403 — tre forme diverse, non tre colori: su quattordici pixel il grigio e l'arancione non
+    si distinguono con un deficit di visione dei colori. `role="img"` perché l'aria-label su uno
+    <span> nudo i lettori di schermo non lo annunciano. %>
+<span class="inline-flex shrink-0 items-center <%= agent_eligibility_icon_class(ticket.agent_eligibility) %>"
+      role="img"
+      title="<%= t("member.tickets.agent_eligibility.#{ticket.agent_eligibility}") %>"
+      aria-label="<%= t("member.tickets.agent_eligibility.#{ticket.agent_eligibility}") %>"
+      data-test="ticket-agent-indicator-<%= ticket.id %>"
+      data-eligibility="<%= ticket.agent_eligibility %>">
+  <%= render Ui::IconComponent.new(name: agent_eligibility_icon(ticket.agent_eligibility), class: "text-[10px]") %>
+</span>

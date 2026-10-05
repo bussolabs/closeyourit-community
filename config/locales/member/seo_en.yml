@@ -1,0 +1,355 @@
+en:
+  member:
+    nav:
+      group_seo: SEO
+      seo_sites: Sites
+      seo_issues: Findings
+      seo_pages: Pages
+    monitoring:
+      seo:
+        title: SEO
+        help_title: "Problems found on your sites' pages, with evidence."
+        pages_help_title: "The pages visited during the checks, with what was read on each."
+        titles:
+          issues: Findings
+          pages: Analysed pages
+        stats:
+          total: Open
+          critical: Critical
+          high: High
+          ignored: Ignored
+          pages: Pages
+          sites: Sites
+        columns:
+          check: Check
+          url: URL
+          severity: Severity
+          area: Area
+          project: Project
+          site: Site
+          status: Status
+          last_seen: Last check
+          first_seen: First seen
+          title_tag: Title
+          h1: H1
+          words: Words
+          canonical: Canonical
+          response_time: Response time
+          triage_note: Note
+        severity:
+          low: Low
+          medium: Medium
+          high: High
+          critical: Critical
+        status:
+          open: Open
+          resolved: Resolved
+          ignored: Ignored
+        actions:
+          ignore: Live with it
+          reopen: Reopen
+          promote: Open a ticket
+        notices:
+          ignored: Finding ignored.
+          reopened: Finding reopened.
+          promoted: Ticket opened from the finding.
+          rescan_started: Check started. The result shows up as soon as the run finishes.
+        errors:
+          promote_failed: The ticket could not be opened.
+        show:
+          evidence: The evidence
+          page_state: How the page looks
+          details: Details
+        empty: No findings
+        empty_hint: "Declare a site to watch: the system visits it and opens a finding for every problem it sees."
+        pages_empty: No pages
+        pages_empty_hint: Pages show up after the first check run.
+        whole_site: Whole site
+        missing: Missing
+        ticket_title: "SEO: %{check} on %{url}"
+        ticket_expected_fallback: The problem no longer shows up on the next check.
+      seo_sites:
+        title: Checked sites
+        help_title: "The sites that get visited, and how often."
+        new: Add site
+        empty: No site is being watched
+        empty_hint: Add a site address and choose how often to check it.
+        paused: paused
+        never_audited: Never checked
+        failed: "Last run failed (%{error})"
+        pages_seen:
+          one: 1 page
+          other: "%{count} pages"
+        pages_unverified_short:
+          one: 1 unread
+          other: "%{count} unread"
+        columns:
+          frequency: Every
+          open_issues: Open findings
+          last_audit: Last check
+        frequency:
+          daily: Day
+          weekly: Week
+        checked_ago: "%{duration} ago"
+        tabs:
+          summary: Summary
+          performance: Speed
+          issues: Findings
+          pages: Pages
+        performance:
+          mobile: On phone
+          desktop: On computer
+          unconfigured: The service that measures speed is not connected
+          unconfigured_hint: "Until it is connected this site is not measured: it is not slow, nobody has measured it yet. An organization admin can connect Google PageSpeed from Integrations."
+          empty: No measurement yet
+          empty_hint: The first one arrives with the next check, or press «Check now» above.
+          stale: "The last measurement failed (%{error}). The numbers below are from the previous run."
+          no_field: Google does not have enough visits to this site yet to say how it went for people.
+          origin_fallback: These numbers cover the whole site, not just this page, because Google does not have enough about it.
+          no_lab: No successful test run for this device.
+          no_lab_inp: "Response to touch cannot be measured in a test run, because nobody touches the page: look at the blocking time above and at the real visitors' response to touch."
+          lab_metrics:
+            lcp: Content appears
+            cls: Page shifts
+            tbt: Blocking time
+            fcp: First sign of life
+            ttfb: Server wait
+            speed_index: Perceived speed
+        fields:
+          max_pages: Pages per run
+          follow_sitemap: Reads the sitemap
+        show:
+          open_issues: Open findings
+          issues: Open findings
+          issues_empty: No open finding on this site.
+          all_issues: "See all (%{count})"
+          pages: Pages seen
+          pages_empty: No page yet
+          pages_empty_hint: Pages show up after the first successful check.
+          all_pages: "See all (%{count})"
+          words: "%{count} words"
+          configuration: Configuration
+          state: State
+          enabled: Active
+          paused: Paused
+          sitemap_on: "Yes"
+          sitemap_off: "No"
+          next_audit: Next check
+          in_time: "in %{duration}"
+          audits: Latest checks
+          audits_empty: No check yet.
+          audit_failed: Failed
+          pages_unverified:
+            one: "1 page could not be read: its findings stay on the list"
+            other: "%{count} pages could not be read: their findings stay on the list"
+          audit_running: Running
+          ago: "%{duration} ago"
+          visits: Visits
+          all_visits: Full analytics
+          visits_window: Last 7 days, on this site's environment.
+        actions:
+          rescan: Check now
+          edit: Edit
+          open: Open the site
+        notices:
+          created: Site added. The first check has already started.
+          updated: Site updated.
+          deleted: Site removed.
+        errors:
+          project_required: Choose the project the site belongs to.
+        form:
+          new_title: Add a site
+          edit_title: Edit the site
+          save_new: Add
+          save_edit: Save
+          cancel: Cancel
+          project: Project
+          project_placeholder: Choose the project
+          project_required: Choose the project first.
+          environment: Environment
+          project_env: Project and environment
+          project_env_locked: They cannot change after creation — they are the site's identity.
+          base_url: Site address
+          base_url_hint: The visit starts here. It must be a public address.
+          frequency: How often to check it
+          max_pages: Pages per run
+          max_pages_hint: How many pages to visit at most each time.
+          follow_sitemap: Read the sitemap
+          enabled: Active
+          manners: "The system visits the site the way a search engine would: it always honours robots.txt, stays on the same address, identifies itself as CloseYourItBot and waits half a second between pages."
+  seo:
+    vitals:
+      lab: Lab
+      field: Field
+      lab_explainer: "A test run on a Google machine over a simulated network: it says WHY the site is slow, and it can be repeated identically. It is not what your visitors lived through."
+      field_explainer: "What actually happened to the people who opened the site: it says HOW slow it is for them. This is the number Google uses for ranking, and it cannot say why."
+      percentile: "Three visits out of four went at least this well. We look at this instead of the average because an average hides exactly the visits that went badly."
+      metrics:
+        lcp: Content appears
+        inp: Response to touch
+        cls: Page shifts
+        ttfb: Server wait
+        fcp: First sign of life
+      metric_help:
+        lcp: How long the biggest part of the page takes to appear.
+        inp: How long the page takes to react when you touch it.
+        cls: How much the page moves under your eyes while it loads.
+        ttfb: How long the server takes to send its first answer.
+        fcp: How long anything at all takes to appear.
+      scores:
+        performance: Performance
+        accessibility: Accessibility
+        best_practices: Best practices
+        seo: SEO
+      ratings:
+        good: Good
+        needs_improvement: Needs improvement
+        poor: Poor
+        unknown: Not measured
+      units:
+        seconds: "%{value} s"
+        milliseconds: "%{value} ms"
+      few_samples: Not enough samples
+      samples: "over %{count} measurements"
+      window: Last 28 days
+    areas:
+      indexability: Indexability
+      structure: Structure
+      content: Content
+      i18n: Languages
+      performance: Performance
+    evidence:
+      status: Response
+      from: Found on
+      hops: Hops
+      chain: Path
+      canonical: Canonical
+      directives: Directives
+      found: Found
+      words: Words
+      without_alt: Without description
+      total: Total
+      length: Length
+      title: Title
+      h1s: H1 headings
+      ms: Milliseconds
+      bytes: Size
+      groups: Groups
+      urls: Addresses
+      pairs: Pairs
+      reason: Reason
+    checks:
+      noindex:
+        label: The page asks not to be indexed
+        explanation: The page carries a "noindex" instruction, which asks search engines not to show it. If the page is meant to be found, that instruction has to go.
+        expected: The page no longer carries the noindex instruction.
+      blocked_by_robots:
+        label: Page disallowed by robots.txt but listed in the sitemap
+        explanation: The site asks to index this page in its sitemap and forbids reading it in robots.txt. The two instructions contradict each other, and the one that excludes it wins.
+        expected: The page is consistent — either out of the sitemap, or no longer disallowed.
+      broken_link:
+        label: The page does not respond
+        explanation: There is nothing at this address any more, or the server errors out. Anyone arriving from a link or from search results finds a closed door.
+        expected: The address responds again, or redirects to where the content moved.
+      redirect_loop:
+        label: Endless redirect
+        explanation: The address points to another one that points back, forever. Nobody reaches the page, search engines included.
+        expected: The address leads to a page instead of going in circles.
+      redirect_chain:
+        label: Too many hops before arriving
+        explanation: Reaching the page goes through several intermediate addresses. Every hop costs time and dilutes the value of incoming links.
+        expected: The address reaches the final page in a single hop.
+      canonical_missing:
+        label: The page's official address is missing
+        explanation: The canonical tells engines which address is the right one when the same content is reachable by several paths. Without it, they decide on their own.
+        expected: The page declares its own official address.
+      canonical_points_elsewhere:
+        label: The official address points to another page
+        explanation: The page is in the sitemap, so the site wants it in results, yet it declares a different address as canonical. That takes it out of results.
+        expected: The page declares itself as canonical, or leaves the sitemap.
+      sitemap_unreachable:
+        label: The sitemap does not respond
+        explanation: The sitemap is the list of pages the site wants found. If it does not respond, engines have to guess what exists.
+        expected: The sitemap responds and lists the site's pages.
+      robots_unreachable:
+        label: robots.txt does not respond
+        explanation: It is the file that tells crawlers where they may go. Without it, every crawler decides for itself.
+        expected: The robots.txt file responds.
+      missing_from_sitemap:
+        label: Page outside the sitemap
+        explanation: The page is reachable by browsing but is not in the list the site declares. It gets found later and treated as less important.
+        expected: The page appears in the sitemap.
+      orphan_page:
+        label: Page nobody links to
+        explanation: The page is in the sitemap but no other page links to it. Visitors never reach it, and for engines it is worth as much as the links it receives — none.
+        expected: At least one page of the site links to this one.
+      missing_title:
+        label: The title is missing
+        explanation: The title is the line shown in search results. Without one, the engine makes it up from the content.
+        expected: The page has a title that says what it is about.
+      title_too_long:
+        label: Title too long
+        explanation: Past a certain length the title gets cut in results, and the important part can end up outside.
+        expected: The title fits the length engines display.
+      duplicate_title:
+        label: The same title on several pages
+        explanation: Two or more pages introduce themselves with the same title. Readers cannot tell which one to open, and engines treat them as copies.
+        expected: Every page has its own title.
+      missing_meta_description:
+        label: The description is missing
+        explanation: It is the text under the title in search results. Without it, the engine grabs an arbitrary piece of the page.
+        expected: The page has a description written for it.
+      duplicate_meta_description:
+        label: The same description on several pages
+        explanation: Several pages show the same text in results, which does not help anyone choose.
+        expected: Every page has its own description.
+      missing_h1:
+        label: The main heading is missing
+        explanation: The H1 is the big heading at the top of the content. It tells readers and engines what the page is about. A green score does not notice — that check is not one it runs.
+        expected: The page has a main heading.
+      multiple_h1:
+        label: More than one main heading
+        explanation: With several H1s it is unclear what the page is actually about.
+        expected: The page has a single main heading.
+      missing_jsonld:
+        label: The home page has no structured data
+        explanation: Structured data tells engines who you are and what you do, and enables rich results. On the home page it matters more than anywhere else.
+        expected: The home page declares its structured data.
+      lang_missing:
+        label: The page does not declare its language
+        explanation: Without a declared language, engines and screen readers have to guess it.
+        expected: The page declares its language.
+      hreflang_not_reciprocal:
+        label: Language versions do not answer each other
+        explanation: One page points to another as its version in a different language, but gets no pointer back. Engines drop the pair and the two pages keep competing.
+        expected: Linked pages declare each other.
+      hreflang_missing_x_default:
+        label: The default version is missing
+        explanation: It says which page to show to someone who speaks none of the declared languages.
+        expected: Multilingual pages declare a default version.
+      thin_content:
+        label: Nearly empty page
+        explanation: There is too little text for an engine to work out what the page is about and show it to anyone.
+        expected: The page has enough content to explain what it covers.
+      images_without_alt:
+        label: Images without a description
+        explanation: The image description serves people who cannot see it and engines trying to understand it. Without one, the image is mute.
+        expected: Every meaningful image has its description.
+      slow_response:
+        label: The page responds slowly
+        explanation: The server takes too long to answer. Visitors leave before seeing it.
+        expected: The page responds within normal times.
+      oversized_html:
+        label: Page too heavy
+        explanation: The page markup is enormous. On a slow connection that becomes a wait.
+        expected: The page has a reasonable size.
+      mixed_content:
+        label: Insecure resources on a secure page
+        explanation: The page is served securely but loads images or scripts in the clear. Browsers block or warn, and what is blocked does not exist for the engine.
+        expected: Every resource on the page is served securely.
+  errors:
+    messages:
+      site_exists: "already has an SEO site for this project"
+      internal_host: "must be a public address: internal addresses cannot be checked"
+      not_declared_by_project: "is not among the environments declared by the project"
+      no_web_platform: "has no web platform: without a site there is no SEO to check"

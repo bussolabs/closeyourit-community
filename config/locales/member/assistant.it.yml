@@ -1,0 +1,151 @@
+it:
+  member:
+    assistant:
+      errors:
+        blank: "Scrivi prima cosa vorresti fare."
+      panel:
+        not_configured:
+          title: "Assistente non collegato"
+        open: "Apri l'assistente"
+        title: "Assistente"
+        new: "Nuova conversazione"
+        history: "Conversazioni"
+        close: "Chiudi"
+        placeholder: "Scrivi cosa vorresti fare…"
+        send: "Invia"
+        greeting: "Ciao! Dimmi cosa vorresti fare e ti indico lo strumento giusto del sistema."
+        examples_lead: "Per esempio:"
+        capability: "Ti indico la pagina giusta e ti spiego a parole come usarla."
+        disclaimer: "Cerca, spiega e prepara ticket, todo e idee. Niente viene creato finché non premi Conferma."
+        note: "Cerca, spiega e prepara ticket, todo e idee: niente parte finché non confermi."
+        untitled: "Conversazione"
+        empty_history: "Ancora nessuna conversazione."
+        empty_body: "L'assistente ti indica la pagina giusta per quello che vuoi fare e ti spiega come usarla."
+        empty_example: "Per esempio: «Come do accesso a un collega?»"
+        not_connected: "L'assistente non parte perché la tua organizzazione non ha ancora collegato il servizio che lo fa funzionare (%{service}). Chi amministra l'organizzazione può collegarlo dalle Integrazioni."
+        failed:
+          unavailable: "L'assistente non è disponibile in questo momento. Riprova tra poco."
+          not_connected: "L'assistente non parte finché la tua organizzazione non collega il servizio che lo fa funzionare. Chi amministra l'organizzazione può collegarlo dalle Integrazioni."
+          no_answer: "Non sono riuscito a rispondere a questa domanda. Prova a scriverla in un altro modo."
+          guides: "Vedi tutte le guide"
+          load: "Non siamo riusciti ad aprire l'assistente."
+          retry: "Riprova"
+        compose_hint: "Invio per inviare · Maiusc+Invio per andare a capo"
+        all_conversations: "Tutte le conversazioni"
+        project: "Su %{name}"
+        project_clear: "Chiedi su tutti i progetti"
+        project_greeting: "Chiedimi quello che vuoi su %{name}: qui guardo solo questo progetto."
+        project_suggestions:
+          - "Come sta questo progetto?"
+          - "Quali errori sono aperti?"
+          - "Cosa è lento?"
+          - "Qual è l'ultimo rilascio?"
+        suggestions:
+          - "Come apro un ticket?"
+          - "Dove vedo gli errori?"
+          - "Come do accesso a un collega?"
+          - "Chi può fare cosa?"
+      list:
+        subtitle: "Le tue domande all'assistente: ti indica la pagina giusta e ti spiega come usarla."
+        retention: "Una conversazione si cancella %{days} giorni dopo l'ultimo messaggio."
+        messages:
+          one: "1 messaggio"
+          other: "%{count} messaggi"
+        last_activity: "%{time} fa"
+        from_terminal: "Da terminale"
+        search_placeholder: "Cerca nelle conversazioni…"
+        search_empty: "Nessuna conversazione trovata."
+      catalog:
+        tickets:
+          label: "Ticket"
+          description: "Segnala e segui bug e attività dei tuoi progetti."
+        ideas:
+          label: "Idee"
+          description: "Proponi, vota e discuti idee, poi trasformale in ticket."
+        knowledge:
+          label: "Knowledge base"
+          description: "Scrivi e cerca note, decisioni e guide dei progetti."
+        workload:
+          label: "Carico di lavoro"
+          description: "Segui le attività non di sviluppo come riunioni e materiali."
+        todos:
+          label: "Cose da fare"
+          description: "Tieni liste personali di cose da fare, anche condivise con un collega."
+        projects:
+          label: "Progetti"
+          description: "Crea e gestisci i tuoi progetti e le loro impostazioni."
+        errors:
+          label: "Errori"
+          description: "Vedi e gestisci gli errori segnalati dalle tue app."
+        performance:
+          label: "Prestazioni"
+          description: "Trova query e metodi lenti nelle tue app."
+        logs:
+          label: "Log"
+          description: "Sfoglia il flusso di log di tutte le tue app."
+        uptime:
+          label: "Uptime"
+          description: "Controlla se i tuoi siti e servizi sono attivi."
+        crons:
+          label: "Job programmati"
+          description: "Verifica che i tuoi job programmati partano puntuali."
+        analytics:
+          label: "Analisi web"
+          description: "Vedi il traffico e i visitatori dei tuoi siti."
+        personal_variables:
+          label: "Variabili personali"
+          description: "Conserva le tue variabili d'ambiente personali, cifrate."
+        personal_files:
+          label: "File segreti personali"
+          description: "Conserva i tuoi file segreti personali, cifrati."
+        project_secrets:
+          label: "Segreti di progetto"
+          description: "Gestisci i segreti cifrati di un progetto."
+        guides:
+          label: "Guide"
+          description: "Leggi guide passo-passo su come funzionano le funzionalità."
+        changelog:
+          label: "Novità"
+          description: "Scopri cosa è cambiato di recente nel prodotto."
+        alerts:
+          label: "Avvisi"
+          description: "Imposta regole che ti avvisano quando qualcosa va storto."
+        servers:
+          label: "Server"
+          description: "Monitora la salute dei tuoi server."
+        agents:
+          label: "Agenti di automazione"
+          description: "Configura agenti di automazione che lavorano sui ticket."
+        members:
+          label: "Membri"
+          description: "Invita persone e gestisci chi fa parte dell'organizzazione."
+        service_accounts:
+          label: "Account di servizio"
+          description: "Crea account non umani da far usare agli agenti AI."
+        teams:
+          label: "Team"
+          description: "Raggruppa le persone in team e assegna gli accessi."
+        roles:
+          label: "Ruoli"
+          description: "Definisci ruoli che raggruppano i permessi."
+        platforms:
+          label: "Piattaforme"
+          description: "Gestisci le piattaforme (dispositivi e sistemi) dei tuoi progetti."
+        environments:
+          label: "Ambienti"
+          description: "Gestisci gli ambienti come produzione e staging."
+        organization:
+          label: "Impostazioni organizzazione"
+          description: "Cambia le impostazioni della tua organizzazione."
+        shared_variables:
+          label: "Variabili dell'organizzazione"
+          description: "Gestisci le variabili d'ambiente condivise dell'organizzazione."
+        shared_files:
+          label: "File segreti dell'organizzazione"
+          description: "Gestisci i file segreti condivisi dell'organizzazione."
+        vault_audit:
+          label: "Attività del Vault"
+          description: "Vedi chi ha letto o modificato i segreti."
+        activity:
+          label: "Registro attività"
+          description: "Vedi chi ha fatto cosa e quando: lavoro, ticket, permessi e Vault in un elenco solo."

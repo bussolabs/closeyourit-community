@@ -1,0 +1,23 @@
+<%# locals: unresolved:, resolved:, ignored:, total:, active_status: — pill di conteggio nell'header
+    lista. Il render iniziale e quello al page-refresh Turbo d'ingest (CYRA-41) usano lo scope
+    visibile/filtrato per-viewer: le stats org-wide NON si ricalcolano più nel path caldo. Il triage
+    (basso volume, Errors::Broadcast.group) fa ancora un replace chirurgico su #errors_stats.
+
+    CYRA-383 — tre numeri con lo stesso aspetto che parlavano di insiemi diversi (uno seguiva i
+    filtri, gli altri no) e non sommavano al totale, perché gli errori messi da parte non avevano
+    una voce. Ora contano tutti sullo stesso insieme, la loro somma È il totale, e ognuno è un
+    filtro: era già scritto lì, non deve costare l'apertura di un pannello. %>
+<%# Wrapper display:contents (CYRA-70): le chip partecipano direttamente al flex del counts slot. %>
+<div id="errors_stats" class="contents" data-test="errors-stats">
+  <% status_url = ->(value) { member_monitoring_error_groups_path(request.query_parameters.merge(status: value).except("page")) } %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.stat_unresolved"), value: unresolved, value_color: :amber,
+        href: status_url.call("unresolved"), active: active_status == "unresolved", test_id: "stat-unresolved") %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.stat_resolved"), value: resolved, value_color: :emerald,
+        href: status_url.call("resolved"), active: active_status == "resolved", test_id: "stat-resolved") %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.stat_ignored"), value: ignored, value_color: :gray,
+        href: status_url.call("ignored"), active: active_status == "ignored", test_id: "stat-ignored") %>
+  <%# Il totale è la SOMMA delle tre voci: toglie il filtro di stato e riporta all'insieme intero. %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.stat_issues"), value: total,
+        href: member_monitoring_error_groups_path(request.query_parameters.except("status", "page").merge(status: ["unresolved", "resolved", "ignored"])),
+        active: active_status.nil?, test_id: "stat-issues") %>
+</div>

@@ -1,0 +1,4 @@
+<%= render "form", feature: @feature, group: @group, categories: @categories, pages: @pages,
+      url: member_product_feature_path(@feature), method: :patch,
+      title: t("member.product.features.edit"),
+      submit_label: t("member.product.features.edit") %>

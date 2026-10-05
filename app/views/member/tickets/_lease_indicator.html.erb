@@ -1,0 +1,17 @@
+<%# Presa in carico in corso (CYRA-295) su card e righe: chi ci lavora adesso e fino a quando. %>
+<%# Reso SOLO se il lease è vivo: la riga sopravvive alla scadenza (viene riusata dal titolare %>
+<%# successivo), e mostrarla scaduta direbbe "in lavorazione" di un lavoro finito da un pezzo. %>
+<%# Il confronto usa Time.current e non Clock.current (che interroga PostgreSQL): qui è una resa %>
+<%# informativa, non un gate — una query per card sarebbe un N+1 travestito. %>
+<%# Niente Current/contesto viewer — la board card è resa anche dal broadcast di ChangeStatus. %>
+<% lease = ticket.agent_lease %>
+<% if lease&.active_at?(Time.current) %>
+  <span class="inline-flex shrink-0 items-center text-indigo-600 dark:text-indigo-400"
+        title="<%= t("member.tickets.lease.badge", name: ticket_lease_holder_name(lease),
+                     time: l(lease.expires_at.in_time_zone, format: :short)) %>"
+        aria-label="<%= t("member.tickets.lease.badge", name: ticket_lease_holder_name(lease),
+                          time: l(lease.expires_at.in_time_zone, format: :short)) %>"
+        data-test="ticket-lease-indicator-<%= ticket.id %>">
+    <%= render Ui::IconComponent.new(name: "user-round-search", class: "text-[10px]") %>
+  </span>
+<% end %>

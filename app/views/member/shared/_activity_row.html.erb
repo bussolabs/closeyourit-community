@@ -1,0 +1,19 @@
+<%# locals: (event:) %>
+<%# Una riga della cronologia attività generalizzata (Activity::Event): icona + frase + orario, resa
+    da Activity::Presenter. Estratta dal modale (CYRA-827) perché la stessa riga serve ora in due
+    posti — l'elenco già in memoria dei riquadri che non sono ancora passati al caricamento su
+    richiesta, e il frame paginato che li rimpiazzerà. L'`id` serve a dire QUALE evento: senza,
+    verificare che una pagina porti l'evento giusto vorrebbe dire cercarne il testo. %>
+<div class="px-4 py-3 flex items-center gap-3" id="activity-row-<%= event.id %>" data-test="activity-row">
+  <% presenter = Activity::Presenter.new(event) %>
+  <span class="shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500">
+    <%= render Ui::IconComponent.new(name: presenter.icon, class: "text-[10px]") %>
+  </span>
+  <div class="min-w-0 flex-1 flex items-center flex-wrap gap-x-2 gap-y-1">
+    <span class="text-[12px] text-zinc-700 dark:text-zinc-300"><%= presenter.sentence %></span>
+    <% if event.impersonated? %>
+      <%= render Ui::BadgeComponent.new(label: t("activity.impersonated"), color: :violet, size: :sm) %>
+    <% end %>
+    <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= event.created_at.strftime("%d/%m · %H:%M") %></span>
+  </div>
+</div>

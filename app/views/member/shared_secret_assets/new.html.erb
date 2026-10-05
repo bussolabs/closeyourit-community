@@ -1,0 +1,30 @@
+<% content_for :title, t("member.secret_assets.new_title") %>
+<div class="p-7">
+  <%= form_with url: member_shared_secret_assets_path, method: :post, multipart: true, class: "space-y-6", data: { test: "shared-secret-asset-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("member.secret_assets.new_title"),
+          breadcrumb: [ { label: t("member.secret_assets.shared_title"), href: member_shared_secret_assets_path }, { label: t("member.breadcrumb.new") } ]) do |header| %>
+      <% header.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.secret_assets.cancel"), href: member_shared_secret_assets_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: t("member.secret_assets.upload"), type: "submit", variant: :primary, size: :sm, icon: "check", test_id: "shared-secret-asset-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%= render Ui::InputComponent.new(name: "name", label: t("member.secret_assets.name"), required: true, value: @asset.name, placeholder: "apns-cert", test_id: "shared-secret-asset-name") %>
+          <%= render Ui::SelectComponent.new(name: "environment_id", label: t("member.secret_assets.environment"), options: @environments.map { |environment| [ environment.label, environment.id ] }, selected: @asset.environment_id, include_blank: t("member.secret_assets.all_environments"), placeholder: t("member.secret_assets.all_environments"), test_id: "shared-secret-asset-environment") %>
+          <div class="md:col-span-2">
+            <label for="file" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.secret_assets.file") %> <span class="text-red-500 dark:text-red-400">*</span></label>
+            <input type="file" name="file" id="file" required accept=".p8,.p12,.jks,.keystore,.json" class="block w-full text-[13px] text-zinc-900 dark:text-zinc-100 file:mr-3 file:rounded-md file:border file:border-stone-200 dark:file:border-zinc-800 file:bg-white dark:file:bg-zinc-900 file:px-3 file:py-1.5 file:text-[12px] file:font-medium file:text-zinc-900 dark:file:text-zinc-100 hover:file:bg-stone-50 dark:hover:file:bg-zinc-800 file:cursor-pointer" data-test="shared-secret-asset-file">
+            <p class="mt-1.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.secret_assets.file_hint") %></p>
+          </div>
+          <div class="md:col-span-2">
+            <%= render Ui::InputComponent.new(name: "description", label: t("member.secret_assets.description"), value: @asset.description, test_id: "shared-secret-asset-description") %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

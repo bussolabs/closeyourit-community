@@ -1,0 +1,37 @@
+<% content_for :title, "#{t('member.knowledge.versions.version_label', number: @version.number)} · #{@page.title}" %>
+
+<div class="p-7 space-y-6" data-test="knowledge-version">
+  <%= render Ui::PageHeaderComponent.new(
+        title: @page.title,
+        breadcrumb: [ { label: t("member.knowledge.title"), href: member_knowledge_pages_path },
+                      { label: @page.title, href: member_knowledge_page_path(@page) },
+                      { label: t("member.knowledge.versions.title"), href: member_knowledge_page_versions_path(@page) },
+                      { label: t("member.knowledge.versions.number_short", number: @version.number) } ]) do |h| %>
+    <% h.with_counts do %>
+      <% if @is_live %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.versions.status_label"), value: t("member.knowledge.versions.live"), value_color: :emerald, test_id: "knowledge-version-live") %>
+      <% else %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.versions.status_label"), value: t("member.knowledge.versions.historical"), value_color: :gray, test_id: "knowledge-version-historical") %>
+      <% end %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.versions.kind_label"), value: t("member.knowledge.kind.#{@version.kind}"), value_color: knowledge_kind_color(@version.kind), test_id: "knowledge-version-kind") %>
+      <% if @version.author_name.present? %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.versions.author_label"), value: @version.author_name, test_id: "knowledge-version-author") %>
+      <% end %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.versions.created_label"), value: @version.created_at.strftime("%d/%m/%Y · %H:%M"), test_id: "knowledge-version-created") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.knowledge.versions.title"), href: member_knowledge_page_versions_path(@page), variant: :secondary_muted, size: :sm, icon: "arrow-left", test_id: "knowledge-version-back-history") %>
+      <% if @can_edit && !@is_live %>
+        <%= render Ui::ButtonComponent.new(label: t("member.knowledge.versions.restore"), href: restore_member_knowledge_page_version_path(@page, @version), method: :post, variant: :primary, size: :sm, confirm: t("member.knowledge.versions.restore_confirm"), test_id: "knowledge-version-restore") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="knowledge-version-body">
+    <%# Il titolo dello snapshot può differire dalla live: si mostra quello congelato. %>
+    <div class="px-6 py-4 border-b border-stone-100 dark:border-zinc-800">
+      <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100" data-test="knowledge-version-title"><%= @version.title %></h2>
+    </div>
+    <%= render Ui::MarkdownComponent.new(text: @version.body, remote_images: true, class: "px-6 py-5 max-w-[70ch]") %>
+  </div>
+</div>

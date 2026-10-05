@@ -1,0 +1,28 @@
+<%# locals: draft_params %>
+<%# Round-trip del draft: la pagina di confronto ri-submette gli STESSI campi del form new
+    (più dedup_ack/motivazione/link dai dialog). Niente id (draft = ticket nuovo). %>
+<% %i[project_id title kind description technical_analysis weight milestone_id due_at
+      status_id priority_id assignee_id].each do |field| %>
+  <%= hidden_field_tag field, draft_params[field], id: nil %>
+<% end %>
+<% Array(draft_params[:scenarios_attributes]).each_with_index do |scenario, i| %>
+  <% %i[title step_given step_when step_then step_expected].each do |field| %>
+    <%= hidden_field_tag "scenarios_attributes[#{i}][#{field}]", scenario[field], id: nil %>
+  <% end %>
+<% end %>
+<% Array(draft_params[:conditions_attributes]).each_with_index do |condition, i| %>
+  <%= hidden_field_tag "conditions_attributes[#{i}][text]", condition[:text], id: nil %>
+<% end %>
+<% Array(draft_params[:platform_ids]).reject(&:blank?).each do |platform_id| %>
+  <%= hidden_field_tag "platform_ids[]", platform_id, id: nil %>
+<% end %>
+<%= hidden_field_tag :locked_project, params[:locked_project], id: nil if params[:locked_project].present? %>
+<%# The error and slow operation picked in the form are not ticket fields: without these the ticket
+    created from the comparison would lose them. %>
+<% %i[error_group_id metric_group_id].each do |field| %>
+  <%= hidden_field_tag field, params[field], id: nil if params[field].present? %>
+<% end %>
+<%# Il ticket d'origine sopravvive al giro dal gate duplicati (CYRA-264). Non è un dettaglio raro:
+    un consiglio parla di cose viste in quel progetto, quindi somigliare a un ticket esistente è il
+    caso NORMALE — senza questa riga il collegamento si perderebbe proprio lì. %>
+<%= hidden_field_tag :source_ticket_id, params[:source_ticket_id], id: nil if params[:source_ticket_id].present? %>

@@ -1,0 +1,8 @@
+<div class="flex flex-wrap gap-2">
+  <% values.each do |value| %>
+    <label class="inline-flex items-center gap-2 h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[12.5px] text-zinc-900 dark:text-zinc-100 cursor-pointer has-[:checked]:border-indigo-600 dark:has-[:checked]:border-indigo-400 has-[:checked]:bg-indigo-50 dark:has-[:checked]:bg-indigo-500/15">
+      <%= radio_button_tag name, value, current == value, class: "accent-indigo-600", data: { test: "#{test_prefix}-#{value}" } %>
+      <%= label.call(value) %>
+    </label>
+  <% end %>
+</div>

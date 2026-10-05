@@ -1,0 +1,24 @@
+<% content_for :title, t("member.members.form.title") %>
+
+<div class="p-7">
+  <%= form_with url: member_member_path(@membership), method: :patch, class: "space-y-6", data: { test: "member-edit-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: t("member.members.form.title"), breadcrumb: [ { label: t("member.members.title"), href: member_members_path }, { label: @account.name }, { label: t("member.breadcrumb.edit") } ]) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.members.form.cancel"), href: member_members_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: t("member.members.form.save"), type: "submit", icon: "check", test_id: "member-edit-submit", size: :sm) %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%= render Ui::InputComponent.new(name: "name", label: t("member.members.form.name"), required: true, value: @account.name, test_id: "member-name", error: @errors&.dig(:name)&.first) %>
+          <%= render Ui::InputComponent.new(name: "email", type: "email", label: t("member.members.form.email"), readonly: true, value: @account.email, test_id: "member-email", error: @errors&.dig(:email)&.first) %>
+          <div class="md:col-span-2">
+            <%= render Ui::InputComponent.new(name: "handle", label: t("member.members.form.handle"), required: true, value: @account.handle, hint: t("member.members.form.handle_hint"), test_id: "member-handle", error: @errors&.dig(:handle)&.first) %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,67 @@
+<%# locals: book, url, method %>
+<%# Form book KB: metadati, progetti e gruppi. Le pagine si assegnano SOLO in edit,
+    quando lo scope è persistito (multi-select searchable, l'ordine
+    di selezione dà la position nel TOC — vedi Knowledge::Books::Save). %>
+<%= form_with url: url, method: method, class: "space-y-6", data: { test: "knowledge-book-form" } do %>
+  <%= render Ui::PageHeaderComponent.new(title: (book.persisted? ? t("member.knowledge.books.form.edit_title") : t("member.knowledge.books.form.new_title")),
+        breadcrumb: (book.persisted? ?
+          [ { label: t("member.knowledge.books.title"), href: member_knowledge_books_path },
+            { label: book.title, href: member_knowledge_book_path(book) },
+            { label: t("member.breadcrumb.edit") } ] :
+          [ { label: t("member.knowledge.books.title"), href: member_knowledge_books_path },
+            { label: t("member.knowledge.books.form.new_title") } ])) do |header| %>
+    <% header.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.knowledge.books.form.cancel"), href: (book.persisted? ? member_knowledge_book_path(book) : member_knowledge_books_path), variant: :secondary_muted, size: :sm) %>
+      <%= render Ui::ButtonComponent.new(label: t("member.knowledge.books.form.save"), type: "submit", icon: "save", test_id: "knowledge-book-form-submit", size: :sm) %>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="md:col-span-2">
+        <%= render Ui::InputComponent.new(name: "title", label: t("member.knowledge.books.form.title"), required: true,
+              value: book.title, test_id: "knowledge-book-form-title",
+              error: @errors&.dig(:title)&.first) %>
+      </div>
+
+      <div>
+        <%= render Ui::SelectComponent.new(name: "project_ids", label: t("member.knowledge.books.form.projects"), multiple: true, summary: true,
+              options: @projects.map { |project| [ project.name, project.id ] },
+              selected: book.projects.map(&:id), placeholder: t("member.knowledge.books.form.projects_placeholder"),
+              test_id: "knowledge-book-form-projects",
+              error: @errors&.dig(:project)&.first) %>
+      </div>
+
+      <div>
+        <%= render Ui::SelectComponent.new(name: "group_ids", label: t("member.knowledge.books.form.groups"), multiple: true, summary: true,
+              options: @groups.map { |group| [ group.name, group.id ] },
+              selected: book.groups.map(&:id), placeholder: t("member.knowledge.books.form.groups_placeholder"),
+              test_id: "knowledge-book-form-groups") %>
+      </div>
+
+      <div class="md:col-span-2">
+        <label for="description" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.knowledge.books.form.description") %></label>
+        <%= text_area_tag "description", book.description, rows: 3,
+              data: { test: "knowledge-book-form-description" },
+              class: "w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 leading-relaxed placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400",
+              placeholder: t("member.knowledge.books.form.description_placeholder") %>
+      </div>
+
+      <% if book.persisted? %>
+        <div class="md:col-span-2">
+          <label class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.knowledge.books.form.pages") %></label>
+          <% if @book_pages.any? %>
+            <%= render Ui::SelectComponent.new(name: "page_ids", multiple: true, summary: true,
+                  options: @book_pages.map { |page| [ "#{page.projects.find { |project| @visible_project_ids.include?(project.id) }&.name} · #{page.title}", page.id ] },
+                  selected: book.pages.map(&:id),
+                  placeholder: t("member.knowledge.books.form.pages_placeholder"),
+                  test_id: "knowledge-book-form-pages") %>
+            <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.books.form.pages_hint") %></p>
+          <% else %>
+            <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.books.form.pages_none") %></p>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

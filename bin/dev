@@ -1,0 +1,45 @@
+#!/usr/bin/env sh
+# Keep every supervisor and socket relative to this checkout.
+cd "$(dirname "$0")/.." || exit 1
+if ! command -v overmind > /dev/null; then
+  echo "Overmind is not installed. Install it with: brew install overmind"
+  exit 1
+fi
+
+# The heavy laboratory is opt-in; Overmind still supervises a single agent process.
+if [ "${1:-}" = "--lab" ]; then
+  export DEMO_AGENT_LAB=1
+  shift
+fi
+
+export PORT="${PORT:-3011}"
+case "$PORT" in
+  *[!0-9]*|"") echo "PORT must be an integer between 1 and 65535"; exit 1 ;;
+esac
+if ! [ "$PORT" -ge 1 ] || ! [ "$PORT" -le 65535 ]; then
+  echo "PORT must be an integer between 1 and 65535"
+  exit 1
+fi
+# Overmind increments PORT per process; every producer must keep the web port.
+export DEMO_AGENT_URL="${DEMO_AGENT_URL:-http://localhost:$PORT}"
+export RUBY_DEBUG_OPEN="true"
+export RUBY_DEBUG_LAZY="true"
+# The demo agent may stop (no demo organization yet) without taking the app down with it.
+export OVERMIND_CAN_DIE="${OVERMIND_CAN_DIE:-agent}"
+export OVERMIND_TIMEOUT="${OVERMIND_TIMEOUT:-120}"
+
+# Never terminate a live checkout or an unrelated port owner during startup.
+socket="${OVERMIND_SOCKET:-./.overmind.sock}"
+if [ -S "$socket" ]; then
+  if overmind status -s "$socket" >/dev/null 2>&1; then
+    echo "Overmind is already running. Stop that instance explicitly before starting another."
+    exit 1
+  fi
+  rm -f "$socket"
+fi
+if lsof -nP -ti tcp:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+  echo "Port $PORT is already in use. Choose a free PORT or stop its owner explicitly."
+  exit 1
+fi
+
+exec overmind start -f Procfile.dev "$@"

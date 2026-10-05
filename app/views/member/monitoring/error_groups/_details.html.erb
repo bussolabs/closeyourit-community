@@ -1,0 +1,52 @@
+<%= render Ui::SectionComponent.new(title: t("member.monitoring.details"), body_class: nil, test_id: "error-details") do %>
+  <%= render Ui::DescriptionListComponent.new(class: "px-4 py-4") do |list| %>
+    <% list.with_item(label: t("member.monitoring.detail_project"), span: 2, test_id: "detail-project") do %>
+      <p class="mt-1 flex items-center gap-1.5">
+        <span class="w-3 h-3 rounded-[3px] <%= Ui::Colors.swatch(@group.project.color) %> shrink-0"></span>
+        <%= link_to @group.project.name, member_project_path(@group.project), class: "text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" %>
+        <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 rounded px-1.5 py-0.5"><%= @group.project.key %></span>
+      </p>
+    <% end %>
+    <% if @group.culprit.present? %>
+      <% list.with_item(label: t("member.monitoring.detail_culprit"), span: 2, test_id: "detail-culprit",
+                        hint: t("member.monitoring.help_culprit"), hint_test_id: "help-culprit") do %>
+        <%# CYRA-379: se il punto del codice è oscurato dallo scrubber dell'SDK, dicitura leggibile + avviso. %>
+        <p class="mt-1 font-mono text-[12px] text-zinc-900 dark:text-zinc-100 break-all"><%= error_culprit(@group.culprit) %></p>
+        <% if any_scrubbed?([ @group.culprit ]) %><%= render "member/monitoring/error_groups/scrubbed_hint" %><% end %>
+      <% end %>
+    <% end %>
+    <% list.with_item(label: t("member.monitoring.detail_ticket"), span: 2, test_id: "detail-ticket",
+                      class: "pb-3 border-b border-stone-100 dark:border-zinc-800") do %>
+      <% if @group.promoted? %>
+        <p class="mt-1"><%= link_to member_ticket_path(@group.ticket), class: "inline-flex items-center gap-1.5 text-[12.5px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "detail-ticket-link" } do %><%= render Ui::IconComponent.new(name: "ticket", class: "text-[10px]") %><%= @group.ticket.code %><% end %></p>
+      <% else %>
+        <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.not_promoted") %></p>
+      <% end %>
+    <% end %>
+    <% list.with_item(label: t("member.monitoring.detail_first_seen"),
+                      value: @group.first_seen_at&.strftime("%d/%m %H:%M") || "—") %>
+    <% list.with_item(label: t("member.monitoring.detail_last_seen"), value: error_time_ago(@group.last_seen_at)) %>
+    <%# CYRA-394 — i due rilasci: quando coincidono è UNA riga a parole («comparso e ancora
+        presente in …»), perché due colonne con lo stesso codice lungo si accavallavano fino a
+        non leggersi. Lo SHA si mostra a sette caratteri, si copia con un gesto e — se il
+        progetto ha un repository agganciato — porta al commit. %>
+    <% last_release = @group.release.presence %>
+    <% first_release = @group.first_seen_release.presence %>
+    <% if last_release.present? && last_release == first_release %>
+      <% list.with_item(label: t("member.monitoring.detail_release_same"), span: 2, test_id: "group-release-same") do %>
+        <p class="mt-1"><%= render "member/monitoring/error_groups/release", project: @group.project, release: last_release, test_id: "group-last-release" %></p>
+      <% end %>
+    <% else %>
+      <% list.with_item(label: t("member.monitoring.detail_release")) do %>
+        <p class="mt-1"><%= render "member/monitoring/error_groups/release", project: @group.project, release: last_release, test_id: "group-last-release" %></p>
+      <% end %>
+      <% list.with_item(label: t("member.monitoring.detail_first_release")) do %>
+        <p class="mt-1"><%= render "member/monitoring/error_groups/release", project: @group.project, release: first_release, test_id: "group-first-release" %></p>
+      <% end %>
+    <% end %>
+    <% list.with_item(label: t("member.monitoring.detail_fingerprint"), span: 2, value: @group.fingerprint,
+                      value_class: "mt-1 font-mono text-[11px] text-gray-500 dark:text-zinc-400 truncate",
+                      hint: t("member.monitoring.help_fingerprint"), hint_test_id: "help-fingerprint",
+                      class: "pt-2 border-t border-stone-100 dark:border-zinc-800") %>
+  <% end %>
+<% end %>

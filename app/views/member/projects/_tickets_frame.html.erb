@@ -1,0 +1,73 @@
+<%# CYRA-827 — la lista ticket della panoramica come pezzo di pagina a sé.
+    Dentro il frame ci sta tutto ciò che dal FILTRO dipende: la barra (che porta il conteggio filtrato
+    e i chip attivi), le righe e il pager. Fuori restano il titolo col totale del progetto e le altre
+    sezioni della scheda, che un cambio pagina non deve far ricalcolare.
+    `advance` scrive l'indirizzo, così il collegamento condiviso riapre la stessa pagina intera; i
+    link ai ticket portano `_top` perché aprire un ticket è lasciare la lista, non cambiarne il
+    contenuto (senza, il dettaglio si aprirebbe dentro il riquadro della lista). %>
+<%= turbo_frame_tag Member::ProjectsController::TICKETS_FRAME, class: "block",
+                    data: { turbo_action: "advance" } do %>
+    <%= render(Ui::TableToolbarComponent.new(framed: true, 
+          url: member_project_path(@project), query: params[:q],
+          search_placeholder: t("member.tickets.search_placeholder"),
+          search_test_id: "project-tickets-search", apply_test_id: "project-tickets-filter",
+          test_id: "project-tickets-toolbar")) do |toolbar| %>
+      <% toolbar.with_filter(key: "status_id", label: t("member.tickets.filter_status")) do %>
+        <div class="w-36"><%= render Ui::SelectComponent.new(name: "status_id", multiple: true, summary: true,
+          options: @statuses.map { |s| [ s.display_label, s.id, s.color ] }, selected: params[:status_id],
+          placeholder: t("member.tickets.filter_status"), test_id: "filter-status") %></div>
+      <% end %>
+      <% toolbar.with_filter(key: "priority_id", label: t("member.tickets.filter_priority")) do %>
+        <div class="w-36"><%= render Ui::SelectComponent.new(name: "priority_id", multiple: true, summary: true,
+          options: @priorities.map { |p| [ p.display_label, p.id, p.color ] }, selected: params[:priority_id],
+          placeholder: t("member.tickets.filter_priority"), test_id: "filter-priority") %></div>
+      <% end %>
+      <% toolbar.with_filter(key: "assignee_id", label: t("member.tickets.filter_assignee")) do %>
+        <div class="w-40"><%= render Ui::SelectComponent.new(name: "assignee_id", multiple: true, summary: true,
+          options: @assignees.map { |a| [ a.name, a.id ] }, selected: params[:assignee_id],
+          placeholder: t("member.tickets.filter_assignee"), test_id: "filter-assignee") %></div>
+      <% end %>
+    <% end %>
+    <% if @tickets.empty? %>
+      <p class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="project-tickets-no-match"><%= t("member.projects.show.tickets_no_match") %></p>
+    <% else %>
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("member.tickets.title"))) do |t| %>
+      <% t.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.projects.show.col_code"), sort: "code", initial: :desc, classes: "w-24") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.projects.show.col_title"), sort: "title") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.projects.show.col_priority"), sort: "priority") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.projects.show.col_status"), sort: "status") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.projects.show.col_assignee"), sort: "assignee", align: :right) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+      <% end %>
+      <% @tickets.each do |ticket| %>
+        <%# frame: "_top" — the row sits in the list's frame; opening a ticket leaves the list. %>
+        <%= render Ui::TableComponent::RowComponent.new(href: member_ticket_path(ticket), link_label: ticket.code, frame: "_top", test_id: "project-ticket-row") do %>
+          <%= render Ui::TableComponent::CellComponent.new(label: t("member.projects.show.col_code"), mono: true, class: "text-gray-500 dark:text-zinc-400 whitespace-nowrap") do %>
+            <span class="inline-flex items-center gap-1.5">
+              <%= render "member/tickets/agent_indicator", ticket: ticket %>
+              <%= link_to ticket.code, member_ticket_path(ticket), class: "hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline", data: { test: "project-ticket-link", turbo_frame: "_top" } %>
+            </span>
+          <% end %>
+          <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+            <div class="flex max-w-[280px] items-center gap-2 text-[13px] font-medium text-zinc-900 dark:text-zinc-100">
+              <%= link_to ticket.title, member_ticket_path(ticket), class: "min-w-0 truncate hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline", data: { turbo_frame: "_top" } %>
+              <%= render "member/tickets/attachments_indicator", ticket: ticket %>
+            </div>
+          <% end %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.projects.show.col_priority"))) { render Ui::BadgeComponent.new(label: ticket.priority.display_label, color: ticket.priority.color, icon: (ticket.priority.code == "high" ? "arrow-up" : nil)) } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.projects.show.col_status"))) { render Ui::BadgeComponent.new(label: ticket.status.display_label, color: ticket.status.color) } %>
+          <%= render Ui::TableComponent::CellComponent.new(label: t("member.projects.show.col_assignee"), align: :right) do %>
+            <% if ticket.assignee %>
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold" title="<%= ticket.assignee.name %>"><%= avatar_initials(ticket.assignee.name) %></span>
+            <% else %>
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 text-[10px]" title="<%= t('member.projects.show.unassigned') %>"><%= render Ui::IconComponent.new(name: "user", class: "text-[10px]") %></span>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <% end %>
+    <%# Pager (CYRA-12): sempre reso dentro la card, preserva i filtri della toolbar tra le pagine. %>
+    <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "project-tickets-pagination")) %>
+<% end %>

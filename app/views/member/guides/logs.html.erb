@@ -1,0 +1,61 @@
+<% content_for :title, t("member.guides.logs.title") %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-logs">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "align-left", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-sky-50 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.logs.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.logs.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.logs.cta"), href: member_monitoring_log_entries_path, variant: :primary, size: :sm, icon: "align-left", test_id: "member-guide-logs-cta") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.logs.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.logs.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.logs.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-sky-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.logs.what_b1") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-sky-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.logs.what_b2") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-sky-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.logs.what_b3") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.logs.setup_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ol class="space-y-4">
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">1</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.logs.setup_step1") %></div>
+        </li>
+        <%# CYRA-349 — il passo 2 diceva «segui le istruzioni» senza istruzioni: la guida spiegava a
+            cosa servono i log e poi lasciava lì chi voleva mandarli. Ora ci sono il pacchetto,
+            la configurazione e l'indirizzo a cui arrivano, come nella guida delle prestazioni. %>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">2</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed mb-2"><%= t("member.guides.logs.setup_step2") %></p>
+            <pre class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto"><span class="text-gray-500 dark:text-zinc-400"># Gemfile</span>
+gem <span class="text-emerald-700 dark:text-emerald-300">"closeyourit-ruby"</span></pre>
+            <pre class="mt-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto"><span class="text-gray-500 dark:text-zinc-400"># config/initializers/closeyourit.rb</span>
+CloseYourIt.init <span class="text-indigo-700 dark:text-indigo-300">do</span> |c|
+  c.endpoint_url = ENV[<span class="text-emerald-700 dark:text-emerald-300">"CLOSEYOURIT_ENDPOINT_URL"</span>]
+  c.token        = ENV[<span class="text-emerald-700 dark:text-emerald-300">"CLOSEYOURIT_TOKEN"</span>]
+  c.project_id   = ENV[<span class="text-emerald-700 dark:text-emerald-300">"CLOSEYOURIT_PROJECT_ID"</span>]
+<span class="text-indigo-700 dark:text-indigo-300">end</span></pre>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">3</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed" data-test="guide-logs-endpoint"><%= t("member.guides.logs.setup_step3") %> <span class="font-mono text-[12px]">POST /api/v1/projects/:id/logs</span></div>
+        </li>
+      </ol>
+    </div>
+  </div>
+</div>

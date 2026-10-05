@@ -1,0 +1,12 @@
+it:
+  member:
+    preferences:
+      # CYRA-338 — le schede stanno sotto il titolo dell'area, che dice «Preferenze»: la prima non
+      # può ripetere quel nome, o si leggerebbe «Preferenze › Preferenze» e la scheda smetterebbe di
+      # dire cosa contiene. «Generali» sono lingua, piattaforme e aspetto degli elenchi.
+      tabs:
+        display: Generali
+        notifications: Notifiche
+        telegram: Telegram
+        security: Sicurezza
+        sessions: Accessi

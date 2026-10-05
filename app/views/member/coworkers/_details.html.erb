@@ -1,0 +1,24 @@
+<aside class="w-full md:w-80 shrink-0 overflow-y-auto border-l border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-950 p-4" data-test="coworkers-details">
+  <h2 class="mb-4 text-[14px] font-semibold"><%= t("member.coworkers.#{params[:panel]}") %></h2>
+  <% if params[:panel] == "memory" %>
+    <%= form_with url: member_coworker_path(puck), method: :patch do %>
+      <%= hidden_field_tag "puck[lock_version]", puck.lock_version %>
+      <%= render Ui::ButtonComponent.new(label: t("member.coworkers.save"), type: "submit", class: "mb-4 min-h-11 md:min-h-0") %>
+      <%= render Ui::InputComponent.new(name: "puck[memory]", type: "textarea", value: puck.memory, rows: 8, maxlength: 8000, label: t("member.coworkers.memory"), hint: t("member.coworkers.memory_hint"), test_id: "coworkers-memory") %>
+    <% end %>
+    <h3 class="mt-5 text-[13px] font-semibold"><%= t("member.coworkers.instructions") %></h3>
+    <p class="mt-2 text-[13px] whitespace-pre-wrap break-words"><%= puck.instructions %></p>
+  <% else %>
+    <% tasks = puck.runs.where(kind: "task").includes(:proposal_run).order(created_at: :desc).to_a %>
+    <%# The form opens on demand; with no task yet it is already open, so the first one is one step away. %>
+    <%= render Ui::ButtonComponent.new(label: t("member.coworkers.open_new_task"), icon: "plus", size: :sm, hidden: tasks.empty?, class: "mb-4 max-md:min-h-11", test_id: "coworkers-open-task",
+          data: { coworker_conversation_target: "taskOpener", action: "coworker-conversation#openTask" }) %>
+    <%= form_with url: member_coworker_runs_path(puck), class: "space-y-3 mb-6", html: { hidden: tasks.any? }, data: { coworker_conversation_target: "taskForm" } do %>
+      <%= hidden_field_tag :kind, "task" %>
+      <%= render Ui::ButtonComponent.new(label: t("member.coworkers.new_task"), type: "submit", class: "min-h-11 md:min-h-0") %>
+      <%= render Ui::InputComponent.new(name: "input", id: "coworkers-task-input", type: "textarea", label: t("member.coworkers.task"), required: true, maxlength: 8000, test_id: "coworkers-task") %>
+      <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.task_hint") %></p>
+    <% end %>
+    <div class="flex flex-col gap-2"><%= render partial: "run", collection: tasks, as: :run, locals: { puck: puck } %></div>
+  <% end %>
+</aside>

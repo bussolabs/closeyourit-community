@@ -1,0 +1,4 @@
+<%= render(Ui::StackComponent.new(direction: :row, gap: 2, align: :center)) do %>
+  <%= render(Ui::ButtonComponent.new(label: "Annulla", variant: :ghost, size: :sm)) %>
+  <%= render(Ui::ButtonComponent.new(label: "Salva", size: :sm)) %>
+<% end %>

@@ -1,0 +1,5 @@
+<% content_for :title, t("member.knowledge.form.edit_title") %>
+
+<div class="p-7">
+  <%= render "form", page: @page, url: member_knowledge_page_path(@page), method: :patch %>
+</div>

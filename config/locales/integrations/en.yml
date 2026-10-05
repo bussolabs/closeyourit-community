@@ -1,0 +1,24 @@
+en:
+  integrations:
+    providers:
+      pagespeed:
+        label: Google PageSpeed
+        summary: The speed measurements of the sites you watch, on phone and on computer.
+        where: The key is created in the Google Cloud console, by enabling the PageSpeed Insights service.
+    features:
+      assistant: Chat assistant
+      ask: Questions on tickets and knowledge
+      summaries: Summaries and relabelling
+      agent_gate: Ticket check for agents
+      site_speed: Site speed
+      quick_bug_report: Quick problem report
+      triage: Assisted triage
+      duplicates: Duplicates across errors
+      datasets: Predictions on data
+    errors:
+      not_connected: "%{service} is not connected to this organization, so this feature does not run. An organization admin can connect it from Integrations."
+      invalid_key: The key is not valid. Check you copied all of it.
+      service_disabled: The key is valid but the service is not enabled on your account. Enable it in the provider's console.
+      key_restricted: "The key is valid but its restrictions do not allow it here. Widen them in the provider's console: copying the key again will not help."
+      unreachable: The provider did not answer. Try again shortly.
+      upstream_error: The provider answered in a way we cannot read.

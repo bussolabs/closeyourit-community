@@ -1,0 +1,16 @@
+<aside id="coworkers-sidebar" class="hidden md:flex w-56 shrink-0 flex-col rounded-xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-y-auto" data-test="coworkers-sidebar">
+  <div class="px-2 pt-2">
+    <%= render Ui::NavLinkComponent.new(label: t("member.coworkers.back"), path: member_home_path, icon: "chevrons-left", size: :top) %>
+  </div>
+  <div class="flex items-center justify-between gap-2 px-3.5 pt-3 pb-1.5">
+    <h1 class="text-[14px] font-semibold">Coworkers</h1>
+    <%= render Ui::ButtonComponent.new(label: t("member.coworkers.new_puck"), icon: "plus", variant: :secondary, size: :sm, test_id: "coworkers-new-puck",
+          data: { controller: "ui--dialog", action: "ui--dialog#open", ui__dialog_dialog_param: "coworker-new" }) %>
+  </div>
+  <nav aria-label="<%= t("member.coworkers.puckies") %>" class="flex-1 p-2 space-y-0.5">
+    <% @puckies.each do |puck| %>
+      <%= render "member/coworkers/puck_link", puck: puck %>
+    <% end %>
+  </nav>
+  <p class="px-3.5 py-3 text-[11px] text-gray-500 dark:text-zinc-400 border-t border-stone-200 dark:border-zinc-800"><%= t("member.coworkers.local") %></p>
+</aside>

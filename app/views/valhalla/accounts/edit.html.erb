@@ -1,0 +1,40 @@
+<% content_for :title, t("valhalla.accounts.edit_title") %>
+
+<div class="p-7 space-y-6">
+  <%= form_with url: valhalla_account_path(@account), method: :patch, class: "space-y-6", data: { test: "valhalla-account-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("valhalla.accounts.edit_title"),
+          breadcrumb: [ { label: t("valhalla.accounts.title"), href: valhalla_accounts_path }, { label: @account.name } ],
+          root_href: valhalla_root_path) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("valhalla.cancel"), href: valhalla_accounts_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: t("valhalla.save"), type: "submit", size: :sm, test_id: "valhalla-account-submit") %>
+      <% end %>
+      <% h.with_meta do %>
+        <span class="inline-flex items-center rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= @account.email %></span>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%= render Ui::InputComponent.new(name: "name", label: t("auth.fields.name"), required: true, test_id: "account-name", value: @account.name, error: @errors&.dig(:name)&.first) %>
+          <%= render Ui::InputComponent.new(name: "email", label: t("auth.fields.email"), type: "email", required: true, test_id: "account-email", value: @account.email, error: @errors&.dig(:email)&.first) %>
+
+          <div class="md:col-span-2 flex items-center justify-between rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
+            <div><p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("valhalla.accounts.god_label") %></p><p class="text-[11px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.accounts.god_hint") %></p></div>
+            <input type="checkbox" name="god" value="1" data-test="account-god" <%= "checked" if @account.god? %> class="w-[18px] h-[18px] rounded-[5px] border-stone-300 dark:border-zinc-700 text-indigo-600 dark:text-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Pannello reset password — form separato (non annidato) %>
+  <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5 flex items-center justify-between">
+    <div><p class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("valhalla.accounts.reset_password_title") %></p><p class="text-[11px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.accounts.reset_password_hint") %></p></div>
+    <%= button_to reset_password_valhalla_account_path(@account), method: :post, class: "inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] font-medium text-gray-500 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100", data: { test: "valhalla-account-reset" } do %>
+      <%= render Ui::IconComponent.new(name: "key", class: "text-[11px] text-gray-400 dark:text-zinc-500") %><%= t("valhalla.accounts.reset_password_send") %>
+    <% end %>
+  </div>
+</div>

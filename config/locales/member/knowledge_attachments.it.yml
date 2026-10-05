@@ -1,0 +1,48 @@
+it:
+  member:
+    knowledge:
+      attachments:
+        title: "Allegati"
+        count:
+          one: "%{count} allegato"
+          other: "%{count} allegati"
+        upload:
+          add: "Carica file"
+          # Riga compatta della card vuota (CYRA-434): apre il selettore, il caricamento parte da sé.
+          pick: "Scegli un file"
+          add_hint: "Documenti, immagini, video, archivi e script — max 25 MB ciascuno"
+          selected: "Selezionati:"
+          uploading: "Caricamento…"
+        uploaded:
+          one: "%{count} file caricato"
+          other: "%{count} file caricati"
+        updated: "Allegato aggiornato"
+        deleted: "Allegato eliminato"
+        delete_confirm: "Eliminare questo allegato? Il file verrà rimosso."
+        empty: "Nessun allegato"
+        download: "Scarica"
+        edit: "Rinomina"
+        delete: "Elimina"
+        # Mostrato accanto ai file di tipo script: chiarisce che il file è solo conservato.
+        script_badge: "script"
+        script_note: "Solo archiviazione: questi file non vengono mai eseguiti."
+        form:
+          title_edit: "Rinomina allegato"
+          name: "Nome"
+          description: "Descrizione"
+          cancel: "Annulla"
+          save: "Salva"
+        errors:
+          no_files: "Seleziona almeno un file da caricare"
+          invalid_file: "Uno o più file non sono ammessi (tipo o dimensione)"
+  activerecord:
+    errors:
+      models:
+        knowledge/attachment:
+          attributes:
+            title:
+              blank: "Il nome è obbligatorio"
+            file:
+              blank: "Il file è obbligatorio"
+              too_large: "Il file supera il limite di 25 MB"
+              invalid_type: "Tipo di file non ammesso"

@@ -1,0 +1,39 @@
+<%# locals: host:, temp_reported: — everything about the machine in one design-system Details box on the
+    overview: status, identity, hardware, updates and reboot. Empty rows are not shown. CYRA-465 — without a
+    temperature sensor a row says so, instead of a missing chart. Si aggiorna col page-refresh Turbo (morph). %>
+<% mono = "font-mono text-[12px]" %>
+<%= render Ui::DetailsComponent.new(title: t("member.servers.overview.specs_title"), test_id: "server-labels", id: "server_host_labels_#{host.id}") do |details| %>
+  <% details.with_row(label: t("member.servers.show.status_label"), test_id: "server-status") do %>
+    <span class="font-mono text-[12px] <%= server_status_color(host) %>"><%= server_status_label(host) %></span>
+  <% end %>
+  <% details.with_row(label: t("member.servers.show.hostname_label"), value: host.hostname, test_id: "server-hostname") %>
+  <% details.with_row(label: t("member.servers.show.os_label"), value: ("#{host.os_name} · #{host.arch}" if host.os_name.present?), test_id: "server-os") %>
+  <% details.with_row(label: t("member.servers.show.agent_label"), value: ("v#{host.agent_version}" if host.agent_version.present?), test_id: "server-agent") %>
+  <% details.with_row(label: t("member.servers.show.uptime"), value: server_uptime_text(host.uptime_seconds), test_id: "server-uptime") %>
+  <% details.with_row(label: t("member.servers.show.detail_cpu_model"), value: host.cpu_model) %>
+  <% details.with_row(label: t("member.servers.show.detail_cores"), value: (host.cores ? "#{host.cores}c / #{host.threads}t" : nil)) %>
+  <% details.with_row(label: t("member.servers.show.detail_memory"), value: (host.memory_total_bytes ? server_bytes_text(host.memory_total_bytes) : nil)) %>
+  <% details.with_row(label: t("member.servers.show.detail_kernel"), value: host.kernel) %>
+  <% details.with_row(label: t("member.servers.show.detail_fingerprint")) do %>
+    <span class="<%= mono %> text-zinc-900 dark:text-zinc-100 truncate"><%= host.fingerprint %></span>
+  <% end if host.fingerprint.present? %>
+  <% unless local_assigns.fetch(:temp_reported, true) %>
+    <% details.with_row(label: t("member.servers.show.detail_temp"), test_id: "server-temp-unavailable") do %>
+      <span class="text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.temp_unavailable") %></span>
+    <% end %>
+  <% end %>
+  <% details.with_row(label: t("member.servers.show.detail_updates"), test_id: "server-updates") do %>
+    <span class="<%= mono %> <%= host.updates_available.to_i.positive? ? "text-amber-700 dark:text-amber-300" : "text-zinc-900 dark:text-zinc-100" %>">
+      <%= host.updates_available.nil? ? t("member.servers.show.updates_unknown") : t("member.servers.show.updates_count", count: host.updates_available) %>
+    </span>
+  <% end %>
+  <%# How many of those updates the "security updates" action can install; absent on agents < 0.8.0. %>
+  <% unless host.security_updates_available.nil? %>
+    <% details.with_row(label: t("member.servers.show.detail_security_updates"), test_id: "server-security-updates") do %>
+      <span class="<%= mono %> <%= host.security_updates_available.positive? ? "text-red-700 dark:text-red-300" : "text-zinc-900 dark:text-zinc-100" %>"><%= t("member.servers.show.updates_count", count: host.security_updates_available) %></span>
+    <% end %>
+  <% end %>
+  <% details.with_row(label: t("member.servers.show.detail_reboot"), test_id: "server-reboot") do %>
+    <span class="<%= mono %> <%= host.reboot_required? ? "text-red-700 dark:text-red-300" : "text-emerald-700 dark:text-emerald-300" %>"><%= host.reboot_required? ? t("member.servers.show.reboot_yes") : t("member.servers.show.reboot_no") %></span>
+  <% end %>
+<% end %>

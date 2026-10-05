@@ -1,0 +1,33 @@
+<details class="relative inline-block text-left" data-controller="ui--dismissable">
+  <%# CYRA-898 — initials only in the bar; name and email are the menu's first row. %>
+  <summary class="list-none cursor-pointer inline-flex items-center gap-2 px-2.5 h-[34px] rounded-md text-[13px] font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800" aria-label="<%= @name %>" title="<%= @name %>" data-test="<%= @trigger_test_id %>">
+    <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-stone-200 dark:border-zinc-800 bg-stone-100 dark:bg-zinc-800 text-[10px] font-semibold text-gray-600 dark:text-zinc-400" aria-hidden="true"><%= helpers.avatar_initials(@name) %></span>
+    <%= render Ui::IconComponent.new(name: "chevron-down", class: "text-xs text-gray-400 dark:text-zinc-500") %>
+  </summary>
+  <div class="absolute right-0 top-10 z-10 w-60 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-1 text-left">
+    <div class="mb-1 flex flex-col px-3 pt-1.5 pb-2.5 border-b border-stone-100 dark:border-zinc-800" data-test="user-menu-identity">
+      <span class="truncate text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= @name %></span>
+      <% if @email.present? && @email != @name %>
+        <span class="truncate font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= @email %></span>
+      <% end %>
+    </div>
+    <% if @account_path %>
+      <%= link_to @account_path, class: item_class(:default), data: { test: @account_test_id } do %>
+        <%= render Ui::IconComponent.new(name: "settings", class: "w-[1.25em] text-gray-400 dark:text-zinc-500 text-[13px]") %><span><%= @account_label %></span>
+      <% end %>
+    <% end %>
+    <% if @valhalla_path %>
+      <%# Ingresso god separato dalle voci quotidiane da un divider: ne dichiara la natura (CYRA-331). %>
+      <% if @account_path %><div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div><% end %>
+      <%= link_to @valhalla_path, class: item_class(:default), data: { test: @valhalla_test_id } do %>
+        <%= render Ui::IconComponent.new(name: "crown", class: "w-[1.25em] text-amber-500 dark:text-amber-400 text-[13px]") %><span><%= @valhalla_label %></span>
+      <% end %>
+    <% end %>
+    <% if @account_path || @valhalla_path %>
+      <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+    <% end %>
+    <%= button_to @logout_path, method: :delete, class: item_class(:danger), data: { test: @logout_test_id } do %>
+      <%= render Ui::IconComponent.new(name: "log-out", class: "w-[1.25em] text-[13px]") %><span><%= @logout_label %></span>
+    <% end %>
+  </div>
+</details>

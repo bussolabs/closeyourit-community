@@ -1,0 +1,19 @@
+<div class="max-w-sm">
+  <%= render(Ui::DetailsComponent.new(title: "Dettagli", test_id: "details")) do |details| %>
+    <% details.with_row(label: "Gruppo", value: "Piattaforma") %>
+    <% details.with_row(label: "Repository") do %>
+      <span class="truncate font-mono text-[12px]">bussolabs/closeyourit-rails</span>
+    <% end %>
+    <% details.with_row(label: "Piattaforme") do %>
+      <%= render Ui::BadgeComponent.new(label: "Web", color: "green", dot: true) %>
+      <%= render Ui::BadgeComponent.new(label: "iOS", color: "amber", dot: true) %>
+    <% end %>
+    <% details.with_row(label: "Ambienti", action: link_to("Gestisci token", "#", class: "text-[11px] font-medium text-indigo-600 dark:text-indigo-400")) do %>
+      <%= render Ui::BadgeComponent.new(label: "production", color: "green", dot: true) %>
+    <% end %>
+    <% details.with_row(label: "Milestone", value: nil) %>
+    <% details.with_footer do %>
+      <span class="text-[11.5px] text-gray-500 dark:text-zinc-400">Creato da Alessio · 12/03/2026</span>
+    <% end %>
+  <% end %>
+</div>

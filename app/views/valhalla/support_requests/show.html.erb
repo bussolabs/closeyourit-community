@@ -1,0 +1,39 @@
+<% content_for :title, t("valhalla.support_requests.title") %>
+<% sender = @support_request.account %>
+
+<div class="p-7 space-y-6" data-test="valhalla-support-request">
+  <%= render Ui::PageHeaderComponent.new(
+        title: sender.name.presence || sender.email,
+        subtitle: (t("valhalla.support_requests.handled_by", name: @support_request.handled_by&.name, date: l(@support_request.handled_at, format: :short)) if @support_request.handled?),
+        breadcrumb: [ { label: t("valhalla.support_requests.title"), href: valhalla_support_requests_path }, { label: l(@support_request.created_at, format: :short) } ],
+        root_href: valhalla_root_path) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("valhalla.support_requests.reply"), href: "mailto:#{sender.email}", icon: "mail",
+            variant: :secondary, size: :sm, test_id: "support-request-reply") %>
+      <% if @support_request.handled? %>
+        <%= render Ui::ButtonComponent.new(label: t("valhalla.support_requests.reopen"), href: valhalla_support_request_path(@support_request),
+              method: :patch, params: { handled: "0" }, variant: :secondary, size: :sm, form_class: "contents", test_id: "support-request-reopen") %>
+      <% else %>
+        <%= render Ui::ButtonComponent.new(label: t("valhalla.support_requests.handle"), href: valhalla_support_request_path(@support_request),
+              method: :patch, params: { handled: "1" }, icon: "check", size: :sm, form_class: "contents", test_id: "support-request-handle") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+    <%= render Ui::SectionComponent.new(title: t("valhalla.support_requests.message_title"), test_id: "support-request-body") do %>
+      <p class="whitespace-pre-line text-[13px] leading-relaxed text-zinc-900 dark:text-zinc-100"><%= @support_request.body %></p>
+    <% end %>
+    <%= render Ui::SectionComponent.new(title: t("valhalla.support_requests.context_title"), body_class: nil, test_id: "support-request-context") do %>
+      <% details = { "organization" => @support_request.organization&.name, "account" => sender.email }.merge(@support_request.context) %>
+      <dl class="divide-y divide-stone-100 dark:divide-zinc-800">
+        <% details.compact_blank.each do |key, value| %>
+          <div class="grid grid-cols-[104px_minmax(0,1fr)] items-baseline gap-2.5 px-4 py-1.5">
+            <dt class="text-[12px] text-gray-500 dark:text-zinc-400"><%= key.to_s.humanize %></dt>
+            <dd class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 break-words"><%= value %></dd>
+          </div>
+        <% end %>
+      </dl>
+    <% end %>
+  </div>
+</div>

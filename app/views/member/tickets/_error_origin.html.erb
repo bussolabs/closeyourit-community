@@ -1,0 +1,15 @@
+<%# locals: ticket
+    Errore di monitoring promosso a QUESTO ticket (CYRA-163, reverse di Errors::Group#ticket_id via
+    Ticketing::Ticket#error_group). Renderizzato SOLO se il ticket nasce da una promozione: un ticket
+    creato a mano non ha origine, e la card non ha senso per lui (come i children sul solo epic). %>
+<% if ticket.error_group %>
+  <%# CYRA-883 — a part of the Context section: sub-heading, no card of its own. %>
+  <div data-test="ticket-error-origin">
+    <div class="px-4 pt-3 pb-1"><h3 class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.show.origin_error") %></h3></div>
+    <div class="px-4 pb-3">
+      <%= link_to member_monitoring_error_group_path(ticket.error_group), class: "inline-flex items-center gap-1.5 text-[12.5px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "ticket-error-origin-link" } do %>
+        <%= render Ui::IconComponent.new(name: "bug", class: "text-[10px] text-orange-500") %><%= ticket.error_group.title %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,26 @@
+<%# Public page tab of one monitor (CYRA-990). %>
+<% org_slug = @monitor.project.organization.slug
+   published = @monitor.public_status_enabled? %>
+<div class="space-y-6">
+  <% if @monitor.group&.public_status_enabled? %>
+    <div class="rounded-lg border border-indigo-200 dark:border-indigo-500/40 bg-indigo-50/40 dark:bg-indigo-500/10 px-4 py-3 flex items-center gap-2.5 flex-wrap" data-test="monitor-public-via-group">
+      <%= render Ui::IconComponent.new(name: "layers", class: "text-indigo-600 dark:text-indigo-400 text-[13px]") %>
+      <span class="text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.public_tab.via_group", group: @monitor.group.name) %></span>
+      <%= link_to t("member.monitoring.public_tab.open_group"), member_monitoring_uptime_group_path(@monitor.group, tab: "public"),
+            class: "ml-auto text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300" %>
+    </div>
+  <% end %>
+
+  <%= render "member/monitoring/shared/public_page",
+        published: published,
+        state_text: t(published ? "member.monitoring.public_tab.monitor_on" : "member.monitoring.public_tab.monitor_off"),
+        toggle_path: published ? unpublish_member_monitoring_monitor_path(@monitor) : publish_member_monitoring_monitor_path(@monitor),
+        toggle_confirm: (t("member.uptime.publish_confirm") unless published),
+        public_url: public_status_url(org_slug, @monitor.project.key, @monitor.environment.code),
+        badge_url: public_status_badge_url(org_slug, @monitor.project.key, @monitor.environment.code),
+        test_prefix: "monitor", can_manage: can_manage %>
+
+  <% if can_manage %>
+    <%= render "member/monitoring/monitors/announcement_form", monitor: @monitor %>
+  <% end %>
+</div>

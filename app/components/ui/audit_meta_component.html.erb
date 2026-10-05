@@ -1,0 +1,14 @@
+<%= tag.div(**html_options) do %>
+  <% entries.each do |key, at, by, machine| %>
+    <span class="inline-flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0" data-test="audit-<%= key %>">
+      <span class="<%= PIECE %> font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400" data-test="audit-label"><%= t("ui.audit.#{key}") %></span>
+      <span class="<%= PIECE %> translate-y-[0.5px] font-mono text-[11.5px] tabular-nums whitespace-nowrap text-gray-500 dark:text-zinc-400" data-test="audit-date"><%= format_at(at) %></span>
+      <% if by.present? %>
+        <span class="<%= PIECE %> gap-1.5 min-w-0 text-[12px] text-zinc-900 dark:text-zinc-100" data-test="audit-author"><%= author_avatar(by, machine: machine) %><span class="truncate"><%= by %></span></span>
+      <% end %>
+    </span>
+  <% end %>
+  <% if action? %>
+    <div class="ml-auto inline-flex items-center" data-test="audit-action"><%= action %></div>
+  <% end %>
+<% end %>

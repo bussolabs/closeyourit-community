@@ -1,0 +1,6 @@
+<%= render(Ui::CardComponent.new(highlighted: true)) do |card| %>
+  <% card.with_header do %>
+    <h3 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">Card evidenziata</h3>
+  <% end %>
+  Bordo accent indigo per lo stato selezionato.
+<% end %>

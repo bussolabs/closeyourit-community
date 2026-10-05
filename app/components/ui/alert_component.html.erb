@@ -1,0 +1,9 @@
+<%= tag.div(**html_options) do %>
+  <%= render Ui::IconComponent.new(name: spec[:icon], class: "#{spec[:tone]} text-[14px] mt-0.5") %>
+  <div class="flex-1 text-[12.5px] text-zinc-900 dark:text-zinc-100"><% if @title %><span class="font-semibold"><%= @title %></span> <% end %><%= content %></div>
+  <% if @dismissible %>
+    <button type="button" class="<%= spec[:tone] %> opacity-70 hover:opacity-100" data-action="ui--alert#dismiss" aria-label="<%= t('shared.actions.close') %>">
+      <%= render Ui::IconComponent.new(name: "x", class: "text-[13px]") %>
+    </button>
+  <% end %>
+<% end %>

@@ -1,0 +1,74 @@
+<%# CYRA-690 — il title dice quello che dice l'h1, non l'invito all'azione. %>
+<% content_for :title, t("member.vault.levels.project") %>
+
+<div class="p-7 space-y-6" data-test="member-vault-projects">
+  <%# CYRA-428 — header e schede in blocco: l'elenco per progetto e la ricerca per variabile sono due
+      letture degli stessi dati, quindi due schede della stessa voce di menu. %>
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.vault.levels.project"),
+        breadcrumb: [ { label: t("member.vault.title"), href: member_vault_path },
+                      { label: t("member.vault.levels.project") } ],
+        test_id: "vault-projects-header",
+        counts_test_id: "vault-projects-counts", tabs_test_id: "vault-projects-tabs") do |h| %>
+    <% h.with_counts do %>
+      <% anomalies_total = @anomaly_counts.values.sum %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.vault.projects.stat_projects"), value: @projects.size,
+            test_id: "vault-projects-stat-projects") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.vault.projects.col_secrets"), value: @secret_counts.values.sum,
+            test_id: "vault-projects-stat-secrets") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.vault.projects.col_anomalies"), value: anomalies_total,
+            value_color: anomalies_total.positive? ? :amber : :neutral, test_id: "vault-projects-stat-anomalies") %>
+    <% end %>
+    <%= render "member/vault_projects/tabs", header: h, active_tab: :by_project %>
+  <% end %>
+
+  <% if @projects.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.vault.empty_projects"), body: t("member.vault.empty_projects_body"),
+          icon: "folder", framed: true, test_id: "vault-projects-empty") %>
+  <% else %>
+    <%# CYRA-404 — l'elenco dice già cosa contiene ciascun progetto: si sceglie sapendo dove guardare,
+        invece di aprirli uno per uno da una tendina. %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="vault-projects-table">
+      <%# F162, F165 — C1, C4: search by project and a "with anomalies" filter. %>
+      <%= render(Ui::TableToolbarComponent.new(framed: true, url: member_vault_projects_path, query: params[:q],
+            search_placeholder: t("member.vault.projects.search"), hidden: { type: params[:type] },
+            search_test_id: "vault-projects-search", apply_test_id: "vault-projects-filter", test_id: "vault-projects-toolbar")) do |toolbar| %>
+        <% toolbar.with_filter(key: "health", label: t("member.vault.projects.col_anomalies")) do %>
+          <div class="w-44"><%= render Ui::SelectComponent.new(name: "health",
+            options: [ [ t("member.vault.projects.with_anomalies"), "anomalies" ] ], selected: params[:health], include_blank: true,
+            placeholder: t("member.vault.projects.col_anomalies"), test_id: "vault-projects-filter-health") %></div>
+        <% end %>
+      <% end %>
+      <% if @listed_projects.empty? %>
+        <%= render Ui::NoResultsComponent.new(title: t("member.vault.projects.no_match"), query: params[:q].presence,
+              reset_href: member_vault_projects_path(type: params[:type]), test_id: "vault-projects-no-match",
+              reset_test_id: "vault-projects-reset-filters") %>
+      <% else %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.vault.levels.project"))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.nav.section_project")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault.projects.col_secrets"), align: :right, classes: "w-28") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault.projects.col_anomalies"), align: :right, classes: "w-28") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault.projects.col_last_change"), align: :right, classes: "w-36") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+        <% end %>
+        <% @listed_projects.each do |project| %>
+          <% anomalies = @anomaly_counts[project.id].to_i %>
+          <% href = @type == "files" ? member_project_secret_assets_path(project) : member_project_secrets_path(project) %>
+          <%= render Ui::TableComponent::RowComponent.new(href: href, link_label: project.name, test_id: "vault-project-row-#{project.id}") do %>
+            <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+              <%= link_to href, class: "text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "vault-project-link-#{project.id}" } do %>
+                <%= project.name %>
+                <span class="ml-1.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= project.key %></span>
+              <% end %>
+            <% end %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.vault.projects.col_secrets"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100", test_id: "vault-project-secrets-#{project.id}")) { @secret_counts[project.id].to_i.to_s } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.vault.projects.col_anomalies"), align: :right, mono: true, class: anomalies.positive? ? "text-amber-700 dark:text-amber-300 font-semibold" : "text-gray-400 dark:text-zinc-500", test_id: "vault-project-anomalies-#{project.id}")) { anomalies.positive? ? anomalies.to_s : "—" } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.vault.projects.col_last_change"), align: :right, mono: true, class: "text-[11.5px] text-gray-500 dark:text-zinc-400", test_id: "vault-project-last-change-#{project.id}")) { @last_changes[project.id] ? l(@last_changes[project.id], format: :short) : "—" } %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,26 @@
+<%# locals: (bindings:) %>
+<div class="flex items-center gap-2 mb-2">
+  <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.metrics.parameters") %></p>
+  <% if bindings.present? %>
+    <span class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300"><%= render Ui::IconComponent.new(name: "eye", class: "text-[9px]") %><%= t("member.metrics.capture_on") %></span>
+    <span class="ml-auto font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= t("member.metrics.binds_count", count: bindings.size) %></span>
+  <% end %>
+</div>
+<% if bindings.present? %>
+  <div class="rounded-md border border-stone-200 dark:border-zinc-800 divide-y divide-stone-100 dark:divide-zinc-800">
+    <% bindings.each_with_index do |bind, i| %>
+      <div class="flex items-center gap-3 px-3 py-1.5 font-mono text-[12px]"><span class="text-gray-500 dark:text-zinc-400 w-6 shrink-0">$<%= i + 1 %></span><span class="text-gray-500 dark:text-zinc-400"><%= bind["name"] %></span><span class="text-gray-500 dark:text-zinc-400">=</span><span class="text-zinc-900 dark:text-zinc-100"><%= bind["value"] %></span></div>
+    <% end %>
+  </div>
+<% else %>
+  <%# Explain how to enable capture and what data it will store. %>
+  <div class="space-y-2" data-test="parameters-off">
+    <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.metrics.capture_off") %></p>
+    <%= render "member/secrets/usage_snippet", label: t("member.metrics.capture_snippet_label"),
+          lines: [ "# config/initializers/closeyourit.rb", "c.capture_bind_params = true" ] %>
+    <p class="text-[11.5px] text-amber-700 dark:text-amber-300" data-test="parameters-privacy"><%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[10px] mr-1") %><%= t("member.metrics.capture_privacy") %></p>
+    <%= link_to t("member.metrics.capture_guide"), member_guides_performance_path,
+          class: "inline-flex items-center gap-1.5 text-[11.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300",
+          data: { test: "parameters-guide" } %>
+  </div>
+<% end %>

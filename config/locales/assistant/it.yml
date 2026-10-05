@@ -1,0 +1,9 @@
+it:
+  assistant:
+    errors:
+      blank: "Scrivi una domanda."
+      no_answer: "Non ho trovato una risposta a questa domanda."
+      too_long: "La domanda è troppo lunga: al massimo %{max} caratteri."
+      unavailable: "L'assistente non è disponibile in questo momento."
+      too_many_turns: "Non sono riuscito a rispondere: la domanda ha richiesto troppi passaggi. Prova a dividerla in due."
+      too_much_context: "Non sono riuscito a rispondere: la domanda tira dentro troppi dati. Prova a restringerla a un progetto o a un periodo."

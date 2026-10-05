@@ -1,0 +1,72 @@
+<%# locals: row, board — una riga dell'elenco di ciò che va avanti da solo (CYRA-593, spostata qui
+    da CYRA-630).
+    Nessuna colonna di azione: in questo elenco ci sono per definizione le lavorazioni che non
+    aspettano nessuno. L'unica eccezione è «Ferma» sul rilascio che aspetta la produzione (CYRA-871):
+    non chiede niente, ma è l'ultimo momento per trattenerlo. %>
+<%= render Ui::TableComponent::RowComponent.new(test_id: "approvals-in-flight-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.approvals.in_flight.col_project")) do %>
+    <span class="font-mono text-[11.5px] text-gray-500 dark:text-zinc-400" title="<%= row.project.name %>" data-test="approvals-in-flight-project"><%= row.project.key %></span>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <%# CYRA-630 — una porta sola vale dove una porta c'è. La scheda della lavorazione esiste solo
+        quando c'è qualcosa da decidere: su una lavorazione impiantata la decisione che resta —
+        chiuderla — va raggiunta anche da qui, e `view` ci riporta dopo. Su una lavorazione che
+        l'agente sta facendo non c'è niente da decidere e `Detail` non la risolve: un link alla
+        scheda rimanderebbe a questo stesso elenco senza aprire niente, che è peggio di nessun link.
+        Lì si va dove la lavorazione si legge davvero, cioè il ticket. %>
+    <% destination = if row.decidable
+                        member_home_approvals_item_path(kind: "agent_plan", id: row.workflow.id,
+                                                        view: Agents::Workflows::InFlight::VIEW)
+                      else
+                        member_ticket_path(row.ticket)
+                      end %>
+    <%= link_to destination, class: "group inline-flex items-baseline gap-2 min-w-0",
+          data: { test: "approvals-in-flight-ticket" } do %>
+      <span class="font-mono text-[12px] text-gray-500 dark:text-zinc-400 shrink-0"><%= row.ticket.code %></span>
+      <span class="text-[12.5px] text-zinc-900 dark:text-zinc-100 truncate group-hover:underline"><%= row.ticket.title %></span>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.approvals.in_flight.col_state")) do %>
+    <%# CYRA-608 — una parola sola. Qui accanto c'era la fila delle sigle tecniche dei passaggi
+        svolti, e diceva la stessa cosa di questo badge in un'altra lingua: una riga poteva leggere
+        «triage · piano · lavorazione» a sinistra e «In coda per la lavorazione» a destra, dove la
+        prima «lavorazione» è un passaggio già fatto e la seconda un'attesa che deve ancora
+        cominciare. Chi apriva l'elenco per capire dove intervenire doveva tradurre due vocabolari.
+        Il dettaglio non si perde: vive nella scheda del ticket, passo per passo, e nella pagina
+        della macchina che li ha svolti. %>
+    <%= render Ui::BadgeComponent.new(label: automation_phase_label(row.phase),
+          color: workflow_state_color(row.state), dot: true, pulse: row.state == "running",
+          test_id: "approvals-in-flight-state") %>
+    <%# CYRA-626 — quando il sistema non riesce a leggere una cosa su GitHub, prima la riga
+        continuava a dire «va avanti da sola» col pallino che pulsa: dall'esterno una lavorazione che
+        lavora e una congelata da un guasto di rete si vedevano identiche. Qui si dice cosa non
+        riesce a leggere e a che ora riprova. Nessun pulsante: non c'è niente da premere. %>
+    <% if row.retry_hint %>
+      <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="approvals-in-flight-retry-hint-<%= row.workflow.id %>">
+        <%= t("member.approvals.in_flight.retry_hint",
+              code: row.retry_hint.code, at: l(row.retry_hint.at, format: :short)) %>
+      </p>
+    <% end %>
+    <% if row.production_hold || row.phase == "closer_production_queued" %>
+      <%= render "member/home/approvals/in_flight_production_hold", row: row %>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.approvals.in_flight.col_outcome")) do %>
+    <% if row.last_status %>
+      <% outcome = automation_outcome_for(row.last_status) %>
+      <%= render Ui::BadgeComponent.new(label: outcome[:label], color: outcome[:color], icon: outcome[:icon],
+            test_id: "approvals-in-flight-outcome") %>
+    <% else %>
+      <span class="text-[11.5px] text-gray-400 dark:text-zinc-500" data-test="approvals-in-flight-outcome">—</span>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.approvals.in_flight.col_agent")) do %>
+    <%# Il nome della macchina è cliccabile solo per chi può aprirne la scheda: `agents.view` è
+        ORG-level mentre questa pagina la vede chi vede i ticket. %>
+    <%= automation_host_label(row.host, css: "text-[12px]", plain_css: "text-gray-500 dark:text-zinc-400", test_id: "approvals-in-flight-agent") %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.approvals.in_flight.col_host_time"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400",
+        test_id: "approvals-in-flight-host-time")) { agent_duration(row.host_seconds) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.approvals.in_flight.col_last"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400",
+        test_id: "approvals-in-flight-last")) { l(row.last_at, format: :short) } %>
+<% end %>

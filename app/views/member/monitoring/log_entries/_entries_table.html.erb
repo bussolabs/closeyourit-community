@@ -1,0 +1,17 @@
+<%= render(Ui::TableComponent.new(stacked: true, label: t("member.monitoring.logs.title"))) do |t| %>
+  <% t.with_head do %>
+    <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.logs.col_when"), sort: "when", initial: :desc, classes: "w-32") %>
+    <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.logs.col_level"), sort: "level", classes: "w-24") %>
+    <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.logs.col_project"), sort: "project", classes: "w-28") %>
+    <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.logs.col_message"), sort: "message") %>
+    <%# CYRA-344: la colonna compare solo se nel risultato c'è almeno un valore. Una colonna di
+        trattini occupa spazio in una tabella già stretta e dice che manca qualcosa senza dirne il che. %>
+    <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.logs.col_logger"), sort: "logger", classes: "w-32", visible: @show_logger_column) %>
+    <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+  <% end %>
+  <%= render partial: "member/monitoring/log_entries/entry", collection: @entries, as: :entry,
+        locals: { show_logger: @show_logger_column } %>
+<% end %>
+<%# CYRA-344 (DoD 4): dire cosa cerca la ricerca, invece di lasciarlo indovinare. %>
+<p class="px-4 py-2 border-t border-stone-100 dark:border-zinc-800 text-[11.5px] text-gray-400 dark:text-zinc-500" data-test="logs-search-hint"><%= t("member.monitoring.logs.search_hint") %></p>
+<%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "logs-pagination")) %>

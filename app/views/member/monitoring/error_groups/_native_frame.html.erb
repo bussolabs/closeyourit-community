@@ -1,0 +1,16 @@
+<div class="py-3 min-w-0" data-test="native-frame" data-native-frame-index="<%= frame[:index] %>">
+  <% if derived %>
+    <% frame[:locations].each_with_index do |location, index| %>
+      <div class="mb-2" data-test="native-location">
+        <p class="break-all font-mono text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= location["function"].presence || location["symbol"].presence || t("member.symbolication.unknown_function") %></p>
+        <% if frame[:locations].size > 1 && index < frame[:locations].size - 1 %><p class="text-[12px] text-gray-600 dark:text-zinc-400" data-test="native-inline"><%= t("member.native_symbols.inline") %></p><% end %>
+        <p class="break-all font-mono text-[12px] text-zinc-700 dark:text-zinc-300"><%= [location["file"], location["line"]].compact.join(":").presence || t("member.native_symbols.no_source") %></p>
+      </div>
+    <% end %>
+    <% if frame[:locations].empty? %><p class="mb-1 text-[12px] text-gray-600 dark:text-zinc-400"><%= t("member.native_symbols.reason.#{frame[:status]}", default: t("member.native_symbols.reason.unavailable")) %></p><% end %>
+  <% end %>
+  <p class="break-all font-mono text-[12px] text-zinc-700 dark:text-zinc-300" data-test="native-instruction"><%= t("member.native_symbols.instruction", value: frame[:received]["instruction"]) %></p>
+  <% if frame[:received]["module_offset"].present? %><p class="break-all font-mono text-[12px] text-gray-600 dark:text-zinc-400"><%= t("member.native_symbols.offset", value: frame[:received]["module_offset"]) %></p><% end %>
+  <% if frame[:received]["trust"].present? %><p class="break-all text-[12px] text-gray-600 dark:text-zinc-400" data-test="native-trust"><%= t("member.native_symbols.trust", value: frame[:received]["trust"]) %></p><% end %>
+  <% if frame[:module] %><p class="break-all font-mono text-[12px] text-gray-600 dark:text-zinc-400"><%= frame[:module]["filename"] %></p><% end %>
+</div>

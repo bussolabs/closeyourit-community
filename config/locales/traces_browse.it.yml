@@ -1,0 +1,94 @@
+{
+  "it": {
+    "member": {
+      "nav": {
+        "traces": "Percorsi"
+      },
+      "traces": {
+        "title": "Percorsi",
+        "subtitle": "Segui una richiesta osservata tra servizi e apri i messaggi collegati.",
+        "empty": "Non sono ancora arrivati percorsi",
+        "empty_body": "Collega un servizio per vedere le operazioni osservate durante una richiesta.",
+        "operation": "Operazione",
+        "service": "Servizio",
+        "environment": "Ambiente",
+        "version": "Versione",
+        "duration": "Intervallo osservato",
+        "spans": "Passaggi ricevuti",
+        "received": "Ultima ricezione",
+        "project": "Progetto",
+        "all_projects": "Tutti i progetti visibili",
+        "project_search": "Cerca progetto per nome o codice",
+        "search": "Cerca operazione o ID del percorso",
+        "status": "Stato ricevuto",
+        "all_statuses": "Tutti gli stati",
+        "min_duration_ms": "Durata minima (ms)",
+        "max_duration_ms": "Durata massima (ms)",
+        "open": "Apri",
+        "reset": "Azzera filtri",
+        "unknown": "Sconosciuto",
+        "received_window": "Il periodo filtra l’ultima ricezione sul server, non l’orario del produttore.",
+        "duration_note": "Le barre mostrano intervalli ricevuti, non il tempo esclusivo. I passaggi paralleli non si sommano.",
+        "service_limit": "Primi 20 di %{count} servizi osservati.",
+        "query_error": "Impossibile leggere questi percorsi",
+        "query_error_body": "Controlla filtri e periodo (massimo 30 giorni), oppure riduci la pagina se i dati superano il limite. Riprova se la lettura è scaduta.",
+        "path": "Percorso della richiesta",
+        "topology": {
+          "unknown": "Completezza sconosciuta",
+          "incomplete": "Percorso incompleto"
+        },
+        "topology_note": "Padri mancanti: %{missing}. Passaggi scaduti: %{expired}. Una radice ricevuta non dimostra che siano arrivate tutte le operazioni.",
+        "parents": {
+          "root": "Radice ricevuta",
+          "child": "Padre in questa pagina",
+          "outside_page": "Padre ricevuto fuori da questa pagina",
+          "missing": "Padre non ricevuto",
+          "cycle": "Le relazioni ricevute contengono un ciclo"
+        },
+        "no_spans": "Non ci sono passaggi conservati; i loro tempi sono sconosciuti.",
+        "observed": "Dati osservati",
+        "trace_id": "Trace ID",
+        "span_id": "Span ID",
+        "parent_id": "Passaggio padre",
+        "span_details": "Passaggio selezionato",
+        "evidence": "Attributi, eventi e collegamenti",
+        "exact_times": "Inizio e fine esatti ricevuti (nanosecondi)",
+        "evidence_budget": "I metadati selezionati superano il limite di visualizzazione di 64 KiB. Nessun contenuto parziale viene mostrato.",
+        "related": "Dati collegati",
+        "related_span": "Sono mostrati i dati collegati al passaggio selezionato.",
+        "all_spans": "Mostra tutto il percorso",
+        "logs": "Log",
+        "errors": "Errori",
+        "no_logs": "Nessun log collegato nei dati osservati.",
+        "no_errors": "Nessun errore collegato nei dati osservati.",
+        "statuses": {
+          "error": "Contiene un errore",
+          "ok": "Tutti i passaggi ricevuti dichiarano OK",
+          "unset": "Non dichiarato",
+          "mixed": "OK e non dichiarato",
+          "unknown": "Nessuno stato ricevuto"
+        }
+      },
+      "guides": {
+        "traces": {
+          "title": "Leggere il percorso di una richiesta",
+          "subtitle": "Interpretare gli span conservati senza presumere che tutte le operazioni siano arrivate.",
+          "cta": "Apri i percorsi",
+          "body": "Ogni span descrive un’operazione ricevuta. Il diagramma usa il primo inizio e l’ultima fine conservati nella traccia: gli span paralleli non vengono sommati. I tempi restano esatti al nanosecondo e sono mostrati in millisecondi.",
+          "filters": "Il periodo predefinito sono le ultime 24 ore dalla ricezione sul server. I periodi personalizzati arrivano a 30 giorni. Servizio, ambiente e versione devono corrispondere allo stesso span. L’ambiente canonico prevale sul nome precedente, anche quando è vuoto.",
+          "missing": "Una radice assente, un padre mancante o uno span scaduto rendono il percorso incompleto. Negli altri casi la completezza resta sconosciuta. Un padre fuori pagina può esistere. Uno span ERROR indica errore osservato; OK e UNSET insieme indicano stato misto. Dati assenti non significano durata zero.",
+          "related": "Log ed errori sono collegati soltanto tramite identità esplicite di traccia e span nello stesso progetto, inclusi gli ID errore presenti nei log. Una sezione vuota non dimostra che non ci siano stati errori. Ogni sezione ha una paginazione indipendente.",
+          "limits": "Il diagramma mostra fino a 50 span per pagina; uno span selezionato fuori pagina viene aperto separatamente. Le evidenze oltre 64 KiB vengono omesse con un avviso. Restringi la ricerca quando supera il limite di tempo o dimensione."
+        },
+        "index": {
+          "traces": {
+            "title": "Leggere il percorso di una richiesta"
+          }
+        },
+        "catalog": {
+          "traces": "Operazioni ricevute, tempi e correlazioni esplicite per seguire una richiesta."
+        }
+      }
+    }
+  }
+}

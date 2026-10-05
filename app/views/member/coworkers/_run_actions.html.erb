@@ -1,0 +1,26 @@
+<%# One compact row at the foot of a bubble or a task card (CYRA-992): start the proposal, retry a failed
+    answer, stop the work, copy the answer. Copy takes the markdown as written, not the rendered text. %>
+<% copy = run.output.present? && !run.active? %>
+<% if run.active? || local_assigns[:approve] || local_assigns[:show_tasks] || copy || run.retryable? %>
+  <footer class="mt-2.5 flex flex-wrap items-center gap-1 border-t border-stone-200 pt-2 dark:border-zinc-700" data-test="coworkers-run-actions"
+          data-controller="clipboard" data-clipboard-copied-value="<%= t("member.coworkers.copied") %>" data-clipboard-error-value="<%= t("member.coworkers.copy_failed") %>">
+    <% if local_assigns[:approve] %>
+      <%= render Ui::ButtonComponent.new(label: t("member.coworkers.start_proposal"), href: approve_member_coworker_run_path(puck, run), method: :post, authenticity_token: false, size: :sm, test_id: "coworkers-approve", class: "max-md:min-h-11") %>
+    <% end %>
+    <% if run.retryable? %>
+      <%= render Ui::ButtonComponent.new(label: t("member.coworkers.retry"), icon: "rotate-ccw", href: repeat_member_coworker_run_path(puck, run), method: :post, authenticity_token: false, variant: :secondary, size: :sm, test_id: "coworkers-retry", class: "max-md:min-h-11") %>
+    <% end %>
+    <% if run.active? %>
+      <%= render Ui::ButtonComponent.new(label: t("member.coworkers.stop"), icon: "square", href: member_coworker_run_path(puck, run), method: :patch, authenticity_token: false, variant: :ghost, size: :sm, disabled: run.stop_requested?, class: "max-md:min-h-11", test_id: "coworkers-stop") %>
+    <% end %>
+    <% if local_assigns[:show_tasks] %>
+      <%= render Ui::ButtonComponent.new(label: t("member.coworkers.tasks"), href: member_coworker_path(puck, panel: "tasks", anchor: "coworker_run_#{run.id}"), variant: :ghost, size: :sm, class: "max-md:min-h-11") %>
+    <% end %>
+    <% if copy %>
+      <span hidden data-clipboard-target="source"><%= run.output %></span>
+      <%= render Ui::ButtonComponent.new(icon: "copy", variant: :ghost, size: :sm, class: "max-md:min-h-11", test_id: "coworkers-copy", data: { action: "clipboard#copy" }) do %>
+        <span data-clipboard-target="label"><%= t("member.coworkers.copy") %></span>
+      <% end %>
+    <% end %>
+  </footer>
+<% end %>

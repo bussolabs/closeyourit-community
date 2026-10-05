@@ -1,0 +1,20 @@
+<%# locals: project %>
+<%# CYRA-924 — the upload button sits beside the section title (T5). The file input stays focusable
+    (sr-only), so the keyboard opens the chooser. %>
+<div class="flex items-center gap-3">
+  <span class="text-[12px] text-zinc-700 dark:text-zinc-300 truncate max-w-[12rem]" hidden data-attachment-upload-target="status" data-test="document-upload-selected"></span>
+  <%= form_with url: member_project_documents_path(project), method: :post, multipart: true,
+        class: "flex items-center gap-2", data: { test: "document-upload-form" } do %>
+    <%= file_field_tag "files[]", multiple: true, id: "project-document-input", class: "peer sr-only",
+          data: { test: "document-upload-input", attachment_upload_target: "input", action: "change->attachment-upload#change" },
+          accept: App::Constants::DOCUMENT_CONTENT_TYPES.join(",") %>
+    <label for="project-document-input" data-test="document-upload-button"
+           class="inline-flex items-center gap-[7px] h-[34px] px-3.5 rounded-md bg-indigo-600 text-white text-[12.5px] font-semibold whitespace-nowrap cursor-pointer hover:bg-indigo-700 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 dark:peer-focus-visible:ring-indigo-400 peer-focus-visible:ring-offset-1">
+      <%= render Ui::IconComponent.new(name: "cloud-upload", class: "text-[12px]") %><%= t("member.documents.upload.add") %>
+    </label>
+    <%# Without JS choosing files does not send them: this button does. %>
+    <noscript>
+      <%= render Ui::ButtonComponent.new(label: t("member.documents.upload.add"), type: "submit", variant: :secondary, size: :sm, test_id: "document-upload-submit") %>
+    </noscript>
+  <% end %>
+</div>

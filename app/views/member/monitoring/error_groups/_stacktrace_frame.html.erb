@@ -1,0 +1,15 @@
+<%# Una riga dello stacktrace: file/modulo, funzione, riga, e per il codice dell'app la riga sorgente.
+    Estratta da _occurrence_left (CYRA-566) perché la stessa riga serve sia ai passaggi mostrati sia a
+    quelli chiusi nel blocco apribile: due copie del markup si sarebbero disallineate al primo ritocco. %>
+<% in_app = frame["in_app"] %>
+<div class="px-3 py-2 <%= in_app ? 'bg-indigo-50/50 dark:bg-indigo-500/10' : 'bg-stone-50 dark:bg-zinc-800' %>" data-test="frame">
+  <p class="font-mono text-[12px] <%= in_app ? 'text-zinc-900 dark:text-zinc-100' : 'text-gray-500 dark:text-zinc-400' %>">
+    <%= error_value(frame["filename"] || frame["module"]) %>
+    <span class="text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.frame_in") %></span>
+    <span class="<%= in_app ? 'text-indigo-700 dark:text-indigo-300' : '' %>"><%= error_value(frame["function"]) %></span>
+    <% if frame["lineno"] %><span class="text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.frame_line") %> <%= frame["lineno"] %></span><% end %>
+  </p>
+  <% if in_app && frame["context_line"].present? %>
+    <pre class="mt-1 font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 bg-amber-100 dark:bg-amber-500/25 rounded px-1 py-0.5 overflow-x-auto"><%= frame["context_line"].to_s.strip %></pre>
+  <% end %>
+</div>

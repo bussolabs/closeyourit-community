@@ -1,0 +1,81 @@
+<%# locals: host: — CYRA-468. Menu delle azioni delicate della macchina: «Scollega dalla flotta» ed
+    «Elimina» non stanno più in prima fila con Pausa/Modifica. Ognuna chiede di RISCRIVERE il nome
+    esatto della macchina (stessa conferma per digitazione del blocco «Azioni operative» in fondo
+    pagina) e dice cosa si perde, storico compreso. Il pulsante resta spento finché il nome non
+    combacia — ma è solo progressive enhancement: il gate vero è lato server (ServersController).
+    Pattern gemello: member/monitoring/server_tokens/index (revoca codice, CYRA-469).
+
+    turbo_permanent + id stabile: la show si ri-fetcha e morfa a ogni push dell'agent; senza questo,
+    un menu aperto si richiuderebbe e il nome digitato sparirebbe sotto le dita (stesso motivo per cui
+    l'input delle azioni operative è turbo_permanent). %>
+<% retention_days = ::Servers::Retention.for(host.organization) %>
+<details id="server-manage-menu" class="relative inline-block text-left" data-test="server-manage-menu"
+         data-turbo-permanent>
+  <summary class="list-none cursor-pointer inline-flex items-center justify-center h-7 w-7 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-500 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400"
+           aria-haspopup="menu" aria-label="<%= t('member.servers.actions.more') %>">
+    <%= render Ui::IconComponent.new(name: "ellipsis", class: "text-[13px]") %>
+  </summary>
+  <div class="absolute right-0 z-30 mt-1 w-80 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg p-3 space-y-3 text-left">
+    <p class="text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-zinc-500"><%= t("member.servers.actions.menu_title") %></p>
+
+    <%# CYRA-245 — Riadotta: l'unica strada per cui la credenziale di una macchina viva viene
+        sostituita. Non revoca niente sul momento — apre una finestra, e la vecchia credenziale cade
+        solo quando la sonda reinstallata si presenta davvero. Fuori quando la finestra è già aperta
+        (c'è già il riquadro in cima alla scheda) o quando la macchina è scollegata (non arruola più). %>
+    <% unless host.revoked? || host.reenrollment_open? %>
+      <div class="space-y-2" data-controller="confirm-phrase" data-confirm-phrase-phrase-value="<%= host.name %>" data-test="server-reenroll">
+        <p class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.servers.actions.reenroll_title") %></p>
+        <p class="text-[12px] text-zinc-600 dark:text-zinc-400" data-test="server-reenroll-impact"><%= t("member.servers.actions.reenroll_impact", count: Servers::Constants::REENROLLMENT_WINDOW_SECONDS / 60) %></p>
+        <p class="text-[12px] text-zinc-600 dark:text-zinc-400"><%= t("member.servers.actions.confirm_hint_html", name: tag.span(host.name, class: "font-mono font-medium text-zinc-900 dark:text-zinc-100")) %></p>
+        <%= form_with url: reenroll_member_monitoring_server_path(host), method: :patch, class: "space-y-2" do %>
+          <%# CYRA-728 — il gesto di conferma preteso dal server. La conferma vera resta il nome
+              ricopiato qui sotto, che il controller confronta per conto suo. %>
+          <%= hidden_field_tag :confirm, 1, id: nil %>
+          <input type="text" name="confirmation" autocomplete="off" placeholder="<%= t('member.servers.actions.confirm_placeholder') %>"
+                 data-confirm-phrase-target="input" data-action="input->confirm-phrase#check" data-test="server-reenroll-confirm"
+                 class="w-full h-8 px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 text-[12px] focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-400">
+          <button type="submit" data-confirm-phrase-target="submit" disabled data-test="server-reenroll-submit"
+                  class="w-full inline-flex items-center justify-center h-8 px-3 rounded-md text-[12px] font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"><%= t("member.servers.actions.reenroll_submit") %></button>
+        <% end %>
+      </div>
+      <div class="border-t border-stone-200 dark:border-zinc-800"></div>
+    <% end %>
+
+    <%# Scollega — reversibile (l'agent smette di inviare, lo storico resta): fuori quando è già scollegata. %>
+    <% unless host.revoked? %>
+      <div class="space-y-2" data-controller="confirm-phrase" data-confirm-phrase-phrase-value="<%= host.name %>" data-test="server-revoke">
+        <p class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.servers.actions.revoke_title") %></p>
+        <p class="text-[12px] text-zinc-600 dark:text-zinc-400" data-test="server-revoke-impact"><%= t("member.servers.actions.revoke_impact") %></p>
+        <p class="text-[12px] text-zinc-600 dark:text-zinc-400"><%= t("member.servers.actions.confirm_hint_html", name: tag.span(host.name, class: "font-mono font-medium text-zinc-900 dark:text-zinc-100")) %></p>
+        <%= form_with url: revoke_member_monitoring_server_path(host), method: :patch, class: "space-y-2" do %>
+          <%# CYRA-728 — il gesto di conferma preteso dal server. La conferma vera resta il nome
+              ricopiato qui sotto, che il controller confronta per conto suo. %>
+          <%= hidden_field_tag :confirm, 1, id: nil %>
+          <input type="text" name="confirmation" autocomplete="off" placeholder="<%= t('member.servers.actions.confirm_placeholder') %>"
+                 data-confirm-phrase-target="input" data-action="input->confirm-phrase#check" data-test="server-revoke-confirm"
+                 class="w-full h-8 px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 text-[12px] focus:outline-none focus:border-amber-500 focus-visible:ring-2 focus-visible:ring-amber-400">
+          <button type="submit" data-confirm-phrase-target="submit" disabled data-test="server-revoke-submit"
+                  class="w-full inline-flex items-center justify-center h-8 px-3 rounded-md text-[12px] font-medium text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed"><%= t("member.servers.actions.revoke_submit") %></button>
+        <% end %>
+      </div>
+      <div class="border-t border-stone-200 dark:border-zinc-800"></div>
+    <% end %>
+
+    <%# Elimina — definitiva: cancella la macchina e tutto il suo storico (fino a retention_days giorni). %>
+    <div class="space-y-2" data-controller="confirm-phrase" data-confirm-phrase-phrase-value="<%= host.name %>" data-test="server-delete">
+      <p class="text-[12.5px] font-medium text-red-700 dark:text-red-300"><%= t("member.servers.actions.delete_title") %></p>
+      <p class="text-[12px] text-zinc-600 dark:text-zinc-400" data-test="server-delete-impact"><%= t("member.servers.actions.delete_impact", count: retention_days) %></p>
+      <p class="text-[12px] text-zinc-600 dark:text-zinc-400"><%= t("member.servers.actions.confirm_hint_html", name: tag.span(host.name, class: "font-mono font-medium text-zinc-900 dark:text-zinc-100")) %></p>
+      <%= form_with url: member_monitoring_server_path(host), method: :delete, class: "space-y-2" do %>
+        <%# CYRA-728 — il gesto di conferma preteso dal server. La conferma vera resta il nome
+            ricopiato qui sotto, che il controller confronta per conto suo. %>
+        <%= hidden_field_tag :confirm, 1, id: nil %>
+        <input type="text" name="confirmation" autocomplete="off" placeholder="<%= t('member.servers.actions.confirm_placeholder') %>"
+               data-confirm-phrase-target="input" data-action="input->confirm-phrase#check" data-test="server-delete-confirm"
+               class="w-full h-8 px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 text-[12px] focus:outline-none focus:border-red-500 focus-visible:ring-2 focus-visible:ring-red-400">
+        <button type="submit" data-confirm-phrase-target="submit" disabled data-test="server-delete-submit"
+                class="w-full inline-flex items-center justify-center h-8 px-3 rounded-md text-[12px] font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed"><%= t("member.servers.actions.delete_submit") %></button>
+      <% end %>
+    </div>
+  </div>
+</details>

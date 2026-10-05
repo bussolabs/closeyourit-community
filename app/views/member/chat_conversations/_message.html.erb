@@ -1,0 +1,30 @@
+<%# current_account_id: assente nei broadcast (Current non disponibile) → nessun bottone elimina. %>
+<%# visible_project_ids: nil nei broadcast (riferimenti appena validati "in comune" → visibili); nella
+    show porta i progetti visibili al viewer → i riferimenti revocati si oscurano (placeholder). %>
+<% current_account_id = local_assigns[:current_account_id] %>
+<% visible_project_ids = local_assigns[:visible_project_ids] %>
+
+<%# data-author-id: the server cannot tell "mine" in a broadcast, so chat-conversation#messageTargetConnected
+    moves the viewer's own messages to the right in the browser. %>
+<div data-test="chat-message" id="<%= dom_id(message) %>" data-author-id="<%= message.author_id %>"
+     data-chat-conversation-target="message" class="max-w-[85%] mr-auto rounded-lg bg-zinc-50 dark:bg-zinc-800 p-3">
+  <div class="flex items-center justify-between gap-3">
+    <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300"><%= message.author&.name %></span>
+    <span class="flex items-center gap-2">
+      <time data-test="chat-message-time" datetime="<%= message.created_at.iso8601 %>"
+            class="text-[11px] text-gray-500 dark:text-zinc-400"><%= l(message.created_at, format: "%H:%M") %></time>
+      <% if current_account_id && message.author_id == current_account_id %>
+        <%= render Ui::ButtonComponent.new(label: t("member.chat.messages.edit"),
+              href: edit_member_chat_conversation_message_path(conversation, message),
+              variant: :ghost, size: :sm, icon: "pencil", icon_only: true,
+              test_id: "chat-message-edit-#{message.id}") %>
+        <%= button_to "×", member_chat_conversation_message_path(conversation, message), method: :delete,
+                      title: t("member.chat.delete"), "aria-label": t("member.chat.delete"),
+                      data: { test: "chat-message-delete-#{message.id}", turbo_confirm: t("member.chat.delete_confirm") },
+                      class: "text-xs text-zinc-400 hover:text-red-600 dark:hover:text-red-400" %>
+      <% end %>
+    </span>
+  </div>
+
+  <%= render "member/chat_conversations/message_content", message: message, visible_project_ids: visible_project_ids %>
+</div>

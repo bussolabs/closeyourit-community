@@ -1,0 +1,45 @@
+<%# CYRA-577 — titolo, briciola di pane e nome della scheda vengono tutti dalla PRIMA RIGA potata del
+    messaggio (log_entry_headline): il messaggio intero come titolo riempiva più di una schermata e
+    cominciava col codice della richiesta invece che col nome dell'errore. Il testo completo sta sotto,
+    nel blocco tecnico. %>
+<% content_for :title, log_entry_headline(@entry, limit: 60) %>
+<% can_link = can?("logs.link", scope: @entry.project) %>
+
+<div class="p-7 space-y-6" data-test="member-log-entry">
+  <%= render Ui::PageHeaderComponent.new(
+        title: tag.span(log_entry_headline(@entry), class: "break-words", data: { test: "log-message" }),
+        breadcrumb: [ { label: t("member.monitoring.logs.title"), href: member_monitoring_log_entries_path },
+                      { label: log_entry_headline(@entry, limit: 40) } ],
+        counts_test_id: "log-meta") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.logs.show.level"), value: error_level_label(@entry.level), value_color: log_level_color(@entry.level), test_id: "log-level") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.logs.show.project"), value: link_to(@entry.project.key, member_project_path(@entry.project), class: "text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"), test_id: "log-project") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.logs.show.occurred"), value: @entry.occurred_at.strftime("%d/%m %H:%M:%S"), test_id: "log-occurred") %>
+      <% if @entry.logger_name.present? %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.logs.show.logger"), value: @entry.logger_name, test_id: "log-logger") %>
+      <% end %>
+    <% end %>
+    <%# CYRA-347 — il messaggio è spesso il primo posto dove si vede un problema nuovo: da qui si apre
+        il lavoro, come dalla scheda di un rallentamento. Sparisce quando un ticket c'è già. %>
+    <% if can_link && @linked_ticket.nil? %>
+      <% h.with_actions do %>
+        <div class="flex items-center gap-2" data-test="log-actions">
+          <%= render Ui::ButtonComponent.new(label: t("member.monitoring.logs.promote"), href: member_monitoring_log_entry_promotion_path(@entry), method: :post, variant: :primary, size: :sm, icon: "ticket", test_id: "promote-ticket") %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render Ui::GridComponent.new(cols: 1, lg: 3, gap: 6) do %>
+    <%= render Ui::StackComponent.new(gap: 6, class: "lg:col-span-2") do %>
+      <%= render "member/monitoring/log_entries/message_panel" %>
+      <%= render "member/monitoring/log_entries/attributes_panel" %>
+      <%= render "member/monitoring/log_entries/request_panel" %>
+    <% end %>
+
+    <%= render Ui::StackComponent.new(gap: 6) do %>
+      <%= render "member/monitoring/log_entries/context_panel" %>
+      <%= render "member/monitoring/log_entries/links_panel", can_link: can_link %>
+    <% end %>
+  <% end %>
+</div>

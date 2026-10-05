@@ -1,0 +1,56 @@
+<% content_for :title, metric_display_signature(@group) %>
+
+<% display_title = occurrence_payload(@selected)["name"].presence || metric_display_signature(@group) %>
+<% is_perf_issue = @group.kind_performance_issue? %>
+
+<%# Selezione occorrenza (j/k/frecce) dichiarata nel registry dell'help globale (CYRA-28). %>
+<div class="p-7 space-y-6" data-test="member-metric-group"
+     data-controller="occurrence-select"
+     data-occurrence-select-selected-class="bg-stone-50 dark:bg-zinc-800"
+     data-keyboard-doc="<%= [ { keys: "↑ ↓ · j k", label: t("member.monitoring.shortcut_select") } ].to_json %>">
+  <%# Live: ogni nuovo campione di questo gruppo (Metrics::Ingest::Record) manda un page-refresh Turbo
+      throttlato sullo stream del gruppo; il browser ri-fetcha QUESTO URL e morpha il DOM (scroll e
+      selezione occorrenza preservati), così i campioni recenti compaiono senza broadcast per-campione
+      nel path caldo (CYRA-41). Stream org-prefissato (Realtime::Streams.metric_group) → isolamento
+      tenant garantito. %>
+  <%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+  <%= turbo_stream_from Realtime::Streams.metric_group(@group) %>
+  <%= render "member/monitoring/metric_groups/header", display_title: display_title, is_perf_issue: is_perf_issue %>
+
+  <%= render Ui::GridComponent.new(cols: 1, lg: 3, gap: 6) do %>
+    <!-- LEFT -->
+    <%= render Ui::StackComponent.new(gap: 6, class: "lg:col-span-2") do %>
+  <%# 1. Durata nel tempo (CYRA-341) — la domanda con cui si apre questa scheda è «sta
+      peggiorando?», e finora non c'era modo di rispondere: l'unico grafico contava QUANTE VOLTE
+      era successo, quindi un'operazione che raddoppiava la lentezza disegnava lo stesso identico
+      grafico del giorno prima. Qui la barra è il caso peggiore del blocco (p95) e il tooltip
+      porta anche il caso tipico (p50); il selettore del periodo governa entrambi i grafici. %>
+      <%= render "member/monitoring/metric_groups/duration_chart" %>
+
+  <!-- 2. Occorrenze nel tempo (istogramma: altezza ∝ volume, colore = performance media; il periodo lo sceglie il grafico sopra) -->
+      <%= render "member/monitoring/metric_groups/volume_chart" %>
+
+  <!-- 3. Signature (query template / route / host) + dettaglio dell'occorrenza selezionata (pannelli toggled da Stimulus) -->
+      <%= render "member/monitoring/metric_groups/signature_panel", is_perf_issue: is_perf_issue %>
+
+  <!-- 4. Logs & errors of this request (correlazione via trace_id del campione selezionato) -->
+  <% if @selected&.trace_id.present? %>
+        <%= render "member/monitoring/metric_groups/trace_panel" %>
+      <% end %>
+
+  <!-- 5. Occurrences: lista selezionabile (click → mostra il suo pannello sopra, via Stimulus) -->
+      <%= render "member/monitoring/metric_groups/occurrences" %>
+    <% end %>
+
+    <!-- RIGHT: Details -->
+    <%= render Ui::StackComponent.new(gap: 6) do %>
+      <%= render "member/monitoring/metric_groups/details", is_perf_issue: is_perf_issue %>
+
+  <%# Triage AI on-demand: verdetto performance + fix suggerito. L'azione consigliata (promote) viene
+      pre-evidenziata sul pulsante nativo → applica con un clic. %>
+  <% if can?("metrics.promote", scope: @group.project) %>
+        <%= render "member/monitoring/metric_groups/triage_ai" %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,25 @@
+en:
+  member:
+    guides:
+      index:
+        seo:
+          title: SEO
+      seo:
+        title: SEO
+        subtitle: How the site check works and what to do with what it finds.
+        what_title: What it is
+        what_intro: The system visits the sites you declare, the way a search engine would, and tells you what is keeping your pages from being found. It is not a score — it is a list of concrete things.
+        what_pages: "Pages: what each one answered, its title, whether it has a main heading, how much text it holds."
+        what_findings: "Findings: every problem with its evidence — which page, what was there, what should have been."
+        what_tickets: "Tickets: open a pre-filled ticket straight from a finding, without redoing the analysis by hand."
+        setup_title: How to set it up
+        step_site_title: Declare a site
+        step_site_body: You need the site's public address, the project it belongs to and how often to check it. The first check starts right away.
+        step_wait_title: Wait for the first run
+        step_wait_body: The system starts from the home page and the sitemap, follows internal links and stops at the page limit you set.
+        step_triage_title: Decide what to do
+        step_triage_body: Every finding can be ignored (if you want to live with it) or turned into a ticket. When the problem disappears from the site, the finding closes itself.
+        manners_title: How it behaves towards sites
+        manners_body: "It always honours robots.txt, stays on the address you gave it, identifies itself as CloseYourItBot and waits half a second between pages. The page limit is yours to set."
+        limits_body: "It reads pages as the server sends them, before the browser runs any code: that is what a search engine sees on the first pass. It does not use Google Search Console and does not judge how well the text is written — those are two other things, and they will come."
+        open_cockpit: Go to the SEO check

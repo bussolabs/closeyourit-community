@@ -1,0 +1,81 @@
+it:
+  member:
+    nav:
+      todos: Da fare
+      todos_open:
+        one: "1 cosa da fare"
+        other: "%{count} cose da fare"
+    todo_lists:
+      title: Da fare
+      help_title: "Le tue liste personali, da condividere o collegare ai ticket."
+      new: Nuova lista
+      created: Lista creata
+      updated: Lista aggiornata
+      deleted: Lista eliminata
+      edit: Modifica
+      edit_title: Modifica lista
+      delete: Elimina
+      delete_confirm: Eliminare questa lista e tutte le sue voci?
+      empty: Nessuna lista — creane una.
+      shared_badge: Condivisa
+      readonly_badge: Sola lettura
+      shared_by: "Condivisa da %{name}"
+      shared_by_label: Condivisa da
+      progress: "%{done} / %{total} completate"
+      progress_empty: Nessuna attività
+      progress_label: Progresso
+      progress_header: "%{done} di %{total} fatte"
+      shared_with: "Condivisa con %{names}"
+      shared_with_readonly: "Condivisa con %{names} · sola lettura"
+      more_menu: Altre azioni
+      drag_hint: Trascina per riordinare
+      colors:
+        indigo: Indaco
+        emerald: Verde
+        amber: Ambra
+        red: Rosso
+        sky: Azzurro
+        violet: Viola
+      form:
+        color: Colore
+        name: Nome lista
+        name_placeholder: "es. Oggi, Bug urgenti…"
+        create: Crea lista
+        save: Salva
+        cancel: Annulla
+      panel:
+        add_placeholder: "Aggiungi una voce…"
+        add_key: "Invio"
+        add_hint: "per aggiungere"
+        add_label: "Aggiungi una voce a %{list}"
+        done_label: "Segna %{title} come fatta"
+        undo_label: "Segna %{title} come da fare"
+        remove_label: "Togli %{title}"
+      item:
+        completed:
+          one: "Completata (%{count})"
+          other: "Completate (%{count})"
+        link_ticket: Collega un ticket
+        rename: Rinomina
+        save: Salva
+        title: Attività
+        title_placeholder: Cosa c'è da fare?
+        ticket: Ticket collegato
+        ticket_placeholder: Nessun ticket
+        ticket_hint: Scrivi la sigla del ticket o una parola del titolo. Sotto, i ticket toccati di recente.
+        add: Aggiungi
+        created: Attività aggiunta
+        updated: Attività aggiornata
+        deleted: Attività rimossa
+        empty: Nessuna attività — aggiungine una sotto.
+        delete_confirm: Rimuovere questa attività?
+        invalid_ticket: Quel ticket appartiene a un'altra organizzazione
+      share:
+        title: Condividi lista
+        list_label: Lista
+        action: Condividi
+        save: Salva condivisione
+        updated: Condivisione aggiornata
+        recipients: Membri
+        hint: I membri selezionati possono vedere questa lista (sola lettura)
+        no_members: Nessun altro membro in questa organizzazione

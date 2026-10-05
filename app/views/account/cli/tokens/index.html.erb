@@ -1,0 +1,87 @@
+<% content_for :title, t("account.cli_tokens.title") %>
+
+<div class="mx-auto max-w-5xl px-6 py-8" data-test="account-cli-tokens">
+  <div class="flex items-center justify-between gap-3 mb-6">
+    <div class="flex items-center gap-2.5">
+      <h1 class="font-display text-[18px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("account.cli_tokens.title") %></h1>
+      <% if @tokens.any? %>
+        <% active_count = @tokens.count { |t| !t.revoked? && !t.expired? } %>
+        <span class="inline-flex items-center rounded-md bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-gray-600 dark:text-zinc-400" data-test="account-cli-tokens-active-count"><%= t("account.cli_tokens.active_count", count: active_count) %></span>
+      <% end %>
+    </div>
+    <div class="flex items-center gap-2">
+      <%# CYRA-643: chi perde un dispositivo deve chiudere le due cose che ci vivono — la sessione del
+          browser e il token della riga di comando. Le due pagine si rimandano a vicenda. %>
+      <%= link_to t("account.sessions.title"), account_sessions_path, class: "inline-flex items-center h-[34px] px-3 rounded-md text-[13px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "account-cli-tokens-sessions" } %>
+      <%= link_to t("cli.authorize.back"), root_path, class: "inline-flex items-center h-[34px] px-3 rounded-md text-[13px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "account-cli-tokens-back" } %>
+    </div>
+  </div>
+
+  <% if @tokens.empty? %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-10 text-center" data-test="account-cli-tokens-empty">
+      <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("account.cli_tokens.empty_title") %></h2>
+      <p class="mt-1.5 text-[13px] text-zinc-600 dark:text-zinc-400"><%= t("account.cli_tokens.empty_lead") %></p>
+    </div>
+  <% else %>
+    <div class="overflow-hidden rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("account.cli_tokens.title"))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("account.cli_tokens.columns.name"), sort: "name") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("account.cli_tokens.columns.organization"), sort: "organization") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("account.cli_tokens.columns.prefix"), sort: "prefix") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("account.cli_tokens.columns.last_used"), sort: "last_used", initial: :desc) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("account.cli_tokens.columns.expiry"), sort: "expiry") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("account.cli_tokens.columns.status"), sort: "status") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: tag.span(t("account.cli_tokens.columns.actions"), class: "sr-only"), align: :right) %>
+        <% end %>
+        <% @tokens.each do |token| %>
+          <%= render Ui::TableComponent::RowComponent.new(test_id: "account-cli-tokens-row-#{token.id}") do %>
+            <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-zinc-900 dark:text-zinc-100")) { token.name } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("account.cli_tokens.columns.organization"), class: "text-zinc-600 dark:text-zinc-400")) { token.organization.name } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("account.cli_tokens.columns.prefix"), mono: true, class: "text-zinc-600 dark:text-zinc-400")) { "#{token.token_prefix}…" } %>
+            <%= render Ui::TableComponent::CellComponent.new(label: t("account.cli_tokens.columns.last_used"), class: "text-zinc-600 dark:text-zinc-400") do %>
+              <%= token.last_used_at ? l(token.last_used_at, format: :default) : t("account.cli_tokens.last_used_never") %>
+            <% end %>
+            <%# CYRA-717: quando smette di valere. Nessuna data = token emesso prima della scadenza
+                di default, valido finché non lo si revoca. %>
+            <%= render Ui::TableComponent::CellComponent.new(label: t("account.cli_tokens.columns.expiry"), test_id: "account-cli-tokens-expiry") do %>
+              <% if token.expires_at.nil? %>
+                <span class="text-gray-400 dark:text-zinc-500"><%= t("account.cli_tokens.expiry.never") %></span>
+              <% else %>
+                <% expiry_status = token.revoked? ? :ok : token.expiry_status %>
+                <% expiry_color = { expired: "text-red-600 dark:text-red-400", due_soon: "text-amber-700 dark:text-amber-300" }.fetch(expiry_status, "text-zinc-600 dark:text-zinc-400") %>
+                <span class="<%= token.revoked? ? 'text-gray-500 dark:text-zinc-400' : expiry_color %>"><%= l(token.expires_at.to_date, format: :long) %></span>
+                <% if expiry_status == :expired %>
+                  <span class="block text-[11px] <%= expiry_color %>"><%= t("account.cli_tokens.expiry.expired_days", count: token.days_until_expiry.abs) %></span>
+                <% elsif expiry_status == :due_soon %>
+                  <span class="block text-[11px] <%= expiry_color %>"><%= t("account.cli_tokens.expiry.due_in_days", count: token.days_until_expiry) %></span>
+                <% end %>
+              <% end %>
+            <% end %>
+            <%# Revocato e scaduto sono due esiti diversi: il primo l'ha deciso qualcuno, il secondo
+                è arrivato da solo e si risolve rifacendo l'accesso. Il badge li distingue (CYRA-717). %>
+            <%= render Ui::TableComponent::CellComponent.new(label: t("account.cli_tokens.columns.status")) do %>
+              <% if token.revoked? %>
+                <span class="inline-flex items-center rounded-md bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 text-[11px] font-medium text-gray-500 dark:text-zinc-400"><%= t("account.cli_tokens.status_revoked") %></span>
+              <% elsif token.expired? %>
+                <%= render Ui::BadgeComponent.new(label: t("account.cli_tokens.status_expired"), color: :red, dot: true) %>
+              <% else %>
+                <span class="inline-flex items-center rounded-md bg-emerald-50 dark:bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-300"><%= t("account.cli_tokens.status_active") %></span>
+              <% end %>
+            <% end %>
+            <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+              <% unless token.revoked? %>
+                <%= render Ui::ConfirmDialogComponent.new(title: t("account.cli_tokens.revoke_dialog.title", name: token.name),
+                      url: account_cli_token_path(token), confirm_label: t("account.cli_tokens.revoke"),
+                      test_id: "account-cli-tokens-revoke-dialog-#{token.id}") do |dialog| %>
+                  <% dialog.with_body { t("account.cli_tokens.revoke_dialog.body") } %>
+                  <%= dialog.button_trigger(label: t("account.cli_tokens.revoke"), test_id: "account-cli-tokens-revoke-#{token.id}") %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

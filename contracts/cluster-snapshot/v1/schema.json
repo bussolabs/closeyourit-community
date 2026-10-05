@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://closeyour.it/contracts/cluster-snapshot/v1/schema.json",
+  "title": "CloseYourIt cluster snapshot v1",
+  "$defs": {
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snapshot_id", "observed_at", "observer_version", "cluster", "nodes", "namespaces", "workloads", "events", "truncated"],
+      "properties": {
+        "snapshot_id": { "type": "string", "format": "uuid" },
+        "observed_at": { "type": "string", "format": "date-time" },
+        "observer_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+([-+][0-9A-Za-z.-]+)?$" },
+        "cluster": { "$ref": "#/$defs/cluster" },
+        "nodes": { "type": "array", "maxItems": 500, "items": { "$ref": "#/$defs/node" } },
+        "namespaces": { "type": "array", "maxItems": 3000, "items": { "$ref": "#/$defs/namespace" } },
+        "workloads": { "type": "array", "maxItems": 3000, "items": { "$ref": "#/$defs/workload" } },
+        "events": { "type": "array", "maxItems": 200, "items": { "$ref": "#/$defs/event" } },
+        "truncated": { "type": "boolean" }
+      }
+    },
+    "cluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kubernetes_version", "provider", "metrics_available"],
+      "properties": {
+        "kubernetes_version": { "type": "string", "maxLength": 64 },
+        "provider": { "type": "string", "maxLength": 64 },
+        "metrics_available": { "type": "boolean" }
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "ready", "pressure", "unschedulable", "being_removed", "cpu_capacity_millicores", "memory_capacity_bytes", "cpu_usage_millicores", "memory_usage_bytes", "pods", "created_at", "provider_id"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 253 },
+        "ready": { "type": "boolean" },
+        "pressure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["memory", "disk", "pid"],
+          "properties": { "memory": { "type": "boolean" }, "disk": { "type": "boolean" }, "pid": { "type": "boolean" } }
+        },
+        "unschedulable": { "type": "boolean" },
+        "being_removed": { "type": "boolean" },
+        "cpu_capacity_millicores": { "type": "integer", "minimum": 0 },
+        "memory_capacity_bytes": { "type": "integer", "minimum": 0 },
+        "cpu_usage_millicores": { "type": ["integer", "null"], "minimum": 0 },
+        "memory_usage_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "pods": { "type": "integer", "minimum": 0 },
+        "created_at": { "type": "string", "format": "date-time" },
+        "provider_id": { "type": "string", "maxLength": 512 }
+      }
+    },
+    "namespace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": { "name": { "type": "string", "minLength": 1, "maxLength": 63 } }
+    },
+    "workload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "namespace", "name", "desired", "ready", "available", "image", "restarts", "last_reason"],
+      "properties": {
+        "kind": { "enum": ["Deployment", "StatefulSet", "DaemonSet"] },
+        "namespace": { "type": "string", "minLength": 1, "maxLength": 63 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 253 },
+        "desired": { "type": "integer", "minimum": 0 },
+        "ready": { "type": "integer", "minimum": 0 },
+        "available": { "type": "integer", "minimum": 0 },
+        "image": { "type": "string", "maxLength": 512 },
+        "restarts": { "type": "integer", "minimum": 0 },
+        "last_reason": { "type": ["string", "null"], "maxLength": 128 }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason", "object_kind", "object_name", "namespace", "message", "count", "last_seen_at"],
+      "properties": {
+        "reason": { "type": "string", "maxLength": 128 },
+        "object_kind": { "type": "string", "maxLength": 64 },
+        "object_name": { "type": "string", "maxLength": 253 },
+        "namespace": { "type": "string", "maxLength": 63 },
+        "message": { "type": "string", "maxLength": 512 },
+        "count": { "type": "integer", "minimum": 0 },
+        "last_seen_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "snapshot_response": {
+      "type": "object",
+      "required": ["data"],
+      "properties": {
+        "data": {
+          "type": "object",
+          "required": ["accepted", "cluster_id"],
+          "properties": { "accepted": { "const": true }, "cluster_id": { "type": "string", "format": "uuid" } }
+        }
+      }
+    },
+    "error_envelope": {
+      "type": "object",
+      "required": ["error"],
+      "properties": {
+        "error": {
+          "type": "object",
+          "required": ["code", "message"],
+          "properties": {
+            "code": { "type": "string", "pattern": "^R[0-9]{3}-CLUSTER-[0-9]{3}$" },
+            "message": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+<%# Icons Stimulus controllers clone with lib/icon.js (CYRA-926). Only names a controller asks for. %>
+<template id="ui-icons">
+  <% %w[arrow-right arrow-up-right-from-square check chevron-down circle circle-check history loader-circle mic quote
+       triangle-alert wand-sparkles].each do |name| %>
+    <%= render Ui::IconComponent.new(name: name) %>
+  <% end %>
+</template>

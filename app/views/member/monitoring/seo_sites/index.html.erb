@@ -1,0 +1,49 @@
+<% content_for :title, t("member.monitoring.seo_sites.title") %>
+
+<div class="p-7 space-y-6" data-test="member-seo-sites">
+  <%= render "member/monitoring/seo/header", title: t("member.monitoring.seo_sites.title"),
+        subtitle: t("member.monitoring.seo_sites.help_title"),
+        total_count: @total_count, critical_count: @critical_count, high_count: @high_count,
+        ignored_count: @ignored_count, pages_count: @pages_count, sites_count: @sites_count %>
+
+  <% if @sites.empty? && Array(params[:project_id]).reject(&:blank?).empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.seo_sites.empty"), body: t("member.monitoring.seo_sites.empty_hint"), icon: "globe", framed: true, test_id: "seo-sites-empty") do |empty| %>
+      <% empty.with_action do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.monitoring.seo_sites.new"), href: new_member_monitoring_seo_site_path,
+              icon: "plus", variant: :primary, size: :sm, test_id: "seo-empty-new-site") %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="seo-sites-table">
+      <%= render(Ui::TableToolbarComponent.new(framed: true,
+            url: member_monitoring_seo_sites_path,
+            apply_test_id: "seo-sites-filter", test_id: "seo-sites-toolbar")) do |toolbar| %>
+        <% toolbar.with_filter(key: "project_id", label: t("member.monitoring.seo.columns.project")) do %>
+          <div class="w-40"><%= render Ui::SelectComponent.new(name: "project_id", multiple: true, summary: true,
+            options: @projects.map { |p| [ p.name, p.id, p.color ] }, selected: params[:project_id],
+            placeholder: t("member.monitoring.seo.columns.project"), test_id: "filter-project") %></div>
+        <% end %>
+      <% end %>
+
+        <% if @sites.empty? %>
+          <%= render Ui::NoResultsComponent.new(reset_href: member_monitoring_seo_sites_path,
+                icon: "globe", test_id: "seo-sites-no-results", reset_test_id: "seo-sites-reset-filters") %>
+        <% else %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.monitoring.seo_sites.title"))) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.site"), sort: "site") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.project"), classes: "w-40") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo_sites.columns.frequency"), classes: "w-28") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo_sites.columns.open_issues"), classes: "w-24") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo_sites.columns.last_audit"), sort: "checked", classes: "w-36") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: tag.span(t("member.monitoring.seo_sites.actions.edit"), class: "sr-only"), classes: "w-56") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+          <% end %>
+          <%= render partial: "member/monitoring/seo_sites/site", collection: @sites, as: :site,
+                locals: { open_counts: @open_counts, last_audits: @last_audits } %>
+        <% end %>
+        <% end %>
+        <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "seo-sites-pagination")) %>
+    </div>
+  <% end %>
+</div>

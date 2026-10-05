@@ -1,0 +1,13 @@
+# CYRA-867 — annullare in un colpo tutte le lavorazioni aperte dell'organizzazione.
+it:
+  member:
+    approvals:
+      cancel_all:
+        button: Annulla tutte le lavorazioni
+        more_menu: Altre azioni
+        confirm: "Annullare tutte le lavorazioni automatiche aperte? Spariscono dalle decisioni e da quelle che vanno avanti da sole, e il lavoro già fatto si ferma. I ticket restano, senza automazione. Non si può tornare indietro."
+        started:
+          zero: Non c'erano lavorazioni aperte da annullare.
+          one: Annullamento avviato per una lavorazione. Ricarica la pagina tra poco.
+          other: "Annullamento avviato per %{count} lavorazioni. Ci vuole qualche minuto: ricarica la pagina tra poco."
+        reason: Annullate tutte insieme dalle Approvazioni, per ripartire da zero.

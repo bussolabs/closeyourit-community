@@ -1,0 +1,36 @@
+---
+en:
+  member:
+    guides:
+      index:
+        knowledge_review:
+          title: Knowledge review
+      knowledge_review:
+        title: Knowledge review
+        subtitle: How to decide what enters the knowledge base and what stays out.
+        what_title: What it is for
+        what_intro: "While you work, an assistant may notice something worth keeping: an error solved, a decision made, a trap not to fall into again. Instead of writing it straight into the knowledge base, it proposes it here and waits for you."
+        what_b1: While a proposal waits, it never shows up in search, in answers, or in the suggestions next to a ticket.
+        what_b2: Read the whole proposal without leaving the page, together with the line explaining why it was written.
+        what_b3: "Decide with one click: accepted, it enters the knowledge base; discarded, it stays aside."
+        steps_title: How to use it
+        step1: Open Review from the menu, under Knowledge. The top of the page shows how many proposals are waiting.
+        step2: Read the title, the reason and the proposed text. They are already in front of you, above the two buttons; when the queue is long, from the fourth one down the text opens with a click.
+        step3: Press Accept to keep it. From that moment the page is visible to everyone, it enters search and the assistant will use it to answer.
+        step4: Press Discard if it isn't useful. It leaves the queue without deleting anything.
+        terminal_title: Deciding from the terminal
+        terminal_body: "If you are already working from the command line, you don't have to come back here: `cyi kb approve <page>` accepts it, `cyi kb reject <page>` discards it. You are asked to confirm before it goes through, so a proposal is never decided by mistake."
+        terminal_b1: "Always decide with your own personal access: accepting and discarding are reserved for people, and an automated login is turned away without touching anything."
+        terminal_b2: "The outcome is the same as on the site: accepted, it enters search straight away; discarded, it stays aside among the ones already seen."
+        terminal_b3: "Marking a page as written into the documents stays a separate step: accepting doesn't do it and doesn't replace it."
+        written_by_title: Who wrote the page
+        written_by_body: "Every page says two different things: who wrote it and whose access was used. An assistant writes using a person's access, but the text is not theirs: the review queue and the list say so, so you always know what you are reading."
+        written_by_b1: "The «Assistant» mark stays next to the type even after you accept the page: you can find it any time from the list, with the «Written by» filter."
+        written_by_b2: "The mark goes away when a person rewrites the text: at least one word in ten counts, or twenty words anyway. Fixing a comma, an accent or a couple of words is not enough, and changing tags, type or projects does not count — the mark is about the text."
+        written_by_b3: "Older pages read «We do not know who wrote it»: they were created before the product started tracking who writes, and saying a person wrote them would be making it up."
+        written_by_note: Whoever writes from the app is always a person, and their page carries no mark.
+        discard_title: What happens to what you discard
+        discard_body: "Discarded proposals are not deleted, they stay aside at the bottom of the page. They serve one purpose: when an assistant is about to propose the same note again, it finds it among the discarded ones and drops it. A decision made once doesn't come back every week."
+        file_title: Accepted, not written into the documents yet
+        file_body: Accepting makes the page searchable straight away, but the final text also lives among the project's documents. Until that step is done, the page stays listed under "Accepted, not written into the documents yet", so you can see at a glance what is still missing.
+        open_review: Go to Review

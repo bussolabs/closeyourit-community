@@ -1,0 +1,27 @@
+# Written by install.sh; DOMAIN, ACME_EMAIL and INGEST_UPSTREAM come from the caddy container.
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Telemetry from your applications: straight to the app, or through the ingest gateway.
+	# Only the requests the gateway accepts go there (its route list, POST only): it refuses
+	# everything else, so the rest of /api/ — reading data back, the Automator — stays on the app
+	# (CYRA-936).
+	@ingest {
+		method POST
+		path_regexp ^/api/(v1/projects/[^/]+/(events|metrics|logs|pageviews|replays|releases|crons/[^/]+/check_in)|v1/servers/samples|[^/]+/(envelope|store))/?$
+	}
+	reverse_proxy @ingest {$INGEST_UPSTREAM}
+
+	reverse_proxy app:80
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+}

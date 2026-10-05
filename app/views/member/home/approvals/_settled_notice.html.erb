@@ -1,0 +1,18 @@
+<%# locals: (settled:) %>
+<%# The link pointed to a request that is gone: say how it ended and stay on the queue. A passing
+    notice, so it joins the toast stack bottom-right. CYRA-325, CYRA-998 %>
+<%= render Ui::AlertComponent.new(variant: :info, dismissible: true, class: "pointer-events-auto transition duration-200 ease-out",
+      title: t("member.approvals.settled.title"), test_id: "approvals-settled") do %>
+  <% if settled.documented? %>
+    <%= t("member.approvals.settled.by",
+          actor: settled.actor_name.presence || t("member.approvals.settled.someone"),
+          time: l(settled.at, format: :long)) %>
+  <% else %>
+    <%= t("member.approvals.settled.gone") %>
+  <% end %>
+  <% if settled.ticket %>
+    <%= link_to t("member.approvals.settled.open_ticket", code: settled.ticket.code),
+          member_ticket_path(settled.ticket), class: "font-semibold text-indigo-700 dark:text-indigo-300 hover:underline",
+          data: { test: "approvals-settled-ticket" } %>
+  <% end %>
+<% end %>

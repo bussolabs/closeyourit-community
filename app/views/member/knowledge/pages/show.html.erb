@@ -1,0 +1,49 @@
+<% content_for :title, @page.title %>
+
+<div class="p-7 space-y-6" data-test="knowledge-page">
+  <%= render "member/knowledge/pages/header" %>
+
+  <%= render Ui::GridComponent.new(cols: 1, lg: 3, gap: 6) do %>
+    <%# Corpo della pagina in due viste: Semplice (body) e Tecnico (tech_spec). Toggle CSS-only
+        (radio + peer, nessun JS), stesso pattern del selettore kind nel form. Default: Semplice. %>
+    <%= render Ui::StackComponent.new(gap: 6, class: "lg:col-span-2") do %>
+      <%# CYRA-429: la scelta fra i due livelli compare solo quando la parte tecnica esiste davvero.
+          Senza, due tab che portano allo stesso identico testo fanno sembrare rotto il controllo. %>
+      <% if @page.tech_spec.blank? %>
+        <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="knowledge-body">
+          <%= render Ui::MarkdownComponent.new(text: @page.body, page: @page, links: @links,
+                remote_images: true, class: "px-6 py-5 max-w-[70ch]") %>
+        </div>
+      <% else %>
+        <%= render "member/knowledge/pages/body_tabs" %>
+      <% end %>
+    <% end %>
+
+    <%# Colonna destra: specifiche della pagina. %>
+    <%= render Ui::StackComponent.new(gap: 6) do %>
+      <%= render "member/knowledge/pages/specs_panel" %>
+
+      <%# File allegati alla pagina. Sempre presente per chi può modificare (contiene la dropzone);
+          per gli altri solo se c'è qualcosa da scaricare. %>
+      <% if @can_edit || @page.attachments.any? %>
+        <%= render "attachments" %>
+      <% end %>
+
+      <%# Grafo della pagina: cosa cita (dai wikilink nel corpo) e chi la cita. Solo pagine
+          visibili a chi legge — un collegamento verso una pagina nascosta non compare affatto.
+          La card resta montata anche a zero collegamenti (CYRA-433): è l'unico posto in cui chi
+          non ha letto la guida scopre che le pagine si possono collegare, e sparire non lo insegna.
+          Lo stato vuoto vale anche quando i collegamenti esistono ma sono tutti verso pagine non
+          visibili: dice come si collega una pagina, mai che ce n'è una nascosta. %>
+      <%= render "member/knowledge/pages/links_panel" %>
+    <% end %>
+  <% end %>
+
+  <%# The audit strip closes the page, full width (E22). %>
+  <%= render Ui::SectionComponent.new(body_class: "px-4 py-2.5", test_id: "knowledge-audit-panel") do %>
+    <%= render Ui::AuditMetaComponent.new(
+          created_at: @page.created_at, created_by: @page.created_by.name,
+          updated_at: @page.updated_at, updated_by: @last_version&.author_name,
+          test_id: "knowledge-audit") %>
+  <% end %>
+</div>

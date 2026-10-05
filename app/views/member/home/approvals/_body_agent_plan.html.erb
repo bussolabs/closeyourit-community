@@ -1,0 +1,116 @@
+<%# locals: (card:, compact:) %>
+<%# CYRA-557 — sulle fasi di consegna (lavoro dell'automa da approvare, rilascio da autorizzare) la
+    scheda si apre col resoconto: quello che segue — il piano — è ciò che era stato promesso, non
+    ciò che è stato fatto. %>
+<%# CYRA-616 — su cosa stai dicendo di sì, PRIMA del racconto di chi ha lavorato: quello sono
+    parole, questo è il codice. Se il verbale manca lo si dichiara, invece di mettere al suo posto un
+    dato plausibile e sbagliato.
+    DOVE mostrarlo lo decide `card.candidate`, che è nil ovunque non si stia decidendo su una
+    consegna: la regola sta in un punto solo, e una seconda guardia qui la renderebbe non
+    verificabile — si potrebbe togliere quella giusta senza che niente diventi rosso. %>
+<% if card.candidate %>
+  <%= render "member/home/approvals/verified_candidate", candidate: card.candidate %>
+<% elsif card.delivered_work? && card.workflow %>
+  <p class="px-4 py-3 border-b border-stone-100 dark:border-zinc-800 text-[12.5px] text-gray-500 dark:text-zinc-400"
+     data-test="approvals-detail-candidate-none"><%= t("member.approvals.candidate.none") %></p>
+<% end %>
+<% if card.delivered_work? %>
+  <%= render "member/home/approvals/delivery_evidence", attempt: card.delivery_attempt %>
+  <%= render "member/home/approvals/delivered_work", report: card.report %>
+<% end %>
+
+<%# Fase review_blocked: la revisione ha bocciato un tentativo. Il riaccodo sta QUI, sotto la frase che
+    lo annuncia — è la decisione più frequente su una lavorazione ferma e non deve costare uno scroll
+    fino al pannello (dove resta, con la nota facoltativa, per chi vuole scrivere prima di riavviare).
+    Compare solo se rimetterebbe davvero in coda qualcosa: quando la fase bocciata riparte da sé il testo
+    lo dice, invece di raccontare una lavorazione ferma che sta già riprovando. %>
+<% if card.phase == "review_blocked" %>
+  <div class="px-4 py-3.5 flex flex-wrap items-center justify-between gap-3" data-test="approvals-detail-blocked">
+    <% if card.plan.blank? %>
+      <p class="text-[13px] text-gray-500 dark:text-zinc-400" data-test="approvals-detail-no-plan">
+        <%= t(card.can?(:approve) ? "member.approvals.no_plan" : "member.approvals.no_plan_retrying") %>
+      </p>
+    <% end %>
+    <% if card.can?(:approve) %>
+      <%= form_with url: member_home_approvals_decision_path, method: :post, class: "shrink-0" do %>
+        <%= hidden_field_tag :item, card.key %>
+        <%= hidden_field_tag :decision, "approve" %>
+        <%= render Ui::ButtonComponent.new(label: t("member.approvals.requeue"), type: "submit",
+              variant: :secondary, size: :sm, icon: "rotate-cw", test_id: "approvals-requeue") %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
+<%# CYRA-317 — cosa è stato tentato e cosa ha detto la revisione. Prima qui c'erano una frase e
+    mezzo schermo bianco: chi apriva una lavorazione respinta non aveva NIENTE su cui decidere se
+    chiuderla, e la chiudeva alla cieca. La riga del tentativo è la stessa della scheda Automazione
+    (partial condiviso): due rese dello stesso passo divergerebbero al primo campo aggiunto. %>
+<% if card.phase == "review_blocked" %>
+  <div class="px-4 py-3.5 border-t border-stone-100 dark:border-zinc-800 space-y-2.5" data-test="approvals-detail-attempt">
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-red-600 dark:text-red-400"><%= t("member.approvals.attempt.title") %></p>
+    <% if card.attempt %>
+      <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 flex items-center justify-between gap-3">
+        <%= render "member/tickets/automation_step_header", attempt: card.attempt,
+              outcome: automation_outcome(card.attempt), expandable: false %>
+      </div>
+      <%# Le considerazioni della macchina: cosa aveva concluso il tentativo poi respinto. Solo il
+          testo — chip e conteggi appartengono alla scheda Automazione, qui servirebbero a nulla. %>
+      <% if (considerations = automation_considerations(card.attempt)[:text]).present? %>
+        <%= render Ui::MarkdownComponent.new(text: considerations,
+              class: "text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-[70ch]",
+              test_id: "approvals-detail-attempt-text") %>
+      <% end %>
+      <div class="rounded-md border border-red-100 dark:border-red-500/20 bg-red-50/60 dark:bg-red-500/10 px-3.5 py-2.5">
+        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1"><%= t("member.approvals.attempt.review") %></p>
+        <% if (review = automation_review(card.attempt)) %>
+          <%= render Ui::MarkdownComponent.new(text: review[:summary],
+                class: "text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-[70ch]",
+                test_id: "approvals-detail-attempt-review") %>
+        <% else %>
+          <%# Il motivo può mancare (record storici, revisione non disponibile): dirlo è comunque
+              un'informazione, lasciare il posto vuoto no. %>
+          <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="approvals-detail-attempt-no-review"><%= t("member.approvals.attempt.no_review") %></p>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="approvals-detail-attempt-none"><%= t("member.approvals.attempt.none") %></p>
+    <% end %>
+  </div>
+<% end %>
+
+<% if card.plan && compact %>
+  <%= render "member/home/approvals/plan_compact", card: card %>
+<% elsif card.plan %>
+  <div class="divide-y divide-stone-100 dark:divide-zinc-800" data-test="approvals-detail-plan">
+    <div class="px-4 py-2.5 flex items-center gap-1.5">
+      <%# CYRA-660 — il piano si legge anche da qui, ma il file si poteva scaricare solo dalla
+          scheda del ticket: chi decide da questa pagina doveva uscirne per averlo. %>
+      <% if card.ticket? %>
+        <%= link_to t("member.tickets.automation.plan.download"),
+                    member_ticket_automation_plan_path(card.ticket),
+                    class: "text-[11.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline",
+                    data: { test: "approvals-plan-download" } %>
+      <% end %>
+      <span class="inline-flex items-center rounded-md bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-gray-600 dark:text-zinc-400">v<%= card.plan.version %></span>
+    </div>
+    <%= render "member/home/approvals/plan_if_approved", plan: card.plan %>
+    <%= render "member/tickets/plan_body", plan: card.plan %>
+  </div>
+<% elsif card.phase != "review_blocked" %>
+  <%# Nessun piano da leggere e nessuna revisione respinta che lo spieghi: resta la frase, senza azioni. %>
+  <div class="px-4 py-3.5" data-test="approvals-detail-no-plan">
+    <p class="text-[13px] text-gray-500 dark:text-zinc-400"><%= t("member.approvals.no_plan") %></p>
+  </div>
+<% end %>
+
+<%# Di cosa parla il ticket: su una lavorazione respinta la decisione è «la chiudo o no», e senza
+    sapere cosa doveva fare non si decide. Stessa resa della card di review, che ha lo stesso
+    bisogno. Solo dove non c'è un piano da leggere: col piano il contesto c'è già, per esteso. %>
+<% if card.phase == "review_blocked" && card.plan.blank? && card.ticket&.description.present? %>
+  <div class="px-4 py-3.5 border-t border-stone-100 dark:border-zinc-800" data-test="approvals-detail-ticket">
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400 mb-1.5"><%= t("member.approvals.description") %></p>
+    <%= render Ui::MarkdownComponent.new(text: card.ticket.description,
+          class: "text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-[70ch]") %>
+  </div>
+<% end %>

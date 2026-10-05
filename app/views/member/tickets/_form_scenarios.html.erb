@@ -1,0 +1,40 @@
+<%# locals: (ticket:) %>
+<div data-controller="nested-fields" data-nested-kind="scenarios" data-test="ticket-scenarios">
+  <div class="flex items-center justify-between mb-2">
+    <div class="flex items-center gap-1">
+      <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.form.scenarios") %></p>
+      <%= render Ui::TooltipComponent.new(text: t("member.tickets.form.scenarios_hint"), test_id: "help-scenarios") %>
+    </div>
+    <button type="button" data-action="nested-fields#add" data-test="ticket-scenario-add"
+            class="inline-flex items-center gap-1.5 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+      <%= render Ui::IconComponent.new(name: "plus", class: "text-[10px]") %><%= t("member.tickets.form.scenario_add") %>
+    </button>
+  </div>
+  <%# No scenario until the person adds one; existing rows (edit) start with their id and values. %>
+  <div data-nested-fields-target="container" class="space-y-3 [counter-reset:scenario]">
+    <% ticket.scenarios.each_with_index do |scenario, i| %>
+      <%= render "member/tickets/scenario_fields", index: i, scenario: scenario %>
+    <% end %>
+  </div>
+  <template data-nested-fields-target="template"><%= render "member/tickets/scenario_fields", index: "NEW_RECORD", scenario: nil %></template>
+</div>
+
+<%# ===== Definition of Done (repeater, opzionale, tutti i kind) ===== %>
+<div data-controller="nested-fields" data-nested-kind="conditions" data-test="ticket-conditions">
+  <div class="flex items-center justify-between mb-2">
+    <div class="flex items-center gap-1">
+      <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.form.conditions") %></p>
+      <%= render Ui::TooltipComponent.new(text: t("member.tickets.form.conditions_hint"), test_id: "help-conditions") %>
+    </div>
+    <button type="button" data-action="nested-fields#add" data-test="ticket-condition-add"
+            class="inline-flex items-center gap-1.5 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+      <%= render Ui::IconComponent.new(name: "plus", class: "text-[10px]") %><%= t("member.tickets.form.condition_add") %>
+    </button>
+  </div>
+  <div data-nested-fields-target="container" class="space-y-2">
+    <% ticket.conditions.each_with_index do |condition, i| %>
+      <%= render "member/tickets/condition_fields", index: i, condition: condition %>
+    <% end %>
+  </div>
+  <template data-nested-fields-target="template"><%= render "member/tickets/condition_fields", index: "NEW_RECORD", condition: nil %></template>
+</div>

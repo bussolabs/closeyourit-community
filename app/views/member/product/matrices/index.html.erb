@@ -1,0 +1,76 @@
+<% content_for :title, t("member.product.matrices.title") %>
+<% can_manage = can?("product_features.manage") %>
+
+<div class="p-7 space-y-6" data-test="member-product-matrices">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.product.matrices.title"),
+        subtitle: t("member.product.matrices.help"),
+        breadcrumb: [ { label: t("member.product.matrices.title") } ],
+        test_id: "product-matrices-header",
+        counts_test_id: "product-matrices-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.groups", count: @pagination.total), value: @pagination.total, test_id: "product-matrices-count-groups") %>
+    <% end %>
+  <% end %>
+
+  <%# Esempio di riga già compilata: mostra a colpo d'occhio com'è fatta la matrice e cosa dicono i
+      numeri di copertura, così la testata spiega la pagina senza aprire una riga. Statico e didattico,
+      indipendente dai dati del tenant (nessun record finto). %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3" data-test="product-matrices-intro">
+    <div class="flex items-center flex-wrap gap-x-3 gap-y-2">
+      <span class="font-mono text-[9px] uppercase tracking-[1px] text-gray-400 dark:text-zinc-500"><%= t("member.product.matrices.intro.example_label") %></span>
+      <span class="inline-flex items-center gap-2">
+        <span class="text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.product.matrices.intro.example_category") %></span>
+        <span class="text-gray-300 dark:text-zinc-600">›</span>
+        <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.product.matrices.intro.example_feature") %></span>
+      </span>
+      <span class="inline-flex items-center flex-wrap gap-1.5">
+        <% [ [ "API", "1/1", "text-emerald-600 dark:text-emerald-400" ], [ "Web", "1/1", "text-emerald-600 dark:text-emerald-400" ], [ "iOS", "0/1", "text-zinc-900 dark:text-zinc-100" ] ].each do |label, ratio, ratio_class| %>
+          <span class="inline-flex items-center gap-1.5 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2 py-0.5 text-[11.5px] whitespace-nowrap">
+            <span class="w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-zinc-600"></span><%= label %>
+            <span class="font-mono <%= ratio_class %>"><%= ratio %></span>
+          </span>
+        <% end %>
+      </span>
+    </div>
+    <p class="mt-2 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.product.matrices.intro.example_hint") %></p>
+  </div>
+
+  <% if @groups.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.product.matrices.empty_title"), body: t("member.product.matrices.empty_body"),
+          icon: "layout-grid", framed: true, test_id: "product-matrices-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="product-matrices-table">
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.product.matrices.title"), body_test_id: "product-matrices-body")) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.product.matrices.columns.product")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.product.matrices.counts.platforms")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.product.matrices.counts.categories"), align: :right, classes: "w-28") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.product.matrices.counts.features"), align: :right, classes: "w-28") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+        <% end %>
+        <% @groups.each do |group| %>
+          <% category_count = @category_counts[group.id].to_i %>
+          <% feature_count = @feature_counts[group.id].to_i %>
+          <%= render Ui::TableComponent::RowComponent.new(href: member_product_matrix_path(group), link_label: group.name, test_id: "product-matrix-row-#{group.id}") do %>
+            <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+              <%= link_to member_product_matrix_path(group), class: "flex items-center gap-2.5", data: { test: "product-matrix-link-#{group.id}" } do %>
+                <%= render Ui::EntityMarkComponent.new(record: group) %>
+                <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= group.name %></span>
+              <% end %>
+            <% end %>
+            <% if feature_count.zero? %>
+              <%# Prodotto ancora vuoto: al posto degli zeri un invito ad agire (Scenario 2). %>
+              <%= render(Ui::TableComponent::CellComponent.new(colspan: 3)) { render "member/product/matrices/empty_row", group: group, category_count: category_count, can_manage: can_manage } %>
+            <% else %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("member.product.matrices.counts.platforms"))) { render "member/product/matrices/coverage", group: group, rows: @coverage[group.id] } %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("member.product.matrices.counts.categories"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { category_count.to_s } %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("member.product.matrices.counts.features"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { feature_count.to_s } %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "product-matrices-pagination")) %>
+    </div>
+  <% end %>
+</div>

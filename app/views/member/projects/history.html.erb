@@ -1,0 +1,21 @@
+<% content_for :title, t("member.projects.history.title", project: @project.name) %>
+
+<%# CYRA-827 — la cronologia a pagina intera. Nasce come VIA DI RECUPERO del riquadro della
+    panoramica (rete caduta, sessione scaduta: il riquadro rimanda qui invece di restare muto) ed è
+    anche l'indirizzo condivisibile di una pagina qualsiasi dello storico. Il frammento è lo stesso
+    che il riquadro riceve, quindi le due strade non possono divergere. %>
+<div class="p-7 space-y-6" data-test="member-project-history">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.projects.history.title", project: @project.name),
+        back_href: member_project_path(@project), back_label: t("member.projects.history.back"),
+        test_id: "project-history", counts_test_id: "project-history-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.projects.history.count"),
+                                            value: @history.total, test_id: "project-history-count") %>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <%= render "member/projects/history_frame" %>
+  </div>
+</div>

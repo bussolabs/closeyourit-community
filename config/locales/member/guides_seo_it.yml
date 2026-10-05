@@ -1,0 +1,25 @@
+it:
+  member:
+    guides:
+      index:
+        seo:
+          title: SEO
+      seo:
+        title: SEO
+        subtitle: Come funziona il controllo dei siti e cosa farne di quello che trova.
+        what_title: Che cos'è
+        what_intro: Il sistema visita i siti che gli dichiari, come farebbe un motore di ricerca, e ti dice cosa sta impedendo alle tue pagine di essere trovate. Non è un punteggio, è un elenco di cose concrete.
+        what_pages: "Le pagine: cosa ha risposto ognuna, che titolo ha, se ha un titolo principale, quanto testo contiene."
+        what_findings: "I rilievi: ogni problema con la sua prova — quale pagina, cosa c'era, cosa ci doveva essere."
+        what_tickets: "I ticket: da un rilievo apri un ticket già compilato, senza rifare l'analisi a mano."
+        setup_title: Come si mette in funzione
+        step_site_title: Dichiara un sito
+        step_site_body: Serve l'indirizzo pubblico del sito, il progetto a cui appartiene e ogni quanto controllarlo. Il primo controllo parte subito.
+        step_wait_title: Aspetta il primo giro
+        step_wait_body: Il sistema parte dalla home e dalla mappa del sito, segue i collegamenti interni e si ferma al numero di pagine che hai indicato.
+        step_triage_title: Decidi cosa farne
+        step_triage_body: Ogni rilievo si può ignorare (se ci vuoi convivere) o trasformare in un ticket. Quando il problema sparisce dal sito, il rilievo si chiude da solo.
+        manners_title: Come si comporta con i siti
+        manners_body: "Rispetta sempre il file robots.txt, resta sull'indirizzo che gli hai dato senza uscire, si presenta con il nome CloseYourItBot e lascia mezzo secondo fra una pagina e l'altra. Il tetto di pagine lo decidi tu."
+        limits_body: "Legge le pagine come arrivano dal server, prima che il browser esegua il codice: è quello che un motore di ricerca vede al primo colpo. Non usa Google Search Console e non giudica se il testo è scritto bene — quelle sono altre due cose, e verranno."
+        open_cockpit: Vai al controllo SEO

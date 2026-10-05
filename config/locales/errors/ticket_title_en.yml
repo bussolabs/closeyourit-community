@@ -1,0 +1,25 @@
+---
+en:
+  errors:
+    promoted:
+      description: |
+        The error reported by monitoring is:
+
+        ```
+        %{message}
+        ```
+
+        Where it happened: %{location}
+      unknown_location: not determined
+    ticket_title:
+      with_location: "%{subject} · %{location}"
+      fallback: "Error: %{type}"
+      unknown: unknown
+      families:
+        database_down: The database is not responding
+        timeout: A request went over the time limit
+        not_found: A page or a record was not found
+        invalid_data: A save was rejected by the data checks
+        missing_value: A missing value interrupted the operation
+        forbidden: An operation was denied for lack of permissions
+        unreadable_input: A received value could not be read

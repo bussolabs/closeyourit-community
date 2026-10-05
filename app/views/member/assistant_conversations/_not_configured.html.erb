@@ -1,0 +1,14 @@
+<%# CYRA-916: no AI service connected. The panel says where it comes from instead of a composer
+    that would only answer with an error. %>
+<%= turbo_frame_tag "assistant_panel", class: "flex flex-col h-full min-h-0" do %>
+  <header class="flex items-center gap-2 px-4 py-3 border-b border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 shrink-0">
+    <h2 class="font-display text-[14px] font-semibold tracking-[-0.01em] text-zinc-900 dark:text-zinc-100"><%= t("member.assistant.panel.title") %></h2>
+    <span class="flex-1"></span>
+    <%= render Ui::ButtonComponent.new(label: t("member.assistant.panel.close"), variant: :ghost, size: :sm, icon: "x",
+          icon_only: true, test_id: "assistant-close", data: { action: "ui--assistant#close" }) %>
+  </header>
+  <div class="flex-1 min-h-0 overflow-y-auto px-4 py-6">
+    <%= render Ui::EmptyStateComponent.new(icon: "sparkles", compact: true, test_id: "assistant-not-configured",
+          title: t("member.assistant.panel.not_configured.title"), body: t("ai.not_configured")) %>
+  </div>
+<% end %>

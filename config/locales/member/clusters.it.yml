@@ -1,0 +1,136 @@
+it:
+  member:
+    nav:
+      clusters: Cluster
+    clusters:
+      title: Cluster
+      subtitle: I cluster Kubernetes osservati da CloseYourIt, in sola lettura.
+      new: Aggiungi cluster
+      search: Cerca un cluster
+      stat_total: cluster
+      stat_down: muti
+      stat_attention: da guardare
+      col_cluster: Cluster
+      col_status: Stato
+      col_nodes: Macchine pronte
+      col_apps: App funzionanti
+      col_last_snapshot: Ultimo invio
+      never: mai
+      kind_line: "k8s %{version} · %{provider}"
+      kind_line_pending: In attesa del primo invio
+      empty: Nessun cluster ancora
+      empty_body: Aggiungi un cluster Kubernetes e installa l'osservatore con un comando. Guarda soltanto, non cambia niente.
+      empty_example: "Esempio: «produzione-eu», 6 macchine, 25 app"
+      status:
+        ok: Tutto in ordine
+        attention:
+          one: Una cosa da guardare
+          other: "%{count} cose da guardare"
+        down: "Muto da %{time}"
+        pending: In attesa del primo invio
+        paused: Avvisi sospesi
+      form:
+        title: Aggiungi cluster
+        name: Nome del cluster
+        name_hint: "Come lo chiami tu, es. produzione-eu."
+        color: Colore
+        cancel: Annulla
+        create: Crea e mostra il codice
+      reveal:
+        title: Codice di accesso del cluster
+        once: Lo vedi solo adesso. Vale solo per questo cluster.
+        copy: Copia
+        copied: Copiato
+        install: Installa nel cluster
+        waiting: In attesa del primo invio… la pagina si aggiorna da sola.
+      tabs:
+        overview: Panoramica
+        nodes: Macchine
+        workloads: App
+        problems: Cosa non va
+      counts:
+        namespaces: cartelle
+        last_snapshot: "Ultimo invio"
+      actions:
+        pause: Sospendi gli avvisi
+        resume: Riattiva gli avvisi
+        rotate: Nuovo codice di accesso
+        delete: Elimina
+        more: Altre azioni
+      rotate_dialog:
+        title: "Dare al cluster %{name} un nuovo codice?"
+        body: "Il codice attuale smette subito di funzionare: l'osservatore installato va aggiornato con quello nuovo, che vedrai una volta sola."
+      delete_dialog:
+        title: "Eliminare il cluster %{name}?"
+        body: "Sparisce con macchine, app ed eventi raccolti. L'osservatore installato riceverà un rifiuto e smetterà di inviare."
+      deleted: "Cluster %{name} eliminato."
+      updated: Cluster aggiornato.
+      problems:
+        col_severity: Gravità
+        col_problem: Problema
+        col_namespace: Cartella
+        col_reason: Motivo
+        col_since: Da
+        severity:
+          danger: Critico
+          warning: Attenzione
+        title: Cosa non va adesso
+        none: Tutto in ordine
+        none_hint: Macchine pronte e app con tutte le copie attive.
+        cluster_down: "Il cluster non manda dati dal %{time}"
+        node_not_ready: "Macchina %{name} non pronta"
+        node_pressure: "Macchina %{name} sotto sforzo"
+        workload_crashloop: "%{name} riparte di continuo"
+        workload_degraded: "%{name} funziona a metà"
+        open_nodes: Apri le macchine
+        open_workloads: Apri le app
+      tiles:
+        nodes: Macchine pronte
+        apps: App funzionanti
+        restarts: Ripartenze 24 h
+        usage: CPU / memoria
+        usage_caption: media delle macchine
+        no_metrics: metrics-server assente
+      namespaces:
+        title: Cartelle e progetti
+        hint: Gli avvisi delle app di una cartella collegata arrivano a chi segue quel progetto.
+        col_namespace: Cartella
+        col_project: Progetto · ambiente
+        unlinked: Non collegata
+        link: Collega a un progetto
+        change: Cambia
+        dialog_title: "Collega la cartella %{name}"
+        project: Progetto
+        environment: Ambiente (facoltativo)
+        none_project: Nessun progetto
+        save: Salva
+        cancel: Annulla
+        linked: Cartella collegata.
+        unlinked_notice: Cartella scollegata.
+        empty: Nessuna cartella ancora.
+      nodes:
+        search: Cerca una macchina
+        col_node: Macchina
+        col_status: Stato
+        col_cpu: CPU
+        col_memory: Memoria
+        col_pods: App in esecuzione
+        col_age: Età
+        ready: Pronta
+        not_ready: "Non pronta da %{time}"
+        pressure: Sotto sforzo
+        removing: In rimozione dal provider
+        empty: Nessuna macchina ancora.
+      workloads:
+        search: Cerca un'app
+        filter_namespace: Cartella
+        col_workload: App · versione
+        col_namespace: Cartella · progetto
+        col_status: Stato
+        col_copies: Copie attive
+        col_restarts: Ripartenze 24 h
+        running: In funzione
+        degraded: "A metà da %{time}"
+        crashloop: Riparte di continuo
+        waiting: "In attesa: %{reason}"
+        empty: Nessuna app ancora.

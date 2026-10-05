@@ -1,0 +1,15 @@
+<%# The header's New list opens this dialog: name and colour, then back to the index with the cursor in
+    the new list's add field. Without JS the button still reaches the new page. F24: standard modal shell. %>
+<%= render Ui::ModalComponent.new(title: t("member.todo_lists.new"), size: :sm, padded: false, test_id: "todo-list-new-dialog",
+      form: { url: member_todo_lists_path(from: "index"), method: :post },
+      data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+  <% modal.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: t("member.todo_lists.form.cancel"), variant: :secondary_muted, size: :sm, data: { action: "ui--dialog#close" }) %>
+    <%= render Ui::ButtonComponent.new(label: t("member.todo_lists.form.create"), type: "submit", icon: "check", size: :sm, test_id: "todo-list-dialog-submit") %>
+  <% end %>
+  <div class="space-y-5 p-4">
+    <%= render Ui::InputComponent.new(name: "name", label: t("member.todo_lists.form.name"), required: true,
+          placeholder: t("member.todo_lists.form.name_placeholder"), test_id: "todo-list-dialog-name") %>
+    <%= render "member/todo_lists/color_swatches", list: Todos::List.new %>
+  </div>
+<% end %>

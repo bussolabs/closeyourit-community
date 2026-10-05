@@ -1,0 +1,30 @@
+<%# A native <details> opens without JavaScript; ui--dismissable adds Esc and click-outside. %>
+<details class="relative" data-controller="ui--dismissable ui--range-filter" data-ui--range-filter-custom-value="<%= @custom %>" data-test="<%= @test_id %>-menu">
+  <summary data-test="<%= @test_id %>-trigger"
+           class="list-none [&::-webkit-details-marker]:hidden cursor-pointer h-[34px] pl-3 pr-2.5 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 hover:bg-stone-50 dark:hover:bg-zinc-800 inline-flex items-center gap-2 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+    <span><span class="text-gray-500 dark:text-zinc-400"><%= @label %>:</span> <%= summary %></span>
+    <%= render Ui::IconComponent.new(name: "chevron-down", class: "text-[10px] text-gray-400 dark:text-zinc-500") %>
+  </summary>
+  <div class="absolute left-0 top-[38px] z-20 w-60 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-1.5">
+    <%= hidden_field_tag @name, @selected, id: nil, data: { test: @test_id, filter_bar_value: "", "ui--range-filter-target": "value" } %>
+    <% presets.each do |label, value| %>
+      <% chosen = selected?(value) %>
+      <button type="button" data-value="<%= value %>" aria-pressed="<%= chosen %>" data-action="ui--range-filter#choose"
+              class="w-full text-left flex items-center gap-2 px-3 h-8 text-[12.5px] text-zinc-700 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800 aria-pressed:text-indigo-600 dark:aria-pressed:text-indigo-400">
+        <span class="truncate"><%= label %></span>
+        <%= render Ui::IconComponent.new(name: "check", class: "ml-auto text-[11px] text-indigo-600 dark:text-indigo-400", hidden: !chosen) %>
+      </button>
+    <% end %>
+    <div class="mt-1.5 flex flex-col gap-2 border-t border-stone-100 dark:border-zinc-800 px-3 pt-2.5 pb-1.5">
+      <% bounds.each do |bound, time| %>
+        <label class="flex flex-col gap-1 text-[11px] text-gray-500 dark:text-zinc-400">
+          <%= t("shared.time_range.#{bound}") %>
+          <input type="datetime-local" name="<%= bound %>" value="<%= input_value(time) %>"
+                 data-test="<%= @bounds_test_prefix %>-<%= bound %>" data-ui--range-filter-target="bound" class="<%= FIELD %>">
+        </label>
+      <% end %>
+      <%= render Ui::ButtonComponent.new(label: t("shared.time_range.apply"), size: :sm, test_id: "#{@bounds_test_prefix}-apply",
+            data: { action: "ui--range-filter#apply" }) %>
+    </div>
+  </div>
+</details>

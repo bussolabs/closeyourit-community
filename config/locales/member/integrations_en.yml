@@ -1,0 +1,33 @@
+# CYRA-545 — the page where an organization connects its own external services. Service names, what
+# they do and where to get the key live in config/locales/integrations/*.yml (they belong to the
+# domain, not to this page); only what this screen says lives here.
+en:
+  member:
+    integrations:
+      title: Integrations
+      help_title: "The external services connected with your organization's keys."
+      services_label: Services
+      connected_label: Connected
+      broken_label: Need a look
+      status_connected: Connected
+      status_missing: Not connected
+      status_broken: Needs a look
+      status_unverified: Not tested yet
+      features_title: What it turns on
+      verified_ago: "Key tested %{ago} ago: it worked."
+      never_verified: "The key is there but has not been tested yet: the daily check tests it by tomorrow."
+      console_link: Open the provider console
+      key_label: Key
+      key_placeholder_missing: Paste the key here
+      key_placeholder_connected: Leave empty to keep the current key
+      key_hint: "The key is never shown again: it can only be replaced."
+      connect: Connect
+      replace: Replace the key
+      disconnect: Disconnect
+      disconnect_confirm: "Disconnect %{service}? These stop working: %{features}."
+      open_github: Set up GitHub
+      connected_notice: "%{service} is connected: the key was tested and it works."
+      disconnected_notice: "%{service} is no longer connected."
+      unchanged_notice: "Nothing to change: the %{service} key is still the one you had."
+      missing_key: "Paste the %{service} key: without it there is nothing to connect."
+      unknown_service: This service does not exist.

@@ -1,0 +1,30 @@
+<%# locals: (found:, query:, type:) %>
+<%# CYRA-900 — one filter per kind with results; a filter reloads only this frame (_self). %>
+<nav class="flex flex-wrap gap-1.5 border-b border-stone-200 dark:border-zinc-800 px-3 py-2" aria-label="<%= t("member.search.filters") %>"
+     data-test="global-search-filters">
+  <% ([ nil ] + found.kinds).each do |kind| %>
+    <% active = kind.to_s == type.to_s || (kind.nil? && found.kinds.map(&:to_s).exclude?(type.to_s)) %>
+    <%= link_to (kind ? t("member.search.groups.#{kind}") : t("member.search.all")),
+          member_search_path(q: query, type: kind),
+          class: "rounded-full border px-2.5 py-0.5 text-[11.5px] font-medium #{active ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : 'border-stone-200 dark:border-zinc-800 text-gray-500 dark:text-zinc-400 hover:border-stone-300 dark:hover:border-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100'}",
+          aria: { current: (active ? "true" : nil) },
+          data: { turbo_frame: "_self", type: kind.to_s, test: "global-search-filter-#{kind || 'all'}",
+                  action: "click->ui--global-search#pickType" } %>
+  <% end %>
+</nav>
+<div class="divide-y divide-stone-200 dark:divide-zinc-800 py-1" data-test="global-search-groups">
+  <% found.groups.each do |group| %>
+    <section class="py-2" data-test="global-search-group-<%= group.key %>">
+      <h2 class="px-3 pb-1 font-mono uppercase text-[9.5px] tracking-[1px] text-gray-400 dark:text-zinc-500"><%= t("member.search.groups.#{group.key}") %></h2>
+      <% group.records.each do |record| %>
+        <%= render "hit", hit: search_hit(group.key, record), query: query %>
+      <% end %>
+      <% see_all = search_see_all_path(group.key, query) if group.total > group.records.size %>
+      <% if see_all %>
+        <%= link_to t("member.search.see_all", count: group.total), see_all,
+              class: "block px-3 pt-1 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline",
+              data: { turbo_frame: "_top", test: "global-search-see-all-#{group.key}" } %>
+      <% end %>
+    </section>
+  <% end %>
+</div>

@@ -1,0 +1,74 @@
+<% content_for :title, t("member.vault_audit.title") %>
+
+<div class="p-7 space-y-6" data-test="member-vault-audit">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.vault_audit.title"),
+        subtitle: t("member.vault_audit.help_title"),
+        breadcrumb: [ { label: t("member.vault.title"), href: member_vault_path }, { label: t("member.vault_audit.title") } ],
+        counts_test_id: "vault-audit-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.vault_audit.stat_events"), value: @pagination.total, test_id: "vault-audit-stat-total") %>
+    <% end %>
+  <% end %>
+
+  <% filtering = params[:event_action].present? || params[:environment_id].present? || params[:actor_id].present? || params[:q].present? || params[:from].present? || params[:to].present? %>
+  <% if @events.empty? && !filtering %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.vault_audit.empty"), body: t("member.vault_audit.empty_body"), icon: "history", framed: true, test_id: "vault-audit-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="vault-audit-table">
+      <%= render(Ui::TableToolbarComponent.new(
+            url: member_vault_audit_path, query: params[:q], framed: true,
+            search_placeholder: t("member.vault_audit.search_placeholder"),
+            search_test_id: "vault-audit-search", apply_test_id: "vault-audit-filter",
+            test_id: "vault-audit-toolbar")) do |toolbar| %>
+        <% toolbar.with_filter(key: "event_action", label: t("member.vault_audit.filter_action")) do %>
+          <div class="w-40"><%= render Ui::SelectComponent.new(name: "event_action", summary: true,
+            options: Secrets::AuditQuery::ACTIONS.map { |a| [ secret_action_label(a), a ] },
+            selected: params[:event_action], placeholder: t("member.vault_audit.filter_action"), test_id: "filter-action") %></div>
+        <% end %>
+        <% toolbar.with_views do %>
+          <%= render Ui::SavedViewsComponent.new(resource_type: "secret_events", views: @saved_views,
+                index_helper: :member_vault_audit_path, current_filters: params) %>
+        <% end %>
+      <% end %>
+      <div>
+
+        <% if @events.empty? %>
+          <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_vault_audit_path,
+                icon: "history", test_id: "vault-audit-no-match", reset_test_id: "vault-audit-reset-filters") %>
+        <% else %>
+          <%= render(Ui::TableComponent.new(stacked: true, label: t("member.vault_audit.title"))) do |t| %>
+            <% t.with_head do %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_audit.col_when"), sort: "occurred_at", initial: :desc, classes: "w-40") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_audit.col_scope"), classes: "w-28") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_audit.col_action"), classes: "w-28") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_audit.col_name")) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_audit.col_actor"), classes: "w-48") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_audit.col_project"), classes: "w-32") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_audit.col_environment"), classes: "w-28") %>
+            <% end %>
+            <% @events.each do |row| %>
+              <%= render Ui::TableComponent::RowComponent.new(test_id: "vault-audit-row") do %>
+                <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-[12.5px] text-gray-500 dark:text-zinc-400 whitespace-nowrap")) { l(row.occurred_at, format: :long) } %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.vault_audit.col_scope"), class: "text-[12.5px] text-gray-600 dark:text-zinc-400")) { t("member.vault_audit.sources.#{row.source}") } %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.vault_audit.col_action"), class: "text-[12.5px] text-zinc-900 dark:text-zinc-100")) { secret_action_label(row.action) } %>
+                <%= render Ui::TableComponent::CellComponent.new(label: t("member.vault_audit.col_name")) do %>
+                  <span class="font-mono text-zinc-900 dark:text-zinc-100"><%= secret_audit_name(row) %></span>
+                  <%# F173 — C14: one grey line of what the event carries: where from, which version. %>
+                  <% if (detail = secret_audit_detail(row)) %>
+                    <span class="block mt-0.5 text-[11px] text-gray-500 dark:text-zinc-400" data-test="vault-audit-detail"><%= detail %></span>
+                  <% end %>
+                <% end %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.vault_audit.col_actor"), class: "text-[12.5px] text-gray-600 dark:text-zinc-400")) { row.actor&.email || t("member.vault_audit.system") } %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.vault_audit.col_project"), class: "text-[12.5px] text-gray-500 dark:text-zinc-400")) { @projects[row.project_id]&.name || "—" } %>
+                <%# A read in production is not a read in staging: the row says where it happened. %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.vault_audit.col_environment"), class: "text-[12.5px] text-gray-500 dark:text-zinc-400", test_id: "vault-audit-environment")) { @environments[row.environment_id]&.label || "—" } %>
+              <% end %>
+            <% end %>
+          <% end %>
+          <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "vault-audit-pagination")) %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

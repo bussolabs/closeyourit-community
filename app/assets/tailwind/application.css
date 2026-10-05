@@ -1,0 +1,364 @@
+@import "tailwindcss";
+/* Typography plugin (bundled nel binario tailwindcss-rails v4): classi `prose` per il
+   rendering markdown delle pagine Knowledge. Config, non CSS custom (rules/styling.md). */
+@plugin "@tailwindcss/typography";
+
+/* DESIGN.md A32 — dark is opt-in: a `dark` class on <html>, never the system setting, because only the
+   rewritten components have a dark look yet. Today only the Lookbook theme switch sets it. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* CloseYourIt — Design System v1.0 (engineering-paper).
+   Fonte di verità: ../closeyourit-design-system/design.md
+   Solo palette Tailwind nativa. Font per ruolo: display/sans/mono. */
+@theme {
+  --font-sans: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
+  --font-display: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, sans-serif;
+  --font-size-xs: 0.6875rem;   --font-size-xs--line-height: 1rem;
+  --font-size-sm: 0.75rem;     --font-size-sm--line-height: 1.125rem;
+  --font-size-base: 0.875rem;  --font-size-base--line-height: 1.375rem;
+  --font-size-lg: 1rem;        --font-size-lg--line-height: 1.5rem;
+  --font-size-xl: 1.125rem;    --font-size-xl--line-height: 1.75rem;
+  --font-size-2xl: 1.25rem;    --font-size-2xl--line-height: 1.75rem;
+  --font-size-3xl: 1.5rem;     --font-size-3xl--line-height: 2rem;
+}
+
+/* CYRA-457 — Blocchi "non misurati" negli istogrammi di sistema: tratteggio diagonale tenue al posto
+   di una barra piena, così l'assenza di campioni non si legge come un valore ≈ 0. Palette stone nativa. */
+@utility bg-hatch {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--color-stone-200) 0,
+    var(--color-stone-200) 1px,
+    transparent 1px,
+    transparent 5px
+  );
+}
+
+/* Self-hosted Atkinson Hyperlegible (no fonts.googleapis.com / fonts.gstatic.com): Next for text and
+   titles, Mono for codes, numbers and labels. Chosen for legibility: letters never get confused.
+   Files in app/assets/fonts/, url() resolved by Propshaft. Only the weights the interface uses. CYRA-238 */
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("/atkinson-hyperlegible-next-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("/atkinson-hyperlegible-next-latin-500-normal.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("/atkinson-hyperlegible-next-latin-600-normal.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("/atkinson-hyperlegible-next-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Mono";
+  src: url("/atkinson-hyperlegible-mono-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Mono";
+  src: url("/atkinson-hyperlegible-mono-latin-500-normal.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Mono";
+  src: url("/atkinson-hyperlegible-mono-latin-600-normal.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+/* Utility opt-in per nascondere la scrollbar su un singolo container. Firefox + WebKit/Chromium.
+   Resta per i container che la referenziano esplicitamente; il comportamento è ora anche globale (sotto). */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* CYRA-4 — Scrollbar nascoste in TUTTA l'interfaccia mantenendo lo scroll (rotella/touch/tastiera).
+   Regola globale invece di applicare l'utility a decine di container. Vale in light e dark
+   (nasconde solo il chrome della scrollbar, non tocca overflow). Firefox: scrollbar-width; WebKit/Chromium: pseudo-elemento. */
+@layer base {
+  * {
+    scrollbar-width: none;
+  }
+
+  *::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Every dialog blurs the page behind it: one rule here, so no dialog has to remember the utility. */
+@layer base {
+  dialog::backdrop {
+    backdrop-filter: blur(4px);
+  }
+}
+
+/* CYRA-351 — Segno di scorrimento orizzontale. Le scrollbar sono nascoste in tutta l'interfaccia
+   (CYRA-4), quindi una tabella tagliata a metà si legge come una tabella con meno colonne: nessuno
+   va a cercare quello che non vede. Le classi le accende `ui--scroll-hint` SOLO quando c'è davvero
+   altro da vedere, così l'ombra non diventa decorazione permanente. Inset: non aggiunge nodi al DOM
+   e resta ancorata al bordo del contenitore mentre il contenuto scorre. */
+.ui-scroll-right {
+  box-shadow: inset -14px 0 12px -12px rgb(0 0 0 / 0.22);
+}
+
+.ui-scroll-left {
+  box-shadow: inset 14px 0 12px -12px rgb(0 0 0 / 0.22);
+}
+
+.ui-scroll-left.ui-scroll-right {
+  box-shadow: inset 14px 0 12px -12px rgb(0 0 0 / 0.22), inset -14px 0 12px -12px rgb(0 0 0 / 0.22);
+}
+
+/* CYRA-431 — Sui blocchi di codice il fondo è scuro (tema di evidenziazione): un'ombra nera lì sopra
+   non si vede, e il segnale non segnalerebbe niente. Stessa forma, colore invertito. */
+pre.ui-scroll-right {
+  box-shadow: inset -14px 0 12px -12px rgb(255 255 255 / 0.38);
+}
+
+pre.ui-scroll-left {
+  box-shadow: inset 14px 0 12px -12px rgb(255 255 255 / 0.38);
+}
+
+pre.ui-scroll-left.ui-scroll-right {
+  box-shadow: inset 14px 0 12px -12px rgb(255 255 255 / 0.38), inset -14px 0 12px -12px rgb(255 255 255 / 0.38);
+}
+
+/* CYRA-924 — The table pieces (DESIGN.md C48–C81). Plain CSS because they style descendants and
+   pseudo-elements: one density for every cell (C53), sticky columns that keep the row's colour
+   (C59, C75), faded rows (C79) and, below 768px, the same row
+   restyled as a card (C26, C73) so a Turbo Stream replaces one element, never two copies. */
+/* A32 — the table colours as tokens, so the dark look redefines them once (zinc-900 panel). All
+   opaque: sticky header cells and columns paint over the rows that scroll under them. */
+.ui-table {
+  --ui-table-surface: #fff;
+  --ui-table-soft: #fafaf9;
+  /* Hover is an indigo tint (indigo-50 at 60% on white), lighter than the selected row: the same
+     tint as a hovered card (D21), and never the neutral grey of the header or of a total row. */
+  --ui-table-hover: #f5f7ff;
+  --ui-table-selected: #eef2ff;
+  --ui-table-line: #e7e5e4;
+  --ui-table-hairline: #f5f5f4;
+  --ui-table-label: #6b7280;
+}
+
+.dark .ui-table {
+  --ui-table-surface: #18181b;
+  --ui-table-soft: #27272a;
+  /* indigo-500 at 10% on zinc-900: a step below the selected row (15%). */
+  --ui-table-hover: #202030;
+  --ui-table-selected: #23243b;
+  --ui-table-line: #27272a;
+  --ui-table-hairline: #27272a;
+  --ui-table-label: #a1a1aa;
+}
+
+/* C52 — a hairline parts the header from the rows; a shadow, not a border, so it stays on a sticky head. */
+.ui-table > thead > tr > th {
+  box-shadow: inset 0 -1px 0 var(--ui-table-line);
+}
+
+.ui-table-cell {
+  padding: 8px 16px;
+  font-size: 12.5px;
+  line-height: 18px;
+}
+
+.ui-table-cell--title {
+  text-align: left;
+  font-weight: inherit;
+}
+
+.ui-table--compact .ui-table-cell {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+/* In the components layer so a row's own utility (a `bg-*`, a `[--ui-row-bg:…]`) still wins. */
+@layer components {
+  .ui-table-row {
+    --ui-row-bg: var(--ui-table-surface);
+    background: var(--ui-row-bg);
+  }
+
+  .ui-table-row:hover {
+    --ui-row-bg: var(--ui-table-hover);
+  }
+
+  .ui-table-row[aria-current="true"],
+  .ui-table-row[aria-selected="true"] {
+    --ui-row-bg: var(--ui-table-selected);
+  }
+
+  .ui-table-row--link {
+    cursor: pointer;
+  }
+
+  .ui-table-row--faded {
+    opacity: 0.55;
+  }
+}
+
+.ui-table-chevron {
+  width: 32px;
+  padding: 0 12px 0 0;
+  text-align: right;
+}
+
+/* C56 — the selection box column; C58 — the detail under a row brings its own padding. */
+.ui-table-select {
+  width: 40px;
+  padding: 8px 0 8px 16px;
+}
+
+.ui-table-detail > td {
+  padding: 0;
+  background: var(--ui-table-soft);
+}
+
+.ui-table-group > td {
+  padding: 9px 16px;
+  background: var(--ui-table-soft);
+}
+
+.ui-table--sticky-first > * > tr > :first-child,
+.ui-table--sticky-last > * > tr > :last-child {
+  position: sticky;
+  z-index: 1;
+  background: var(--ui-row-bg, var(--ui-table-surface));
+}
+
+.ui-table--sticky-first > * > tr > :first-child {
+  left: 0;
+  box-shadow: inset -1px 0 0 var(--ui-table-hairline);
+}
+
+.ui-table--sticky-last > * > tr > :last-child {
+  right: 0;
+  box-shadow: inset 1px 0 0 var(--ui-table-hairline);
+}
+
+.ui-table--sticky-first > thead > tr > :first-child,
+.ui-table--sticky-last > thead > tr > :last-child {
+  z-index: 2;
+  background: var(--ui-table-soft);
+}
+
+.ui-table--sticky-first > thead > tr > :first-child {
+  box-shadow: inset -1px 0 0 var(--ui-table-hairline), inset 0 -1px 0 var(--ui-table-line);
+}
+
+.ui-table--sticky-last > thead > tr > :last-child {
+  box-shadow: inset 1px 0 0 var(--ui-table-hairline), inset 0 -1px 0 var(--ui-table-line);
+}
+
+.ui-table--sticky-first > tbody > :is(.ui-table-state, .ui-table-group) > td,
+.ui-table--sticky-last > tbody > :is(.ui-table-state, .ui-table-group) > td {
+  position: static;
+  box-shadow: none;
+}
+
+@media (max-width: 767.98px) {
+  .ui-table--stacked,
+  .ui-table--stacked > tbody,
+  .ui-table--stacked > tfoot,
+  .ui-table--stacked > tbody > tr:not([hidden]),
+  .ui-table--stacked > tfoot > tr:not([hidden]),
+  .ui-table--stacked > tbody > tr > *,
+  .ui-table--stacked > tfoot > tr > * {
+    display: block;
+  }
+
+  .ui-table--stacked > thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .ui-table--stacked > tbody > tr.ui-table-row {
+    padding: 8px 0;
+  }
+
+  .ui-table--stacked .ui-table-cell:not([hidden]) {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 4px 16px;
+    position: static;
+    box-shadow: none;
+    text-align: left;
+  }
+
+  .ui-table--stacked .ui-table-cell[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 38%;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--ui-table-label);
+  }
+
+  .ui-table--stacked .ui-table-cell--actions {
+    padding-top: 8px;
+  }
+
+  .ui-table--stacked .ui-table-chevron {
+    display: none;
+  }
+}
+
+/* T1 — from md up the member panels touch the frame (layouts/member, `data-panels="flush"`): a rounded
+   corner against the straight frame line leaves a notch. The ui--panel-edges controller marks the sides
+   of each outermost panel that touch the frame (`data-flush`), and only the corners on those sides are
+   square; inner corners stay rounded. Until it has measured, the outermost panels are square from md up.
+   What sits inside a panel (cards, columns), dialogs and floating notices keep their corners. */
+@media (min-width: 768px) {
+  [data-panels="flush"] :is(.rounded-lg, .rounded-xl).border:not(:is(.rounded-lg, .rounded-xl).border *, dialog, .fixed, [data-flush]) {
+    border-radius: 0;
+  }
+}
+/* T1 — from md up panels sit 8px apart, everywhere: any stack, grid or row that lives outside a panel
+   is spacing panels, so its gap shrinks to --panel-gap. Spacing inside a panel, a dialog or a floating
+   notice is content rhythm and stays as written. */
+@media (min-width: 768px) {
+  [data-panels="flush"] { --panel-gap: 0.5rem; }
+  [data-panels="flush"] :is(.space-y-4, .space-y-5, .space-y-6, .space-y-8):not(:is(.rounded-lg, .rounded-xl).border, :is(.rounded-lg, .rounded-xl).border *, dialog *, .fixed *) > :not(:last-child) {
+    margin-block-start: 0;
+    margin-block-end: var(--panel-gap);
+  }
+  [data-panels="flush"] :is(.gap-4, .gap-5, .gap-6, .gap-8, .sm\:gap-4, .sm\:gap-5, .sm\:gap-6, .md\:gap-8, .lg\:gap-4, .gap-x-4, .gap-x-5, .gap-x-6, .gap-y-4, .gap-y-5, .gap-y-6):not(:is(.rounded-lg, .rounded-xl).border, :is(.rounded-lg, .rounded-xl).border *, dialog *, .fixed *) {
+    gap: var(--panel-gap);
+  }
+}
+[data-flush~="top"] { border-top-left-radius: 0; border-top-right-radius: 0; }
+[data-flush~="right"] { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+/* The frame already draws the line at the page end: a panel that reaches it would double it. */
+[data-flush~="bottom"] { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-width: 0; }
+[data-flush~="left"] { border-top-left-radius: 0; border-bottom-left-radius: 0; }

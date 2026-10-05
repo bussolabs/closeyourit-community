@@ -1,0 +1,38 @@
+<%# C79 — an archived idea stays readable and clickable, faded: the open ones stand out. %>
+<%= render Ui::TableComponent::RowComponent.new(href: member_idea_path(idea), link_label: idea.title, faded: idea.status_archived?, test_id: "idea-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <div class="flex items-start gap-2 max-w-[360px]">
+      <div class="min-w-0">
+        <%= link_to idea.title, member_idea_path(idea), class: "text-[13px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 truncate block" %>
+        <p class="text-[11.5px] text-gray-500 dark:text-zinc-400 truncate" data-test="idea-problem-excerpt"><%= idea_problem_excerpt(idea) %></p>
+      </div>
+      <%# An evolution is recognizable in the list, not only once opened. CYRA-845 %>
+      <% if idea.evolution? %>
+        <%= render Ui::BadgeComponent.new(label: t("member.ideas.links.evolution_chip"), color: :indigo, size: :sm, test_id: "idea-evolution-chip") %>
+      <% end %>
+    </div>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.ideas.col_project")) do %>
+    <span class="inline-flex items-center gap-1.5 text-gray-500 dark:text-zinc-400"><span class="w-2 h-2 rounded-[2px] <%= Ui::Colors.swatch(idea.project.color) %>"></span><%= idea.project.name %></span>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.ideas.col_author"), class: "text-gray-500 dark:text-zinc-400")) { idea.author&.name || t("member.ideas.author_gone") } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.ideas.col_votes"), test_id: "idea-votes-cell") do %>
+    <span class="inline-flex items-center gap-1 text-gray-500 dark:text-zinc-400 whitespace-nowrap"><%= render Ui::IconComponent.new(name: "chevron-up", class: "text-[11px]") %><span class="font-mono"><%= idea.votes_count %></span></span>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.ideas.col_comments")) do %>
+    <span class="inline-flex items-center gap-1 text-gray-500 dark:text-zinc-400 whitespace-nowrap"><%= render Ui::IconComponent.new(name: "message-circle", class: "text-[11px]") %><span class="font-mono"><%= idea.comments_count %></span></span>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.ideas.col_status"), test_id: "idea-status-cell") do %>
+    <%= render Ui::BadgeComponent.new(label: t("member.ideas.status.#{idea.status}"), color: idea_status_color(idea.status), dot: true) %>
+  <% end %>
+  <%# The ticket backlink is nullify: a deleted ticket leaves a dash, not a broken row. %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.ideas.col_ticket"), test_id: "idea-ticket-cell") do %>
+    <% if idea.ticket %>
+      <%= link_to idea.ticket.code, member_ticket_path(idea.ticket), class: "font-mono text-[12px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "idea-ticket-link" } %>
+    <% else %>
+      <span class="text-gray-300 dark:text-zinc-600">—</span>
+    <% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.ideas.col_last_activity"), align: :right, mono: true,
+        class: "text-gray-500 dark:text-zinc-400", test_id: "idea-last-activity-cell", title: l(idea.updated_at, format: :long))) { l(idea.updated_at.to_date, format: :day_month) } %>
+<% end %>

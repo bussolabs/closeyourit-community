@@ -1,0 +1,33 @@
+<%= tag.div(class: "group flex w-68 shrink-0 flex-col rounded-lg border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 transition-[width] duration-150 data-[collapsed=true]:w-12",
+      data: column_data) do %>
+  <div class="flex items-start justify-between border-b border-stone-200 dark:border-zinc-800 px-3 py-1.5 group-data-[collapsed=true]:hidden">
+    <div class="min-w-0">
+      <div class="flex items-center gap-2">
+        <span class="h-2 w-2 shrink-0 rounded-full <%= swatch %>"></span>
+        <span class="truncate text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= label %></span>
+        <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400">
+          <%= tag.span(shown_count, id: count_id, data: { test: test_id("count") }) %><% if search_on? %>
+          <span class="text-gray-400 dark:text-zinc-500">/ <span data-board-total><%= @total %></span></span><% end %>
+        </span>
+      </div>
+      <%= note %>
+    </div>
+    <%= tag.button(type: "button", class: "-mr-1 shrink-0 rounded p-1 text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-400",
+          data: { action: toggle_action, test: test_id("collapse") }, aria: { label: t("ui.kanban.collapse", column: label) }) do %>
+      <%= render Ui::IconComponent.new(name: "chevron-left", class: "text-[11px]") %>
+    <% end %>
+  </div>
+  <%= tag.button(type: "button", class: "hidden flex-1 flex-col items-center gap-2.5 py-3 text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-300 group-data-[collapsed=true]:flex",
+        data: { action: toggle_action, test: test_id("expand") }, aria: { label: t("ui.kanban.expand", column: label) }) do %>
+    <%= render Ui::IconComponent.new(name: "chevron-right", class: "text-[11px]") %>
+    <span class="h-2 w-2 rounded-full <%= swatch %>"></span>
+    <span class="rotate-180 text-[12px] font-semibold text-zinc-700 dark:text-zinc-300 [writing-mode:vertical-rl]"><%= label %></span>
+    <span class="font-mono text-[11px] text-gray-400 dark:text-zinc-500"><span data-board-collapsed-count><%= shown_count %></span><% if search_on? %> / <span data-board-total><%= @total %></span><% end %></span>
+  <% end %>
+  <div class="flex-1 overflow-y-auto p-1.5 group-data-[collapsed=true]:hidden">
+    <%= tag.div(id: list_id, class: "space-y-1.5", role: "list", aria: { label: t("ui.kanban.cards", column: label) },
+          data: { board_list: true }) do %><%= content %><% end %>
+    <%= tag.div(hidden: has_cards, data: { board_empty: true }) do %><%= empty %><% end %>
+    <%= footer %>
+  </div>
+<% end %>

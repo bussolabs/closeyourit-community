@@ -1,0 +1,62 @@
+<%# CYRA-845 — Evoluzioni e idee collegate. Un'evoluzione è un'idea a sé (voti e discussione
+    propri): qui c'è solo l'elenco con il filo. Le evoluzioni si propongono dal pulsante nel
+    titolo; i parenti alla pari si collegano qui, scegliendo fra le idee del progetto. %>
+<%# One Links panel with two sections (evolutions, related ideas): two near-empty boxes read as noise. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="idea-links">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.ideas.links.title") %></h2>
+  </div>
+  <section class="border-b border-stone-200 dark:border-zinc-800" data-test="member-idea-evolutions">
+    <div class="px-4 pt-3">
+      <h3 class="text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <%= t("member.ideas.links.evolutions_title") %><span class="ml-1.5 font-mono text-[12px] text-gray-500 dark:text-zinc-400" data-test="idea-evolutions-count"><%= @evolutions.size %></span>
+      </h3>
+    </div>
+    <div class="divide-y divide-stone-200 dark:divide-zinc-800" data-test="member-idea-evolutions-list">
+      <% if @evolutions.empty? %>
+        <p class="px-4 py-3 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="idea-evolutions-empty"><%= t("member.ideas.links.evolutions_empty") %></p>
+      <% else %>
+        <% @evolutions.each do |evolution| %>
+          <%= render "member/ideas/linked_idea", idea: @idea, other: evolution, can_manage: @can_edit, test_prefix: "member-idea-evolution" %>
+        <% end %>
+      <% end %>
+    </div>
+  </section>
+
+  <section data-test="member-idea-related">
+    <div class="px-4 pt-3">
+      <h3 class="text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <%= t("member.ideas.links.related_title") %><span class="ml-1.5 font-mono text-[12px] text-gray-500 dark:text-zinc-400" data-test="idea-related-count"><%= @related.size %></span>
+      </h3>
+    </div>
+    <div class="divide-y divide-stone-200 dark:divide-zinc-800" data-test="member-idea-related-list">
+      <% if @related.empty? %>
+        <p class="px-4 py-3 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="idea-related-empty"><%= t("member.ideas.links.related_empty") %></p>
+      <% else %>
+        <% @related.each do |related| %>
+          <%= render "member/ideas/linked_idea", idea: @idea, other: related, can_manage: @can_edit, test_prefix: "member-idea-related" %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <% if @can_edit %>
+      <div class="px-4 py-4 border-t border-stone-200 dark:border-zinc-800">
+        <% if @linkable_ideas.empty? %>
+          <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="idea-related-none-linkable"><%= t("member.ideas.links.none_linkable") %></p>
+        <% else %>
+          <%= form_with url: member_idea_links_path(@idea), method: :post, class: "space-y-2", data: { test: "member-idea-link-form" } do %>
+            <div class="flex items-center gap-2">
+              <div class="flex-1 min-w-0">
+                <%= render Ui::SelectComponent.new(name: "target_id", aria_label: t("member.ideas.links.select_idea"),
+                      options: @linkable_ideas.map { |other| [ other.title, other.id ] }, include_blank: true,
+                      placeholder: t("member.ideas.links.select_idea"), required: true, test_id: "member-idea-link-target") %>
+              </div>
+              <%= render Ui::ButtonComponent.new(label: t("member.ideas.links.link_submit"), type: "submit", icon: "link", test_id: "member-idea-link-submit") %>
+            </div>
+            <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.ideas.links.related_hint") %></p>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+</div>

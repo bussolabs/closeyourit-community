@@ -1,0 +1,93 @@
+<% content_for :title, @site.display_name %>
+
+<%# CYRA-824 — il controllo del sito gira in background e dura minuti: la scheda aperta non ne
+    riceveva l'esito. `turbo_stream_from` porta il SEGNALE (nessun contenuto: sulla stessa pagina
+    «Rilancia» e «Modifica» compaiono solo a chi ha `seo.manage`, quindi l'HTML non può viaggiare
+    qui) e il controllo `live-frame` decide quando ricaricare il riquadro con la sessione di chi
+    guarda: mai a scheda nascosta, una richiesta alla volta, e una riconciliazione quando la scheda
+    torna davanti o la rete ritorna.
+    Il giro a tempo non è un doppione del segnale: «ultimo controllo un minuto fa», «prossimo fra
+    un'ora» e un giro rimasto in corso scadono col TEMPO, e una lavorazione interrotta a metà smette
+    di far partire segnali — senza il giro la scheda la direbbe in corso per sempre. Cinque minuti:
+    i controlli sono orari o giornalieri, e una data relativa non ha bisogno del secondo. %>
+<div class="p-7 space-y-6" data-test="member-seo-site"
+     data-controller="live-frame"
+     data-live-frame-frame-value="<%= Member::Monitoring::SeoSitesController::LIVE_FRAME %>"
+     data-live-frame-url-value="<%= member_monitoring_seo_site_path(@site) %>"
+     data-live-frame-interval-value="300000">
+  <%= turbo_stream_from Realtime::Streams.seo_site(@site) %>
+
+  <%# `target: "_top"` — il riquadro è un pezzo di pagina che si ricarica da sé, non un'area di
+      navigazione: linguette, rilancio e modifica devono portare via l'intera pagina. %>
+  <%= turbo_frame_tag Member::Monitoring::SeoSitesController::LIVE_FRAME, target: "_top", class: "block space-y-6" do %>
+    <%= render "member/monitoring/seo_sites/header", site: @site, active_tab: "summary",
+          open_count: @open_count, critical_count: @critical_count, high_count: @high_count,
+          ignored_count: @ignored_count, pages_count: @site_pages_count %>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div class="lg:col-span-2 space-y-5">
+        <%# I rilievi aperti, i più gravi per primi. È un'anticipazione: l'elenco intero sta nella
+            scheda accanto, e ripeterlo qui farebbe due pagine che dicono la stessa cosa. %>
+        <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="seo-site-issues">
+          <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
+            <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.seo_sites.show.issues") %></h2>
+            <% if @open_count > @issues.size %>
+              <%= link_to t("member.monitoring.seo_sites.show.all_issues", count: @open_count),
+                    issues_member_monitoring_seo_site_path(@site),
+                    class: "text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "seo-site-all-issues" } %>
+            <% end %>
+          </div>
+          <% if @issues.empty? %>
+            <p class="px-5 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="seo-site-issues-empty"><%= t("member.monitoring.seo_sites.show.issues_empty") %></p>
+          <% else %>
+            <ul class="divide-y divide-stone-200 dark:divide-zinc-800">
+              <% @issues.each do |issue| %>
+                <li class="px-5 py-3 flex items-start gap-3 hover:bg-stone-50 dark:hover:bg-zinc-800">
+                  <%= render Ui::BadgeComponent.new(label: t("member.monitoring.seo.severity.#{issue.severity}"), color: seo_severity_color(issue.severity)) %>
+                  <div class="min-w-0 flex-1">
+                    <%= link_to issue.check.label, member_monitoring_seo_path(issue),
+                          class: "text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" %>
+                    <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 break-all"><%= issue.url %></p>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
+        </div>
+
+        <%# Le pagine viste dall'ultimo giro: dicono com'è messo il sito, non cosa non va. %>
+        <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="seo-site-pages">
+          <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
+            <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.seo_sites.show.pages") %></h2>
+            <% if @site_pages_count > @pages.size %>
+              <%= link_to t("member.monitoring.seo_sites.show.all_pages", count: @site_pages_count),
+                    pages_member_monitoring_seo_site_path(@site),
+                    class: "text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "seo-site-all-pages" } %>
+            <% end %>
+          </div>
+          <% if @pages.empty? %>
+            <p class="px-5 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="seo-site-pages-empty"><%= t("member.monitoring.seo_sites.show.pages_empty") %></p>
+          <% else %>
+            <ul class="divide-y divide-stone-200 dark:divide-zinc-800">
+              <% @pages.each do |page| %>
+                <li class="px-5 py-3 flex items-center gap-3">
+                  <%= render Ui::BadgeComponent.new(label: page.status_code.to_s, color: seo_status_color(page.status_code)) %>
+                  <span class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 break-all flex-1 min-w-0"><%= page.display_url %></span>
+                  <span class="font-mono text-[11px] text-gray-400 dark:text-zinc-500 shrink-0"><%= t("member.monitoring.seo_sites.show.words", count: page.word_count.to_i) %></span>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="space-y-5">
+        <%= render "member/monitoring/seo_sites/configuration", site: @site %>
+        <%= render "member/monitoring/seo_sites/audits", audits: @audits %>
+        <% if @visits %>
+          <%= render "member/monitoring/seo_sites/visits", site: @site, visits: @visits %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

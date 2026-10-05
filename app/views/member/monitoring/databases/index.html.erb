@@ -1,0 +1,48 @@
+<% content_for :title, t("member.databases.title") %>
+<%# Inventario database di tutta la flotta. Sola lettura: i dati sono l'ultimo push dell'agent. %>
+<% filtering = params[:q].present? || params[:server].present? %>
+
+<div class="p-7 space-y-6" data-test="member-databases">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.databases.title"),
+        subtitle: t("member.databases.subtitle"),
+        breadcrumb: [ { label: t("member.servers.title"), href: member_monitoring_servers_path },
+                      { label: t("member.databases.title") } ],
+        test_id: "databases-header",
+        counts_test_id: "databases-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.databases.stat_databases"), value: @pagination.total, test_id: "databases-count-databases") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.databases.stat_servers"), value: @hosts.size, test_id: "databases-count-servers") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.databases.stat_size"), value: server_bytes_text(@total_bytes), test_id: "databases-count-size") %>
+      <% if @data_from %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.databases.stat_freshness"), value: server_time_ago(@data_from), test_id: "databases-count-freshness") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if @pagination.total.zero? && !filtering %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.databases.empty"), body: t("member.databases.empty_body"),
+          icon: "database", framed: true, test_id: "databases-empty") %>
+  <% else %>
+    <div>
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+        <%= render(Ui::TableToolbarComponent.new(framed: true,
+              url: member_monitoring_databases_path, query: params[:q],
+              search_placeholder: t("member.databases.search_placeholder"),
+              search_test_id: "databases-search", apply_test_id: "databases-apply",
+              test_id: "databases-toolbar")) do |toolbar| %>
+          <%# multiple come gli altri filtri del toolbar: un select singolo senza stato "nessuna scelta"
+              invierebbe sempre il primo host, e una semplice ricerca testuale filtrerebbe di nascosto
+              su quella macchina. %>
+          <% toolbar.with_filter(key: "server", label: t("member.databases.filter_server")) do %>
+            <div class="w-48"><%= render Ui::SelectComponent.new(name: "server", multiple: true, summary: true,
+                  options: @hosts.map { |host| [ host.name, host.id ] }, selected: params[:server],
+                  placeholder: t("member.databases.filter_server"), test_id: "filter-server") %></div>
+          <% end %>
+        <% end %>
+        <%= render "member/monitoring/databases/table", rows: @rows, pagination: @pagination,
+              show_server: true, no_match: t("member.databases.no_match") %>
+      </div>
+    </div>
+  <% end %>
+</div>

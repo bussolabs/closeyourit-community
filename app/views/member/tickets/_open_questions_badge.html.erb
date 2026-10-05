@@ -1,0 +1,16 @@
+<%# locals: (ticket:, count:, test_id:, link: true) %>
+<%# CYRA-844 — «N domande aperte»: il ticket ha domande senza risposta e non ritirate. `count` arriva
+    già calcolato da chi carica la pagina (una query aggregata, mai una per riga); a zero il partial
+    non rende niente. Sulla riga è un link alla scheda Domande: il segnale dice anche dove
+    rispondere. Sulla card no (`link: false`): la card è già un link, e un link dentro un link non
+    è HTML valido. %>
+<% if count.to_i.positive? %>
+  <% title = t("member.tickets.open_questions.badge_title", count: count) %>
+  <% badge = capture { render Ui::BadgeComponent.new(label: t("member.tickets.open_questions.badge", count: count), color: :amber, icon: "circle-question-mark", size: :sm) } %>
+  <% if link %>
+    <%= link_to badge, member_ticket_path(ticket, tab: "questions"), class: "shrink-0", title: title,
+          data: { turbo_frame: "_top", test: test_id } %>
+  <% else %>
+    <span class="shrink-0" title="<%= title %>" data-test="<%= test_id %>"><%= badge %></span>
+  <% end %>
+<% end %>

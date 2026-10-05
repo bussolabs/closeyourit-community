@@ -1,0 +1,13 @@
+<%# CYRA-933 — every New opens here, over the page; ui--remote-modal builds the frame it fills.
+    A <dialog> does not inherit the page's text color: it sets its own, for both themes. Drafts are
+    keyed by account and organization, so a shared browser never mixes them. %>
+<% draft_scope = [ Current.account&.id, Current.organization&.id ].join(":") %>
+<dialog class="m-auto w-[min(56rem,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-xl border border-stone-200 dark:border-zinc-800 bg-stone-100 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 p-0 backdrop:bg-zinc-900/40 backdrop:backdrop-blur-sm data-[size=wide]:w-[min(72rem,calc(100vw-2rem))] [&_.p-7]:p-4"
+        aria-label="<%= t("shared.modal_label") %>" data-test="member-modal"
+        data-ui--remote-modal-loading-value="<%= t("shared.modal_loading") %>" data-ui--remote-modal-scope-value="<%= draft_scope %>"
+        data-controller="ui--remote-modal" data-action="click->ui--remote-modal#backdrop close->ui--remote-modal#reset"></dialog>
+<%# A New opened from inside that modal (the + next to a select) stacks here, on top. %>
+<dialog class="m-auto w-[min(40rem,calc(100vw-3rem))] max-h-[calc(100dvh-4rem)] overflow-y-auto rounded-xl border border-stone-200 dark:border-zinc-800 bg-stone-100 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 p-0 backdrop:bg-zinc-900/40 backdrop:backdrop-blur-sm [&_.p-7]:p-4"
+        aria-label="<%= t("shared.modal_label") %>" data-test="member-modal-stack"
+        data-ui--remote-modal-loading-value="<%= t("shared.modal_loading") %>" data-ui--remote-modal-scope-value="<%= draft_scope %>" data-ui--remote-modal-stack-value="true"
+        data-controller="ui--remote-modal" data-action="click->ui--remote-modal#backdrop close->ui--remote-modal#reset"></dialog>

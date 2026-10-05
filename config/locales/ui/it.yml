@@ -1,0 +1,48 @@
+---
+it:
+  ui:
+    card_grid:
+      to_set_up: Da configurare
+      show_more: Mostra altri
+      show_more_count:
+        one: "Mostra l'ultimo"
+        other: "Mostra altri %{count}"
+    kanban:
+      collapse: "Riduci la colonna %{column}"
+      expand: "Espandi la colonna %{column}"
+      cards: "Colonna %{column}"
+    confirm_dialog:
+      cancel: Annulla
+    table:
+      open_column: Apri
+    select:
+      selected_count: "%{count} selezionati"
+      search: "Cerca…"
+    # CYRA-563 — un interruttore si salva da sé, un campo aspetta il Salva, e a occhio erano la
+    # stessa cosa. La riga lo dichiara da ferma e conferma appena la modifica è passata; se non
+    # passa il messaggio resta, perché un errore non sparisce da solo.
+    switch:
+      immediate: si applica subito
+      saved: salvato
+      failed: non salvato
+    github_status:
+      connected: GitHub collegato
+      not_connected: GitHub non collegato
+    # CYRA-555 — le parole comuni a tutti gli elenchi filtrati senza corrispondenze: dicono che è la
+    # ricerca a non aver trovato niente, mai che i dati non esistono. La frase che cita quanti
+    # elementi ci sono DAVVERO resta di ogni pagina, che sa come si chiamano le sue righe.
+    no_results:
+      title_query: "Nessun risultato per «%{query}»"
+      title_filtered: Nessun risultato con questi filtri
+      reset_search: Azzera la ricerca
+      reset_filters: Azzera i filtri
+    audit:
+      title: Audit
+      created: Creato
+      updated: Aggiornato
+      view_history: Vedi cronologia attività
+      empty: Ancora nessuna attività.
+      close: Chiudi
+      events_count:
+        one: 1 evento
+        other: "%{count} eventi"

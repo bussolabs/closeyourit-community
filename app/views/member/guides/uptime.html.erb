@@ -1,0 +1,113 @@
+<% content_for :title, t("member.guides.uptime.title") %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-uptime">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "heart-pulse", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.uptime.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.uptime.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.uptime.cta"), href: member_monitoring_monitors_path, variant: :primary, size: :sm, icon: "heart-pulse", test_id: "member-guide-uptime-cta") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.uptime.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.uptime.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.uptime.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "activity", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.uptime.what_checks") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.uptime.what_incidents") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "percent", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.uptime.what_sla") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.uptime.setup_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ol class="space-y-4">
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">1</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.uptime.setup_step1") %></div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">2</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed mb-2"><%= t("member.guides.uptime.setup_step2", space: t("member.nav.group_infrastructure"), page: t("member.nav.uptime")) %></p>
+            <div class="rounded-md border border-stone-200 dark:border-zinc-800 divide-y divide-stone-200 dark:divide-zinc-800 text-[12.5px]">
+              <div class="flex items-center gap-3 px-3 py-2"><span class="w-28 shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.uptime.field_type") %></span><span class="text-gray-600 dark:text-zinc-400"><%= t("member.guides.uptime.field_type_desc") %></span></div>
+              <div class="flex items-center gap-3 px-3 py-2"><span class="w-28 shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.uptime.field_url") %></span><span class="text-gray-600 dark:text-zinc-400"><%= t("member.guides.uptime.field_url_desc") %></span></div>
+              <div class="flex items-center gap-3 px-3 py-2"><span class="w-28 shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.uptime.field_environment") %></span><span class="text-gray-600 dark:text-zinc-400"><%= t("member.guides.uptime.field_environment_desc") %></span></div>
+              <div class="flex items-center gap-3 px-3 py-2"><span class="w-28 shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.uptime.field_method") %></span><span class="text-gray-600 dark:text-zinc-400"><%= t("member.guides.uptime.field_method_desc") %></span></div>
+              <div class="flex items-center gap-3 px-3 py-2"><span class="w-28 shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.uptime.field_status") %></span><span class="text-gray-600 dark:text-zinc-400"><%= t("member.guides.uptime.field_status_desc") %></span></div>
+              <div class="flex items-center gap-3 px-3 py-2"><span class="w-28 shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.uptime.field_interval") %></span><span class="text-gray-600 dark:text-zinc-400"><%= t("member.guides.uptime.field_interval_desc") %></span></div>
+              <div class="flex items-center gap-3 px-3 py-2"><span class="w-28 shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.uptime.field_timeout") %></span><span class="text-gray-600 dark:text-zinc-400"><%= t("member.guides.uptime.field_timeout_desc") %></span></div>
+              <div class="flex items-center gap-3 px-3 py-2"><span class="w-28 shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.uptime.field_latency") %></span><span class="text-gray-600 dark:text-zinc-400"><%= t("member.guides.uptime.field_latency_desc") %></span></div>
+            </div>
+            <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.uptime.name_note") %></p>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">3</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.uptime.setup_step3") %></div>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-uptime-embed">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.uptime.embed_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ol class="space-y-4">
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">1</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.uptime.embed_step1") %></div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">2</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed mb-2"><%= t("member.guides.uptime.embed_step2") %></p>
+            <div class="rounded-md border border-stone-200 dark:border-zinc-800 divide-y divide-stone-200 dark:divide-zinc-800 text-[12.5px]">
+              <div class="flex items-start gap-3 px-3 py-2"><span class="w-28 shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.uptime.embed_badge") %></span><span class="text-gray-600 dark:text-zinc-400"><%= t("member.guides.uptime.embed_badge_desc") %></span></div>
+              <div class="flex items-start gap-3 px-3 py-2"><span class="w-28 shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.uptime.embed_page") %></span><span class="text-gray-600 dark:text-zinc-400"><%= t("member.guides.uptime.embed_page_desc") %></span></div>
+            </div>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">3</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.uptime.embed_step3") %></div>
+        </li>
+      </ol>
+      <p class="mt-4 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.uptime.embed_note") %></p>
+    </div>
+  </div>
+
+  <%# CYRA-476: un monitor registra i guasti ma non avvisa nessuno da solo — l'ultimo passo è la regola di avviso. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-uptime-alerts">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.uptime.alert_title") %></h2></div>
+    <div class="px-4 py-4">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed mb-3"><%= t("member.guides.uptime.alert_intro") %></p>
+      <ol class="space-y-4">
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">1</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.uptime.alert_step1", page: t("member.nav.alert_rules")) %></div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">2</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.uptime.alert_step2") %></div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">3</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.uptime.alert_step3") %></div>
+        </li>
+      </ol>
+      <div class="mt-4">
+        <%= render Ui::ButtonComponent.new(label: t("member.guides.uptime.alert_cta"), href: member_alerting_rules_path, variant: :secondary_muted, size: :sm, icon: "bell", test_id: "member-guide-uptime-alerts-cta") %>
+      </div>
+    </div>
+  </div>
+</div>

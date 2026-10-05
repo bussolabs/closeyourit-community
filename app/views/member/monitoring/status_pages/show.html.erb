@@ -1,0 +1,52 @@
+<% content_for :title, t("member.monitoring.status_pages.title") %>
+
+<div class="p-7 space-y-6" data-test="member-status-pages">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.monitoring.status_pages.title"),
+        subtitle: t("member.monitoring.status_pages.subtitle"),
+        breadcrumb: [ { label: t("member.monitoring.status_pages.title") } ],
+        counts_test_id: "status-pages-counts",
+        test_id: "status-pages-header") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.status_pages.stat_monitors"), value: @published_monitors.size,
+            value_color: @published_monitors.any? ? :indigo : :neutral, test_id: "status-pages-count-monitors") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.status_pages.stat_groups"), value: @published_groups.size,
+            value_color: @published_groups.any? ? :indigo : :neutral, test_id: "status-pages-count-groups") %>
+    <% end %>
+  <% end %>
+
+  <%# Nothing public yet: say where to publish. %>
+  <% if @published_monitors.empty? && @published_groups.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.status_pages.empty_title"),
+          body: t("member.monitoring.status_pages.empty_body"),
+          example: t("member.monitoring.status_pages.empty_example"), icon: "globe",
+          framed: true, test_id: "status-pages-empty") do |empty| %>
+      <% empty.with_action do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.monitoring.status_pages.go_to_monitors"),
+              href: member_monitoring_monitors_path, variant: :secondary_muted, size: :sm, icon: "heart-pulse",
+              test_id: "status-pages-go-monitors") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-990 — one row per public page; preview, embed code and the toggle live in its Public page tab. %>
+  <% [ [ @published_groups, :group ], [ @published_monitors, :monitor ] ].each do |records, kind| %>
+    <% records.each do |record| %>
+      <% url = kind == :group ? public_group_status_url(org_slug: Current.organization.slug, group_slug: record.slug)
+                              : public_status_url(org_slug: Current.organization.slug, project_key: record.project.key, environment_code: record.environment.code) %>
+      <% tab = kind == :group ? member_monitoring_uptime_group_path(record, tab: "public") : member_monitoring_monitor_path(record, tab: "public") %>
+      <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3 flex items-start justify-between gap-3 flex-wrap" data-test="status-page-<%= kind %>-<%= record.id %>">
+        <div class="min-w-0">
+          <p class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= record.name %></p>
+          <%= link_to url, target: "_blank", rel: "noopener",
+                class: "mt-0.5 inline-flex items-center gap-1.5 font-mono text-[11.5px] text-indigo-600 dark:text-indigo-400 hover:underline break-all",
+                data: { test: "status-page-url-#{record.id}" } do %>
+            <%= render Ui::IconComponent.new(name: "arrow-up-right-from-square", class: "text-[10px]") %><%= url %>
+          <% end %>
+        </div>
+        <%= render Ui::ButtonComponent.new(label: t("member.monitoring.status_pages.manage"), href: tab,
+              variant: :secondary_muted, size: :sm, icon: "globe", test_id: "status-page-manage-#{record.id}") %>
+      </section>
+    <% end %>
+  <% end %>
+</div>

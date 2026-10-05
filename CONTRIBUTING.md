@@ -2,7 +2,7 @@
 
 ## Release snapshots
 
-This repository publishes verified release snapshots. Development and release validation happen in a separate maintainer repository. The first source release is still in preparation.
+This repository publishes verified release snapshots. Development and release validation happen in a separate maintainer repository.
 
 Accepted contributions are imported into the development repository with author credit and return here with a later release. A maintainer will explain the status on your pull request; do not assume that a public pull request merge immediately deploys a change.
 
@@ -12,11 +12,11 @@ Search existing issues, then use the bug or feature form. Include the version, i
 
 ## Pull requests
 
-After the first source release, fork this repository and branch from `main`. Keep one focused change per pull request. Code, comments, log messages and tests must be in English. Include regression coverage for behavior changes and follow the setup and verification commands shipped with the release.
+Fork this repository and branch from `main`. Keep one focused change per pull request. Code, comments, log messages and tests must be in English. Include regression coverage for behavior changes and follow the setup and verification commands shipped with the release.
 
 Read [CLA.md](CLA.md) before contributing. The contributor agreement is required before an external contribution is accepted. Follow the maintainer or CLA check instructions on your pull request; do not treat a green CI run alone as acceptance of the agreement or the contribution.
 
-External workflow runs require maintainer approval. Contributors do not need organization membership or write access. Do not include changes that expose secrets or connect CI to private infrastructure.
+Fork pull requests do not execute contributor code on managed runners. Maintainers review and import accepted changes into the development repository for validation. Contributors do not need organization membership or write access. Do not include changes that expose secrets or connect CI to private infrastructure.
 
 ## Security and conduct
 

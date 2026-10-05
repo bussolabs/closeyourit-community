@@ -1,0 +1,22 @@
+<div class="flex items-center gap-2" data-test="triage-actions">
+<% if @group.status_unresolved? %>
+  <%# CYRA-192 — «Risolvi» non chiude più al buio: apre i due campi in cui si scrive perché
+      l'errore c'era e cosa l'ha chiuso. Restano facoltativi (si conferma anche vuoti), ma
+      chiederli nel momento in cui si sa la risposta è l'unico modo per averli poi. %>
+  <span data-controller="ui--dialog">
+    <%= render Ui::ButtonComponent.new(label: t("member.monitoring.resolve"), variant: :success_outline, size: :sm, icon: "check", data: { action: "ui--dialog#open" }, test_id: "triage-resolve") %>
+    <%= render "member/monitoring/error_groups/resolve_dialog", group: @group %>
+  </span>
+  <%= render Ui::ButtonComponent.new(label: t("member.monitoring.ignore"), href: ignore_member_monitoring_error_group_path(@group), method: :patch, variant: :secondary_muted, size: :sm, icon: "volume-x", test_id: "triage-ignore") %>
+<% else %>
+  <%= render Ui::ButtonComponent.new(label: t("member.monitoring.reopen"), href: reopen_member_monitoring_error_group_path(@group), method: :patch, variant: :secondary_muted, size: :sm, icon: "rotate-ccw", test_id: "triage-reopen") %>
+<% end %>
+<%# CYRA-382 — il pulsante non posta più al buio: apre l'anteprima di ciò che verrà creato. %>
+<% unless @group.promoted? %>
+  <span data-controller="ui--dialog">
+    <%= render Ui::ButtonComponent.new(label: t("member.monitoring.promote"), variant: :primary, size: :sm,
+          icon: "ticket", data: { action: "ui--dialog#open" }, test_id: "promote-ticket") %>
+    <%= render "member/monitoring/error_groups/promote_dialog", group: @group %>
+  </span>
+<% end %>
+</div>

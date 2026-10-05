@@ -1,0 +1,21 @@
+<%# locals: pending %>
+<%# CYRA-420, portato qui da CYRA-428 — quando non c'è nessuna richiesta in attesa, il posto dove le
+    si sarebbe decise insegna il meccanismo: cosa rende protetto un segreto, chi può approvare, cosa
+    succede nel frattempo, e dove si attiva la protezione. Senza, la protezione a due resterebbe una
+    funzione che non si scopre mai perché non la si vede mai in azione. %>
+<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="vault-attention-change-requests-how">
+  <div class="px-4 py-3 border-b border-stone-100 dark:border-zinc-800">
+    <h2 class="flex items-center gap-1.5 font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100">
+      <%= render Ui::IconComponent.new(name: "shield-user", class: "text-[12px] text-indigo-500 dark:text-indigo-400") %><%= t("member.vault_change_requests.how_title") %>
+    </h2>
+    <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.vault_change_requests.empty_body") %></p>
+  </div>
+  <ul class="px-4 py-3 space-y-1.5 text-[12px] leading-relaxed text-gray-600 dark:text-zinc-400">
+    <li class="flex gap-2"><%= render Ui::IconComponent.new(name: "lock", class: "mt-[3px] text-[10px] text-gray-400 dark:text-zinc-500") %><span><%= t("member.vault_change_requests.how_protected") %></span></li>
+    <li class="flex gap-2"><%= render Ui::IconComponent.new(name: "user-check", class: "mt-[3px] text-[10px] text-gray-400 dark:text-zinc-500") %><span><%= t("member.vault_change_requests.how_approver") %></span></li>
+    <li class="flex gap-2"><%= render Ui::IconComponent.new(name: "hourglass", class: "mt-[3px] text-[10px] text-gray-400 dark:text-zinc-500") %><span><%= t("member.vault_change_requests.how_meanwhile") %></span></li>
+  </ul>
+  <%= link_to member_projects_path, class: "mx-4 mb-4 inline-flex items-center gap-1.5 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "vault-attention-protect-link" } do %>
+    <%= render Ui::IconComponent.new(name: "arrow-right", class: "text-[11px]") %><%= t("member.vault_change_requests.protect_cta") %>
+  <% end %>
+</section>

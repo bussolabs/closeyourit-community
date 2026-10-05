@@ -1,0 +1,57 @@
+<%# CYRA-51, CYRA-986 — the "Logs of this request" tab of one occurrence: the logs sharing its
+    trace_id, capped at RELATED_LOGS_PER_OCCURRENCE; the badge and the pivot link use the REAL total
+    of the trace (CYRA-60), since the list is truncated. %>
+<% logs = @logs_by_trace[event.trace_id] || [] %>
+<% related_count = @logs_count_by_trace[event.trace_id] || 0 %>
+<div data-test="error-related-logs">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <div class="flex items-center gap-2">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.logs.in_error_title") %></h2>
+      <%# Badge volume onesto della richiesta: il totale REALE, non i (max 20) log mostrati sotto (CYRA-60). %>
+      <% if related_count.positive? %>
+        <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 rounded px-1.5 py-0.5 shrink-0" data-test="error-related-logs-count"><%= t("member.monitoring.logs.in_error_count", count: related_count) %></span>
+      <% end %>
+    </div>
+    <%# CYRA-391 — il codice della richiesta è il collegamento più utile della pagina: era testo
+        morto. Ora è SEMPRE un link ai registri di quella richiesta, anche quando qui non ne
+        abbiamo nessuno — la pagina dei registri sa dire perché non c'è niente meglio di così. %>
+    <% if event.trace_id.present? %>
+      <p class="mt-1 font-mono text-[11px] break-all" data-test="error-related-logs-trace">
+        <span class="uppercase tracking-[1.2px] text-gray-400 dark:text-zinc-500"><%= t("member.monitoring.logs.in_error_trace") %></span>
+        <%= link_to event.trace_id, member_monitoring_log_entries_path(trace_id: event.trace_id, project_id: event.project_id),
+              class: "text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 underline decoration-indigo-200 dark:decoration-indigo-500/60 underline-offset-2",
+              data: { test: "error-related-logs-trace-link" } %>
+      </p>
+    <% end %>
+  </div>
+  <% if logs.any? %>
+    <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% logs.each do |entry| %>
+        <li class="px-4 py-2.5 hover:bg-stone-50 dark:hover:bg-zinc-800" data-test="error-related-log">
+          <%= link_to member_monitoring_log_entry_path(entry), class: "flex items-center gap-3" do %>
+            <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 w-16 shrink-0"><%= entry.occurred_at.strftime("%H:%M:%S") %></span>
+            <span class="font-mono text-[11px] font-semibold <%= "text-#{log_level_color(entry.level)}-600" %> w-16 shrink-0"><%= entry.level %></span>
+            <span class="text-[12.5px] text-zinc-700 dark:text-zinc-300 truncate"><%= entry.message %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <%# Una frase sola, non due negazioni di fila: senza codice della richiesta il motivo è quello,
+        e non serve ripetere che di conseguenza non ci sono registri. %>
+    <p class="px-4 py-6 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="error-related-logs-none">
+      <%= event.trace_id.present? ? t("member.monitoring.logs.in_error_none") : t("member.monitoring.logs.in_error_no_trace") %>
+    </p>
+  <% end %>
+  <%# CYRA-60: pivot allo stream log COMPLETO del trace (info/debug inclusi, ordinamento/filtri/facet),
+      pre-filtrato per trace_id ESATTO + progetto del gruppo (scoping identico al badge sopra, niente
+      log estranei che menzionano il trace nel messaggio o di altri progetti visibili). Necessario
+      perché il pannello ne mostra al massimo RELATED_LOGS_PER_OCCURRENCE. %>
+  <% if event.trace_id.present? && related_count.positive? %>
+    <div class="px-4 py-2.5 border-t border-stone-200 dark:border-zinc-800">
+      <%= link_to member_monitoring_log_entries_path(trace_id: event.trace_id, project_id: event.project_id), class: "inline-flex items-center gap-1.5 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded", data: { test: "error-related-logs-all" } do %>
+        <%= t("member.monitoring.logs.in_error_view_all") %><%= render Ui::IconComponent.new(name: "arrow-right", class: "text-[10px]") %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

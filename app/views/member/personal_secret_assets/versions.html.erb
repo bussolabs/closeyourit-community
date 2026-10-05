@@ -1,0 +1,38 @@
+<% content_for :title, t("member.personal_secret_assets.versions_title", name: @asset.name) %>
+<div class="p-7 space-y-6" data-test="member-personal-secret-asset-versions">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.personal_secret_assets.versions_title", name: @asset.name),
+        breadcrumb: [ { label: t("member.personal_secret_assets.title"), href: member_personal_secret_assets_path },
+                      { label: @asset.name },
+                      { label: t("member.personal_secret_assets.versions") } ],
+        test_id: "personal-secret-asset-versions-header",
+        counts_test_id: "personal-secret-asset-versions-counts") do |header| %>
+    <% header.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.versions", count: @versions.size), value: @versions.size, test_id: "personal-secret-asset-versions-count") %>
+    <% end %>
+  <% end %>
+
+  <% if @versions.empty? %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 py-12 text-center" data-test="personal-secret-asset-versions-empty">
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.personal_secret_assets.no_versions") %></p>
+    </div>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 divide-y divide-stone-200 dark:divide-zinc-800" data-test="personal-secret-asset-versions-list">
+      <% @versions.each_with_index do |version, index| %>
+        <div class="flex items-center gap-3 p-4" data-test="personal-secret-asset-version-row">
+          <span class="font-mono text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">v<%= version.number %></span>
+          <div class="min-w-0">
+            <p class="text-[12.5px] text-zinc-800 dark:text-zinc-200 truncate"><%= version.original_filename %></p>
+            <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= number_to_human_size(version.byte_size) %> · <%= t("member.personal_secret_assets.uploaded_ago", time: time_ago_in_words(version.created_at)) %><% if index.zero? %> · <%= t("member.personal_secret_assets.current") %><% end %></p>
+          </div>
+          <div class="ml-auto flex items-center gap-1.5">
+            <%= render Ui::ButtonComponent.new(label: t("member.personal_secret_assets.download"), href: download_member_personal_secret_asset_path(@asset, version: version.number), variant: :secondary_muted, size: :sm, icon: "download", test_id: "personal-secret-asset-version-download-#{version.number}") %>
+            <% unless index.zero? %>
+              <%= render Ui::ButtonComponent.new(label: t("member.personal_secret_assets.rollback"), href: rollback_member_personal_secret_asset_path(@asset, version: version.number), method: :post, variant: :secondary, size: :sm, confirm: t("member.personal_secret_assets.rollback_confirm"), test_id: "personal-secret-asset-rollback-#{version.number}") %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

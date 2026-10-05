@@ -1,0 +1,91 @@
+en:
+  chat:
+    errors:
+      same_account: "You can't start a conversation with yourself."
+      not_member: "One of the accounts doesn't belong to this organization."
+      no_shared_project: "You can only message members you share a project with."
+      invalid_conversation: "The conversation couldn't be created."
+      invalid_context: "This context can't host a channel."
+      not_accessible: "You don't have access to this channel."
+      invalid_message: "The message couldn't be sent."
+      duplicate_notification: "Notification already delivered."
+    notifications:
+      content:
+        message: "New message from %{name}"
+        mentioned: "%{name} mentioned you"
+    message_notifications:
+      mailer:
+        notify:
+          subject: "New message from %{name}"
+          cta: "Open the conversation"
+    reference:
+      unavailable: "Resource no longer accessible"
+      types:
+        project: "Project"
+        ticket: "Ticket"
+        error: "Error"
+        metric: "Performance"
+        log: "Log"
+        uptime: "Uptime"
+  member:
+    nav:
+      # CYRA-356 — the top icon and the sidebar entry open THE SAME page: one place, one name.
+      # CYRA-328 had named them differently to tell them apart, but pressing «Conversations» landed on a
+      # page titled «Chat», losing the confirmation of having arrived where you meant to go.
+      chat: "Conversations"
+      conversations: "Conversations"
+      chat_unread:
+        one: "1 unread conversation"
+        other: "%{count} unread conversations"
+    chat:
+      title: "Conversations"
+      subtitle: "Talk to your teammates as it happens. Anything that has to stay next to the work goes in the ticket comments."
+      # CYRA-447 — see the Italian file: the empty state is the only moment this space can say what
+      # it is for, and it used to contradict itself instead.
+      empty: "No conversations yet"
+      empty_body: "This is where you talk to your teammates as it happens: a quick question, a decision to make right now."
+      empty_example: "For example: «Who's looking into tonight's drop?» belongs here; «Only happens on
+        Safari 17» belongs in a ticket comment."
+      new_conversation:
+        button: "New conversation"
+        short: "New"
+        title: "New conversation"
+        cancel: "Close"
+        direct_placeholder: "Pick a member…"
+        project_placeholder: "Pick a project…"
+        team_placeholder: "Pick a team…"
+        start: "Start"
+        open: "Open"
+      select_conversation: "Select a conversation to get started."
+      last_activity: "%{time} ago"
+      empty_thread: "No messages yet. Say hello."
+      compose_placeholder: "Write a message…"
+      send: "Send"
+      typing: "%{name} is typing…"
+      read_by: "Read by %{names}"
+      muted: "Conversation muted."
+      unmuted: "Conversation unmuted."
+      mute: "Mute"
+      unmute: "Unmute"
+      search_placeholder: "Search conversations…"
+      search_empty: "No conversations found."
+      people:
+        one: "1 person"
+        other: "%{count} people"
+      days:
+        today: "Today"
+        yesterday: "Yesterday"
+      delete_confirm: "Delete this message?"
+      delete: "Delete message"
+      compose_hint: "Enter to send · Shift+Enter for a new line"
+      messages:
+        deleted: "Message deleted."
+        deleted_placeholder: "Message deleted"
+      kinds:
+        direct: "Direct message"
+        project: "Project channel"
+        team: "Team channel"
+    alerting:
+      preferences:
+        chat: "Conversations"
+        chat_hint: "New messages and mentions in your conversations"

@@ -1,0 +1,27 @@
+<%# K9 — the board is one panel: the filter bar on top, a column per active status below. %>
+<%= render Ui::KanbanComponent.new(controller: "ticket-board", test_id: "board-panel", class: "md:border-b-0") do |board| %>
+  <% board.with_toolbar { render "member/tickets/board_toolbar" } %>
+  <% @columns.each do |column| %>
+    <% status = column.status %>
+    <% board.with_column(key: status.code, label: status.display_label, color: status.color, total: column.total,
+          found: @found_counts&.fetch(status.id, 0), test_prefix: "board",
+          list_id: "board_column_#{status.id}", count_id: "board_count_#{status.id}", has_cards: column.tickets.any?,
+          collapsed: @collapsed_status_codes.include?(status.code), auto_collapsed: @auto_collapsed_ids.include?(status.id),
+          data: { status_id: status.id, status_label: status.display_label, status_code: status.code }) do |slot| %>
+      <% if status.category_done? %>
+        <% slot.with_note do %>
+          <p class="mt-0.5 pl-4 text-[10.5px] text-gray-400 dark:text-zinc-500" data-test="board-window-<%= status.code %>">
+            <%= t("member.tickets.board.recent_window", days: Ticketing::Constants::BOARD_DONE_WINDOW.in_days.to_i) %>
+          </p>
+        <% end %>
+      <% end %>
+      <% slot.with_empty { render "member/tickets/board_empty", status: status } %>
+      <% slot.with_footer { render "member/tickets/board_column_footer", column: column } %>
+      <% column.tickets.each do |ticket| %>
+        <%= render "member/tickets/board_card", ticket: ticket, can_manage: can_manage, highlight: params[:q],
+              blocked: @blocked_ticket_ids.include?(ticket.id), awaiting: @awaiting_ticket_ids.include?(ticket.id),
+              open_questions: @open_questions_counts.fetch(ticket.id, 0) %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

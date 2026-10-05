@@ -1,0 +1,7 @@
+<%= render Ui::ButtonComponent.new(href: member_coworkers_path, variant: :secondary, test_id: "coworkers-entry", aria: { label: "Coworkers" }, title: "Coworkers", class: "shrink-0 max-md:min-h-11 max-md:min-w-11 max-md:px-2!", data: { controller: "coworker-mascot-cycle", action: "visibilitychange@document->coworker-mascot-cycle#schedule" }) do %>
+  <%# CYRA-992 — the mascot sits in a tinted square flush with the left edge (option A). %>
+  <span class="grid size-[26px] shrink-0 place-items-center rounded-[5px] bg-indigo-50 dark:bg-indigo-500/15 md:-ml-2.5">
+    <%= image_tag "/coworkers/mascots/01.webp", alt: "", width: 22, height: 22, class: "size-[22px] object-contain transition-opacity duration-300", data: { coworker_mascot_cycle_target: "image" } %>
+  </span>
+  <span class="hidden md:inline">Coworkers</span>
+<% end %>

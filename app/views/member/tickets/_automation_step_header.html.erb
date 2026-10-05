@@ -1,0 +1,30 @@
+<%# locals: attempt, outcome, expandable
+    La riga che basta a orientarsi su un tentativo: quale fase, su che macchina, quando, quanto ci ha
+    messo, com'è finito. È la stessa sia dentro un <summary> (passo apribile) sia dentro un <div> (passo
+    senza niente da leggere), perciò vive qui: due copie divergerebbero al primo campo aggiunto. %>
+<div class="flex items-center gap-2 min-w-0 flex-wrap">
+  <%# CYRA-384 — la fase col nome che porta in tutto il prodotto, non col valore della colonna:
+      «planner» in mezzo a una riga italiana è una sigla di macchina consegnata a chi deve decidere. %>
+  <span class="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100"><%= automation_execution_phase_label(attempt.phase) %></span>
+  <span class="text-stone-300 dark:text-zinc-600">·</span>
+  <%# Il nome della macchina porta alla scheda dell'host per chi può vederla (helper condiviso col
+      riquadro "In lavorazione su": due copie divergerebbero al primo ritocco). %>
+  <%= automation_host_label(attempt.host, css: "font-mono text-[11.5px]", plain_css: "text-gray-500 dark:text-zinc-400",
+        test_id: "automation-step-host") %>
+  <% if attempt.started_at %>
+    <span class="text-stone-300 dark:text-zinc-600">·</span>
+    <span class="font-mono text-[11.5px] text-gray-500 dark:text-zinc-400"><%= l(attempt.started_at, format: :short) %></span>
+  <% end %>
+  <% if (duration = automation_duration(attempt)) %>
+    <span class="text-stone-300 dark:text-zinc-600">·</span>
+    <span class="font-mono text-[11.5px] text-gray-500 dark:text-zinc-400"><%= duration %></span>
+  <% end %>
+</div>
+<div class="shrink-0 flex items-center gap-2">
+  <%= render Ui::BadgeComponent.new(label: outcome[:label], color: outcome[:color], icon: outcome[:icon]) %>
+  <%# Il chevron sta solo dove c'è davvero qualcosa sotto, e ruota col gruppo aperto. motion-safe: chi ha
+      chiesto meno animazioni vede lo stato finale senza la rotazione. %>
+  <% if expandable %>
+    <%= render Ui::IconComponent.new(name: "chevron-right", class: "text-[10px] text-gray-400 dark:text-zinc-500 motion-safe:transition-transform group-open:rotate-90") %>
+  <% end %>
+</div>

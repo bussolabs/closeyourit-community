@@ -1,0 +1,33 @@
+<% content_for :title, t("member.alerting.rules.new_title") %>
+<%# CYRA-482 — I modelli pronti, in cima: il caso più comune («avvisami se il sito cade») si
+    costruiva a mano riconoscendo l'evento fra ventitré voci, e nessuno diceva che per sapere anche
+    quando il sito torna serve una SECONDA regola. Ogni card dichiara cosa creerà prima che si
+    confermi; poi i campi restano tutti modificabili. %>
+<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 mb-6" data-test="alerting-rule-templates">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.alerting.rules.templates.title") %></h2>
+    <p class="mt-0.5 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.alerting.rules.templates.subtitle") %></p>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-stone-200 dark:divide-zinc-800">
+    <% @templates.each do |template| %>
+      <div class="flex flex-col gap-2 px-4 py-3.5" data-test="alerting-template-<%= template.key %>">
+        <div class="min-w-0">
+          <p class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= template.title %></p>
+          <p class="mt-0.5 text-[12.5px] text-gray-500 dark:text-zinc-400 leading-relaxed"><%= template.description %></p>
+          <p class="mt-1.5 text-[11.5px] text-indigo-700 dark:text-indigo-300" data-test="alerting-template-outcome-<%= template.key %>"><%= template.outcome %></p>
+        </div>
+        <div class="mt-auto">
+          <%= render Ui::ButtonComponent.new(label: t("member.alerting.rules.templates.use"),
+                href: apply_template_member_alerting_rules_path(template: template.key,
+                                                                project_id: params[:project_id],
+                                                                environment_id: params[:environment_id]),
+                method: :post, variant: :primary, size: :sm, icon: "wand-sparkles",
+                test_id: "alerting-template-use-#{template.key}") %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</section>
+
+<%= render "form", rule: @rule, url: member_alerting_rules_path, method: :post,
+                   submit_label: t("member.alerting.rules.form.save") %>

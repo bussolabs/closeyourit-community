@@ -1,0 +1,35 @@
+<div class="py-3" data-test="changelog-release">
+  <div class="flex items-baseline gap-2">
+    <span class="font-mono text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= @release.label %></span>
+    <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= @release.date %></span>
+  </div>
+
+  <div class="mt-2 space-y-3">
+    <% @release.sections.each do |section| %>
+      <div>
+        <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1"><%= section_label(section[:label]) %></p>
+        <ul class="space-y-1">
+          <% section[:items].each do |item| %>
+            <li class="flex gap-1.5 text-[12.5px] leading-relaxed text-zinc-700 dark:text-zinc-300">
+              <span class="text-indigo-400 select-none">–</span>
+              <% visible, rest = fold(item) %>
+              <% if rest %>
+                <%# CYRA-693 — voce lunga ripiegata: lead + prima frase, il resto dietro «continua».
+                    <details> nativo, nessun JS; il link «continua» sparisce ad aperto. %>
+                <details class="group min-w-0" data-test="changelog-item-folded">
+                  <summary class="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                    <span class="[&_a]:font-medium [&_a]:text-indigo-600 dark:[&_a]:text-indigo-400 [&_a]:underline [&_a]:decoration-indigo-300 dark:[&_a]:decoration-indigo-500 [&_a]:underline-offset-2 hover:[&_a]:text-indigo-700 dark:hover:[&_a]:text-indigo-300"><%= inline(visible) %></span>
+                    <span class="font-medium text-indigo-600 dark:text-indigo-400 group-open:hidden"><%= t("shared.changelog.more") %></span>
+                  </summary>
+                  <span class="[&_a]:font-medium [&_a]:text-indigo-600 dark:[&_a]:text-indigo-400 [&_a]:underline [&_a]:decoration-indigo-300 dark:[&_a]:decoration-indigo-500 [&_a]:underline-offset-2 hover:[&_a]:text-indigo-700 dark:hover:[&_a]:text-indigo-300"><%= inline(rest) %></span>
+                </details>
+              <% else %>
+                <span class="min-w-0 [&_a]:font-medium [&_a]:text-indigo-600 dark:[&_a]:text-indigo-400 [&_a]:underline [&_a]:decoration-indigo-300 dark:[&_a]:decoration-indigo-500 [&_a]:underline-offset-2 hover:[&_a]:text-indigo-700 dark:hover:[&_a]:text-indigo-300"><%= inline(item) %></span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
+</div>

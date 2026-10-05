@@ -1,0 +1,8 @@
+<%# locals: monitor: — header di stato della show (badge status + slug + intervallo + grazia), anche
+    broadcast via Turbo replace su #cron_monitor_labels_<id> (check-in, missed). %>
+<div id="cron_monitor_labels_<%= monitor.id %>" class="flex items-center flex-wrap gap-1.5" data-test="cron-monitor-labels">
+  <%= render Ui::BadgeComponent.new(label: t("member.crons.status.#{monitor.status}"), color: cron_status_color(monitor.status)) %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.crons.detail_slug"), value: monitor.slug) %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.crons.col_interval"), value: cron_interval_label(monitor.expected_interval_minutes)) %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.crons.detail_grace"), value: t("member.crons.n_minutes", n: monitor.grace_minutes)) %>
+</div>

@@ -1,0 +1,117 @@
+<%# Allegati della pagina (CYRA-176). Sono file di solo storage: qualunque cosa contengano, il
+    download li consegna come binario da salvare — vedi Member::Knowledge::AttachmentsController#download
+    e config/initializers/active_storage.rb. Il link punta SEMPRE alla rotta download, mai al blob. %>
+<%# CYRA-434: senza allegati la card si riduce a UNA riga — titolo, «nessuno» e il comando per
+    caricarne uno. Il riquadro tratteggiato è la parte che occupa più colonna di tutte, e a vuoto
+    la occupava per niente. Il ramo vuoto esiste solo per chi può modificare: agli altri la show
+    non rende affatto il partial. %>
+<% if @page.attachments.none? %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="knowledge-attachments">
+    <div class="px-4 py-2.5 flex items-center flex-wrap gap-x-3 gap-y-2" data-test="knowledge-attachments-empty">
+      <%= render Ui::IconComponent.new(name: "paperclip", class: "text-[12px] text-gray-400 dark:text-zinc-500") %>
+      <h2 class="font-display text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.knowledge.attachments.title") %></h2>
+      <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.attachments.empty") %></span>
+
+      <%= form_with url: member_knowledge_page_attachments_path(@page), method: :post, multipart: true,
+            class: "ml-auto flex items-center gap-2",
+            data: { test: "attachment-upload-form", controller: "attachment-upload",
+                    attachment_upload_selected_value: t("member.knowledge.attachments.upload.selected"),
+                    attachment_upload_uploading_value: t("member.knowledge.attachments.upload.uploading") } do %>
+        <%# Il label apre il selettore file; con JS la scelta fa partire il caricamento da sola,
+            senza JS resta il bottone accanto (stesso comportamento della dropzone distesa). %>
+        <label for="knowledge-attachment-input" class="cursor-pointer text-[11.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+          <%= t("member.knowledge.attachments.upload.pick") %>
+        </label>
+        <%= file_field_tag "files[]", multiple: true, id: "knowledge-attachment-input", class: "hidden",
+              data: { test: "attachment-upload-input", attachment_upload_target: "input", action: "change->attachment-upload#change" },
+              accept: Knowledge::Constants::ATTACHMENT_CONTENT_TYPES.join(",") %>
+        <span class="text-[12px] text-zinc-700 dark:text-zinc-300 truncate max-w-[10rem]" hidden data-attachment-upload-target="status" data-test="attachment-upload-selected"></span>
+        <%= render Ui::ButtonComponent.new(label: t("member.knowledge.attachments.upload.add"), type: "submit", variant: :secondary_muted, size: :sm, test_id: "attachment-upload-submit", data: { attachment_upload_target: "submit" }) %>
+      <% end %>
+    </div>
+  </div>
+<% else %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="knowledge-attachments">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.knowledge.attachments.title") %></h2>
+      <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="knowledge-attachments-count"><%= @page.attachments.size %></span>
+    </div>
+
+    <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% @page.attachments.each do |attachment| %>
+        <% blob = attachment.file.blob %>
+        <li class="px-4 py-3 flex items-start gap-3" data-test="attachment-row-<%= attachment.id %>">
+          <%= render Ui::IconComponent.new(name: knowledge_attachment_icon(blob.content_type), class: "text-[14px] text-gray-400 dark:text-zinc-500 mt-0.5") %>
+
+          <div class="min-w-0 flex-1">
+            <p class="text-[12.5px] text-zinc-900 dark:text-zinc-100 truncate" title="<%= attachment.title %>"><%= attachment.title %></p>
+            <% if attachment.description.present? %>
+              <p class="mt-0.5 text-[11.5px] text-gray-500 dark:text-zinc-400 line-clamp-2"><%= attachment.description %></p>
+            <% end %>
+            <div class="mt-1 flex items-center flex-wrap gap-x-2 gap-y-1">
+              <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= number_to_human_size(blob.byte_size) %></span>
+              <% if knowledge_attachment_script?(blob.content_type) %>
+                <%# Dichiarato a chiare lettere: senza, caricare uno script su una pagina di procedura
+                    potrebbe far pensare che serva a farlo eseguire da qualcuno. %>
+                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded font-mono text-[9.5px] uppercase tracking-[0.6px] bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/40"
+                      title="<%= t("member.knowledge.attachments.script_note") %>" data-test="attachment-script-badge">
+                  <%= render Ui::IconComponent.new(name: "shield-half", class: "text-[8.5px]") %><%= t("member.knowledge.attachments.script_badge") %>
+                </span>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-0.5 shrink-0">
+            <%= link_to download_member_knowledge_page_attachment_path(@page, attachment),
+                  class: "inline-flex items-center justify-center h-7 w-7 rounded-md text-gray-400 dark:text-zinc-500 hover:bg-stone-100 dark:hover:bg-zinc-800 hover:text-indigo-600 dark:hover:text-indigo-400",
+                  title: t("member.knowledge.attachments.download"),
+                  data: { test: "attachment-download-#{attachment.id}" } do %>
+              <%= render Ui::IconComponent.new(name: "download", class: "text-[12px]") %>
+            <% end %>
+            <% if @can_edit %>
+              <%= link_to edit_member_knowledge_page_attachment_path(@page, attachment),
+                    class: "inline-flex items-center justify-center h-7 w-7 rounded-md text-gray-400 dark:text-zinc-500 hover:bg-stone-100 dark:hover:bg-zinc-800 hover:text-indigo-600 dark:hover:text-indigo-400",
+                    title: t("member.knowledge.attachments.edit"),
+                    data: { test: "attachment-edit-#{attachment.id}" } do %>
+                <%= render Ui::IconComponent.new(name: "pen", class: "text-[11px]") %>
+              <% end %>
+              <%= button_to member_knowledge_page_attachment_path(@page, attachment), method: :delete,
+                    class: "inline-flex items-center justify-center h-7 w-7 rounded-md text-gray-400 dark:text-zinc-500 hover:bg-stone-100 dark:hover:bg-zinc-800 hover:text-red-600 dark:hover:text-red-400",
+                    title: t("member.knowledge.attachments.delete"),
+                    form: { data: { turbo_confirm: t("member.knowledge.attachments.delete_confirm") } },
+                    data: { test: "attachment-delete-#{attachment.id}" } do %>
+                <%= render Ui::IconComponent.new(name: "trash", class: "text-[11px]") %>
+              <% end %>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+
+    <% if @can_edit %>
+      <div class="px-4 py-3 border-t border-stone-200 dark:border-zinc-800">
+        <%# Dropzone: riusa lo Stimulus attachment-upload dei ticket/documenti, invariato. %>
+        <%= form_with url: member_knowledge_page_attachments_path(@page), method: :post, multipart: true,
+              data: { test: "attachment-upload-form", controller: "attachment-upload",
+                      attachment_upload_selected_value: t("member.knowledge.attachments.upload.selected"),
+                      attachment_upload_uploading_value: t("member.knowledge.attachments.upload.uploading") } do %>
+          <label class="flex flex-col items-center justify-center gap-1.5 px-4 py-4 rounded-lg border border-dashed border-stone-300 dark:border-zinc-700 bg-stone-50/60 dark:bg-zinc-800/60 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/40 dark:hover:bg-indigo-500/10"
+                 data-test="attachment-dropzone"
+                 data-action="dragover->attachment-upload#dragover dragleave->attachment-upload#dragleave drop->attachment-upload#drop">
+            <%= render Ui::IconComponent.new(name: "cloud-upload", class: "text-[16px] text-stone-400 dark:text-zinc-500") %>
+            <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.attachments.upload.add") %></span>
+            <span class="font-mono text-[10px] text-gray-500 dark:text-zinc-400 text-center"><%= t("member.knowledge.attachments.upload.add_hint") %></span>
+            <%# accept dalla costante, mai una stringa a mano: allowlist e UI restano allineate. %>
+            <%= file_field_tag "files[]", multiple: true, id: "knowledge-attachment-input", class: "hidden",
+                  data: { test: "attachment-upload-input", attachment_upload_target: "input", action: "change->attachment-upload#change" },
+                  accept: Knowledge::Constants::ATTACHMENT_CONTENT_TYPES.join(",") %>
+          </label>
+          <p class="mt-2 text-[12px] text-zinc-700 dark:text-zinc-300 truncate" hidden data-attachment-upload-target="status" data-test="attachment-upload-selected"></p>
+          <div class="mt-2 flex justify-end">
+            <%= render Ui::ButtonComponent.new(label: t("member.knowledge.attachments.upload.add"), type: "submit", variant: :secondary, size: :sm, icon: "paperclip", test_id: "attachment-upload-submit", data: { attachment_upload_target: "submit" }) %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

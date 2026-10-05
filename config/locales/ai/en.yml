@@ -1,0 +1,21 @@
+en:
+  ai:
+    # CYRA-916: shown wherever an AI feature runs without a connected service.
+    not_configured: "Available with CloseYourIt AI: an administrator connects an AI service in AI settings."
+    token_cap_reached: "The organization has used all its AI tokens for this month. The count starts again on the first of the month, or whoever manages the AI can raise the cap."
+    # CYRA-920: the CloseYourIt AI gateway answered 402.
+    limit_reached: "The CloseYourIt AI key reached its monthly limit: AI features start again next month. The rest of the app keeps working."
+    feature:
+      disabled: "AI feature unavailable: %{service} is switched off in the system settings."
+      services:
+        agent_gate: "the agent eligibility gate"
+        assistant_chat: "the chat assistant"
+        assistant_tools: "the assistant that reads your data"
+        assistant_voice: "the voice assistant"
+        triage: "error and metric triage"
+        embeddings: "semantic search"
+        ticket_composition: "assisted ticket writing"
+        dataset_predictions: "dataset training and predictions"
+        comment_compaction: "summarising historical comments"
+        analysis_relabel: "relabelling technical analyses"
+        knowledge_review: "the knowledge page reviewer"

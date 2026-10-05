@@ -1,0 +1,36 @@
+<%# locals: event — Errors::Event; selected (opt, default false); replay_session_ids (opt, Set — CYRA-52);
+    constants (opt, Hash — CYRA-400: le colonne già dette dal riepilogo, che qui non si ripetono).
+    Riga della tabella occorrenze (show).
+    Resa server-side sia al load sia al page-refresh Turbo che ogni nuova occorrenza innesca sullo stream
+    del gruppo (CYRA-41): il morph ri-renderizza l'intera lista, non c'è più il prepend live. Il container
+    #error_group_events_<group_id> resta come ancora DOM per il morph. La selezione per-viewer (roving
+    tabindex, pannelli dettaglio) resta gestita dal controller Stimulus occurrence-select. %>
+<% selected = local_assigns.fetch(:selected, false) %>
+<%# CYRA-52: insieme dei replay_session_id con una Replays::Session registrata (calcolato una volta nel
+    controller, no N+1). L'occorrenza mostra l'icona play SOLO se il suo replay è davvero disponibile,
+    coerente col pannello player che richiede la sessione. %>
+<% replay_session_ids = local_assigns.fetch(:replay_session_ids, Set.new) %>
+<%# CYRA-400: un valore uguale su tutta la pagina è già scritto nel riepilogo sopra la tabella —
+    ripeterlo su ogni riga era il motivo per cui questa sezione occupava mezza pagina. %>
+<% constants = local_assigns.fetch(:constants, {}) %>
+<% has_replay = event.replay_session_id.present? && replay_session_ids.include?(event.replay_session_id) %>
+<%= render Ui::TableComponent::RowComponent.new(selected: selected, test_id: "occurrence-row", tabindex: selected ? 0 : -1,
+      class: "cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-400#{" bg-indigo-50 dark:bg-indigo-500/15" if selected}",
+      data: { occurrence_select_target: "row", action: "click->occurrence-select#select", occurrence_id: event.id,
+              announce: t("member.monitoring.viewing_occurrence", when: error_time_ago(event.occurred_at)) }) do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <span class="flex items-center gap-2">
+      <%= render Ui::IconComponent.new(name: "check", class: "text-[10px] text-indigo-600 dark:text-indigo-400 #{"invisible" unless selected}", data: { occurrence_select_target: "check" }) %>
+      <span class="font-mono text-[12px] text-gray-600 dark:text-zinc-400"><%= error_time_ago(event.occurred_at) %></span>
+      <% if has_replay %>
+        <span role="img" class="text-indigo-500 dark:text-indigo-400" aria-label="<%= t("member.monitoring.replay.available") %>" title="<%= t("member.monitoring.replay.available") %>" data-test="occurrence-replay-indicator">
+          <%= render Ui::IconComponent.new(name: "circle-play", class: "text-[11px]") %>
+        </span>
+      <% end %>
+    </span>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_environment"), visible: !constants.key?(:environment)) do %><% if event.environment.present? %><%= render Ui::BadgeComponent.new(label: event.environment, color: :sky, dot: true) %><% else %><span class="text-[12px] text-gray-500 dark:text-zinc-400">—</span><% end %><% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_release"), mono: true, class: "text-gray-600 dark:text-zinc-400", visible: !constants.key?(:release))) { event.release.presence || "—" } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_level"), visible: !constants.key?(:level))) { tag.span(error_level_label(event.level), class: "font-mono text-[12px] font-semibold text-#{error_level_color(event.level)}-600") } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_event"), align: :right, mono: true, class: "text-[11px] text-indigo-600 dark:text-indigo-400")) { event.event_id.truncate(12) } %>
+<% end %>

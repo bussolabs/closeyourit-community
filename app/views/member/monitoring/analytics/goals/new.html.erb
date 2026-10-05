@@ -1,0 +1,48 @@
+<% content_for :title, t("member.monitoring.analytics.goals.new") %>
+
+<div class="p-7 space-y-6" data-test="member-analytics-goal-new">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.monitoring.analytics.goals.new"),
+        breadcrumb: [
+          { label: t("member.monitoring.analytics.title"), href: member_monitoring_analytics_path(project_id: @project.id) },
+          { label: t("member.monitoring.analytics.goals.title"), href: member_monitoring_analytics_goals_path(project_id: @project.id) },
+          { label: t("member.monitoring.analytics.goals.new") }
+        ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.monitoring.analytics.goals.cancel"), href: member_monitoring_analytics_goals_path(project_id: @project.id), variant: :secondary_muted, size: :sm) %>
+      <%= render Ui::ButtonComponent.new(label: t("member.monitoring.analytics.goals.save"), type: "submit", form: "analytics-goal-form", variant: :primary, size: :sm, test_id: "analytics-goal-submit") %>
+    <% end %>
+  <% end %>
+
+  <%= form_with model: @goal, url: member_monitoring_analytics_goals_path(project_id: @project.id),
+        method: :post, id: "analytics-goal-form", data: { test: "analytics-goal-form" } do |f| %>
+    <%= hidden_field_tag :project_id, @project.id %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="md:col-span-2">
+        <label class="block text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.monitoring.analytics.goals.form.display_name") %><span class="text-red-500 dark:text-red-400 ml-0.5">*</span></label>
+        <%= f.text_field :display_name, class: "w-full h-[36px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400", data: { test: "analytics-goal-display-name" } %>
+      </div>
+
+      <div>
+        <label class="block text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.monitoring.analytics.goals.form.kind") %></label>
+        <%= render Ui::SelectComponent.new(name: "analytics_goal[kind]", multiple: false,
+              options: ::Analytics::Goal.kinds.keys.map { |k| [ t("member.monitoring.analytics.goals.kinds.#{k}"), k ] },
+              selected: @goal.kind, test_id: "analytics-goal-kind") %>
+      </div>
+
+      <div></div>
+
+      <div>
+        <label class="block text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.monitoring.analytics.goals.form.path_pattern") %></label>
+        <%= f.text_field :path_pattern, placeholder: "/pricing  ·  /blog/*", class: "w-full h-[36px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400", data: { test: "analytics-goal-path" } %>
+        <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.goals.form.path_hint") %></p>
+      </div>
+
+      <div>
+        <label class="block text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.monitoring.analytics.goals.form.event_name") %></label>
+        <%= f.text_field :event_name, placeholder: "Signup", class: "w-full h-[36px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400", data: { test: "analytics-goal-event-name" } %>
+        <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.goals.form.event_hint") %></p>
+      </div>
+    </div>
+  <% end %>
+</div>

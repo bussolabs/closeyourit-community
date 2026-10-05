@@ -1,0 +1,96 @@
+<%# locals: plan %>
+<% document = plan.document %>
+<div class="px-4 py-3.5">
+  <div class="flex items-baseline justify-between gap-3 mb-1.5">
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400"><%= t("member.tickets.automation.plan.summary") %></p>
+    <p class="text-[11px] text-gray-500 dark:text-zinc-400" data-test="automation-plan-signature"><%= t("member.tickets.automation.plan.written", version: plan.version, date: l(plan.created_at, format: :long)) %></p>
+  </div>
+  <%= render Ui::MarkdownComponent.new(text: document.summary, class: "text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed", test_id: "automation-plan-analysis") %>
+</div>
+
+<% if document.work_items.present? %>
+  <div class="px-4 py-3.5">
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400 mb-2"><%= t("member.tickets.automation.plan.work_items") %></p>
+    <div class="space-y-3">
+      <% document.work_items.each do |raw_item| %>
+        <% item = raw_item.to_h.deep_stringify_keys %>
+        <article class="border-l-2 border-indigo-100 dark:border-indigo-500/20 pl-3" data-test="automation-plan-work-item">
+          <div class="flex items-baseline gap-2"><span class="font-mono text-[10px] text-indigo-600 dark:text-indigo-400"><%= item["id"] %></span><h4 class="font-display text-[13.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= item["title"] %></h4></div>
+          <%= render Ui::MarkdownComponent.new(text: item["description"], class: "mt-1 text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed") %>
+          <% if item["files"].present? %>
+            <ul class="mt-1.5 space-y-1">
+              <% item["files"].each do |raw_file| %>
+                <% file = raw_file.to_h.deep_stringify_keys %>
+                <%= render "member/tickets/plan_file_reference", reference: file %>
+              <% end %>
+            </ul>
+          <% end %>
+          <% if item["dependencies"].present? %><p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.automation.plan.dependencies") %>: <%= item["dependencies"].join(", ") %></p><% end %>
+        </article>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<% [["rationale", document.rationale], ["risks", document.risks], ["open_points", document.open_points], ["sources", document.sources]].each do |key, items| %>
+  <% next if items.blank? %>
+  <div class="px-4 py-3.5">
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400 mb-2"><%= t("member.tickets.automation.plan.#{key}") %></p>
+    <ul class="space-y-1.5">
+      <% items.each do |raw_item| %>
+        <% item = raw_item.is_a?(Hash) ? raw_item.deep_stringify_keys : nil %>
+        <% if key == "sources" %>
+          <%= render "member/tickets/plan_file_reference", reference: item %>
+          <% next %>
+        <% end %>
+        <li class="text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed">
+          <% if key == "risks" %>
+            <strong><%= [item["id"], item["title"]].compact_blank.join(" · ") %></strong> — <%= item["impact"] %><% if item["mitigation"].present? %> <span class="text-gray-500 dark:text-zinc-400"><%= t("member.tickets.automation.plan.mitigation") %>: <%= item["mitigation"] %></span><% end %>
+          <% else %>
+            <%= render Ui::MarkdownComponent.new(text: raw_item, inline: true) %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<% if document.scenarios.present? %>
+  <div class="px-4 py-3.5">
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400 mb-2"><%= t("member.tickets.automation.plan.scenarios") %></p>
+    <ol class="space-y-2.5">
+      <% document.scenarios.each_with_index do |scenario, index| %>
+        <% sentence = "**#{t("member.tickets.automation.plan.sentence.given")}** #{scenario["given"]}, " \
+                      "**#{t("member.tickets.automation.plan.sentence.when")}** #{scenario["when"]}, " \
+                      "**#{t("member.tickets.automation.plan.sentence.then")}** #{scenario["then"]}, " \
+                      "**#{t("member.tickets.automation.plan.sentence.expected")}** #{scenario["expected"]}." %>
+        <li class="text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed" data-test="automation-plan-scenario">
+          <% if scenario["id"].present? %><%= render Ui::BadgeComponent.new(label: scenario["id"], color: :indigo, size: :sm, class: "font-mono mr-1", test_id: "automation-plan-scenario-id") %><% else %><span class="font-mono text-[11px] text-gray-400 dark:text-zinc-500"><%= "#{index + 1}." %></span><% end %>
+          <%= render Ui::MarkdownComponent.new(text: sentence, inline: true) %>
+        </li>
+      <% end %>
+    </ol>
+  </div>
+<% end %>
+
+<% if document.definition_of_done.present? %>
+  <div class="px-4 py-3.5">
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400 mb-2"><%= t("member.tickets.automation.plan.definition_of_done") %></p>
+    <ul class="space-y-1.5">
+      <% document.definition_of_done.each do |criterion| %>
+        <li class="flex items-start gap-2 text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed">
+          <% if criterion["id"].present? %><%= render Ui::BadgeComponent.new(label: criterion["id"], color: :indigo, size: :sm, class: "font-mono shrink-0 mt-0.5", test_id: "automation-plan-criterion-id") %><% else %><%= render Ui::IconComponent.new(name: "minus", class: "text-gray-300 dark:text-zinc-600 text-[11px] mt-1") %><% end %>
+          <%= render Ui::MarkdownComponent.new(text: criterion["text"], inline: true) %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<% if plan.notes.present? %>
+  <div class="px-4 py-3.5"><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400 mb-2"><%= t("member.tickets.automation.plan.notes") %></p><ul class="space-y-1.5"><% plan.notes.each do |note| %><li class="text-[12.5px] text-zinc-700 dark:text-zinc-300"><%= render Ui::MarkdownComponent.new(text: note, inline: true) %></li><% end %></ul></div>
+<% end %>
+
+<% if plan.change_request.present? %>
+  <div class="px-4 py-3.5"><div class="rounded-md bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/40 p-2.5 text-[12.5px] text-amber-800 dark:text-amber-200"><span class="font-medium"><%= t("member.tickets.automation.plan.change_request") %></span> <%= render Ui::MarkdownComponent.new(text: plan.change_request, inline: true) %></div></div>
+<% end %>

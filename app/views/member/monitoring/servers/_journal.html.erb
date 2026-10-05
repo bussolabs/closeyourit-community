@@ -1,0 +1,31 @@
+<%# locals: entries: — journald err/crit lines (last 48h, cap 100), on the System log tab: one row per line. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-journal">
+  <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.show.journal") %></h2>
+    <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.journal_count", count: entries.size) %></span>
+  </div>
+  <% if entries.empty? %>
+    <p class="px-5 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="server-journal-empty"><%= t("member.servers.show.journal_empty") %></p>
+  <% else %>
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("member.servers.show.journal"), test_id: "server-journal-list")) do |table| %>
+      <% table.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.show.journal_col_level"), classes: "w-20") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.show.journal_col_time"), classes: "w-32") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.show.journal_col_unit"), classes: "w-36") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.show.journal_col_message")) %>
+      <% end %>
+      <% entries.each do |entry| %>
+        <%= render Ui::TableComponent::RowComponent.new(test_id: "server-journal-row") do %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.show.journal_col_level"))) do %>
+            <span class="inline-flex items-center px-1.5 h-[18px] rounded font-mono text-[10px] uppercase tracking-[0.5px] <%= server_journal_priority_class(entry.priority) %>"><%= server_journal_priority_label(entry.priority) %></span>
+          <% end %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.show.journal_col_time"), mono: true)) { l(entry.occurred_at, format: :short) } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.show.journal_col_unit"), mono: true)) { entry.unit.presence || "—" } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.show.journal_col_message"))) do %>
+            <span class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 break-words"><%= entry.message %></span>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

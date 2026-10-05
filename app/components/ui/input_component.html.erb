@@ -1,0 +1,17 @@
+<%= tag.div(class: @wrapper_class) do %>
+  <% if @label %>
+    <label for="<%= field_id %>" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5">
+      <%= @label %><% if @required %><span class="text-red-500 dark:text-red-400 ml-0.5">*</span><% end %>
+    </label>
+  <% end %>
+  <% if @type == "textarea" %>
+    <%= tag.textarea(@value, **input_options.except(:type, :value).merge(rows: @options.fetch(:rows, 3))) %>
+  <% else %>
+    <%= tag.input(**input_options) %>
+  <% end %>
+  <% if @error %>
+    <p id="<%= field_id %>_error" class="mt-1 text-[11px] text-red-600 dark:text-red-400"><%= @error %></p>
+  <% elsif @hint %>
+    <p id="<%= field_id %>_hint" class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400"><%= @hint %></p>
+  <% end %>
+<% end %>

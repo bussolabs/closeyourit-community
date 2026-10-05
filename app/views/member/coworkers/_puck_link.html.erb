@@ -1,0 +1,16 @@
+<%# CYRA-992 — under the name, the start of the Puck's last answer; a green puck while it is working. %>
+<% latest = @latest_runs&.dig(puck.id) %>
+<% preview = latest && (latest.output.presence || latest.input).to_s.gsub(/[#*_`>\[\]]/, "").squish.truncate(60) %>
+<div class="flex min-w-0 items-center gap-1" data-controller="ui--dialog">
+  <%= render Ui::NavLinkComponent.new(label: puck.name, path: member_coworker_path(puck), active: @puck&.id == puck.id, size: :top, detail: preview.presence, class: "h-12! min-w-0 flex-1 [&>span:last-child]:order-first") do %>
+    <span class="relative flex shrink-0">
+      <%= render "member/coworkers/mascot", puck: puck, small: true %>
+      <% if latest&.active? %>
+        <span class="absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full bg-emerald-500 ring-2 ring-white motion-safe:animate-pulse dark:ring-zinc-900" title="<%= t("member.coworkers.working") %>" data-test="coworkers-puck-working"></span>
+      <% end %>
+    </span>
+  <% end %>
+  <%= render Ui::ButtonComponent.new(label: t("member.coworkers.edit_puck", name: puck.name), icon: "pencil", icon_only: true, variant: :ghost,
+        class: "shrink-0 min-h-11 min-w-11 md:min-h-0 md:min-w-0", test_id: "coworkers-edit-puck",
+        data: { action: "ui--dialog#open", ui__dialog_dialog_param: "coworker-edit-#{puck.id}" }) %>
+</div>

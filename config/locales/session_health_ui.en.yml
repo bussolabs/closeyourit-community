@@ -1,0 +1,35 @@
+en:
+  member:
+    nav:
+      session_health: Sessions
+    monitoring:
+      session_health:
+        title: Sessions
+        subtitle: "Crash-free sessions by release and environment, with missing outcomes always visible."
+        groups: groups
+        index:
+          empty: No sessions received
+          empty_body: "Session health shows whether a release ends without crashes. It does not record screens or user interactions."
+          empty_example: "Configure the project's Sentry DSN and enable session tracking in the SDK. Release groups appear after the first session arrives."
+          search: Search releases…
+          project: Project
+          environment: Environment
+          source: Source
+          all_sources: All sources
+          individual: Individual sessions
+          aggregate: Aggregated requests
+          release_environment: Release / environment
+          known: Known outcomes
+          crashed: Crashes
+          unknown: Unknown
+          rate: Crash-free
+          unknown_environment: Environment unknown
+          unavailable: No known outcomes
+          definition_title: How to read these numbers
+          definition: "Crash-free = (exited + errored + unhandled) / (exited + errored + unhandled + crashed). Open and abnormal sessions are unknown and excluded from the denominator. With no known outcomes, the rate is unavailable."
+          sources_note: "Individual sessions and aggregated requests stay separate. Aggregates have no delivery identifier, so identical retries cannot be deduplicated. Filters use the session start time; project and environment selectors show up to 200 values."
+          recordings_note: "These are session outcomes, not recordings. Screen recordings live in Session replay."
+          deduplication:
+            sid: Deduplicated by session ID
+            partial: Some sessions have no ID
+            unavailable: Retries cannot be deduplicated

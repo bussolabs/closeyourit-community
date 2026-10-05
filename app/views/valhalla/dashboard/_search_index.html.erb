@@ -1,0 +1,34 @@
+<%# locals: (tables:) %>
+<%# What semantic search can see, per kind of content: outdated and never-indexed rows are hidden from it. %>
+<%= render Ui::SectionComponent.new(title: t("valhalla.dashboard.search_index"), heading_size: :md, body_class: nil,
+      test_id: "valhalla-dashboard-search-index") do |section| %>
+  <% section.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: t("valhalla.nav.ai_settings"), href: valhalla_ai_settings_path, variant: :ghost, size: :sm) %>
+  <% end %>
+  <%= render(Ui::TableComponent.new(stacked: true, label: t("valhalla.dashboard.search_index"))) do |table| %>
+    <% table.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.col_content")) %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.col_aligned"), align: :right) %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.drift_stale_label"), align: :right) %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.drift_missing_label"), align: :right) %>
+    <% end %>
+    <% tables.each do |row| %>
+      <% key = row.key.to_s.dasherize %>
+      <%= render Ui::TableComponent::RowComponent.new(test_id: "valhalla-search-index-#{key}") do %>
+        <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+          <span class="flex items-center gap-2">
+            <%= render Ui::IconComponent.new(name: (row.drift? ? "triangle-alert" : "circle-check"), class: "text-[13px] #{row.drift? ? "text-red-500 dark:text-red-400" : "text-emerald-500"}") %>
+            <%= t("valhalla.dashboard.content_#{row.key}") %>
+          </span>
+        <% end %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.dashboard.col_aligned"), mono: true, align: :right, class: "text-gray-500 dark:text-zinc-400")) { "#{row.current}/#{row.embedded}" } %>
+        <%= render Ui::TableComponent::CellComponent.new(label: t("valhalla.dashboard.drift_stale_label"), align: :right) do %>
+          <span class="font-mono <%= row.stale.positive? ? "font-semibold text-red-600 dark:text-red-400" : "text-zinc-900 dark:text-zinc-100" %>" data-test="stat-drift-<%= key %>"><%= row.stale %></span>
+        <% end %>
+        <%= render Ui::TableComponent::CellComponent.new(label: t("valhalla.dashboard.drift_missing_label"), align: :right) do %>
+          <span class="font-mono <%= row.missing.positive? ? "font-semibold text-red-600 dark:text-red-400" : "text-zinc-900 dark:text-zinc-100" %>" data-test="stat-missing-<%= key %>"><%= row.missing %></span>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

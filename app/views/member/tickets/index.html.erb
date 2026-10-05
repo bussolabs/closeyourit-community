@@ -1,0 +1,65 @@
+<% content_for :title, t("member.tickets.title") %>
+<% can_manage = can_any?("tickets.edit") %>
+
+<%# Realtime: page-refresh morph, uno stream per progetto VISIBILE (@projects = visible.projects). %>
+<%# Il broadcaster manda solo il segnale (Ticketing::StatusBroadcasts post-commit): è questa GET a %>
+<%# ri-renderizzare, quindi scope, conteggi e filtri attivi restano quelli di chi guarda. Uno stream %>
+<%# org-wide che spediva le card renderizzate le faceva atterrare anche in board di chi quei progetti %>
+<%# non li vede — gli id board_column_/board_count_ sono uguali per tutti, gli status sono org-level %>
+<%# (CYRA-257). Il morph preserva scroll orizzontale delle colonne e drag in corso. %>
+<%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+<% @projects.each do |board_project| %>
+  <%= turbo_stream_from Realtime::Streams.project_board(board_project) %>
+<% end %>
+
+<div class="flex flex-col h-full md:-mx-px md:-mt-px md:h-[calc(100%+1px)]" data-controller="ticket-board"
+     data-ticket-board-can-manage-value="<%= can_manage %>"
+     data-ticket-board-grabbed-label-value="<%= t("member.tickets.board.a11y.grabbed_label") %>"
+     data-ticket-board-grabbed-message-value="<%= t("member.tickets.board.a11y.grabbed") %>"
+     data-ticket-board-moving-message-value="<%= t("member.tickets.board.a11y.moving") %>"
+     data-ticket-board-dropped-message-value="<%= t("member.tickets.board.a11y.dropped") %>"
+     data-ticket-board-cancelled-message-value="<%= t("member.tickets.board.a11y.cancelled") %>"
+     data-keyboard-doc="<%= board_keyboard_docs(can_manage:).to_json %>"
+     data-test="member-board">
+  <%# Live region: annuncia grab/spostamento/drop/annulla ai lettori di schermo (WP2.9). %>
+  <div class="sr-only" role="status" aria-live="polite" data-ticket-board-target="live" data-test="board-live"></div>
+  <div class="px-7 pt-7 pb-4 md:px-0 md:pt-0 md:pb-2">
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("member.tickets.title"),
+          subtitle: t("member.tickets.help_title"),
+          breadcrumb: [ { label: t("member.tickets.title") } ],
+          test_id: "board-header",
+          counts_test_id: "board-counts") do |h| %>
+      <% h.with_counts do %>
+        <%# CYRA-374 — lo stesso contatore della lista, con la stessa regola: cliccato mostra solo le
+            decisioni che aspettano te, ri-cliccato torna alla board intera. Vedi list.html.erb. %>
+        <%= render Ui::StatLabelComponent.new(label: t("stats.awaiting_me"), value: @awaiting_count,
+              value_color: (@awaiting_count.positive? ? :amber : :gray),
+              href: ((member_tickets_path(awaiting: ("me" unless awaiting_filter?)) if @awaiting_count.positive? || awaiting_filter?)),
+              active: awaiting_filter?, title: t("member.tickets.awaiting.chip_title"),
+              test_id: "board-stat-awaiting") %>
+        <%# CYRA-844 — i ticket con domande senza risposta, con la stessa regola del contatore sopra. %>
+        <%= render Ui::StatLabelComponent.new(label: t("stats.open_questions", count: @open_questions_count), value: @open_questions_count,
+              value_color: (@open_questions_count.positive? ? :amber : :gray),
+              href: ((member_tickets_path(questions: ("open" unless open_questions_filter?)) if @open_questions_count.positive? || open_questions_filter?)),
+              active: open_questions_filter?, title: t("member.tickets.open_questions.chip_title"),
+              test_id: "board-stat-open-questions") %>
+        <%= render Ui::StatLabelComponent.new(label: t("stats.tickets", count: @board_total), value: @board_total, test_id: "board-stat-tickets") %>
+        <%= render Ui::StatLabelComponent.new(label: t("stats.in_progress"), value: @board_in_progress, value_color: :indigo, test_id: "board-stat-in-progress", title: in_progress_chip_title(@in_progress_labels)) %>
+      <% end %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.tickets.ask.title"),
+              href: ask_member_tickets_path, variant: :secondary_muted, size: :sm,
+              icon: "wand-sparkles", test_id: "tickets-ask") %>
+        <%# data-keyboard-new: hook del tasto universale "n" (nuovo) — CYRA-28. %>
+        <%= render Ui::ButtonComponent.new(label: t("member.tickets.new"),
+              href: new_member_ticket_path, variant: :primary, size: :sm,
+              icon: "plus", test_id: "tickets-new", data: { keyboard_new: "" }) %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="flex min-h-0 flex-1 flex-col px-7 pb-7 md:px-0 md:pb-0">
+    <%= render "member/tickets/board", can_manage: can_manage %>
+  </div>
+</div>

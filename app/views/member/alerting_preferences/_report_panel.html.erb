@@ -1,0 +1,28 @@
+<%= render Ui::SectionComponent.new(title: t("member.notifications.report.heading"), header_padding: :wide,
+      body_class: nil, test_id: "pref-report") do |section| %>
+  <% section.with_subtitle do %>
+    <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.notifications.report.hint") %></p>
+  <% end %>
+  <div class="flex items-center gap-3 px-5 py-3.5">
+    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shrink-0"><%= render Ui::IconComponent.new(name: "chart-line", class: "text-[13px]") %></span>
+    <div class="min-w-0 flex-1">
+      <p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.notifications.report.label") %></p>
+      <p class="text-[11.5px] text-gray-500 dark:text-zinc-400">
+        <%= t("member.notifications.report.label_hint") %>
+        <%= link_to t("member.notifications.report.guide"), member_guides_reports_path,
+              class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "pref-report-guide" } %>
+      </p>
+    </div>
+    <div class="w-44 shrink-0"><%= render Ui::SelectComponent.new(name: "report_cadence",
+          options: ::Alerting::Preference.report_cadences.keys.map { |key| [ t("member.notifications.report.cadences.#{key}"), key ] },
+          selected: @preference.report_cadence,
+          aria_label: t("member.notifications.report.label"), test_id: "pref-report-cadence") %></div>
+  </div>
+  <%# Un riepilogo acceso con le email spente non arriva mai: dirlo qui evita l'attesa di
+      un'email che nessuno spedirà. %>
+  <% if @preference.report_cadence != "off" && !@preference.email_enabled %>
+    <p class="px-5 py-3 bg-amber-50/60 dark:bg-amber-500/10 border-t border-stone-100 dark:border-zinc-800 text-[11.5px] text-amber-800 dark:text-amber-200" data-test="pref-report-email-off">
+      <%= render Ui::IconComponent.new(name: "triangle-alert", class: "mr-1.5") %><%= t("member.notifications.report.email_off") %>
+    </p>
+  <% end %>
+<% end %>

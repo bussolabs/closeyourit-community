@@ -1,0 +1,43 @@
+<%# locals: (group:) %>
+<%# CYRA-903 — the name opens the area's overview, the chevron opens and closes the group. Two
+    controls side by side: a link inside a <summary> would nest two interactive elements. The server
+    opens the group holding the page; ui--nav-group keeps one open at a time and remembers it. %>
+<%# CYRA-909 — in compact mode the leaves are hidden: hover or focus shows them in the flyout below. %>
+<div data-ui--nav-group-target="group" data-nav-group-id="<%= group.id %>" data-test="<%= group.test %>"
+     data-action="mouseenter->ui--nav-flyout#enter mouseleave->ui--nav-flyout#leave focusin->ui--nav-flyout#enter focusout->ui--nav-flyout#leave keydown.esc->ui--nav-flyout#escape">
+  <div class="flex items-center gap-0.5">
+    <%# aria-current: "page" on the overview itself, "true" when the open page is inside the area (CYRA-583). %>
+    <%= render Ui::NavLinkComponent.new(label: group.label, path: group.path, icon: group.icon, active: group.active,
+          current: (group.overview_active ? "page" : "true"), test_id: group.link_test, class: "flex-1 min-w-0",
+          data: { nav_flyout: true }) do %>
+      <% if group.active %>
+        <span class="sr-only"><%= t("member.nav.current_area") %></span>
+        <span class="w-1.5 h-1.5 rounded-[2px] bg-indigo-500 shrink-0" data-test="member-current-area" aria-hidden="true"></span>
+      <% end %>
+    <% end %>
+    <button type="button" data-action="ui--nav-group#toggle" data-ui--nav-group-target="toggle"
+            aria-expanded="<%= group.active %>" aria-controls="member-nav-items-<%= group.id %>"
+            aria-label="<%= t("member.nav.group_toggle", group: group.label) %>"
+            data-test="member-nav-toggle-<%= group.id %>"
+            class="shrink-0 inline-flex items-center justify-center w-7 h-8 rounded-md text-gray-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-stone-100 dark:hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 [&[aria-expanded=true]>i]:rotate-90 md:group-data-[compact]/sidebar:hidden">
+      <%= render Ui::IconComponent.new(name: "chevron-right", class: "text-[10px] transition-transform motion-reduce:transition-none") %>
+    </button>
+  </div>
+  <div id="member-nav-items-<%= group.id %>" class="mt-0.5 space-y-0.5 md:group-data-[compact]/sidebar:hidden"
+       <%= "hidden" unless group.active %>>
+    <% group.items.each do |item| %>
+      <%= render Ui::NavLinkComponent.new(label: item.label, path: item.path, active: item.active, size: :leaf,
+            test_id: item.test) %>
+    <% end %>
+  </div>
+  <div popover="manual" data-ui--nav-flyout-target="panel" data-test="member-nav-flyout-<%= group.id %>"
+       aria-label="<%= group.label %>"
+       class="m-0 inset-auto w-56 p-1.5 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <p class="px-3 pt-1 pb-2 mb-1 border-b border-stone-100 dark:border-zinc-800 text-[12px] font-semibold text-zinc-900 dark:text-zinc-100" aria-hidden="true"><%= group.label %></p>
+    <div class="space-y-0.5">
+      <% group.items.each do |item| %>
+        <%= render Ui::NavLinkComponent.new(label: item.label, path: item.path, active: item.active, size: :flyout) %>
+      <% end %>
+    </div>
+  </div>
+</div>

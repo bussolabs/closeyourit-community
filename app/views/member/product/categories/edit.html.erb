@@ -1,0 +1,4 @@
+<%= render "form", category: @category, group: @category.group,
+      url: member_product_category_path(@category), method: :patch,
+      title: t("member.product.categories.edit"),
+      submit_label: t("member.product.categories.edit") %>

@@ -1,0 +1,14 @@
+<%# CYRA-883 — availability and the tools sending data are one question ("is it watched, is it up?"),
+    so they share one section. Uptime only on web/server projects (Projects::Project#supports_uptime?). %>
+<%= render Ui::SectionComponent.new(title: t("member.projects.show.monitoring"), header_layout: :row,
+      body_class: "divide-y divide-stone-100 dark:divide-zinc-800", test_id: "project-monitoring") do |section| %>
+  <% if @supports_uptime %>
+    <% section.with_actions do %>
+      <%= link_to t("member.projects.show.uptime_view_all"), member_monitoring_monitors_path(project_id: [ @project.id ]), class: "ml-auto text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "project-uptime-view-all" } %>
+    <% end %>
+  <% end %>
+  <% if @supports_uptime && @project_environments.any? %>
+    <%= render "member/projects/uptime_panel" %>
+  <% end %>
+  <%= render "member/projects/tools" %>
+<% end %>

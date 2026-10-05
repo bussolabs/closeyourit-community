@@ -1,0 +1,36 @@
+---
+it:
+  member:
+    guides:
+      index:
+        knowledge_review:
+          title: Revisione della knowledge
+      knowledge_review:
+        title: Revisione della knowledge
+        subtitle: Come decidere cosa entra nella knowledge e cosa resta fuori.
+        what_title: A cosa serve
+        what_intro: "Mentre lavori, un assistente può accorgersi di qualcosa che vale la pena conservare: un errore risolto, una decisione presa, una trappola in cui non ricadere. Invece di scriverlo dritto nella knowledge, lo propone qui e aspetta te."
+        what_b1: Finché una proposta aspetta, non compare nelle ricerche, nelle risposte e nei suggerimenti a lato dei ticket.
+        what_b2: Leggi la proposta per intero senza cambiare pagina, insieme alla riga che spiega perché è stata scritta.
+        what_b3: "Decidi con un clic: accettata entra nella knowledge, scartata resta da parte."
+        steps_title: Come si usa
+        step1: Apri Revisione dal menu, sotto Conoscenza. In cima trovi quante proposte aspettano una risposta.
+        step2: Leggi il titolo, la motivazione e il testo della proposta. Sono già davanti a te, sopra i due bottoni; quando la fila è lunga, dalla quarta in giù il testo si apre con un clic.
+        step3: Premi Accetta se la vuoi tenere. Da quel momento la pagina è visibile a tutti, entra nella ricerca e l'assistente la userà per rispondere.
+        step4: Premi Scarta se non serve. Sparisce dalla fila senza cancellare niente.
+        terminal_title: Decidere dal terminale
+        terminal_body: "Se stai già lavorando da riga di comando, non serve tornare qui: `cyi kb approve <pagina>` la accetta, `cyi kb reject <pagina>` la scarta. Prima di procedere ti viene chiesta una conferma, così una proposta non si decide per sbaglio."
+        terminal_b1: "Decidi sempre con il tuo accesso personale: accettare e scartare sono riservati alle persone, e un accesso automatico viene respinto senza toccare niente."
+        terminal_b2: "L'esito è lo stesso del sito: accettata entra subito nella ricerca, scartata resta da parte fra quelle già viste."
+        terminal_b3: "Segnare una pagina come scritta nei documenti resta un passaggio separato: accettare non lo fa e non lo sostituisce."
+        written_by_title: Chi ha scritto la pagina
+        written_by_body: "Ogni pagina dice due cose diverse: chi l'ha scritta e con l'accesso di chi. Un assistente scrive usando l'accesso di una persona, ma il testo non è suo: la fila di revisione e l'elenco lo dichiarano, così sai sempre cosa stai leggendo."
+        written_by_b1: "Il segno «Assistente» resta accanto al tipo anche dopo che hai accettato la pagina: la puoi ritrovare in ogni momento dall'elenco, col filtro «Scritta da»."
+        written_by_b2: "Il segno sparisce quando una persona riscrive il testo: conta almeno una parola su dieci, o comunque una ventina di parole. Correggere una virgola, un accento o un paio di parole non basta, e cambiare tag, tipo o progetti non conta — il segno riguarda il testo."
+        written_by_b3: "Sulle pagine più vecchie leggi «Non sappiamo chi l'ha scritta»: sono nate prima che il prodotto tenesse traccia di chi scrive, e dire che le ha scritte una persona sarebbe inventare."
+        written_by_note: Chi scrive dall'app è sempre una persona, e la sua pagina non porta nessun segno.
+        discard_title: Cosa succede a quello che scarti
+        discard_body: "Le proposte scartate non vengono cancellate, ma restano da parte in fondo alla pagina. Servono a una cosa sola: quando un assistente sta per proporti di nuovo la stessa nota, la ritrova fra le scartate e lascia perdere. Così una decisione presa una volta non torna a chiedertela ogni settimana."
+        file_title: Accettate, non ancora scritte nei documenti
+        file_body: Accettare rende la pagina cercabile subito, ma il testo definitivo vive anche fra i documenti del progetto. Finché quel passaggio manca, la pagina resta elencata in «Accettate, non ancora scritte nei documenti», così vedi a colpo d'occhio cosa c'è ancora da sistemare.
+        open_review: Vai alla Revisione

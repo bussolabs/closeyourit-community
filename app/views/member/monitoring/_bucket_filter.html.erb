@@ -1,0 +1,13 @@
+<%# locals:
+      label:      (required) finestra oraria del blocco selezionato (es. "09:00–09:30")
+      reset_path: (required) URL della show senza from/to (rimuove il drill-down, preserva gli altri filtri)
+    Chip di drill-down attivo (CYRA-46): cliccare una barra dell'istogramma filtra le occorrenze a quel
+    blocco temporale; questo chip lo segnala e permette di rimuovere il filtro. Condiviso da errori e metriche. %>
+<div class="flex items-center gap-2 rounded-lg border border-indigo-200 dark:border-indigo-500/40 bg-indigo-50/50 dark:bg-indigo-500/10 px-3 py-2" data-test="bucket-filter">
+  <%= render Ui::IconComponent.new(name: "filter", class: "text-indigo-500 dark:text-indigo-400 text-[11px]") %>
+  <span class="text-[12px] text-zinc-700 dark:text-zinc-300"><%= t("member.monitoring.bucket_filter.label") %></span>
+  <span class="font-mono text-[12px] font-semibold text-indigo-700 dark:text-indigo-300" data-test="bucket-filter-window"><%= label %></span>
+  <%= link_to reset_path, class: "ml-auto inline-flex items-center gap-1 rounded text-[12px] text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400", data: { test: "bucket-filter-clear" } do %>
+    <%= render Ui::IconComponent.new(name: "x", class: "text-[11px]") %><%= t("member.monitoring.bucket_filter.clear") %>
+  <% end %>
+</div>

@@ -1,0 +1,56 @@
+<%# Correlazione automatica: log + errori della stessa richiesta (trace_id) %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="log-request">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <div class="flex items-center flex-wrap gap-2">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.logs.show.request_title") %></h2>
+      <%# Badge volume onesto della richiesta: conta TUTTE le voci del trace (log incl. questo + errori). %>
+      <% if @entry.trace_id.present? %>
+        <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 rounded px-1.5 py-0.5 shrink-0" data-test="log-request-count"><%= t("member.monitoring.logs.show.request_count_logs", count: @related_logs_count) %><% if @related_errors_count.positive? %> · <%= t("member.monitoring.logs.show.request_count_errors", count: @related_errors_count) %><% end %></span>
+      <% end %>
+      <%# Provenienza: il trace è stato riconosciuto nel testo, non certificato dal client (CYRA-345). %>
+      <% if @entry.trace_id_extracted? %>
+        <span class="inline-flex items-center gap-1 text-[10.5px] text-amber-600 dark:text-amber-400" data-test="log-request-extracted"><%= render Ui::IconComponent.new(name: "wand-sparkles", class: "text-[9px]") %><%= t("member.monitoring.logs.show.request_extracted") %></span>
+      <% end %>
+    </div>
+  </div>
+  <% if @entry.trace_id.blank? %>
+    <p class="px-4 py-6 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="log-request-no-trace"><%= t("member.monitoring.logs.show.no_trace") %></p>
+  <% else %>
+    <div class="px-4 py-3 font-mono text-[11px] text-gray-500 dark:text-zinc-400 break-all"><%= t("member.monitoring.logs.show.request_body") %> · <span class="text-gray-500 dark:text-zinc-400"><%= @entry.trace_id %></span></div>
+    <% if @related.any? %>
+      <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+        <% @related.each do |rel| %>
+          <li class="px-4 py-2.5 hover:bg-stone-50 dark:hover:bg-zinc-800" data-test="related-log">
+            <%= link_to member_monitoring_log_entry_path(rel), class: "flex items-center gap-3" do %>
+              <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 w-16 shrink-0"><%= rel.occurred_at.strftime("%H:%M:%S") %></span>
+              <span class="font-mono text-[11px] font-semibold <%= "text-#{log_level_color(rel.level)}-600" %> w-16 shrink-0"><%= rel.level %></span>
+              <span class="text-[12.5px] text-zinc-700 dark:text-zinc-300 truncate"><%= rel.message %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="px-4 py-3 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="related-log-none"><%= t("member.monitoring.logs.show.request_none") %></p>
+    <% end %>
+    <% if @related_errors.any? %>
+      <div class="px-4 py-3 border-t border-stone-100 dark:border-zinc-800">
+        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-2"><%= t("member.monitoring.logs.show.request_errors") %></p>
+        <div class="flex flex-wrap gap-1.5">
+          <% @related_errors.each do |event| %>
+            <% next if event.group.nil? %>
+            <%= link_to member_monitoring_error_group_path(event.group), class: "inline-flex items-center gap-1.5 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2 py-1 text-[11.5px] hover:border-indigo-200 dark:hover:border-indigo-500/40 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "related-error" } do %>
+              <%= render Ui::IconComponent.new(name: "bug", class: "text-[10px] text-#{log_level_color(event.level)}-500") %><span class="truncate max-w-[220px]"><%= event.group.title %></span>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+    <%# Pivot allo stream log COMPLETO del trace (filtri/facet/ordinamento), pre-filtrato per
+        trace_id ESATTO + progetto: stesso scoping del badge, nessun log estraneo (CYRA-345). %>
+    <div class="px-4 py-2.5 border-t border-stone-200 dark:border-zinc-800">
+      <%= link_to member_monitoring_log_entries_path(trace_id: @entry.trace_id, project_id: @entry.project_id), class: "inline-flex items-center gap-1.5 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded", data: { test: "log-request-view-all" } do %>
+        <%= t("member.monitoring.logs.in_error_view_all") %><%= render Ui::IconComponent.new(name: "arrow-right", class: "text-[10px]") %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

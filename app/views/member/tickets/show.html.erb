@@ -1,0 +1,102 @@
+<%# CYRA-393: il codice viaggia da solo (rami, commit, chat) e le sigle non sono tutte
+    derivabili: accanto al codice ci va sempre il nome del progetto. %>
+<% content_for :title, "#{@ticket.code} · #{@ticket.project.name}" %>
+<% can_manage = can?("tickets.edit", scope: @ticket.project) %>
+
+<div class="p-7 space-y-6" data-test="member-ticket">
+  <%# Sottoscrizione realtime al singolo ticket: timeline (append commenti/eventi), badge stato,
+      assignee, watcher e contatore commenti arrivano live. Stream tenant-prefissato da Realtime::Streams. %>
+  <%= turbo_stream_from Realtime::Streams.ticket(@ticket) %>
+  <%= render "member/tickets/show_header", can_manage: can_manage %>
+
+  <%# CYRA-384 — le segnalazioni di sicurezza della lavorazione automatica: in cima a tutto, prima
+      della decisione da prendere. Stavano dentro il testo lungo di una scheda secondaria, e chi
+      decideva approvava senza averle mai lette. %>
+  <%# CYRA-603 — tre esiti, non due. Con almeno una segnalazione l'avviso rosso, come già previsto.
+      Con la dichiarazione presente ma vuota una riga sobria: «controllato, niente da segnalare» —
+      perché «ho guardato e non ho trovato niente» è una risposta, e prima era indistinguibile dal
+      silenzio. Senza dichiarazione la pagina non dice nulla, come prima: ma adesso quel nulla
+      significa una cosa sola, «nessuno ha guardato». %>
+  <%# CYRA-782 — il ticket è fermo perché aspetta una risposta. Sta in testa a OGNI scheda, come le
+      segnalazioni di sicurezza: chi apre il dettaglio deve saperlo, non scoprirlo aprendo la scheda
+      giusta. Una macchina non lo prenderà in carico finché la domanda resta aperta. %>
+  <% if @blocking_questions.positive? %>
+    <%= render Ui::AlertComponent.new(variant: :warning, test_id: "ticket-blocked-by-questions") do %>
+      <%= t("member.tickets.questions.blocked", count: @blocking_questions) %>
+      <%= link_to t("member.tickets.questions.blocked_link"), member_ticket_path(@ticket, tab: "questions"),
+            class: "font-semibold underline underline-offset-2" %>
+    <% end %>
+  <% end %>
+
+  <% if @security_findings.any? %>
+    <%= render "member/tickets/security_findings", findings: @security_findings %>
+  <% elsif @security_findings_declared %>
+    <p class="mb-4 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="ticket-security-clear">
+      <%= render Ui::IconComponent.new(name: "shield-check", class: "mr-1.5 text-gray-400 dark:text-zinc-500") %>
+      <%= t("member.tickets.automation.security.clear") %>
+    </p>
+  <% end %>
+
+  <%# CYRA-402 — la decisione che sblocca il lavoro stava in mezzo a nove bottoni tutti uguali,
+      accanto a «Elimina». Qui sale in cima, col contesto e un solo bottone principale: il rifiuto
+      resta accanto, come azione secondaria, perché chiede una motivazione. %>
+  <%# CYRA-557 — la decisione si offre solo se c'è qualcosa da leggere. Il banner diceva «il lavoro è
+      finito» e il suo link portava sempre alla scheda Automazione, che senza tentativi dichiara di
+      non avere niente: si approvava sulla fiducia una lavorazione che poteva non essere nemmeno
+      partita. `@review_evidence_tab` è la scheda che ha DAVVERO il racconto (resoconto, discussione o
+      automazione); nil significa che non è stato consegnato niente, e allora si dice — lo stato resta
+      modificabile dal pannello Dettagli, per chi sa qualcosa che la pagina non sa. %>
+  <% if can_manage && @ticket.status.review_gate? %>
+    <%= render "member/tickets/review_decision" %>
+  <% end %>
+
+  <%= render Ui::GridComponent.new(cols: 1, lg: 3, gap: 6) do %>
+    <%# colonna principale: la scheda scelta %>
+    <%= render Ui::StackComponent.new(gap: 6, class: "lg:col-span-2") do %>
+      <% if @tab == "analysis" %>
+        <%= render "member/tickets/technical_analysis", ticket: @ticket, can_manage: can_manage %>
+      <% elsif @tab == "report" %>
+        <% if @report %>
+          <%= render "member/tickets/report", report: @report, reports: @reports, ticket: @ticket, previous: @previous_report %>
+        <% end %>
+        <%# CYRA-883 — the agent's own work report lives here, next to the written one. %>
+        <% if @work_report_attempt %>
+          <div class="mt-4"><%= render "member/tickets/automation_work_report", attempt: @work_report_attempt %></div>
+        <% end %>
+        <%# CYRA-627 — sotto il racconto del lavoro, quello che il sistema ha guardato davvero. Sta
+            sul TICKET e non solo nella coda delle decisioni: là la scheda sparisce nel momento
+            esatto in cui il lavoro risulta finito, cioè proprio quando vorresti controllare com'è
+            andato il rilascio. %>
+        <div class="mt-4">
+          <%= render "member/tickets/delivery_evidence", workflow: @workflow %>
+        </div>
+      <% elsif @tab == "automation" %>
+        <%= render "member/tickets/automation_tab", ticket: @ticket, workflow: @workflow, attempts: @attempts,
+              clarifications: @clarifications, current_plan: @current_plan, blocked_failures: @blocked_failures,
+              retrying_phase: @retrying_phase, can_manage: can_manage, summary: @automation_summary %>
+      <% elsif @tab == "questions" %>
+        <%= render "member/tickets/questions_tab", ticket: @ticket, questions: @questions,
+              can_manage: can_manage %>
+      <% elsif @tab == "discussion" %>
+        <%= render "member/tickets/discussion", ticket: @ticket, timeline: @timeline,
+              comments_count: @comments_count, visible_ticket_ids: @visible_event_ticket_ids,
+              can_manage: can_manage %>
+      <% else %>
+        <%= render "member/tickets/show_overview", can_manage: can_manage %>
+      <% end %>
+    <% end %>
+
+    <%# CYRA-883 — side column grouped by question: who and what (Agents, Details), code (GitHub),
+        links between tickets (Connections), where it comes from (Context). Audit closes the page. %>
+    <%= render Ui::StackComponent.new(gap: 6) do %>
+      <%= render "member/tickets/agent_eligibility_panel", ticket: @ticket, can_manage: can_manage %>
+      <%= render "member/tickets/details_panel", can_manage: can_manage %>
+      <%= render "member/tickets/github_panel", ticket: @ticket %>
+      <%= render "member/tickets/connections_panel", can_manage: can_manage %>
+      <%= render "member/tickets/helpdesk_requests_panel", requests: @helpdesk_requests %>
+      <%= render "member/tickets/context_panel" %>
+    <% end %>
+  <% end %>
+
+  <%= render "member/tickets/page_footer" %>
+</div>

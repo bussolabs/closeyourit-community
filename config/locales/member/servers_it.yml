@@ -1,0 +1,432 @@
+it:
+  member:
+    nav:
+      servers: Server
+    servers:
+      title: Server
+      subtitle: Le macchine che l'agent monitora
+      todo:
+        title: "Da fare sulla flotta"
+        reboot:
+          one: "1 macchina aspetta un riavvio"
+          other: "%{count} macchine aspettano un riavvio"
+        security_updates:
+          one: "1 macchina ha aggiornamenti di sicurezza in attesa"
+          other: "%{count} macchine hanno aggiornamenti di sicurezza in attesa"
+        services_failed:
+          one: "1 macchina ha un servizio caduto"
+          other: "%{count} macchine hanno servizi caduti"
+        disk:
+          one: "1 macchina ha il disco oltre soglia"
+          other: "%{count} macchine hanno il disco oltre soglia"
+        cpu:
+          one: "1 macchina ha la CPU oltre soglia"
+          other: "%{count} macchine hanno la CPU oltre soglia"
+        mem:
+          one: "1 macchina ha la memoria oltre soglia"
+          other: "%{count} macchine hanno la memoria oltre soglia"
+      stat_up: Attive
+      data_age: "dato di %{time} fa"
+      down_reason: "nessun dato da %{time}"
+      stat_down: Non raggiungibili
+      stat_over:
+        cpu: "CPU oltre soglia"
+        mem: "Memoria oltre soglia"
+        disk: "Disco oltre soglia"
+      stat_total: Totali
+      tokens_link: Token agent
+      connect_cta: "Collega una macchina"
+      empty: Nessun server
+      empty_body: Installa closeyourit-agent sui tuoi server e si registreranno qui automaticamente al primo push.
+      empty_cta: Crea un token agent
+      search_placeholder: Cerca per nome o hostname…
+      count: "%{count} server"
+      no_match: Nessun server corrisponde ai filtri.
+      filter_group: Gruppo
+      filter_status: Stato
+      col_host: Server
+      col_status: Stato
+      col_cpu: CPU
+      col_mem: Memoria
+      col_disk: Disco
+      col_load: Carico
+      col_load_hint: "Quanto è impegnata la macchina: media degli ultimi 1, 5 e 15 minuti."
+      col_temp: Temp
+      col_os: OS
+      col_last_seen: Ultimo dato
+      updates_badge: "%{count} update"
+      reboot_badge: riavvio richiesto
+      time_ago: "%{time} fa"
+      uptime_days: "%{days}g"
+      filtered_by_token: "Solo le macchine registrate con il codice «%{name}»."
+      filtered_clear: Mostra tutte
+      status:
+        silent: "Silenziosa"
+        pending: In attesa
+        up: "Up"
+        down: Non raggiungibile
+        paused: In pausa
+        revoked: Revocato
+      db_role:
+        primary: primary
+        standby: standby
+      updated: Server aggiornato.
+      deleted: Server eliminato.
+      paused_notice: Server in pausa — niente controlli di silenzio né alert finché non riprende.
+      resumed_notice: Server ripreso — tornerà up al prossimo push dell'agent.
+      revoked_notice: Server revocato — l'agent ora riceve 403 e si ferma.
+      unrevoked_notice: Server ripristinato — l'agent può tornare a inviare.
+      edit_title: Modifica server
+      back: Torna al server
+      form:
+        name: Nome
+        name_hint: Nome mostrato nella flotta (l'hostname resta quello riportato dall'agent).
+        groups_title: Gruppi
+        groups_hint: "Le etichette con cui organizzi la flotta — «produzione», «staging», «CI». Separale con una virgola. Servono a filtrare e a raggruppare l'elenco per rispondere a «come sta la produzione»."
+        groups_placeholder: "produzione, database"
+        save: Salva
+        cancel: Annulla
+        thresholds_title: Soglie di allarme
+        ignored_containers_title: Container che non sono servizi
+        ignored_containers_hint: "Un frammento di nome per riga. I container che ne contengono uno non generano l'avviso «container caduto»: servono per quelli di compilazione e test, che nascono e muoiono a ogni lavorazione. Minimo tre caratteri, così un filtro troppo largo non nasconde guasti veri."
+        ignored_containers_placeholder: "ci-runner\ntest-postgres"
+        ignored_services_title: Servizi da non avvisare
+        ignored_services_hint: "Un frammento di nome per riga. Le unit systemd che ne contengono uno non generano l'avviso «servizio in errore»: serve per quelle rumorose, che falliscono per come sono fatte. Il pannello continua a mostrarle; qui si tace solo l'avviso. Minimo tre caratteri."
+        ignored_services_placeholder: "motd-news\nfwupd-refresh"
+        thresholds_hint: Il limite oltre cui questa macchina fa scattare un avviso. Lascia vuoto per usare la regola generale dell'organizzazione.
+        cpu_threshold: Soglia CPU
+        mem_threshold: Soglia memoria
+        disk_threshold: Soglia disco
+        threshold_unit: "%"
+      limits:
+        label: "soglia %{value}"
+      alerts:
+        title: Regole di avviso
+        count: "%{count} regole"
+        via_app: nell'app
+        last_triggered: "ultimo avviso %{time} fa"
+        never_triggered: mai scattato su questa macchina
+        empty_body: Nessuna regola di avviso copre questa macchina. Senza una regola i valori alti non avvisano nessuno.
+        empty_link: Crea una regola di avviso
+        muted_badge: silenziata qui
+        mute_here: silenzia su questa macchina
+        unmute_here: riattiva qui
+        muted_here: "«%{rule}» non avviserà più su questa macchina. Continua a valere per tutte le altre."
+        unmuted_here: "«%{rule}» torna ad avvisare su questa macchina."
+        col_rule: Regola
+        col_limit: Limite
+        col_last: Ultimo avviso
+        col_channels: Canali
+        col_action: Azione
+        last_ago: "%{time} fa"
+        never: mai
+      tabs:
+        overview: Panoramica
+        metrics: Metriche
+        hardware: Dischi e hardware
+        workloads: Container e servizi
+        log: Registro di sistema
+        operations: Operazioni
+        alerts: Regole di avviso
+      overview:
+        vital_cpu: CPU
+        vital_mem: Memoria
+        vital_disk: Disco
+        vital_load: Carico
+        vital_temp: Temperatura
+        specs_title: Specifiche
+        attention_title: Da sistemare
+        all_fine: "Niente da sistemare su questa macchina."
+        reboot: "In attesa di riavvio"
+        updates:
+          one: "1 aggiornamento di sicurezza in attesa"
+          other: "%{count} aggiornamenti di sicurezza in attesa"
+        services_failed:
+          one: "1 servizio fallito"
+          other: "%{count} servizi falliti"
+        journal:
+          one: "1 errore di sistema nel registro"
+          other: "%{count} errori di sistema nel registro"
+      show:
+        section_gpu: Scheda grafica
+        gpu_usage: Uso
+        gpu_power: Assorbimento
+        gpu_temp: Temperatura
+        gpu_memory: Memoria
+        gpu_memory_unavailable: non esposta da questa scheda
+        chart_gpu: Scheda grafica
+        chart_gpu_watt: Assorbimento
+        section_temperature: Temperature
+        sensors: Sensori
+        sensors_hint: Il grafico segue il sensore più caldo; qui sotto ci sono tutti.
+        section_cpu: Processore
+        cpu_breakdown: Come viene usato
+        cpu_user: Programmi
+        cpu_system: Sistema
+        cpu_iowait: In attesa del disco
+        cpu_steal: Tolto da altri
+        cpu_idle: Libero
+        cpu_cores: Singoli processori
+        section_memory: Memoria
+        swap: Memoria di scambio
+        swap_hint: "Quando la memoria finisce, la macchina usa il disco: è molto più lenta."
+        section_disk: Disco
+        disk_io: Velocità del disco
+        disk_util: Quanto è impegnato
+        disk_read_wait: Attesa in lettura
+        disk_write_wait: Attesa in scrittura
+        section_network: Rete
+        chart_net: Traffico
+        nics: Interfacce
+        nic_sent: inviati
+        nic_recv: ricevuti
+        uptime: Acceso da
+        status_label: Stato
+        hostname_label: Host
+        os_label: Sistema
+        agent_label: Agent
+        charts: Metriche di sistema
+        chart_cpu: CPU
+        chart_mem: Memoria
+        chart_disk: Disco
+        chart_temp: Temperatura
+        chart_summary: "Istogramma %{metric}, ultimi %{range}"
+        chart_summary_scaled: "Istogramma %{metric}, ultimi %{range}, scala da 0 a %{max}"
+        no_data: nessun dato
+        hires_since: "Misure di dettaglio disponibili da %{time}"
+        containers: Container
+        containers_empty: Nessun container riportato.
+        col_container: Container
+        col_health: Health
+        container_restarts:
+          one: "%{count} riavvio"
+          other: "%{count} riavvii"
+        container_oom: memoria esaurita
+        health:
+          none: nessun controllo
+          healthy: in salute
+          unhealthy: in errore
+          starting: in avvio
+        col_mem_abs: Memoria
+        col_net: Rete
+        processes: Processi principali
+        processes_hint: top per CPU e memoria
+        processes_name: Processo
+        processes_mem: Memoria
+        systemd: Servizi systemd
+        systemd_counts: "%{total} servizi · %{failed} in errore"
+        systemd_empty: Nessun servizio riportato.
+        systemd_all_ok: Nessun servizio in errore.
+        systemd_show_all:
+          one: Mostra il servizio
+          other: "Mostra tutti i %{count} servizi"
+        systemd_rest:
+          idle: a riposo
+          stopped: fermo
+        database: Database
+        help_database: Il database rilevato su questo server — stato, connessioni aperte, ritardo della replica e spazio occupato. Compare solo se l'agent trova un database sulla macchina.
+        database_status:
+          up: raggiungibile
+          down: non raggiungibile
+          unknown: sconosciuto
+        database_unreachable: Database rilevato ma non interrogabile — potrebbe essere fermo o rifiutare la connessione dell'agent.
+        database_connections: Connessioni
+        database_reserved:
+          one: "%{count} slot dei %{max} è tenuto da parte per le emergenze."
+          other: "%{count} slot dei %{max} sono tenuti da parte per le emergenze."
+        connection_states:
+          active: al lavoro
+          idle: in attesa
+          idle_in_transaction: transazione aperta e ferma
+          idle_in_transaction_aborted: transazione interrotta e ferma
+          fastpath_function_call: chiamata diretta
+          disabled: disattivate
+        database_replication: Replica
+        database_streaming_on: copia allineata
+        database_streaming_off: copia ferma
+        database_lag_value: "%{value} s di ritardo"
+        database_tables: Tabelle più grandi
+        database_empty: Nessun dato riportato.
+        smart: SMART
+        smart_empty: Nessun dato SMART riportato.
+        help_smart: S.M.A.R.T. è il sistema di autodiagnosi dei dischi — segnala se un disco è sano (passed) o a rischio di guasto (failing).
+        disks: Dischi
+        disk_root: disco di sistema
+        disk_charted: "· quello del grafico"
+        disk_free: "%{free} liberi su %{total}"
+        disk_inodes: "inode al %{pct}"
+        disks_hint: I dischi che l'agent misura su questa macchina. La percentuale del grafico riguarda solo il disco di sistema.
+        detail_cpu_model: CPU
+        detail_cores: Core
+        detail_memory: Memoria
+        detail_os: OS
+        detail_kernel: Kernel
+        detail_fingerprint: Fingerprint
+        detail_updates: Aggiornamenti disponibili
+        detail_security_updates: Di cui di sicurezza
+        detail_reboot: Riavvio richiesto
+        detail_temp: Temperatura
+        temp_unavailable: non esposta da questo hardware
+        updates_count:
+          one: 1 pacchetto
+          other: "%{count} pacchetti"
+        updates_unknown: sconosciuto
+        reboot_yes: "sì — in attesa"
+        reboot_no: "no"
+        projects: Ambienti collegati
+        projects_none: Nessun ambiente di progetto collegato.
+        projects_help: "Il collegamento associa a mano questa macchina agli ambienti di un progetto: si imposta dal progetto e serve a legare avvisi e monitoraggi. Non è un conteggio automatico di ciò che gira qui."
+        projects_link_cta: "Vai ai progetti per collegarla"
+        projects_detected:
+          one: "Rilevato %{count} progetto non ancora collegato: vuoi collegarlo?"
+          other: "Rilevati %{count} progetti non ancora collegati: vuoi collegarli?"
+        projects_detected_hint: "Proposte dai nomi di container e database della macchina: confermale collegandole dal progetto."
+        next_steps: "E adesso?"
+        open_ticket: "Apri un ticket su questa macchina"
+        see_alerts: "Avvisi scattati qui"
+        ticket_title: "Problema sulla macchina %{host}"
+        ticket_intro: "Aperto dalla pagina della macchina %{host}. Valori al momento dell'apertura:"
+        journal: Registro di sistema (errori)
+        journal_count: "%{count} righe · ultime 48h"
+        journal_empty: Nessun errore nel registro di sistema nelle ultime 48h.
+        journal_col_level: Livello
+        journal_col_time: Quando
+        journal_col_unit: Servizio
+        journal_col_message: Messaggio
+        journal_snapshot: Ultime righe del registro di sistema
+        journal_priority:
+          "0": emerg
+          "1": alert
+          "2": crit
+          "3": err
+          "4": warning
+          "5": notice
+          "6": info
+          "7": debug
+      actions:
+        pause: Sospendi gli avvisi
+        resume: Riattiva gli avvisi
+        revoke: Scollega dalla flotta
+        unrevoke: Ricollega alla flotta
+        edit: Modifica
+        delete: Elimina
+        # CYRA-468 — menu delle azioni delicate + conferma per digitazione (fuori dalla prima fila).
+        more: Altre azioni
+        menu_title: Azioni delicate
+        confirm_hint_html: "Per confermare, scrivi il nome della macchina — %{name} — qui sotto."
+        confirm_placeholder: nome della macchina
+        confirmation_invalid: "Il nome non corrisponde: non ho toccato niente."
+        revoke_title: Scollega dalla flotta
+        revoke_impact: "L'agent di questa macchina smette di inviare dati; riguarda solo questa macchina, non tutta la flotta. Lo storico già raccolto resta ed è reversibile con «Ricollega alla flotta»."
+        revoke_submit: Scollega questa macchina
+        delete_title: Elimina la macchina
+        delete_impact:
+          one: "Cancella la macchina e tutto il suo storico (fino a %{count} giorno). È definitivo. Se l'agent è ancora attivo si registrerà di nuovo."
+          other: "Cancella la macchina e tutto il suo storico (fino a %{count} giorni). È definitivo. Se l'agent è ancora attivo si registrerà di nuovo."
+        delete_submit: Elimina definitivamente
+        # CYRA-245 — riadozione: l'unico modo per cui la credenziale di una macchina viva viene
+        # sostituita. Il testo dice cosa succede se nessuno si presenta, perché è la domanda che si
+        # fa chi sta per premere.
+        reenroll_title: Ho reinstallato l'agent qui
+        reenroll_impact:
+          one: "Autorizza per %{count} minuto la prima installazione che si presenta a prendere il posto di quella registrata su questa macchina. Finché non si presenta nessuno non cambia niente, e passato il tempo tutto torna com'era."
+          other: "Autorizza per %{count} minuti la prima installazione che si presenta a prendere il posto di quella registrata su questa macchina. Finché non si presenta nessuno non cambia niente, e passato il tempo tutto torna com'era."
+        reenroll_submit: Autorizza la nuova installazione
+        reenroll_notice: "Autorizzata fino alle %{time}: la prossima installazione che si presenta prende il posto della precedente."
+      enrollment:
+        conflict_title: Qualcuno ha provato a prendere il posto di questa macchina
+        conflict_body: "Ultimo tentativo: %{time}. Non abbiamo toccato niente — questa macchina continua a inviare i suoi dati come prima. Se sei stato tu, perché hai reinstallato l'agent qui, autorizzalo da «Altre azioni»."
+        reenrollment_open_title: In attesa della nuova installazione
+        reenrollment_open_body: "Fino alle %{time} la prima installazione che si presenta prende il posto di quella attuale. Se non si presenta nessuno non cambia niente."
+      action_queue:
+        title: Azioni operative
+        confirmation_hint: "Per confermare, scrivi il nome del server: %{name}"
+        confirmation_invalid: Il nome del server non corrisponde.
+        agent_upgrade_required: "L'agent installato su questo server non supporta questa azione: aggiornalo."
+        updates_breakdown: "Aggiornamenti in attesa: %{total} in tutto, di cui %{security} di sicurezza e %{other} ordinari."
+        security_updates: Installa aggiornamenti di sicurezza
+        all_updates: Installa tutti gli aggiornamenti
+        all_updates_confirm: Vengono installati tutti gli aggiornamenti disponibili, non solo quelli di sicurezza. Continuare?
+        submitting: Invio…
+        reboot: Riavvia server
+        reboot_confirm: Il server diventerà temporaneamente irraggiungibile. Continuare?
+        created: Azione accodata.
+        cancelled: Azione annullata.
+        cancel: Annulla
+        output: Vedi il dettaglio
+        empty: Nessuna azione eseguita.
+        kinds:
+          apply_security_updates: Aggiornamenti di sicurezza
+          apply_all_updates: Tutti gli aggiornamenti
+          reboot: Riavvio
+        statuses:
+          queued: In attesa
+          running: In corso
+          succeeded: Completata
+          failed: Fallita
+          cancelled: Annullata
+          expired: Scaduta
+          interrupted: Interrotta
+        details:
+          queued: "Richiesta alle %{time}. Il server la prende in carico al prossimo controllo, di solito entro un minuto."
+          running: "In corso dalle %{time}."
+          succeeded: "Completata alle %{time}."
+          failed: "Fallita alle %{time} (codice %{code})."
+          cancelled: "Annullata alle %{time}."
+          expired: "Scaduta prima che il server la prendesse in carico: era irraggiungibile."
+          interrupted: "Partita alle %{time}. Il server non ha mai comunicato com'è andata: non sappiamo se sia stata eseguita. Controlla la macchina prima di rilanciarla."
+      tokens:
+        title: Token agent
+        help_title: "La chiave con cui i server mandano i loro dati."
+        breadcrumb: Token agent
+        stat_active: Attivi
+        stat_revoked: Revocati
+        reveal_created: "Token “%{name}” creato"
+        copy_now: Copialo ora — non sarà più mostrato
+        secret: Enrollment token
+        copy: Copia
+        copied: Copiato!
+        close: Chiudi
+        form_title: Nuovo token
+        form_name: Nome
+        form_submit: Crea token
+        empty: Nessun token — creane uno per arruolare gli agent.
+        col_name: Nome
+        col_prefix: Prefisso
+        col_servers: Server collegati
+        col_last_enrollment: Ultima registrazione
+        last_enrollment_hint: "Quando una macchina si è registrata con questo codice l'ultima volta — non quando ha inviato gli ultimi dati."
+        col_expiry: Scadenza
+        never_expires: Non scade
+        servers_none: Nessuna
+        servers_view: "Vedi le macchine"
+        col_status: Stato
+        status_active: Attivo
+        status_revoked: Revocato
+        revoke: Revoca
+        revoke_title: Revoca il codice
+        revoke_impact:
+          zero: "Nessuna macchina risulta collegata a questo codice."
+          one: "1 macchina è collegata a questo codice: dopo la revoca non potrà più registrarsi con questo codice."
+          other: "%{count} macchine sono collegate a questo codice: dopo la revoca non potranno più registrarsi con questo codice."
+        revoke_type_prompt_html: "Per confermare, scrivi %{name} qui sotto."
+        revoke_confirm_placeholder: "nome del codice"
+        revoke_submit: Revoca definitivamente
+        revoke_denied: "Conferma non valida: il codice non è stato revocato."
+        revoked:
+          zero: Codice revocato.
+          one: "Codice revocato: 1 macchina era collegata."
+          other: "Codice revocato: %{count} macchine erano collegate."
+        compromised_title: Hai perso un codice o è finito nelle mani sbagliate?
+        compromised_body: "Crea un codice nuovo qui sopra, aggiorna gli agent con il nuovo segreto, poi revoca quello vecchio. Le macchine già registrate continuano a inviare; le nuove installazioni useranno solo il codice valido."
+        snippet_title: Installa l'agent
+        status_waiting: "Nessuna macchina ha ancora mandato dati con questo collegamento: dopo aver lanciato il comando, ricarica la pagina."
+        status_arrived: "%{count} macchine stanno già mandando i loro dati."
+        snippet_lead: "Il segreto si vede una volta sola, quando lo crei: se non ce l'hai più, creane uno nuovo qui sopra e usa quello. Nel comando va al posto di CYI_TOKEN."
+        snippet_docker: "Con Docker Compose"
+        snippet_binary: "Macchine che ospitano un database (senza Docker)"
+        snippet_binary_lead: "Sulle macchine dove non gira Docker si installa il programma direttamente: stesso indirizzo, stesso segreto."
+        token_placeholder: "il tuo segreto"
+        copy: "Copia"
+        copied: "Copiato"
+        guide_link: "Leggi la guida"

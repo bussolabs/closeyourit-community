@@ -1,0 +1,51 @@
+<%# locals: ticket
+    Corpo dell'eleggibilità agenti (CYRA-184, CYRA-770): la DECISIONE — chi può lavorare il ticket —
+    e, sotto, il PARERE dell'AI, che è un consiglio e non uno stato. Le due cose stavano nello stesso
+    badge e si confondevano: un parere favorevole SEMBRAVA un via libera, e infatti lo era. Ora il
+    badge dice solo che cosa ha deciso una persona; il parere è una riga a sé, che si legge come tale.
+    È il target del broadcast realtime (Ticketing::SetAgentEligibility) — il parere arriva da un job,
+    quindi chi ha la pagina aperta lo vede comparire senza ricaricare. Viewer-agnostico di proposito:
+    i pulsanti di override sono per-viewer (gated can_manage) e stanno nel pannello che lo contiene,
+    FUORI da questo div — se ci finissero dentro, il primo broadcast li cancellerebbe dalla pagina di
+    chi gestisce il ticket. %>
+<div id="<%= dom_id(ticket) %>_agent_eligibility" class="space-y-2" data-test="member-ticket-agent-eligibility">
+  <%# CYRA-883 — the verdict and the reason of the DECISION on one line. The advice has its own, below. %>
+  <p class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+    <%= render Ui::BadgeComponent.new(label: t("member.tickets.agent_eligibility.#{ticket.agent_eligibility}"),
+                                      color: agent_eligibility_color(ticket.agent_eligibility), dot: true) %>
+    <% if ticket.agent_eligibility_reason.present? %>
+      <span class="text-[12px] text-gray-700 dark:text-zinc-300" data-test="member-ticket-agent-eligibility-reason"><%= ticket.agent_eligibility_reason %></span>
+    <% elsif ticket.agent_eligibility_advice_unknown? %>
+      <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.agent_eligibility.not_evaluated_yet") %></span>
+    <% end %>
+  </p>
+
+  <%# Su un ticket su cui nessuno ha deciso non c'è niente da attribuire: niente paragrafo, così non
+      resta una riga vuota a spingere in giù i pulsanti. %>
+  <% if ticket.agent_eligibility_source_human? && ticket.agent_eligibility_decided_at %>
+    <p class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="agent-eligibility-attribution">
+      <%= t("member.tickets.agent_eligibility.decided_by",
+            name: ticket.agent_eligibility_decided_by&.name || t("member.tickets.agent_eligibility.unknown_actor"),
+            when: l(ticket.agent_eligibility_decided_at, format: :long)) %>
+    </p>
+  <% end %>
+
+  <%# Il parere dell'AI. Nessun badge: un badge accanto a quello della decisione tornerebbe a
+      leggersi come un secondo stato, ed è esattamente l'equivoco che questo ticket chiude. %>
+  <% unless ticket.agent_eligibility_advice_unknown? %>
+    <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2 space-y-1" data-test="agent-eligibility-advice">
+      <p class="text-[12px] text-gray-700 dark:text-zinc-300">
+        <%= t("member.tickets.agent_eligibility.advice.summary",
+              verdict: t("member.tickets.agent_eligibility.advice.#{ticket.agent_eligibility_advice}")) %>
+      </p>
+      <% if ticket.agent_eligibility_advice_reason.present? %>
+        <p class="text-[12px] text-gray-600 dark:text-zinc-400" data-test="agent-eligibility-advice-reason"><%= ticket.agent_eligibility_advice_reason %></p>
+      <% end %>
+      <% if ticket.agent_eligibility_evaluated_at %>
+        <p class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="agent-eligibility-advice-evaluated-at">
+          <%= t("member.tickets.agent_eligibility.advice.evaluated_at", when: l(ticket.agent_eligibility_evaluated_at, format: :long)) %>
+        </p>
+      <% end %>
+    </div>
+  <% end %>
+</div>

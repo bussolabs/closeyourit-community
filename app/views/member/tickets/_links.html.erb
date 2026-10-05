@@ -1,0 +1,46 @@
+<%# locals: ticket, links, visible_linked_ticket_ids, can_manage %>
+<%# Ticket collegati (gate duplicati): letti da entrambe le direzioni. Card assente se vuota. %>
+<% if links.any? %>
+  <%# CYRA-883 — a part of the Connections section: sub-heading, no card of its own. %>
+  <div data-test="ticket-links">
+    <div class="px-4 pt-3 pb-1"><h3 class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.links.title") %></h3></div>
+    <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% links.each do |link| %>
+        <% other = link.other_ticket(ticket) %>
+        <%# CYRA-789 — anti-BOLA: il collegamento attraversa i progetti di proposito, quindi l'altro
+            capo può stare dove chi guarda non ha accesso. Fuori scope resta il FATTO (esiste un
+            collegamento, di che tipo), spariscono identità e stato: code, titolo, link e badge di
+            stato sono tutti dati del ticket riservato. %>
+        <% visible = visible_linked_ticket_ids.include?(other.id) %>
+        <div class="px-4 py-3 flex items-center gap-2.5" data-test="ticket-link-<%= link.id %>">
+          <%= render Ui::BadgeComponent.new(label: t("member.tickets.links.kind.#{link.kind}"), color: (link.kind_duplicate? ? :amber : :sky), size: :sm) %>
+          <div class="min-w-0 flex-1">
+            <% if visible %>
+              <%= link_to member_ticket_path(other), class: "block group", data: { test: "ticket-link-target-#{other.id}" } do %>
+                <span class="inline-flex items-center gap-1.5 font-mono text-[10.5px] text-gray-500 dark:text-zinc-400">
+                  <%= render "member/tickets/agent_indicator", ticket: other %>
+                  <%= other.code %>
+                </span>
+                <span class="block text-[12.5px] text-zinc-900 dark:text-zinc-100 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400"><%= other.title %></span>
+              <% end %>
+            <% else %>
+              <span class="block text-[12.5px] italic text-gray-500 dark:text-zinc-400" data-test="ticket-link-hidden-<%= link.id %>"><%= t("member.tickets.links.hidden_ticket") %></span>
+            <% end %>
+          </div>
+          <% if visible %>
+            <%= render Ui::BadgeComponent.new(label: other.status.display_label, color: other.status.color, size: :sm, dot: true) %>
+          <% end %>
+          <% if can_manage %>
+            <%= button_to member_ticket_link_path(ticket, link), method: :delete,
+                  class: "shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 dark:text-zinc-500 hover:bg-red-50 dark:hover:bg-red-500/15 hover:text-red-600 dark:hover:text-red-400",
+                  title: t("member.tickets.links.remove"),
+                  form: { class: "pointer-events-auto" },
+                  data: { test: "ticket-link-remove-#{link.id}", turbo_confirm: t("member.tickets.links.remove_confirm") } do %>
+              <%= render Ui::IconComponent.new(name: "unlink", class: "text-[11px]") %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

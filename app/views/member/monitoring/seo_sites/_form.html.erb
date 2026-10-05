@@ -1,0 +1,108 @@
+<%# locals: site, url, method, title, submit_label %>
+<% content_for :title, title %>
+
+<div class="p-7">
+  <%= form_with url: url, method: method, class: "space-y-6", data: { test: "seo-site-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: title,
+          breadcrumb: (site.persisted? ?
+            [ { label: t("member.monitoring.seo.title"), href: member_monitoring_seo_index_path },
+              { label: site.base_url, href: member_monitoring_seo_sites_path },
+              { label: t("member.breadcrumb.edit") } ] :
+            [ { label: t("member.monitoring.seo.title"), href: member_monitoring_seo_index_path },
+              { label: t("member.breadcrumb.new") } ])) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.monitoring.seo_sites.form.cancel"), href: member_monitoring_seo_sites_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: submit_label, type: "submit", icon: "check", size: :sm, test_id: "seo-site-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <% inline_keys = %i[base_url max_pages] %>
+          <% summary_errors = site.errors.reject { |err| inline_keys.include?(err.attribute) } %>
+          <% if summary_errors.any? %>
+            <div class="md:col-span-2 rounded-md border border-rose-200 dark:border-rose-500/40 bg-rose-50 dark:bg-rose-500/15 px-3.5 py-2.5" data-test="seo-site-errors">
+              <ul class="space-y-1">
+                <% summary_errors.each do |err| %>
+                  <li class="text-[11.5px] text-rose-700 dark:text-rose-300"><%= err.full_message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <% if site.new_record? %>
+            <%# L'ambiente dipende dal progetto: si offrono solo quelli che il progetto dichiara.
+                Al cambio progetto il controller Stimulus ricarica il turbo-frame — lo stesso già in
+                uso per i monitor uptime, che risolve esattamente questo problema. %>
+            <% selected_project = @projects.find { |p| p.id == (site.project_id || params[:project_id]).presence } %>
+            <% env_options = selected_project ? selected_project.environments.active.ordered.map { |e| [ e.label, e.id ] } : [] %>
+            <div data-test="seo-site-project"
+                 data-controller="monitoring--environment-loader"
+                 data-monitoring--environment-loader-url-value="<%= new_member_monitoring_seo_site_path %>"
+                 data-monitoring--environment-loader-frame-value="seo_site_environment_field"
+                 data-action="change->monitoring--environment-loader#reload">
+              <%= render Ui::SelectComponent.new(name: "project_id", label: t("member.monitoring.seo_sites.form.project"), required: true,
+                    options: @projects.map { |p| [ p.name, p.id, p.color ] }, selected: selected_project&.id,
+                    include_blank: true, placeholder: t("member.monitoring.seo_sites.form.project_placeholder"), test_id: "seo-site-project") %>
+            </div>
+            <%= turbo_frame_tag "seo_site_environment_field" do %>
+              <div data-test="seo-site-environment">
+                <%= render Ui::SelectComponent.new(name: "environment_id", label: t("member.monitoring.seo_sites.form.environment"), required: true,
+                      options: env_options, selected: site.environment_id || params[:environment_id], include_blank: true,
+                      hint: selected_project ? nil : t("member.monitoring.seo_sites.form.project_required"),
+                      placeholder: t("member.monitoring.seo_sites.form.environment"), test_id: "seo-site-environment") %>
+              </div>
+            <% end %>
+          <% else %>
+            <div class="md:col-span-2">
+              <label class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.monitoring.seo_sites.form.project_env") %></label>
+              <p class="flex items-center gap-1.5 flex-wrap">
+                <span class="w-3 h-3 rounded-[3px] <%= Ui::Colors.swatch(site.project.color) %>"></span>
+                <span class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= site.project.name %></span>
+                <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 rounded px-1.5 py-0.5"><%= site.project.key %></span>
+                <%= render Ui::BadgeComponent.new(label: site.environment.label, color: site.environment.color, dot: true) %>
+              </p>
+              <p class="mt-1.5 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.seo_sites.form.project_env_locked") %></p>
+            </div>
+          <% end %>
+
+          <div class="md:col-span-2">
+            <%= render Ui::InputComponent.new(name: "base_url", label: t("member.monitoring.seo_sites.form.base_url"), required: true,
+                  value: site.base_url, placeholder: "https://www.esempio.it",
+                  hint: t("member.monitoring.seo_sites.form.base_url_hint"),
+                  error: site.errors[:base_url].first, test_id: "seo-site-base-url") %>
+          </div>
+
+          <%= render Ui::SelectComponent.new(name: "frequency", label: t("member.monitoring.seo_sites.form.frequency"),
+                options: Seo::Site.frequencies.keys.map { |f| [ t("member.monitoring.seo_sites.frequency.#{f}"), f ] },
+                selected: site.frequency, test_id: "seo-site-frequency") %>
+
+          <%= render Ui::InputComponent.new(name: "max_pages", label: t("member.monitoring.seo_sites.form.max_pages"), type: "number",
+                value: site.max_pages, min: 1, max: Seo::Site::MAX_PAGES_CEILING,
+                hint: t("member.monitoring.seo_sites.form.max_pages_hint"),
+                error: site.errors[:max_pages].first, test_id: "seo-site-max-pages") %>
+
+          <div class="md:col-span-2 flex flex-wrap items-center gap-2">
+            <label class="inline-flex items-center gap-2 h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[12.5px] text-zinc-900 dark:text-zinc-100 cursor-pointer has-[:checked]:border-indigo-600 dark:has-[:checked]:border-indigo-400 has-[:checked]:bg-indigo-50 dark:has-[:checked]:bg-indigo-500/15" data-test="seo-site-follow-sitemap">
+              <%= hidden_field_tag "follow_sitemap", "0" %>
+              <%= check_box_tag "follow_sitemap", "1", site.follow_sitemap, class: "accent-indigo-600" %>
+              <%= t("member.monitoring.seo_sites.form.follow_sitemap") %>
+            </label>
+            <label class="inline-flex items-center gap-2 h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[12.5px] text-zinc-900 dark:text-zinc-100 cursor-pointer has-[:checked]:border-indigo-600 dark:has-[:checked]:border-indigo-400 has-[:checked]:bg-indigo-50 dark:has-[:checked]:bg-indigo-500/15" data-test="seo-site-enabled">
+              <%= hidden_field_tag "enabled", "0" %>
+              <%= check_box_tag "enabled", "1", site.enabled, class: "accent-indigo-600" %>
+              <%= t("member.monitoring.seo_sites.form.enabled") %>
+            </label>
+          </div>
+
+          <%# Non è una nota a piè di pagina: dice a chi compila che il sistema andrà davvero a
+              bussare a quell'indirizzo, e come si comporterà quando lo farà. %>
+          <div class="md:col-span-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3.5 py-2.5">
+            <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.seo_sites.form.manners") %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

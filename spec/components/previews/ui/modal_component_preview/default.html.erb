@@ -1,0 +1,11 @@
+<div data-controller="ui--dialog">
+  <%= render Ui::ButtonComponent.new(label: "Apri la finestra", data: { action: "ui--dialog#open" }) %>
+  <%= render Ui::ModalComponent.new(title: "Risolvi l'errore", subtitle: "ERR-41 · Timeout sul pagamento",
+        data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+    <% modal.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: "Annulla", variant: :secondary_muted, size: :sm, data: { action: "ui--dialog#close" }) %>
+      <%= render Ui::ButtonComponent.new(label: "Risolvi", size: :sm, icon: "check") %>
+    <% end %>
+    L'errore torna aperto da solo se si ripresenta dopo la prossima versione.
+  <% end %>
+</div>

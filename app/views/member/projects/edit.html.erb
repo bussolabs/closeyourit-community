@@ -1,0 +1,6 @@
+<%= render "form",
+      project: @project,
+      url: member_project_path(@project),
+      method: :patch,
+      title: t("member.projects.form.edit_title"),
+      submit_label: t("member.projects.form.save_edit") %>

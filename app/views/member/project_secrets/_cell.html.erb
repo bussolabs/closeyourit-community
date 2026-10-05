@@ -1,0 +1,54 @@
+<%# locals: environment, variable (Secrets::Variable | nil), can_manage, can_read,
+    hole (bool), pending_change (bool), consolidation (Secrets::Consolidation::Suggestion | nil) %>
+<%# Cella della matrice (env × nome): masked + copia, il valore in chiaro solo con 👁 (secret-row).
+    CYRA-924 — no fields in the cell: editing is the row's dialog (C64). Copia = controller `clipboard`.
+    `hole` (Secrets::Drift, CYRA-137): il nome ha valore su un altro ambiente attivo del progetto ma
+    manca QUI — evidenzia la cella anche quando non è creabile (capability disabilitata): il buco è un
+    fatto sulla matrice, indipendente da cosa questa cella permette di fare.
+    `pending_change` (CYRA-138 C2b): esiste una Secrets::ChangeRequest pending per [environment, name]
+    — reso PRIMA della biforcazione variable/creatable/else perché una CR può riguardare sia una cella
+    con valore esistente (set su un secret già presente, o remove) sia una cella vuota (set su un nome
+    che esiste solo su un altro ambiente, riga presente per il drift) — il badge non è mai un dato
+    sensibile (solo il nome+ambiente, già visibili in riga), quindi va mostrato indipendentemente dal
+    mascheramento del valore. %>
+<%# CYRA-924 — C67: exceptional states are pills, never a tinted cell; a hole pulses orange. %>
+<%= render Ui::TableComponent::CellComponent.new(label: environment.label) do %>
+  <% if pending_change %>
+    <span class="mb-1 flex items-center gap-1 text-[10.5px] font-medium text-indigo-700 dark:text-indigo-300" data-test="secret-cell-change-pending">
+      <%= render Ui::IconComponent.new(name: "hourglass", class: "text-[9px]") %><%= t("member.secrets.change_pending") %>
+    </span>
+  <% end %>
+  <%# CYRA-777 — questo valore è tenuto uguale da altri progetti. Non è un errore e non blocca
+      niente: è un invito, e sta sulla cella perché è lì che si vede di quale valore si parla. Come il
+      badge della richiesta in attesa, non rivela mai il valore — solo che esiste una proposta. %>
+  <% if consolidation %>
+    <%= link_to member_vault_consolidation_path(consolidation),
+          class: "mb-1 inline-flex items-center gap-1 text-[10.5px] font-medium text-indigo-700 dark:text-indigo-300 hover:text-indigo-900 dark:hover:text-indigo-200",
+          title: t("member.secrets.consolidation_cell_tooltip"),
+          data: { test: "secret-cell-consolidation" } do %>
+      <%= render Ui::IconComponent.new(name: "group", class: "text-[9px]") %><%= t("member.secrets.consolidation_cell") %>
+    <% end %>
+  <% end %>
+  <% if local_assigns[:delegation] %>
+    <% delegation = local_assigns[:delegation] %>
+    <span class="block mb-1" data-test="secret-cell-shared-<%= environment.code %>"><%= render Ui::BadgeComponent.new(label: t("member.secrets.origins.shared"), color: "indigo") %></span>
+    <% if can?("shared_secrets.manage") %>
+      <%= link_to t("member.shared_secrets.source_link"), member_shared_secrets_path, class: "text-xs font-medium text-indigo-700 dark:text-indigo-300 underline underline-offset-4", data: { test: "secret-shared-source" } %>
+    <% end %>
+    <% if delegation.name != delegation.effective_name %>
+      <p class="mt-1 font-mono text-xs text-zinc-600 dark:text-zinc-400"><%= t("member.secrets.origins.source_name", name: delegation.name) %></p>
+    <% end %>
+  <% elsif variable %>
+    <%# T11 — the normal case carries nothing on screen; the word stays for screen readers. %>
+    <span class="sr-only" data-test="secret-cell-local"><%= t("member.secrets.origins.local") %></span>
+    <%= render "member/project_secrets/cell_variable", environment: environment, variable: variable,
+          can_manage: can_manage, can_read: can_read %>
+  <% else %>
+    <% if hole %>
+      <span class="block select-none"
+            data-test="secret-cell-drift" title="<%= t('member.secrets.drift_cell_tooltip') %>"><%= render Ui::BadgeComponent.new(label: t("member.secrets.origins.missing"), color: "orange", dot: true, pulse: true) %></span>
+    <% else %>
+      <span class="block text-gray-400 dark:text-zinc-500 select-none" data-test="secret-cell-empty"><%= t("member.secrets.cell_empty") %></span>
+    <% end %>
+  <% end %>
+<% end %>

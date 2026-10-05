@@ -1,0 +1,25 @@
+---
+it:
+  errors:
+    promoted:
+      description: |
+        L'errore segnalato dal monitoraggio è:
+
+        ```
+        %{message}
+        ```
+
+        Punto in cui è avvenuto: %{location}
+      unknown_location: non determinato
+    ticket_title:
+      with_location: "%{subject} · %{location}"
+      fallback: "Errore %{type}"
+      unknown: sconosciuto
+      families:
+        database_down: Il database non risponde
+        timeout: Una richiesta ha superato il tempo massimo
+        not_found: Una pagina o un dato non è stato trovato
+        invalid_data: Un salvataggio è stato rifiutato dai controlli sui dati
+        missing_value: Un dato mancante ha interrotto l'operazione
+        forbidden: Un'operazione è stata negata per mancanza di permessi
+        unreadable_input: Un dato ricevuto non era leggibile

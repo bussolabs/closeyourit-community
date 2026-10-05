@@ -1,0 +1,75 @@
+<%# CYRA-817 — le accettate che aspettano di finire nei documenti erano stampate TUTTE: da sole una
+    quarantina di schermate, con la cronologia degli scarti spinta in fondo e nessun modo di cercarne
+    una. Ora sono una lista come le altre — divisa in pagine, con una ricerca sua — dentro un riquadro
+    che si aggiorna per conto suo: sfogliarlo chiede al server soltanto lui.
+    `advance` scrive la pagina nell'indirizzo, così ricaricando (o senza JS, dove il riquadro non
+    esiste e la richiesta rende la pagina intera) si torna esattamente qui.
+    I link alle pagine escono dal riquadro (`_top`): la scheda di una pagina è un'altra pagina, e
+    caricarla dentro il riquadro la lascerebbe senza il frame che Turbo cerca. %>
+<% current_query = request.query_parameters.slice("page", "per", "q", "project_id") %>
+<%= turbo_frame_tag "knowledge-review-to-file", data: { turbo_action: "advance" } do %>
+  <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="knowledge-review-to-file">
+    <div class="flex items-baseline flex-wrap gap-2 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <span class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.knowledge.reviews.to_file_title") %></span>
+      <span class="font-mono text-[11px] text-gray-400 dark:text-zinc-500"><%= t("member.knowledge.reviews.to_file_note") %></span>
+      <span class="ml-auto font-mono text-[11px] text-gray-400 dark:text-zinc-500"><%= t("member.knowledge.reviews.pages_count", count: @to_file_total) %></span>
+    </div>
+
+    <%# La ricerca di QUESTO riquadro: parametro suo (`to_file_q`), e lo stato della coda in cima
+        viaggia negli hidden — un form GET scarta la query dell'indirizzo a cui punta, e senza quei
+        campi cercare qui azzererebbe il filtro delle proposte. %>
+    <%= render(Ui::TableToolbarComponent.new(framed: true, 
+          url: member_knowledge_reviews_path(current_query), query: params[:to_file_q],
+          search_param: :to_file_q, hidden: current_query,
+          search_placeholder: t("member.knowledge.reviews.to_file_search_placeholder"),
+          search_test_id: "knowledge-review-to-file-search",
+          search_submit_label: t("shared.tables.search"),
+          search_submit_test_id: "knowledge-review-to-file-apply",
+          test_id: "knowledge-review-to-file-toolbar")) %>
+
+    <% if @to_file.empty? %>
+      <%# Con delle accettate in casa non si dice mai «non c'è niente»: è la ricerca a non aver trovato. %>
+      <%= render Ui::NoResultsComponent.new(query: params[:to_file_q].presence,
+            reset_href: member_knowledge_reviews_path(current_query.merge(RememberableFilters::MARKER_PARAM => 1)),
+            body: t("member.knowledge.reviews.to_file_no_results_body", count: @to_file_total),
+            icon: "inbox", test_id: "knowledge-review-to-file-no-results",
+            reset_test_id: "knowledge-review-to-file-reset-search") %>
+    <% else %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.knowledge.reviews.to_file_title"))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.reviews.col_page"), sort: "page", param: :to_file_sort, page_param: :to_file_page) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.reviews.col_accepted"), sort: "accepted", initial: :desc, param: :to_file_sort, page_param: :to_file_page, classes: "w-36") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.reviews.col_document"), classes: "w-40") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+        <% end %>
+        <% @to_file.each do |page| %>
+          <%= render Ui::TableComponent::RowComponent.new(href: member_knowledge_page_path(page), link_label: page.title, frame: "_top",
+                test_id: "knowledge-review-to-file-row") do %>
+            <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+              <%= link_to member_knowledge_page_path(page), class: "block", data: { turbo_frame: "_top" } do %>
+                <span class="block text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400"><%= page.title %></span>
+                <span class="block font-mono text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">
+                  <%= page.projects.map(&:key).join(" · ").presence || t("member.knowledge.reviews.org_wide") %>
+                  · <%= t("member.knowledge.kind.#{page.kind}") %>
+                </span>
+              <% end %>
+            <% end %>
+            <%= render Ui::TableComponent::CellComponent.new(label: t("member.knowledge.reviews.col_accepted"), mono: true, class: "text-gray-500 dark:text-zinc-400") do %>
+              <%= l(page.reviewed_at || page.updated_at, format: :short) %>
+            <% end %>
+            <%= render Ui::TableComponent::CellComponent.new(label: t("member.knowledge.reviews.col_document")) do %>
+              <span class="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-medium bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                <%= render Ui::IconComponent.new(name: "hourglass", class: "text-[10px]") %><%= t("member.knowledge.reviews.not_filed") %>
+              </span>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <%= render(Ui::PaginationComponent.new(pagination: @to_file_pagination, page_param: :to_file_page,
+          per_param: :to_file_per, test_id: "knowledge-review-to-file-pagination")) %>
+    <div class="px-4 py-2.5 border-t border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800">
+      <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.reviews.to_file_hint") %></p>
+    </div>
+  </section>
+<% end %>

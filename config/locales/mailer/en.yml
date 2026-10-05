@@ -1,0 +1,6 @@
+en:
+  mailer:
+    shared:
+      tagline: "bug tracking & monitoring"
+      footer_note: "Automated email — please don't reply to this address."
+      button_fallback: "If the button doesn't work, copy this link:"

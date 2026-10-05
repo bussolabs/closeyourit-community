@@ -1,0 +1,51 @@
+<% content_for :title, t("member.secret_overrides.new_title") %>
+<div class="p-7">
+  <%= form_with url: member_project_secret_overrides_path(@project), method: :post, class: "space-y-6", data: { test: "secret-override-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("member.secret_overrides.new_title"),
+          breadcrumb: [ { label: t("member.projects.title"), href: member_projects_path },
+                        { label: @project.name, href: member_project_path(@project) },
+                        { label: t("member.secret_overrides.section_title"), href: member_project_secret_overrides_path(@project) },
+                        { label: t("member.breadcrumb.new") } ]) do |header| %>
+      <% header.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.secret_overrides.cancel"), href: member_project_secret_overrides_path(@project), variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: t("member.secret_overrides.submit"), type: "submit", variant: :primary, size: :sm, icon: "check", test_id: "secret-override-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%= render Ui::SelectComponent.new(name: "account_id", label: t("member.secret_overrides.recipient"), required: true,
+                options: @readers.map { |reader| [ reader.account.name, reader.account.id ] },
+                selected: params[:account_id],
+                placeholder: t("member.secret_overrides.recipient_placeholder"),
+                hint: t("member.secret_overrides.recipient_hint"),
+                test_id: "secret-override-account") %>
+          <%= render Ui::SelectComponent.new(name: "environment_id", label: t("member.secret_overrides.environment"), required: true,
+                options: @environments.map { |environment| [ environment.label, environment.id ] },
+                selected: params[:environment_id],
+                placeholder: t("member.secret_overrides.environment_placeholder"),
+                test_id: "secret-override-environment") %>
+          <%# Il nome è libero (un override può anche AGGIUNGERE una variabile che nei default non
+              esiste), ma i nomi già nel vault sono suggeriti: batterli a mano è il modo più facile
+              per sbagliarli. %>
+          <%= render Ui::InputComponent.new(name: "name", label: t("member.secret_overrides.name"), required: true,
+                value: params[:name], placeholder: "DATABASE_URL", list: "secret-override-known-names",
+                hint: t("member.secret_overrides.name_hint"), test_id: "secret-override-name") %>
+          <datalist id="secret-override-known-names">
+            <% @known_names.each do |known| %><option value="<%= known %>"></option><% end %>
+          </datalist>
+          <%= render Ui::InputComponent.new(name: "value", label: t("member.secret_overrides.value"), required: true,
+                type: "password", autocomplete: "off", hint: t("member.secret_overrides.value_hint"),
+                test_id: "secret-override-value") %>
+          <div class="md:col-span-2">
+            <%= render Ui::InputComponent.new(name: "description", label: t("member.secret_overrides.description"),
+                  value: params[:description], hint: t("member.secret_overrides.description_hint"),
+                  test_id: "secret-override-description") %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,6 @@
+en:
+  member:
+    tokens:
+      reveal:
+        sentry_dsn: "DSN for Sentry SDKs"
+        sentry_hint: "For supported Sentry SDK error events. CloseYourIt SDKs use the token and project ID above."

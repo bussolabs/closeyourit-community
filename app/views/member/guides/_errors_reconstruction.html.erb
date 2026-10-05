@@ -1,0 +1,7 @@
+<%= render Ui::SectionComponent.new(title: t("member.guides.errors.reconstruction.title"), id: "reconstruction", test_id: "member-guide-errors-reconstruction") do %>
+  <%= render Ui::StackComponent.new(gap: 4) do %>
+    <% %w[body processors reading].each do |key| %>
+      <p class="text-sm leading-relaxed text-gray-600 dark:text-zinc-400"><%= t("member.guides.errors.reconstruction.#{key}") %></p>
+    <% end %>
+  <% end %>
+<% end %>

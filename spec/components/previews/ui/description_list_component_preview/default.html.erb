@@ -1,0 +1,8 @@
+<%= render(Ui::SectionComponent.new(title: "Dettagli")) do %>
+  <%= render(Ui::DescriptionListComponent.new(test_id: "dettagli")) do |list| %>
+    <% list.with_item(label: "Progetto", span: 2, value: "CloseYourIt", value_class: "mt-1 text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100") %>
+    <% list.with_item(label: "Prima vista", value: "01/09 10:14") %>
+    <% list.with_item(label: "Ultima vista", value: "3 minuti fa") %>
+    <% list.with_item(label: "Impronta", span: 2, value: "5f3a9c2e1b", hint: "Come si raggruppano gli errori", hint_test_id: "help-impronta") %>
+  <% end %>
+<% end %>

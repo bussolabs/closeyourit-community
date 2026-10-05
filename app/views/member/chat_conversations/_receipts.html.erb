@@ -1,0 +1,11 @@
+<%# Ricevute di lettura: chi ha letto fino all'ultimo messaggio. Nessuna dipendenza da Current
+    (renderizzato anche nei broadcast). %>
+<% last_at = conversation.messages.kept.maximum(:created_at) %>
+<% if last_at %>
+  <% readers = conversation.participants.where(last_read_at: last_at..).includes(:account).filter_map { |p| p.account&.name } %>
+  <% if readers.any? %>
+    <p data-test="chat-receipts" class="text-xs text-zinc-400">
+      <%= t("member.chat.read_by", names: readers.join(", ")) %>
+    </p>
+  <% end %>
+<% end %>

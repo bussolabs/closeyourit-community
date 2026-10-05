@@ -1,0 +1,144 @@
+<% content_for :title, t("member.personal_secrets.title") %>
+
+<%# Errori attribuiti alla riga-crea (nome inesistente o vuoto) vs a una riga esistente. %>
+<% existing_names = @secret_names %>
+<% new_row_errors = (@row_errors if @row_errors.present? && existing_names.exclude?(@open_row)) %>
+
+<div class="p-7 space-y-6" data-test="member-personal-secrets">
+  <%# CYRA-428 — header e schede sono un blocco solo: lo space-y del contenitore li vede come una cosa
+      sola, così le schede restano attaccate al titolo a cui appartengono. %>
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.vault.levels.personal"),
+        breadcrumb: [ { label: t("member.vault.title"), href: member_vault_path },
+                      { label: t("member.vault.levels.personal") } ],
+        test_id: "personal-secrets-header",
+        counts_test_id: "personal-secrets-counts", tabs_test_id: "personal-tabs") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.variables", count: @pagination.total), value: @pagination.total, test_id: "personal-secrets-count-variables") %>
+    <% end %>
+    <%= render "member/personal_secrets/tabs", header: h, active_tab: :variables %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="personal-secrets-table">
+    <div class="flex items-center gap-2 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100 mr-1"><%= t("member.personal_secrets.table_title") %></h3>
+      <span class="ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.personal_secrets.count", count: @pagination.total) %></span>
+    </div>
+
+    <%# Riga-crea (upsert): nome + valore + descrizione. Sempre visibile (ownership, nessun gate). %>
+    <%= form_with url: member_personal_secrets_path, method: :post, data: { test: "personal-secret-new-row" },
+          class: "flex flex-wrap items-start gap-2 px-4 py-3 border-b border-stone-100 dark:border-zinc-800 bg-stone-50/60 dark:bg-zinc-800/60" do %>
+      <div class="min-w-0 flex-1">
+        <%= text_field_tag :name, @open_row, placeholder: t("member.personal_secrets.new_name"),
+              "aria-label": t("member.personal_secrets.new_name"), required: true, pattern: "[A-Za-z_][A-Za-z0-9_]*",
+              title: t("member.review_fixes.secret_name_hint"),
+              class: "w-full h-8 rounded-md border border-stone-200 dark:border-zinc-800 px-2 font-mono text-[12px] uppercase text-zinc-900 dark:text-zinc-100",
+              data: { test: "personal-secret-name" } %>
+        <% if new_row_errors.present? %>
+          <p class="mt-1 text-[11px] text-red-600 dark:text-red-400" data-test="personal-secret-new-error"><%= Array(new_row_errors[:name] || new_row_errors[:base]).join(", ") %></p>
+        <% end %>
+      </div>
+      <div class="min-w-0 flex-1">
+        <%= text_field_tag :value, nil, placeholder: t("member.personal_secrets.value_placeholder"),
+              "aria-label": t("member.personal_secrets.value_placeholder"),
+              class: "w-full h-8 rounded-md border border-stone-200 dark:border-zinc-800 px-2 font-mono text-[12px] text-zinc-900 dark:text-zinc-100",
+              data: { test: "personal-secret-value" } %>
+      </div>
+      <div class="min-w-0 flex-1">
+        <%= text_field_tag :description, nil, placeholder: t("member.personal_secrets.description_placeholder"),
+              "aria-label": t("member.personal_secrets.description_placeholder"),
+              class: "w-full h-8 rounded-md border border-stone-200 dark:border-zinc-800 px-2 text-[12px] text-zinc-900 dark:text-zinc-100" %>
+      </div>
+      <%= render Ui::ButtonComponent.new(label: t("member.personal_secrets.add_row"), variant: :primary,
+            size: :sm, type: "submit", test_id: "personal-secret-add") %>
+    <% end %>
+
+    <% if @secrets.empty? %>
+      <%= render Ui::EmptyStateComponent.new(title: t("member.personal_secrets.empty"), body: t("member.personal_secrets.empty_body"),
+            icon: "key", test_id: "personal-secrets-empty") %>
+    <% else %>
+      <ul class="divide-y divide-stone-100 dark:divide-zinc-800" data-test="personal-secrets-list">
+        <% @secrets.each do |secret| %>
+          <li class="px-4 py-3" data-test="personal-secret-row">
+            <div class="flex items-start gap-3">
+              <span class="font-mono text-[12px] font-medium text-zinc-900 dark:text-zinc-100 w-48 shrink-0 truncate" data-test="personal-secret-name-<%= secret.id %>"><%= secret.name %></span>
+              <%# CYRA-204: il valore NON è più nel sorgente HTML (chi apre il sorgente lo leggerebbe senza
+                  mostrare né lasciare traccia). "Mostra" e "Copia" recuperano il valore on-demand
+                  dall'endpoint reveal, che registra l'accesso (audit "read", source web) — gemello del
+                  vault di progetto (CYRA-202). La copia passa SEMPRE dall'endpoint (mai dal DOM). %>
+              <div class="min-w-0 flex-1" data-controller="secret-reveal clipboard"
+                   data-secret-reveal-url-value="<%= reveal_member_personal_secret_path(secret) %>"
+                   data-secret-reveal-show-value="<%= t('member.personal_secrets.reveal') %>"
+                   data-secret-reveal-hide-value="<%= t('member.personal_secrets.hide') %>"
+                   data-secret-reveal-error-value="<%= t('member.personal_secrets.reveal_failed') %>"
+                   data-clipboard-copied-value="<%= t('member.personal_secrets.copied') %>"
+                   data-clipboard-error-value="<%= t('member.personal_secrets.copy_failed') %>"
+                   data-clipboard-url-value="<%= reveal_member_personal_secret_path(secret) %>">
+                <div class="flex items-center gap-2" data-test="personal-secret-reveal-<%= secret.id %>">
+                  <button type="button" data-action="secret-reveal#toggle" data-secret-reveal-target="toggle"
+                          class="cursor-pointer select-none font-mono text-[12px] text-gray-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"><%= t("member.personal_secrets.reveal") %></button>
+                  <code data-secret-reveal-target="value" hidden data-test="personal-secret-value-<%= secret.id %>"
+                        class="block max-w-md break-all rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2 py-1.5 font-mono text-[12px] text-zinc-800 dark:text-zinc-200"></code>
+                  <button type="button" data-action="clipboard#copy" class="ml-auto shrink-0 text-[11px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+                    <span data-clipboard-target="label"><%= t("member.personal_secrets.copy") %></span>
+                  </button>
+                </div>
+                <% if secret.description.present? %><p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400"><%= secret.description %></p><% end %>
+              </div>
+              <div class="shrink-0 flex items-center gap-2">
+                <%= link_to t("member.personal_secrets.history"), member_personal_secret_versions_path(secret),
+                      class: "text-[12px] text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100", data: { test: "personal-secret-history-#{secret.id}" } %>
+                <%= render Ui::ButtonComponent.new(label: t("member.personal_secrets.delete"),
+                      href: member_personal_secret_path(secret), method: :delete, variant: :danger_outline, size: :sm,
+                      confirm: t("member.personal_secrets.delete_confirm"), test_id: "personal-secret-delete-#{secret.id}") %>
+              </div>
+            </div>
+            <%# Aggiorna il valore (upsert): posta col nome esistente. Native <details>, no-JS friendly. %>
+            <details class="mt-2">
+              <summary class="cursor-pointer select-none text-[11px] text-indigo-600 dark:text-indigo-400 list-none"><%= t("member.personal_secrets.edit_value") %></summary>
+              <%= form_with url: member_personal_secrets_path, method: :post, class: "mt-2 flex flex-wrap items-center gap-2" do %>
+                <%= hidden_field_tag :name, secret.name %>
+                <%= text_field_tag :value, nil, placeholder: t("member.personal_secrets.value_placeholder"),
+                      class: "min-w-0 flex-1 h-8 rounded-md border border-stone-200 dark:border-zinc-800 px-2 font-mono text-[12px]",
+                      data: { test: "personal-secret-edit-value-#{secret.id}" } %>
+                <%= text_field_tag :description, secret.description,
+                      class: "min-w-0 flex-1 h-8 rounded-md border border-stone-200 dark:border-zinc-800 px-2 text-[12px]" %>
+                <%= render Ui::ButtonComponent.new(label: t("member.personal_secrets.save_row"), variant: :secondary, size: :sm, type: "submit") %>
+              <% end %>
+            </details>
+          </li>
+        <% end %>
+      </ul>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "personal-secrets-pagination")) %>
+    <% end %>
+  </div>
+
+  <%# Attività recente (audit): letture programmatiche (cyi personal bundle/run) + set/deleted/imported. %>
+  <% if @events.any? %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="personal-secrets-activity">
+      <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+        <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.personal_secrets.activity_title") %></h3>
+      </div>
+      <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+        <% @events.each do |event| %>
+          <li class="flex items-center gap-2 px-4 py-2.5 text-[12.5px]" data-test="personal-secret-event">
+            <%= render Ui::IconComponent.new(name: secret_event_icon(event.action), class: "text-[11px] text-gray-400 dark:text-zinc-500 w-4 text-center") %>
+            <span class="text-zinc-700 dark:text-zinc-300"><%= secret_event_sentence(event, scope: "member.personal_secrets.activity") %></span>
+            <span class="ml-auto text-[11px] text-gray-400 dark:text-zinc-500"><%= secret_event_time(event.created_at) %></span>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%# Secondary to the table (DESIGN.md T13): side by side in columns, not one after the other. %>
+  <%= render Ui::GridComponent.new(cols: 1, lg: 2, gap: 6, class: "items-start", test_id: "secondary-panels") do %>
+    <%# CYRA-422 — protezione nel corpo (prima nel suggerimento a scomparsa del titolo): cifratura,
+        visibilità solo tua, tracciamento e retention del registro (Scenario 2). %>
+    <%= render SecretProtectionComponent.new(kind: :personal) %>
+
+    <%# CYRA-401 — «Usa questo segreto» nel corpo: come iniettarli in shell (cyi personal run / direnv),
+        prima solo nel suggerimento a scomparsa del titolo. %>
+    <%= render SecretUsageComponent.new(kind: :personal) %>
+  <% end %>
+</div>

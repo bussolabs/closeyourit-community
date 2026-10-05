@@ -1,0 +1,12 @@
+<%= turbo_frame_tag "ticket-history" do %>
+  <div class="max-h-[60vh] overflow-y-auto divide-y divide-stone-100 dark:divide-zinc-800">
+    <% if @history.records.any? %>
+      <% @history.records.each do |event| %>
+        <%= render "member/tickets/event", event: event, ticket: @ticket, visible_ticket_ids: @visible_event_ticket_ids %>
+      <% end %>
+    <% else %>
+      <%= render Ui::EmptyNoteComponent.new(text: t("ui.audit.empty"), inset: true, test_id: "ticket-activity-empty") %>
+    <% end %>
+  </div>
+  <%= render Ui::PaginationComponent.new(pagination: @history, test_id: "ticket-history-pagination") %>
+<% end %>

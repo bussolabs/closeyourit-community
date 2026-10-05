@@ -1,0 +1,43 @@
+en:
+  member:
+    vault_health:
+      title: What's off
+      help_title: Secret anomalies across the projects you can see, one by one, with what is missing and where. The ones that matter most come first.
+      stat_active: To look at
+      stat_production: In production
+      stat_acknowledged: Marked as intended
+      empty: All clear
+      empty_body: We found no anomalies in the secrets of the projects you can see.
+      project_summary:
+        one: 1 thing to look at
+        other: "%{count} things to look at"
+      kind:
+        drift_hole: Missing in an environment
+        empty_environment: Environment with no secrets
+        broken_delegation: Broken delegation
+      detail:
+        drift_hole: "missing in %{environment}"
+        empty_environment: "%{environment} has no secret saved"
+        broken_delegation: "delegation in %{environment}, which the project no longer declares or keeps active"
+      badge_production: Production
+      col_secret: Variable
+      col_kind: What's off
+      col_since: Seen for
+      col_actions: Actions
+      since: "Seen for %{time}"
+      acknowledge:
+        button: Mark as intended
+        title: Mark the absence as intended
+        reason_label: Why is this absence intended?
+        reason_placeholder: E.g. this environment does not need the service.
+        submit: Confirm
+        cancel: Cancel
+      acknowledged: Absence marked as intended.
+      acknowledge_needs_reason: Write a note explaining why this absence is intended.
+      restore_button: Move back to things to look at
+      restored: The absence is back among the things to look at.
+      acknowledged_section:
+        title: Intended absences
+        body: Absences someone decided to keep. They stay here, out of the counts.
+        attribution: "by %{who} · marked %{time} ago"
+        attribution_unknown: "marked %{time} ago"

@@ -1,0 +1,104 @@
+<% content_for :title, t("member.guides.integrations.title") %>
+
+<%# CYRA-545 — la pagina Integrazioni si legge in un colpo d'occhio, ma le domande che si porta
+    dietro non stanno in una schermata: cos'è una chiave, chi paga il consumo, perché non si rilegge
+    più dopo averla incollata, cosa vuol dire «da controllare» e cosa si spegne scollegando. %>
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-integrations">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "plug", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.integrations.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.integrations.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.integrations.cta"), href: member_integrations_path,
+            variant: :primary, size: :sm, icon: "plug", test_id: "member-guide-integrations-cta") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.integrations.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-integrations-what">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.integrations.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.integrations.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% %w[what_b1 what_b2 what_b3].each do |key| %>
+          <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.integrations.#{key}") %></span></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <%# I servizi non sono un elenco scritto a mano: sono gli stessi del registro, con la stessa riga
+      che si legge in pagina. Un servizio nuovo compare qui da solo. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-integrations-services">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.integrations.services_title") %></h2></div>
+    <div class="px-4 py-4">
+      <dl class="space-y-3 text-[12.5px]">
+        <% Integrations::Providers.all.each do |provider| %>
+          <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
+            <dt class="font-medium text-zinc-900 dark:text-zinc-100"><%= provider.label %></dt>
+            <dd class="mt-0.5 text-gray-500 dark:text-zinc-400"><%= provider.summary %></dd>
+          </div>
+        <% end %>
+        <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
+          <dt class="font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.integrations.github.title") %></dt>
+          <dd class="mt-0.5 text-gray-500 dark:text-zinc-400"><%= t("member.guides.integrations.github_note") %></dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-integrations-how">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.integrations.how_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ol class="space-y-4">
+        <% %w[how_step1 how_step2 how_step3 how_step4].each_with_index do |key, index| %>
+          <li class="flex items-start gap-3">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-mono text-[11px] shrink-0"><%= index + 1 %></span>
+            <span class="text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.integrations.#{key}") %></span>
+          </li>
+        <% end %>
+      </ol>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-integrations-key">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.integrations.key_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.integrations.key_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% %w[key_b1 key_b2 key_b3].each do |key| %>
+          <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "lock", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.integrations.#{key}") %></span></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-integrations-status">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.integrations.status_title") %></h2></div>
+    <div class="px-4 py-4">
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[12.5px]">
+        <% %w[connected broken unverified missing].each do |state| %>
+          <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
+            <dt class="font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.integrations.status_#{state}") %></dt>
+            <dd class="mt-0.5 text-gray-500 dark:text-zinc-400"><%= t("member.guides.integrations.status_#{state}") %></dd>
+          </div>
+        <% end %>
+      </dl>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-integrations-off">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.integrations.off_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.integrations.off_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% %w[off_b1 off_b2].each do |key| %>
+          <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "circle-alert", class: "text-amber-500 dark:text-amber-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.integrations.#{key}") %></span></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+</div>

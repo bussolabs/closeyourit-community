@@ -1,0 +1,21 @@
+en:
+  member:
+    secrets:
+      origins:
+        manage_shared: "Manage shared secrets"
+        search: "Search by name"
+        filter: "Source"
+        missing: "Missing"
+        local: "Local"
+        shared: "Shared"
+        apply: "Filter"
+        reset: "Reset filters"
+        no_match: "No variables match these filters"
+        no_match_body: "Try another name or reset the filters."
+        source_name: "Source: %{name}"
+        consolidations: "Copies to consolidate"
+        examine:
+          one: "Review proposal"
+          other: "Review %{count} proposals"
+        alias_conflict: "Needs a fix first"
+        alias_conflict_body: "One project uses several names for the same value in an environment. Consolidation cannot currently preserve all aliases. Resolve the names before confirming."

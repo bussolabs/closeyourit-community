@@ -1,0 +1,54 @@
+<% content_for :title, @idea.title %>
+
+<div class="p-7 space-y-6" data-test="member-idea">
+  <%= render "member/ideas/header" %>
+
+  <%# The converted date and ticket live in the Details panel; only the archived state keeps a banner. %>
+  <% if @idea.status_archived? %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-4 py-3 flex items-center gap-3" data-test="idea-archived-banner">
+      <%= render Ui::IconComponent.new(name: "archive", class: "text-[13px] text-gray-400 dark:text-zinc-500") %>
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400"><%= t("member.ideas.show.archived_hint") %></p>
+    </div>
+  <% end %>
+
+  <%# CYRA-845 — due colonne come le altre pagine di dettaglio (ticket, errori): a sinistra il
+      contenuto che si legge e si discute, a destra i riferimenti (dettagli, audit, idee collegate). %>
+  <%= render Ui::GridComponent.new(cols: 1, lg: 3, gap: 6) do %>
+    <%= render Ui::StackComponent.new(gap: 6, class: "lg:col-span-2", test_id: "idea-main-column") do %>
+      <%= render "member/ideas/content_panels" %>
+
+      <%= render "member/ideas/cases_panel" %>
+
+      <%= render "member/ideas/comments_panel" %>
+    <% end %>
+
+    <%= render Ui::StackComponent.new(gap: 6, test_id: "idea-side-column") do %>
+      <%# Read the problem first, then vote: the interest opens the right column. %>
+      <%= render "member/ideas/interest_panel" %>
+
+      <%= render "member/ideas/details_panel" %>
+
+      <%# CYRA-845 — evoluzioni e idee collegate: idee a sé, qui solo il filo. %>
+      <%= render "member/ideas/links_panel" %>
+    <% end %>
+  <% end %>
+
+  <%# The audit strip closes the page, full width (E22). %>
+  <%= render Ui::SectionComponent.new(body_class: "px-4 py-2.5", test_id: "idea-audit") do %>
+    <%= render Ui::AuditMetaComponent.new(
+          created_at: @idea.created_at,
+          created_by: @idea.author&.name,
+          updated_at: (@last_activity&.created_at || @idea.updated_at),
+          updated_by: activity_actor_name(@last_activity),
+          test_id: "idea-audit-meta",
+          data: { controller: "ui--dialog" }
+        ) do |c| %>
+      <% c.with_action do %>
+        <button type="button" data-action="ui--dialog#open" data-test="idea-history" class="inline-flex items-center gap-1.5 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+          <%= render Ui::IconComponent.new(name: "history", class: "text-[11px]") %><%= t("ui.audit.view_history") %>
+        </button>
+        <%= render "member/shared/activity_modal", subtitle: @idea.title, events: @activity_events %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

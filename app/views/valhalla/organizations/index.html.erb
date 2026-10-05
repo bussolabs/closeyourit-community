@@ -1,0 +1,53 @@
+<% content_for :title, t("valhalla.organizations.title") %>
+
+<%= turbo_stream_from "valhalla_organizations" %>
+
+<div class="p-7 space-y-6" data-test="valhalla-organizations">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("valhalla.organizations.title"),
+        title_tooltip: t("valhalla.organizations.help_title"),
+        breadcrumb: [ { label: t("valhalla.organizations.title") } ],
+        root_href: valhalla_root_path,
+        counts_test_id: "organizations-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.organizations", count: @pagination.total), value: @pagination.total, test_id: "organizations-count-organizations") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("valhalla.organizations.new"), href: new_valhalla_organization_path, icon: "plus", size: :sm, test_id: "valhalla-organization-new") %>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <%= render(Ui::TableToolbarComponent.new(framed: true,
+          url: valhalla_organizations_path, query: params[:q],
+          search_placeholder: t("valhalla.organizations.search_placeholder"),
+          search_test_id: "valhalla-organizations-search", test_id: "valhalla-organizations-toolbar")) do |toolbar| %>
+      <% toolbar.with_filter(key: "status", label: t("valhalla.organizations.filter_status")) do %>
+        <div class="w-44"><%= render Ui::SelectComponent.new(name: "status", multiple: true, summary: true, options: [ [ t("valhalla.organizations.status_active"), "active" ], [ t("valhalla.organizations.status_suspended"), "suspended" ] ], selected: params[:status], placeholder: t("valhalla.organizations.filter_status"), test_id: "valhalla-organizations-filter-status") %></div>
+      <% end %>
+    <% end %>
+
+      <% if @organizations.any? %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("valhalla.organizations.title"), body_id: "valhalla_organizations")) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.organizations.col_organization"), sort: "organization") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.organizations.col_owner"), sort: "owner") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.organizations.col_members"), sort: "members", initial: :desc) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.organizations.col_projects"), sort: "projects", initial: :desc) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.organizations.col_status"), sort: "status") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.organizations.actions.edit"), label_hidden: true, classes: "w-10") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+          <% end %>
+          <%= render partial: "valhalla/organizations/organization", collection: @organizations, as: :organization %>
+        <% end %>
+      <% else %>
+        <div class="p-12 flex flex-col items-center text-center" data-test="valhalla-organizations-empty">
+          <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 mb-4"><%= render Ui::IconComponent.new(name: "building", class: "text-[18px]") %></span>
+          <h3 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("valhalla.organizations.empty_title") %></h3>
+          <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-[280px]"><%= t("valhalla.organizations.empty_body") %></p>
+        </div>
+      <% end %>
+
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "valhalla-organizations-pagination")) %>
+  </div>
+</div>

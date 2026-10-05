@@ -1,0 +1,76 @@
+<% content_for :title, t("member.service_accounts.new_title") %>
+
+<div class="p-7">
+  <%= form_with url: member_service_accounts_path, method: :post, class: "space-y-6", data: { test: "service-account-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: t("member.service_accounts.new_title"),
+          breadcrumb: [ { label: t("member.service_accounts.title"), href: member_service_accounts_path },
+                        { label: t("member.breadcrumb.new") } ]) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.service_accounts.form.cancel"), href: member_service_accounts_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: t("member.service_accounts.form.create"), type: "submit", icon: "check", test_id: "service-account-submit", size: :sm) %>
+      <% end %>
+    <% end %>
+
+    <% if @errors&.dig(:base) %>
+      <div class="rounded-lg border border-rose-200 dark:border-rose-500/40 bg-rose-50 dark:bg-rose-500/15 px-4 py-3 text-[12.5px] text-rose-700 dark:text-rose-300" data-test="service-account-error">
+        <%= @errors[:base].first %>
+      </div>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
+      <p class="text-[12.5px] leading-relaxed text-gray-500 dark:text-zinc-400 mb-5 max-w-2xl"><%= t("member.service_accounts.form.lead") %></p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+        <%= render Ui::InputComponent.new(name: "name", label: t("member.service_accounts.form.name"), required: true,
+              value: params[:name], placeholder: t("member.service_accounts.form.name_placeholder"),
+              test_id: "service-account-name", error: @errors&.dig(:name)&.first) %>
+
+        <%= render Ui::InputComponent.new(name: "handle", label: t("member.service_accounts.form.handle"),
+              value: params[:handle], placeholder: t("member.service_accounts.form.handle_placeholder"),
+              hint: t("member.service_accounts.form.handle_hint"), test_id: "service-account-handle",
+              error: @errors&.dig(:handle)&.first) %>
+
+        <div class="md:col-span-2">
+          <%= render Ui::SelectComponent.new(name: "project_ids", label: t("member.service_accounts.form.projects"), multiple: true,
+                options: @grantable_projects.map { |project| [ "#{project.key} · #{project.name}", project.id ] },
+                selected: Array(params[:project_ids]), placeholder: t("member.service_accounts.form.projects_placeholder"),
+                hint: t("member.service_accounts.form.projects_hint"), test_id: "service-account-projects") %>
+        </div>
+
+        <div class="md:col-span-2">
+          <%= render Ui::SelectComponent.new(name: "group_ids", label: t("member.service_accounts.form.groups"), multiple: true,
+                options: @grantable_groups.map { |group| [ group.name, group.id ] },
+                selected: Array(params[:group_ids]), placeholder: t("member.service_accounts.form.groups_placeholder"),
+                hint: t("member.service_accounts.form.groups_hint"), test_id: "service-account-groups") %>
+        </div>
+
+        <div class="md:col-span-2">
+          <%= render Ui::SelectComponent.new(name: "role_ids", label: t("member.service_accounts.form.roles"), multiple: true,
+                options: @grantable_roles.map { |role| [ role.name, role.id ] },
+                selected: Array(params[:role_ids]), placeholder: t("member.service_accounts.form.roles_placeholder"),
+                hint: t("member.service_accounts.form.roles_hint"), test_id: "service-account-roles") %>
+        </div>
+
+        <div class="md:col-span-2 rounded-md border border-indigo-100 dark:border-indigo-500/20 bg-indigo-50/40 dark:bg-indigo-500/10 px-4 py-3">
+          <label class="flex items-start gap-2.5 text-[13px] text-zinc-900 dark:text-zinc-100" data-test="service-account-grant-secrets-field">
+            <input type="hidden" name="grant_secrets" value="0">
+            <input type="checkbox" name="grant_secrets" value="1" <%= "checked" if ActiveModel::Type::Boolean.new.cast(params[:grant_secrets]) %>
+                   data-test="service-account-grant-secrets"
+                   class="mt-0.5 h-4 w-4 rounded border-stone-300 dark:border-zinc-700 text-indigo-600 dark:text-indigo-400 focus:ring-indigo-400">
+            <span>
+              <span class="font-medium"><%= t("member.service_accounts.form.grant_secrets") %></span>
+              <span class="block text-[11.5px] text-gray-500 dark:text-zinc-400 mt-0.5"><%= t("member.service_accounts.form.grant_secrets_hint") %></span>
+            </span>
+          </label>
+        </div>
+
+        <div class="md:col-span-2">
+          <%= render Ui::SelectComponent.new(name: "secret_environment_codes", label: t("member.service_accounts.form.secret_environments"), multiple: true,
+                options: @grantable_environments.map { |env| [ env.label.presence || env.code, env.code ] },
+                selected: Array(params[:secret_environment_codes]), placeholder: t("member.service_accounts.form.secret_environments_placeholder"),
+                hint: t("member.service_accounts.form.secret_environments_hint"), test_id: "service-account-secret-environments") %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

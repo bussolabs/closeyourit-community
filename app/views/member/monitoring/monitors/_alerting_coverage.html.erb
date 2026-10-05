@@ -1,0 +1,58 @@
+<%# locals: monitor, rules
+    CYRA-476: "Chi viene avvisato" se questo sito cade. Materializza la relazione monitor→regola che
+    prima viveva solo a runtime. Vuoto = nessuno sarà avvisato: lo dichiara e (a chi gestisce gli avvisi)
+    offre il link per creare subito la regola già mirata a questo progetto/ambiente. I recapiti mostrati
+    sono OGGETTIVI (nell'app + canali esterni della regola), uguali per chiunque apra la pagina — non le
+    preferenze personali di chi guarda. %>
+<% can_manage_alerts = can?("alerts.manage") %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="monitor-alert-coverage">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center gap-2">
+    <%= render Ui::IconComponent.new(name: "bell", class: "text-gray-400 dark:text-zinc-500 text-[12px]") %>
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.uptime.alerts.title") %></h2>
+    <% if rules.any? %><span class="ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.alerts.count", count: rules.size) %></span><% end %>
+  </div>
+
+  <% if rules.any? %>
+    <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% rules.each do |rule| %>
+        <% channels = rule.channels.select(&:enabled?) %>
+        <div class="px-4 py-3" data-test="monitor-alert-rule-<%= rule.id %>">
+          <div class="flex items-center gap-2 flex-wrap">
+            <% tone = alerting_event_tone(rule.event_type) %>
+            <span class="inline-flex items-center justify-center w-5 h-5 rounded <%= tone[:bg] %> <%= tone[:fg] %> shrink-0"><%= render Ui::IconComponent.new(name: tone[:icon], class: "text-[10px]") %></span>
+            <% if can_manage_alerts %>
+              <%= link_to rule.name, member_alerting_rule_path(rule), class: "text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "monitor-alert-rule-link-#{rule.id}" } %>
+            <% else %>
+              <span class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= rule.name %></span>
+            <% end %>
+            <% unless rule.enabled? %>
+              <span class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400"><%= t("member.alerting.rules.status_off") %></span>
+            <% end %>
+          </div>
+          <p class="mt-1 flex items-center gap-1.5 flex-wrap font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="monitor-alert-recipients-<%= rule.id %>">
+            <span class="inline-flex items-center gap-1"><%= render Ui::IconComponent.new(name: "bell", class: "text-[9px]") %><%= t("member.uptime.alerts.via_app") %></span>
+            <% channels.each do |channel| %>
+              <span class="inline-flex items-center gap-1"><%= render Ui::IconComponent.new(name: "radio-tower", class: "text-[9px]") %><%= channel.name %></span>
+            <% end %>
+          </p>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="px-4 py-4" data-test="monitor-alert-coverage-empty">
+      <div class="flex items-start gap-2.5">
+        <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-amber-500 dark:text-amber-400 text-[13px] mt-0.5 shrink-0") %>
+        <div class="min-w-0">
+          <p class="text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.uptime.alerts.empty_body") %></p>
+          <% if can_manage_alerts %>
+            <%= link_to new_member_alerting_rule_path(event_type: :uptime_down, project_id: monitor.project_id, environment_id: monitor.environment_id),
+                  class: "mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300",
+                  data: { test: "monitor-alert-coverage-link" } do %>
+              <%= render Ui::IconComponent.new(name: "plus", class: "text-[11px]") %><%= t("member.uptime.alerts.empty_link") %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

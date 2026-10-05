@@ -1,0 +1,52 @@
+<% content_for :title, @project.name %>
+
+<div class="p-7 space-y-6" data-test="member-project-environments">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "environments" %>
+
+  <%# The declared environments in columns and the capabilities in rows: few columns, so the table stays
+      inside its box (the old one, an environment per row, had seven columns and overflowed — CYRA-883).
+      The environments not active on this project are gathered at the bottom. %>
+  <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="project-environments-manage">
+    <div class="flex flex-wrap items-start gap-3 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <div class="min-w-0 flex-1">
+        <%# The active tab already names the page: the heading stays for screen readers only. %>
+        <h2 class="sr-only"><%= t("member.projects.environments.title") %></h2>
+        <p class="text-[12.5px] text-gray-600 dark:text-zinc-400"><%= t("member.projects.environments.subtitle") %></p>
+      </div>
+      <%= link_to t("member.projects.environments.defaults_link"), member_environments_path,
+            class: "shrink-0 text-[11.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "project-environments-defaults" } %>
+    </div>
+    <p class="px-4 py-2 border-b border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-[11.5px] text-gray-500 dark:text-zinc-400 leading-relaxed" data-test="project-environments-legend">
+      <%= t("member.projects.environments.legend") %>
+    </p>
+    <% unless @supports_uptime %>
+      <p class="px-4 py-2 border-b border-stone-200 dark:border-zinc-800 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="project-servers-unsupported">
+        <%= t("member.projects.environments.servers_unsupported") %>
+      </p>
+    <% end %>
+
+    <% if @environments.empty? %>
+      <p class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="project-environments-none">
+        <%= t("member.projects.environments.none") %>
+      </p>
+    <% else %>
+      <% declared, inactive = @environments.partition { |environment| @declared.key?(environment.id) } %>
+      <%= render "member/project_environments/matrix", environments: declared if declared.any? %>
+      <% if inactive.any? %>
+        <div class="flex flex-wrap items-center gap-2 px-4 py-3 border-t border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800" data-test="project-environments-inactive">
+          <span class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.environments.inactive_title") %></span>
+          <% inactive.each do |environment| %>
+            <span class="inline-flex items-center gap-1.5" data-test="project-environment-row-<%= environment.id %>">
+              <%= render Ui::BadgeComponent.new(label: environment.label, color: "gray", dot: true) %>
+              <%= button_to member_project_environments_path(@project), method: :post, params: { environment_id: environment.id },
+                    class: "inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/15",
+                    data: { test: "project-environment-activate-#{environment.id}" } do %>
+                <%= render Ui::IconComponent.new(name: "toggle-left", class: "text-[12px] text-gray-400 dark:text-zinc-500") %><%= t("member.projects.environments.activate") %>
+              <% end %>
+            </span>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </section>
+</div>

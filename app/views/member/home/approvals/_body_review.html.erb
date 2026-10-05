@@ -1,0 +1,78 @@
+<%# locals: (card:, compact:) %>
+<%# CYRA-557 — il resoconto per primo: qui si decide se il lavoro consegnato va bene, e ciò che
+    segue (descrizione, analisi, criteri) è la richiesta, non la consegna. %>
+<% if card.candidate %>
+  <%= render "member/home/approvals/verified_candidate", candidate: card.candidate %>
+<% end %>
+<%= render "member/home/approvals/delivery_evidence", attempt: card.delivery_attempt %>
+<% if compact %>
+  <%# CYRA-702 — in coda si giudica il lavoro dal suo racconto: primo paragrafo del verbale e
+      rimando. Verbale integrale, descrizione, analisi e criteri stanno a tutta pagina. %>
+  <div class="px-4 py-3.5 border-b border-stone-100 dark:border-zinc-800 space-y-2" data-test="approvals-detail-report">
+    <div class="flex items-baseline justify-between gap-3 flex-wrap">
+      <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-emerald-700 dark:text-emerald-300"><%= t("member.approvals.delivered.title") %></p>
+      <% if card.report %>
+        <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="approvals-detail-report-meta">
+          <%= t("member.tickets.show.report_version", version: card.report.version) %> ·
+          <%= card.report.author_name.presence || t("member.tickets.show.report_unknown_author") %> ·
+          <%= l(card.report.created_at, format: :short) %>
+        </p>
+      <% end %>
+    </div>
+    <% if card.report %>
+      <%= render Ui::MarkdownComponent.new(text: card.report.body.to_s.split(/\n{2,}/).first.to_s,
+            class: "text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-[70ch]",
+            test_id: "approvals-detail-report-text") %>
+    <% else %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="approvals-detail-report-none"><%= t("member.approvals.delivered.none") %></p>
+      <%# Senza verbale si decide almeno sapendo di cosa parla il ticket. CYRA-860 %>
+      <% if card.ticket.description.present? %>
+        <%= render Ui::MarkdownComponent.new(text: card.ticket.description.split(/\n{2,}/).first.to_s.truncate(280, separator: " "),
+              class: "text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-[70ch]",
+              test_id: "approvals-compact-ticket-gist") %>
+      <% end %>
+    <% end %>
+  </div>
+  <div class="px-4 py-2.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="approvals-compact-more">
+    <%= link_to t("member.approvals.compact.more"),
+                member_home_approvals_item_path(kind: card.kind, id: card.id),
+                class: "text-indigo-600 dark:text-indigo-400 hover:underline" %>
+  </div>
+<% else %>
+<% if card.delivery_attempt %>
+  <div class="px-4 py-3.5 border-b border-stone-100 dark:border-zinc-800">
+    <%= render "member/tickets/automation_work_report", attempt: card.delivery_attempt %>
+  </div>
+<% end %>
+<%= render "member/home/approvals/delivered_work", report: card.report %>
+<div class="divide-y divide-stone-100 dark:divide-zinc-800" data-test="approvals-detail-review">
+  <%# `present?` non per sicurezza (Ui::MarkdownComponent regge il vuoto) ma per non stampare
+      un'etichetta sopra il niente. %>
+  <% if card.ticket.description.present? %>
+    <div class="px-4 py-3.5">
+      <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400 mb-1.5"><%= t("member.approvals.description") %></p>
+      <%= render Ui::MarkdownComponent.new(text: card.ticket.description,
+            class: "text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-[70ch]") %>
+    </div>
+  <% end %>
+  <% if card.ticket.technical_analysis.present? %>
+    <div class="px-4 py-3.5">
+      <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400 mb-1.5"><%= t("member.tickets.show.technical_analysis") %></p>
+      <%= render Ui::MarkdownComponent.new(text: card.ticket.technical_analysis,
+            class: "text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-[70ch]") %>
+    </div>
+  <% end %>
+  <% if card.ticket.conditions.any? %>
+    <div class="px-4 py-3.5">
+      <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400 mb-2"><%= t("member.tickets.show.conditions") %></p>
+      <ul class="space-y-1.5">
+        <% card.ticket.conditions.ordered.each do |condition| %>
+          <li class="flex items-start gap-2 text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed">
+            <%# CYRA-627 — era una casella vuota: la promessa di uno stato che nessuno può spuntare. %><%= render Ui::IconComponent.new(name: "minus", class: "text-gray-300 text-[11px] mt-1") %><%= render Ui::MarkdownComponent.new(text: condition.text, inline: true) %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+</div>
+<% end %>

@@ -1,0 +1,10 @@
+<%# Tab of one occurrence: its tags as key and value chips. %>
+<% tags = event.context["tags"] %>
+<div data-test="error-tags">
+  <div class="px-4 py-3 flex flex-wrap gap-1.5">
+    <% tags.each do |key, value| %>
+      <span class="inline-flex items-center gap-1 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2 py-0.5 font-mono text-[11px]"><span class="text-gray-500 dark:text-zinc-400"><%= key %></span><span class="text-zinc-900 dark:text-zinc-100 break-all"><%= error_value(value) %></span></span>
+    <% end %>
+  </div>
+  <% if any_scrubbed?(tags.values) %><div class="px-4 pb-3"><%= render "member/monitoring/error_groups/scrubbed_hint" %></div><% end %>
+</div>

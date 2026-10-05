@@ -1,0 +1,87 @@
+it:
+  stats:
+    pending_agent_eligibility: Da valutare
+    # CYRA-374 — le decisioni che aspettano la persona collegata, in testa a board e lista ticket.
+    awaiting_me: Aspettano te
+    # CYRA-844 — i ticket con domande senza risposta, in testa a board e lista ticket.
+    open_questions:
+      one: Domanda aperta
+      other: Domande aperte
+    projects:
+      one: Progetto
+      other: Progetti
+    groups:
+      one: Gruppo
+      other: Gruppi
+    tickets:
+      one: Ticket
+      other: Ticket
+    open: Aperti
+    todo: Da fare
+    in_progress: In corso
+    resolved: Risolti
+    members:
+      one: Membro
+      other: Membri
+    # CYRA-556 — le utenze usate dai programmi hanno un numero loro: sommarle alle persone faceva
+    # promettere colleghi che non esistono. Il nome è quello della loro pagina, non un secondo nome.
+    service_accounts:
+      one: Service account
+      other: Service account
+    pending: In sospeso
+    organizations:
+      one: Organizzazione
+      other: Organizzazioni
+    accounts:
+      one: Account
+      other: Account
+    platforms:
+      one: Piattaforma
+      other: Piattaforme
+    environments:
+      one: Ambiente
+      other: Ambienti
+    variables:
+      one: Variabile
+      other: Variabili
+    files:
+      one: File
+      other: File
+    versions:
+      one: Versione
+      other: Versioni
+    features: Feature
+    next_milestone: Prossima
+    lists:
+      one: Lista
+      other: Liste
+    workload_actions:
+      one: Attività
+      other: Attività
+    agents: Agenti
+    agents_enabled: Attivi
+    agents_failing: In errore
+    conversations:
+      one: Conversazione
+      other: Conversazioni
+    unread: Non letti
+    shared: Condivise
+    teams:
+      one: Team
+      other: Team
+    roles:
+      one: Ruolo
+      other: Ruoli
+    # CYRA-580 — i permessi decisi a mano su una persona, in testa alla sua pagina di accesso.
+    exceptions:
+      one: Eccezione
+      other: Eccezioni
+    logs:
+      one: Log
+      other: Log
+    errors:
+      one: Errore
+      other: Errori
+    warnings:
+      one: Avviso
+      other: Avvisi

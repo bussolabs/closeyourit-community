@@ -1,0 +1,21 @@
+<% scope = "valhalla.ai_settings.rerank" %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ai-rerank">
+  <div class="border-b border-stone-200 dark:border-zinc-800 px-6 py-4">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("#{scope}.title") %></h2>
+    <p class="mt-1 max-w-[75ch] text-[13px] text-stone-500 dark:text-zinc-400"><%= t("#{scope}.hint") %></p>
+  </div>
+  <div class="p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+      <%= render Ui::InputComponent.new(
+            name: "ai_rerank_base_url", type: "url", label: t("#{scope}.base_url"), value: settings.ai_rerank_base_url,
+            placeholder: "https://api.cohere.com/v2", inputmode: "url", autocomplete: "off",
+            test_id: "ai-rerank-base-url", error: errors&.dig(:ai_rerank_base_url)&.first) %>
+      <%= render Ui::InputComponent.new(
+            name: "ai_rerank_api_key", type: "password", label: t("#{scope}.api_key"),
+            hint: t("valhalla.ai_settings.fields.api_key_hint"), autocomplete: "off", test_id: "ai-rerank-api-key") %>
+      <%= render Ui::InputComponent.new(
+            name: "ai_rerank_model", label: t("#{scope}.model"), value: settings.ai_rerank_model,
+            placeholder: "rerank-v3.5", autocomplete: "off", test_id: "ai-rerank-model") %>
+    </div>
+  </div>
+</div>

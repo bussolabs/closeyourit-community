@@ -1,0 +1,23 @@
+<%# locals: (h:, ticket:, tab:, comments_count:, pending_questions:, has_report: false, report_version: nil, automation_attention: false) %>
+<%# The ticket tabs, on the page header's bottom row (T2). Order by use (CYRA-883): Detail, Discussion,
+    Questions, Automation, Report, Analysis. The active tab comes from ?tab= and is rendered on the
+    server: the address is shareable. Report shows only when one exists (CYRA-265), Analysis only
+    when written. The amber count on Questions and the dot on Automation mark what waits on a person. %>
+<% [ [ "detail", "file-text" ], [ "discussion", "messages-square" ], [ "questions", "circle-question-mark" ], [ "automation", "bot" ], [ "report", "clipboard-check" ], [ "analysis", "microscope" ] ].each do |name, icon| %>
+  <% next if name == "report" && !has_report %>
+  <% next if name == "analysis" && ticket.technical_analysis.blank? && tab != "analysis" %>
+  <% h.with_tab(label: t("member.tickets.tabs.#{name}"), href: member_ticket_path(ticket, tab: (name == "detail" ? nil : name)),
+       active: tab == name, icon: icon, test_id: "ticket-tab-#{name}",
+       count: (pending_questions if name == "questions"), count_color: :amber,
+       count_title: t("member.tickets.automation.questions.pending", count: pending_questions)) do %>
+    <% if name == "discussion" %>
+      <%# The live count: target of the realtime replace when a comment is added or deleted. %>
+      <%= render "member/tickets/comments_count", ticket: ticket, count: comments_count %>
+    <% elsif name == "automation" && automation_attention %>
+      <span class="w-[7px] h-[7px] rounded-full bg-amber-500" title="<%= t("member.tickets.tabs.automation_attention") %>"
+            data-test="ticket-tab-automation-attention"><span class="sr-only"><%= t("member.tickets.tabs.automation_attention") %></span></span>
+    <% elsif name == "report" && report_version %>
+      <span class="font-mono text-[11px] text-gray-400 dark:text-zinc-500" data-test="ticket-tab-report-version">v<%= report_version %></span>
+    <% end %>
+  <% end %>
+<% end %>

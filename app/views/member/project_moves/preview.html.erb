@@ -1,0 +1,52 @@
+<% title = t(".title", name: @subject.label, destination: @destination.name) %>
+<% content_for :title, title %>
+<% typed = params[:confirm].to_s.strip %>
+
+<%# CYRA-879 — the dry run of the move, then the typed confirmation. With a single blocker the
+    confirmation stays disabled: create checks the plan again anyway. %>
+<div class="p-7">
+  <%= form_with url: create_project_move_path_for(@subject), method: :post, class: "space-y-6",
+        data: { test: "move-confirm-form" } do %>
+    <%= hidden_field_tag :destination_id, @destination.id %>
+
+    <%= render Ui::PageHeaderComponent.new(
+          title:,
+          breadcrumb: project_move_breadcrumb(@subject, t("member.project_moves.open")),
+          test_id: "move-header",
+          counts_test_id: "move-counts") do |header| %>
+      <% header.with_counts do %>
+        <%= render Ui::StatLabelComponent.new(label: t("stats.projects", count: @subject.project_ids.size), value: @subject.project_ids.size,
+              test_id: "move-count-projects") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.project_moves.report.blockers"), value: @report.blockers.size,
+              value_color: (@report.blocked? ? :rose : :emerald), test_id: "move-count-blockers") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.project_moves.report.creations_short"),
+              value: @report.creations.size, test_id: "move-count-creations") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.project_moves.report.detachments"),
+              value: @report.detachments.size, value_color: :amber, test_id: "move-count-detachments") %>
+      <% end %>
+      <% header.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t(".change_destination"), href: new_project_move_path_for(@subject),
+              variant: :secondary_muted, size: :sm, icon: "arrow-left", test_id: "move-change-destination") %>
+        <%= render Ui::ButtonComponent.new(label: t(".submit"), type: "submit", variant: :danger, size: :sm,
+              icon: "arrow-left-right", disabled: @report.blocked?, test_id: "move-submit") %>
+      <% end %>
+    <% end %>
+
+    <% if @report.blocked? %>
+      <%= render Ui::AlertComponent.new(variant: :danger, test_id: "move-blocked") do %>
+        <%= t(".blocked") %>
+      <% end %>
+    <% end %>
+
+    <%= render "member/project_moves/report", report: @report %>
+
+    <%= render Ui::SectionComponent.new(title: t(".confirm_title"), test_id: "move-confirm") do %>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+        <%= render Ui::InputComponent.new(name: "confirm", label: t(".confirm_label", name: @subject.label),
+              value: typed, required: true, placeholder: @subject.label, hint: t(".confirm_hint"),
+              error: (t(".confirm_mismatch") if typed.present? && typed != @subject.label),
+              autocomplete: "off", test_id: "move-confirm-input") %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

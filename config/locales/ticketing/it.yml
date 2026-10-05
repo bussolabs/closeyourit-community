@@ -1,0 +1,87 @@
+it:
+  ticketing:
+    # CYRA-392 — etichette localizzate degli status/priorità di default (Types::InstallDefaults):
+    # Types::TicketStatus#display_label / TicketPriority#display_label le risolvono per code, senza mai
+    # toccarlo (filtri e URL condivisi ci si agganciano). Uno status personalizzato dall'org non ha una
+    # chiave qui e ricade sulla label del DB.
+    statuses:
+      open: Aperto
+      in_progress: In lavorazione
+      in_review: In revisione
+      resolved: Risolto
+      closed: Chiuso
+    priorities:
+      low: Bassa
+      medium: Media
+      high: Alta
+    # Una riga per status: chi decide e qual è il passo successivo (mostrata sotto lo stato nella
+    # ticket-show). Vale per i code di default; uno status custom non la mostra.
+    status_hints:
+      open: Da prendere in carico. Chi lavora al progetto lo sposta in lavorazione.
+      in_progress: Qualcuno ci sta lavorando. Quando è pronto lo manda in revisione.
+      in_review: Aspetta il revisore. Se approva diventa Risolto, altrimenti torna in lavorazione.
+      resolved: Lavoro fatto e approvato. Viene chiuso quando non serve più tenerlo aperto.
+      closed: Chiuso, non c'è altro da fare. Si può riaprire se serve.
+    reports:
+      # Righe di servizio in discussione: le scrive l'app quando nasce o cambia un resoconto. Stanno
+      # sotto i 240 caratteri per costruzione — il testo lungo vive nel resoconto, non qui.
+      service_line:
+        created: "Aggiunto il resoconto di lavorazione."
+        updated: "Resoconto di lavorazione aggiornato alla versione %{version}."
+        review_rejection: "Il lavoro è stato respinto: il motivo è nel resoconto di lavorazione."
+      errors:
+        invalid: "Resoconto non valido. Controlla il testo."
+        not_found: "Questo ticket non ha ancora un resoconto di lavorazione."
+    analysis_archive:
+      unknown_author: "Autore non più disponibile"
+      errors:
+        too_long: "La spiegazione dell'analisi di %{code} non sta nel campo: va sistemata a mano."
+    compaction:
+      errors:
+        empty_summary: "Il modello non ha prodotto nessun riassunto."
+    relabel:
+      errors:
+        empty: "Il modello non ha prodotto nessuna analisi."
+        unlabelled: "Il modello ha risposto senza le etichette previste."
+    notifications:
+      content:
+        created: "Nuovo ticket %{code}"
+        assigned: "%{code} assegnato a %{name}"
+        unassigned: "%{code} senza assegnatario"
+        status_changed: "%{code}: %{from} → %{to}"
+        review_requested: "%{code} è pronto per la tua revisione"
+        review_rejected: "Revisione respinta su %{code}"
+        review_approved: "%{code}: revisione approvata, ora %{to}"
+        milestone_set: "%{code}: milestone %{name}"
+        milestone_removed: "%{code}: milestone rimossa"
+        commented: "%{name} ha commentato %{code}"
+        mentioned: "%{name} ti ha menzionato in %{code}"
+        question_asked: "%{name} ha fatto una domanda su %{code}"
+        question_answered: "%{name} ha risposto a una domanda su %{code}"
+    ticket_notifications:
+      mailer:
+        notify:
+          subject: "[%{code}] %{title}"
+          greeting: "Ciao,"
+          action: Apri il ticket
+          footer: Ricevi questa email perché segui il ticket. Gestisci le notifiche dalle preferenze.
+          label_project: "Progetto"
+          label_ticket: "Ticket"
+  activerecord:
+    # Nomi umani dei campi: entrano nei full_messages mostrati in flash e nelle risposte CLI.
+    attributes:
+      ticketing/ticket:
+        title: Titolo
+        description: Descrizione
+        technical_analysis: Analisi tecnica
+    errors:
+      models:
+        ticketing/ticket:
+          attributes:
+            description:
+              # Corpo minimo (ogni kind) = descrizione libera OPPURE almeno uno scenario con contenuto.
+              body_required: obbligatoria, oppure aggiungi almeno uno scenario
+        ticketing/scenario:
+          attributes:
+            base:
+              steps_required: serve almeno uno step (Given/When/Then/Expected)

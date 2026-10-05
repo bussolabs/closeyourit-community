@@ -1,0 +1,42 @@
+it:
+  member:
+    vault_change_requests:
+      title: Modifiche ai segreti
+      help_title: Le modifiche ai secret protetti in attesa di essere approvate o respinte da un secondo responsabile (approvazione a due). È una coda diversa da «Approvazioni», che raccoglie le decisioni sul lavoro (analisi, ticket, domande).
+      stat_total: In attesa
+      stat_decidable: Da decidere
+      stat_mine: Tue richieste
+      stat_total_hint: Tutte le modifiche che vedi in attesa di una decisione — quelle che puoi decidere tu più le tue.
+      stat_decidable_hint: "Quelle che puoi approvare o respingere tu. Mai le tue: la conferma spetta a un secondo responsabile."
+      stat_mine_hint: Le modifiche che hai chiesto tu e aspettano il via libera di un altro responsabile.
+      empty: Nessuna modifica ai segreti in attesa
+      empty_body: Quando qualcuno modifica un segreto protetto, la richiesta compare qui finché un secondo responsabile non la approva o la respinge.
+      how_title: Come funziona la protezione
+      how_protected: "Un segreto è protetto quando il suo progetto attiva l'approvazione in due e l'ambiente è marcato come protetto: da quel momento ogni modifica o cancellazione passa di qui invece di essere applicata subito."
+      how_approver: Può approvare o respingere chi ha il permesso di gestire i segreti di quel progetto, purché non sia la stessa persona che ha chiesto la modifica.
+      how_meanwhile: "Nel frattempo il valore non cambia: la richiesta resta in attesa finché non arriva una decisione, e chi l'ha chiesta può sempre ritirarla."
+      protect_cta: Attiva la protezione in un progetto
+      col_project: Progetto
+      col_environment: Ambiente
+      col_variable: Variabile
+      col_action: Azione
+      col_requester: Richiedente
+      col_value: Valore
+      col_actions: Azioni
+      action_set: Modifica
+      action_remove: Cancellazione
+      requester_deleted: Account eliminato
+      requested_ago: "richiesta %{time} fa"
+      approve: Approva
+      approve_confirm: Approvare questa richiesta? Il secret verrà aggiornato subito.
+      reject: Respingi
+      reject_title: Respingi la richiesta
+      reason_label: Motivo
+      reason_placeholder: Spiega perché respingi questa richiesta...
+      reject_dialog_cancel: Annulla
+      reject_confirm: Conferma
+      withdraw: Ritira
+      withdraw_confirm: Ritirare questa richiesta? Non verrà applicata.
+      approved: "Richiesta di modifica a %{name} approvata e applicata."
+      rejected: "Richiesta di modifica a %{name} respinta."
+      cancelled: "Richiesta di modifica a %{name} ritirata."

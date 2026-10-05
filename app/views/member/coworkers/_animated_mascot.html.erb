@@ -1,0 +1,17 @@
+<% latest_run = puck.runs.order(created_at: :desc).first %>
+<% activity_runs = (puck.runs.active.to_a + [latest_run]).compact.uniq(&:id) %>
+<div class="flex min-w-0 items-center gap-3" data-controller="coworker-activity"
+     data-coworker-activity-puck-value="<%= puck.id %>"
+     data-coworker-activity-key-value="coworkers:mascot:<%= puck.organization_id %>:<%= puck.account_id %>:<%= puck.id %>"
+     data-coworker-activity-runs-value="<%= activity_runs.map { |run| { id: run.id, status: run.status, kind: run.kind, createdAt: run.created_at.iso8601(6) } }.to_json %>"
+     data-coworker-activity-labels-value="<%= t('member.coworkers.activity').to_json %>"
+     data-action="turbo:before-stream-render@document->coworker-activity#stream visibilitychange@document->coworker-activity#animate coworker-mascot:change@window->coworker-activity#mascotChanged storage@window->coworker-activity#storage">
+  <div class="relative size-8 shrink-0 overflow-hidden" data-coworker-activity-target="mascot" data-test="coworkers-animated-mascot" aria-hidden="true">
+    <%= image_tag "/coworkers/mascots/01.webp", alt: "", width: 32, height: 32, class: "size-full object-contain", data: { coworker_activity_target: "portrait", test: "coworkers-mascot" } %>
+    <img alt="" hidden class="absolute top-0 left-0 h-[600%] w-[600%] max-w-none" data-coworker-activity-target="sprite" data-test="coworkers-mascot-sprite" data-action="load->coworker-activity#loaded error->coworker-activity#failed">
+  </div>
+  <div class="flex min-w-0 items-baseline gap-2">
+    <h2 class="truncate text-[13px] font-semibold"><%= puck.name %></h2>
+    <p class="text-[12px] text-gray-500 dark:text-zinc-400" role="status" data-coworker-activity-target="status"><%= t("member.coworkers.subtitle") %></p>
+  </div>
+</div>

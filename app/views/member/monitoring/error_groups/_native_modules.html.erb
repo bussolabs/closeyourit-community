@@ -1,0 +1,18 @@
+<% if native.modules.any? %>
+  <details class="mt-3 border-t border-stone-200 dark:border-zinc-800 pt-3" data-test="native-build-identities">
+    <summary class="cursor-pointer text-[12.5px] text-indigo-700 dark:text-indigo-300 focus-visible:outline-indigo-500"><%= t("member.native_symbols.matching") %></summary>
+    <p class="my-3 text-[12px] text-gray-600 dark:text-zinc-400"><%= t("member.native_symbols.matching_hint") %></p>
+    <div class="divide-y divide-stone-200 dark:divide-zinc-800">
+      <% native.modules.each do |mod| %>
+        <div class="py-3">
+          <%= render Ui::DescriptionListComponent.new(columns: 1) do |list| %>
+            <% %w[filename debug_id code_id base_addr end_addr].each do |key| %>
+              <% next if mod[key].blank? %>
+              <% list.with_item(label: t("member.native_symbols.#{key}"), value: mod[key], value_class: "mt-1 break-all font-mono text-[12px] text-zinc-900 dark:text-zinc-100") %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </details>
+<% end %>

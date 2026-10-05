@@ -1,0 +1,113 @@
+it:
+  member:
+    nav:
+      logs: Log
+    monitoring:
+      logs:
+        facets:
+          title: "Campi nel risultato"
+          window: "Sulle voci più recenti"
+          remove: "Togli"
+        search_hint: "Cerca il testo dentro il messaggio, oppure incolla il codice di una richiesta."
+        title: Log
+        help_title: "I log di tutte le app, da filtrare e collegare a errori e ticket."
+        empty: Ancora nessun log
+        empty_body: "I log delle tue app appaiono qui. Inviali con la gemma closeyourit-ruby."
+        no_match: Nessun log corrisponde a questi filtri.
+        no_match_trace: "Nessun registro per questa richiesta: potrebbe non essere mai stato inviato, oppure essere scaduto. Il collegamento resta valido: se i registri arrivano, li trovi qui."
+        no_match_level: "Se hai filtrato per livello: i programmi mandano solo i livelli configurati, quindi un livello che non hanno mai mandato resta vuoto per sempre. Il livello minimo si imposta nell'SDK."
+        clear_filters: Togli tutti i filtri
+        open_guide: Apri la guida ai registri
+        retention_note:
+          single:
+            one: "I log sono conservati 1 giorno; quelli più vecchi vengono eliminati automaticamente."
+            other: "I log sono conservati %{count} giorni; quelli più vecchi vengono eliminati automaticamente."
+          range: "I log sono conservati da %{min} a %{max} giorni (dipende dal progetto); quelli più vecchi vengono eliminati automaticamente."
+        count:
+          one: "%{count} log"
+          other: "%{count} log"
+        search_placeholder: Cerca nei messaggi…
+        filter_level: Livello
+        filter_environment: Environment
+        filter_project: Progetto
+        col_when: Quando
+        col_level: Livello
+        col_project: Progetto
+        col_message: Messaggio
+        col_logger: Logger
+        link_created: Log collegato.
+        link_removed: Collegamento rimosso.
+        link_failed: Impossibile collegare questo log.
+        promote: Apri un ticket
+        promoted: "Ticket %{code} aperto da questo messaggio."
+        promote_reused: "Questo messaggio era già diventato il ticket %{code}: l'ho collegato a quello invece di aprirne un altro."
+        promote_failed: Non è stato possibile aprire un ticket da questo messaggio.
+        not_promoted: Non ancora promosso
+        count_of: "%{filtered} di %{total}"
+        count_of_title: "Il primo numero rispetta i filtri e il periodo a schermo; il secondo è tutto ciò che è conservato."
+        chart_title: Quanti messaggi, e quando
+        chart_window: "%{from} → %{to}"
+        chart_reset: Torna a tutto il periodo
+        chart_bucket: "%{count} messaggi, di cui %{alarming} allarmanti"
+        chart_bucket_aria: "%{time}: %{count} messaggi"
+        chart_summary: "Volume dei messaggi nel tempo. Il blocco più alto ne ha %{count}."
+        # CYRA-570: il periodo non ha nemmeno un messaggio — si dice, non si disegnano blocchi vuoti.
+        chart_empty: "Nessun messaggio in questo periodo."
+        group_by_message: Messaggio simile
+        group_by_none: Nessuno
+        group_by_none_hint: un elenco
+        group_seen: "Prima volta %{first} · ultima %{last}"
+        group_empty: Nessun messaggio da raggruppare con questi filtri.
+        group_drilldown: Stai vedendo le singole voci di un messaggio.
+        # CYRA-579: il filtro su una sola richiesta arriva dalla scheda di un errore e non si vedeva.
+        trace_filter: Stai vedendo i registri di una sola richiesta.
+        group_ungrouped: "%{count} voci più vecchie non hanno un raggruppamento e restano fuori da questa vista."
+        show:
+          ticket: Ticket
+          link_errors_title: "Errori"
+          link_tickets_title: "Ticket"
+          link_placeholder_error: "Cerca un errore per titolo…"
+          link_placeholder_ticket: "Cerca un ticket per codice o titolo…"
+          back: Log
+          message: Messaggio
+          attributes: Attributi
+          no_attributes: Nessun attributo strutturato.
+          context: Contesto
+          environment: Environment
+          release: Release
+          logger: Logger
+          project: Progetto
+          level: Livello
+          occurred: Rilevato
+          request_title: Questa richiesta
+          request_body: Altri log della stessa richiesta.
+          request_none: Nessun altro log per questa richiesta.
+          request_errors: Errori di questa richiesta
+          request_count_logs:
+            one: "%{count} log"
+            other: "%{count} log"
+          request_count_errors:
+            one: "%{count} errore"
+            other: "%{count} errori"
+          request_extracted: Identificativo riconosciuto nel messaggio
+          no_trace: "Questo messaggio non riporta un identificativo di richiesta (trace id). Invialo come trace id insieme al log per collegarlo agli errori e agli altri messaggi della stessa richiesta. I messaggi standard di Rails e delle attività in background vengono riconosciuti in automatico."
+          links_title: Collegato a
+          links_empty: Non ancora collegato a niente.
+          link_add: Collega a errore/ticket
+          link_placeholder: Scegli un errore o un ticket…
+          link_submit: Collega
+          link_remove: Rimuovi
+          linked_error: "Errore"
+          linked_ticket: "Ticket"
+        in_error_title: Log di questa richiesta
+        in_error_body: Log emessi durante la stessa richiesta di questo errore.
+        in_error_none: "Nessun registro conservato per questa richiesta: potrebbe non essere mai stato inviato, oppure essere scaduto."
+        in_error_trace: "Trace"
+        in_error_no_trace: "Questa occorrenza non porta il codice della richiesta: senza, i registri non si possono collegare. Lo aggiungono gli SDK quando è attivo il tracciamento."
+        in_error_count:
+          one: "%{count} log correlato"
+          other: "%{count} log correlati"
+        in_error_view_all: Vedi tutti i log di questa richiesta
+        linked:
+          title: Log collegati
+          empty: Nessun log collegato manualmente.

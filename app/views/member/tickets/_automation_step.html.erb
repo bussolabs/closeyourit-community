@@ -1,0 +1,93 @@
+<%# CYRA-883 — one compact row per attempt: the box appears on hover and when opened. %>
+<%# locals: attempt, expanded
+    Un passo della lavorazione (CYRA-219). Estratto dalla lista (CYRA-384) perché ora è reso in due
+    posti: da solo nella timeline, e dentro la riga che raccoglie i tentativi consecutivi con lo
+    stesso esito — due copie divergerebbero al primo campo aggiunto.
+
+    CYRA-281 — chiuso di default: su una lavorazione lunga sono decine di blocchi aperti. <details>
+    nativo, nessuno stato sul server, navigabile da tastiera; il contenuto resta nel DOM anche da
+    chiuso, quindi la ricerca del browser continua a trovarlo. %>
+<% outcome = automation_outcome(attempt) %>
+<% considerations = automation_considerations(attempt) %>
+<% review = automation_review(attempt) %>
+<% failure = automation_failure(attempt) %>
+<% glossary = automation_glossary(attempt) %>
+<%# CYRA-384 — il glossario basta ad aprire il passo: prima un tentativo interrotto non aveva corpo e
+    restava un blocco fermo, e la sigla del suo esito non era spiegata da nessuna parte. Ora ciò che
+    si apre non è mai vuoto. %>
+<% body = considerations[:text].present? || considerations[:chips].any? || considerations[:counts].any? || glossary.any? || failure.present? %>
+<% expandable = body || review.present? %>
+<%# CYRA-592 — ogni passo ha il suo indirizzo: è il referto che la plancia delle approvazioni apre
+    quando si preme la cella di una fase. Senza l'ancora si arriverebbe in cima alla lavorazione. %>
+<li id="attempt-<%= attempt.id %>" class="relative pl-6 scroll-mt-6" data-test="automation-step">
+  <span class="absolute left-0 top-2 w-[11px] h-[11px] rounded-full ring-4 ring-white dark:ring-zinc-900 <%= Ui::Colors.swatch(outcome[:color]) %>" aria-hidden="true"></span>
+  <% if expandable %>
+    <details class="group rounded-md border border-transparent bg-white dark:bg-zinc-900 hover:border-stone-200 dark:hover:border-zinc-800 open:border-stone-200 dark:open:border-zinc-800" <%= "open" if expanded %>>
+      <%# list-none + marker webkit nascosto: il triangolino di sistema stonerebbe accanto al chevron,
+          e su Safari resta visibile senza la seconda regola. %>
+      <summary class="px-3.5 py-1.5 flex items-center justify-between gap-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden rounded-md hover:bg-stone-50/60 dark:hover:bg-zinc-800/60 group-open:rounded-b-none group-open:border-b group-open:border-stone-100 dark:group-open:border-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+        <%= render "member/tickets/automation_step_header", attempt:, outcome:, expandable: true %>
+      </summary>
+
+      <% if body %>
+        <div class="px-3.5 py-3 space-y-2.5">
+          <% if considerations[:chips].any? %>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <% considerations[:chips].each do |chip| %>
+                <span class="inline-flex items-center rounded-md bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-gray-700 dark:text-zinc-300"><%= chip %></span>
+              <% end %>
+            </div>
+          <% end %>
+          <% if considerations[:text].present? %>
+            <%= render Ui::MarkdownComponent.new(text: considerations[:text],
+                  class: "text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed", test_id: "automation-step-text") %>
+          <% end %>
+          <% if considerations[:counts].any? %>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <% considerations[:counts].each do |label, value| %>
+                <span class="inline-flex items-center gap-1.5 rounded-md bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-gray-700 dark:text-zinc-300"><%= label %> <span class="font-semibold text-zinc-900 dark:text-zinc-100"><%= value %></span></span>
+              <% end %>
+            </div>
+          <% end %>
+          <% if failure %>
+            <div class="rounded-md border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 px-3 py-2 text-[12px] text-amber-900 dark:text-amber-200" data-test="automation-failure-action">
+              <strong><%= t("member.tickets.automation.failure.human_action") %></strong> <%= failure["human_action"] %>
+              <p class="mt-0.5 text-[11px] text-amber-800 dark:text-amber-200"><%= t("member.tickets.automation.failure.category") %>: <%= failure["category"] %> · <%= failure["retryable"] ? t("member.tickets.automation.failure.retryable") : t("member.tickets.automation.failure.not_retryable") %></p>
+            </div>
+          <% end %>
+          <%# CYRA-384 — ogni sigla che il passo mostra, con la frase che la spiega. Tradotte lo erano
+              già (CYRA-392): «bloccato» però non dice né cosa è successo né se riparte da sé, ed è la
+              parola su cui si decide se intervenire. %>
+          <% if glossary.any? %>
+            <dl class="pt-0.5 space-y-1" data-test="automation-glossary">
+              <% glossary.each do |item| %>
+                <div class="flex items-baseline gap-2 text-[11.5px] leading-relaxed">
+                  <dt class="shrink-0 font-mono text-gray-700 dark:text-zinc-300"><%= item[:term] %></dt>
+                  <dd class="text-gray-500 dark:text-zinc-400"><%= item[:hint] %></dd>
+                </div>
+              <% end %>
+            </dl>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if review %>
+        <div class="px-3.5 py-2.5 border-t border-stone-100 dark:border-zinc-800 <%= review[:accepted] ? 'bg-stone-50/70 dark:bg-zinc-800/70' : 'bg-red-50/60 dark:bg-red-500/10' %> flex items-start gap-2" data-test="automation-step-review">
+          <span class="shrink-0 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-400 dark:text-zinc-500 mt-0.5"><%= t("member.tickets.automation.steps.review") %></span>
+          <% if review[:runtime].present? %>
+            <span class="shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5"><%= review[:runtime] %></span>
+          <% end %>
+          <%= render Ui::IconComponent.new(name: review[:accepted] ? "check" : "x", class: "#{review[:accepted] ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"} text-[11px] mt-1") %>
+          <%= render Ui::MarkdownComponent.new(text: review[:summary], class: "text-[12px] text-zinc-600 dark:text-zinc-400 leading-relaxed") %>
+        </div>
+        <% if review[:findings].present? %>
+          <%= render "member/tickets/automation_review_findings", findings: review[:findings] %>
+        <% end %>
+      <% end %>
+    </details>
+  <% else %>
+    <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 flex items-center justify-between gap-3">
+      <%= render "member/tickets/automation_step_header", attempt:, outcome:, expandable: false %>
+    </div>
+  <% end %>
+</li>

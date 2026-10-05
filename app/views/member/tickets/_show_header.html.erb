@@ -1,0 +1,86 @@
+<%# locals: (can_manage:) %>
+<%= render Ui::PageHeaderComponent.new(
+      title: @ticket.title,
+      breadcrumb: [ { label: t("member.tickets.title"), href: member_tickets_path },
+                    { label: @ticket.code } ],
+      counts_test_id: "ticket-header-counts", tabs_test_id: "ticket-tabs") do |h| %>
+  <%= render "member/tickets/ticket_tabs", h: h, ticket: @ticket, tab: @tab, comments_count: @comments_count,
+        pending_questions: @pending_questions, has_report: @report.present? || @work_report_attempt.present?,
+        report_version: @report&.version, automation_attention: automation_needs_person?(@workflow) %>
+  <%# CYRA-65 — sotto il titolo solo il TTL "aperto da": codice/tipologia/status/gravità + persone
+      e contesto vivono ora nel pannello Dettagli della colonna destra (rivede la direzione di
+      CYRA-23/CYRA-25, che li teneva come pill sotto il titolo). %>
+  <%# CYRA-819 — solo sotto lg: stato e priorità, in sola lettura, sopra i comandi. Sul telefono la
+      griglia impila la sidebar sotto il corpo del ticket e il pannello Dettagli finiva oltre due
+      schermate più giù, mentre le azioni stanno qui. Da lg in su sparisce: il posto di stato e
+      priorità resta il pannello Dettagli (CYRA-65). The meta slot sits in the title block, before
+      the actions, while the counts moved to the header's bottom row (DESIGN.md T2). %>
+  <% h.with_meta do %>
+    <%= render "member/tickets/mobile_summary", ticket: @ticket %>
+  <% end %>
+  <% h.with_counts do %>
+    <%# CYRA-393 — il codice sta in cima accanto al nome del progetto: da solo non dice a quale
+        progetto appartiene, e due progetti hanno sigle che differiscono per una lettera sola.
+        Il titolo al passaggio del mouse scioglie la sigla per esteso. %>
+    <span class="inline-flex items-center gap-1.5 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="ticket-code"
+          title="<%= t("member.tickets.show.code_title", key: @ticket.project.key, project: @ticket.project.name) %>">
+      <span class="font-mono font-semibold text-zinc-900 dark:text-zinc-100"><%= @ticket.code %></span>
+      <span class="text-gray-300 dark:text-zinc-600">·</span>
+      <%= link_to @ticket.project.name, member_project_path(@ticket.project), class: "hover:text-zinc-900 dark:hover:text-zinc-100" %>
+    </span>
+    <span class="inline-flex items-center gap-1.5 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="ticket-open-since">
+      <%= render Ui::IconComponent.new(name: "clock", class: "text-[10px]") %><%= ticket_created_line(@ticket) %>
+    </span>
+    <%# Presa in carico in corso: chi ci lavora adesso e fino a quando. È un avviso, non un blocco —
+        chi non tiene il ticket può comunque modificarlo (semantica soft, CYRA-292). %>
+    <% if @active_lease %>
+      <span class="inline-flex items-center gap-1.5 text-[11.5px] text-indigo-700 dark:text-indigo-300" data-test="ticket-lease">
+        <%= render Ui::IconComponent.new(name: "user-round-search", class: "text-[10px]") %>
+        <%= t("member.tickets.lease.badge",
+              name: ticket_lease_holder_name(@active_lease),
+              time: l(@active_lease.expires_at.in_time_zone, format: :short)) %>
+      </span>
+    <% end %>
+  <% end %>
+  <% h.with_actions do %>
+    <%# Upvote visibile a chiunque vede il ticket (anche customer/member, non solo i manager). %>
+    <%= render "member/tickets/vote_button", ticket: @ticket, voted: @voted, test_id: "ticket-vote" %>
+    <%# Watch (sottoscrizione) visibile a chiunque vede il ticket: PUT iscrive / DELETE disiscrive.
+        Shape stabile (CYRA-66): bordato in entrambi gli stati come gli altri pulsanti dell'header —
+        cambia solo il colore (secondary_muted grigio = inattivo, tinted_outline indigo = attivo),
+        MAI il bordo/fill (evita che il pulsante "salti" di forma tra Segui e Seguendo). %>
+    <%# CYRA-883 — icon and live count only; the words stay as aria-label and tooltip. %>
+    <%= render Ui::ButtonComponent.new(label: "",
+          href: member_ticket_watch_path(@ticket), method: (@watching ? :delete : :put),
+          variant: (@watching ? :tinted_outline : :secondary_muted), size: :sm, icon: "eye",
+          form_class: "pointer-events-auto", test_id: (@watching ? "ticket-unwatch" : "ticket-watch"),
+          title: t(@watching ? "member.tickets.watch.watching" : "member.tickets.watch.watch"),
+          aria: { label: t(@watching ? "member.tickets.watch.watching" : "member.tickets.watch.watch") }) do |b| %>
+      <% b.with_trailing { render "member/tickets/watchers_count", ticket: @ticket, count: @watchers_count } %>
+    <% end %>
+    <%# CYRA-402 — i comandi rivolti a chi sviluppa stanno sotto una voce loro: erano in fila con
+        gli altri e li vedeva chiunque, anche chi tecnico non è. %>
+    <% if @ticket.project.github_repository && can?("github.manage", scope: @ticket.project) %>
+      <%= render Ui::RowMenuComponent.new(test_id: "ticket-dev-menu", aria_label: t("member.tickets.show.dev_menu"), icon: "git-branch", title: t("member.tickets.show.dev_menu")) do %>
+        <%= button_to t("member.tickets.github.create_branch"), branch_member_ticket_github_path(@ticket),
+              method: :post, class: Ui::RowMenuComponent.item_class, form: { class: "block" },
+              data: { test: "ticket-github-branch" } %>
+        <%= button_to t("member.tickets.github.open_pr"), pull_request_member_ticket_github_path(@ticket),
+              method: :post, class: Ui::RowMenuComponent.item_class, form: { class: "block" },
+              data: { test: "ticket-github-pr" } %>
+      <% end %>
+    <% end %>
+    <%# Modificare ed eliminare sono azioni rare, e una è irreversibile: non stanno in prima fila
+        accanto a ciò che si fa tutti i giorni. %>
+    <% if can_manage %>
+      <%= render Ui::RowMenuComponent.new(test_id: "ticket-more-menu", aria_label: t("member.tickets.show.more_menu")) do %>
+        <%= link_to t("member.tickets.show.edit"), edit_member_ticket_path(@ticket),
+              class: Ui::RowMenuComponent.item_class, data: { test: "ticket-edit" } %>
+        <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+        <%= button_to t("member.tickets.show.delete"), member_ticket_path(@ticket), method: :delete, params: { confirm: 1 },
+              class: Ui::RowMenuComponent.item_class(:danger), form: { class: "block" },
+              data: { test: "ticket-delete", turbo_confirm: t("member.tickets.delete_confirm") } %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

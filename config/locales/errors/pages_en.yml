@@ -1,0 +1,16 @@
+---
+en:
+  errors:
+    pages:
+      home: Back to home
+      tickets: Go to tickets
+      servers: Go to servers
+      not_found:
+        title: This page does not exist
+        body: The address may be misspelled, or the page may have moved. If you got here from a shared link, ask whoever sent it to check it again.
+      unprocessable_content:
+        title: The operation could not be completed
+        body: "The request was not accepted. If you were filling in a form, go back and try again: your session may have expired."
+      internal_server_error:
+        title: Something went wrong
+        body: "The problem is on our side, not yours. It has already been recorded: try again in a moment."

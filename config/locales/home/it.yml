@@ -1,0 +1,6 @@
+it:
+  home:
+    deferrals:
+      errors:
+        invalid: "Impossibile rimandare questa decisione"
+        blank_key: "Manca la decisione da rimandare"

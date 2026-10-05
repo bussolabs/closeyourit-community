@@ -1,0 +1,4 @@
+<%= render "form", feature: @feature, group: @group, categories: @categories, pages: @pages,
+      url: member_product_features_path(matrix_id: @group.id), method: :post,
+      title: t("member.product.features.new"),
+      submit_label: t("member.product.features.new") %>

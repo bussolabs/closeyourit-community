@@ -1,0 +1,62 @@
+<%# The conversations page has no page header: the title, the counts and the "new conversation"
+    action live in the conversations panel (member/chat_conversations/_conversations_pane). This
+    partial only holds the dialog that action opens (ui--dialog: the data-controller sits on the
+    page wrapper). %>
+<%# Dialog "nuova conversazione": un mini-form per tipo, POST alla create già esistente. %>
+<%= render Ui::ModalComponent.new(title: t("member.chat.new_conversation.title"), test_id: "chat-new-dialog",
+      data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+  <% modal.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: t("member.chat.new_conversation.cancel"), variant: :secondary_muted, size: :sm,
+          data: { action: "ui--dialog#close" }, test_id: "chat-new-close") %>
+  <% end %>
+  <div class="space-y-4">
+    <%# DM: destinatario tra i membri dell'org (il service gata sui progetti in comune). %>
+    <%= form_with url: member_chat_conversations_path, method: :post do %>
+      <input type="hidden" name="kind" value="direct">
+      <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.chat.kinds.direct") %></p>
+      <div class="flex items-start gap-2">
+        <%= render Ui::SelectComponent.new(
+              name: :account_id, options: @members.map { |a| [ a.name, a.id ] },
+              include_blank: true, required: true, wrapper_class: "flex-1",
+              placeholder: t("member.chat.new_conversation.direct_placeholder"),
+              test_id: "chat-new-direct-account") %>
+        <button type="submit" data-test="chat-new-direct-submit"
+                class="shrink-0 inline-flex items-center h-[34px] px-3.5 rounded-md text-[12.5px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700"><%= t("member.chat.new_conversation.start") %></button>
+      </div>
+    <% end %>
+
+    <% if @pickable_projects.any? %>
+      <div class="border-t border-stone-100 dark:border-zinc-800"></div>
+      <%= form_with url: member_chat_conversations_path, method: :post do %>
+        <input type="hidden" name="kind" value="project">
+        <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.chat.kinds.project") %></p>
+        <div class="flex items-start gap-2">
+          <%= render Ui::SelectComponent.new(
+                name: :project_id, options: @pickable_projects.map { |p| [ p.name, p.id ] },
+                include_blank: true, required: true, wrapper_class: "flex-1",
+                placeholder: t("member.chat.new_conversation.project_placeholder"),
+                test_id: "chat-new-project-select") %>
+          <button type="submit" data-test="chat-new-project-submit"
+                  class="shrink-0 inline-flex items-center h-[34px] px-3.5 rounded-md text-[12.5px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700"><%= t("member.chat.new_conversation.open") %></button>
+        </div>
+      <% end %>
+    <% end %>
+
+    <% if @teams.any? %>
+      <div class="border-t border-stone-100 dark:border-zinc-800"></div>
+      <%= form_with url: member_chat_conversations_path, method: :post do %>
+        <input type="hidden" name="kind" value="team">
+        <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.chat.kinds.team") %></p>
+        <div class="flex items-start gap-2">
+          <%= render Ui::SelectComponent.new(
+                name: :team_id, options: @teams.map { |team| [ team.name, team.id ] },
+                include_blank: true, required: true, wrapper_class: "flex-1",
+                placeholder: t("member.chat.new_conversation.team_placeholder"),
+                test_id: "chat-new-team-select") %>
+          <button type="submit" data-test="chat-new-team-submit"
+                  class="shrink-0 inline-flex items-center h-[34px] px-3.5 rounded-md text-[12.5px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700"><%= t("member.chat.new_conversation.open") %></button>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

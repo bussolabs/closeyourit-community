@@ -1,0 +1,37 @@
+<% content_for :title, t("member.workload.actions.promote.title") %>
+
+<div class="p-7">
+  <%= form_with url: member_workload_action_promotion_path(@action), method: :post, class: "space-y-6", data: { test: "workload-promotion-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: t("member.workload.actions.promote.title"),
+          breadcrumb: [ { label: t("member.workload.actions.title"), href: member_workload_actions_path },
+                        { label: @action.title, href: member_workload_action_path(@action) },
+                        { label: t("member.workload.actions.promote.breadcrumb") } ]) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.workload.actions.form.cancel"), href: member_workload_action_path(@action), variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: t("member.workload.actions.promote.submit"), type: "submit", icon: "wand-sparkles", size: :sm, test_id: "workload-promotion-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400 mb-5"><%= t("member.workload.actions.promote.hint") %></p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+        <%= render Ui::SelectComponent.new(name: "project_id", label: t("member.workload.actions.promote.project"), required: true,
+              options: @projects.map { |project| [ project.name, project.id ] },
+              placeholder: t("member.workload.actions.promote.project_placeholder"),
+              test_id: "workload-promotion-project", error: @errors&.dig(:project_id)&.first) %>
+
+        <%= render Ui::InputComponent.new(name: "title", label: t("member.workload.actions.promote.ticket_title"),
+              value: @draft_title, placeholder: t("member.workload.actions.promote.ticket_title_placeholder"),
+              test_id: "workload-promotion-title", error: @errors&.dig(:title)&.first) %>
+
+        <div class="md:col-span-2">
+          <label for="description" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.workload.actions.promote.description") %></label>
+          <textarea name="description" id="description" rows="5"
+                    class="block w-full rounded-md border border-stone-200 dark:border-zinc-800 px-3 py-2 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400"
+                    placeholder="<%= t("member.workload.actions.promote.description_placeholder") %>"
+                    data-test="workload-promotion-description"><%= @draft_description %></textarea>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

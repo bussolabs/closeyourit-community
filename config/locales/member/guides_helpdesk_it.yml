@@ -1,0 +1,35 @@
+---
+it:
+  member:
+    guides:
+      index:
+        helpdesk:
+          title: Assistenza
+      helpdesk:
+        title: Assistenza
+        subtitle: Chi visita i tuoi siti scrive al team, e la richiesta arriva nel progetto giusto.
+        what_title: A cosa serve
+        what_intro: "Un visitatore ha un problema e lo scrive dal sito. La richiesta arriva nella pagina Assistenza, legata al progetto di quel sito. Non è un ticket: è una richiesta da leggere."
+        what_b1: Ogni richiesta porta il messaggio, la pagina da cui è stata scritta e il tipo di dispositivo.
+        what_b2: "L'email di chi scrive è facoltativa: c'è solo se il visitatore l'ha lasciata."
+        what_b3: Nessuna email parte in automatico verso chi scrive.
+        enable_title: Accenderla
+        enable_intro: "L'Assistenza è spenta finché non la accendi, progetto per progetto. Un progetto spento rifiuta ogni richiesta."
+        enable_b1: "Apri le impostazioni del progetto e accendi «Ricevi le richieste di assistenza dai siti»."
+        enable_b2: Scrivono solo i siti che il progetto ammette. L'elenco è lo stesso usato per gli errori.
+        enable_b3: "Nel progetto compare la scheda Assistenza: lì trovi il codice pronto per il sito e il testo da dare a un assistente che scrive codice."
+        read_title: Leggere e smistare
+        read_intro: "La pagina si apre sulle richieste nuove. Vede la pagina solo chi ha il permesso «Gestisci le richieste di assistenza» sul progetto."
+        read_b1: Cerca nel testo e filtra per progetto o per stato.
+        read_b2: "Scarta toglie una richiesta dalle nuove: pubblicità, prove, doppioni."
+        read_b3: Una richiesta scartata si ritrova con il filtro Stato e si può recuperare.
+        read_b4: Un clic sulla riga apre il messaggio intero e i dettagli.
+        read_b5: "«Trasforma in ticket» apre una bozza con il testo di chi ha scritto. Il ticket nasce a tuo nome, senza l'email del visitatore."
+        read_b6: "Se il problema ha già un ticket, collega la richiesta a quello. Il ticket mostra quante richieste ha dietro."
+        read_b7: "Rispondi dalla richiesta: la risposta parte per email e resta nella conversazione. Se la persona risponde a quella email, la sua risposta non arriva qui."
+        read_b8: "Con l'AI configurata, le richieste che dicono la stessa cosa compaiono come simili e si collegano allo stesso ticket."
+        privacy_title: I dati di chi scrive
+        privacy_intro: "Chi scrive è una persona fuori dalla tua organizzazione. Di lei si conserva il meno possibile."
+        privacy_b1: L'email è salvata cifrata e si cancella da sola dopo 180 giorni. Il messaggio resta.
+        privacy_b2: "Puoi cancellare l'email prima, dalla richiesta. Non si può annullare."
+        privacy_b3: L'indirizzo di rete di chi scrive non viene salvato.

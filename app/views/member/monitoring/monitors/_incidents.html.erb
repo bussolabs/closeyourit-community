@@ -1,0 +1,117 @@
+<%# locals: monitor: — incident (TOP-LEVEL) del monitor. Root con id stabile `monitor_incidents_<id>`
+    (target del broadcast Turbo, sempre presente anche vuoto). Le finestre grezze si UNIFICANO: la
+    checkbox seleziona le righe, "Aggiorna stato" le raggruppa in un incident e vi posta uno step
+    (detected → investigating → fixing → monitoring → resolved). La narrazione è visibile in pagina
+    pubblica. Preload children+updates: window_* e la timeline iterano gli associati (no N+1). %>
+<%
+  # can_manage arriva dal controller (show); nel broadcast Turbo (stream condiviso, senza request) NON
+  # è passato → default false: la lista live è read-only per tutti, i controlli tornano al reload.
+  can_manage = local_assigns.fetch(:can_manage, false)
+  incidents = monitor.top_incidents.includes(:updates, :children).limit(20).to_a
+%>
+<div id="monitor_incidents_<%= monitor.id %>" class="space-y-3" data-test="incidents">
+  <% if incidents.any? %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-controller="<%= "ui--bulk-select ui--dialog" if can_manage %>">
+      <%# T1 — the title sits in the panel header, as on the other panels of the page. %>
+      <div class="flex items-center gap-2 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+        <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.uptime.incidents") %></h2>
+        <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.incidents_count", count: incidents.size) %></span>
+      </div>
+      <% if can_manage %>
+        <%# Bulk bar: visibile (via [hidden]) solo con ≥1 riga selezionata. Apre il dialog di aggiornamento. %>
+        <div class="flex items-center gap-2 px-4 py-2 border-b border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800" data-ui--bulk-select-target="bar" hidden>
+          <span class="font-mono text-[11px] text-gray-600 dark:text-zinc-400" data-test="incidents-bulk-count">
+            <span data-ui--bulk-select-target="count">0</span> <%= t("member.uptime.incident.selected") %>
+          </span>
+          <button type="button" data-action="ui--dialog#open" data-test="incidents-update-open"
+                  class="ml-auto inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[12px] font-medium bg-indigo-600 text-white hover:bg-indigo-700">
+            <%= render Ui::IconComponent.new(name: "radio-tower", class: "text-[11px]") %><%= t("member.uptime.incident.update_status") %>
+          </button>
+        </div>
+      <% end %>
+
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.uptime.incidents"), selectable: (can_manage && { test_id: "incidents-select-all" }))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime.col_started")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime.col_resolved")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime.col_duration")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime.col_incident_status"), align: :right) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: tag.span(t("member.uptime.incident.manage"), class: "sr-only"), classes: "w-10", visible: can_manage) %>
+        <% end %>
+        <% incidents.each do |incident| %>
+          <%# CYRA-495 — inizio finestra: è insieme il dato della colonna e il riferimento di riga nei
+              nomi accessibili di casella e comando (senza, il lettore di schermo legge l'UUID del
+              value e sette comandi identici). %>
+          <% started_label = l(incident.window_started_at, format: :short) %>
+          <%= render Ui::TableComponent::RowComponent.new(test_id: "incident-row", data: { incident_id: incident.id },
+                select: (can_manage ? { value: incident.id, label: t("member.uptime.incident.select_row", started_at: started_label), test_id: "incident-select" } : nil)) do %>
+            <%= render(Ui::TableComponent::CellComponent.new(header: true, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { started_label } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.uptime.col_resolved"), mono: true, class: "text-gray-600 dark:text-zinc-400")) { (l(incident.window_resolved_at, format: :short) if incident.window_resolved_at) || "—" } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.uptime.col_duration"), mono: true, class: incident.window_ongoing? ? "text-red-600 dark:text-red-400" : "text-gray-600 dark:text-zinc-400")) { "#{distance_of_time_in_words(incident.window_started_at, incident.window_resolved_at || Time.current)}#{incident.window_ongoing? ? " (#{t('member.uptime.ongoing')})" : ""}" } %>
+            <%= render Ui::TableComponent::CellComponent.new(label: t("member.uptime.col_incident_status"), align: :right) do %>
+              <div class="inline-flex items-center gap-2 justify-end flex-wrap">
+                <% if incident.grouped? %>
+                  <span class="font-mono text-[10px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.incident.windows_count", count: incident.children.size + 1) %></span>
+                <% end %>
+                <% if incident.narrated? %>
+                  <%= render Ui::BadgeComponent.new(label: uptime_phase_label(incident.phase), color: uptime_phase_color(incident.phase), dot: true) %>
+                <% elsif incident.window_ongoing? %>
+                  <%= render Ui::BadgeComponent.new(label: t("member.uptime.incident_open"), color: :red, dot: true) %>
+                <% else %>
+                  <%= render Ui::BadgeComponent.new(label: t("member.uptime.incident_resolved"), color: :emerald, dot: true) %>
+                <% end %>
+              </div>
+            <% end %>
+            <%= render Ui::TableComponent::CellComponent.new(actions: true, visible: can_manage, data: { controller: "ui--dialog" }) do %>
+              <button type="button" data-action="ui--dialog#open" data-test="incident-manage-<%= incident.id %>"
+                      aria-label="<%= t("member.uptime.incident.manage_row", started_at: started_label) %>"
+                      class="inline-flex items-center justify-center w-8 h-8 rounded-md text-gray-500 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100">
+                <%= render Ui::IconComponent.new(name: "ellipsis-vertical", class: "text-[13px]") %>
+              </button>
+              <%= render "member/monitoring/monitors/incident_manage_modal", monitor:, incident:, can_manage: true %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <% if can_manage %>
+        <%# Dialog: raggruppa le finestre selezionate + posta uno step. Form DENTRO il dialog (pattern
+            del progetto): bulk-select inietta qui gli incident_ids[] selezionati al submit. %>
+        <%= render Ui::ModalComponent.new(title: t("member.uptime.incident.update_status"), size: :sm,
+              form: { url: member_monitoring_monitor_incidents_group_path(monitor), method: :post,
+                      data: { controller: "incident-update", action: "submit->ui--bulk-select#injectIds" } },
+              test_id: "incidents-update-dialog",
+              data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+          <% modal.with_actions do %>
+            <%= render Ui::ButtonComponent.new(label: t("shared.actions_cancel"), variant: :secondary_muted, size: :sm,
+                  data: { action: "ui--dialog#close" }) %>
+            <%= render Ui::ButtonComponent.new(label: t("member.uptime.incident.post"), type: "submit", variant: :primary, size: :sm,
+                  icon: "send", test_id: "incident-update-submit") %>
+          <% end %>
+          <div class="space-y-3">
+            <p class="text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.incident.group_hint") %></p>
+            <%# contenitore hidden: bulk-select vi inietta gli incident_ids[] selezionati %>
+            <div data-ui--bulk-select-target="ids"></div>
+
+            <div>
+              <label class="block font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.uptime.incident.phase") %></label>
+              <select name="phase" required data-incident-update-target="phase" data-action="change->incident-update#fill" data-test="incident-phase"
+                      class="w-full h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+                <% Uptime::IncidentUpdate.phases.keys.each do |phase| %>
+                  <option value="<%= phase %>" data-body="<%= t("member.uptime.incident.default_body.#{phase}") %>"><%= uptime_phase_label(phase) %></option>
+                <% end %>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.uptime.incident.message") %></label>
+              <textarea name="body" rows="3" data-incident-update-target="body" data-test="incident-body"
+                        placeholder="<%= t('member.uptime.incident.message_placeholder') %>"
+                        class="w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] text-zinc-900 dark:text-zinc-100 leading-relaxed focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400"><%= t("member.uptime.incident.default_body.detected") %></textarea>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,42 @@
+<% content_for :title, t("member.support.mine_title") %>
+
+<div class="p-7 space-y-6" data-test="member-support-requests">
+  <%= render Ui::PageHeaderComponent.new(title: t("member.support.mine_title"), subtitle: t("member.support.mine_subtitle"),
+        breadcrumb: [ { label: t("member.support.mine_title") } ], counts_test_id: "support-mine-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.support.mine_count"), value: @pagination.total, test_id: "support-mine-total") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.support.button"), icon: "life-buoy", size: :sm,
+            test_id: "support-mine-new", data: { action: "ui--support#open" }) %>
+    <% end %>
+  <% end %>
+
+  <% if @requests.empty? %>
+    <%= render Ui::EmptyStateComponent.new(icon: "life-buoy", framed: true, test_id: "support-mine-empty",
+          title: t("member.support.mine_empty_title"), body: t("member.support.mine_empty_body")) %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.support.mine_title"))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.support.col_when")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.support.col_request")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.support.col_page")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.support.col_status")) %>
+        <% end %>
+        <% @requests.each do |support_request| %>
+          <%= render Ui::TableComponent::RowComponent.new(id: dom_id(support_request), test_id: "support-mine-row") do %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.support.col_when"), mono: true, class: "whitespace-nowrap text-gray-500 dark:text-zinc-400")) { l(support_request.created_at, format: :short) } %>
+            <%= render(Ui::TableComponent::CellComponent.new(header: true)) { tag.span(support_request.body, class: "whitespace-pre-line text-[13px] text-zinc-900 dark:text-zinc-100") } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.support.col_page"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { truncate(support_request.context["page"].to_s, length: 40) } %>
+            <%= render Ui::TableComponent::CellComponent.new(label: t("member.support.col_status")) do %>
+              <% handled = support_request.handled? %>
+              <%= render Ui::BadgeComponent.new(label: t(handled ? "member.support.state_handled" : "member.support.state_pending"), color: (handled ? :green : :amber), dot: true) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "support-mine-pagination") %>
+    </div>
+  <% end %>
+</div>

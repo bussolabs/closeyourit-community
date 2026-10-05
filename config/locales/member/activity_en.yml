@@ -1,0 +1,87 @@
+en:
+  member:
+    activity:
+      title: Activity log
+      subtitle: What people did on work, tickets, permissions and the vault, in time order.
+      empty: No activity yet
+      empty_body: As soon as someone creates, changes or grants something, it shows up here.
+      no_match: No activity matches the filters.
+      count:
+        one: 1 action
+        other: "%{count} actions"
+      stat_events: Actions
+      filter_source: Log
+      filter_action: Action
+      filter_actor: Who
+      filter_from: From
+      filter_to: To
+      system: System
+      col_when: When
+      col_source: Log
+      col_action: Action
+      col_subject: On what
+      col_actor: Who
+      col_project: Project
+      impersonated: impersonating
+      sources:
+        work: Work
+        tickets: Tickets
+        permissions: Permissions
+        secrets: Vault
+      actions:
+        unknown: Action
+        work:
+          created: Created
+          updated: Updated
+          moved_in: Moved in
+          moved_out: Moved out
+        tickets:
+          created: Ticket opened
+          updated: Ticket updated
+          status_changed: Status changed
+          assigned: Assigned
+          unassigned: Unassigned
+          reviewer_changed: Reviewer changed
+          milestone_changed: Milestone changed
+          comment_deleted: Comment deleted
+          attached: Attachment added
+          attachment_removed: Attachment removed
+          review_rejected: Review rejected
+          review_approved: Review approved
+          autopilot_auto_approved: Delivery moved on by itself
+          linked: Linked
+          branch_created: Branch created
+          pull_request_opened: Pull request opened
+          pull_request_merged: Pull request merged
+          pull_request_closed: Pull request closed
+          pull_request_autoclose_declined: Auto-close declined
+          agent_eligibility_evaluated: AI opinion
+          agent_eligibility_overridden: Eligibility overridden
+          clarification_requested: Clarification requested
+          question_asked: Question asked
+          question_answered: Question answered
+          question_closed: Question withdrawn
+          work_context_captured: Context captured
+          dependency_added: Prerequisite added
+          dependency_removed: Prerequisite removed
+          dependency_blocked: Blocked by a prerequisite
+          already_done: Already done
+        permissions:
+          role_created: Role created
+          role_updated: Role updated
+          role_deleted: Role deleted
+          permission_granted: Permission granted
+          permission_revoked: Permission revoked
+          team_created: Team created
+          team_updated: Team updated
+          team_deleted: Team deleted
+          team_member_added: Person added to team
+          team_member_removed: Person removed from team
+          team_role_added: Role given to team
+          team_role_removed: Role removed from team
+          team_scope_changed: Team projects changed
+          account_role_added: Role given to a person
+          account_role_removed: Role removed from a person
+          personal_override_set: Personal exception set
+          personal_override_cleared: Personal exception cleared
+          dangerous_action_confirmed: Sensitive action confirmed

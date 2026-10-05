@@ -1,0 +1,43 @@
+<%# locals: host:, rule:, can_manage:, limit:, last_at:, muted: — one alert rule that covers this machine.
+    CYRA-519 — a rule muted here stays listed and marked: an unseen silence is a forgotten one. %>
+<% tone = alerting_event_tone(rule.event_type) %>
+<% event_label = alerting_event_label(rule.event_type) %>
+<%= render Ui::TableComponent::RowComponent.new(test_id: "server-alert-rule-#{rule.id}") do %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.alerts.col_rule"))) do %>
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="inline-flex items-center justify-center w-5 h-5 rounded <%= tone[:bg] %> <%= tone[:fg] %> shrink-0"><%= render Ui::IconComponent.new(name: tone[:icon], class: "text-[10px]") %></span>
+      <% if can_manage %>
+        <%= link_to rule.name, member_alerting_rule_path(rule), class: "text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "server-alert-rule-link-#{rule.id}" } %>
+      <% else %>
+        <span class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= rule.name %></span>
+      <% end %>
+      <%# The event type only when it adds something to the name. %>
+      <% if event_label != rule.name %><span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="server-alert-event-<%= rule.id %>"><%= event_label %></span><% end %>
+      <% if muted %>
+        <span class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300" data-test="server-alert-muted-<%= rule.id %>">
+          <%= render Ui::IconComponent.new(name: "bell-off", class: "text-[9px]") %><%= t("member.servers.alerts.muted_badge") %>
+        </span>
+      <% end %>
+    </div>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.alerts.col_limit"), mono: true)) do %>
+    <% if limit %><span data-test="server-alert-threshold-<%= rule.id %>"><%= server_threshold_pct(limit) %></span><% else %><span class="text-gray-400 dark:text-zinc-500">—</span><% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.alerts.col_last"), mono: true)) do %>
+    <span data-test="server-alert-last-<%= rule.id %>" class="<%= last_at ? "text-zinc-900 dark:text-zinc-100" : "text-gray-400 dark:text-zinc-500" %>" title="<%= last_at ? t("member.servers.alerts.last_triggered", time: time_ago_in_words(last_at)) : t("member.servers.alerts.never_triggered") %>">
+      <%= last_at ? t("member.servers.alerts.last_ago", time: time_ago_in_words(last_at)) : t("member.servers.alerts.never") %>
+    </span>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.alerts.col_channels"))) do %>
+    <span class="text-[12px] text-gray-600 dark:text-zinc-400"><%= ([ t("member.servers.alerts.via_app") ] + rule.channels.select(&:enabled?).map(&:name)).join(" · ") %></span>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.alerts.col_action"), actions: true, visible: can_manage)) do %>
+    <% if muted %>
+      <%= render Ui::ButtonComponent.new(label: t("member.servers.alerts.unmute_here"), href: member_monitoring_server_alert_exclusion_path(host, rule_id: rule.id),
+            method: :delete, variant: :ghost, size: :sm, test_id: "server-alert-unmute-#{rule.id}") %>
+    <% else %>
+      <%= render Ui::ButtonComponent.new(label: t("member.servers.alerts.mute_here"), href: member_monitoring_server_alert_exclusions_path(host, rule_id: rule.id),
+            method: :post, variant: :ghost, size: :sm, test_id: "server-alert-mute-#{rule.id}") %>
+    <% end %>
+  <% end %>
+<% end %>

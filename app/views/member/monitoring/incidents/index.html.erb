@@ -1,0 +1,55 @@
+<% content_for :title, t("member.uptime.incidents") %>
+
+<div class="p-7 space-y-6" data-test="member-uptime-incidents">
+  <%# Riusa lo stream uptime: al cambio salute i chip dell'header condiviso si aggiornano live. Da
+      CYRA-257 arrivano via page-refresh e non più renderizzati dal broadcaster (erano conteggi
+      org-wide): serve il morph anche qui, o questa pagina risponderebbe al refresh con un reload
+      duro, perdendo scroll e filtro stato. %>
+  <%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+  <%= turbo_stream_from Realtime::Streams.uptime(current_organization) %>
+  <%= render "member/monitoring/uptime_header", active_tab: "incidents",
+        up_count: @up_count, down_count: @down_count, total: @total, open_incidents_count: @open_incidents_count %>
+
+  <% filtering = params[:status].present? %>
+  <% if @incidents.empty? && !filtering %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.uptime.incidents_empty"), body: t("member.uptime.incidents_empty_body"), icon: "triangle-alert", framed: true, test_id: "uptime-incidents-empty") %>
+  <% else %>
+    <div class="space-y-3">
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="uptime-incidents-table">
+        <%# T1 — the title is the panel header, not a line on the page ground. %>
+        <div class="flex items-baseline gap-2 px-4 py-3 border-b border-stone-200 dark:border-zinc-800" data-test="uptime-incidents-heading">
+          <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.uptime.incidents") %></h2>
+          <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= count_label("member.uptime.incidents_count_total", @pagination.total) %></span>
+        </div>
+        <%= render(Ui::TableToolbarComponent.new(
+              url: member_monitoring_incidents_path, framed: true,
+              test_id: "uptime-incidents-toolbar")) do |toolbar| %>
+          <% toolbar.with_filter(key: "status", label: t("member.uptime.filter_incident_status")) do %>
+            <div class="w-40"><%= render Ui::SelectComponent.new(name: "status", multiple: true, summary: true,
+              options: [ [ t("member.uptime.incident_open"), "open" ], [ t("member.uptime.incident_resolved"), "resolved" ] ],
+              selected: params[:status], placeholder: t("member.uptime.filter_incident_status"), test_id: "filter-incident-status") %></div>
+          <% end %>
+        <% end %>
+
+        <% if @incidents.empty? %>
+          <p class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="uptime-incidents-no-match"><%= t("member.uptime.incidents_no_match") %></p>
+        <% else %>
+          <%= render(Ui::TableComponent.new(stacked: true, label: t("member.uptime.incidents"))) do |t| %>
+            <% t.with_head do %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime.col_monitor"), sort: "monitor") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime.col_started"), sort: "started", initial: :desc, classes: "w-32") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime.col_resolved"), sort: "resolved", initial: :desc, classes: "w-32") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime.col_duration"), sort: "duration", initial: :desc, classes: "w-28") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime.col_incident_status"), sort: "status", classes: "w-24") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+            <% end %>
+            <% @incidents.each do |incident| %>
+              <%= render "member/monitoring/incidents/row", incident: incident %>
+            <% end %>
+          <% end %>
+          <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "uptime-incidents-pagination")) %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

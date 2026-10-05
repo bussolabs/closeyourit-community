@@ -1,0 +1,100 @@
+<% content_for :title, @group.title %>
+<%# CSS del player rrweb-player: caricato SOLO se un'occorrenza ha un replay (via yield :head). %>
+<% if @replay_session_ids.any? %>
+  <% content_for :head do %><%= stylesheet_link_tag "rrweb-player", "data-turbo-track": "reload" %><% end %>
+<% end %>
+<% can_manage = can?("errors.triage", scope: @group.project) %>
+<% muted = @group.status_resolved? || @group.status_ignored? %>
+<% filter_params = { environment: params[:environment], release: params[:release], level: params[:level] }.compact %>
+<%# Binding di questa pagina dichiarati nel registry dell'help GLOBALE (CYRA-28): selezione occorrenza
+    + triage r/i/p per chi può gestire. Nessun cheatsheet locale — l'help è quello condiviso del layout. %>
+<% shortcut_docs = [ { keys: "↑ ↓ · j k", label: t("member.monitoring.shortcut_select") } ]
+   if can_manage
+     shortcut_docs += [
+       { keys: "r", label: t("member.monitoring.resolve") },
+       { keys: "i", label: t("member.monitoring.ignore") },
+       { keys: "p", label: t("member.monitoring.promote") }
+     ]
+   end %>
+
+<div class="p-7 space-y-6" data-test="member-error-group"
+     data-controller="occurrence-select keyboard-shortcuts"
+     data-occurrence-select-selected-class="bg-indigo-50 dark:bg-indigo-500/15"
+     data-keyboard-doc="<%= shortcut_docs.to_json %>">
+  <%# Live: ogni nuova occorrenza di questo gruppo (Errors::Ingest::Record) manda un page-refresh Turbo
+      throttlato sullo stream del gruppo; il browser ri-fetcha QUESTO URL e morpha il DOM (scroll e
+      selezione occorrenza preservati), così le occorrenze recenti compaiono senza broadcast per-occorrenza
+      nel path caldo (CYRA-41). Stream org-prefissato (Realtime::Streams.error_group) → isolamento tenant. %>
+  <%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+  <%= turbo_stream_from Realtime::Streams.error_group(@group) %>
+  <%= render "member/monitoring/error_groups/header", can_manage: can_manage %>
+
+  <%# CYRA-382 — Il ponte errore→ticket finiva nel vuoto: creato il ticket, il bottone spariva e
+      l'unica traccia era una sigla in fondo alla colonna di destra, tre schermate più sotto. Qui, in
+      testa, si legge in due secondi che qualcuno se ne sta occupando: sigla, stato, a chi è
+      assegnato. Lo stato si legge dal ticket (una association già caricata), non copiato sul gruppo:
+      un valore denormalizzato qui invecchierebbe a ogni cambio di stato. %>
+  <% if @group.promoted? %>
+    <%= render "member/monitoring/error_groups/ticket_bar" %>
+  <% end %>
+
+  <%# CYRA-192 — perché l'errore c'era e cosa l'ha chiuso, in testa: è la domanda di chi ritrova un
+      gruppo risolto mesi dopo, e finora non aveva risposta da nessuna parte. %>
+  <% if @group.status_resolved? && (@group.resolution_cause.present? || @group.resolution_fix.present?) %>
+    <%= render "member/monitoring/error_groups/resolution", group: @group %>
+  <% end %>
+
+  <%# Lede plain-language per il customer (non-engineer): riassunto sopra l'evidenza tecnica. %>
+  <% if current_membership&.customer? %>
+    <%= render "customer_lede", group: @group %>
+  <% end %>
+
+  <%# istogramma: occorrenze nel tempo (solo visualizzazione) + range selector %>
+  <%= render "member/monitoring/error_groups/histogram", filter_params: filter_params %>
+
+  <%= render Ui::GridComponent.new(cols: 1, lg: 3, gap: 6) do %>
+    <%# LEFT: pannelli per-occorrenza (stacktrace/request/breadcrumbs) + tabella occorrenze %>
+    <%= render Ui::StackComponent.new(gap: 6, class: "lg:col-span-2") do %>
+      <%# CYRA-381 — Gli altri gruppi con LO STESSO messaggio: il fingerprint include il punto del
+          codice, quindi lo stesso errore lanciato da quattro posti diventa quattro righe da smaltire
+          invece di un problema solo. Qui sono già in pagina, senza premere niente: è un confronto
+          esatto sul messaggio, non una chiamata AI (che resta nel pannello Triage, per i casi in cui
+          il messaggio non coincide alla lettera). %>
+      <% if @similar_groups.any? %>
+        <%= render "member/monitoring/error_groups/similar_groups" %>
+      <% end %>
+      <% if @events.empty? %>
+        <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="stacktrace">
+          <p class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.no_events") %></p>
+        </div>
+      <% else %>
+        <% @visible_events.each do |event| %>
+          <%= render "occurrence_left", event: event, selected: @selected, group: @group %>
+        <% end %>
+      <% end %>
+
+      <%= render "member/monitoring/error_groups/occurrences_panel", filter_params: filter_params %>
+    <% end %>
+
+    <%# RIGHT: pannelli per-occorrenza (user/tags/context) + dettagli gruppo (aggregati) %>
+    <%= render Ui::StackComponent.new(gap: 6) do %>
+      <%# Dettagli aggregati del gruppo (stabili) PRIMA dei pannelli per-occorrenza, così l'identità
+          dell'issue resta sempre in alto a destra e non viene spinta giù dai pannelli della selezione. %>
+      <%= render "member/monitoring/error_groups/details" %>
+
+      <%# Breakdown device (solo gruppi con eventi mobile/browser): top OS e top versioni app. %>
+      <% if @device_breakdown.present? && (@device_breakdown[:os].any? || @device_breakdown[:apps].any?) %>
+        <%= render "member/monitoring/error_groups/device_breakdown" %>
+      <% end %>
+
+      <%# Triage AI on-demand: verdetto strutturato + cluster errori simili. L'azione consigliata viene
+          pre-evidenziata sui pulsanti d'azione (form Rails nativi) → applica con un clic. %>
+      <% if can_manage %>
+        <%= render "member/monitoring/error_groups/triage_ai" %>
+      <% end %>
+
+      <%= render "member/monitoring/error_groups/side_extras", can_manage: can_manage, muted: muted %>
+    <% end %>
+  <% end %>
+
+</div>

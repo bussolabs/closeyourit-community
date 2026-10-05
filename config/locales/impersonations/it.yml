@@ -1,0 +1,21 @@
+it:
+  impersonations:
+    action: "Impersona"
+    cannot_self: "Non puoi impersonare te stesso."
+    started: "Stai impersonando %{email}."
+    entered: "Sei entrato in %{name}."
+    no_member: "L'organizzazione non ha membri in cui entrare."
+    stopped: "Impersonazione terminata."
+    banner: "Stai impersonando %{email}."
+    exit: "Esci"
+    confirm:
+      title: "Conferma con la verifica in due passaggi"
+      breadcrumb: "Conferma"
+      subtitle_account: "Stai per impersonare %{email}. Inserisci il codice della tua app di autenticazione."
+      subtitle_organization: "Stai per entrare in %{name} come %{email}. Inserisci il codice della tua app di autenticazione."
+      code_label: "Codice"
+      code_hint: "6 cifre dall'app di autenticazione."
+      submit: "Conferma"
+      cancel: "Annulla"
+      invalid_code: "Codice non valido o già usato. Attendi il codice successivo e riprova."
+      locked_out: "Troppi tentativi. Accedi di nuovo per riprovare."

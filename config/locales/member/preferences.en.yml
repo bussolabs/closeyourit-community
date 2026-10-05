@@ -1,0 +1,11 @@
+en:
+  member:
+    preferences:
+      # CYRA-338 — the tabs sit under the area title, which reads «Preferences»: the first one cannot
+      # repeat that name. «General» covers language, platforms and how lists look.
+      tabs:
+        display: General
+        notifications: Notifications
+        telegram: Telegram
+        security: Security
+        sessions: Sign-ins

@@ -1,0 +1,70 @@
+<%# locals: host: (required) — Servers::Host, snapshot denormalizzato per la fleet (no query extra);
+    thresholds: (opzionale) — hash { cpu:, mem:, disk: } con la soglia d'allarme effettiva per riga
+    (Alerting::ServerThresholds), affiancata al valore (CYRA-458). Assente → nessun limite mostrato.
+    temp_column: (opzionale, CYRA-465) — la flotta riporta la temperatura? La cella temp esiste solo
+    se true, allineata all'header condizionale dell'index. I due call-site (index + Broadcast.row) lo
+    passano sempre; assente → false (non mostrare un dato che non c'è). %>
+<% thresholds = local_assigns.fetch(:thresholds, {}) %>
+<% temp_column = local_assigns.fetch(:temp_column, false) %>
+<%= render Ui::TableComponent::RowComponent.new(href: member_monitoring_server_path(host), link_label: host.name, id: dom_id(host), test_id: "server-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <%= link_to member_monitoring_server_path(host), class: "block", data: { test: "server-link-#{host.id}" } do %>
+      <span class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400"><%= host.name %></span>
+      <span class="block font-mono text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5 truncate max-w-[240px]"><%= host.hostname.presence || "—" %><% if host.agent_version.present? %> · v<%= host.agent_version %><% end %></span>
+    <% end %>
+    <%# CYRA-470 — i gruppi assegnati compaiono qui, così la struttura della flotta si legge riga per
+        riga (non solo nella barra in cima). Etichette, non link: il filtro sta nella barra. %>
+    <% if host.groups.any? %>
+      <span class="mt-1 flex items-center flex-wrap gap-1" data-test="server-row-groups-<%= host.id %>">
+        <% host.groups.each do |group| %>
+          <span class="inline-flex items-center rounded px-1.5 h-[16px] text-[10px] bg-stone-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"><%= group %></span>
+        <% end %>
+      </span>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.servers.col_status")) do %>
+    <span class="flex items-center gap-1.5">
+      <%= render Ui::BadgeComponent.new(label: server_status_label(host), color: server_status_color(host), dot: true) %>
+      <%# Ruolo di replica del database rilevato sull'host (nil = host senza DB → nessun badge). %>
+      <% if host.db_role.present? %>
+        <%= render Ui::BadgeComponent.new(label: t("member.servers.db_role.#{host.db_role}"),
+              color: host.db_role == "primary" ? :indigo : :sky, size: :sm, test_id: "server-db-role-badge") %>
+      <% end %>
+    </span>
+    <%# F103 — C78: down means the agent stopped reporting; the cell says so, and since when. %>
+    <% if host.status_down? && host.last_seen_at %>
+      <span class="mt-1 block font-mono text-[10px] text-red-600 dark:text-red-400 whitespace-nowrap" data-test="server-down-reason-<%= host.id %>"><%= t("member.servers.down_reason", time: time_ago_in_words(host.last_seen_at)) %></span>
+    <% end %>
+  <% end %>
+  <%# CYRA-461: su una macchina silenziosa i numeri portano la propria età, qui accanto e non in
+      fondo alla riga — è dove si legge il valore che serve sapere quanto è vecchio. %>
+  <% { cpu: host.cpu_pct, mem: host.mem_pct, disk: host.disk_pct }.each_with_index do |(metric, pct), index| %>
+    <% limit = thresholds[metric] %>
+    <%= render Ui::TableComponent::CellComponent.new(label: t("member.servers.col_#{metric}"), class: server_cell_class(pct, limit), test_id: "server-cell-#{metric}-#{host.id}") do %>
+      <div class="flex items-center gap-2">
+        <span class="font-mono text-[12px] <%= server_value_color(host, pct) %> w-12 text-right shrink-0"><%= server_pct_text(pct) %></span>
+        <span class="relative flex-1 h-1.5 rounded-full bg-stone-100 dark:bg-zinc-800 overflow-hidden">
+          <span class="block h-full rounded-full <%= server_bar_class(pct) %>" style="width: <%= pct.to_f.clamp(0, 100) %>%"></span>
+          <%# CYRA-458: tacca alla soglia d'allarme, così la barra dice "a che punto scatta un avviso". %>
+          <% if limit %><span class="absolute inset-y-0 w-px bg-zinc-500" style="left: <%= limit.to_f.clamp(0, 100) %>%" aria-hidden="true"></span><% end %>
+        </span>
+      </div>
+      <% if index.zero? && host.silent? %>
+        <span class="mt-1 block text-right font-mono text-[10px] text-amber-700 dark:text-amber-300" data-test="server-data-age-<%= host.id %>"><%= server_data_age_text(host) %></span>
+      <% elsif limit %>
+        <span class="mt-1 block text-right font-mono text-[10px] text-gray-400 dark:text-zinc-500" data-test="server-threshold-<%= metric %>-<%= host.id %>"><%= t("member.servers.limits.label", value: server_threshold_pct(limit)) %></span>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.col_load"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { server_load_text(host) } %>
+  <%# CYRA-465 — la cella temperatura solo se la flotta la riporta (allineata all'header condizionale). %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.col_temp"), align: :right, mono: true, visible: temp_column, class: host.temp_max && host.temp_max >= 80 ? "text-red-600 dark:text-red-400" : "text-zinc-900 dark:text-zinc-100")) { server_temp_text(host.temp_max) } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.servers.col_os")) do %>
+    <span class="block text-[12px] text-zinc-900 dark:text-zinc-100 truncate max-w-[170px]"><%= host.os_name.presence || "—" %></span>
+    <span class="mt-0.5 flex items-center gap-1.5">
+      <% if host.updates_available.to_i.positive? %><span class="inline-flex items-center rounded px-1.5 h-[16px] font-mono text-[10px] whitespace-nowrap bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300" data-test="server-updates-badge"><%= t("member.servers.updates_badge", count: host.updates_available) %></span><% end %>
+      <% if host.reboot_required? %><span class="inline-flex items-center rounded px-1.5 h-[16px] font-mono text-[10px] whitespace-nowrap bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-300" data-test="server-reboot-badge"><%= t("member.servers.reboot_badge") %></span><% end %>
+    </span>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.col_last_seen"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400 whitespace-nowrap")) { server_time_ago(host.last_seen_at) } %>
+<% end %>

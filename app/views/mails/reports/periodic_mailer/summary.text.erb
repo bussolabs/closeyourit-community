@@ -1,0 +1,24 @@
+<%= t("reports.periodic.mailer.heading.#{@report.cadence}") %>
+<%= t("reports.periodic.mailer.period", from: l(@report.from.to_date, format: :long), to: l(@report.to.to_date, format: :long)) %> · <%= @organization.name %>
+
+<%= t("reports.periodic.mailer.traffic_title") %>: <%= number_with_delimiter(@report.pageviews) %> — <%= t("reports.periodic.mailer.visitors", count: @report.visitors) %>
+<%= t("reports.periodic.mailer.errors_title") %>: <%= number_with_delimiter(@report.error_events) %> — <%= t("reports.periodic.mailer.new_errors", count: @report.new_error_groups) %>
+<%= t("reports.periodic.mailer.uptime_title") %>: <%= @report.uptime_percent ? "#{@report.uptime_percent}%" : t("reports.periodic.mailer.uptime_missing") %>
+
+<% if @report.pageviews_delta.nil? -%>
+<%= t("reports.periodic.mailer.delta_missing") %>
+<% else -%>
+<%= t("reports.periodic.mailer.delta", value: number_to_percentage(@report.pageviews_delta, precision: 0, format: "%{number}%"), previous: number_with_delimiter(@report.previous_pageviews)) %>
+<% end -%>
+
+<%= t("reports.periodic.mailer.projects_title") %>
+<% @report.rows.each do |row| -%>
+- <%= row.name %>: <%= t("reports.periodic.mailer.row_text", pageviews: number_with_delimiter(row.pageviews), errors: number_with_delimiter(row.error_events), uptime: row.uptime_percent ? "#{row.uptime_percent}%" : "—") %>
+<% end -%>
+<% if @report.other_projects.positive? -%>
+<%= t("reports.periodic.mailer.other_projects", count: @report.other_projects) %>
+<% end -%>
+
+<%= t("reports.periodic.mailer.action") %>: <%= member_monitoring_analytics_url %>
+
+<%= t("reports.periodic.mailer.footer") %>

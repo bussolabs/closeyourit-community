@@ -1,0 +1,103 @@
+default: &default
+  dispatchers:
+    - polling_interval: 1
+      batch_size: 500
+  workers:
+    # Corsia real-time del monitoraggio (CYRA-246): controlli siti, avvisi, notifiche, email, controllo
+    # server e job di sistema (default = ActiveStorage/fallback). 3 slot, ISOLATA dall'AI: un
+    # addestramento lungo non può più rubarle i posti e fermare il monitoraggio.
+    # ORDINE = priorità: Solid Queue serve le code di una lista una alla volta, in ordine, finché hanno
+    # lavoro. Le code time-sensitive a basso volume stanno PRIMA e si svuotano subito.
+    #
+    # DEVE essere una LISTA YAML, non una stringa con virgole. Solid Queue 1.5 non la spezza: passa il
+    # valore così com'è a QueueSelector, che genera `WHERE queue_name = 'alerts,uptime,…'` — un nome di
+    # coda che non esiste. Il worker parte, fa heartbeat, interroga ogni 100ms e non trova mai nulla,
+    # senza un solo errore da nessuna parte. È quello che ha fermato TUTTI i job in produzione per due
+    # giorni senza che niente lo segnalasse; il wildcard "*" di prima funzionava perché è gestito a
+    # parte, ed è per questo che la regressione è passata inosservata.
+    - queues: [alerts, uptime, notifications, servers, mailers, default]
+      threads: 3
+      processes: <%= ENV.fetch("JOB_CONCURRENCY", 1) %>
+      polling_interval: 0.1
+    # Corsia riservata alla ricezione dati (CYRA-301). Stare ULTIMA nella lista del pool real-time non
+    # bastava: l'ordine è una priorità STRETTA, quindi finché alerts o uptime hanno lavoro "ingest" non
+    # viene servita affatto. Dal 07/08 al 09/08 è successo davvero — Uptime::CheckJob ~30k/h dal
+    # recupero dei ricorrenti, più un Alerting::EvaluateJob per ogni Servers::IngestJob — con 600k job
+    # arretrati, rate netto zero e tutti i 17 server segnati offline mentre erano attivi. Qui i dati
+    # (server, metriche, log, errori) hanno slot propri che nessun'altra coda può occupare. Alzare
+    # JOB_CONCURRENCY sarebbe stato inutile: aumenta la capacità, non toglie la precedenza.
+    - queues: [ingest]
+      threads: 3
+      processes: <%= ENV.fetch("INGEST_JOB_CONCURRENCY", 1) %>
+      polling_interval: 0.1
+    # Corsia riservata all'ingest dei server (CYRA-850). Il sample di un agent è l'unico ingest il cui
+    # RITARDO produce un falso allarme e non solo un dato tardivo: `Servers::CheckStaleJob` legge il
+    # silenzio a 180s come «macchina caduta». Su `ingest` stava dietro alle metriche di ogni
+    # applicazione monitorata — il 16/09/2026 un'app a 528 metriche/min ha portato i sample a 16
+    # minuti di ritardo e ha fatto suonare 8 host sani. NON nel pool real-time qui sopra: lì il bulk
+    # dei sample competerebbe con gli avvisi, cioè proprio ciò che deve restare veloce.
+    - queues: [servers_ingest]
+      threads: 2
+      processes: 1
+      polling_interval: 0.1
+    # Corsia riservata agli embedding (CYRA-649). Stavano su "ingest" e ne condividevano i 3 slot:
+    # ogni embed è una chiamata al servizio che gira sulla STESSA macchina e ne consuma la CPU, e i
+    # quattro backfill notturni delle 4:00 ne accodano uno per riga. Risultato misurato in
+    # produzione: i dati dei server arrivavano con 6 minuti di ritardo, il controllo di staleness
+    # marcava giù 19 macchine perfettamente vive, ~76 avvisi falsi al giorno. Corsia PROPRIA e non
+    # in coda al pool AI: dietro "maintenance" e "ai" (priorità stretta) l'embed di un ticket appena
+    # creato aspetterebbe la fine di un addestramento, e serve subito per la ricerca dei doppioni.
+    - queues: [embeddings]
+      threads: 1
+      processes: <%= ENV.fetch("EMBEDDINGS_JOB_CONCURRENCY", 1) %>
+      polling_interval: 0.1
+    # Corsia dei controlli periodici (CYRA-714): i giri che scattano ogni minuto o pochi minuti —
+    # lavorazioni degli agenti, cron utente, salute dei servizi esterni, decadimento dei contatori.
+    # Durano secondi e la loro unica utilità è partire in orario. Fino al 09/2026 stavano nello stesso
+    # pool dell'AI: un addestramento (fino a un'ora) li teneva fermi per tutta la sua durata, perché
+    # l'ordine delle code è una priorità stretta e non c'è prelazione. Gli orari dei giri notturni
+    # erano stati spostati a mano per aggirarlo — un compenso che rimanda l'attesa, non la toglie.
+    # 2 thread: quando un controllo chiama un servizio esterno e ci mette qualche secondo (GitHub,
+    # server AI), gli altri quattro giri dello stesso minuto non gli si accodano dietro.
+    - queues: [maintenance]
+      threads: 2
+      processes: 1
+      polling_interval: 0.1
+    # Corsia dei lavori lunghi: intelligenza artificiale (training ~fino a un'ora, predizioni), visite
+    # SEO ai siti (minuti per giro: una pausa fra le richieste per ogni pagina) e "batch", i giri che
+    # attraversano tabelle intere — potature, recuperi degli embedding, aggregazioni, scansioni.
+    # 1 thread e 1 processo: girano UNO alla volta e nessuno di loro può occupare la corsia dei
+    # controlli qui sopra né quella real-time.
+    #
+    # Perché code separate e non un thread in più su una sola coda: dentro una coda l'ordine è di
+    # arrivo, quindi i venti prune accodati alle 3 di notte precedono comunque il controllo accodato
+    # alle 3:01. Più capacità sposta la soglia, la separazione toglie l'attesa — è la stessa lezione
+    # di "ingest" (CYRA-301) e "embeddings" (CYRA-649).
+    #
+    # ORDINE = priorità stretta. "ai" per ULTIMA: è l'unica delle tre a volume illimitato (gli
+    # addestramenti si accodano a richiesta) e davanti alle altre potrebbe affamarle per ore. "seo"
+    # prima di "batch" perché la sua cadenza è oraria e un giro saltato è un'ora di misure perse,
+    # mentre i giri di "batch" sono notturni e recuperano da soli il giorno dopo. Devono restare
+    # tutte in QUESTA lista: una coda che nessun worker serve accumula job per sempre senza un errore.
+    - queues: [seo, batch, ai]
+      threads: 1
+      processes: 1
+      polling_interval: 0.1
+    # Corsia del revisore delle pagine di conoscenza (CYRA-764): ogni giro è una chiamata al modello
+    # del server AI di casa, che scrive ~25 token al secondo — una pagina alla volta, e non dietro
+    # "ai", dove un addestramento la farebbe aspettare un'ora. Serve al giro di riclassificazione
+    # (Knowledge::ReclassifyPagesJob → ReviewPageJob); i salvataggi normali sono sincroni e non
+    # passano di qui.
+    - queues: [knowledge_review]
+      threads: 1
+      processes: 1
+      polling_interval: 1
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default

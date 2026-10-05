@@ -1,0 +1,12 @@
+<%# Help desk answer — mail body (frame: layouts/mailer.html.erb). %>
+<% content_for :preheader, truncate(@message.body, length: 120) %>
+
+<p style="<%= mail_overline_style %>"><%= @project.name %></p>
+<h1 style="<%= mail_h1_style %>"><%= t("helpdesk.mailer.intro", project: @project.name) %></h1>
+
+<p style="<%= mail_p_style %>white-space:pre-line;"><%= @message.body %></p>
+
+<p style="<%= mail_note_style %>">
+  <%= t("helpdesk.mailer.you_wrote") %>: <%= @request.summary %><br>
+  <%= t("helpdesk.mailer.no_reply") %>
+</p>

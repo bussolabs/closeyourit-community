@@ -1,0 +1,36 @@
+<%= render Ui::SectionComponent.new(body_class: "px-4 py-4 space-y-3", test_id: "triage-ai",
+      data: { controller: "monitoring-triage",
+              monitoring_triage_triage_url_value: triage_ai_member_monitoring_metric_group_path(@group),
+              monitoring_triage_poll_url_value: member_ai_request_path(":id"),
+              monitoring_triage_failed_value: t("member.monitoring.triage_ai.failed"),
+              monitoring_triage_analyzing_value: t("member.monitoring.triage_ai.analyzing") }) do |section| %>
+  <% section.with_title do %>
+    <%= render Ui::IconComponent.new(name: "wand-sparkles", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mr-1.5") %><%= t("member.monitoring.triage_ai.title") %>
+  <% end %>
+    <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.triage_ai.hint") %></p>
+    <button type="button" data-action="monitoring-triage#suggest" data-monitoring-triage-target="suggestButton" class="inline-flex items-center gap-1.5 h-[34px] px-3.5 rounded-md text-[12.5px] font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60" data-test="triage-ai-suggest">
+      <%= render Ui::IconComponent.new(name: "wand-sparkles", class: "text-[11px]") %><%= t("member.monitoring.triage_ai.suggest") %>
+    </button>
+    <p class="hidden text-[12px]" data-monitoring-triage-target="status" data-test="triage-ai-status"></p>
+
+    <div class="hidden space-y-2.5 pt-1" data-monitoring-triage-target="result" data-test="triage-ai-result">
+      <div class="flex flex-wrap items-center gap-1.5">
+        <span class="inline-flex items-center gap-1 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2 py-0.5 text-[11.5px]"><span class="text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.triage_ai.category") %>:</span><span class="font-semibold text-zinc-900 dark:text-zinc-100" data-monitoring-triage-target="category"></span></span>
+        <span class="inline-flex items-center gap-1 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2 py-0.5 text-[11.5px]"><span class="text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.triage_ai.severity") %>:</span><span class="font-semibold text-zinc-900 dark:text-zinc-100" data-monitoring-triage-target="severity"></span></span>
+        <span class="inline-flex items-center gap-1 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2 py-0.5 text-[11.5px]"><span class="text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.triage_ai.confidence") %>:</span><span class="font-semibold text-zinc-900 dark:text-zinc-100" data-monitoring-triage-target="confidence"></span></span>
+      </div>
+      <div><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.triage_ai.fix") %></p><p class="mt-0.5 text-[12.5px] font-medium text-indigo-700 dark:text-indigo-300" data-monitoring-triage-target="fix" data-test="triage-ai-fix"></p></div>
+      <div><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.triage_ai.root_cause") %></p><p class="mt-0.5 text-[12.5px] text-zinc-700 dark:text-zinc-300" data-monitoring-triage-target="rootCause"></p></div>
+      <div><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.triage_ai.summary") %></p><p class="mt-0.5 text-[12.5px] text-zinc-700 dark:text-zinc-300" data-monitoring-triage-target="summary"></p></div>
+
+      <div class="pt-1">
+        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.monitoring.triage_ai.action") %></p>
+        <div class="flex flex-wrap gap-2">
+          <% unless @group.promoted? %>
+            <%= button_to promote_member_monitoring_metric_group_path(@group), method: :post, class: "hidden inline-flex items-center gap-1.5 h-[32px] px-3 rounded-md text-[12px] font-semibold text-white bg-indigo-600 hover:bg-indigo-700", data: { monitoring_triage_target: "action", action_kind: "promote", test: "triage-ai-action-promote" } do %><%= render Ui::IconComponent.new(name: "ticket", class: "text-[10px]") %><%= t("member.monitoring.triage_ai.actions.promote") %><% end %>
+          <% end %>
+          <span class="hidden text-[12px] text-gray-500 dark:text-zinc-400" data-monitoring-triage-target="actionNone" data-test="triage-ai-action-none"><%= t("member.monitoring.triage_ai.actions.none") %></span>
+        </div>
+      </div>
+    </div>
+<% end %>

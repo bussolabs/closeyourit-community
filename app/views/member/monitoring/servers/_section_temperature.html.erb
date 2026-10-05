@@ -1,0 +1,38 @@
+<%# locals: host:, last_sample:, buckets:, range:, temp_reported: — CYRA-703. Il grafico master
+    segue temp_max, che è il MASSIMO fra i sensori: da solo non dice quale parte della macchina sia
+    calda. Su spark mostrava 49.8° di un sensore della scheda mentre la GPU stava a 45°, e i due
+    numeri non erano distinguibili da nessuna parte. La sezione non compare sulle macchine che i
+    sensori non li espongono (VM Hetzner), come già deciso in CYRA-465.
+    La scala delle barre è il sensore più caldo, non 100°: a fondo scala fisso undici sensori fra i
+    36 e i 50 gradi disegnano undici barre quasi identiche. %>
+<% sensors = server_temperature_sensors(last_sample) %>
+<% if temp_reported %>
+  <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-section-temperature">
+    <div class="px-5 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3 flex-wrap">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.show.section_temperature") %></h2>
+      <%= render "member/monitoring/servers/range_selector", host: host, range: range, buckets: buckets, note: false %>
+    </div>
+    <div class="grid grid-cols-1 gap-5 px-5 py-5">
+      <%= render "member/monitoring/servers/chart", host: host, metric: :temp,
+            label: t("member.servers.show.chart_temp"), buckets: buckets, range: range,
+            threshold: nil, total_bytes: nil, last_sample: last_sample %>
+      <% if sensors.any? %>
+        <% scala = sensors.first[:value] %>
+        <div data-test="server-sensors">
+          <p class="font-mono text-[10px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.sensors") %></p>
+          <div class="mt-2.5 space-y-1.5">
+            <% sensors.each do |sensor| %>
+              <div data-test="server-sensor">
+                <%= render Ui::MeterComponent.new(label: sensor[:name],
+                      value_text: server_temp_text(sensor[:value]),
+                      pct: scala.positive? ? (sensor[:value] / scala) * 100 : 0,
+                      color: :orange) %>
+              </div>
+            <% end %>
+          </div>
+          <p class="mt-2 text-[10px] text-gray-400 dark:text-zinc-500"><%= t("member.servers.show.sensors_hint") %></p>
+        </div>
+      <% end %>
+    </div>
+  </section>
+<% end %>

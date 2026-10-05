@@ -1,0 +1,89 @@
+<%# locals: card (Home::Approvals::Detail::Card), state (lo stato acceso nei filtri, o nil),
+    view (CYRA-630: la vista di partenza, per tornarci dopo la decisione),
+    from_card (true quando il pannello è quello della scheda a tutta pagina, default false),
+    project/agent (CYRA-825: gli altri due filtri accesi, che viaggiano con lo stato),
+    frame (CYRA-825: il riquadro in cui tornare; nil sulle pagine che non ne hanno) %>
+<% from_card = local_assigns.fetch(:from_card, false) %>
+<%# In home le scelte secondarie e la nota stanno chiuse (CYRA-861). %>
+<% collapse = local_assigns.fetch(:collapse_secondary, false) %>
+<%# Il riquadro è un local e non una costante letta da qui: questo pannello vive anche sulla scheda
+    a tutta pagina e nella home, dove quel riquadro non esiste — dichiararlo lì manderebbe Turbo a
+    cercare un riquadro assente e la richiesta si rifarebbe due volte. %>
+<% frame = local_assigns[:frame] %>
+<%# I filtri accesi e la provenienza viaggiano nella query string dell'indirizzo dell'azione, non in
+    hidden field: il controller li rimette nel redirect, così la richiesta successiva è dello stesso
+    taglio. CYRA-655 — `return_to` è confrontato con l'unico valore ammesso, quindi da qui basta
+    passarlo: chi decide dalla home ci torna. CYRA-825 — progetto e agente stanno accanto allo stato,
+    o smaltire un progetto solo riallargava la coda a ogni decisione. %>
+<% filters = { state: state, project: local_assigns[:project], agent_id: local_assigns[:agent],
+              view: view, return_to: local_assigns[:return_to] } %>
+<%# La decisione. Accettare è a un clic (la nota è facoltativa e sta già aperta sopra il pulsante);
+    respingere e chiedere precisazioni pretendono un testo, quindi stanno in un <details> nativo —
+    zero JS, come le azioni veloci della home. Compaiono solo i pulsanti che questo account può
+    davvero premere: chi decide è Home::Approvals::Detail, non questa view.
+
+    Il filtro acceso viaggia nella query string dell'action (CYRA-290), non in quattro hidden field
+    in più: il controller lo rimette nel redirect, così la card successiva è dello stesso stato. %>
+<% variant = approval_variant(card) %>
+<%# On a short window the column scrolls on its own, or its last buttons stay out of reach. CYRA-998 %>
+<aside class="lg:col-span-1 lg:sticky lg:top-[calc(var(--page-header-h,0px)+0.5rem)] lg:max-h-[calc(100dvh-12rem)] lg:overflow-y-auto space-y-3" data-test="approvals-decision">
+  <% if card.can?(:approve) %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
+      <%= form_with url: member_home_approvals_decision_path(**filters), method: :post, class: "space-y-2.5",
+            data: { turbo_frame: frame } do %>
+        <%= hidden_field_tag :item, card.key %>
+        <%= hidden_field_tag :from_card, "1" if from_card %>
+        <%= hidden_field_tag :decision, "approve" %>
+        <%# La nota diventa un commento sul ticket: la legge il team e la legge l'automa che esegue.
+            Per una richiesta sui segreti non c'è nessuna discussione dove scriverla. %>
+        <% if card.ticket? %>
+          <%= tag.details(open: !collapse, data: { test: "approvals-note" }) do %>
+            <summary class="<%= collapse ? "cursor-pointer list-none text-[12px] text-indigo-600 dark:text-indigo-400 mb-2" : "hidden" %>"><%= t("member.approvals.add_note") %></summary>
+            <label for="approve-note" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.approvals.note_label") %></label>
+            <%= text_area_tag :text, nil, id: "approve-note", rows: 3,
+                  placeholder: t("member.approvals.note_placeholder"),
+                  class: "w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[12.5px] text-zinc-900 dark:text-zinc-100 leading-relaxed placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400",
+                  data: { test: "approvals-approve-note" } %>
+          <% end %>
+        <% end %>
+        <%= render Ui::ButtonComponent.new(label: t("member.approvals.actions.approve.#{variant}"),
+              type: "submit", variant: :success, size: :sm, icon: "check", test_id: "approvals-approve") %>
+        <%# On the home, one line says what happens after the yes; twin of reject_hint. CYRA-884 %>
+        <% if collapse && I18n.exists?("member.approvals.approve_hint.#{variant}") %>
+          <p class="text-[12px] text-gray-500 dark:text-zinc-400 leading-relaxed" data-test="approvals-approve-hint"><%= t("member.approvals.approve_hint.#{variant}") %></p>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if collapse %>
+    <details class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4" data-test="approvals-more-choices">
+      <summary class="cursor-pointer list-none text-[12px] font-medium text-gray-600 dark:text-zinc-400"><%= t("member.approvals.more_choices") %></summary>
+      <div class="mt-3 space-y-3">
+        <%= render "member/home/approvals/secondary_actions", card:, filters:, frame:, from_card:, variant: %>
+      </div>
+    </details>
+  <% else %>
+    <%= render "member/home/approvals/secondary_actions", card:, filters:, frame:, from_card:, variant: %>
+  <% end %>
+
+  <% if card.can?(:reply) %>
+    <%# With proposed answers the free text is optional: the picked answers are the reply. CYRA-887 %>
+    <% proposed = card.kind == "clarification" && clarification_options(card.record).any?(&:present?) %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
+      <%= form_with url: member_home_approvals_decision_path(**filters), method: :post, class: "space-y-2.5",
+            id: "approvals-reply-form", data: { turbo_frame: frame } do %>
+        <%= hidden_field_tag :item, card.key %>
+        <%= hidden_field_tag :from_card, "1" if from_card %>
+        <%= hidden_field_tag :decision, "reply" %>
+        <label for="reply-text" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.approvals.reply_label") %></label>
+        <%= text_area_tag :text, nil, id: "reply-text", required: !proposed, rows: 4,
+              placeholder: t("member.approvals.reply_placeholder"),
+              class: "w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[12.5px] text-zinc-900 dark:text-zinc-100 leading-relaxed placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400",
+              data: { test: "approvals-reply-text" } %>
+        <%= render Ui::ButtonComponent.new(label: t("member.approvals.confirm_reply"), type: "submit",
+              variant: :primary, size: :sm, icon: "send", test_id: "approvals-reply-submit") %>
+      <% end %>
+    </div>
+  <% end %>
+</aside>

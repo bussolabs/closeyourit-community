@@ -1,0 +1,7 @@
+<%= render "form",
+      environment: @environment,
+      url: member_environment_path(@environment),
+      method: :patch,
+      title: t("member.environments.form.edit_title"),
+      lead: t("member.environments.form.lead_edit"),
+      submit_label: t("member.environments.form.save_edit") %>

@@ -1,0 +1,88 @@
+---
+en:
+  member:
+    product:
+      cancel: Cancel
+      matrices:
+        title: Feature matrix
+        help: For each group of projects, which features exist and on which platform they are available.
+        no_platforms: No platform declared by the projects of this group. You can still mark a feature on a platform to make it appear as a column.
+        counts:
+          categories: Categories
+          features: Features
+          platforms: Platforms
+          missing_release: No version
+        columns:
+          feature: Feature
+          # CYRA-362 — see the Italian file: the matrix row IS a group of projects, so the column
+          # carries the same name as its list. The key stays `product`.
+          product: Group
+        inactive_platform: inactive
+        open_group: Open group
+        missing_release_hint: Marked as available but no version was indicated.
+        documented: Open the page that explains this feature
+        intro:
+          example_label: Example
+          example_category: Access
+          example_feature: Two-factor authentication
+          example_hint: 'A row already filled in. For each platform the numbers show how many expected features are already available: "1/1" all set, "0/1" still to do.'
+        coverage:
+          none: No platform marked
+          ratio_hint: Available over expected features, per platform
+        empty_row:
+          cta_category: Create the first category
+          cta_feature: Add the first feature
+          view_only: No feature yet
+      categories:
+        new: New category
+        edit: Edit category
+        created: Category created.
+        updated: Category updated.
+        deleted: Category deleted.
+        delete: Delete category
+        delete_dialog:
+          title: "Delete the %{name} category?"
+          body: "All its features and their cells disappear with the category. This cannot be undone."
+        name: Name
+        position: Order
+        features_count: "%{count} features"
+        errors:
+          not_empty: "The category still contains features: move or delete them first."
+      features:
+        new: New feature
+        edit: Edit feature
+        created: Feature created.
+        updated: Feature updated.
+        deleted: Feature deleted.
+        delete: Delete feature
+        delete_dialog:
+          title: "Delete the %{name} feature?"
+          body: "Its cells on every platform disappear with the feature. This cannot be undone."
+        name: Name
+        description: Description
+        position: Order
+        category: Category
+        knowledge_page: Knowledge base page
+        knowledge_page_blank: None
+        errors:
+          page_not_found: The chosen knowledge base page does not exist or is not visible.
+          category_not_found: Choose a category of this group.
+      cells:
+        edit: "%{feature} on %{platform}"
+        new: Mark "%{feature}" on another platform
+        new_help: The column appears in the matrix as soon as you mark the feature on that platform.
+        platform: Platform
+        save: Save
+        no_assignable_platforms: This feature is already marked on every active platform.
+        updated: Cell updated.
+        cleared: Cell cleared.
+        status: Status
+        release: Available from version
+        release_blank: Not indicated
+        release_none: No version registered for the projects of this group on this platform.
+        clear: Clear
+        live: live
+        unset: Not set
+        errors:
+          status_not_found: The chosen status does not exist or is no longer active.
+          release_not_found: The chosen version does not belong to this group on this platform.

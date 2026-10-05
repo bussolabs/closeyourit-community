@@ -1,0 +1,102 @@
+---
+en:
+  member:
+    guides:
+      index:
+        agents:
+          title: How agents work
+        skill_bundles:
+          title: Skill versions
+      agents:
+        title: How agents work
+        subtitle: The path a job takes, what each outcome means and what happens if you do not reply.
+        what_title: What they are
+        what_intro: "An agent is a machine that takes a ticket and carries it forward on its own, one step at a time. What it does not do on its own is decide: the steps that matter stay with a person."
+        what_b1: It only works on the projects assigned to it, and only after someone has cleared it to run.
+        what_b2: "It carries a limited number of jobs at a time and, while working, says where it has got to."
+        what_b3: "Everything is on the record: which machine did what, when, and how it ended."
+        cycle_title: The path of a job
+        cycle_intro: "Always in the same order. A step starts only once the one before it is closed."
+        steps:
+          to_plan:
+            body: "The work has been picked up: the machine reads the request, works out what it is about and writes down how it means to do it. If something is unclear it asks instead of guessing."
+          plan_to_approve:
+            body: "The proposal is ready and nobody has said yet whether it is good. Nothing has been touched here."
+            gate: "Your call — until you accept the plan, the run does not start."
+          in_progress:
+            body: "The machine carries out the plan you accepted and prepares what it changed."
+          to_review:
+            body: "The work has been delivered and is waiting to be looked at."
+            gate: "Your call — until you accept the delivered work, it does not move on."
+          closing:
+            body: "The work goes to the staging environment and then to the live site, and the system checks by itself that it really got there."
+          done:
+            body: "The work is live on the real site and someone saw it answer. Only then is it finished."
+        exits_title: How a run leaves the path
+        exits_intro: "Two ways, and neither is a stage: they are where a piece of work stops moving forward."
+        exits:
+          blocked:
+            body: "The run stopped retrying on its own and is waiting for a decision: it gets going again, or it gets closed."
+          cancelled:
+            body: "Someone stopped it and wrote why. Who, when and why stay on record, and it does not restart by itself."
+        outcomes_title: How a step can end
+        outcomes_intro: "The difference matters: one is your judgement on the work, one is a fault, one is work that never made it to the end."
+        outcomes:
+          approved:
+            title: Approved
+            body: You gave the go-ahead and the next step begins.
+          rejected:
+            title: Rejected
+            body: "This is what happens when you press «Reject»: the work comes back with the reason you wrote and is redone taking it into account. Nothing is thrown away, it restarts from that step."
+          interrupted:
+            title: Interrupted
+            body: "It ended without delivering anything: nearly always the machine shut down or lost its connection. It is not a judgement on the work and does not count as a mistake."
+          failed:
+            title: Failed
+            body: "The step broke on a technical fault and the machine says so. Different from «Rejected», which is your decision: here the work never arrived at all."
+        waiting_title: When it is your turn
+        waiting:
+          intro: "Everything waiting for your answer lives in Approvals, oldest requests first."
+          plan: "The plan is ready: approve it, or reject it saying what is wrong."
+          work: "The work is done: look at it and say whether it is fine as it is."
+          question: "The agent did not understand something and asks: you answer in the ticket discussion, as you would a colleague."
+          no_reply: "If you do not reply nothing happens: that job stays exactly where it is. Whoever asked tries again later, finds the same silence and keeps waiting."
+          no_deadline: "No request expires and none approves itself. Without an answer that ticket goes nowhere, and nobody carries it forward in your place."
+          cta: Go to Approvals
+        certification_title: Clearing a machine to run, and taking it back
+        certification:
+          intro: "A machine that has just connected does no work: first a person has to say it may. The choice can be undone at any time."
+          certify_body: From then on it can pick up jobs from the projects it covers.
+          revoke_body: "It stops receiving new jobs straight away. It stays connected and keeps checking in, but no ticket is handed to it until you clear it again."
+          note: "Taking the clearance back erases nothing it has already done. A job already under way is not pulled out of its hands: if it never delivers it, sooner or later it shows up as interrupted."
+        stopped_title: When a machine stops
+        stopped_intro: "Machines shut down, lose the network, fall behind. These are three different situations and the page tells them apart, because each needs something different."
+        stopped_b1: "«Offline» means it has been quiet for a short while: it may be a restart, and it often sorts itself out."
+        stopped_b2: "«Stalled» means it has been quiet for far too long: nearly always it was left on and stuck, or switched off and forgotten."
+        stopped_b3: "If jobs look open while the machine is not reporting them, the page says so: it stopped without closing them."
+        stopped_versions: "There is one more reason a machine can work badly: it is following old instructions."
+        stopped_versions_link: Skill versions
+        cta: Go to agents
+      skill_bundles:
+        title: Skill versions
+        subtitle: Which instructions the machines are following, and how to roll back if a version causes damage.
+        what_title: What it is
+        what_intro: "Machines cannot work things out on their own: they follow a package of written instructions, which carries a version number like any program. This is where you say which version they must all follow."
+        what_b1: "There is a single version for the whole organisation: no machine ends up following different instructions by accident."
+        what_b2: "It usually updates itself when a new one is published: this page is for looking, not for touching."
+        what_b3: It is edited by hand only to pin a specific version on purpose, and that is a job for whoever administers the machines.
+        check_title: Has it reached them all?
+        check_intro: "The pinned version says what they should be following, not what they are following. The table at the top of the page puts the two side by side, one row per machine."
+        check_aligned: It is following the version it should be following.
+        check_mismatched: "It is following something else: usually it has not picked up the new instructions yet."
+        check_unknown: "It does not say which version it is following. That is not a mismatch: it is missing information."
+        rollback_title: Going back to an earlier version
+        rollback_intro: "If a new version causes damage, every machine goes back to the previous one. It is not the normal route, so it has to be asked for explicitly."
+        rollback_b1: "Normally you can only move forward: going back has a tick box of its own, meaning «I am doing this on purpose»."
+        rollback_b2: It applies to all machines together, never to a single one.
+        rollback_b3: "Every job records which version it ran with: if something goes wrong, you know where to start from."
+        rollback_note: "Changing the version touches neither the work already done nor the tickets: it only changes the instructions the machines will follow from now on."
+        who: "The real work is done by the machines, and the path they follow is told here:"
+        who_link: how agents work
+        locked: The versions page is opened by whoever administers the machines.
+        cta: Open the versions

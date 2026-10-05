@@ -1,0 +1,21 @@
+<%# locals: list, item, mine — one row of an index panel: tick and remove in place on an own list. %>
+<% title_class = item.done? ? "text-gray-500 dark:text-zinc-400 line-through" : "text-zinc-900 dark:text-zinc-100" %>
+<li class="group/item flex items-center gap-1.5 border-b border-stone-100 dark:border-zinc-800 px-2.5 py-0.5 hover:bg-stone-50 dark:hover:bg-zinc-800" data-test="todo-panel-item">
+  <% if mine %>
+    <%= render Ui::ButtonComponent.new(label: t(item.done? ? "member.todo_lists.panel.undo_label" : "member.todo_lists.panel.done_label", title: item.title),
+          href: toggle_member_todo_list_item_path(list, item, from: "index", q: @query.presence), method: :patch, variant: :ghost, size: :sm, icon_only: true,
+          icon: (item.done? ? "square-check" : "square"), class: (item.done? ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-zinc-500"),
+          test_id: "todo-panel-toggle-#{item.id}") %>
+  <% else %>
+    <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center <%= item.done? ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-zinc-500" %>">
+      <%= render Ui::IconComponent.new(name: (item.done? ? "square-check" : "square"), class: "text-[12px]") %>
+    </span>
+  <% end %>
+  <span class="min-w-0 flex-1 truncate text-[13px] <%= title_class %>" data-test="todo-panel-item-title"><%= item.title %></span>
+  <% if mine %>
+    <%= render Ui::ButtonComponent.new(label: t("member.todo_lists.panel.remove_label", title: item.title),
+          href: member_todo_list_item_path(list, item, from: "index", q: @query.presence), method: :delete, variant: :ghost, size: :sm, icon_only: true,
+          icon: "x", class: "opacity-0 hover:text-red-600 dark:hover:text-red-400 focus-visible:opacity-100 group-hover/item:opacity-100",
+          test_id: "todo-panel-remove-#{item.id}") %>
+  <% end %>
+</li>

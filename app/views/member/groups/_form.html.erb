@@ -1,0 +1,27 @@
+<%# locals: group, url, method, title, submit_label %>
+<% content_for :title, title %>
+<% group_breadcrumb = [ { label: t("member.projects.title"), href: member_projects_path }, { label: t("member.groups.title"), href: member_groups_path } ]
+   group_breadcrumb += group.persisted? ? [ { label: group.name, href: member_group_path(group) }, { label: t("member.breadcrumb.edit") } ] : [ { label: t("member.breadcrumb.new") } ] %>
+
+<div class="p-7">
+  <%= form_with url: url, method: method, multipart: true, class: "space-y-6", data: { test: "group-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: title, breadcrumb: group_breadcrumb) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.groups.form.cancel"), href: member_groups_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: submit_label, type: "submit", icon: "check", test_id: "group-submit", size: :sm) %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%= render Ui::InputComponent.new(name: "name", label: t("member.groups.form.name"), required: true, value: group.name, placeholder: "DriverOne", test_id: "group-name", error: @errors&.dig(:name)&.first) %>
+
+          <%= render "member/shared/color_field", record: group, prefix: "group", scope: "member.groups.form" %>
+
+          <%= render "member/shared/icon_field", record: group, prefix: "group", scope: "member.groups.form" %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

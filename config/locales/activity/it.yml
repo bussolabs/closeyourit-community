@@ -1,0 +1,43 @@
+---
+it:
+  activity:
+    unknown_actor: Qualcuno
+    impersonated: in impersonation
+    actions:
+      created: "%{actor} l'ha creato"
+      updated: "%{actor} ha modificato %{fields}"
+      updated_generic: "%{actor} ha apportato modifiche"
+      moved_in: "%{actor} l'ha spostato qui da un'altra organizzazione"
+      moved_out: "%{actor} l'ha spostato in un'altra organizzazione"
+    fields:
+      sentry_project_id: ID progetto Sentry
+      name: nome
+      key: chiave
+      description: descrizione
+      color: colore
+      icon: icona
+      icon_image: icona
+      group_id: gruppo
+      title: titolo
+      problem: problema
+      solution: soluzione
+      stakeholders: stakeholder
+      status: stato
+      label: etichetta
+      code: codice
+      due_on: data target
+      active: attivo
+      tags: tag
+      scheduled_at: data programmata
+      due_at: scadenza
+      ticket_id: ticket collegato
+      allowed_origins: origini consentite
+      analytics_enabled: statistiche del sito
+      helpdesk_enabled: richieste di assistenza dai siti
+      cto_id: CTO del progetto
+      default_assignee_id: assegnatario di default
+      preferences: impostazioni
+      quick_bug_report_enabled: segnalazione rapida di un problema
+      secret_approval_enabled: approvazione in due per i secret
+      session_replay_enabled: Session replay
+      roadmap_enabled: roadmap

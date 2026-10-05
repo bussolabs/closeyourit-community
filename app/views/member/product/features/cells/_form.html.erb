@@ -1,0 +1,31 @@
+<%# locals: feature, platform, cell, statuses, releases, url, method
+    Form compatto: con JS vive dentro la cella (turbo frame), senza JS è il corpo della pagina di
+    modifica. Select in taglia :sm perché la colonna di una matrice è stretta. %>
+<%= form_with url: url, method: method, class: "space-y-2", data: { test: "product-cell-form" } do %>
+  <%= render Ui::SelectComponent.new(name: "status_id", label: t("member.product.cells.status"),
+        options: statuses.map { |status| [ status.label, status.id, status.color ] },
+        selected: cell&.status_id, required: true, size: :sm, test_id: "product-cell-status") %>
+
+  <% if releases.any? %>
+    <%= render Ui::SelectComponent.new(name: "release_id", label: t("member.product.cells.release"),
+          options: releases.map { |release| [ release_candidate_label(release), release.id ] },
+          selected: cell&.release_id, include_blank: true,
+          placeholder: t("member.product.cells.release_blank"), size: :sm, test_id: "product-cell-release") %>
+  <% else %>
+    <%# Nessuna release registrata per i progetti di questo prodotto su questa piattaforma: la
+        versione non è indicabile (le release nascono dalla CI e dall'ingest, non si scrivono qui). %>
+    <p class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="product-cell-no-releases"><%= t("member.product.cells.release_none") %></p>
+  <% end %>
+
+  <div class="flex items-center gap-1.5 pt-1">
+    <%= render Ui::ButtonComponent.new(label: t("member.product.cells.save"), type: "submit", size: :sm, icon: "check", test_id: "product-cell-submit") %>
+    <%= render Ui::ButtonComponent.new(label: t("member.product.cancel"), href: member_product_matrix_path(feature.category.group), variant: :secondary_muted, size: :sm) %>
+  </div>
+<% end %>
+
+<% if cell %>
+  <%= button_to member_product_feature_cell_path(feature, platform), method: :delete,
+        form: { class: "mt-2" },
+        class: "text-[11.5px] text-red-600 dark:text-red-400 hover:underline",
+        data: { test: "product-cell-clear" } do %><%= t("member.product.cells.clear") %><% end %>
+<% end %>

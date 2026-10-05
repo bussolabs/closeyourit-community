@@ -1,0 +1,127 @@
+<% content_for :title, t("member.knowledge.ask.title") %>
+
+<div class="p-7" data-test="knowledge-ask">
+  <div class="max-w-3xl mx-auto space-y-5"
+       data-controller="knowledge-ask"
+       data-knowledge-ask-url-value="<%= ask_member_knowledge_pages_path %>"
+       data-knowledge-ask-poll-url-value="<%= member_ai_request_path(":id") %>"
+       data-knowledge-ask-pending-message-value="<%= t("member.knowledge.ask.pending") %>"
+       data-knowledge-ask-failed-message-value="<%= t("member.knowledge.ask.failed") %>">
+    <%= render Ui::PageHeaderComponent.new(title: t("member.knowledge.ask.title"),
+          breadcrumb: [ { label: t("member.knowledge.title"), href: member_knowledge_pages_path },
+                        { label: t("member.knowledge.ask.title") } ]) %>
+
+    <%# Scope: su cosa risponde (Scenario 2) — quali progetti e quante pagine, PRIMA di leggere la
+        risposta, così si capisce cosa resta fuori. %>
+    <% project_names = @scope_projects.limit(8).pluck(:name) %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-3.5" data-test="knowledge-ask-scope">
+      <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1"><%= t("member.knowledge.ask.scope_heading") %></p>
+      <p class="text-[12.5px] text-zinc-900 dark:text-zinc-100">
+        <span class="font-semibold" data-test="knowledge-ask-scope-projects"><%= t("member.knowledge.ask.scope_projects", count: @scope_projects.size) %></span>
+        <span class="text-gray-300 dark:text-zinc-600 px-0.5">·</span>
+        <span data-test="knowledge-ask-scope-pages"><%= t("member.knowledge.ask.scope_pages", count: @scope_pages_count) %></span>
+      </p>
+      <% if project_names.any? %>
+        <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400">
+          <%= project_names.join(", ") %><% if @scope_projects.size > project_names.size %> <%= t("member.knowledge.ask.scope_more", count: @scope_projects.size - project_names.size) %><% end %>
+        </p>
+      <% end %>
+    </div>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3">
+      <label for="ask-question" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.knowledge.ask.label") %></label>
+      <%# q pre-compila la domanda quando si arriva dal rimbalzo "chiedi alla KB" della ricerca a zero
+          risultati (CYRA-412). Nessuno spazio tra i tag e il valore: finirebbe dentro la textarea. %>
+      <textarea id="ask-question" rows="3" data-knowledge-ask-target="input" data-test="knowledge-ask-input"
+                placeholder="<%= t("member.knowledge.ask.placeholder") %>"
+                class="w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400"><%= params[:q] %></textarea>
+      <div class="flex items-center justify-between gap-3">
+        <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.ask.hint") %></p>
+        <button type="button" data-action="knowledge-ask#submit" data-knowledge-ask-target="submit" data-test="knowledge-ask-submit"
+                class="inline-flex items-center justify-center rounded-md whitespace-nowrap h-[34px] px-3.5 gap-[7px] text-[12.5px] bg-indigo-600 text-white font-semibold hover:bg-indigo-700 disabled:opacity-50">
+          <%= render Ui::IconComponent.new(name: "wand-sparkles", class: "text-[12px]") %><%= t("member.knowledge.ask.submit") %>
+        </button>
+      </div>
+      <p hidden data-knowledge-ask-target="status" class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="knowledge-ask-status"></p>
+      <%# Domande d'esempio dal contenuto reale (Scenario 1): cliccabili, restano lì mentre si scrive —
+          non un placeholder che sparisce. Seminate ogni notte dal giro notturno, ancorate ai progetti. %>
+      <% if @sample_questions.any? %>
+        <div class="pt-3 border-t border-stone-100 dark:border-zinc-800" data-test="knowledge-ask-samples">
+          <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-2"><%= t("member.knowledge.ask.samples_heading") %></p>
+          <div class="flex flex-wrap gap-1.5">
+            <% @sample_questions.each do |sample| %>
+              <button type="button"
+                      data-action="knowledge-ask#useSample"
+                      data-knowledge-ask-question-param="<%= sample.question %>"
+                      data-test="knowledge-ask-sample"
+                      class="text-left rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-1.5 text-[12px] text-zinc-700 dark:text-zinc-300 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50/60 dark:hover:bg-indigo-500/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+                <%= sample.question %>
+              </button>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div hidden data-knowledge-ask-target="result" class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-4">
+      <%# CYRA-831 — l'accesso tolto mentre la domanda era in coda restringe le pagine consultabili:
+          la nota lo dice sopra a tutto, prima ancora delle fonti citate. %>
+      <p hidden data-knowledge-ask-target="scopeNotice" data-test="knowledge-ask-scope-reduced"
+         class="rounded-md border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 px-3 py-2 text-[12px] leading-relaxed text-amber-900 dark:text-amber-200"><%= t("member.knowledge.ask.scope_reduced") %></p>
+      <%# Scenario 3 (CYRA-417): PRIMA l'elenco delle pagine pertinenti, POI — come blocco separato e
+          dichiarato — la risposta generata. Così si aprono le fonti invece di fidarsi solo del riassunto. %>
+      <div hidden data-knowledge-ask-target="citationsWrapper">
+        <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.knowledge.ask.pages_heading") %></p>
+        <ul data-knowledge-ask-target="citations" data-test="knowledge-ask-citations" class="space-y-1"></ul>
+      </div>
+      <div hidden data-knowledge-ask-target="answerWrapper" class="pt-3 border-t border-stone-100 dark:border-zinc-800">
+        <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.knowledge.ask.answer_heading") %></p>
+        <div data-knowledge-ask-target="answer" data-test="knowledge-ask-answer" class="text-[13px] leading-relaxed text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap"></div>
+      </div>
+      <p hidden data-knowledge-ask-target="insufficient" data-test="knowledge-ask-empty" class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.ask.insufficient") %></p>
+    </div>
+
+    <%# Storico condiviso del team (Scenario 3): le ultime domande poste, riapribili con la loro
+        risposta — nessuna nuova chiamata al modello, solo ciò che è già stato pagato. %>
+    <% if @ask_history.any? %>
+      <div data-test="knowledge-ask-history">
+        <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-2"><%= t("member.knowledge.ask.history_heading") %></p>
+        <div class="space-y-1.5">
+          <% @ask_history.each do |log| %>
+            <% visible_citations = Array(log.citations).select { |citation| @ask_cited_page_ids.include?(citation["id"].to_s) } %>
+            <details class="group rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="knowledge-ask-history-item">
+              <summary class="cursor-pointer list-none px-4 py-2.5 flex items-center justify-between gap-3 text-[13px] text-zinc-900 dark:text-zinc-100 hover:bg-stone-50/70 dark:hover:bg-zinc-800/70">
+                <span><%= log.question %></span>
+                <%= render Ui::IconComponent.new(name: "chevron-down", class: "text-[10px] text-gray-400 dark:text-zinc-500 transition-transform group-open:rotate-180") %>
+              </summary>
+              <div class="px-4 pb-3.5 pt-2.5 space-y-2.5 border-t border-stone-100 dark:border-zinc-800">
+                <% if log.insufficient? %>
+                  <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.ask.history_insufficient") %></p>
+                <% else %>
+                  <div class="text-[13px] leading-relaxed text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap"><%= log.answer %></div>
+                <% end %>
+                <% if visible_citations.any? %>
+                  <ul class="space-y-1">
+                    <% visible_citations.each do |citation| %>
+                      <li>
+                        <a href="<%= citation["url"] %>" class="inline-flex items-baseline gap-1.5 text-[12.5px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+                          <span class="shrink-0 font-mono uppercase text-[9px] tracking-[1px] text-violet-600 dark:text-violet-400"><%= citation["kind_label"] || citation["kind"] %></span>
+                          <span class="underline underline-offset-2 decoration-indigo-200 dark:decoration-indigo-500/60"><%= citation["title"] %></span>
+                        </a>
+                      </li>
+                    <% end %>
+                  </ul>
+                <% end %>
+                <button type="button" data-action="knowledge-ask#fill" data-knowledge-ask-question-param="<%= log.question %>"
+                        data-test="knowledge-ask-history-reuse"
+                        class="text-[11.5px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 focus:outline-none focus-visible:underline">
+                  <%= render Ui::IconComponent.new(name: "corner-left-up", class: "rotate-90 text-[10px] mr-1") %><%= t("member.knowledge.ask.history_reuse") %>
+                </button>
+              </div>
+            </details>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

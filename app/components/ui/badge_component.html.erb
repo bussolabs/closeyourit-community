@@ -1,0 +1,1 @@
+<%= tag.span(**html_options) do %><% if @dot %><span class="<%= dot_klass %>"></span><% end %><% if @icon %><%= render Ui::IconComponent.new(name: @icon, class: "text-[9px]") %><% end %><%= @label || content %><% end %>

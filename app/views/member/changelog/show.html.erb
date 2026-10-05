@@ -1,0 +1,71 @@
+<% content_for :title, t("shared.changelog.page_title") %>
+
+<div class="p-7 space-y-6">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("shared.changelog.page_title"),
+        breadcrumb: [ { label: t("shared.changelog.page_title") } ],
+        counts_test_id: "changelog-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("shared.changelog.counts.releases"), value: @pagination.total, test_id: "changelog-count-releases") %>
+      <%= render Ui::StatLabelComponent.new(label: t("shared.changelog.counts.entries"), value: @entries_count, value_color: :indigo, test_id: "changelog-count-entries") %>
+      <% if @latest %>
+        <%= render Ui::StatLabelComponent.new(label: t("shared.changelog.latest_label"), value: @latest.label, test_id: "changelog-latest") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-445 — filtri e ricerca IN CIMA alla lista: prima le 300+ versioni arrivavano tutte
+      insieme, in una colonna sola, e l'unico modo di trovare qualcosa era scorrere. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="changelog-card">
+    <%= render(Ui::TableToolbarComponent.new(framed: true,
+          url: member_changelog_path, query: @query,
+          search_placeholder: t("shared.changelog.search_placeholder"),
+          apply_label: t("shared.changelog.apply"),
+          search_test_id: "changelog-search", apply_test_id: "changelog-filter",
+          test_id: "changelog-toolbar")) do |toolbar| %>
+      <% toolbar.with_filter(key: "area", label: t("shared.changelog.filter_area")) do %>
+        <div class="w-44">
+          <%= render Ui::SelectComponent.new(name: "area", multiple: true, summary: true,
+                options: @areas, selected: @area,
+                placeholder: t("shared.changelog.filter_area"), test_id: "filter-area") %>
+        </div>
+      <% end %>
+      <% toolbar.with_filter(key: "kind", label: t("shared.changelog.filter_kind")) do %>
+        <div class="w-40">
+          <%= render Ui::SelectComponent.new(name: "kind", multiple: true, summary: true,
+                options: Changelog::Filter::KINDS.map { |kind| [ t("shared.changelog.sections.#{kind}"), kind ] },
+                selected: @kind,
+                placeholder: t("shared.changelog.filter_kind"), test_id: "filter-kind") %>
+        </div>
+      <% end %>
+    <% end %>
+
+      <div class="px-5 divide-y divide-stone-100 dark:divide-zinc-800" data-test="changelog-list">
+        <% if @releases.any? %>
+          <% @releases.each do |release| %>
+            <%= render Ui::ChangelogReleaseComponent.new(release: release) %>
+          <% end %>
+        <% elsif filtering? %>
+          <%= render Ui::EmptyStateComponent.new(
+                title: t("shared.changelog.no_results"),
+                body: t("shared.changelog.no_results_body"),
+                example: t("shared.changelog.no_results_example"),
+                icon: "search", test_id: "changelog-no-results") do |empty| %>
+            <% empty.with_action do %>
+              <%# CYRA-694 — il path nudo non azzera più: i filtri ricordati risorgono al redirect.
+                  `ft=1` dichiara «questi sono TUTTI i filtri» e a mani vuote cancella la memoria. %>
+              <%= render Ui::ButtonComponent.new(label: t("shared.changelog.reset"),
+                    href: member_changelog_path(ft: 1), variant: :secondary, size: :sm,
+                    test_id: "changelog-reset") %>
+            <% end %>
+          <% end %>
+        <% else %>
+          <%= render Ui::EmptyNoteComponent.new(text: t("shared.changelog.empty"), class: "py-6", test_id: "changelog-empty") %>
+        <% end %>
+      </div>
+
+      <% if @releases.any? %>
+        <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "changelog-pagination") %>
+      <% end %>
+  </div>
+</div>

@@ -1,0 +1,65 @@
+<%# locals: (can_link:) %>
+<%# Collegamenti manuali a errori/ticket %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="log-links">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.logs.show.links_title") %></h2></div>
+  <div class="px-4 py-4 space-y-3">
+    <% if @links.empty? %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="log-links-empty"><%= t("member.monitoring.logs.show.links_empty") %></p>
+    <% else %>
+      <ul class="space-y-2">
+        <% @links.each do |link| %>
+          <li class="flex items-center justify-between gap-2 rounded-md border border-stone-200 dark:border-zinc-800 px-2.5 py-1.5" data-test="log-link">
+            <% if link.linkable.is_a?(Errors::Group) %>
+              <%= link_to member_monitoring_error_group_path(link.linkable), class: "inline-flex items-center gap-1.5 text-[12px] text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 truncate" do %>
+                <%= render Ui::IconComponent.new(name: "bug", class: "text-[10px] text-orange-500") %><span class="text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.logs.show.linked_error") %>:</span><span class="truncate"><%= link.linkable.title %></span>
+              <% end %>
+            <% else %>
+              <%= link_to member_ticket_path(link.linkable), class: "inline-flex items-center gap-1.5 text-[12px] text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 truncate" do %>
+                <%= render Ui::IconComponent.new(name: "ticket", class: "text-[10px] text-indigo-500 dark:text-indigo-400") %><span class="text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.logs.show.linked_ticket") %>:</span><span class="truncate"><%= link.linkable.code %></span>
+              <% end %>
+            <% end %>
+            <% if can_link %>
+              <%= button_to member_monitoring_log_entry_link_path(@entry, link), method: :delete, class: "shrink-0 text-gray-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400", data: { test: "log-link-remove-#{link.id}" }, form: { "aria-label": t("member.monitoring.logs.show.link_remove") } do %>
+                <%= render Ui::IconComponent.new(name: "x", class: "text-[12px]") %>
+              <% end %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <%# CYRA-346 — La tendina unica elencava ~50 ticket come solo codice e ~22 errori troncati a
+        quaranta caratteri (due «NoMethodError: undefined method 'name…» consecutivi e
+        indistinguibili): la scelta era di fatto casuale. Ora sono DUE tendine, una per famiglia,
+        ogni voce porta il titolo accanto al codice, e in cima stanno i candidati più vicini nel
+        tempo a questo messaggio — quelli che quasi sempre sono la ragione per cui lo si collega.
+        La ricerca incrementale ce l'ha già Ui::SelectComponent (Stimulus ui--select), che senza
+        JS resta un <select> nativo funzionante. %>
+    <% if can_link %>
+      <% error_options = link_candidate_errors(@entry).map { |g| [ log_link_error_label(g), "Errors::Group:#{g.id}" ] } %>
+      <% ticket_options = link_candidate_tickets(@entry).map { |tk| [ log_link_ticket_label(tk), "Ticketing::Ticket:#{tk.id}" ] } %>
+
+      <% if error_options.any? %>
+        <div data-test="log-link-errors">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1"><%= t("member.monitoring.logs.show.link_errors_title") %></p>
+          <%= form_with url: member_monitoring_log_entry_links_path(@entry), method: :post, data: { test: "log-link-form-error" } do %>
+            <%= render Ui::SelectComponent.new(name: "linkable", options: error_options, include_blank: true,
+                  placeholder: t("member.monitoring.logs.show.link_placeholder_error"), test_id: "log-link-select-error") %>
+            <%= submit_tag t("member.monitoring.logs.show.link_submit"), class: "mt-2 w-full h-[34px] rounded-md text-[12.5px] font-semibold text-white bg-indigo-600 hover:bg-indigo-700", data: { test: "log-link-submit-error" } %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if ticket_options.any? %>
+        <div class="mt-3" data-test="log-link-tickets">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1"><%= t("member.monitoring.logs.show.link_tickets_title") %></p>
+          <%= form_with url: member_monitoring_log_entry_links_path(@entry), method: :post, data: { test: "log-link-form-ticket" } do %>
+            <%= render Ui::SelectComponent.new(name: "linkable", options: ticket_options, include_blank: true,
+                  placeholder: t("member.monitoring.logs.show.link_placeholder_ticket"), test_id: "log-link-select-ticket") %>
+            <%= submit_tag t("member.monitoring.logs.show.link_submit"), class: "mt-2 w-full h-[34px] rounded-md text-[12.5px] font-semibold text-white bg-indigo-600 hover:bg-indigo-700", data: { test: "log-link-submit-ticket" } %>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,9 @@
+test:
+  dispatchers:
+    - polling_interval: 0.1
+      batch_size: 100
+  workers:
+    - queues: [ingest, default, batch, alerts]
+      threads: 1
+      processes: 1
+      polling_interval: 0.1

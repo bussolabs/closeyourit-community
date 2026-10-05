@@ -1,0 +1,20 @@
+<% content_for :title, t("member.product.cells.edit", feature: @feature.name, platform: @platform.label) %>
+
+<%# Pagina completa che CONTIENE il frame: con Turbo il browser estrae solo il frame e rimpiazza la
+    cella nella matrice; senza JS (rack_test, e i system spec) resta una normale pagina di modifica. %>
+<div class="p-7 space-y-6" data-test="member-product-cell-edit">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.product.cells.edit", feature: @feature.name, platform: @platform.label),
+        breadcrumb: [ { label: t("member.product.matrices.title"), href: member_product_matrices_path },
+                      { label: @group.name, href: member_product_matrix_path(@group) },
+                      { label: @feature.name } ],
+        test_id: "product-cell-header") %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 max-w-md">
+    <%= turbo_frame_tag feature_cell_frame_id(@feature, @platform) do %>
+      <%= render "member/product/features/cells/form", feature: @feature, platform: @platform,
+                 cell: @cell, statuses: @statuses, releases: @releases,
+                 url: member_product_feature_cell_path(@feature, @platform), method: :patch %>
+    <% end %>
+  </div>
+</div>

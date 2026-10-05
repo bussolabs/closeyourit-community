@@ -1,0 +1,28 @@
+en:
+  member:
+    usage:
+      title: "Usage · %{project}"
+      tab: Usage
+      section_title: What gets used
+      count_total: Entries
+      count_features: Features
+      count_routes: Pages
+      empty: No signal yet
+      empty_body: What actually gets opened in this project shows up here, as soon as the first usage signal arrives.
+      no_match: No entry matches the filters.
+      count:
+        one: 1 entry
+        other: "%{count} entries"
+      filter_kind: Type
+      filter_environment: Environment
+      col_kind: Type
+      col_symbol: Name
+      col_environment: Environment
+      col_hits: Opens
+      col_first_seen: First seen
+      col_last_seen: Last seen
+      kinds:
+        feature_view: Feature
+        route: Page
+        job: Background job
+        custom: Other

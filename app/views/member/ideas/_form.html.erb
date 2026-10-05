@@ -1,0 +1,114 @@
+<%# locals: (idea:, url:, method:, title:, submit_label:, locked_project: nil, base: nil) %>
+<% content_for :title, title %>
+
+<% back_path = idea.persisted? ? member_idea_path(idea) : member_ideas_path %>
+<% idea_breadcrumb = idea.persisted? ?
+     [ { label: t("member.ideas.title"), href: member_ideas_path }, { label: idea.title, href: member_idea_path(idea) }, { label: t("member.breadcrumb.edit") } ] :
+     [ { label: t("member.ideas.title"), href: member_ideas_path }, { label: t("member.ideas.new") } ] %>
+<div class="p-7">
+  <%= form_with url: url, method: method, class: "space-y-6", data: { test: "idea-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: title, breadcrumb: idea_breadcrumb) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.ideas.form.cancel"), href: back_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: submit_label, type: "submit", size: :sm, icon: "check", test_id: "idea-submit") %>
+      <% end %>
+    <% end %>
+
+    <%# CYRA-845 — «Proponi evoluzione»: l'idea di base viaggia nascosta e si vede in cima al form,
+        così chi scrive sa che sta continuando quella e non proponendone una qualsiasi. %>
+    <% if base %>
+      <div class="rounded-lg border border-indigo-200 dark:border-indigo-500/40 bg-indigo-50 dark:bg-indigo-500/15 px-4 py-3 flex items-start gap-3" data-test="idea-evolution-banner">
+        <%= render Ui::IconComponent.new(name: "git-branch", class: "text-[13px] text-indigo-600 dark:text-indigo-400 mt-0.5") %>
+        <div class="min-w-0">
+          <p class="text-[13px] font-semibold text-indigo-900 dark:text-indigo-200"><%= t("member.ideas.links.evolution_of", title: "") %><%= link_to base.title, member_idea_path(base), class: "underline hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "idea-evolution-base-link" } %></p>
+          <p class="mt-0.5 text-[12px] text-indigo-800 dark:text-indigo-200"><%= t("member.ideas.links.evolution_form_hint") %></p>
+        </div>
+        <input type="hidden" name="evolves_id" value="<%= base.id %>">
+      </div>
+    <% end %>
+
+    <%# Card unica full-width, griglia 2 colonne: campi lunghi a tutta riga (col-span-2). %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+        <%# CYRA-167 — idee simili suggerite mentre si scrive il titolo (solo in proposta: chi modifica
+            un'idea esistente non sta creando un doppione). Progressive enhancement: senza JS il
+            pannello resta nascosto e il modulo è identico a prima — il salvataggio non ne dipende. %>
+        <div class="md:col-span-2">
+          <% if idea.persisted? %>
+            <%= render Ui::InputComponent.new(name: "title", label: t("member.ideas.form.title_label"), required: true,
+                  value: idea.title, placeholder: t("member.ideas.form.title_placeholder"), test_id: "idea-title",
+                  error: @errors&.dig(:title)&.first) %>
+          <% else %>
+            <div data-controller="idea-duplicates"
+                 data-idea-duplicates-url-value="<%= duplicates_member_ideas_path %>"
+                 data-idea-duplicates-min-chars-value="8">
+              <%= render Ui::InputComponent.new(name: "title", label: t("member.ideas.form.title_label"), required: true,
+                    value: idea.title, placeholder: t("member.ideas.form.title_placeholder"), test_id: "idea-title",
+                    error: @errors&.dig(:title)&.first,
+                    data: { action: "input->idea-duplicates#queue" }) %>
+              <div data-idea-duplicates-target="panel" hidden
+                   class="mt-2 rounded-md border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 px-3 py-2.5"
+                   data-test="idea-duplicates-panel">
+                <p class="text-[11.5px] font-semibold text-amber-900 dark:text-amber-200"><%= t("member.ideas.duplicates.title") %></p>
+                <p class="mt-0.5 text-[11.5px] text-amber-800 dark:text-amber-200"><%= t("member.ideas.duplicates.hint") %></p>
+                <ul data-idea-duplicates-target="list" class="mt-1.5 space-y-1"></ul>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <% locked_display = idea.persisted? ? idea.project : locked_project %>
+        <% if locked_display %>
+          <%# Progetto fisso: attr_readonly in edit, oppure aperto da un progetto specifico in creazione. %>
+          <div data-test="idea-project-locked">
+            <label class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.ideas.form.project") %></label>
+            <div class="inline-flex items-center gap-2 h-[38px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-[13px]">
+              <span class="w-2.5 h-2.5 rounded-[3px] <%= Ui::Colors.swatch(locked_display.color) %>"></span>
+              <span class="font-medium text-zinc-900 dark:text-zinc-100"><%= locked_display.name %></span>
+              <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= locked_display.key %></span>
+            </div>
+            <% unless idea.persisted? %>
+              <input type="hidden" name="project_id" value="<%= locked_display.id %>">
+              <input type="hidden" name="locked_project" value="1">
+            <% end %>
+          </div>
+        <% else %>
+          <%= render Ui::SelectComponent.new(name: "project_id", label: t("member.ideas.form.project"), required: true,
+                options: @projects.map { |p| [ p.name, p.id ] }, selected: idea.project_id, include_blank: true,
+                placeholder: t("member.ideas.form.select_project"), test_id: "idea-project",
+                error: @errors&.dig(:project)&.first) %>
+        <% end %>
+
+        <div class="md:col-span-2">
+          <label for="problem" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.ideas.form.problem_label") %><span class="text-red-500 dark:text-red-400 ml-0.5">*</span></label>
+          <%= text_area_tag "problem", idea.problem, rows: 5, placeholder: t("member.ideas.form.problem_placeholder"), data: { test: "idea-problem-field" }, class: "w-full px-3 py-2 rounded-md border #{@errors&.dig(:problem)&.first ? "border-red-300 dark:border-red-500/50" : "border-stone-200 dark:border-zinc-800"} bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+          <% if @errors&.dig(:problem)&.first %>
+            <p class="mt-1 text-[11.5px] text-red-600 dark:text-red-400" data-test="idea-problem-error"><%= @errors.dig(:problem).first %></p>
+          <% end %>
+        </div>
+
+        <div class="md:col-span-2">
+          <label for="solution" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.ideas.form.solution_label") %></label>
+          <%= text_area_tag "solution", idea.solution, rows: 5, placeholder: t("member.ideas.form.solution_placeholder"), data: { test: "idea-solution-field" }, class: "w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+        </div>
+
+        <%# CYRA-845 — come si ripaga e cosa la frena: fatti dell'idea, non commenti. %>
+        <div class="md:col-span-2">
+          <label for="monetization" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.ideas.form.monetization_label") %></label>
+          <%= text_area_tag "monetization", idea.monetization, rows: 4, placeholder: t("member.ideas.form.monetization_placeholder"), data: { test: "idea-monetization-field" }, class: "w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+        </div>
+
+        <div class="md:col-span-2">
+          <label for="risks" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.ideas.form.risks_label") %></label>
+          <%= text_area_tag "risks", idea.risks, rows: 4, placeholder: t("member.ideas.form.risks_placeholder"), data: { test: "idea-risks-field" }, class: "w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+        </div>
+
+        <div class="md:col-span-2">
+          <%= render Ui::InputComponent.new(name: "stakeholders", label: t("member.ideas.form.stakeholders_label"),
+                value: idea.stakeholders.join(", "), placeholder: t("member.ideas.form.stakeholders_placeholder"),
+                hint: t("member.ideas.form.stakeholders_hint"), test_id: "idea-stakeholders") %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

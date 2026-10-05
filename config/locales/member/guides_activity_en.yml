@@ -1,0 +1,27 @@
+---
+en:
+  member:
+    guides:
+      index:
+        activity:
+          title: Who did what
+      activity:
+        title: Who did what
+        subtitle: The log of what people did, in a single list.
+        what_title: What you find here
+        what_intro: "The log lines up, most recent first, what the people in your organization did. Each of these used to live on a different page, and permission changes could not be read anywhere at all."
+        sources:
+          work: projects, documents, milestones, ideas and workload created or changed.
+          tickets: the history of the tickets in the projects you can see — opening, status, assignments, reviews.
+          permissions: roles and permissions granted or removed, teams changed, and confirmations of sensitive actions.
+          secrets: who read, changed or synced a confidential value of the organization.
+        out_title: What you do NOT find here
+        out_intro: "Some things stay out on purpose. If you are looking for one of these, the right place is elsewhere."
+        out_b1: "Your personal Vault and your personal files: they are yours, and no administrator sees them from here."
+        out_b2: "Software errors: those are program failures, not what a person did. They live on the errors page."
+        out_b3: "The Vault only shows up for those who already have permission to read its activity: the log does not bypass that permission."
+        how_title: How to search
+        how_step1: "Pick the log if you already know where to look: work, tickets, permissions or Vault. Leave it empty to see them together."
+        how_step2: "Narrow it down with «Who» and «Action» when the question has a name: who granted a permission, or who changed a status."
+        how_step3: "Use the period to go back to a specific day. Filters stay as you left them when you come back to the page."
+        cta: Open the activity log

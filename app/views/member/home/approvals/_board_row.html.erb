@@ -1,0 +1,142 @@
+<%# locals: row, batch, selectable, group_key, columns — una riga della plancia (CYRA-592). %>
+<%# Da sinistra a destra: di che lavorazione si tratta, dove è arrivata, cosa aspetta, da quanto,
+    chi l'ha prodotta, cosa posso farci. Lo STATO ha la sua colonna, con testo allineato: dentro una
+    cella d'altro sarebbe un'etichetta colorata in mezzo ai puntini, e la colonna delle fasi non si
+    leggerebbe più dall'alto in basso. %>
+<%# CYRA-899 — the row takes keyboard focus (j/k), and a stopped row carries a red left edge. %>
+<%# CYRA-904 — a click anywhere on the row opens its preview; links and buttons keep their own job. %>
+<% select = (row.item.bulk_approvable ? { name: "keys[]", value: row.key, test_id: "approvals-select-#{row.key}", data: { no_report: row.item.no_report } } : :none) if selectable %>
+<%= render Ui::TableComponent::RowComponent.new(group: group_key, select: select, test_id: "approvals-board-row", tabindex: -1,
+      class: "group cursor-pointer focus:outline-none focus:bg-indigo-50/60 dark:focus:bg-indigo-500/15#{" [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-red-500)]" if row.stuck?}",
+      data: { stuck: row.stuck?, approvals_board_keys_target: "row", action: "click->approvals-board-keys#openFromRow" }) do %>
+
+  <%# Codice e titolo del ticket: le sole due informazioni che distinguono una riga dall'altra
+      (CYRA-303). Le righe senza ticket — le richieste sui segreti — portano la loro descrizione. %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true, test_id: "approvals-board-title-cell") do %>
+    <div class="flex items-center gap-2">
+      <%# CYRA-899 — opens the preview row right below, without leaving the board. %>
+      <button type="button" class="mt-0.5 shrink-0 w-5 h-5 inline-flex items-center justify-center rounded text-gray-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-stone-100 dark:hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+              aria-expanded="false" aria-label="<%= t("member.approvals.board.preview_toggle") %>"
+              data-action="approvals-board-keys#togglePreview:stop" data-test="approvals-row-preview-toggle">
+        <%= render Ui::IconComponent.new(name: "chevron-right", class: "text-[10px] transition-transform") %>
+      </button>
+      <%# CYRA-904 — code and title on one line: one row per ticket. The wait has its own column (CYRA-998). %>
+      <%= link_to row.item.url, class: "group/ticket flex items-baseline gap-2 min-w-0", data: { test: "approvals-board-ticket" } do %>
+        <% if row.item.code.present? %>
+          <span class="shrink-0 font-mono text-[12px] font-semibold text-indigo-700 dark:text-indigo-300 group-hover/ticket:underline"><%= row.item.code %></span>
+        <% end %>
+        <span class="text-[12.5px] text-zinc-900 dark:text-zinc-100 truncate max-w-[30rem]"><%= row.item.code.present? ? row.item.subtitle : row.item.title %></span>
+      <% end %>
+    </div>
+    <% if row.stuck? %>
+      <span class="sr-only"><%= t("member.approvals.board.stuck") %></span>
+    <% end %>
+    <%# CYRA-610 — l'avviso sta ANCHE qui, non solo nella scheda di dettaglio: da questo elenco si
+        approvano dieci piani in una volta senza aprirne nessuno, e se l'avviso vivesse solo nel
+        dettaglio l'unico gesto che approva in blocco sarebbe anche l'unico fatto alla cieca. %>
+    <% if row.item.freeze_warning.present? %>
+      <span class="mt-0.5 flex items-center gap-1 text-[11px] text-red-600 dark:text-red-400" data-test="approvals-board-freeze-warning"
+            title="<%= row.item.freeze_warning %>">
+        <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[10px]") %>
+        <%= t("member.approvals.board.freeze.missing_short") %>
+      </span>
+    <% end %>
+    <%# Revisione senza lavoro consegnato (CYRA-863): selected in bulk from the group header (CYRA-904),
+        named here for screen readers only. %>
+    <% if row.item.no_report %>
+      <span class="sr-only" data-test="approvals-no-report-<%= row.key.split(":", 2).last %>"><%= t("member.approvals.board.no_report") %></span>
+    <% end %>
+  <% end %>
+
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.approvals.board.columns.project")) do %>
+    <span class="font-mono text-[11px] text-gray-600 dark:text-zinc-400 border border-stone-200 dark:border-zinc-800 rounded px-1.5 py-0.5 whitespace-nowrap"
+          title="<%= row.project&.name %>" data-test="approvals-board-project"><%= row.project&.key || t("member.approvals.board.no_project") %></span>
+  <% end %>
+
+  <%# CYRA-998 — the version a rewritten plan has reached, and how long the row has been waiting. %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.approvals.board.columns.version")) do %>
+    <% if row.item.plan_version %>
+      <span class="rounded-md bg-stone-100 dark:bg-zinc-800 px-1.5 font-mono text-[11px] text-gray-600 dark:text-zinc-400"
+            title="<%= t("member.approvals.board.plan_version_hint") %>" data-test="approvals-board-plan-version">v<%= row.item.plan_version %></span>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.approvals.board.columns.wait")) do %>
+    <span class="font-mono text-[11px] whitespace-nowrap <%= approval_wait_classes(row.since) %>" title="<%= t("member.approvals.board.wait_hint") %>"
+          data-test="approvals-board-wait"><%= approval_wait(row.since) %></span>
+  <% end %>
+
+  <%# La matrice, in una cella sola (CYRA-904): un puntino per passaggio. Puntino con un tentativo
+      dietro = link al passaggio dentro il ticket; senza = spento e NON cliccabile (CYRA-619). %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.approvals.board.columns.steps")) do %>
+    <span class="inline-flex items-center gap-0.5">
+      <% row.cells.each do |cell| %>
+        <% style = approval_cell_style(cell.state) %>
+        <span class="inline-flex rounded <%= style[:cell] %>" data-test="approvals-board-cell-<%= cell.phase %>" data-state="<%= cell.state %>">
+          <% if cell.open? && row.ticket_id %>
+            <%= link_to member_ticket_path(row.ticket_id, tab: "automation", anchor: "passaggio-#{cell.phase}"),
+                  class: "flex items-center justify-center w-5 h-5 rounded hover:bg-stone-200 dark:hover:bg-zinc-700",
+                  title: t("member.approvals.board.open_phase", phase: approval_phase_name(cell.phase)),
+                  data: { test: "approvals-board-open-#{cell.phase}" } do %>
+              <%= render "member/home/approvals/board_dot", style: style, cell: cell %>
+            <% end %>
+          <% else %>
+            <span class="flex items-center justify-center w-5 h-5" title="<%= approval_cell_title(cell) %>">
+              <%= render "member/home/approvals/board_dot", style: style, cell: cell %>
+            </span>
+          <% end %>
+        </span>
+      <% end %>
+    </span>
+  <% end %>
+
+  <%# Lo stato con LE STESSE parole con cui i filtri lo contano: due nomi per la stessa cosa
+      farebbero cercare, su una pagina che esiste per non far cercare. %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.approvals.board.columns.state")) do %>
+    <% if row.state.present? %>
+      <span class="flex items-center gap-2" data-test="approvals-board-state">
+        <span class="w-1.5 h-1.5 rounded-full shrink-0 <%= Ui::Colors.swatch(row.item.tone) %>"></span>
+        <span class="text-[12.5px] text-zinc-900 dark:text-zinc-100 whitespace-nowrap"><%= t("member.approvals.filters.#{row.state}") %></span>
+      </span>
+    <% end %>
+  <% end %>
+
+  <%# Dove si decide: la riga porta alla scheda, che è l'unico posto in cui si legge per intero ciò
+      su cui si sta decidendo. %>
+  <%# CYRA-904 — pinned to the right edge: the decision never scrolls out of sight. %>
+  <%= render Ui::TableComponent::CellComponent.new(actions: true, test_id: "approvals-board-actions") do %>
+    <div class="flex items-center justify-end gap-1.5">
+      <%# CYRA-899 — Approve straight from the row, only where approving in bulk is already allowed:
+          same gate, same endpoint, one key. The button joins the standalone form in `_board`. %>
+      <% if row.item.bulk_approvable %>
+        <button type="submit" form="approvals-approve-one" name="keys[]" value="<%= row.key %>"
+                class="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 py-1 text-[12px] font-semibold text-white hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                data-test="approvals-row-approve">
+          <%= render Ui::IconComponent.new(name: "check", class: "text-[10px]") %><%= t("member.approvals.board.approve") %>
+        </button>
+      <% end %>
+      <%= render Ui::ButtonComponent.new(label: t("member.approvals.board.decide"),
+            href: member_home_approvals_path(item: row.key, state: batch.filter),
+            variant: :secondary_muted, size: :sm, icon: "gavel", test_id: "approvals-board-decide") %>
+    </div>
+  <% end %>
+<% end %>
+<%# CYRA-899 — the preview row: hidden until opened, then its frame loads the request. It also hides
+    when its group closes, because it follows a hidden row. %>
+<% kind, id = row.key.split(":", 2) %>
+<%= render Ui::TableComponent::DetailRowComponent.new(colspan: columns, hidden: true, class: "[tr[hidden]+&]:hidden", test_id: "approvals-row-preview") do %>
+    <%# CYRA-904 — who produced the work lives here, next to the work itself. %>
+    <p class="px-4 pt-3 text-[12px] text-gray-500 dark:text-zinc-400">
+      <%= t("member.approvals.board.agent_label") %>:
+      <% if row.item.agent.present? %>
+        <%= link_to row.item.agent.name, member_agent_path(row.item.agent.id),
+              class: "font-mono text-[11.5px] hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline",
+              title: t("member.approvals.agent_tip"), data: { test: "approvals-board-agent" } %>
+      <% else %>
+        <span class="font-mono text-[11.5px] text-gray-400 dark:text-zinc-500" data-test="approvals-board-agent"><%= t("member.approvals.board.no_agent") %></span>
+      <% end %>
+    </p>
+    <%= turbo_frame_tag "approvals-preview-#{kind}-#{id}", src: member_home_approvals_item_preview_path(kind:, id:),
+          loading: "lazy", target: "_top" do %>
+      <p class="px-4 py-3 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.approvals.board.preview_loading") %></p>
+    <% end %>
+<% end %>

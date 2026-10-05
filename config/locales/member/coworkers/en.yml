@@ -1,0 +1,147 @@
+{
+  "en": {
+    "member": {
+      "coworkers": {
+        "back": "Back to CloseYourIt",
+        "subtitle": "Your persistent agents",
+        "puckies": "Puckies",
+        "new_puck": "New Puck",
+        "empty_puckies_title": "Create your first Puck",
+        "empty_puckies_body": "Choose a name and instructions for your assistant, such as finding sources for a project.",
+        "edit_puck": "Edit %{name}",
+        "save_puck": "Save Puck",
+        "edit_pending": "Puck editing is not available yet. You can change the mascot now; use Memory to save notes.",
+        "activity": {
+          "idle": "Ready to help",
+          "queued": "Waiting to start",
+          "running": "Working…",
+          "completed": "Response ready",
+          "failed": "Work failed",
+          "stopped": "Work stopped",
+          "interrupted": "Work interrupted"
+        },
+        "local": "Local experiment · personal Puckies in this organization",
+        "invalid": "Check the required fields and text length, then try again.",
+        "conflict": "Memory changed in another window. Reload it before saving.",
+        "busy": "The execution lane is busy. Wait for the current run or stop it.",
+        "memory": "Memory",
+        "tasks": "Tasks",
+        "empty_chat": "Write your first message to this Puck.",
+        "message": "Message to your Puck",
+        "message_placeholder": "What would you like to do? (Enter sends, Shift+Enter adds a line)",
+        "send": "Send",
+        "create": "Create Puck",
+        "name": "Name",
+        "instructions": "Instructions",
+        "close": "Close",
+        "save": "Save memory",
+        "memory_hint": "Saved notes apply to new runs. Active runs keep their original context.",
+        "new_task": "Start task",
+        "task": "What should the Puck research?",
+        "task_hint": "Public web research only. No staging changes or virtual machines yet. Work continues when you leave this page.",
+        "stop": "Stop",
+        "typing": "... typing ...",
+        "run_failed": "The run did not finish successfully. Review any partial answer before starting another.",
+        "status": {
+          "queued": "Queued",
+          "running": "Working",
+          "completed": "Response ready",
+          "failed": "Failed",
+          "stopped": "Stopped",
+          "interrupted": "Interrupted"
+        },
+        "keyboard": "Enter to send · Shift+Enter for a new line",
+        "you": "You",
+        "request": "Request",
+        "result": "Result",
+        "proposal_title": "Task proposal",
+        "proposal_objective": "Objective",
+        "proposal_activities": "Activities",
+        "proposal_limits": "Limits",
+        "proposal_hint": "Research starts only with this button. To revise the proposal, write in chat: the previous proposal will no longer be available to start.",
+        "proposal_budget": "Public sources only · up to 3 minutes · USD 1.50 model budget per start (estimate, research services excluded).",
+        "start_proposal": "Start task",
+        "proposal_started": "Task started by you. Progress and results stay here and in Tasks.",
+        "proposal_expired": "This proposal can no longer be started. Ask the Puck for a new proposal in chat.",
+        "presets": {
+          "mascot_hint": "Your mascot choice applies only in this browser.",
+          "title": "Ready-made presets",
+          "intro": "Choose a card to fill in the form. You can edit everything.",
+          "blank": "Create from scratch",
+          "customize": "Make this Puck your own",
+          "hint": "These instructions define how it helps you. Adjust them before creating your Puck.",
+          "example": "Try asking: %{text}",
+          "items": {
+            "researcher": {
+              "name": "Researcher",
+              "description": "Explores a topic and gathers reliable sources.",
+              "example": "What are the pros and cons of a four-day workweek?",
+              "instructions": "You are my Researcher: curious, methodical and clear. Help me explore a topic, clarifying the goal and depth when needed.\n\nUse public sources for research, prefer primary sources and cite links and relevant dates. Distinguish verified facts, interpretations and uncertainty; flag disagreements between sources. Never invent data or citations.\n\nDeliver a useful summary first, followed by evidence and open questions. Propose a research task when needed and wait for my manual approval before starting it."
+            },
+            "observer": {
+              "name": "Observer",
+              "description": "Compares competitors, products and industry developments.",
+              "example": "Compare three newsletter services for a small team.",
+              "instructions": "You are my Observer: detail-oriented, pragmatic and impartial. Help me compare competitors, products or industry developments. Ask which alternatives, criteria, market and time period matter when they are unclear.\n\nUse public information and official sources for prices and features; cite links and the verification date. Compare alternatives using the same criteria, highlight differences and missing information, and never invent numbers.\n\nConclude with opportunities, limitations and areas to explore. Do not promise recurring monitoring or automatic notifications. Propose research and wait for my manual approval before starting it."
+            },
+            "technical": {
+              "name": "Technical explorer",
+              "description": "Compares technologies and makes documentation clearer.",
+              "example": "When should I choose PostgreSQL or SQLite for a small app?",
+              "instructions": "You are my Technical explorer: precise, curious and practical. Help me understand and compare technologies based on the problem, stack and constraints I provide.\n\nUse official documentation, specifying versions and dates when relevant. Cite sources and compare compatibility, complexity, maintenance and trade-offs. Distinguish illustrative examples from verified solutions. Never claim to have run code or inspected repositories you cannot access.\n\nDeliver a reasoned recommendation and the checks needed to evaluate it. Propose any public web research and wait for my manual approval before starting it."
+            },
+            "editor": {
+              "name": "Editor",
+              "description": "Turns a topic into ideas and outlines for your content.",
+              "example": "Outline an article explaining backups to small business owners.",
+              "instructions": "You are my Editor: creative, concise and attentive to the reader. Help me turn a topic or material I provide into ideas, titles and outlines. Clarify the audience, goal, channel and tone when needed.\n\nSuggest distinct angles and a structure with a clear central message. Respect my voice; avoid generic wording, unsupported promises and invented facts. Flag claims that need checking and cite sources when researching.\n\nPrepare content for us to review, without publishing or sending it. If public web research is needed, propose a task and wait for my manual approval before starting it."
+            }
+          }
+        },
+        "mascot": {
+          "choose": "Choose a mascot",
+          "change": "Change mascot for %{name}",
+          "hint": "Applies immediately, only in this browser. You can change it anytime.",
+          "saved": "Mascot saved in this browser.",
+          "unavailable": "Mascot changed for this page. Your browser cannot save it: enable browser storage and choose again.",
+          "names": {
+            "01": "Blue cloud",
+            "02": "Mint sprout",
+            "03": "Lilac star",
+            "04": "Apricot bean",
+            "05": "Vanilla drop",
+            "06": "Pink heart",
+            "07": "Turquoise button",
+            "08": "Lavender mushroom",
+            "09": "Pistachio cactus",
+            "10": "Peach moon",
+            "11": "Honey sun",
+            "12": "Coral strawberry",
+            "13": "Cream ghost",
+            "14": "Sky blue whale",
+            "15": "Vanilla bee",
+            "16": "Lilac alien",
+            "17": "Peach snail",
+            "18": "Periwinkle penguin",
+            "19": "Caramel acorn",
+            "20": "Butter daisy"
+          }
+        },
+        "chat": "Chat",
+        "panels": "Puck panels",
+        "load_older": "Show earlier messages",
+        "loading": "Loading…",
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "copy": "Copy",
+        "copied": "Copied",
+        "copy_failed": "Not copied",
+        "retry": "Retry",
+        "latest": "Latest message",
+        "open_new_task": "New task",
+        "working": "Working",
+        "cancel": "Cancel"
+      }
+    }
+  }
+}

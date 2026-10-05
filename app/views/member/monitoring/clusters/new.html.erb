@@ -1,0 +1,28 @@
+<% content_for :title, t("member.clusters.form.title") %>
+
+<div class="p-7" data-test="member-cluster-new">
+  <%= form_with url: member_monitoring_clusters_path, method: :post, class: "space-y-6", data: { test: "cluster-form" } do %>
+    <%# CYRA-728: servers.manage writes carry the confirmation; submitting this form is the gesture. %>
+    <%= hidden_field_tag :confirm, 1, id: nil %>
+    <%= render Ui::PageHeaderComponent.new(title: t("member.clusters.form.title"),
+          breadcrumb: [ { label: t("member.clusters.title"), href: member_monitoring_clusters_path }, { label: t("member.breadcrumb.new") } ]) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.clusters.form.cancel"), href: member_monitoring_clusters_path,
+              variant: :secondary_muted, size: :sm, test_id: "cluster-cancel") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.clusters.form.create"), type: "submit", icon: "check",
+              size: :sm, test_id: "cluster-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%= render Ui::InputComponent.new(name: "name", label: t("member.clusters.form.name"), required: true,
+                value: @cluster.name, hint: t("member.clusters.form.name_hint"), autocomplete: "off",
+                test_id: "cluster-name", error: @errors&.dig(:name)&.first) %>
+          <%= render "member/shared/color_field", record: @cluster, prefix: "cluster", scope: "member.clusters.form" %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,16 @@
+---
+it:
+  errors:
+    pages:
+      home: Torna alla home
+      tickets: Vai ai ticket
+      servers: Vai ai server
+      not_found:
+        title: Questa pagina non esiste
+        body: L'indirizzo potrebbe essere scritto male, oppure la pagina è stata spostata. Se ci sei arrivato da un link condiviso, chiedi a chi te l'ha mandato di ricontrollarlo.
+      unprocessable_content:
+        title: Non è stato possibile completare l'operazione
+        body: "La richiesta non è stata accettata. Se stavi compilando un modulo, torna indietro e riprova: potrebbe essere scaduta la sessione."
+      internal_server_error:
+        title: Qualcosa è andato storto
+        body: "Il problema è dalla nostra parte, non dalla tua. È già stato registrato: riprova fra un momento."

@@ -1,0 +1,8 @@
+<%# locals: (decision_card:) %>
+<% level_colors = { "none" => "emerald", "low" => "amber", "high" => "red" } %>
+<% if decision_card["risk_level"] %>
+  <span data-test="approvals-decision-card-level">
+    <%= render Ui::BadgeComponent.new(label: t("member.approvals.decision_card.risk_levels.#{decision_card["risk_level"]}"),
+                                      color: level_colors.fetch(decision_card["risk_level"], "gray"), dot: true) %>
+  </span>
+<% end %>

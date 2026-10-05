@@ -1,0 +1,49 @@
+<%# locals: (tree:) %>
+<nav class="flex-1 overflow-y-auto scrollbar-none px-3 pt-3 border-t border-stone-200 dark:border-zinc-800 md:group-data-[compact]/sidebar:px-2"
+     data-controller="ui--nav-group ui--scroll-hint ui--nav-flyout ui--keep-scroll" data-ui--keep-scroll-key-value="sidebar"
+     data-action="scroll->ui--nav-flyout#closeAll scroll->ui--keep-scroll#save"
+     data-test="member-nav">
+  <%# Bottom padding lives on the content, not on the nav: a sticky child stops at the padding edge,
+      so a padded nav let items show below the "more" strip. %>
+  <div class="space-y-4 pb-3">
+    <%# Pinned: what gets opened every day, always on top and never inside a group. %>
+    <div class="space-y-0.5">
+      <% tree.pinned.each do |item| %>
+        <%= render Ui::NavLinkComponent.new(label: item.label, path: item.path, icon: item.icon,
+              active: item.active, test_id: item.test, dot: true) do %>
+          <%= nav_item_badge(item) %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <% tree.sections.each do |section| %>
+      <div>
+        <%# CYRA-909 — the section name is for screen readers only in compact mode: a line keeps sections apart. %>
+        <div class="hidden h-px mx-1 mb-2 bg-stone-200 dark:bg-zinc-700 md:group-data-[compact]/sidebar:block" aria-hidden="true"
+             data-test="member-nav-section-divider"></div>
+        <p class="px-3 pb-1.5 font-mono uppercase text-[10.5px] font-medium tracking-[1.2px] text-gray-600 dark:text-zinc-400 md:group-data-[compact]/sidebar:sr-only"
+           data-test="<%= section.test %>"><%= section.label %></p>
+        <div class="space-y-0.5">
+          <% section.nodes.each do |node| %>
+            <% if node.respond_to?(:items) %>
+              <%= render "member/nav_group", group: node %>
+            <% else %>
+              <%= render Ui::NavLinkComponent.new(label: node.label, path: node.path, icon: node.icon,
+                    active: node.active, test_id: node.test) %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# CYRA-585 — the scrollbar is hidden, so a fade and an arrow say there is more below, and only
+      then. The negative margin keeps it from taking room; decorative, hence aria-hidden.
+      CYRA-883 — solid white under the arrow: a thin, half-clear fade left the last item half
+      covered with the arrow on top of its text.
+      The arrow now sits in its own opaque strip: the fade still let it land on the last item. %>
+  <div class="sticky bottom-0 -mx-3 -mt-6 h-6 flex items-center justify-center bg-white dark:bg-zinc-900 border-t border-stone-100 dark:border-zinc-800 pointer-events-none md:group-data-[compact]/sidebar:-mx-2"
+       data-ui--scroll-hint-target="more" data-test="member-nav-more" aria-hidden="true" hidden>
+    <%= render Ui::IconComponent.new(name: "chevron-down", class: "text-[10px] text-gray-400 dark:text-zinc-500") %>
+  </div>
+</nav>

@@ -1,0 +1,24 @@
+it:
+  cli:
+    authorize:
+      title: "Autorizza la CLI"
+      lead: "Un dispositivo vuole accedere a CloseYourIt come te."
+      client_label: "Dispositivo"
+      unknown_client: "Client da riga di comando"
+      organization_label: "Organizzazione"
+      organization_hint: "Il token CLI agirà nell'organizzazione che scegli, con i tuoi permessi."
+      approve: "Autorizza"
+      authorizing: "Autorizzazione…"
+      deny: "Nega"
+      no_grant_title: "Codice non valido"
+      no_grant_lead: "Questo codice di autorizzazione è sconosciuto o scaduto. Rilancia il login dal terminale."
+      approved_title: "Dispositivo autorizzato"
+      approved_lead: "Torna al terminale — la CLI ora ha accesso a %{organization}."
+      # CYRA-717 — l'accesso da terminale non è per sempre: chi lo concede lo legge qui, nel momento
+      # in cui lo concede, non fra tre mesi quando smette di funzionare senza spiegazioni.
+      approved_expiry: "L'accesso vale %{days} giorni. Alla scadenza rifai il login dal terminale."
+      denied_title: "Richiesta negata"
+      denied_lead: "Nessun accesso concesso. Puoi chiudere questa pagina."
+      back: "Torna a CloseYourIt"
+      errors:
+        no_organization: "Scegli un'organizzazione da autorizzare."

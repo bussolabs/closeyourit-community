@@ -1,0 +1,46 @@
+<%# locals: (subtitle:, events: nil, history_url: nil, history_frame: nil) %>
+<%# Cronologia attività generalizzata (project/group/…) in un <dialog> nativo. Aperta dal bottone
+    "View activity history" della sezione Audit. Righe via member/shared/activity_row.
+
+    Due modi di riempirlo, e la differenza è quando si legge lo storico (CYRA-827):
+      · `history_url:` + `history_frame:` — le righe arrivano su richiesta, in un frame pigro che
+        parte quando il riquadro si apre davvero, e sono paginate. La pagina che ospita il riquadro
+        non legge più tutta la cronologia per mostrarne l'ultima riga nel blocco Audit. Il nome del
+        frame lo passa il chiamante e vale anche per la risposta: due nomi diversi e il riquadro
+        resterebbe sul contenuto di partenza senza dire niente.
+      · `events:` — le righe sono già in memoria, ed è il caso dei riquadri non ancora passati al
+        caricamento su richiesta.
+    Il conteggio degli eventi vive dentro il frame quando il frame c'è: qui fuori nessuno sa quanti
+    sono finché la risposta non arriva, e un numero scritto prima sarebbe un numero inventato. %>
+<%= render Ui::ModalComponent.new(title: t("ui.audit.view_history"), subtitle: subtitle, padded: false, test_id: "activity-modal",
+      data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+  <% modal.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: t("ui.audit.close"), variant: :secondary_muted, size: :sm,
+          data: { action: "ui--dialog#close" }, test_id: "activity-close") %>
+  <% end %>
+  <div data-test="activity-panel">
+    <% if history_url %>
+      <%# Il contenuto di partenza è la VIA DI RECUPERO: se il frame non arriva — rete caduta, sessione
+          scaduta — resta un collegamento che apre la cronologia a pagina intera, invece di un riquadro
+          muto. `_top` perché quella è una pagina, non un pezzo di questa. %>
+      <%= turbo_frame_tag history_frame, src: history_url, loading: :lazy, class: "block" do %>
+        <%= link_to t("ui.audit.view_history"), history_url, target: "_top",
+              data: { test: "activity-history-fallback" },
+              class: "block px-4 py-6 text-[12.5px] text-indigo-600 dark:text-indigo-400 underline" %>
+      <% end %>
+    <% else %>
+      <div class="max-h-[60vh] overflow-y-auto divide-y divide-stone-100 dark:divide-zinc-800">
+        <% if events.any? %>
+          <% events.reverse_each do |event| %>
+            <%= render "member/shared/activity_row", event: event %>
+          <% end %>
+        <% else %>
+          <%= render Ui::EmptyNoteComponent.new(text: t("ui.audit.empty"), inset: true, test_id: "activity-empty") %>
+        <% end %>
+      </div>
+    <% end %>
+    <% if events&.any? %>
+      <p class="px-4 py-3 border-t border-stone-100 dark:border-zinc-800 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("ui.audit.events_count", count: events.size) %></p>
+    <% end %>
+  </div>
+<% end %>

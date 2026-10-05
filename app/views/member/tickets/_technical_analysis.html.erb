@@ -1,0 +1,59 @@
+<%# locals: ticket, can_manage %>
+<%# CYRA-259 — Analisi tecnica: registro tecnico separato dal corpo human-simple, con scheda propria.
+    Il markdown è RESO (render_markdown → Commonmarker GFM in modalità safe: il raw HTML nel sorgente
+    esce escapato, quindi nessun sanitize sopra — spoglierebbe le tabelle). Il testo arriva anche da
+    CLI e agenti, che lo scrivono in markdown: prima si leggeva coi simboli in chiaro. %>
+<%# CYRA-883 — no panel title: the tab already names it. Who wrote it, edit and copy sit on one line
+    above the text, then the index of its sections. %>
+<% if ticket.technical_analysis.present? %>
+  <% signature = ticket_analysis_signature(ticket) %>
+  <% headings = markdown_headings(ticket.technical_analysis, prefix: "analysis") %>
+  <div class="flex flex-col gap-2.5" data-controller="ui--clamp" data-ui--clamp-more-value="<%= t("member.tickets.show.show_all") %>"
+       data-ui--clamp-less-value="<%= t("member.tickets.show.show_less") %>">
+    <div class="flex items-center justify-between gap-3 flex-wrap" data-controller="clipboard"
+         data-clipboard-copied-value="<%= t("member.tickets.show.analysis_copied") %>">
+      <p class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="ticket-analysis-signature"><%= ticket_written_line(**signature) %></p>
+      <div class="flex items-center gap-1.5">
+        <% if can_manage %>
+          <%= render Ui::ButtonComponent.new(label: t("member.tickets.show.analysis_edit"), href: edit_member_ticket_path(ticket),
+                variant: :secondary, size: :sm, icon: "pen", test_id: "ticket-analysis-edit") %>
+        <% end %>
+        <button type="button" data-action="clipboard#copy" data-test="ticket-analysis-copy"
+                class="inline-flex items-center gap-1.5 h-[30px] px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[12px] font-medium text-gray-600 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+          <%= render Ui::IconComponent.new(name: "copy", class: "text-[11px] text-gray-400 dark:text-zinc-500") %><span data-clipboard-target="label"><%= t("member.tickets.show.analysis_copy") %></span>
+        </button>
+        <pre hidden data-clipboard-target="source" data-test="ticket-analysis-source"><%= ticket.technical_analysis %></pre>
+      </div>
+    </div>
+
+    <% if headings.size > 1 %>
+      <nav class="flex items-center gap-1.5 flex-wrap" aria-label="<%= t("member.tickets.show.analysis_sections") %>" data-test="ticket-analysis-toc">
+        <% headings.each do |heading| %>
+          <a href="#<%= heading[:id] %>" data-action="ui--clamp#expand"
+             class="inline-flex items-center h-6 px-2 rounded-md bg-indigo-50 dark:bg-indigo-500/15 font-mono text-[11px] text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-500/25"><%= heading[:title] %></a>
+        <% end %>
+      </nav>
+    <% end %>
+
+    <%# remote_images: il componente lo tiene spento di suo — aprire un ticket è baseline (anche un
+        customer), e un'immagine remota qui dentro sarebbe un tracking pixel sul browser di chi legge.
+        Il testo parte accorciato: senza JS resta tutto visibile — il taglio lo mette il controller. %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ticket-technical-analysis">
+      <div data-ui--clamp-target="body" data-test="ticket-analysis-body">
+        <%= render Ui::MarkdownComponent.new(text: ticket.technical_analysis, anchor_prefix: "analysis", class: "px-4 py-3.5 max-w-[70ch]") %>
+      </div>
+      <button type="button" data-ui--clamp-target="toggle" data-action="ui--clamp#toggle"
+              data-test="ticket-analysis-toggle"
+              class="w-full px-4 py-2 border-t border-stone-100 dark:border-zinc-800 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:bg-stone-50 dark:hover:bg-zinc-800 text-left">
+        <span data-ui--clamp-target="label"><%= t("member.tickets.show.show_all") %></span>
+      </button>
+    </div>
+  </div>
+<% else %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3.5" data-test="ticket-technical-analysis">
+    <%# Il suggerimento solo a chi il ticket può modificarlo davvero. %>
+    <%= render Ui::EmptyNoteComponent.new(text: t("member.tickets.show.technical_analysis_empty"),
+          hint: (t("member.tickets.show.technical_analysis_empty_hint") if can_manage),
+          test_id: "ticket-technical-analysis-empty") %>
+  </div>
+<% end %>

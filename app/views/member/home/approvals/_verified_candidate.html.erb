@@ -1,0 +1,42 @@
+<%# locals: (candidate:) %>
+<%# CYRA-616 — su cosa stai dicendo di sì, in una riga sola e in cima a tutto.
+    Prima, per vedere il codice, bisognava uscire dalla pagina, aprire il ticket e guardare l'elenco
+    delle proposte: ordinate dalla più recente, col nome del ramo, senza dire da nessuna parte quale
+    versione esatta fosse stata controllata. Con due proposte aperte sullo stesso ticket, quella in
+    cima non è per forza quella che il sistema ha guardato; e siccome un progetto può coprire due
+    archivi, un «#12» da solo non dice nemmeno dove.
+    Niente qui chiede niente a GitHub: è tutto ciò che è stato registrato al momento del controllo,
+    quindi non cambia sotto gli occhi mentre si decide e la pagina non rallenta se GitHub è lento. %>
+<% no_checks_configured = candidate.state_verified_none_configured? %>
+<div class="px-4 py-3 border-b <%= no_checks_configured ? "border-red-100 dark:border-red-500/20 bg-red-50/40 dark:bg-red-500/10" : "border-stone-100 dark:border-zinc-800" %>"
+     data-test="approvals-detail-candidate">
+  <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] <%= no_checks_configured ? "text-red-700 dark:text-red-300" : "text-emerald-700 dark:text-emerald-300" %>">
+    <%= t("member.approvals.candidate.title") %>
+  </p>
+  <p class="mt-1 flex items-center gap-1.5 flex-wrap font-mono text-[11.5px] text-zinc-700 dark:text-zinc-300">
+    <span data-test="approvals-detail-candidate-repo"><%= candidate.repository_full_name %></span>
+    <span class="text-gray-400 dark:text-zinc-500">·</span>
+    <%= link_to "##{candidate.number}", "https://github.com/#{candidate.repository_full_name}/pull/#{candidate.number}",
+          class: "text-indigo-700 dark:text-indigo-300 hover:underline", target: "_blank", rel: "noopener",
+          data: { test: "approvals-detail-candidate-number" } %>
+    <span class="text-gray-400 dark:text-zinc-500">·</span>
+    <%# Per intero, selezionabile e copiabile: un abbreviato non identifica niente, e chi vuole
+        controllare deve poterlo incollare da qualche altra parte. %>
+    <%= link_to candidate.head_sha,
+          "https://github.com/#{candidate.repository_full_name}/pull/#{candidate.number}/commits/#{candidate.head_sha}",
+          class: "select-all break-all text-indigo-700 dark:text-indigo-300 hover:underline", target: "_blank", rel: "noopener",
+          data: { test: "approvals-detail-candidate-sha" } %>
+    <span class="text-gray-400 dark:text-zinc-500">·</span>
+    <span data-test="approvals-detail-candidate-base"><%= t("member.approvals.candidate.onto", base: candidate.base_ref) %></span>
+  </p>
+  <p class="mt-1 text-[12px] <%= no_checks_configured ? "text-red-700 dark:text-red-300" : "text-gray-500 dark:text-zinc-400" %>"
+     data-test="approvals-detail-candidate-outcome">
+    <%# Due letture, non tre: «GitHub non risponde» qui non compare mai, ed è voluto — finché il
+        sistema non è riuscito a guardare, questa scheda non viene messa davanti a nessuno. %>
+    <% key = candidate.state_verified_passing? ? "passing" : candidate.state_verified_none_configured? ? "none_configured" : "unexpected" %>
+    <%= t("member.approvals.candidate.#{key}", count: candidate.checks_count) %>
+    <% if candidate.verified_at %>
+      · <%= t("member.approvals.candidate.verified_at", at: l(candidate.verified_at, format: :short)) %>
+    <% end %>
+  </p>
+</div>

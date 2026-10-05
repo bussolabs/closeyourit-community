@@ -1,0 +1,12 @@
+# Sito marketing pubblico: indicizzabile. Aree applicative fuori dall'indice.
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /cli/
+Disallow: /member/
+Disallow: /valhalla/
+Disallow: /account/
+Disallow: /login
+Disallow: /signup
+
+Sitemap: https://www.closeyour.it/sitemap.xml

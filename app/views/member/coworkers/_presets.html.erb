@@ -1,0 +1,21 @@
+<aside hidden data-coworker-presets-target="catalog" class="min-w-0 scroll-mt-20 border-t border-stone-200 bg-stone-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 md:col-span-2 md:border-t-0 md:border-l md:p-5" aria-labelledby="coworker-presets-title" data-test="coworkers-presets">
+  <div class="mb-4 space-y-1">
+    <h3 id="coworker-presets-title" class="text-[14px] font-semibold"><%= t("member.coworkers.presets.title") %></h3>
+    <p class="text-[13px] text-gray-600 dark:text-zinc-400"><%= t("member.coworkers.presets.intro") %></p>
+  </div>
+  <div class="space-y-3">
+    <% { researcher: "01", observer: "13", technical: "16", editor: "03" }.each do |key, mascot| %>
+      <% preset = t("member.coworkers.presets.items.#{key}") %>
+      <%= render Ui::ButtonComponent.new(variant: :secondary, class: "group relative w-full h-auto! items-start! justify-start! whitespace-normal! gap-3! p-3! text-left aria-pressed:border-indigo-600 aria-pressed:bg-indigo-50 dark:aria-pressed:border-indigo-400 dark:aria-pressed:bg-indigo-500/15", aria: { pressed: false }, test_id: "coworkers-preset-#{key}", data: { action: "coworker-presets#choose", coworker_presets_target: "option", preset: key, name: preset[:name], instructions: preset[:instructions], mascot: mascot }) do %>
+        <%= image_tag "/coworkers/mascots/#{mascot}.webp", alt: "", width: 48, height: 48, class: "size-12 shrink-0 object-contain" %>
+        <span class="min-w-0 flex-1">
+          <span class="block pr-4 text-[13px] font-semibold"><%= preset[:name] %></span>
+          <span class="mt-1 block text-[12px] font-normal text-gray-600 group-aria-pressed:text-indigo-800 dark:text-zinc-400 dark:group-aria-pressed:text-indigo-200"><%= preset[:description] %></span>
+          <span class="mt-2 hidden text-[12px] font-normal text-indigo-800 group-aria-pressed:block dark:text-indigo-200"><%= t("member.coworkers.presets.example", text: preset[:example]) %></span>
+        </span>
+        <span class="absolute top-3 right-3 hidden text-indigo-600 group-aria-pressed:block dark:text-indigo-300"><%= render Ui::IconComponent.new(name: "check", class: "size-4") %></span>
+      <% end %>
+    <% end %>
+  </div>
+  <%= render Ui::ButtonComponent.new(label: t("member.coworkers.presets.blank"), variant: :secondary, class: "mt-4 w-full min-h-11 aria-pressed:border-indigo-600 aria-pressed:bg-indigo-50 dark:aria-pressed:border-indigo-400 dark:aria-pressed:bg-indigo-500/15", aria: { pressed: true }, test_id: "coworkers-preset-blank", data: { action: "coworker-presets#choose", coworker_presets_target: "option", preset: "blank", name: "", instructions: "", mascot: "01" }) %>
+</aside>

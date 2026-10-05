@@ -1,0 +1,111 @@
+<%# Pannelli dettaglio di UNA occorrenza (colonna sinistra): stacktrace + request + breadcrumbs.
+    Toggle via Stimulus occurrence-select (data-panel-id). %>
+<div class="space-y-6 <%= "hidden" unless event == selected %>"
+     data-test="occurrence-panel"
+     data-occurrence-select-target="panel"
+     data-panel-id="<%= event.id %>">
+
+  <%# CYRA-986 — one panel, its tabs the first row (T6): the stack trace, then what else this
+      occurrence carries. Without JavaScript every tab stays readable, one under the other. %>
+  <% tabs = error_occurrence_tabs(event) %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-controller="tabs" data-test="occurrence-tabs">
+    <div class="flex flex-wrap gap-1.5 px-4 py-3 border-b border-stone-200 dark:border-zinc-800" role="tablist">
+      <% tabs.each_with_index do |tab, index| %>
+        <%= render Ui::ButtonComponent.new(label: tab[:label], variant: :ghost, size: :sm, role: "tab", test_id: "occurrence-tab-#{tab[:key]}",
+              class: "aria-selected:bg-indigo-50 dark:aria-selected:bg-indigo-500/15 aria-selected:text-indigo-600 dark:aria-selected:text-indigo-400",
+              data: { "tabs-target": "tab", action: "tabs#select", "tabs-index-param": index }) %>
+      <% end %>
+    </div>
+    <div data-tabs-target="panel" data-test="stacktrace">
+    <div class="flex items-center gap-2 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.occurrence_detail") %></h2>
+      <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= error_time_ago(event.occurred_at) %> · <%= event.environment.presence || "—" %></span>
+      <span class="ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.event") %> <%= event.event_id.truncate(12) %></span>
+    </div>
+    <div class="px-4 py-3">
+      <p class="font-mono text-[12.5px] text-red-600 dark:text-red-400"><%= group.title %></p>
+      <% presentation = Member::Monitoring::SymbolicationPresenter.new(event: event, result: @symbolications&.dig([event.project_id, event.id, event.created_at]), native_report: @native_reports&.dig(event.event_id)) %>
+      <% if presentation.native? %>
+        <%= render "member/monitoring/error_groups/native_symbolication", presentation: presentation, event: event %>
+      <% elsif presentation.applicable? %>
+        <%= render "member/monitoring/error_groups/symbolication", presentation: presentation, event: event %>
+      <% else %>
+        <%= render "member/monitoring/error_groups/received_stack", event: event %>
+      <% end %>
+    </div>
+  </div>
+    <% tabs.drop(1).each do |tab| %>
+      <div data-tabs-target="panel" data-test="occurrence-tab-panel-<%= tab[:key] %>">
+        <%= render "member/monitoring/error_groups/occurrence_tab_#{tab[:key]}", event: event %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# request context %>
+  <% request = event.payload["request"] %>
+  <% if request.is_a?(Hash) && request.any? %>
+    <details class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 group" data-test="error-request">
+      <summary class="flex items-center gap-2 px-4 py-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-400">
+        <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.detail_request") %></h2>
+        <%= render Ui::IconComponent.new(name: "chevron-down", class: "ml-auto text-[11px] text-gray-400 dark:text-zinc-500 transition-transform group-open:rotate-180") %>
+      </summary>
+      <div class="px-4 py-3 space-y-2.5 border-t border-stone-200 dark:border-zinc-800">
+        <p class="font-mono text-[12.5px]">
+          <% if request["method"].present? %><span class="inline-flex items-center rounded bg-stone-100 dark:bg-zinc-800 px-1.5 py-0.5 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300"><%= request["method"] %></span> <% end %>
+          <span class="text-gray-600 dark:text-zinc-400 break-all"><%= request["url"] %></span>
+        </p>
+        <% headers = request["headers"] %>
+        <% if headers.is_a?(Hash) && headers.any? %>
+          <div class="rounded-md border border-stone-200 dark:border-zinc-800 divide-y divide-stone-200 dark:divide-zinc-800">
+            <% headers.each do |name, value| %>
+              <div class="flex px-3 py-1.5"><span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 w-32 shrink-0"><%= name %></span><span class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 truncate"><%= error_value(value) %></span></div>
+            <% end %>
+          </div>
+        <% end %>
+        <%# params: body (request.data, scrubbato client+server) + query string %>
+        <% data = request["data"] %>
+        <% query = request["query_string"] %>
+        <% if (data.is_a?(Hash) && data.any?) || query.present? %>
+          <div data-test="error-params">
+            <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.detail_params") %></p>
+            <% if query.present? %>
+              <p class="mt-1 font-mono text-[11.5px] text-gray-600 dark:text-zinc-400 break-all">?<%= error_value(query) %></p>
+            <% end %>
+            <% if data.is_a?(Hash) && data.any? %>
+              <div class="mt-1 rounded-md border border-stone-200 dark:border-zinc-800 divide-y divide-stone-200 dark:divide-zinc-800">
+                <% data.each do |key, value| %>
+                  <div class="flex px-3 py-1.5"><span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 w-32 shrink-0"><%= key %></span><span class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 break-all"><%= error_value_deep(value) %></span></div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+        <%# CYRA-379: header/params oscurati (auth, cookie, password…) → spiega e linka una volta per sezione. %>
+        <% if any_scrubbed?([ headers, data, query ]) %><%= render "member/monitoring/error_groups/scrubbed_hint" %><% end %>
+      </div>
+    </details>
+  <% end %>
+
+  <%# breadcrumbs %>
+  <% crumbs = event.payload["breadcrumbs"] %>
+  <% crumbs = crumbs["values"] if crumbs.is_a?(Hash) %>
+  <% if crumbs.is_a?(Array) && crumbs.any? %>
+    <details class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 group" data-test="error-breadcrumbs">
+      <summary class="flex items-center gap-2 px-4 py-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-400">
+        <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.breadcrumbs") %></h2>
+        <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.breadcrumbs_count", count: crumbs.size) %></span>
+        <%= render Ui::IconComponent.new(name: "chevron-down", class: "ml-auto text-[11px] text-gray-400 dark:text-zinc-500 transition-transform group-open:rotate-180") %>
+      </summary>
+      <div class="divide-y divide-stone-200 dark:divide-zinc-800 border-t border-stone-200 dark:border-zinc-800">
+        <% crumbs.last(50).each do |crumb| %>
+          <div class="flex items-start gap-3 px-4 py-2">
+            <span class="mt-0.5 inline-flex items-center rounded bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 px-1.5 py-0.5 font-mono text-[10px] font-medium shrink-0 w-16 justify-center"><%= crumb["category"].presence || crumb["type"].presence || "—" %></span>
+            <p class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 min-w-0 break-all"><%= crumb["message"] %></p>
+            <% meta = crumb.dig("data", "duration_ms") || crumb.dig("data", "status") %>
+            <% if meta %><span class="ml-auto font-mono text-[10.5px] text-gray-500 dark:text-zinc-400 shrink-0"><%= meta %></span><% end %>
+          </div>
+        <% end %>
+      </div>
+    </details>
+  <% end %>
+</div>

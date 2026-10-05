@@ -1,0 +1,16 @@
+---
+it:
+  ideas:
+    errors:
+      project_not_found: Progetto non trovato
+      invalid: Impossibile salvare l'idea
+      comment_invalid: Impossibile salvare il commento
+      comment_too_long: "Il commento supera i %{count} caratteri (adesso sono %{actual}): accorcialo."
+      case_invalid: Impossibile salvare il caso d'uso
+      base_not_found: Idea di base non trovata
+      link_invalid: Impossibile collegare le idee
+      locked: L'idea non è più aperta
+      already_converted: L'idea è già stata convertita in ticket
+      invalid_transition: Transizione non consentita per questa idea
+      ai_unavailable: Assistente AI non disponibile al momento
+      ai_unreadable: L'assistente AI ha restituito una bozza illeggibile

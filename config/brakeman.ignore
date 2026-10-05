@@ -1,0 +1,133 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "bff421248702aa7c3182cf85de3f8f525c8c35a9f68afabde598bc498eb081d4",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/services/agents/workflows/backfill_host_attribution.rb",
+      "line": 37,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "connection.execute(\"UPDATE agents_workflows w\\nSET #{column_prefix}_by_host_id = a.host_id,\\n    #{column_prefix}_by_service_account_id = a.service_account_id\\nFROM (\\n  SELECT DISTINCT ON (workflow_id) workflow_id, host_id, service_account_id\\n  FROM agents_attempts\\n  WHERE phase = #{connection.quote(attempt_phase)}\\n  ORDER BY workflow_id, created_at DESC, id DESC\\n) a\\nWHERE a.workflow_id = w.id\\n\".squish)",
+      "note": "Falso positivo: column_prefix proviene SOLO dalle chiavi costanti di PHASE_COLUMNS (triage/planned/autopilot/closer_staging/closer_production) \u2014 nomi colonna hardcoded, mai input utente; attempt_phase e gia quotato via connection.quote. Backfill one-shot interno host-first (CYAU-83)."
+    },
+    {
+      "code": "Arel.sql(\"#{pressure_sql} DESC NULLS LAST\")",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "fingerprint": "43737020752d4993853b32f45417fe8b61047b45a0f63fc96c4c02e8918b0bdf",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/controllers/member/monitoring/servers_controller.rb",
+      "line": 42,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Member::Monitoring::ServersController",
+        "method": "index"
+      },
+      "user_input": "pressure_sql",
+      "warning_code": 0,
+      "warning_type": "SQL Injection",
+      "note": "Falso positivo (CYRA-456): #pressure_sql non tocca input dell'utente. I nomi colonna vengono da PRESSURE_COLUMNS, un vocabolario chiuso dichiarato nel controller, e le soglie viaggiano come bind di sanitize_sql_array. Brakeman segnala l'interpolazione senza poter seguire il metodo."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "4aed3cb3778a71fc03b339ad411b9e8e3743aaa0759c8d380736e28b6c54e758",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/services/agents/ticket_queues/candidates.rb",
+      "line": 56,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "project.tickets.joins(:status, :priority, :agent_workflow).left_joins(:agent_lease).where(:agent_eligibility => :allowed).where.not(:types_ticket_statuses => ({ :category => Types::TicketStatus.categories.fetch(\"done\") })).where(\"agents_leases.id IS NULL OR agents_leases.expires_at <= ?\", now).where.not(deferrals.arel.exists).where(\"(#{ready_phase_sql}) IS NOT NULL\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Agents::TicketQueues::Candidates",
+        "method": "relation"
+      },
+      "user_input": "ready_phase_sql",
+      "confidence": "Weak",
+      "cwe_id": [
+        89
+      ],
+      "note": "READY_EXECUTION_PHASE_SQL e una costante heredoc congelata in Agents::Workflow: e SQL scritto a mano nel repository, senza un solo valore che arrivi da fuori. Brakeman vede l interpolazione e non che cosa viene interpolato. Se un giorno quella costante diventasse un metodo con un argomento, questa riga andrebbe tolta e l avviso riletto."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "9dcf658f869882e5e8fe3686039f65de08003fe5a3bf908730ecfe479678f80f",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/services/agents/ticket_queues/candidates.rb",
+      "line": 80,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "Agents::TicketQueueDeferral.where(\"agents_ticket_queue_deferrals.ticket_id = ticketing_tickets.id\").where(:host_id => host.id).where(\"agents_ticket_queue_deferrals.execution_phase = (#{ready_phase_sql})\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Agents::TicketQueues::Candidates",
+        "method": "deferrals"
+      },
+      "user_input": "ready_phase_sql",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "note": "READY_EXECUTION_PHASE_SQL e una costante heredoc congelata in Agents::Workflow: e SQL scritto a mano nel repository, senza un solo valore che arrivi da fuori. Brakeman vede l interpolazione e non che cosa viene interpolato. Se un giorno quella costante diventasse un metodo con un argomento, questa riga andrebbe tolta e l avviso riletto."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "10c42fdb50039813a8d2bd151b2d7477a72f4efcb6b62fb8c954f194312bbde8",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/services/session_health/query.rb",
+      "line": 22,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "ApplicationRecord.connection.select_all(\"SELECT * FROM (#{summary_sql}) session_groups ORDER BY #{ordering(sort)} LIMIT #{Integer(limit)} OFFSET #{Integer(offset)}\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "SessionHealth::Query",
+        "method": "call"
+      },
+      "user_input": "summary_sql",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "note": "False positive: summary_sql is a UNION ALL of ActiveRecord relations rendered by to_sql. Current callers supply project-scoped relations; release/environment/time filters use hash or bound predicates. Projection/counter expressions are fixed literals. SORT_COLUMNS supplies the only ordering expression; limit/offset are Integer-coerced. No raw request text enters SQL structure. Re-review if callers accept raw SQL or summary_sql/ordering changes. See spec/services/sql_composition_boundaries_spec.rb and session-health visibility tests."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "f4d62b1d306681598e8cc9c0b8f3a13d8075cb762ffb2fd7ded600279bbcfdaf",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/services/session_health/query.rb",
+      "line": 20,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "ApplicationRecord.connection.select_value(\"SELECT COUNT(*) FROM (#{summary_sql}) session_groups\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "SessionHealth::Query",
+        "method": "call"
+      },
+      "user_input": "summary_sql",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "note": "False positive: summary_sql is a UNION ALL of ActiveRecord relations rendered by to_sql. Current callers supply project-scoped relations; release/environment/time filters use hash or bound predicates. Projection/counter expressions are fixed literals. SORT_COLUMNS supplies the only ordering expression; limit/offset are Integer-coerced. No raw request text enters SQL structure. Re-review if callers accept raw SQL or summary_sql/ordering changes. See spec/services/sql_composition_boundaries_spec.rb and session-health visibility tests."
+    }
+  ],
+  "brakeman_version": "8.0.6",
+  "updated": "2026-08-17 10:09:58 +0200"
+}

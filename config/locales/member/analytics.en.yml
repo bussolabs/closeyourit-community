@@ -1,0 +1,144 @@
+en:
+  member:
+    nav:
+      analytics: Site analytics
+    monitoring:
+      analytics:
+        title: Site analytics
+        empty: No web project yet
+        empty_body: Site analytics turns on for projects with a web platform. Add the web platform to a project, then send pageviews with the closeyourit-js SDK (trackPageviews).
+        no_data: No data in this range.
+        onboarding:
+          title: Connect your site
+          body: "No visit has arrived for %{project} yet. Paste this code into your site's pages and the stats start on their own."
+          snippet_label: Code to paste
+          copy: Copy
+          copied: Copied
+          key_placeholder: YOUR_PUBLIC_KEY
+          expected_domain: Expected domains
+          domain_unknown: No domain declared for this project.
+          token_label: Public key
+          token_link: Open the project codes
+          token_locked: Ask a project administrator for it.
+          waiting: Waiting for the first visit. This page refreshes on its own as soon as one arrives.
+          guide: Read the analytics guide
+        range_empty:
+          title: No visit in this range
+          last_visit: "The last visit was on %{at}."
+          go_to: "Go to the %{range} range"
+          panels_label: Panels with no data in this range
+        filter_project: Project
+        filter_environment: Environment
+        apply: Apply
+        chart_title: Pageviews
+        timeline_sub: "last %{range} · %{count} buckets"
+        timeline_window: "from %{from} to %{to}"
+        automated_toggle: Health checks
+        chart_peak: "peak %{count}"
+        chart_summary: "Pageview histogram for the last %{range}, peak %{count}."
+        # CYRA-570: no pageview in the period — the chart says so, instead of fifty-six bars at zero.
+        chart_empty: "No pageviews in this period."
+        tooltip_visitors:
+          one: "%{count} visitor"
+          other: "%{count} visitors"
+        pages_title: Top pages
+        referrers_title: Top referrers
+        channels_title: Channels
+        channels:
+          direct: Direct
+          organic_search: Organic search
+          organic_social: Organic social
+          ai_assistants: AI assistants
+          referral: Referral
+          email: Email
+          paid: Paid
+        entry_exit_title: Entry & exit pages
+        entry_pages: Entry pages
+        exit_pages: Exit pages
+        locations_title: Locations
+        comparison:
+          vs_previous: Changes are against the previous period of the same length.
+          flat: "="
+        realtime:
+          title: Now
+          window: last 30 min
+          loading: Loading…
+        filters:
+          active: Filters
+          referrer_host: Referrer
+          country_code: Country
+          device_type: Device
+          screen_class: Screen
+          browser_version: Browser version
+          os_version: OS version
+        devices_title: Browser & operating system
+        browsers: Browsers
+        oses: Operating systems
+        device_types_title: Device & screen
+        device_type: Device type
+        screen_size: Screen size
+        device_labels:
+          mobile: Mobile
+          tablet: Tablet
+          laptop: Laptop
+          desktop: Desktop
+        utm_title: Campaigns (UTM)
+        utm_source: Source
+        utm_medium: Medium
+        utm_campaign: Campaign
+        utm_term: Term
+        utm_content: Content
+        utm_empty: "No visits from a campaign link in this range."
+        col_pageviews: pageviews
+        col_visitors: visitors
+        stats:
+          pageviews: Pageviews
+          visitors: Visitors
+          realtime: Now
+          bounce: Bounce
+          duration: Avg. visit
+          views_per_visit: Views/visit
+        bucket:
+          no_data: no traffic
+          tooltip: "%{pageviews} pageviews · %{visitors} visitors"
+        goals:
+          title: Goals
+          help_title: "The visits or events that count as a goal reached."
+          new: New goal
+          manage: Manage goals
+          count: Goals
+          empty: No goals yet. Create one to track conversions.
+          created: Goal created
+          deleted: Goal deleted
+          delete: Delete
+          delete_dialog:
+            title: "Delete the %{name} goal?"
+            body: "Visits and events stay: only this goal's conversion count disappears. This cannot be undone."
+          save: Save goal
+          cancel: Cancel
+          col_goal: Goal
+          col_kind: Type
+          col_unique: Unique
+          col_total: Total
+          col_rate: Rate
+          kinds:
+            pageview_path: Pageview path
+            custom_event: Custom event
+          form:
+            display_name: Name
+            kind: Type
+            path_pattern: Path pattern
+            path_hint: For pageview-path goals — exact path or prefix with "*" (e.g. /blog/*).
+            event_name: Event name
+            event_hint: For custom-event goals — the name sent by captureEvent.
+        share:
+          title: Share & embed
+          create: Create link
+          active: Public link
+          revoke: Revoke
+          confirm_revoke: Revoke the public link?
+          published_by: "Published by %{name} on %{at}."
+          created: Public link created
+          revoked: Public link revoked
+          public_url: Public URL
+          embed: Embed code

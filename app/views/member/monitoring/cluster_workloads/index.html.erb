@@ -1,0 +1,37 @@
+<% content_for :title, t("member.clusters.tabs.workloads") %>
+<%= turbo_stream_from Realtime::Streams.cluster(@cluster) %>
+<%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+
+<div class="p-7 space-y-6" data-test="member-cluster-workloads">
+  <%= render "member/monitoring/clusters/header", cluster: @cluster, active_tab: :workloads, problems: @problems %>
+  <% filtering = params[:q].present? || params[:namespace].present? %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="cluster-workloads-table">
+    <%= render(Ui::TableToolbarComponent.new(framed: true, url: member_monitoring_cluster_workloads_path(@cluster), query: params[:q],
+          search_placeholder: t("member.clusters.workloads.search"), search_test_id: "cluster-workloads-search",
+          test_id: "cluster-workloads-toolbar")) do |toolbar| %>
+      <% toolbar.with_filter(key: "namespace", label: t("member.clusters.workloads.filter_namespace")) do %>
+        <div class="w-48"><%= render Ui::SelectComponent.new(name: "namespace", multiple: true, summary: true,
+              options: @namespaces.map { |namespace| [ namespace.name, namespace.name ] }, selected: params[:namespace],
+              placeholder: t("member.clusters.workloads.filter_namespace"), test_id: "cluster-workloads-filter-namespace") %></div>
+      <% end %>
+    <% end %>
+    <% if @workloads.empty? && filtering %>
+      <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_monitoring_cluster_workloads_path(@cluster),
+            test_id: "cluster-workloads-no-match", reset_test_id: "cluster-workloads-reset") %>
+    <% elsif @workloads.empty? %>
+      <%= render Ui::EmptyNoteComponent.new(text: t("member.clusters.workloads.empty"), inset: true, test_id: "cluster-workloads-empty") %>
+    <% else %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.clusters.tabs.workloads"))) do |table| %>
+        <% table.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.workloads.col_workload"), sort: "name") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.workloads.col_namespace"), sort: "namespace", classes: "w-56") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.workloads.col_status"), sort: "reason", classes: "w-56") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.workloads.col_copies"), sort: "copies", align: :right, classes: "w-28") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.workloads.col_restarts"), align: :right, classes: "w-32") %>
+        <% end %>
+        <%= render partial: "member/monitoring/cluster_workloads/row", collection: @workloads, as: :workload %>
+      <% end %>
+      <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "cluster-workloads-pagination") %>
+    <% end %>
+  </div>
+</div>

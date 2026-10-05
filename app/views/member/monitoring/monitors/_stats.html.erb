@@ -1,0 +1,22 @@
+<%# locals: up_count:, down_count:, total: — pill di conteggio nell'header lista (anche broadcast
+    via Turbo replace su #monitors_stats). Il render iniziale (controller) usa lo scope visibile/filtrato;
+    il broadcast (RecordCheck) ricalcola org-wide (lo stream è condiviso, niente contesto per-viewer). %>
+<%# Wrapper display:contents (CYRA-70): le chip partecipano direttamente al flex del counts slot
+    (mt-2.5 una sola volta dall'header via counts_options) — niente flex annidato = niente mt-5.
+    id + data-test restano per il broadcast Turbo replace su #monitors_stats. %>
+<%# CYRA-492 — i contatori su/giù sono link ai filtri dell'elenco: durante un guasto «fammi vedere solo
+    i giù» è la prima cosa, e sta già scritta lì. `active` accende il chip quando quel filtro è in vigore.
+    "Monitor" riporta all'elenco completo (nessun filtro). I link puntano sempre alla tab Monitor, così
+    sono utili anche dall'header condiviso della tab Incidents. %>
+<div id="monitors_stats" class="contents" data-test="monitors-stats">
+  <%= render Ui::StatLabelComponent.new(label: t("member.uptime.stat_up"), value: up_count, value_color: :emerald,
+        href: member_monitoring_monitors_path(status: "up"), active: uptime_status_chip_active?("up"), test_id: "stat-up") %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.uptime.stat_down"), value: down_count, value_color: :rose,
+        href: member_monitoring_monitors_path(status: "down"), active: uptime_status_chip_active?("down"), test_id: "stat-down") %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.uptime.stat_monitors"), value: total,
+        href: member_monitoring_monitors_path, test_id: "stat-monitors") %>
+  <%# incidents_open: solo nel render iniziale della index (il broadcast org-wide non lo passa). %>
+  <% if local_assigns[:incidents_open].to_i.positive? %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.uptime.stat_incidents_open"), value: incidents_open, value_color: :rose, test_id: "stat-incidents-open") %>
+  <% end %>
+</div>

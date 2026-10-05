@@ -1,0 +1,183 @@
+<% content_for :title, t("member.guides.errors.title") %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-errors">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "bug", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.errors.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.errors.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.errors.cta"), href: member_monitoring_error_groups_path, variant: :primary, size: :sm, icon: "bug", test_id: "member-guide-errors-cta") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.errors.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.errors.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.errors.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "signal", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.errors.what_levels") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "circle-dot", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.errors.what_status") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "ticket", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.errors.what_promote") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.errors.connect_title") %></h2></div>
+    <div class="px-4 py-4">
+      <%# CYRA-397 — il kit si sceglie qui: la guida valeva per un linguaggio solo, mentre l'ingest
+          riceve già da JS e Flutter. Sono link (non bottoni JS): l'indirizzo si condivide e la
+          pagina funziona senza JavaScript. Elencati SOLO i kit pubblicati, con la versione vera. %>
+      <div class="inline-flex items-center rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-100 dark:bg-zinc-800 p-1 mb-4" data-test="guide-errors-sdk-picker">
+        <% Member::GuidesController::SDKS.each do |sdk| %>
+          <% current = sdk == @sdk %>
+          <%= link_to member_guides_errors_path(sdk: sdk),
+                class: "inline-flex items-center gap-1.5 h-[28px] px-3 rounded text-[12px] font-medium #{current ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-stone-200 dark:border-zinc-800' : 'text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}",
+                aria: { current: ("page" if current) }, data: { test: "guide-errors-sdk-#{sdk}" } do %>
+            <%= t("member.guides.errors.sdk.#{sdk}.label") %>
+          <% end %>
+        <% end %>
+      </div>
+
+      <ol class="space-y-4">
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">1</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.errors.connect_step1") %></div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">2</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed mb-2"><%= t("member.guides.errors.sdk.#{@sdk}.step2") %></p>
+            <% case @sdk %>
+            <% when "ruby" %>
+              <pre class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto"><span class="text-gray-500 dark:text-zinc-400"># Gemfile</span>
+gem <span class="text-emerald-700 dark:text-emerald-300">"closeyourit-ruby"</span></pre>
+              <pre class="mt-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto"><span class="text-gray-500 dark:text-zinc-400"># config/initializers/closeyourit.rb</span>
+CloseYourIt.init <span class="text-indigo-700 dark:text-indigo-300">do</span> |c|
+  c.endpoint_url = ENV[<span class="text-emerald-700 dark:text-emerald-300">"CLOSEYOURIT_ENDPOINT_URL"</span>]
+  c.token        = ENV[<span class="text-emerald-700 dark:text-emerald-300">"CLOSEYOURIT_TOKEN"</span>]
+  c.project_id   = ENV[<span class="text-emerald-700 dark:text-emerald-300">"CLOSEYOURIT_PROJECT_ID"</span>]
+<span class="text-indigo-700 dark:text-indigo-300">end</span></pre>
+            <% when "js" %>
+              <pre class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto"><span class="text-gray-500 dark:text-zinc-400">// terminale</span>
+npm install <span class="text-emerald-700 dark:text-emerald-300">@bussolabs/closeyourit-js</span></pre>
+              <pre class="mt-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto"><span class="text-gray-500 dark:text-zinc-400">// il prima possibile all'avvio dell'app</span>
+<span class="text-indigo-700 dark:text-indigo-300">import</span> * <span class="text-indigo-700 dark:text-indigo-300">as</span> CloseYourIt <span class="text-indigo-700 dark:text-indigo-300">from</span> <span class="text-emerald-700 dark:text-emerald-300">"@bussolabs/closeyourit-js"</span>
+
+CloseYourIt.init({
+  endpointUrl: <span class="text-emerald-700 dark:text-emerald-300">"<%= request.base_url %>"</span>,
+  publicKey: <span class="text-emerald-700 dark:text-emerald-300">"&lt;chiave pubblica del token&gt;"</span>,
+  projectId: <span class="text-emerald-700 dark:text-emerald-300">"&lt;Project ID&gt;"</span>,
+  environment: <span class="text-emerald-700 dark:text-emerald-300">"production"</span>,
+  release: <span class="text-emerald-700 dark:text-emerald-300">"web@1.4.2"</span>,
+})</pre>
+            <% when "dart" %>
+              <pre class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto"><span class="text-gray-500 dark:text-zinc-400"># terminale</span>
+flutter pub add <span class="text-emerald-700 dark:text-emerald-300">closeyourit</span></pre>
+              <pre class="mt-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto"><span class="text-gray-500 dark:text-zinc-400">// main.dart</span>
+<span class="text-indigo-700 dark:text-indigo-300">await</span> CloseYourIt.init(
+  CloseYourItOptions(
+    endpointUrl: <span class="text-emerald-700 dark:text-emerald-300">"<%= request.base_url %>"</span>,
+    publicKey: <span class="text-emerald-700 dark:text-emerald-300">"&lt;chiave pubblica del token&gt;"</span>,
+    projectId: <span class="text-emerald-700 dark:text-emerald-300">"&lt;Project ID&gt;"</span>,
+    environment: <span class="text-emerald-700 dark:text-emerald-300">"production"</span>,
+  ),
+  appRunner: () => runApp(<span class="text-indigo-700 dark:text-indigo-300">const</span> MyApp()),
+);</pre>
+            <% end %>
+            <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="guide-errors-sdk-version"><%= t("member.guides.errors.sdk.#{@sdk}.published") %></p>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">3</span>
+          <%# Il percorso di menu è composto dalle STESSE etichette della sidebar: la guida non può
+              più indicare una voce che nell'interfaccia non esiste. %>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed" data-test="guide-errors-step3"><%= t("member.guides.errors.connect_step3", space: t("member.nav.section_observability"), page: t("member.nav.errors")) %></div>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <%# CYRA-380: come popolare la colonna «Utenti» (chi è stato colpito). Senza contesto utente sugli
+      eventi la colonna resta «non tracciato»; qui si spiega come inviarlo e come CloseYourIt lo protegge. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-errors-affected">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.errors.affected_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.errors.affected_intro") %></p>
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.errors.affected_how") %></p>
+      <pre class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto"><span class="text-gray-500 dark:text-zinc-400"># Ruby / server — prima che l'errore venga catturato</span>
+CloseYourIt.set_user(id: current_user.id)</pre>
+      <pre class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto"><span class="text-gray-500 dark:text-zinc-400">// Browser (closeyourit-js)</span>
+CloseYourIt.setUser({ id: user.id })</pre>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "users", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.errors.affected_count") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "shield-user", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.errors.affected_privacy") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <%# CYRA-379: spiega i valori mostrati come «Nascosto» sulla pagina dell'errore e dove si configura lo scrubbing. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-errors-privacy">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.errors.privacy_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.errors.privacy_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "lock", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.errors.privacy_hidden") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "folder-tree", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.errors.privacy_paths") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "sliders", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.errors.privacy_where") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <%# Source map uploads must match the error's build identity. CYRA-955 %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-errors-sourcemaps">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.errors.sourcemaps_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.errors.sourcemaps_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "tag", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.errors.sourcemaps_release") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "file-code", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.errors.sourcemaps_keep") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "info", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.errors.sourcemaps_limit") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <%# CYRA-397 — le sessioni registrate esistono ma vanno accese: chi non sa che ci sono non le cerca. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-errors-replays">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.errors.replays_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.errors.replays_intro") %></p>
+      <%# CYRA-648 — il passo del codice mancava anche qui: chi leggeva questa scorciatoia restava con
+          l'idea che bastasse l'interruttore, ed è lo stesso equivoco che non lascia tracce. Il codice
+          per intero sta nella guida dedicata, linkata sotto: qui basta dire che serve. %>
+      <ol class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400 list-decimal list-inside">
+        <li><%= t("member.guides.errors.replays_step1") %></li>
+        <li><%= t("member.guides.errors.replays_step2") %></li>
+        <li><%= t("member.guides.errors.replays_step3") %></li>
+        <li><%= t("member.guides.errors.replays_step4") %></li>
+      </ol>
+      <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.errors.replays_note") %></p>
+      <div>
+        <%= render Ui::ButtonComponent.new(label: t("member.guides.errors.replays_guide"), href: member_guides_replays_path, variant: :secondary_muted, size: :sm, icon: "film", test_id: "member-guide-errors-replays-guide") %>
+      </div>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.errors.triage_title") %></h2></div>
+    <div class="px-4 py-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[12.5px]">
+        <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5"><span class="font-medium text-emerald-700 dark:text-emerald-300"><%= t("member.guides.errors.triage_resolve") %></span><span class="block text-gray-500 dark:text-zinc-400 mt-0.5"><%= t("member.guides.errors.triage_resolve_desc") %></span></div>
+        <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5"><span class="font-medium text-gray-600 dark:text-zinc-400"><%= t("member.guides.errors.triage_ignore") %></span><span class="block text-gray-500 dark:text-zinc-400 mt-0.5"><%= t("member.guides.errors.triage_ignore_desc") %></span></div>
+        <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5"><span class="font-medium text-amber-700 dark:text-amber-300"><%= t("member.guides.errors.triage_reopen") %></span><span class="block text-gray-500 dark:text-zinc-400 mt-0.5"><%= t("member.guides.errors.triage_reopen_desc") %></span></div>
+        <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5"><span class="font-medium text-indigo-700 dark:text-indigo-300"><%= t("member.guides.errors.triage_promote") %></span><span class="block text-gray-500 dark:text-zinc-400 mt-0.5"><%= t("member.guides.errors.triage_promote_desc") %></span></div>
+      </div>
+      <p class="mt-3 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.errors.triage_note", triage: authorization_permission_label("errors.triage"), promote: authorization_permission_label("errors.promote")) %></p>
+    </div>
+  </div>
+  <%= render "member/guides/errors_reconstruction" %>
+</div>

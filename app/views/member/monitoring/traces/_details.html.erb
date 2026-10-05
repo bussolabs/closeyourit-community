@@ -1,0 +1,23 @@
+<%= render Ui::DetailsComponent.new(title: t("member.traces.observed")) do |details| %>
+  <% details.with_row(label: t("member.traces.trace_id")) do %><span class="font-mono break-all"><%= @trace.trace_id %></span><% end %>
+  <% details.with_row(label: t("member.traces.duration")) do %><%= trace_duration(@detail.extent.first && @detail.extent.last.to_i - @detail.extent.first.to_i) %><% end %>
+  <% details.with_row(label: t("member.traces.received")) do %><time datetime="<%= @trace.last_received_at.iso8601(6) %>"><%= l(@trace.last_received_at, format: :long) %></time><% end %>
+<% end %>
+<% if @selected %>
+  <%= render Ui::DetailsComponent.new(title: t("member.traces.span_details"), test_id: "trace-selected-span") do |details| %>
+    <% {operation: @selected.name.truncate(256), service: trace_identity(@selected, :service_name).truncate(256), environment: trace_identity(@selected, :environment).truncate(256), version: trace_identity(@selected, :service_version).truncate(256), span_id: @selected.span_id, parent_id: @selected.parent_span_id || t("member.traces.parents.root")}.each do |key, value| %>
+      <% details.with_row(label: t("member.traces.#{key}")) do %><span class="break-all"><%= value %></span><% end %>
+    <% end %>
+    <% details.with_row(label: t("member.traces.status")) do %><%= trace_status({0=>"unset", 1=>"ok", 2=>"error"}.fetch(@selected.status_code, "unknown")) %><% end %>
+    <% details.with_row(label: t("member.traces.duration")) do %><%= trace_duration(@selected.end_time_unix_nano.to_i - @selected.start_time_unix_nano.to_i) %><% end %>
+  <% end %>
+  <%= render Ui::SectionComponent.new(title: t("member.traces.evidence"), collapsible: true, collapsed: true) do %>
+    <p class="text-xs text-gray-500 dark:text-zinc-400"><%= t("member.traces.exact_times") %></p>
+    <p class="font-mono text-xs break-all"><%= @selected.start_time_unix_nano.to_i %> → <%= @selected.end_time_unix_nano.to_i %></p>
+    <% if (evidence = trace_evidence(@selected)) %>
+      <pre class="mt-3 whitespace-pre-wrap break-all text-[11px] font-mono" data-test="trace-evidence"><%= evidence %></pre>
+    <% else %>
+      <p class="mt-3 text-xs text-gray-500 dark:text-zinc-400" data-test="trace-evidence-budget"><%= t("member.traces.evidence_budget") %></p>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,7 @@
+<div class="w-64 space-y-0.5 p-3 bg-white dark:bg-zinc-900">
+  <%= render Ui::NavLinkComponent.new(label: "Home", path: "#", icon: "house") %>
+  <%= render Ui::NavLinkComponent.new(label: "Il mio lavoro", path: "#", icon: "user-check", active: true) %>
+  <%= render Ui::NavLinkComponent.new(label: "Approvazioni", path: "#", icon: "circle-check") do %>
+    <%= render "shared/notification_counter", count: 3, label: "3" %>
+  <% end %>
+</div>

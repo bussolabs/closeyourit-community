@@ -1,0 +1,30 @@
+<% content_for :title, t("member.clusters.tabs.nodes") %>
+<%= turbo_stream_from Realtime::Streams.cluster(@cluster) %>
+<%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+
+<div class="p-7 space-y-6" data-test="member-cluster-nodes">
+  <%= render "member/monitoring/clusters/header", cluster: @cluster, active_tab: :nodes, problems: @problems %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="cluster-nodes-table">
+    <%= render(Ui::TableToolbarComponent.new(framed: true, url: member_monitoring_cluster_nodes_path(@cluster), query: params[:q],
+          search_placeholder: t("member.clusters.nodes.search"), search_test_id: "cluster-nodes-search", test_id: "cluster-nodes-toolbar")) %>
+    <% if @nodes.empty? && params[:q].present? %>
+      <%= render Ui::NoResultsComponent.new(query: params[:q], reset_href: member_monitoring_cluster_nodes_path(@cluster),
+            test_id: "cluster-nodes-no-match", reset_test_id: "cluster-nodes-reset") %>
+    <% elsif @nodes.empty? %>
+      <%= render Ui::EmptyNoteComponent.new(text: t("member.clusters.nodes.empty"), inset: true, test_id: "cluster-nodes-empty") %>
+    <% else %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.clusters.tabs.nodes"))) do |table| %>
+        <% table.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.nodes.col_node"), sort: "name") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.nodes.col_status"), sort: "status", classes: "w-56") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.nodes.col_cpu"), sort: "cpu", initial: :desc, classes: "w-40") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.nodes.col_memory"), sort: "memory", initial: :desc, classes: "w-40") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.nodes.col_pods"), sort: "pods", initial: :desc, align: :right, classes: "w-32") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.nodes.col_age"), sort: "age", classes: "w-28") %>
+        <% end %>
+        <%= render partial: "member/monitoring/cluster_nodes/row", collection: @nodes, as: :node %>
+      <% end %>
+      <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "cluster-nodes-pagination") %>
+    <% end %>
+  </div>
+</div>

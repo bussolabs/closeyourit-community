@@ -1,0 +1,147 @@
+{
+  "it": {
+    "member": {
+      "coworkers": {
+        "back": "Torna a CloseYourIt",
+        "subtitle": "I tuoi agenti persistenti",
+        "puckies": "Puckies",
+        "new_puck": "Nuovo Puck",
+        "empty_puckies_title": "Crea il tuo primo Puck",
+        "empty_puckies_body": "Scegli un nome e le istruzioni per il tuo assistente, ad esempio cercare fonti per un progetto.",
+        "edit_puck": "Modifica %{name}",
+        "save_puck": "Salva Puck",
+        "edit_pending": "La modifica del Puck non è ancora disponibile. Puoi già cambiare la mascotte; per salvare le note usa Memoria.",
+        "activity": {
+          "idle": "Pronto ad aiutarti",
+          "queued": "In attesa di iniziare",
+          "running": "Al lavoro…",
+          "completed": "Risposta pronta",
+          "failed": "Lavoro non riuscito",
+          "stopped": "Lavoro fermato",
+          "interrupted": "Lavoro interrotto"
+        },
+        "local": "Esperimento locale · Puckies personali in questa organizzazione",
+        "invalid": "Controlla i campi obbligatori e la lunghezza del testo, poi riprova.",
+        "conflict": "La memoria è cambiata in un’altra finestra. Ricaricala prima di salvare.",
+        "busy": "La corsia è occupata. Attendi la fine del lavoro oppure fermalo.",
+        "memory": "Memoria",
+        "tasks": "Incarichi",
+        "empty_chat": "Scrivi il primo messaggio a questo Puck.",
+        "message": "Messaggio al tuo Puck",
+        "message_placeholder": "Scrivi cosa vorresti fare… (Invio invia, Maiusc+Invio va a capo)",
+        "send": "Invia",
+        "create": "Crea Puck",
+        "name": "Nome",
+        "instructions": "Istruzioni",
+        "close": "Chiudi",
+        "save": "Salva memoria",
+        "memory_hint": "Le note salvate valgono per i nuovi lavori. Quelli attivi mantengono il contesto iniziale.",
+        "new_task": "Avvia incarico",
+        "task": "Che cosa deve ricercare il Puck?",
+        "task_hint": "Solo ricerca sul web pubblico. Modifiche su staging e macchine virtuali non ancora disponibili. Il lavoro continua quando esci dalla pagina.",
+        "stop": "Ferma",
+        "typing": "... sto scrivendo ...",
+        "run_failed": "Il lavoro non si è concluso correttamente. Controlla l’eventuale risposta parziale prima di avviarne un altro.",
+        "status": {
+          "queued": "In attesa",
+          "running": "Al lavoro",
+          "completed": "Risposta pronta",
+          "failed": "Non riuscito",
+          "stopped": "Fermato",
+          "interrupted": "Interrotto"
+        },
+        "keyboard": "Invio per inviare · Maiusc+Invio per andare a capo",
+        "you": "Tu",
+        "request": "Richiesta",
+        "result": "Risultato",
+        "proposal_title": "Proposta di compito",
+        "proposal_objective": "Obiettivo",
+        "proposal_activities": "Attività",
+        "proposal_limits": "Limiti",
+        "proposal_hint": "La ricerca parte solo con il pulsante. Per modificare la proposta, scrivi in chat: quella precedente non sarà più avviabile.",
+        "proposal_budget": "Solo fonti pubbliche · fino a 3 minuti · budget modello 1,50 USD per avvio (stima, servizi di ricerca esclusi).",
+        "start_proposal": "Avvia compito",
+        "proposal_started": "Compito avviato da te. Avanzamento e risultato restano qui e in Incarichi.",
+        "proposal_expired": "Proposta non più avviabile. Chiedi al Puck una nuova proposta in chat.",
+        "presets": {
+          "mascot_hint": "La scelta della mascotte vale solo in questo browser.",
+          "title": "Preset pronti",
+          "intro": "Scegli una card per compilare il form. Tutto resta modificabile.",
+          "blank": "Crea da zero",
+          "customize": "Personalizza il tuo Puck",
+          "hint": "Queste istruzioni definiscono come ti aiuterà. Puoi adattarle prima di crearlo.",
+          "example": "Prova a chiedere: %{text}",
+          "items": {
+            "researcher": {
+              "name": "Ricercatore",
+              "description": "Approfondisce un argomento e raccoglie fonti affidabili.",
+              "example": "Quali sono i pro e i contro della settimana lavorativa di quattro giorni?",
+              "instructions": "Sei il mio Ricercatore: curioso, metodico e chiaro. Aiutami ad approfondire un argomento, chiarendo obiettivo e livello di dettaglio quando servono.\n\nPer le ricerche usa fonti pubbliche, preferisci quelle primarie e cita i link e le date rilevanti. Distingui fatti verificati, interpretazioni e punti incerti; segnala se le fonti sono in disaccordo. Non inventare dati o citazioni.\n\nConsegna prima una sintesi utile, poi le evidenze e le domande ancora aperte. Proponi un compito di ricerca quando necessario e attendi la mia approvazione manuale prima di avviarlo."
+            },
+            "observer": {
+              "name": "Osservatore",
+              "description": "Confronta concorrenti, prodotti e novità di settore.",
+              "example": "Confronta tre servizi di newsletter per un piccolo team.",
+              "instructions": "Sei il mio Osservatore: attento ai dettagli, pragmatico e imparziale. Aiutami a confrontare concorrenti, prodotti o novità di un settore. Chiedi quali alternative, criteri, mercato e periodo contano quando non sono chiari.\n\nUsa informazioni pubbliche e fonti ufficiali per prezzi e funzionalità; cita i link e la data della verifica. Confronta le alternative con gli stessi criteri, evidenzia differenze e informazioni mancanti, senza inventare numeri.\n\nConcludi con opportunità, limiti e aspetti da approfondire. Non promettere monitoraggio periodico o notifiche automatiche. Proponi la ricerca e attendi la mia approvazione manuale prima di avviarla."
+            },
+            "technical": {
+              "name": "Esploratore tecnico",
+              "description": "Confronta tecnologie e chiarisce la documentazione.",
+              "example": "Quando scegliere PostgreSQL e quando SQLite per una piccola app?",
+              "instructions": "Sei il mio Esploratore tecnico: preciso, curioso e concreto. Aiutami a capire e confrontare tecnologie partendo dal problema, dallo stack e dai vincoli che ti indico.\n\nUsa documentazione ufficiale, specificando versioni e date quando rilevanti. Cita le fonti e confronta compatibilità, complessità, manutenzione e compromessi. Distingui gli esempi illustrativi dalle soluzioni effettivamente verificate. Non affermare di aver eseguito codice o controllato repository a cui non hai accesso.\n\nConsegna una raccomandazione motivata e i controlli necessari per valutarla. Proponi eventuali ricerche sul web pubblico e attendi la mia approvazione manuale prima di avviarle."
+            },
+            "editor": {
+              "name": "Editor",
+              "description": "Trasforma un tema in spunti e scalette per i tuoi contenuti.",
+              "example": "Prepara una scaletta per spiegare i backup a chi gestisce una piccola impresa.",
+              "instructions": "Sei il mio Editor: creativo, essenziale e attento a chi legge. Aiutami a trasformare un tema o i materiali che ti fornisco in spunti, titoli e scalette. Chiarisci pubblico, obiettivo, canale e tono quando servono.\n\nProponi angolazioni distinte e una struttura con un messaggio centrale chiaro. Rispetta la mia voce; evita formule generiche, promesse non dimostrate e fatti inventati. Segnala le affermazioni da verificare e cita le fonti quando fai ricerca.\n\nPrepara contenuti da rivedere insieme, senza pubblicarli o inviarli. Se servono approfondimenti sul web pubblico, proponi un compito e attendi la mia approvazione manuale prima di avviarlo."
+            }
+          }
+        },
+        "mascot": {
+          "choose": "Scegli la mascotte",
+          "change": "Cambia mascotte di %{name}",
+          "hint": "Si applica subito, solo in questo browser. Puoi cambiarla quando vuoi.",
+          "saved": "Mascotte salvata in questo browser.",
+          "unavailable": "Mascotte cambiata per questa pagina. Il browser non consente di salvarla: abilita lo spazio di archiviazione e scegli di nuovo.",
+          "names": {
+            "01": "Nuvola azzurra",
+            "02": "Germoglio menta",
+            "03": "Stellina lilla",
+            "04": "Fagiolino albicocca",
+            "05": "Goccia vaniglia",
+            "06": "Cuoricino rosa",
+            "07": "Bottoncino turchese",
+            "08": "Funghetto lavanda",
+            "09": "Cactus pistacchio",
+            "10": "Lunetta pesca",
+            "11": "Sole miele",
+            "12": "Fragolina corallo",
+            "13": "Fantasmino panna",
+            "14": "Balenina celeste",
+            "15": "Apina vaniglia",
+            "16": "Alieno lilla",
+            "17": "Lumachina pesca",
+            "18": "Pinguino pervinca",
+            "19": "Ghiandina caramello",
+            "20": "Margheritina burro"
+          }
+        },
+        "chat": "Chat",
+        "panels": "Pannelli del Puck",
+        "load_older": "Mostra i precedenti",
+        "loading": "Carico…",
+        "today": "Oggi",
+        "yesterday": "Ieri",
+        "copy": "Copia",
+        "copied": "Copiato",
+        "copy_failed": "Non copiato",
+        "retry": "Riprova",
+        "latest": "Ultimo messaggio",
+        "open_new_task": "Nuovo incarico",
+        "working": "Sta lavorando",
+        "cancel": "Annulla"
+      }
+    }
+  }
+}

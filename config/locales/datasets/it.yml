@@ -1,0 +1,20 @@
+---
+it:
+  datasets:
+    errors:
+      invalid: Impossibile salvare il dataset. Controlla i campi evidenziati.
+      project_not_found: Progetto non trovato o non gestibile.
+      no_input: Aggiungi almeno una colonna Input (es. una foto) — i dati che l'AI legge.
+      no_target: Aggiungi almeno una colonna Target — un attributo che l'AI deve predire.
+      row_invalid: Impossibile salvare la riga. Controlla i campi obbligatori e le foto.
+      ai_unreadable: L'AI ha restituito una risposta illeggibile.
+      not_enough: Aggiungi altre righe etichettate prima di allenare.
+      no_training: Allena il dataset prima di predire.
+      already_running: "Un addestramento su questo insieme di dati è già in corso: attendi che finisca prima di avviarne un altro."
+      interrupted: "L'addestramento si è fermato prima di finire e non riprenderà da solo. Puoi avviarne uno nuovo quando vuoi."
+      internal: L'operazione è fallita in modo inatteso.
+    ai:
+      input_heading: "Dati in ingresso:"
+      predict_tool_desc: Restituisci il valore predetto per ogni attributo target.
+      build_tool_desc: Registra il system prompt ottimizzato.
+      build_prompt_field: Il system prompt ottimizzato.

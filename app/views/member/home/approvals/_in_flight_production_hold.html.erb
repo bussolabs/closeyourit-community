@@ -1,0 +1,18 @@
+<%# locals: row — CYRA-871 — perché il rilascio aspetta la produzione e, a chi lo decide, «Ferma».
+    L'elenco è dei soli progetti di cui si è CTO effettivo, quindi il tasto lo vede chi può premerlo. %>
+<div class="mt-1 flex flex-wrap items-center gap-2" data-test="approvals-in-flight-production-<%= row.workflow.id %>">
+  <% if row.production_hold %>
+    <p class="text-[11.5px] text-gray-500 dark:text-zinc-400">
+      <% if row.production_hold[:reason] == "staging_soak" %>
+        <%= t("member.approvals.in_flight.production_soak", at: l(row.production_hold[:until], format: :short)) %>
+      <% else %>
+        <%= t("member.approvals.in_flight.production_staging_errors") %>
+      <% end %>
+    </p>
+  <% end %>
+  <%= render Ui::ButtonComponent.new(label: t("member.approvals.in_flight.production_hold"),
+        href: member_ticket_automation_production_hold_path(row.ticket), method: :post,
+        variant: :danger_outline, size: :sm, icon: "hand",
+        confirm: t("member.approvals.in_flight.production_hold_confirm"),
+        test_id: "approvals-in-flight-production-hold") %>
+</div>

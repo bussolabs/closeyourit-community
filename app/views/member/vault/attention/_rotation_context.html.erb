@@ -1,0 +1,59 @@
+<%# locals: rotation, uncovered (the preview, sorted by the controller) %>
+<%# Il contesto della rotazione, ereditato dalla pagina «Rotazione» (CYRA-407): quanti segreti una
+    regola li copre davvero, e quali non ne hanno nessuna. Non sono cose da sistemare adesso — sono
+    migliaia e nessuna scade oggi — ma senza di loro «Scaduti: 0» sarebbe un falso verde. %>
+<section id="vault-attention-rotation" class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="vault-attention-rotation">
+  <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-stone-100 dark:border-zinc-800">
+    <div>
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.vault_rotation.title") %></h2>
+      <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.vault_rotation.list_body") %></p>
+    </div>
+    <%= render Ui::StatLabelComponent.new(label: t("member.vault_rotation.stat_coverage"),
+          value: "#{rotation.covered_count} / #{rotation.total_count}",
+          value_color: rotation.coverage_tone, test_id: "vault-attention-rotation-coverage") %>
+  </div>
+
+  <% if rotation.total_count.zero? %>
+    <%# Vault vuoto: nessun segreto fra i progetti visibili. Stato neutro, mai un finto "tutto a posto". %>
+    <p class="px-4 py-4 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="vault-attention-rotation-empty"><%= t("member.vault_rotation.no_secrets_body") %></p>
+  <% elsif !rotation.any_policy? %>
+    <%# Zero regole configurate: la funzione non è attiva, e dirlo è diverso dal dire "niente da ruotare". %>
+    <div class="px-4 py-4" data-test="vault-attention-rotation-onboarding">
+      <p class="text-[12.5px] text-gray-600 dark:text-zinc-400 max-w-2xl"><%= t("member.vault_rotation.onboarding_body") %></p>
+      <p class="mt-1.5 text-[12.5px] font-medium text-gray-700 dark:text-zinc-300"><%= t("member.vault_rotation.onboarding_how") %></p>
+    </div>
+  <% end %>
+
+  <% if rotation.uncovered_count.positive? %>
+    <div class="px-4 py-3 border-t border-stone-100 dark:border-zinc-800" data-test="vault-attention-uncovered">
+      <h3 class="font-display text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.vault_rotation.uncovered_title") %></h3>
+      <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.vault_rotation.uncovered_body") %></p>
+    </div>
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("member.vault_rotation.uncovered_title"))) do |t| %>
+      <% t.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_rotation.col_variable"), sort: "variable", param: :uncovered_sort) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_rotation.col_project"), sort: "project", param: :uncovered_sort, classes: "w-56") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_rotation.col_environment"), sort: "environment", param: :uncovered_sort, classes: "w-40") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_rotation.col_age"), sort: "age", param: :uncovered_sort, classes: "w-40") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_rotation.col_action"), label_hidden: true) %>
+      <% end %>
+      <% uncovered.each do |variable| %>
+        <%= render Ui::TableComponent::RowComponent.new(test_id: "vault-attention-uncovered-row") do %>
+          <%= render(Ui::TableComponent::CellComponent.new(header: true, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { variable.name } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.vault_rotation.col_project"), class: "text-[12.5px]")) { link_to variable.project.name, member_project_secrets_path(variable.project), class: "text-zinc-900 dark:text-zinc-100 font-medium hover:text-indigo-600 dark:hover:text-indigo-400" } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.vault_rotation.col_environment"), class: "text-[12.5px] text-gray-600 dark:text-zinc-400")) { variable.environment.label } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.vault_rotation.col_age"), class: "text-[12.5px] text-gray-500 dark:text-zinc-400")) { variable.rotated_at ? t("member.secrets.updated_ago", time: time_ago_in_words(variable.rotated_at)) : t("member.vault_rotation.age_unknown") } %>
+          <%# F170 — F5: the action of the row, on the right: the secret's own page, where the rule is set. %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.vault_rotation.col_action"), align: :right)) { link_to t("member.vault_rotation.set_rule"), member_project_secrets_path(variable.project, q: variable.name), class: "text-[12.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap", data: { test: "vault-attention-set-rule" } } %>
+        <% end %>
+      <% end %>
+      <% if rotation.uncovered_overflow_count.positive? %>
+        <% t.with_foot do %>
+          <tr data-test="vault-attention-uncovered-more">
+            <td colspan="5" class="px-3 py-2 text-center text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.vault_rotation.uncovered_more", count: rotation.uncovered_overflow_count) %></td>
+          </tr>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</section>

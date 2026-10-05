@@ -1,0 +1,20 @@
+<%# CYRA-908: the microphone inside a composer field, the waves strip that takes the field's place
+    while it listens, and the cross that cancels. Rendered inside the field's relative wrapper. %>
+<%= render Ui::ButtonComponent.new(label: t("member.assistant.voice.open"), icon: "mic", icon_only: true,
+                                   variant: :ghost, size: :sm, test_id: "assistant-mic", hidden: true,
+                                   class: "absolute bottom-[5px] right-[5px]",
+                                   data: { "ui--voice-inline-target": "mic", action: "ui--voice-inline#start" }) %>
+<div hidden data-ui--voice-inline-target="waves" data-test="assistant-waves"
+     class="relative h-[38px] overflow-hidden rounded-lg border border-indigo-300 dark:border-indigo-500/50 bg-white dark:bg-zinc-900">
+  <%# A canvas does not stretch between left and right, so a box sets the width and it fills
+      the box. The waves stop before the timer, which sits just left of the cross. %>
+  <div class="absolute inset-y-0 left-2 right-[76px]">
+    <canvas data-ui--voice-inline-target="canvas" class="block h-full w-full"></canvas>
+  </div>
+  <p data-ui--voice-inline-target="status" aria-live="polite"
+     class="absolute right-10 top-1/2 -translate-y-1/2 rounded bg-white/85 dark:bg-zinc-900/85 px-1 text-[11.5px] tabular-nums text-gray-600 dark:text-zinc-400 data-[silent]:font-semibold data-[silent]:text-amber-700 dark:data-[silent]:text-amber-300"></p>
+</div>
+<%= render Ui::ButtonComponent.new(label: t("member.assistant.voice.cancel"), icon: "x", icon_only: true,
+                                   variant: :ghost, size: :sm, test_id: "assistant-mic-cancel", hidden: true,
+                                   class: "absolute bottom-[5px] right-[5px]",
+                                   data: { "ui--voice-inline-target": "cancel", action: "ui--voice-inline#cancel" }) %>

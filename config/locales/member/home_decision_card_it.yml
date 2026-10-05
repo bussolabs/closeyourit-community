@@ -1,0 +1,44 @@
+# CYRA-884 — la scheda decisione in home si legge in cinque secondi.
+it:
+  member:
+    home:
+      bar:
+        others: altre
+        oldest: "la più vecchia: %{time}"
+    approvals:
+      compact:
+        if_approved: Se approvi
+        show_all_warnings:
+          one: "+1 altro"
+          other: "+%{count} altri"
+      secret:
+        headline:
+          set: "Nuovo valore per %{name} in %{environment}"
+          remove: "Rimuovere %{name} da %{environment}"
+        production_risk:
+          set: "Rischio alto: se il valore è sbagliato, ciò che lo usa in Production smette di funzionare."
+          remove: "Rischio alto: se qualcosa lo usa ancora, in Production smette di funzionare."
+      approve_hint:
+        awaiting_approval: "Poi l'agente lavora sul piano approvato e torna da te per la revisione."
+        awaiting_autopilot_approval: "Poi il lavoro passa in chiusura, a partire da staging."
+        review_blocked: "La lavorazione riparte dal passaggio in cui si era fermata."
+        review: "Il ticket si chiude come fatto."
+        secret_change: "La modifica viene applicata subito al segreto."
+      decision_card:
+        risk_levels:
+          none: Rischio nessuno
+          low: Rischio basso
+          high: Rischio alto
+      evidence:
+        criteria: "%{done}/%{total} criteri"
+        tests: "%{done}/%{total} test passati"
+        deviations:
+          zero: "nessuna deviazione"
+          one: "1 deviazione"
+          other: "%{count} deviazioni"
+        reported: "dichiarati dall'agente"
+        deviation: "Deviazione"
+      clarification:
+        options_legend: "Risposte proposte alla domanda %{position}"
+        recommended: consigliata
+        other: Altro

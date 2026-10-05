@@ -1,0 +1,151 @@
+<%# locals: rule, url, method, submit_label %>
+<div class="p-7">
+  <%= form_with url: url, method: method, id: "alerting-rule-form", data: { test: "alerting-rule-form" } do %>
+  <%# CYRA-481 — i campi che non valgono per l'evento scelto restano nel DOM ma nascosti, mai
+      rimossi: un campo rimosso non viene inviato e al salvataggio azzererebbe un valore già scritto
+      su una regola esistente (è il rischio dichiarato nel ticket). Lo stato iniziale lo decide il
+      server; il resto lo fa lo Stimulus al cambio di tendina. %>
+  <div data-controller="alerting--rule-fields"
+       data-alerting--rule-fields-matrix-value="<%= ::Alerting::Rule.fields_matrix.to_json %>">
+    <%= render Ui::PageHeaderComponent.new(
+          title: rule.new_record? ? t("member.alerting.rules.new_title") : t("member.alerting.rules.edit_title"),
+          subtitle: t("member.alerting.rules.form.note"),
+          test_id: "alerting-rule-header",
+          breadcrumb: (rule.persisted? ?
+            [ { label: t("member.alerting.rules.title"), href: member_alerting_rules_path },
+              { label: rule.name },
+              { label: t("member.breadcrumb.edit") } ] :
+            [ { label: t("member.alerting.rules.title"), href: member_alerting_rules_path },
+              { label: t("member.breadcrumb.new") } ])) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.alerting.rules.form.cancel"), href: member_alerting_rules_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: submit_label, type: "submit", icon: "check", size: :sm, test_id: "alerting-rule-form-submit") %>
+      <% end %>
+    <% end %>
+
+    <% if @errors.present? %>
+      <div class="mt-4 rounded-md border border-rose-200 dark:border-rose-500/40 bg-rose-50 dark:bg-rose-500/15 px-3.5 py-2.5" data-test="alerting-rule-errors">
+        <ul class="space-y-1">
+          <% @errors.each_value do |messages| %>
+            <% Array(messages).each do |message| %><li class="text-[11.5px] text-rose-700 dark:text-rose-300"><%= message %></li><% end %>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="mt-6 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <%= render Ui::InputComponent.new(name: "name", label: t("member.alerting.rules.form.name"), required: true,
+              value: rule.name, wrapper_class: "md:col-span-2", test_id: "alerting-rule-name",
+              error: @errors&.dig(:name)&.first) %>
+
+        <%# CYRA-481 — ventitré voci in fila non si scorrono: raggruppate per famiglia (le stesse
+            famiglie delle impostazioni personali, Notifications::Catalog) e con sotto la riga che dice
+            quando quell'evento succede. Select nativa: gli optgroup sono ciò che il ticket chiede, e
+            il dropdown arricchito non li rende. %>
+        <div data-test="alerting-rule-event">
+          <label for="event_type" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.alerting.rules.form.event") %></label>
+          <%# CYRA-465 — l'evento temperatura è proponibile solo se una macchina della flotta la riporta:
+              senza sensori non potrà mai scattare. L'evento di una regola già su server_temp resta
+              comunque, per non alterarla in modifica. %>
+          <% hidden_events = @temperature_reported ? [] : (%w[server_temp] - [ rule.event_type ]) %>
+          <% hidden_events += %w[measurement_threshold] - [ rule.event_type ] %>
+          <% grouped = ::Notifications::Catalog.groups_for(Current.account).filter_map { |group|
+               events = (group.event_types & ::Alerting::Rule.event_types.keys) - hidden_events
+               [ group.label, events.map { |type| [ alerting_event_label(type), type ] } ] if events.any?
+             } %>
+          <%= select_tag "event_type", grouped_options_for_select(grouped, rule.event_type), required: true,
+                id: "event_type",
+                class: "w-full h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400",
+                data: { test: "alerting-rule-event-select", "alerting--rule-fields-target": "event",
+                        action: "change->alerting--rule-fields#refresh" } %>
+          <% if rule.event_type.present? && alerting_event_description(rule.event_type) %>
+            <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400" data-test="alerting-rule-event-hint"><%= alerting_event_description(rule.event_type) %></p>
+          <% end %>
+        </div>
+
+        <div data-test="alerting-rule-level" data-field="min_level" data-alerting--rule-fields-target="field" <%= "hidden" unless ::Alerting::Rule.fields_for(rule.event_type).include?("min_level") %>>
+          <%= render Ui::SelectComponent.new(name: "min_level", label: t("member.alerting.rules.form.min_level"),
+                options: [ [ t("member.alerting.rules.form.min_level_any"), "" ] ] +
+                         ::Alerting::Rule::LEVELS.map { |code, value| [ t("member.alerting.levels.#{code}"), value ] },
+                selected: rule.min_level, hint: t("member.alerting.rules.form.min_level_hint"), test_id: "alerting-rule-level-select") %>
+        </div>
+
+        <div class="md:col-span-2" data-test="alerting-rule-projects" data-field="project_id" data-alerting--rule-fields-target="field" <%= "hidden" unless ::Alerting::Rule.fields_for(rule.event_type).include?("project_id") %>>
+          <%= render Ui::SelectComponent.new(name: "project_id", label: t("member.alerting.rules.form.projects"),
+                options: [ [ t("member.alerting.rules.all_projects"), "" ] ] + @projects.map { |p| [ p.name, p.id ] },
+                selected: rule.project_id, hint: t("member.alerting.rules.form.projects_hint"), test_id: "alerting-rule-project-select") %>
+        </div>
+
+        <div class="md:col-span-2" data-test="alerting-rule-environments" data-field="environment_id" data-alerting--rule-fields-target="field" <%= "hidden" unless ::Alerting::Rule.fields_for(rule.event_type).include?("environment_id") %>>
+          <%= render Ui::SelectComponent.new(name: "environment_id", label: t("member.alerting.rules.form.environments"),
+                options: [ [ t("member.alerting.rules.any_environment"), "" ] ] + @environments.map { |e| [ e.label, e.id ] },
+                selected: rule.environment_id, hint: t("member.alerting.rules.form.environments_hint"), test_id: "alerting-rule-environment-select") %>
+        </div>
+
+        <%# CYRA-496 — senza canali il campo era una tendina vuota sotto un aiuto che parlava di canali
+            inesistenti: la domanda vera («e allora dove arrivano gli avvisi?») aveva risposta solo
+            dentro la pagina dei canali. È la stessa frase del suo elenco vuoto, detta qui. %>
+        <div class="md:col-span-2" data-test="alerting-rule-channels">
+          <%= render Ui::SelectComponent.new(name: "channel_ids", label: t("member.alerting.rules.form.channels"), multiple: true,
+                options: @channels.map { |c| [ "#{c.name} (#{t("member.alerting.channels.kinds.#{c.kind}")})", c.id ] },
+                selected: rule.channel_ids,
+                hint: @channels.any? ? t("member.alerting.rules.form.channels_hint") : t("member.alerting.channels.empty"),
+                test_id: "alerting-rule-channels-select") %>
+        </div>
+
+        <div data-test="alerting-rule-threshold" data-field="threshold_ms" data-alerting--rule-fields-target="field" <%= "hidden" unless ::Alerting::Rule.fields_for(rule.event_type).include?("threshold_ms") %>>
+          <label for="threshold_ms" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.alerting.rules.form.threshold_ms") %></label>
+          <div class="flex items-center gap-2">
+            <input type="number" name="threshold_ms" id="threshold_ms" min="1" value="<%= rule.threshold_ms&.to_i %>" data-test="alerting-rule-threshold-input"
+                   class="w-24 h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] font-mono focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+            <span class="text-[12.5px] text-gray-500 dark:text-zinc-400">ms</span>
+          </div>
+          <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.alerting.rules.form.threshold_ms_hint") %></p>
+        </div>
+
+        <div data-test="alerting-rule-server-threshold" data-field="threshold" data-alerting--rule-fields-target="field" <%= "hidden" unless ::Alerting::Rule.fields_for(rule.event_type).include?("threshold") %>>
+          <label for="threshold" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.alerting.rules.form.threshold") %></label>
+          <div class="flex items-center gap-2">
+            <input type="number" name="threshold" id="threshold" min="1" step="0.1" value="<%= rule.threshold&.to_f %>" data-test="alerting-rule-server-threshold-input"
+                   class="w-24 h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] font-mono focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+            <span class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.alerting.rules.form.threshold_unit") %></span>
+          </div>
+          <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.alerting.rules.form.threshold_hint") %></p>
+        </div>
+
+        <div>
+          <label for="throttle_minutes" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.alerting.rules.form.throttle") %></label>
+          <div class="flex items-center gap-2">
+            <input type="number" name="throttle_minutes" id="throttle_minutes" min="1" value="<%= (rule.throttle_seconds || 300) / 60 %>" data-test="alerting-rule-throttle"
+                   class="w-24 h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] font-mono focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+            <span class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.alerting.rules.form.throttle_unit") %></span>
+          </div>
+          <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.alerting.rules.form.throttle_hint") %></p>
+        </div>
+
+        <div>
+          <%# "Status" è un'intestazione per il toggle sotto, non il label di un singolo controllo:
+              <p>, non <label> orfano (un <label> senza for/wrapping è markup invalido). %>
+          <p class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.alerting.rules.form.status") %></p>
+          <label class="inline-flex items-center gap-2.5 h-[38px] cursor-pointer">
+            <input type="hidden" name="enabled" value="0">
+            <input type="checkbox" name="enabled" value="1" <%= "checked" if rule.enabled? %> data-test="alerting-rule-enabled" class="w-4 h-4 rounded accent-indigo-600">
+            <span class="text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= t("member.alerting.rules.form.enabled") %></span>
+          </label>
+        </div>
+
+        <div data-test="alerting-rule-unhandled-only" data-field="unhandled_only" data-alerting--rule-fields-target="field" <%= "hidden" unless ::Alerting::Rule.fields_for(rule.event_type).include?("unhandled_only") %>>
+          <p class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.alerting.rules.form.unhandled_only") %></p>
+          <label class="inline-flex items-center gap-2.5 h-[38px] cursor-pointer">
+            <input type="hidden" name="unhandled_only" value="0">
+            <input type="checkbox" name="unhandled_only" value="1" <%= "checked" if rule.unhandled_only? %> data-test="alerting-rule-unhandled-only-input" class="w-4 h-4 rounded accent-indigo-600">
+            <span class="text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= t("member.alerting.rules.form.unhandled_only_label") %></span>
+          </label>
+          <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.alerting.rules.form.unhandled_only_hint") %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+</div>

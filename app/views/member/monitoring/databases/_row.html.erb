@@ -1,0 +1,53 @@
+<%# locals: row: (Servers::DatabaseInventory::Row), show_server: — riga dell'inventario database. %>
+<%= render Ui::TableComponent::RowComponent.new(href: member_monitoring_server_database_path(row.host_id, row.name), link_label: row.name, test_id: "database-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <%# Il dettaglio vive nel namespace della macchina che lo ospita: per una riga accorpata è il
+        primary, che è anche la fonte di dimensione e storico. %>
+    <%= link_to row.name, member_monitoring_server_database_path(row.host_id, row.name),
+          class: "font-mono text-[12px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "database-row-link" } %>
+  <% end %>
+    <%= render Ui::TableComponent::CellComponent.new(label: t("member.databases.col_server"), visible: show_server) do %>
+      <div class="flex items-center gap-1.5">
+        <%= link_to member_monitoring_server_path(row.host_id), class: "inline-flex items-center gap-1.5 text-[13px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "database-row-server" } do %>
+          <%= render Ui::BadgeComponent.new(label: row.host_name, color: row.db_reachable == false ? :red : :gray, dot: true, size: :sm) %>
+        <% end %>
+        <%# Lo stesso database sta anche sulle repliche: una riga per macchina sarebbe un doppione.
+            I nomi stanno nel title nativo — un tooltip per riga, in tabella, sarebbe rumore. %>
+        <% if row.replica_host_names.any? %>
+          <%= render Ui::BadgeComponent.new(
+                label: t("member.databases.replica_count", count: row.replica_host_names.size),
+                color: :gray, size: :sm, title: row.replica_host_names.join(", "),
+                test_id: "database-row-replicas") %>
+        <% end %>
+      </div>
+    <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.databases.col_size"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100", test_id: "database-row-size")) { server_bytes_text(row.size_bytes) } %>
+  <%# Variazione a 7 giorni con la direzione (freccia + segno + colore). "—" quando manca la storia:
+      un database più giovane della finestra non ha una crescita da dichiarare, e uno zero si
+      leggerebbe come "non cresce" (CYRA-474). %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.databases.col_change"), align: :right, test_id: "database-row-change") do %>
+    <% if row.change_bytes.nil? %>
+      <span class="font-mono text-[11px] text-gray-400 dark:text-zinc-500" title="<%= t('member.databases.change_new_title') %>">—</span>
+    <% else %>
+      <span class="inline-flex items-center gap-1 font-mono text-[12px] <%= server_size_change_class(row.change_bytes) %>" data-test="database-row-change-value">
+        <% if (icon = server_size_change_icon(row.change_bytes)) %><%= render Ui::IconComponent.new(name: icon, class: "text-[9px]") %><% end %>
+        <%= server_size_change_text(row.change_bytes) %>
+      </span>
+    <% end %>
+  <% end %>
+  <%# Il denominatore della quota è consultabile nel title nativo (CYRA-466): due percentuali simili
+      su macchine diverse corrispondono a dimensioni molto diverse, e il totale lo spiega. %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.databases.col_share"),
+        title: (t("member.databases.share_title", size: server_bytes_text(row.size_bytes), total: server_bytes_text(row.host_total_bytes), host: row.host_name) if row.share_pct)) do %>
+    <div class="flex items-center justify-end gap-2">
+      <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 shrink-0 w-12 text-right">
+        <%= row.share_pct.nil? ? "—" : number_to_percentage(row.share_pct, precision: 1) %>
+      </span>
+      <% if row.share_pct %>
+        <span class="w-20 h-1.5 rounded-full bg-stone-100 dark:bg-zinc-800 overflow-hidden shrink-0">
+          <span class="block h-full rounded-full bg-indigo-400" style="width: <%= row.share_pct.clamp(0, 100) %>%"></span>
+        </span>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

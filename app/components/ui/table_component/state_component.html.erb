@@ -1,0 +1,15 @@
+<%= tag.div(**wrapper_options) do %>
+  <span class="<%= icon_class.first %>"><%= render Ui::IconComponent.new(name: @icon, class: icon_class.last) %></span>
+  <h3 class="mt-3 font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= @title %></h3>
+  <% if @body %>
+    <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= @body %></p>
+  <% end %>
+  <% if action? || @reset_href %>
+    <div class="mt-4 flex items-center justify-center gap-2">
+      <% if @reset_href %>
+        <%= render Ui::ButtonComponent.new(label: @reset_label, href: @reset_href, variant: :secondary_muted, size: :sm) %>
+      <% end %>
+      <%= action %>
+    </div>
+  <% end %>
+<% end %>

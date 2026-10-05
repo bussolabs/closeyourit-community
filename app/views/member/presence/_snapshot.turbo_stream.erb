@@ -1,0 +1,3 @@
+<%# Snapshot inviato (transmit) alla SOLA tab che entra: <turbo-stream> "replace #presence_list".
+    Applicato dal client via Turbo.renderStreamMessage (renderer sanzionato, niente injection JS). %>
+<%= turbo_stream.replace "presence_list", partial: "member/presence/list", locals: { accounts: accounts, viewer: local_assigns[:viewer] } %>

@@ -1,0 +1,61 @@
+<%# locals:
+      site: (required) — Seo::Site con :project e :environment caricati
+      active_tab: (required) — "summary" | "issues" | "pages"
+      open_count:, critical_count:, high_count:, ignored_count:, pages_count: (required)
+    Header condiviso dalle tre schede di UN sito. Qui le linguette hanno senso — sono viste dello
+    stesso oggetto, come sulla scheda di una macchina — mentre in cima alle pagine dell'area erano un
+    doppione del menu (CYRA-535).
+
+    Le chip contano i rilievi di QUESTO sito: sotto il nome di un sito, i numeri dell'organizzazione
+    direbbero il falso. %>
+<% can_manage = can?("seo.manage", scope: site.project) %>
+<%= render Ui::PageHeaderComponent.new(
+      title: safe_join([ site.project.name,
+                         render(Ui::BadgeComponent.new(label: site.environment.label,
+                                                       color: site.environment.color, dot: true)) ], " "),
+      breadcrumb: [ { label: t("member.monitoring.seo_sites.title"), href: member_monitoring_seo_sites_path },
+                    { label: site.display_name } ],
+      counts_test_id: "seo-site-counts", tabs_test_id: "seo-site-tabs") do |h| %>
+  <% h.with_counts do %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.seo.stats.total"), value: open_count,
+          value_color: (open_count.positive? ? :amber : :neutral), test_id: "seo-site-stat-open") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.seo.stats.critical"), value: critical_count, value_color: :rose, test_id: "seo-site-stat-critical") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.seo.stats.high"), value: high_count, value_color: :amber, test_id: "seo-site-stat-high") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.seo.stats.ignored"), value: ignored_count, test_id: "seo-site-stat-ignored") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.seo.stats.pages"), value: pages_count, test_id: "seo-site-stat-pages") %>
+    <%# L'esito dell'ultimo giro sta accanto alla data, come nell'elenco: un giro fallito non deve
+        mai somigliare a un sito a posto. %>
+    <%= render Ui::StatLabelComponent.new(
+          label: t("member.monitoring.seo_sites.columns.last_audit"),
+          value: seo_site_last_check_text(site),
+          value_color: (site.last_error.present? ? :rose : :neutral), test_id: "seo-site-stat-checked") %>
+  <% end %>
+  <% h.with_actions do %>
+    <div class="flex items-center gap-2 shrink-0" data-test="seo-site-actions">
+      <% if can_manage %>
+        <%= render Ui::ButtonComponent.new(label: t("member.monitoring.seo_sites.actions.rescan"),
+              href: rescan_member_monitoring_seo_index_path(site_id: site.id), method: :post,
+              variant: :primary, size: :sm, icon: "rotate-cw", test_id: "seo-site-rescan") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.monitoring.seo_sites.actions.edit"),
+              href: edit_member_monitoring_seo_site_path(site), variant: :secondary, size: :sm,
+              icon: "pen", test_id: "seo-site-edit") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.review_fixes.delete_site"),
+              href: member_monitoring_seo_site_path(site), method: :delete, variant: :danger_outline, size: :sm,
+              confirm: t("member.review_fixes.delete_site_confirm", site: site.base_url), test_id: "seo-site-delete") %>
+      <% end %>
+      <%# L'indirizzo del sito resta raggiungibile, ma da QUI e non più dalla riga dell'elenco:
+          era l'unica cosa che si poteva già aprire da soli. %>
+      <% if (url = seo_safe_url(site.base_url)) %>
+        <%= render Ui::ButtonComponent.new(label: t("member.monitoring.seo_sites.actions.open"), href: url,
+              variant: :secondary, size: :sm, icon: "arrow-up-right-from-square", test_id: "seo-site-open",
+              rel: "noopener noreferrer nofollow", target: "_blank") %>
+      <% end %>
+    </div>
+  <% end %>
+  <% [ [ "summary", member_monitoring_seo_site_path(site), "gauge" ],
+       [ "performance", performance_member_monitoring_seo_site_path(site), "bolt" ],
+       [ "issues", issues_member_monitoring_seo_site_path(site), "triangle-alert" ],
+       [ "pages", pages_member_monitoring_seo_site_path(site), "file-text" ] ].each do |key, url, icon_name| %>
+    <% h.with_tab(label: t("member.monitoring.seo_sites.tabs.#{key}"), href: url, active: active_tab.to_s == key, icon: icon_name, test_id: "seo-site-tab-#{key}") %>
+  <% end %>
+<% end %>

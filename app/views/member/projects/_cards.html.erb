@@ -1,0 +1,49 @@
+<%# Cards view of the projects list (D19–D24): toolbar, groups ("Ungrouped" last) or one group with grouping
+    off, Show more after 12, and the visible groups without projects as sections to set up (CYRA-362). %>
+<%= render Ui::CardGridComponent.new(test_id: "projects-cards", setup_test_id: "projects-empty-groups") do |grid| %>
+  <% grid.with_toolbar { render "toolbar" } %>
+  <% if @projects.empty? %>
+    <% grid.with_no_results do %>
+      <%= render Ui::NoResultsComponent.new(title: t("member.projects.no_match"), query: params[:q].presence,
+            reset_href: member_projects_path, icon: "folder-open", test_id: "projects-no-match",
+            reset_test_id: "projects-reset-filters") %>
+    <% end %>
+  <% elsif @cards_grouped %>
+    <% @projects.group_by(&:group).sort_by { |group, _| group ? group.name.downcase : "￿" }.each do |group, projects| %>
+      <% grid.with_group(title: group ? group.name : t("member.groups.ungrouped"),
+           href: (member_group_path(group) if group && can_view_groups?), muted: group.nil?,
+           count_label: t("member.groups.projects_count", count: projects.size),
+           test_id: group ? "projects-group-#{group.id}" : "projects-ungrouped",
+           title_test_id: (group && "projects-group-link-#{group.id}")) do |section| %>
+        <% section.with_mark do %>
+          <% if group %>
+            <%= render Ui::EntityMarkComponent.new(record: group, size: :xs) %>
+          <% else %>
+            <span class="w-2.5 h-2.5 rounded-[3px] border border-dashed border-gray-400 shrink-0"></span>
+          <% end %>
+        <% end %>
+        <% if group && can_view_groups? %>
+          <% section.with_actions do %>
+            <%= link_to member_group_path(group), class: "ml-1 inline-flex items-baseline gap-1 text-[11px] font-medium text-gray-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "projects-manage-group-#{group.id}" } do %>
+              <%= render Ui::IconComponent.new(name: "settings", class: "text-[10px]") %><%= t("member.groups.manage") %>
+            <% end %>
+          <% end %>
+        <% end %>
+        <%= render partial: "card", collection: projects, as: :project, locals: { health: @card_health } %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <% grid.with_group(test_id: "projects-all") do %>
+      <%= render partial: "card", collection: @projects, as: :project, locals: { health: @card_health } %>
+    <% end %>
+  <% end %>
+  <% if @more_cards %>
+    <% grid.with_more(href: member_projects_path(request.query_parameters.merge("limit" => @card_limit + Member::ProjectsController::CARDS_STEP)),
+         count: [ @projects_total - @card_limit, Member::ProjectsController::CARDS_STEP ].min, test_id: "projects-more") %>
+  <% end %>
+  <% @empty_groups.to_a.each do |group| %>
+    <% grid.with_setup_item(label: group.name, href: (member_group_path(group) if can_view_groups?), test_id: "projects-empty-group-#{group.id}") do %>
+      <%= render Ui::EntityMarkComponent.new(record: group, size: :xs) %>
+    <% end %>
+  <% end %>
+<% end %>

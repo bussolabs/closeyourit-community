@@ -1,0 +1,14 @@
+<div id="<%= dom_id(message, :content) %>">
+  <%= render Ui::MarkdownComponent.new(text: message.body, class: "mt-1 text-sm text-zinc-900 dark:text-zinc-100") %>
+  <% if message.updated_at > message.created_at %>
+    <span class="text-xs text-gray-500 dark:text-zinc-400" data-test="chat-message-edited"><%= t("member.chat.messages.edited") %></span>
+  <% end %>
+  <% if message.references.any? %>
+    <div class="mt-2 flex flex-wrap gap-1.5">
+      <% message.references.each do |reference| %>
+        <%= render ChatReferenceCardComponent.new(referable: reference.referable,
+              visible: chat_reference_visible?(reference.referable, local_assigns[:visible_project_ids])) %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

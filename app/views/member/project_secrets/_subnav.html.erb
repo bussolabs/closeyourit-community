@@ -1,0 +1,19 @@
+<%# locals: (project:, active:) %>
+<%# The secrets pages as tabs: each one shows only to who can open it today. %>
+<% tabs = [ { key: "variables", href: member_project_secrets_path(project), icon: "lock" } ] %>
+<% if can?("secret_files.read", scope: project) || can?("secret_files.manage", scope: project) %>
+  <% tabs << { key: "files", href: member_project_secret_assets_path(project), icon: "file-lock" } %>
+<% end %>
+<% if can?("secrets.manage", scope: project) %>
+  <% tabs << { key: "overrides", href: member_project_secret_overrides_path(project), icon: "user-pen" } %>
+  <% tabs << { key: "events", href: member_project_secret_events_path(project), icon: "history" } %>
+<% end %>
+<nav class="flex items-center gap-1 overflow-x-auto scrollbar-none" aria-label="<%= t("member.secrets.subnav.label") %>" data-test="secrets-subnav">
+  <% tabs.each do |tab| %>
+    <% current = tab[:key] == active.to_s %>
+    <%= link_to tab[:href], "aria-current": (current ? "page" : nil), data: { test: "secrets-subnav-#{tab[:key]}" },
+          class: "inline-flex items-center gap-1.5 h-8 px-3 rounded-md whitespace-nowrap text-[12.5px] #{current ? 'bg-stone-100 dark:bg-zinc-800 font-semibold text-zinc-900 dark:text-zinc-100' : 'font-medium text-gray-500 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100'}" do %>
+      <%= render Ui::IconComponent.new(name: tab[:icon], class: "text-[11px] #{current ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 dark:text-zinc-500'}") %><%= t("member.secrets.subnav.#{tab[:key]}") %>
+    <% end %>
+  <% end %>
+</nav>

@@ -1,0 +1,99 @@
+<% content_for :title, t("member.guides.knowledge_review.title") %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-knowledge-review">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "inbox", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.knowledge_review.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.knowledge_review.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.knowledge_review.open_review"),
+            href: member_knowledge_reviews_path, variant: :primary, size: :sm, icon: "inbox",
+            test_id: "member-guide-knowledge-review-open") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.knowledge_review.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.knowledge_review.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge_review.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge_review.what_b1") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge_review.what_b2") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge_review.what_b3") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.knowledge_review.steps_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ol class="space-y-4">
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">1</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge_review.step1") %></div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">2</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge_review.step2") %></div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">3</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge_review.step3") %></div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">4</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge_review.step4") %></div>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <%# CYRA-642 — la decisione si prende anche dal terminale. Sta nella guida perché la regola che la
+      accompagna (decide una persona, non un automatismo) va letta PRIMA di provarci, non scoperta
+      da un errore. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-knowledge-review-terminal">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.knowledge_review.terminal_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge_review.terminal_body") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "user", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge_review.terminal_b1") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge_review.terminal_b2") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "file-text", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge_review.terminal_b3") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <%# CYRA-419 — la definizione scritta del segno «scritta da un assistente»: cosa dice, dove resta e
+      cosa lo fa decadere. Sta nella guida e non solo nel codice perché è una regola che chi
+      revisiona deve poter leggere prima di correggere una pagina credendo di farla propria. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-knowledge-review-written-by">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.knowledge_review.written_by_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge_review.written_by_body") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "bot", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge_review.written_by_b1") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "pen", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge_review.written_by_b2") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "circle-question-mark", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge_review.written_by_b3") %></span></li>
+      </ul>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge_review.written_by_note") %></p>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.knowledge_review.discard_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge_review.discard_body") %></p>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.knowledge_review.file_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge_review.file_body") %></p>
+    </div>
+  </div>
+</div>

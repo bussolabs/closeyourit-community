@@ -1,0 +1,56 @@
+en:
+  valhalla:
+    nav:
+      settings: Settings
+    settings:
+      title: Settings
+      updated: Settings saved.
+      logs_retention_label: Logs retention (days)
+      logs_retention_hint: Global default. Organizations and projects can override it.
+      analytics_retention_label: Analytics retention (days)
+      analytics_retention_hint: Global default for pageview data. Organizations and projects can override it.
+      errors_retention_label: Errors retention (days)
+      errors_retention_hint: Global default. Organizations and projects can override it.
+      performance_retention_label: Performance retention (days)
+      performance_retention_hint: Global default. Organizations and projects can override it.
+      servers_retention_label: Servers retention (days)
+      servers_retention_hint: Global default for server samples. Organizations can override it (no project level).
+      uptime_retention_label: Uptime retention (days)
+      uptime_retention_hint: Global default for daily uptime history. Organizations and projects can override it.
+      ai:
+        title: AI features
+        hint: Switch a feature off to stop provider calls immediately, with no release. It applies to every organization and takes effect on click.
+        services:
+          agent_gate:
+            label: Agent eligibility gate
+            hint: Decides whether a ticket can be worked by an autonomous agent. Off, tickets stay unevaluated and out of the queue.
+          assistant_chat:
+            label: Chat assistant
+            hint: Replies from the help assistant. Off, the chat stays visible but does not answer.
+          assistant_tools:
+            label: Assistant that reads your data
+            hint: Replies carrying real numbers about tickets, projects, errors and monitoring. Off, the help assistant keeps pointing to pages.
+          assistant_voice:
+            label: Voice assistant
+            hint: Transcription of messages spoken into the microphone. Off, the microphone disappears and the typed chat stays.
+          triage:
+            label: Error and metric triage
+            hint: AI verdict on an error or metric group, plus similar-error lookup. Manual triage buttons keep working.
+          embeddings:
+            label: Semantic search
+            hint: Meaning-based indexing and search across tickets, errors and the knowledge base. Off, search falls back to text matching.
+          ticket_composition:
+            label: Assisted ticket writing
+            hint: Quick bug report analysis, ticket composition and idea synthesis. Forms stay usable by hand.
+          dataset_predictions:
+            label: Dataset training and predictions
+            hint: Prompt training and dataset predictions. Off, running jobs fail immediately instead of waiting.
+          comment_compaction:
+            label: Historical comment summaries
+            hint: Shortens long comments on old tickets to one sentence, keeping the full text in the attached report. Off, historical comments stay long and queued compactions stop without losing anything.
+          analysis_relabel:
+            label: Technical analysis relabelling
+            hint: Rewrites existing technical analyses into the labelled form (Approach, Why, Risks, Open). Off, analyses stay as they are and queued jobs skip the ticket.
+          knowledge_review:
+            label: Knowledge page reviewer
+            hint: Checks format and quality of every new or edited page before it gets in. Starts off; switch it on only with the AI server key in the vault, otherwise no page can be saved. Off, pages get in unchecked (logged).

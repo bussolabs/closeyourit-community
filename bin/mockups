@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Mini server per navigare i mockup statici di CloseYourIt (dev-only).
+# Serve docs/mockups/ con un indice raggruppato. Logica: docs/mockups/config.ru.
+# Uso: bin/mockups            (porta 4011)
+#      PORT=5050 bin/mockups  (porta custom)
+set -e
+
+cd "$(dirname "$0")/.." # repo root (bin/ → root), così è avviabile da qualsiasi cartella
+
+PORT="${PORT:-4011}"
+echo "→ Mockup server: http://localhost:${PORT}/  (Ctrl+C per fermare)"
+exec bundle exec puma docs/mockups/config.ru -p "${PORT}"

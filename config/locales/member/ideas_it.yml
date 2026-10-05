@@ -1,0 +1,192 @@
+---
+it:
+  member:
+    nav:
+      ideas: Idee
+    tickets:
+      show:
+        from_idea: dall'idea
+    ideas:
+      title: Idee
+      help_title: "Proposte da votare, discutere e trasformare in ticket."
+      new: Nuova idea
+      created: Idea creata.
+      updated: Idea aggiornata.
+      deleted: Idea eliminata.
+      archived: Idea archiviata.
+      reopened: Idea riaperta.
+      converted: Idea convertita in ticket.
+      delete_confirm: Eliminare questa idea? Voti e commenti andranno persi.
+      delete_confirm_converted: "Eliminare questa idea? Si perde il collegamento con il ticket %{code} nato da questa idea, insieme a voti e commenti."
+      author_gone: Ex membro
+      counts:
+        total: Idee
+        open: Aperte
+        converted: Convertite
+        archived: Archiviate
+      search_placeholder: Cerca idee…
+      count:
+        one: "%{count} idea"
+        other: "%{count} idee"
+      apply: Applica
+      filter_status: Stato
+      filter_project: Progetto
+      # CYRA-360 — l'ordinamento della bacheca, dichiarato in pagina: era per voti, che erano zero
+      # su ogni riga, e quello che si vedeva era un ordine per data mai scritto da nessuna parte.
+      sort_note: Prima le idee mosse di recente
+      status:
+        open: Aperta
+        converted: Convertita
+        archived: Archiviata
+      col_title: Idea
+      col_project: Progetto
+      col_author: Autore
+      col_comments: Commenti
+      col_votes: Voti
+      view_switch:
+        label: Vista
+        cards: Card
+        table: Tabella
+      col_status: Stato
+      # CYRA-370 — al posto dei voti, fermi a zero su ogni riga: dove è finita l'idea convertita.
+      col_ticket: Ticket
+      # CYRA-360 — al posto della data di creazione: la data che ordina davvero la lista.
+      col_last_activity: Ultimo movimento
+      empty: Ancora nessuna idea
+      empty_body: Proponi un'idea per un progetto e falla votare e discutere dal team.
+      empty_example: "Per esempio: «Esportare i report in PDF», col problema che risolve e chi lo chiede."
+      # CYRA-555 — il messaggio di chi ha cercato e non ha trovato: dice quante idee ci sono davvero
+      # (lo stesso numero dei chip in alto), così non sembra che l'elenco sia vuoto.
+      no_results_body:
+        zero: Non c'è ancora nessuna idea da cercare.
+        one: "C'è %{count} idea in tutto, ma non corrisponde a quello che hai chiesto."
+        other: "Ci sono %{count} idee in tutto, ma nessuna corrisponde a quello che hai chiesto."
+      # CYRA-167 — la ricerca capisce il significato: chi cerca «scaricare i dati» trova
+      # «Esportare i report in PDF» invece di riproporla da capo.
+      semantic:
+        degraded_hint: La ricerca per significato non è disponibile ora — risultati per parole esatte.
+        using_semantic: Stai cercando per significato.
+        using_exact: Stai cercando per parole esatte.
+        switch_to_exact: Cerca invece per parole esatte
+        switch_to_semantic: Cerca invece per significato
+      # CYRA-167 — idee simili mostrate mentre si scrive: è il momento in cui si può ancora evitare
+      # il doppione. Il suggerimento non blocca mai la proposta.
+      duplicates:
+        title: Idee simili già proposte
+        hint: Se è la stessa cosa, apri quell'idea e votala invece di proporne una nuova.
+      show:
+        back: Tutte le idee
+        edit: Modifica
+        delete: Elimina
+        archive: Archivia
+        reopen: Riapri
+        convert: Converti in ticket
+        open_ticket: "Apri %{code}"
+        more_menu: Altre azioni
+        problem: Problema
+        solution: Soluzione
+        monetization: Monetizzazione
+        risks: Rischi e vincoli
+        stakeholders: Stakeholder
+        status_label: Stato
+        kind_label: Tipo
+        details: Dettagli
+        ticket_label: Ticket
+        project_label: Progetto
+        author_label: Proposta da
+        converted_date: "· convertita il %{date}"
+        archived_hint: Questa idea è archiviata — riaprila per riprendere voti e discussione.
+      # CYRA-360 — accanto al voto c'è scritto a cosa serve e, soprattutto, a cosa non serve.
+      interest:
+        info: Come funziona il voto
+        title: Interesse
+        explainer: Il voto dice soltanto quante persone vogliono questa idea. Non cambia l'ordine della bacheca, non le dà la precedenza e non fa partire niente da solo.
+        locked: "Questa idea non è più aperta: i voti restano come sono, a ricordo di chi la voleva."
+        empty: Ancora nessun voto.
+      vote:
+        added: Voto registrato.
+        removed: Voto rimosso.
+        upvote: Vota
+        voted: Votata
+        remove_title: Rimuovi il tuo voto
+      comments:
+        title: Discussione
+        created: Commento aggiunto.
+        deleted: Commento eliminato.
+        placeholder: Aggiungi il tuo punto di vista…
+        submit: Commenta
+        empty: Ancora nessun commento — avvia la discussione.
+        locked: La discussione è congelata — l'idea non è più aperta.
+        delete_confirm: Eliminare questo commento?
+        role_author: autore
+        show_all: Mostra tutto
+        show_less: Mostra meno
+      # CYRA-845 — monetizzazione, rischi ed evoluzioni non stanno più nei commenti.
+      links:
+        title: Collegamenti
+        evolutions_title: Evoluzioni
+        evolutions_empty: Ancora nessuna evoluzione — un'idea che porta questa più avanti la si propone da qui.
+        propose_evolution: Proponi evoluzione
+        evolution_chip: Evoluzione
+        evolves_from: Evolve da
+        evolution_of: "Evoluzione di: %{title}"
+        evolution_form_hint: Questa idea nasce come evoluzione di quella qui sopra e resta collegata alla sua pagina.
+        related_title: Idee collegate
+        related_empty: Nessuna idea collegata.
+        related_hint: Un'idea che condivide meccanismo o valore con questa, da valutare insieme.
+        select_idea: Scegli un'idea del progetto
+        link_submit: Collega
+        unlink: Scollega
+        unlink_confirm: Togliere il collegamento fra le due idee?
+        created: Idee collegate.
+        deleted: Collegamento tolto.
+        none_linkable: Non ci sono altre idee da collegare in questo progetto.
+      cases:
+        title: Casi d'uso
+        created: Caso d'uso aggiunto.
+        updated: Caso d'uso aggiornato.
+        deleted: Caso d'uso eliminato.
+        field_title: Titolo del caso d'uso
+        field_description: Descrizione
+        title_placeholder: Es. Onboarding nuovo cliente
+        description_placeholder: Descrivi lo scenario concreto…
+        submit: Aggiungi un caso d'uso
+        empty: Ancora nessun caso d'uso — racconta una situazione concreta in cui serve.
+        delete_confirm: Eliminare questo caso d'uso?
+        locked: I casi d'uso sono congelati — l'idea non è più aperta.
+      form:
+        back: Indietro
+        cancel: Annulla
+        new_title: Nuova idea
+        edit_title: Modifica idea
+        save_new: Crea idea
+        save_edit: Salva modifiche
+        title_label: Titolo
+        title_placeholder: Cosa vorresti vedere?
+        project: Progetto
+        select_project: Seleziona un progetto
+        problem_label: Problema
+        problem_placeholder: Che problema o esigenza vuoi risolvere?
+        solution_label: Soluzione
+        solution_placeholder: Come pensi di risolverlo? (opzionale)
+        monetization_label: Monetizzazione
+        monetization_placeholder: Come si ripaga? Prodotti a listino, leve indirette, cosa evitare. (opzionale)
+        risks_label: Rischi e vincoli
+        risks_placeholder: Cosa la frena o la rende delicata? Sicurezza, dipendenze, cose fuori scope. (opzionale)
+        stakeholders_label: Stakeholder
+        stakeholders_placeholder: team mobile, clienti enterprise
+        stakeholders_hint: Per chi è utile. Separa più valori con una virgola.
+      convert:
+        title: Converti in ticket
+        back: Torna all'idea
+        submit: Crea ticket
+        regenerate: Rigenera con AI
+        generating: L'AI sta unendo idea e discussione del team in una bozza di ticket…
+        generated: Bozza pronta — rivedila e modificala prima di creare il ticket.
+        failed: Bozza AI non disponibile — i campi contengono l'idea originale, modificali e invia.
+        field_title: Titolo del ticket
+        field_description: Descrizione del ticket
+        description_hint: Markdown supportato. Generata da idea e commenti — rivedi prima di inviare.
+        field_kind: Tipo
+        field_status: Stato
+        field_priority: Priorità

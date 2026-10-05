@@ -1,0 +1,38 @@
+it:
+  reports:
+    periodic:
+      mailer:
+        subject:
+          daily: "Come è andata ieri — %{org}"
+          weekly: "Come è andata la settimana — %{org}"
+          monthly: "Come è andato il mese — %{org}"
+        heading:
+          daily: "Il riepilogo di ieri"
+          weekly: "Il riepilogo della settimana"
+          monthly: "Il riepilogo del mese"
+        period: "Dal %{from} al %{to}"
+        traffic_title: "Visite"
+        visitors:
+          one: "1 visitatore"
+          other: "%{count} visitatori"
+        errors_title: "Errori"
+        new_errors:
+          zero: "nessun problema nuovo"
+          one: "1 problema nuovo"
+          other: "%{count} problemi nuovi"
+        uptime_title: "Uptime"
+        uptime_hint: "i tuoi siti hanno risposto"
+        uptime_missing: "nessun controllo attivo"
+        delta: "%{value} rispetto al periodo precedente, che aveva %{previous} visite."
+        delta_missing: "Nel periodo precedente non c'erano visite, quindi non c'è un confronto da fare."
+        projects_title: "Progetto per progetto"
+        col_project: "Progetto"
+        col_pageviews: "Visite"
+        col_errors: "Errori"
+        col_uptime: "Uptime"
+        row_text: "%{pageviews} visite · %{errors} errori · uptime %{uptime}"
+        other_projects:
+          one: "C'è anche un altro progetto con dati nel periodo."
+          other: "Ci sono anche altri %{count} progetti con dati nel periodo."
+        action: "Apri le statistiche del sito"
+        footer: "Ricevi questo riepilogo perché l'hai chiesto tu. Puoi cambiarne la frequenza, o smettere di riceverlo, dalle tue preferenze delle notifiche."

@@ -1,0 +1,74 @@
+en:
+  telegram:
+    start:
+      welcome: |-
+        👋 Hi! I'm the CloseYourIt notifications bot — I deliver your alerts here.
+
+        To link your account, open CloseYourIt → Settings → Telegram and tap “Connect Telegram”. That link brings you back here already signed, and I'll confirm the connection.
+
+        Typing /start on its own can't link you: I don't know who you are yet, you need the button in the app. Send /stop anytime to disconnect.
+    link:
+      connected: "Connected as %{name}. You'll receive your CloseYourIt notifications here."
+      disconnected: "Disconnected. You won't receive CloseYourIt notifications here anymore."
+    commands:
+      link_required: |-
+        Link your account first: open CloseYourIt → Settings → Telegram and tap “Connect Telegram”.
+      unknown: "Unknown command. Send /aiuto for the list of commands."
+    menu:
+      nuovo_ticket: "Open a ticket: /nuovo_ticket [KEY] text (+photo in caption)"
+      progetti: "List your projects with their keys"
+      progetto: "Set the active project: /progetto KEY"
+      ticket: "Show a ticket status: /ticket KEY-12"
+      miei_ticket: "Your open tickets"
+      commenta: "Comment on a ticket: /commenta KEY-12 text"
+      aiuto: "Commands help"
+    help:
+      body: |-
+        Available commands:
+
+        /nuovo-ticket [KEY] <text> — open a ticket (attach a photo by putting the command in the caption)
+        /progetti — list your projects with their keys
+        /progetto <KEY> — set the active project (default for /nuovo-ticket)
+        /ticket <CODE> — show a ticket's status (e.g. /ticket DRRA-12)
+        /miei-ticket — your open tickets
+        /commenta <CODE> <text> — comment on a ticket (+photo in the caption)
+        /aiuto — this message
+    projects:
+      list: "Your projects:\n%{list}"
+      item: "%{key} — %{name}"
+      empty: "You don't have access to any project yet. Ask an admin to grant you access."
+    project:
+      set_ok: "Active project: %{key} — %{name}. Now /nuovo-ticket <text> will open tickets here."
+      usage: "Usage: /progetto KEY (e.g. /progetto DRRA). /progetti for the list."
+    ticket:
+      created: "✅ Ticket %{code} created: %{title}\n%{url}"
+      created_photo: "✅ Ticket %{code} created with photo attached: %{title}\n%{url}"
+      created_photo_failed: "✅ Ticket %{code} created (photo not attached): %{title}\n%{url}"
+      no_project: "No active project. Set one with /progetto KEY, or use /nuovo-ticket KEY <text>. /progetti for the list."
+      empty: "Write the ticket text: /nuovo-ticket description of the problem."
+      failed: "I couldn't open the ticket: %{error}"
+      show: "🎫 %{code} — %{title}\nStatus: %{status} · Priority: %{priority}\nAssignee: %{assignee}\n%{url}"
+      show_usage: "Usage: /ticket CODE (e.g. /ticket DRRA-12)."
+      unassigned: "unassigned"
+      mine: "Your open tickets:\n%{list}"
+      mine_item: "%{code} %{title} (%{status})"
+      mine_empty: "You have no open tickets."
+    comment:
+      added: "💬 Comment added to %{code}.\n%{url}"
+      failed: "I couldn't add the comment: %{error}"
+      usage: "Usage: /commenta CODE <text> (e.g. /commenta DRRA-12 tried again)."
+      empty: "Write the comment text: /commenta CODE your message."
+      photo_body: "Photo attached from Telegram."
+    errors:
+      project_not_found: "No project with key %{key} among the ones you can see. /progetti for the list."
+      project_ambiguous: "Key %{key} exists in more than one organization. Open it from the web to disambiguate."
+      project_none: "No active project. Set one with /progetto KEY. /progetti for the list."
+      ticket_bad_code: "Invalid ticket code. Use the KEY-NUMBER format (e.g. DRRA-12)."
+      ticket_not_found: "Ticket %{code} not found among the ones you can see."
+    group:
+      connected: "Group linked to %{organization}. From now on your alerts arrive here, each in its own topic. The email for the same alert is no longer sent."
+      not_owner: "Only the organization owner can link a group. The group was not linked."
+      not_forum: "This group does not have topics turned on. Turn them on in the group settings, then go back to CloseYourIt and press “Link Telegram group” again."
+      topics:
+        critical: "Critical"
+        other: "Other"

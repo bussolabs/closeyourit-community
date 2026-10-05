@@ -1,0 +1,42 @@
+<%# locals: (action:) %>
+<%# Details panel on the right of the action page, like the ticket one: status (changeable), team,
+    dates and linked ticket. %>
+<%= render Ui::SectionComponent.new(title: t("member.workload.actions.details"), body_class: "divide-y divide-stone-100 dark:divide-zinc-800",
+      test_id: "workload-action-details") do %>
+  <%= render "member/tickets/detail_row", label: t("member.workload.actions.status_label"), test_id: "workload-detail-status" do %>
+    <details class="relative inline-block" data-test="workload-action-status">
+      <summary class="list-none cursor-pointer inline-flex items-center gap-1.5">
+        <%= render Ui::BadgeComponent.new(label: t("member.workload.actions.status.#{action.status}"), color: workload_status_color(action.status), dot: true) %><%= render Ui::IconComponent.new(name: "chevron-down", class: "text-[9px] text-gray-400 dark:text-zinc-500") %>
+      </summary>
+      <div class="absolute left-0 top-7 z-10 w-44 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-1">
+        <% Workload::Action.statuses.each_key do |status| %>
+          <%= button_to status_member_workload_action_path(action, status: status), method: :patch,
+                class: "w-full text-left flex items-center gap-2 px-3 h-8 text-[12.5px] hover:bg-stone-50 dark:hover:bg-zinc-800",
+                data: { test: "workload-action-status-#{status}" } do %>
+            <%= render Ui::BadgeComponent.new(label: t("member.workload.actions.status.#{status}"), color: workload_status_color(status), dot: true) %>
+          <% end %>
+        <% end %>
+      </div>
+    </details>
+  <% end %>
+  <%= render "member/tickets/detail_row", label: t("member.workload.actions.team_label"), test_id: "workload-detail-team" do %>
+    <span class="text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= action.team.name %></span>
+  <% end %>
+  <%= render "member/tickets/detail_row", label: t("member.workload.actions.scheduled_label"), test_id: "workload-detail-scheduled" do %>
+    <span class="font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= action.scheduled_at ? "#{workload_short_date(action.scheduled_at)} · #{action.scheduled_at.strftime("%H:%M")}" : "—" %></span>
+  <% end %>
+  <%= render "member/tickets/detail_row", label: t("member.workload.actions.due_label"), test_id: "workload-detail-due" do %>
+    <% if action.due_at %>
+      <%= render "member/workload/actions/due_badge", action: action %>
+    <% else %>
+      <span class="text-[12px] text-gray-400 dark:text-zinc-500">—</span>
+    <% end %>
+  <% end %>
+  <%= render "member/tickets/detail_row", label: t("member.workload.actions.ticket_label"), test_id: "workload-detail-ticket" do %>
+    <% if action.ticket %>
+      <%= link_to action.ticket.code, member_ticket_path(action.ticket), class: "font-mono text-[12px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300" %>
+    <% else %>
+      <span class="text-[12px] text-gray-400 dark:text-zinc-500">—</span>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,6 @@
+<%# locals: name, selected, test_id, aria_label — select searchable (cadenza per-notifica × canale).
+    Nessun <label> visibile qui (cella densa di tabella): aria_label è l'unico nome accessibile.
+    size: :sm — riga densa della tabella cadenze, h-[34px] di default eccede l'altezza riga. %>
+<%= render Ui::SelectComponent.new(name: name,
+      options: Notifications::Cadence::VALUES.map { |value| [ t("member.notifications.cadences.#{value}"), value ] },
+      selected: selected, test_id: test_id, aria_label: aria_label, size: :sm) %>

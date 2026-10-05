@@ -1,0 +1,38 @@
+<% content_for :title, t("member.home.title") %>
+
+<%# CYRA-657 — la home è la decisione, non un elenco: una decisione per volta, la più vecchia.
+    Chi vuole vedere l'arretrato per intero ha il link alla plancia, che resta quella di CYRA-592.
+
+    B25 — the page header like every member page, so it collapses with the others. It replaced the
+    thin queue bar: its numbers are the header counts, its two links the header actions. Without an
+    organization there is no header: its toggle saves to an endpoint that needs one. %>
+<div class="p-7 space-y-6">
+  <% if current_organization.nil? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.home.no_org_title"), body: t("member.home.no_org_body"),
+                                           icon: "building-2", framed: true, test_id: "home-no-org") %>
+  <% else %>
+    <%= render Ui::PageHeaderComponent.new(title: t("member.home.title"), subtitle: t("member.home.subtitle"),
+                                           test_id: "home-header", counts_test_id: "home-queue-bar") do |header| %>
+      <% header.with_counts do %>
+        <%= render "home/queue_counts", next_decision: @next, in_flight_total: @in_flight_total %>
+      <% end %>
+      <% header.with_actions do %>
+        <%# «Indietro» compare solo se c'è davvero qualcosa da riprendere: un pulsante che non fa niente
+            è peggio di un pulsante che non c'è. %>
+        <% if @next.skipped_count.positive? %>
+          <%= render Ui::ButtonComponent.new(label: t("member.home.bar.back"), href: member_home_card_back_path,
+                                             method: :post, icon: "chevron-left", variant: :secondary_muted,
+                                             size: :sm, test_id: "home-back") %>
+        <% end %>
+        <%= render Ui::ButtonComponent.new(label: t("member.home.bar.see_all"), href: member_home_approvals_path,
+                                           variant: :secondary, size: :sm, test_id: "home-see-all") %>
+      <% end %>
+    <% end %>
+
+    <% if @next.card? %>
+      <%= render "home/next_decision", card: @next.card, item: @next.item %>
+    <% else %>
+      <%= render "home/queue_empty", next_decision: @next, in_flight_total: @in_flight_total %>
+    <% end %>
+  <% end %>
+</div>

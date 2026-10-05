@@ -1,0 +1,62 @@
+<%# Card del board Kanban. Root con id=dom_id(ticket) ("ticketing_ticket_<id>"): è il target dei %>
+<%# broadcast (remove per spostarla, append nella colonna destinazione). Reso sia server-side %>
+<%# (board.html.erb) sia dal broadcast di Ticketing::ChangeStatus → niente Current/contesto richiesto. %>
+<%# draggable bakeato server-side da can_manage (default false): il render server di board.html.erb %>
+<%# passa il can_manage del viewer (test non-JS lo legge); il broadcast di ChangeStatus non lo passa %>
+<%# (false) e il controller ticket-board lo riallinea per-viewer (canManageValue) sulle card live. %>
+<%# role=listitem: la card resta <a href> (link nativo, drag/keyboard invariati) ma dentro la %>
+<%# colonna role=list sovrascrive il ruolo link implicito ai fini della struttura lista (a11y, WP2.9). %>
+<%= link_to member_ticket_path(ticket), id: dom_id(ticket),
+      draggable: local_assigns.fetch(:can_manage, false),
+      role: "listitem",
+      class: "block rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-2 hover:border-indigo-300 dark:hover:border-indigo-500/50",
+      data: { test: "board-card-#{ticket.id}", ticket_board_target: "card", ticket_id: ticket.id, title: ticket.title } do %>
+  <%# CYRA-901 — compact card: priority as a tinted arrow before the code, warnings as named icons on the
+      right. Same facts as the old text badges; the name lives in `title` and in an sr-only label. %>
+  <% priority = ticket.priority %>
+  <% open_questions = local_assigns.fetch(:open_questions, 0) %>
+  <div class="flex items-center justify-between gap-2">
+    <span class="inline-flex items-center gap-1.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400">
+      <span class="inline-flex items-center justify-center w-4 h-4 rounded <%= Ui::Colors.chip(priority.color) %>"
+            title="<%= priority.display_label %>" data-test="board-card-priority-<%= ticket.id %>">
+        <%= render Ui::IconComponent.new(name: Ticketing::Constants::PRIORITY_ICONS.fetch(priority.code, "flag"), class: "text-[9px]") %>
+        <span class="sr-only"><%= priority.display_label %></span>
+      </span>
+      <%= render "member/tickets/agent_indicator", ticket: ticket %>
+      <%= render "member/tickets/lease_indicator", ticket: ticket %>
+      <%= ticket.code %>
+      <%= render "member/tickets/attachments_indicator", ticket: ticket %>
+    </span>
+    <span class="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+      <%# `blocked`, `awaiting` and `open_questions` arrive precomputed (default off): the card is also
+          rendered by broadcasts, where there is no Current viewer to ask (CYRA-82, CYRA-374, CYRA-844). %>
+      <% if local_assigns.fetch(:blocked, false) %>
+        <span title="<%= t("member.tickets.dependencies.blocked_badge") %>" data-test="board-card-blocked-<%= ticket.id %>">
+          <%= render Ui::IconComponent.new(name: "lock", class: "text-[10px]") %><span class="sr-only"><%= t("member.tickets.dependencies.blocked_badge") %></span>
+        </span>
+      <% end %>
+      <% if local_assigns.fetch(:awaiting, false) %>
+        <span title="<%= t("member.tickets.awaiting.badge") %>" data-test="board-card-awaiting-<%= ticket.id %>">
+          <%= render Ui::IconComponent.new(name: "clipboard-check", class: "text-[10px]") %><span class="sr-only"><%= t("member.tickets.awaiting.badge") %></span>
+        </span>
+      <% end %>
+      <% if open_questions.positive? %>
+        <span class="inline-flex items-center gap-0.5" title="<%= t("member.tickets.open_questions.badge_title", count: open_questions) %>"
+              data-test="board-card-open-questions-<%= ticket.id %>">
+          <%= render Ui::IconComponent.new(name: "circle-question-mark", class: "text-[10px]") %><span class="font-mono text-[10px]" aria-hidden="true"><%= open_questions %></span>
+          <span class="sr-only"><%= t("member.tickets.open_questions.badge_title", count: open_questions) %></span>
+        </span>
+      <% end %>
+    </span>
+  </div>
+  <%# Two lines on the card too: a five-line title made the column scroll for nothing. %>
+  <p class="mt-1 text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 leading-snug line-clamp-2" title="<%= ticket.title %>" data-test="board-card-title"><%= board_card_title(ticket.title, local_assigns[:highlight]) %></p>
+  <div class="mt-1.5 flex items-center justify-between">
+    <span class="inline-flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-zinc-400"><span class="w-1.5 h-1.5 rounded-[2px] <%= Ui::Colors.swatch(ticket.project.color) %>"></span><%= ticket.project.name %></span>
+    <% if ticket.assignee %>
+      <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[9px] font-semibold" title="<%= ticket.assignee.name %>"><%= avatar_initials(ticket.assignee.name) %></span>
+    <% else %>
+      <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 text-[9px]" title="<%= t('member.tickets.unassigned') %>"><%= render Ui::IconComponent.new(name: "user", class: "text-[9px]") %></span>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,8 @@
+---
+en:
+  workload:
+    errors:
+      invalid: The action could not be saved
+      participants_invalid: The participants could not be updated
+      already_linked: The action is already linked to a ticket
+      project_not_found: Project not found

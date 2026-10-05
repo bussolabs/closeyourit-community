@@ -1,0 +1,51 @@
+<%# CYRA-924 — no count in the bar: the counts line above says it.
+    `grouped` viaggia nel form: filtrare da qui non deve riportare alla lista completa.
+    CYRA-924 — the period is a chip of the Filters menu, as on Errors (C61); the grouping is a
+    "Group by" choice of the View menu (C62). %>
+<% range = current_time_range %>
+<% range_set = range.custom? || range.key != Monitoring::TimeRange::DEFAULT %>
+<%= render(Ui::TableToolbarComponent.new(framed: true, 
+      url: member_monitoring_log_entries_path, query: params[:q],
+      search_placeholder: t("member.monitoring.logs.search_placeholder"),
+      search_test_id: "logs-search", apply_test_id: "logs-filter",
+      # CYRA-579 — nel form viaggia TUTTO quello che restringe la lista: prima c'era solo il
+      # periodo, e cercare una parola azzerava la densità scelta, il filtro su un campo, le
+      # voci del messaggio aperto e — la peggiore — il filtro su una sola richiesta, che
+      # riportava in silenzio i risultati di tutta l'organizzazione. `from`/`to` non stanno
+      # qui: quando ci sono il periodo è «personalizzato» e i due estremi sono già campi veri
+      # del selettore — ripeterli sarebbe lo stesso campo due volte.
+      hidden: { grouped: params[:grouped], per: params[:per],
+                trace_id: params[:trace_id], fingerprint: params[:fingerprint],
+                field: params[:field], value: params[:value], release: params[:release] },
+      group_by: [ [ "message", "1" ], [ "none", nil ] ].map { |key, grouped|
+        { label: t("member.monitoring.logs.group_by_#{key}"), hint: (t("member.monitoring.logs.group_by_none_hint") if key == "none"),
+          href: member_monitoring_log_entries_path(request.query_parameters.merge("grouped" => grouped).except("page", "fingerprint").compact),
+          active: @grouped == grouped.present?, test_id: "logs-group-by-#{key}" } },
+      test_id: "logs-toolbar")) do |toolbar| %>
+  <% toolbar.with_filter(key: "range", label: t("shared.time_range.label"), active: range_set) do %>
+    <%= render "member/monitoring/range_filter", range:, range_set:, test_prefix: "logs" %>
+  <% end %>
+  <% toolbar.with_filter(key: "level", label: t("member.monitoring.logs.filter_level")) do %>
+    <%# CYRA-350 — accanto a ogni livello quante voci ha; quelli a zero restano visibili (esistono
+        nel vocabolario) ma non si scelgono, perché sceglierli portava su una pagina vuota. %>
+    <div class="w-40"><%= render Ui::SelectComponent.new(name: "level", multiple: true, summary: true,
+      options: Logs::Entry.levels.keys.map { |l| [ "#{error_level_label(l).capitalize} (#{number_with_delimiter(@level_counts[l].to_i)})", l ] },
+      disabled_values: @level_counts.select { |_level, count| count.zero? }.keys,
+      selected: params[:level], placeholder: t("member.monitoring.logs.filter_level"), test_id: "filter-level") %></div>
+  <% end %>
+  <% toolbar.with_filter(key: "environment", label: t("member.monitoring.logs.filter_environment")) do %>
+    <div class="w-40"><%= render Ui::SelectComponent.new(name: "environment", multiple: true, summary: true,
+      options: @environments.map { |e| [ e, e ] },
+      selected: params[:environment], placeholder: t("member.monitoring.logs.filter_environment"), test_id: "filter-environment") %></div>
+  <% end %>
+  <% toolbar.with_filter(key: "project_id", label: t("member.monitoring.logs.filter_project")) do %>
+    <div class="w-40"><%= render Ui::SelectComponent.new(name: "project_id", multiple: true, summary: true,
+      options: @projects.map { |p| [ p.name, p.id, p.color ] }, selected: params[:project_id],
+      placeholder: t("member.monitoring.logs.filter_project"), test_id: "filter-project") %></div>
+  <% end %>
+  <% toolbar.with_views do %>
+    <%= render Ui::SavedViewsComponent.new(resource_type: "log_entries", views: @saved_views,
+          index_helper: :member_monitoring_log_entries_path, current_filters: params,
+          presets: @saved_view_presets) %>
+  <% end %>
+<% end %>

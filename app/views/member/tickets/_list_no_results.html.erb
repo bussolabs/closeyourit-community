@@ -1,0 +1,25 @@
+<%# Ricerca/filtro attivi ma zero risultati: NON è "nessun ticket". Cita i criteri, offre di %>
+<%# azzerarli e rimanda a "Chiedi ai ticket" (CYRA-387). I chip in cima restano sul totale reale. %>
+<div class="flex flex-col items-center justify-center text-center px-6 py-16" data-test="tickets-no-results">
+  <span class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500"><%= render Ui::IconComponent.new(name: "search", class: "text-[22px]") %></span>
+  <h2 class="mt-4 font-display text-[16px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.no_results.title") %></h2>
+  <p class="mt-1.5 text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-sm">
+    <% if @search_query.present? %>
+      <%= t("member.tickets.no_results.body_query", query: @search_query) %>
+    <% else %>
+      <%= t("member.tickets.no_results.body_filters") %>
+    <% end %>
+  </p>
+  <%# turbo_frame: _top come i link di riga: questi bottoni escono da tickets-results. Senza, %>
+  <%# "Azzera" ricaricherebbe solo il frame lasciando piena la barra di ricerca (che gli sta %>
+  <%# sopra, fuori dal frame) e "Chiedi ai ticket" caricherebbe una pagina priva di quel frame %>
+  <%# → Turbo scarterebbe la risposta (frame vuoto). CYRA-387. %>
+  <div class="mt-4 flex items-center gap-2">
+    <%= render Ui::ButtonComponent.new(label: t("member.tickets.no_results.reset"),
+          href: list_member_tickets_path, variant: :primary, size: :sm,
+          icon: "x", test_id: "tickets-reset-search", data: { turbo_frame: "_top" }) %>
+    <%= render Ui::ButtonComponent.new(label: t("member.tickets.no_results.ask"),
+          href: ask_member_tickets_path(q: @search_query.presence), variant: :secondary_muted, size: :sm,
+          icon: "wand-sparkles", test_id: "tickets-no-results-ask", data: { turbo_frame: "_top" }) %>
+  </div>
+</div>

@@ -1,0 +1,23 @@
+<%= render Ui::SectionComponent.new(title: t("member.monitoring.device_breakdown"),
+      body_class: "px-4 py-3 space-y-3", test_id: "error-device-breakdown") do %>
+    <% if @device_breakdown[:os].any? %>
+      <div>
+        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.device_os") %></p>
+        <div class="mt-1 rounded-md border border-stone-200 dark:border-zinc-800 divide-y divide-stone-200 dark:divide-zinc-800">
+          <% @device_breakdown[:os].each do |(name, version), count| %>
+            <div class="flex px-3 py-1.5"><span class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 break-all"><%= [ name, version ].compact.join(" ") %></span><span class="ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400 shrink-0"><%= count %></span></div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+    <% if @device_breakdown[:apps].any? %>
+      <div>
+        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.device_app") %></p>
+        <div class="mt-1 rounded-md border border-stone-200 dark:border-zinc-800 divide-y divide-stone-200 dark:divide-zinc-800">
+          <% @device_breakdown[:apps].each do |version, count| %>
+            <div class="flex px-3 py-1.5"><span class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 break-all"><%= version %></span><span class="ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400 shrink-0"><%= count %></span></div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+<% end %>

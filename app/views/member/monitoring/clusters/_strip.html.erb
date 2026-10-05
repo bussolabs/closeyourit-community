@@ -1,0 +1,26 @@
+<%# locals: cluster:, summary:, restarts:, usage: — the four figures as one low strip of cells split by lines. %>
+<% apps_short = summary.apps_ok < summary.apps_total %>
+<% nodes_short = summary.nodes_ready < summary.nodes_total %>
+<% cells = [
+     { key: "nodes", label: t("member.clusters.tiles.nodes"), value: "#{summary.nodes_ready}/#{summary.nodes_total}", warn: nodes_short,
+       fill: (summary.nodes_total.positive? ? summary.nodes_ready * 100 / summary.nodes_total : nil) },
+     { key: "apps", label: t("member.clusters.tiles.apps"), value: "#{summary.apps_ok}/#{summary.apps_total}", warn: apps_short,
+       fill: (summary.apps_total.positive? ? summary.apps_ok * 100 / summary.apps_total : nil) },
+     { key: "restarts", label: t("member.clusters.tiles.restarts"), value: restarts.to_s, warn: restarts.positive?, fill: nil },
+     { key: "usage", label: t("member.clusters.tiles.usage"), value: (usage ? "#{usage[:cpu] || "—"}% / #{usage[:memory] || "—"}%" : "—"), warn: false,
+       fill: usage&.dig(:cpu), caption: t(usage ? "member.clusters.tiles.usage_caption" : "member.clusters.tiles.no_metrics") }
+   ] %>
+<div class="grid grid-cols-2 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 lg:grid-cols-4" data-test="cluster-strip">
+  <% cells.each do |cell| %>
+    <div class="flex min-w-0 flex-col gap-1.5 border-stone-200 dark:border-zinc-800 px-5 py-3 odd:border-r [&:nth-child(-n+2)]:border-b lg:border-r lg:last:border-r-0 lg:[&:nth-child(-n+2)]:border-b-0" data-test="cluster-strip-<%= cell[:key] %>">
+      <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= cell[:label] %></span>
+      <span class="font-mono text-[18px] font-semibold <%= cell[:warn] ? "text-amber-600 dark:text-amber-400" : "text-zinc-900 dark:text-zinc-100" %>"><%= cell[:value] %></span>
+      <% if cell[:fill] %>
+        <span class="block h-1 overflow-hidden rounded-full bg-gray-100 dark:bg-zinc-800"><span class="block h-full <%= cell[:warn] ? "bg-amber-500" : "bg-emerald-500" %>" style="width: <%= [ cell[:fill], 100 ].min %>%"></span></span>
+      <% end %>
+      <% if cell[:caption] %>
+        <span class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= cell[:caption] %></span>
+      <% end %>
+    </div>
+  <% end %>
+</div>

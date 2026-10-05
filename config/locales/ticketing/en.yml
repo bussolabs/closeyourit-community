@@ -1,0 +1,81 @@
+en:
+  ticketing:
+    # CYRA-392 — localized labels for the default statuses/priorities (Types::InstallDefaults),
+    # resolved by code (never by label) via Types::TicketStatus#display_label / TicketPriority#display_label.
+    statuses:
+      open: Open
+      in_progress: In Progress
+      in_review: In Review
+      resolved: Resolved
+      closed: Closed
+    priorities:
+      low: Low
+      medium: Medium
+      high: High
+    status_hints:
+      open: Waiting to be picked up. Whoever works on the project moves it into progress.
+      in_progress: Someone is working on it. When ready they send it to review.
+      in_review: Waiting for the reviewer. If approved it becomes Resolved, otherwise it goes back to in progress.
+      resolved: Done and approved. It gets closed when there is no need to keep it open.
+      closed: Closed, nothing else to do. It can be reopened if needed.
+    reports:
+      service_line:
+        created: "Work report added."
+        updated: "Work report updated to version %{version}."
+        review_rejection: "The work was sent back: the reason is in the work report."
+      errors:
+        invalid: "Invalid report. Check the text."
+        not_found: "This ticket has no work report yet."
+    analysis_archive:
+      unknown_author: "Author no longer available"
+      errors:
+        too_long: "The analysis summary for %{code} does not fit the field: it needs a manual pass."
+    compaction:
+      errors:
+        empty_summary: "The model returned no summary."
+    relabel:
+      errors:
+        empty: "The model returned no analysis."
+        unlabelled: "The model replied without the expected labels."
+    notifications:
+      content:
+        created: "New ticket %{code}"
+        assigned: "%{code} assigned to %{name}"
+        unassigned: "%{code} unassigned"
+        status_changed: "%{code}: %{from} → %{to}"
+        review_requested: "%{code} is ready for your review"
+        review_rejected: "Review rejected on %{code}"
+        review_approved: "%{code}: review approved, now %{to}"
+        milestone_set: "%{code}: milestone %{name}"
+        milestone_removed: "%{code}: milestone removed"
+        commented: "%{name} commented on %{code}"
+        mentioned: "%{name} mentioned you in %{code}"
+        question_asked: "%{name} asked a question on %{code}"
+        question_answered: "%{name} answered a question on %{code}"
+    ticket_notifications:
+      mailer:
+        notify:
+          subject: "[%{code}] %{title}"
+          greeting: "Hi,"
+          action: View ticket
+          footer: You receive this because you watch this ticket. Manage notifications in your preferences.
+          label_project: "Project"
+          label_ticket: "Ticket"
+  activerecord:
+    # Human field names: they show up in the full_messages surfaced in flashes and CLI responses.
+    attributes:
+      ticketing/ticket:
+        title: Title
+        description: Description
+        technical_analysis: Technical analysis
+    errors:
+      models:
+        ticketing/ticket:
+          attributes:
+            description:
+              # Minimum body (any kind) = free-text description OR at least one scenario with content.
+              body_required: is required, or add at least one scenario
+        ticketing/scenario:
+          attributes:
+            base:
+              steps_required: needs at least one step (Given/When/Then/Expected)

@@ -1,0 +1,58 @@
+<% content_for :title, t("member.monitoring.session_health.title") %>
+<% range = current_time_range %>
+<% range_set = range.custom? || range.key != Member::Monitoring::SessionHealthController::DEFAULT_RANGE %>
+<div class="p-7 space-y-6" data-test="member-session-health">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.monitoring.session_health.title"),
+        subtitle: t("member.monitoring.session_health.subtitle"),
+        breadcrumb: [ { label: t("member.monitoring.session_health.title") } ]) do |header| %>
+    <% header.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.session_health.groups"), value: @pagination.total, test_id: "session-health-total") %>
+    <% end %>
+  <% end %>
+
+  <% if !@has_records && !params.values_at(:q, :project_id, :environment, :source).any?(&:present?) && !range_set %>
+    <%= render Ui::EmptyStateComponent.new(title: t(".empty"), body: t(".empty_body"), example: t(".empty_example"), icon: "heart-pulse", framed: true, test_id: "session-health-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="session-health-table">
+      <%= render Ui::TableToolbarComponent.new(framed: true, url: member_monitoring_session_health_path, query: params[:q],
+            search_placeholder: t(".search"), search_test_id: "session-health-search", test_id: "session-health-toolbar") do |toolbar| %>
+        <% toolbar.with_filter(key: "project_id", label: t(".project")) do %>
+          <%= render Ui::SelectComponent.new(name: "project_id", multiple: true, summary: true, options: @projects.map { |project| [ project.name, project.id ] }, selected: params[:project_id], placeholder: t(".project"), test_id: "filter-project") %>
+        <% end %>
+        <% toolbar.with_filter(key: "environment", label: t(".environment")) do %>
+          <%= render Ui::SelectComponent.new(name: "environment", multiple: true, summary: true, options: @environments.map { |value| [ value, value ] }, selected: params[:environment], placeholder: t(".environment"), test_id: "filter-environment") %>
+        <% end %>
+        <% toolbar.with_filter(key: "source", label: t(".source")) do %>
+          <%= render Ui::SelectComponent.new(name: "source", options: [ [ t(".all_sources"), "" ], [ t(".individual"), "individual" ], [ t(".aggregate"), "aggregate" ] ], selected: params[:source], placeholder: t(".source"), test_id: "filter-source") %>
+        <% end %>
+        <% toolbar.with_filter(key: "range", label: t("shared.time_range.label"), active: range_set) do %>
+          <%= render Ui::RangeFilterComponent.new(name: "range", label: t("shared.time_range.label"),
+                options: [ [ t("shared.time_range.presets.7d"), "" ] ] + (Monitoring::TimeRange::PRESETS.keys - [ "7d" ]).map { |key| [ t("shared.time_range.presets.#{key}"), key ] } + [ [ t("shared.time_range.custom"), "custom" ] ],
+                selected: (range.key if range_set), custom: "custom", from: (range.from if range.custom?), to: (range.to if range.custom?), test_id: "filter-range", bounds_test_prefix: "session-health-range") %>
+        <% end %>
+      <% end %>
+      <% if @rows.empty? %>
+        <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_monitoring_session_health_path, test_id: "session-health-no-match", reset_test_id: "session-health-reset") %>
+      <% else %>
+        <%= render Ui::TableComponent.new(stacked: true, label: t("member.monitoring.session_health.title")) do |table| %>
+          <% table.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t(".release_environment"), sort: "release") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t(".source"), sort: "source") %>
+            <% %w[known crashed unknown rate].each do |column| %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t(".#{column}"), sort: column, align: :right, initial: :desc) %>
+            <% end %>
+          <% end %>
+          <%= render partial: "row", collection: @rows, as: :cohort %>
+        <% end %>
+        <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "session-health-pagination") %>
+      <% end %>
+    </div>
+    <section class="max-w-prose space-y-2 text-sm text-gray-500 dark:text-zinc-400" data-test="session-health-definition" aria-label="<%= t('.definition_title') %>">
+      <h2 class="font-medium text-zinc-900 dark:text-zinc-100"><%= t(".definition_title") %></h2>
+      <p><%= t(".definition") %></p>
+      <p><%= t(".sources_note") %></p>
+      <p><%= t(".recordings_note") %></p>
+    </section>
+  <% end %>
+</div>

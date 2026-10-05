@@ -1,0 +1,39 @@
+<%# locals: (is_perf_issue:) %>
+<%= render Ui::SectionComponent.new(header_layout: :row, header_padding: :compact, body_class: nil,
+      test_id: "query-panel") do |section| %>
+  <% section.with_title do %>
+    <%= render Ui::IconComponent.new(name: @group.kind_slow_query? ? "database" : "bolt", class: "text-gray-400 dark:text-zinc-500 text-[12px] mr-1.5") %><%= @group.kind_slow_query? ? t("member.metrics.query") : t("member.metrics.signature") %>
+  <% end %>
+  <% if @group.kind_slow_query? %>
+    <% section.with_actions do %>
+      <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= t("member.metrics.query_hint") %></span>
+    <% end %>
+  <% end %>
+  <div class="px-4 py-3.5">
+    <%# Same surface as the copyable snippet below: one look for every code block of the panel. %>
+    <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5 overflow-x-auto">
+<pre class="font-mono text-[12.5px] leading-relaxed text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap break-all"><%= metric_display_signature(@group) %></pre>
+    </div>
+  </div>
+  <% if @occurrences.empty? %>
+    <p class="px-4 pb-3.5 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="no-occurrences"><%= t("member.metrics.bucket.no_data") %></p>
+  <% else %>
+    <% @occurrences.each do |occ| %>
+      <% bindings = occurrence_bindings(occ) %>
+      <div class="<%= "hidden" unless occ == @selected %>" data-test="occurrence-panel" data-occurrence-select-target="panel" data-panel-id="<%= occ.id %>">
+        <div class="px-4 pt-3 pb-3">
+          <% if @group.kind_slow_query? %>
+            <%= render "member/monitoring/metric_groups/query_parameters", bindings: bindings %>
+          <% end %>
+          <div class="flex items-center flex-wrap gap-x-5 gap-y-1.5 mt-3 pt-3 border-t border-stone-200 dark:border-zinc-800 text-[11.5px]" data-test="occurrence-footer">
+            <% if occurrence_source(occ).present? %>
+              <span class="inline-flex items-center gap-1.5"><span class="font-mono uppercase text-[9.5px] tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.metrics.source") %></span><span class="font-mono text-indigo-600 dark:text-indigo-400"><%= occurrence_source(occ) %></span></span>
+            <% end %>
+            <span class="inline-flex items-center gap-1.5"><span class="font-mono uppercase text-[9.5px] tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.metrics.occurred") %></span><span class="font-mono text-gray-600 dark:text-zinc-400"><%= occ.occurred_at.strftime("%d/%m %H:%M:%S") %></span></span>
+            <span class="inline-flex items-center gap-1.5"><span class="font-mono uppercase text-[9.5px] tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.metrics.sample_label") %></span><span class="font-mono text-gray-500 dark:text-zinc-400"><%= occ.sample_id %></span></span>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

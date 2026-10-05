@@ -1,0 +1,26 @@
+it:
+  member:
+    guides:
+      shared_values:
+        title: Valore in comune
+        subtitle: Quando lo stesso valore è ripetuto in più progetti, CloseYourIt te lo dice e propone di tenerne uno solo.
+        what_title: Cosa guarda CloseYourIt
+        what_intro: Guarda il valore, non il nome. Se due progetti tengono lo stesso valore, è lo stesso segreto anche se lo chiamano in modo diverso; se due progetti hanno una variabile con lo stesso nome ma valori diversi, non c'entrano niente l'una con l'altra.
+        what_value: Il confronto è sul contenuto, e avviene senza che nessuno legga i valori.
+        what_names: "I nomi possono essere diversi da progetto a progetto: non cambia niente."
+        what_environments: Ogni ambiente fa storia a sé. Produzione e collaudo hanno valori diversi, quindi sono proposte diverse.
+        what_minimum: Servono almeno due progetti. Un valore che vive in un progetto solo è già dove deve stare.
+        setup_title: Come si accetta una proposta
+        setup_step1: La proposta compare in «Da sistemare», nel Vault, e sulla pagina dei segreti dei progetti coinvolti.
+        setup_step2: Aprila. Vedi quali progetti hanno quel valore, con che nome ciascuno lo chiama e quali repository lo riceveranno.
+        setup_step3: Scegli il nome che il valore avrà nell'organizzazione e, se vuoi, cambia il nome con cui un progetto continuerà a leggerlo.
+        setup_step4: Conferma. Il valore si sposta una volta sola e ogni progetto lo riceve subito, senza dover cambiare nulla nel proprio codice.
+        notes_title: Cosa non fa
+        note_never_automatic: Non sposta mai niente da solo. Senza la tua conferma non cambia nulla.
+        note_own_name: "Non ti obbliga a rinominare le tue variabili: ogni progetto tiene il nome che usa oggi, a meno che tu non lo cambi."
+        note_rotation: Se una delle copie aveva una regola «cambialo ogni N giorni», quella regola sparisce con la copia. La pagina di conferma te lo dice, e la rimetti sul valore dell'organizzazione.
+        note_dismiss: "Se due progetti hanno lo stesso valore per caso e devono restare separati, usa «Non proporre più»: la proposta non torna."
+        note_permission: Le proposte le vede e le accetta solo chi gestisce i secret dell'organizzazione.
+      index:
+        shared_values:
+          title: Valore in comune

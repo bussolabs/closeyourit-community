@@ -1,0 +1,24 @@
+en:
+  cli:
+    authorize:
+      title: "Authorize CLI"
+      lead: "A device wants to access CloseYourIt as you."
+      client_label: "Device"
+      unknown_client: "Command-line client"
+      organization_label: "Organization"
+      organization_hint: "The CLI token will act within the organization you choose, with your permissions."
+      approve: "Authorize"
+      authorizing: "Authorizing…"
+      deny: "Deny"
+      no_grant_title: "Code not valid"
+      no_grant_lead: "This authorization code is unknown or has expired. Start the login again from your terminal."
+      approved_title: "Device authorized"
+      approved_lead: "Return to your terminal — the CLI now has access to %{organization}."
+      # CYRA-717 — command-line access is not forever: whoever grants it reads it here, as they grant
+      # it, not three months later when it stops working with no explanation.
+      approved_expiry: "This access lasts %{days} days. When it expires, run login again from your terminal."
+      denied_title: "Request denied"
+      denied_lead: "No access was granted. You can close this page."
+      back: "Back to CloseYourIt"
+      errors:
+        no_organization: "Choose an organization to authorize."

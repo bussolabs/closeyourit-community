@@ -1,0 +1,13 @@
+<%= render Ui::TableComponent::RowComponent.new(test_id: "cluster-workload-#{workload.id}") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <span class="block text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= workload.name %></span>
+    <span class="block truncate font-mono text-[11.5px] text-gray-500 dark:text-zinc-400"><%= workload.image.presence || "—" %></span>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.clusters.workloads.col_namespace")) do %>
+    <span class="block font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= workload.namespace.name %></span>
+    <span class="block text-[12px] text-gray-500 dark:text-zinc-400"><%= workload.namespace.project ? [ workload.namespace.project.name, workload.namespace.environment&.label ].compact.join(" · ") : t("member.clusters.namespaces.unlinked") %></span>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.clusters.workloads.col_status"))) { cluster_workload_badge(workload) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.clusters.workloads.col_copies"), mono: true, align: :right)) { "#{workload.ready}/#{workload.desired}" } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.clusters.workloads.col_restarts"), mono: true, align: :right)) { workload.restarts_24h.to_s } %>
+<% end %>

@@ -1,0 +1,131 @@
+<% content_for :title, t("member.members.title") %>
+<% can_manage = can?("members.manage") %>
+<%# Il link di accettazione sta dietro members.invite, non dietro members.view con cui si apre questa
+    pagina: leggere l'elenco non deve bastare per far entrare qualcuno nell'organizzazione. %>
+<% can_invite = can?("members.invite") %>
+<% can_edit = can?("members.edit") %>
+<% pending = t("member.members.pending_count", count: @invitations_pagination.total) %>
+
+<div class="p-7 space-y-6" data-test="member-members">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.members.title"),
+        subtitle: t("member.members.help_title"),
+        breadcrumb: [ { label: t("member.members.title") } ],
+        counts_test_id: "members-counts") do |h| %>
+    <% h.with_counts do %>
+      <%# CYRA-556 — le persone e le utenze dei programmi stanno nella stessa tabella ma non sono la
+          stessa cosa: il chip «Membri» conta i colleghi, quello accanto le utenze. %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.members", count: @total_members), value: @total_members, test_id: "members-count-members") %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.service_accounts", count: @total_service_accounts), value: @total_service_accounts, value_color: (:violet if @total_service_accounts.positive?), test_id: "members-count-service") %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.pending"), value: @invitations_pagination.total, value_color: :amber, test_id: "members-count-pending") %>
+    <% end %>
+    <% if can_manage %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.members.invite"), href: new_member_invitation_path, variant: :primary, size: :sm, icon: "user-plus", test_id: "member-invite") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% content_for :floating_notice do %>
+    <%= render Ui::FloatingNoticeComponent.new(key: "members_roles", title: t("member.members.roles_notice_title"),
+                                               test_id: "members-roles-notice") do %>
+      <p><%= t("member.members.roles_notice_body") %></p>
+    <% end %>
+  <% end %>
+
+  <div>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <%= render(Ui::TableToolbarComponent.new(framed: true,
+            url: member_members_path, query: params[:q],
+            search_placeholder: t("member.members.search_placeholder"),
+            search_test_id: "members-search", test_id: "members-toolbar")) do |toolbar| %>
+        <% toolbar.with_filter(key: "role", label: t("member.members.filter_role")) do %>
+          <div class="w-40"><%= render Ui::SelectComponent.new(name: "role", multiple: true, summary: true, options: Connections::Membership.roles.keys.map { |r| [ t("member.roles.#{r}"), r ] }, selected: params[:role], placeholder: t("member.members.filter_role"), test_id: "members-filter-role") %></div>
+        <% end %>
+        <% toolbar.with_views do %>
+          <%= render Ui::SavedViewsComponent.new(resource_type: "members", views: @saved_views,
+                index_helper: :member_members_path, current_filters: params) %>
+        <% end %>
+      <% end %>
+      <%# CYRA-555 — la tabella senza righe non diceva niente: nessun messaggio, solo l'intestazione.
+          Ora, quando è una ricerca o il filtro sul livello a non aver trovato nessuno, lo si legge —
+          con quante persone ci sono davvero e il modo di rivederle tutte. %>
+      <% if @memberships.empty? && @members_filtering %>
+        <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_members_path,
+              body: t("member.members.no_results_body", count: @total_members),
+              icon: "users", test_id: "members-no-results", reset_test_id: "members-reset-search") %>
+      <% else %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.members.title"))) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.members.col_member"), sort: "member") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.members.col_email"), sort: "email") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.members.col_level"), sort: "role") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.members.col_effective_roles")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.members.col_joined"), sort: "joined", initial: :desc, align: :right) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.members.col_actions"), label_hidden: true, classes: "w-10") %>
+          <% end %>
+          <%= render partial: "member/members/membership", collection: @memberships, as: :membership, locals: { can_manage: can_manage, can_edit: can_edit, member_teams: @member_teams } %>
+        <% end %>
+        <%= render(Ui::PaginationComponent.new(pagination: @members_pagination, test_id: "members-pagination")) %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @invitations.any? %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+        <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.members.pending_title") %></h2>
+        <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= pending %></span>
+      </div>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.members.pending_title"))) do |t| %>
+        <% t.with_head do %>
+          <%# Seconda tabella della pagina: namespace param dedicato (invitations_sort/_page). %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.members.col_email"), sort: "email", param: :invitations_sort, page_param: :invitations_page, test_id: "sort-invitations-email") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.members.col_level"), sort: "role", param: :invitations_sort, page_param: :invitations_page, test_id: "sort-invitations-role") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.members.col_invited"), sort: "invited", initial: :desc, param: :invitations_sort, page_param: :invitations_page, test_id: "sort-invitations-invited") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: tag.span(t("member.members.col_actions"), class: "sr-only"), align: :right, visible: can_manage) %>
+        <% end %>
+          <% @invitations.each do |invitation| %>
+            <%= render Ui::TableComponent::RowComponent.new(test_id: "member-invitation-row") do %>
+              <%= render(Ui::TableComponent::CellComponent.new(header: true, mono: true, class: "text-gray-500 dark:text-zinc-400")) { invitation.email } %>
+              <%= render Ui::TableComponent::CellComponent.new(label: t("member.members.col_level")) do %>
+                <span class="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium whitespace-nowrap bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400"><%= t("member.roles.#{invitation.role}") %></span>
+              <% end %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("member.members.col_invited"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { l(invitation.created_at.to_date) } %>
+              <%= render Ui::TableComponent::CellComponent.new(actions: true, visible: can_manage) do %>
+                <div class="inline-flex items-center gap-1.5">
+                  <%= button_to resend_member_invitation_path(invitation), method: :post, class: "inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] font-medium text-gray-500 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100", data: { test: "member-invitation-resend" } do %><%= render Ui::IconComponent.new(name: "rotate-cw", class: "text-[11px] text-gray-400 dark:text-zinc-500") %><%= t("member.members.resend") %><% end %>
+                  <% if can_invite %>
+                    <%= link_to member_members_path(request.query_parameters.merge(reveal: invitation.id)), class: "inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] font-medium text-gray-500 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100", data: { test: "member-invitation-link" } do %><%= render Ui::IconComponent.new(name: "link", class: "text-[11px] text-gray-400 dark:text-zinc-500") %><%= t("member.members.invitation_link") %><% end %>
+                  <% end %>
+                  <%= render Ui::ConfirmDialogComponent.new(title: t("member.members.revoke_dialog.title", email: invitation.email),
+                        url: member_invitation_path(invitation), confirm_label: t("member.members.revoke"),
+                        test_id: "member-invitation-revoke-dialog-#{invitation.id}") do |dialog| %>
+                    <% dialog.with_body { t("member.members.revoke_dialog.body") } %>
+                    <%= dialog.button_trigger(label: t("member.members.revoke"), test_id: "member-invitation-revoke") %>
+                  <% end %>
+                </div>
+              <% end %>
+            <% end %>
+            <%# Riga del link, aperta dal bottone qui sopra. Il confronto avviene DENTRO il ciclo degli
+                inviti dell'organizzazione corrente: un id di un'altra org non combacia con nessuna riga
+                e non rivela niente. Il token si rigenera a ogni apertura (ognuno con la sua scadenza,
+                tutti validi): non c'è nessun "mostrato una volta sola" da difendere, il gate è il
+                permesso. %>
+            <% if can_invite && params[:reveal].to_s == invitation.id %>
+              <%= render Ui::TableComponent::DetailRowComponent.new(colspan: t.column_count, test_id: "member-invitation-link-row") do %>
+                <div class="px-4 py-3">
+                  <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.members.invitation_link_hint") %></p>
+                  <div class="mt-2 flex items-stretch gap-2" data-controller="clipboard" data-clipboard-copied-value="<%= t('member.members.invitation_link_copied') %>">
+                    <code data-clipboard-target="source" data-test="invitation-link" class="flex-1 min-w-0 truncate rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 font-mono text-[12px] text-zinc-800 dark:text-zinc-200"><%= edit_invitation_url(invitation.generate_token_for(:invitation)) %></code>
+                    <button type="button" data-action="clipboard#copy" class="inline-flex items-center gap-1.5 h-[37px] px-3 rounded-md text-[12px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800 shrink-0"><%= render Ui::IconComponent.new(name: "copy", class: "text-[12px] text-gray-400 dark:text-zinc-500") %><span data-clipboard-target="label"><%= t("member.members.invitation_link_copy") %></span></button>
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
+          <% end %>
+      <% end %>
+      <%= render(Ui::PaginationComponent.new(pagination: @invitations_pagination, test_id: "invitations-pagination")) %>
+    </div>
+  <% end %>
+</div>

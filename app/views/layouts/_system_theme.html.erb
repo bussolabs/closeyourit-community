@@ -1,0 +1,21 @@
+<%# DESIGN.md A32 — "system" follows the OS setting, live.
+    Turbo swaps <head> and <body> but never touches <html>, so the class set by one layout would
+    leak into the next page (auth follows the OS, the member pages follow the account). The meta
+    below is replaced on every visit; the script, identical on every page, runs once and re-applies
+    it after each render. %>
+<meta name="color-theme" content="<%= theme %>">
+<%= javascript_tag nonce: true do %>
+  (() => {
+    if (window.colorThemeSync) return;
+    window.colorThemeSync = true;
+    const query = matchMedia("(prefers-color-scheme: dark)");
+    const apply = () => {
+      const theme = document.querySelector("meta[name='color-theme']")?.content || "light";
+      document.documentElement.dataset.theme = theme;
+      document.documentElement.classList.toggle("dark", theme === "dark" || (theme === "system" && query.matches));
+    };
+    apply();
+    query.addEventListener("change", apply);
+    document.addEventListener("turbo:render", apply);
+  })();
+<% end %>

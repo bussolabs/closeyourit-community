@@ -1,0 +1,145 @@
+it:
+  member:
+    projects:
+      show:
+        tab_helpdesk: Assistenza
+    helpdesk:
+      title: Assistenza
+      subtitle: Le richieste scritte da chi visita i siti dei tuoi progetti.
+      counts:
+        received: Nuove
+        discarded: Scartate
+      status:
+        received: Nuova
+        discarded: Scartata
+        converted: Diventata ticket
+        linked: Collegata
+        answered: Risposta data
+      search_placeholder: Cerca nelle richieste…
+      filter_status: Stato
+      filter_project: Progetto
+      col_request: Richiesta
+      col_project: Progetto
+      col_status: Stato
+      col_received: Ricevuta
+      no_email: Nessuna email
+      empty: Nessuna richiesta di assistenza
+      empty_body: Qui arriva quello che i visitatori scrivono dai siti dei tuoi progetti. Si accende dalle impostazioni di ogni progetto.
+      empty_example: "«Non riesco a pagare con la carta» — da anna@esempio.it, pagina /carrello"
+      inbox_clear: Nessuna richiesta nuova. Quelle scartate si trovano con il filtro Stato.
+      no_results_body:
+        one: C'è %{count} richiesta in tutto.
+        other: Ci sono %{count} richieste in tutto.
+      discard: Scarta
+      restore: Recupera
+      erase_email: Cancella l'email
+      more_menu: Altre azioni
+      erase_dialog:
+        title: Cancellare %{email} da questa richiesta?
+        body: Il messaggio resta, l'indirizzo no. Non si può annullare e non potrai più rispondere a questa persona.
+      discarded: Richiesta scartata.
+      restored: Richiesta recuperata.
+      email_erased: Email cancellata.
+      on_ticket:
+        one: "%{count} richiesta di assistenza"
+        other: "%{count} richieste di assistenza"
+      converted: La richiesta è diventata un ticket.
+      linked: Richiesta collegata al ticket.
+      unlinked: Collegamento tolto. La richiesta è tornata fra le nuove.
+      errors:
+        already_handled: Questa richiesta non è più fra le nuove.
+        ticket_not_found: Scegli un ticket dello stesso progetto.
+        no_email: Questa richiesta non ha un'email a cui rispondere.
+        too_many_replies: Hai già scritto molte risposte a questa richiesta.
+      replied: Risposta inviata.
+      reply:
+        title: Rispondi
+        placeholder: Scrivi la risposta…
+        hint: "Parte per email a %{email}. Se la persona risponde, la sua email non arriva qui."
+        submit: Invia la risposta
+        nobody: "Non c'è nessuno a cui rispondere: questa richiesta non ha un'email."
+      similar:
+        title:
+          one: "%{count} richiesta simile"
+          other: "%{count} richieste simili"
+        link_same: Collega allo stesso ticket
+      visit_errors:
+        title: Errori nella stessa visita
+      convert:
+        action: Trasforma in ticket
+        title: Trasforma in ticket
+        cancel: Annulla
+        submit: Crea il ticket
+        field_title: Titolo
+        field_description: Descrizione
+        description_hint: Parte dal testo di chi ha scritto. L'email non viene copiata nel ticket.
+        field_kind: Tipo
+        field_status: Stato
+        field_priority: Priorità
+      ticket:
+        title: Ticket
+        select: Cerca un ticket del progetto…
+        link_submit: Collega
+        hint: Se il problema ha già un ticket, collega la richiesta a quello.
+        unlink: Scollega
+        gone: Il ticket è stato eliminato.
+      messages: Messaggi
+      from_visitor: Visitatore
+      details: Dettagli
+      email: Email
+      email_erased_value: Cancellata
+      page: Pagina
+      browser: Browser
+      project:
+        count:
+          one: "%{count} nuova"
+          other: "%{count} nuove"
+        empty_off_title: "L'assistenza è spenta su questo progetto"
+        empty_off_body: "Si accende dalle impostazioni del progetto."
+        open_settings: Apri le impostazioni
+      connect:
+        title: Collega il sito
+        subtitle: I passi, il codice pronto e il testo da dare a un assistente che scrive codice.
+        step_key: "Crea la chiave del sito nelle impostazioni del progetto. Scrivono solo i siti che hanno una chiave."
+        keys_link: Apri i codici del progetto
+        no_key: "Questo progetto non ha ancora una chiave: nel codice qui sotto resta un segnaposto."
+        key_locked: "La chiave la vede chi gestisce i codici del progetto. Nel codice qui sotto resta un segnaposto: chiedila a un amministratore."
+        step_code: "Incolla questo modulo nella pagina del sito. Funziona così com'è."
+        code_note: "La chiave è pubblica: può stare nel codice della pagina. I testi del modulo si cambiano liberamente."
+        step_prompt: "Dai questo testo a un assistente che scrive codice: costruisce il modulo con lo stile del tuo sito."
+        step_try: "Scrivi una richiesta di prova dal sito: compare qui entro pochi secondi."
+        copy: Copia
+        copied: Copiato
+        prompt: |-
+          Aggiungi a questo sito un modulo «Serve aiuto?» che manda le richieste dei visitatori a CloseYourIt.
+
+          Chiamata
+          - POST %{endpoint}
+          - Intestazioni: Content-Type: application/json e X-Sentry-Auth: Sentry sentry_key=%{key}
+          - Parte dal browser del visitatore. La chiave è pubblica: può stare nel codice della pagina.
+
+          Corpo JSON
+          - message: obbligatorio, testo semplice, massimo 4000 caratteri.
+          - email: facoltativa. Se presente deve essere un indirizzo valido.
+          - page_url: l'indirizzo della pagina da cui si scrive.
+          - website: campo trappola per i robot. Nascosto alle persone, sempre vuoto. Non toglierlo.
+
+          Risposte
+          - 202: richiesta ricevuta. Mostra un ringraziamento e svuota il modulo.
+          - 422: messaggio mancante o troppo lungo, oppure email non valida. Mostra l'errore accanto al campo.
+          - 403: il sito non è fra quelli ammessi o l'assistenza è spenta. Mostra un errore generico.
+          - 429: troppe richieste. Chiedi di riprovare fra un minuto.
+
+          Regole
+          - Usa i componenti e lo stile che il sito ha già. Niente librerie nuove.
+          - Etichetta l'email come facoltativa e spiega che serve solo per rispondere.
+          - Non promettere un'email di conferma: non ne parte nessuna.
+          - Non mandare altri dati personali oltre a quelli elencati.
+          - Il modulo deve funzionare da tastiera e avere un'etichetta per ogni campo.
+          - Aggiungi un test che copre l'invio riuscito e l'errore 422.
+  helpdesk:
+    mailer:
+      subject: "Risposta alla tua richiesta — %{project}"
+      intro: "%{project} ha risposto alla tua richiesta"
+      you_wrote: Avevi scritto
+      no_reply: "Non rispondere a questa email: l'indirizzo non riceve posta."

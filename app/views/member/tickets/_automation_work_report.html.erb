@@ -1,0 +1,43 @@
+<%# locals: attempt %>
+<% report = automation_work_report(attempt) %>
+<% if report %>
+  <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="automation-work-report">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3">
+      <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.automation.work_report.title") %></h3>
+      <span class="font-mono text-[9.5px] uppercase tracking-[1.1px] text-amber-700 dark:text-amber-300"><%= t("member.tickets.automation.work_report.reported") %></span>
+    </div>
+    <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <div class="px-4 py-3.5">
+        <%= render Ui::MarkdownComponent.new(text: report["summary"], class: "text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed") %>
+        <% if report["commit"].present? %><p class="mt-1 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= report["commit"] %></p><% end %>
+      </div>
+      <% if report["changed_files"].present? %>
+        <div class="px-4 py-3.5">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-2"><%= t("member.tickets.automation.work_report.files") %></p>
+          <ul class="space-y-1.5"><% report["changed_files"].each do |file| %><li class="text-[12px] text-zinc-700 dark:text-zinc-300"><code><%= file["path"] %></code> — <%= file["summary"] %></li><% end %></ul>
+        </div>
+      <% end %>
+      <% if report["tests"].present? %>
+        <div class="px-4 py-3.5">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-2"><%= t("member.tickets.automation.work_report.tests") %></p>
+          <ul class="space-y-1.5"><% report["tests"].each do |test| %><li class="flex items-start gap-2 text-[12px] text-zinc-700 dark:text-zinc-300"><span class="font-mono text-[10px] <%= test["status"] == "passed" ? "text-emerald-700 dark:text-emerald-300" : "text-amber-700 dark:text-amber-300" %>"><%= test["status"] %></span><code><%= test["command"] %></code><span>— <%= test["summary"] %></span></li><% end %></ul>
+        </div>
+      <% end %>
+      <% if report["acceptance_evidence"].present? %>
+        <div class="px-4 py-3.5">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-2"><%= t("member.tickets.automation.work_report.criteria") %></p>
+          <ul class="space-y-2"><% report["acceptance_evidence"].each do |evidence| %><li class="text-[12px] text-zinc-700 dark:text-zinc-300"><div class="flex items-center gap-2"><strong class="font-mono text-[10.5px]"><%= evidence["criterion_id"] %></strong><span class="rounded bg-stone-100 dark:bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px]"><%= evidence["status"] %></span><span class="font-mono text-[9.5px] uppercase text-amber-700 dark:text-amber-300"><%= t("member.tickets.automation.work_report.reported") %></span></div><p class="mt-0.5"><%= evidence["evidence"] %></p></li><% end %></ul>
+        </div>
+      <% end %>
+      <% if report["deviations"].present? || report["risks"].present? %>
+        <div class="px-4 py-3.5">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-2"><%= t("member.tickets.automation.work_report.exceptions") %></p>
+          <ul class="space-y-1.5">
+            <% Array(report["deviations"]).each do |item| %><li class="text-[12px] text-zinc-700 dark:text-zinc-300"><strong><%= item["title"] %></strong> — <%= item["reason"] %> <span class="text-gray-500 dark:text-zinc-400"><%= item["impact"] %></span></li><% end %>
+            <% Array(report["risks"]).each do |risk| %><li class="text-[12px] text-zinc-700 dark:text-zinc-300"><strong><%= [risk["id"], risk["title"]].compact_blank.join(" · ") %></strong> — <%= risk["impact"] %> <span class="text-gray-500 dark:text-zinc-400"><%= risk["mitigation"] %></span></li><% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+  </section>
+<% end %>

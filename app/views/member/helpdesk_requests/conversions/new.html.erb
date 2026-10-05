@@ -1,0 +1,57 @@
+<% content_for :title, t("member.helpdesk.convert.title") %>
+
+<div class="p-7" data-test="member-helpdesk-convert">
+  <%= form_with url: member_helpdesk_request_conversion_path(@request_record), method: :post, class: "space-y-6", data: { test: "helpdesk-convert-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: t("member.helpdesk.convert.title"),
+          breadcrumb: [ { label: t("member.helpdesk.title"), href: member_helpdesk_requests_path },
+                        { label: @request_record.summary, href: member_helpdesk_request_path(@request_record) },
+                        { label: t("member.helpdesk.convert.title") } ]) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.helpdesk.convert.cancel"), href: member_helpdesk_request_path(@request_record), variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: t("member.helpdesk.convert.submit"), type: "submit", size: :sm, icon: "ticket", test_id: "helpdesk-convert-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="md:col-span-2">
+          <%= render Ui::InputComponent.new(name: "title", label: t("member.helpdesk.convert.field_title"), required: true,
+                value: @draft_title, test_id: "helpdesk-convert-title", error: @errors&.dig(:title)&.first) %>
+        </div>
+
+        <div class="md:col-span-2">
+          <label for="description" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.helpdesk.convert.field_description") %><span class="text-red-500 dark:text-red-400 ml-0.5">*</span></label>
+          <%= text_area_tag "description", @draft_description, rows: 12,
+                data: { test: "helpdesk-convert-description" },
+                class: "w-full px-3 py-2 rounded-md border #{@errors&.dig(:description)&.first ? "border-red-300 dark:border-red-500/50" : "border-stone-200 dark:border-zinc-800"} bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 font-mono leading-relaxed placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+          <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.helpdesk.convert.description_hint") %></p>
+          <% if @errors&.dig(:description)&.first %>
+            <p class="mt-1 text-[11.5px] text-red-600 dark:text-red-400" data-test="helpdesk-convert-description-error"><%= @errors.dig(:description).first %></p>
+          <% end %>
+        </div>
+
+        <div data-test="helpdesk-convert-kind">
+          <label class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.helpdesk.convert.field_kind") %></label>
+          <div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800">
+            <% @kinds.each do |k| %>
+              <label class="cursor-pointer">
+                <input type="radio" name="kind" value="<%= k %>" class="peer sr-only"
+                       <%= "checked" if (params[:kind].presence || @kinds.first) == k %>>
+                <span class="inline-flex items-center h-[30px] px-3.5 rounded-[5px] text-[12.5px] font-medium text-gray-500 dark:text-zinc-400 peer-checked:bg-zinc-900 dark:peer-checked:bg-zinc-100 peer-checked:text-white dark:peer-checked:text-zinc-900"><%= t("member.tickets.kind.#{k}") %></span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <%= render Ui::SelectComponent.new(name: "status_id", label: t("member.helpdesk.convert.field_status"), required: true,
+                options: @statuses.map { |s| [ s.display_label, s.id, s.color ] }, selected: (params[:status_id].presence || @default_status_id),
+                test_id: "helpdesk-convert-status-select", error: @errors&.dig(:status)&.first) %>
+          <%= render Ui::SelectComponent.new(name: "priority_id", label: t("member.helpdesk.convert.field_priority"), required: true,
+                options: @priorities.map { |p| [ p.display_label, p.id, p.color ] }, selected: (params[:priority_id].presence || @default_priority_id),
+                test_id: "helpdesk-convert-priority-select", error: @errors&.dig(:priority)&.first) %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

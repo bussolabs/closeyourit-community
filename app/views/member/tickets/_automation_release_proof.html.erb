@@ -1,0 +1,19 @@
+<%# locals: (ticket:, workflow:, decides:, probe:) %>
+<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="automation-release-proof">
+  <div class="px-4 py-3.5">
+    <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.automation.proof.title") %></h3>
+    <p class="mt-1 text-[12.5px] text-gray-600 dark:text-zinc-400"><%= t("member.tickets.automation.proof.body") %></p>
+    <% if probe&.last_error_code.present? %>
+      <p class="mt-1.5 font-mono text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="automation-release-proof-checks">
+        <%= t("member.tickets.automation.proof.checks", count: probe.checks_count, code: probe.last_error_code) %>
+      </p>
+    <% end %>
+    <% if decides %>
+      <div class="mt-3.5">
+        <%= render Ui::ButtonComponent.new(label: t("member.tickets.automation.proof.mark"),
+              href: member_ticket_automation_release_mark_path(ticket), method: :post,
+              variant: :secondary, size: :sm, icon: "circle-check", test_id: "automation-release-mark") %>
+      </div>
+    <% end %>
+  </div>
+</section>

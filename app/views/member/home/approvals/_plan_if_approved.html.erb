@@ -1,0 +1,20 @@
+<%# locals: (plan:) %>
+<%# The full-page plan opens with what happens on approval, in plain words: the agent's card, or its
+    brief. Nothing when the agent wrote neither: the summary below stays the opening. CYRA-998 %>
+<% document = plan.document %>
+<% decision_card = document.decision_card %>
+<% if decision_card || document.decision_brief %>
+  <div class="px-4 py-3.5" data-test="approvals-plan-if-approved">
+    <%# The risk level sits on the title row, the headline opens the section. %>
+    <div class="flex items-center justify-between gap-3 mb-1.5" data-test="approvals-plan-if-approved-title">
+      <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400"><%= t("member.approvals.compact.if_approved") %></p>
+      <%= render("member/home/approvals/decision_card_level", decision_card:) if decision_card %>
+    </div>
+    <% if decision_card %>
+      <%= render "member/home/approvals/decision_card", decision_card:, show_level: false %>
+    <% else %>
+      <%= render Ui::MarkdownComponent.new(text: document.decision_brief,
+            class: "text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-[70ch]") %>
+    <% end %>
+  </div>
+<% end %>

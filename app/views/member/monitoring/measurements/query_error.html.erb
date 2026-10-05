@@ -1,0 +1,7 @@
+<div class="p-7" data-test="measurements-query-error">
+  <%= render Ui::EmptyStateComponent.new(title: measurement_label("query_error"), body: measurement_label("query_error_body"), icon: "circle-alert", framed: true) do |state| %>
+    <% state.with_action do %>
+    <%= render Ui::ButtonComponent.new(label: measurement_label("retry"), href: member_monitoring_measurements_path(ft: 1), size: :sm, test_id: "measurements-retry") %>
+    <% end %>
+  <% end %>
+</div>

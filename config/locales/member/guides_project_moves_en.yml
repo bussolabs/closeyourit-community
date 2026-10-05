@@ -1,0 +1,34 @@
+en:
+  member:
+    guides:
+      index:
+        project_moves:
+          title: Moving a project
+      project_moves:
+        title: Moving a project
+        subtitle: Take a project or a group to another organization you own.
+        what_title: What it is
+        what_intro: Sometimes a project starts in the wrong organization, or moves to another client. Instead of rebuilding it, you move it. It stays the same project, with everything in it.
+        what_who: Only someone who is owner of both the source and the destination organization can do it.
+        what_kept: The project's secrets, files, tickets, history and keys stay valid. Connected programs keep working without any change.
+        what_group: If you move a group, all its projects go with it. If you move a project alone, it leaves its group, which stays where it was.
+        steps_title: How to do it
+        step1: Open the project settings, at the bottom of the page, or the group page. Press "Move to another organization".
+        step2: Choose the destination organization. Only the ones you own are listed.
+        step3: Read what will happen. You see what blocks the move, what will be created in the destination and which links come off. While there is a blocker you cannot go on.
+        step4: Type the name to confirm. The move starts right away and the page tells you when it is done. From there you open the project in the new organization.
+        blockers_title: What blocks a move
+        blocker_key: The project code is already used in the destination organization.
+        blocker_person: Someone working on the project is not a member of the destination organization. Invite them first, then try again.
+        blocker_provision: A secret passes from this project to one that stays. Move them together, for example by moving their group.
+        blocker_shared: The destination already has an organization secret or file with the same name but a different value.
+        blocker_agent: An agent is working right now on a ticket of the project. Wait for it to finish. Work idle for more than 15 minutes, or on hold, does not count.
+        blocker_book: A Knowledge book that stays would lose all its projects and its staying pages have none. Link it to a project that stays first.
+        blocker_knowledge: A Knowledge page that moves has a publication key already used in the destination organization.
+        notes_title: Good to know
+        note_created: If the destination lacks environments, ticket statuses or priorities, identical ones are created. Organization secrets and files used by the project are copied; if identical ones already exist, those are used.
+        note_detached: Links to things that stay in the source come off, such as team access and alert rules. You see them all before confirming.
+        note_knowledge: Knowledge pages linked only to what you move go along, with their history, attachments and book. A page also linked elsewhere stays where it is and only loses the link.
+        note_github: The GitHub repository is always disconnected. Reconnect it from the destination organization.
+        note_undo: A move cannot be undone. To go back, move it again the other way. If it fails, nothing changes.
+        note_history: The move stays recorded in the activity of both organizations.

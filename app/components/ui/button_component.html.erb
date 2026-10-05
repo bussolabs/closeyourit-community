@@ -1,0 +1,9 @@
+<% if shared_form_submit? %>
+  <%= button_tag(shared_form_options) do %><%= body %><% end %>
+<% elsif button_to? %>
+  <%= button_to(@href, button_to_options) do %><%= body %><% end %>
+<% elsif @href %>
+  <%= link_to(@href, html_options) do %><%= body %><% end %>
+<% else %>
+  <%= button_tag(html_options.merge(type: @type)) do %><%= body %><% end %>
+<% end %>

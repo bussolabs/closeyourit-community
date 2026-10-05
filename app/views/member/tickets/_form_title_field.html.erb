@@ -1,0 +1,32 @@
+<%# locals: (ticket:) %>
+<% if ticket.persisted? %>
+  <%= render Ui::InputComponent.new(name: "title", label: t("member.tickets.form.title"), required: true,
+        value: ticket.title, placeholder: t("member.tickets.form.title_placeholder"), test_id: "ticket-title",
+        error: @errors&.dig(:title)&.first) %>
+<% else %>
+  <div>
+    <%= render Ui::InputComponent.new(name: "title", label: t("member.tickets.form.title"), required: true,
+          value: ticket.title, placeholder: t("member.tickets.form.title_placeholder"), test_id: "ticket-title",
+          error: @errors&.dig(:title)&.first,
+          data: { action: "input->ticket-duplicates#queue" }) %>
+    <div data-ticket-duplicates-target="panel" hidden
+         class="mt-2 rounded-md border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 px-3 py-2.5"
+         data-open-label="<%= t("member.tickets.duplicates.open") %>"
+         data-test="ticket-duplicates-panel">
+      <p class="text-[11.5px] font-semibold text-amber-900 dark:text-amber-200"><%= t("member.tickets.duplicates.title") %></p>
+      <p class="mt-0.5 text-[11px] text-amber-800 dark:text-amber-200"><%= t("member.tickets.duplicates.hint") %></p>
+      <ul data-ticket-duplicates-target="list" class="mt-1.5 space-y-1"></ul>
+    </div>
+    <%# Spunte sopravvissute a un errore di validazione: il pannello si ricostruisce da
+        zero, e senza questi la scelta sparirebbe insieme al messaggio d'errore. Ognuno
+        sparisce quando la sua casella è di nuovo in pagina, non prima — e si porta
+        dietro codice e titolo proprio per poterla ridisegnare anche se il motore dei
+        simili non risponde: un collegamento che parte da un campo invisibile non si
+        potrebbe più togliere. %>
+    <% Array(@selected_links).each do |link| %>
+      <%= hidden_field_tag "link_ticket_ids[]", link.id, id: nil,
+            data: { ticket_duplicates_target: "restored", code: link.code,
+                    title: link.title, url: member_ticket_path(link) } %>
+    <% end %>
+  </div>
+<% end %>

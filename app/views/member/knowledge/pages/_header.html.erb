@@ -1,0 +1,27 @@
+<%= render Ui::PageHeaderComponent.new(
+      title: @page.title,
+      breadcrumb: [ { label: t("member.knowledge.title"), href: member_knowledge_pages_path }, { label: @page.title } ]) do |h| %>
+  <%# I metadati vivono nella colonna Specifiche a destra — niente chip sotto il titolo (no dato duplicato). %>
+  <% h.with_actions do %>
+    <%# Cronologia versioni: sempre visibile (consultare = visibilità della pagina). %>
+    <%= render Ui::ButtonComponent.new(label: t("member.knowledge.versions.link"), href: member_knowledge_page_versions_path(@page), variant: :secondary_muted, size: :sm, icon: "history", test_id: "knowledge-versions-link") do |button| %>
+      <% button.with_trailing do %>
+        <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400">(<%= @page.versions.size %>)</span>
+      <% end %>
+    <% end %>
+    <% if @can_edit %>
+      <%= render Ui::ButtonComponent.new(label: t("member.knowledge.show.edit"), href: edit_member_knowledge_page_path(@page), variant: :secondary_muted, size: :sm, icon: "pen", test_id: "knowledge-edit") %>
+    <% end %>
+    <%# CYRA-434: eliminare è irreversibile e stava a un pixel da «Modifica». Scende nel menu:
+        a un clic da chi la cerca, mai premibile per sbaglio mentre si apre l'editor. %>
+    <% if @can_delete %>
+      <div data-test="knowledge-more-menu">
+        <%= render Ui::RowMenuComponent.new(test_id: "knowledge-menu-trigger", aria_label: t("member.knowledge.show.more_menu")) do %>
+          <%= button_to t("member.knowledge.show.delete"), member_knowledge_page_path(@page), method: :delete, params: { confirm: 1 },
+                class: Ui::RowMenuComponent.item_class(:danger), form: { class: "block" },
+                data: { test: "knowledge-delete", turbo_confirm: t("member.knowledge.delete_confirm") } %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

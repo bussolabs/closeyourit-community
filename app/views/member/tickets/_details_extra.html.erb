@@ -1,0 +1,35 @@
+<%# Optional Details rows: source idea, parent epic, milestone, weight, due date, platforms. %>
+<% if @ticket.idea %>
+  <%= render "member/tickets/detail_row", label: t("member.tickets.show.idea"), test_id: "detail-idea" do %>
+    <%= link_to member_idea_path(@ticket.idea), class: "inline-flex items-center gap-1.5 text-[12.5px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "ticket-idea-link" } do %><%= render Ui::IconComponent.new(name: "lightbulb", class: "text-[10px]") %><%= t("member.tickets.show.from_idea") %><% end %>
+  <% end %>
+<% end %>
+<% if @ticket.parent %>
+  <%= render "member/tickets/detail_row", label: t("member.tickets.show.parent"), test_id: "detail-parent" do %>
+    <%= link_to member_ticket_path(@ticket.parent), class: "inline-flex min-w-0 items-center gap-1.5 text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "ticket-parent-link" } do %><%= render Ui::IconComponent.new(name: "layers", class: "text-[10px] text-amber-600 dark:text-amber-400") %><span class="font-mono text-[11.5px] text-gray-500 dark:text-zinc-400"><%= @ticket.parent.code %></span><span class="truncate"><%= @ticket.parent.title %></span><% end %>
+  <% end %>
+<% end %>
+<% if @ticket.milestone %>
+  <%= render "member/tickets/detail_row", label: t("member.tickets.show.milestone"), test_id: "detail-milestone" do %>
+    <%= link_to member_project_milestone_path(@ticket.project, @ticket.milestone), class: "inline-flex items-center gap-1.5 text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" do %><span class="w-2.5 h-2.5 rounded-full <%= Ui::Colors.swatch(@ticket.milestone.color) %> shrink-0"></span><%= @ticket.milestone.label %><% end %>
+  <% end %>
+<% end %>
+<% if @ticket.weight %>
+  <%= render "member/tickets/detail_row", label: t("member.tickets.show.weight"), test_id: "detail-weight" do %>
+    <span class="text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.show.weight_points", count: @ticket.weight) %></span>
+  <% end %>
+<% end %>
+<% if @ticket.due_at %>
+  <%= render "member/tickets/detail_row", label: t("member.tickets.show.due_at"), test_id: "detail-due" do %>
+    <span class="text-[12.5px] text-amber-600 dark:text-amber-400"><%= @ticket.due_at.strftime("%d/%m/%Y · %H:%M") %></span>
+  <% end %>
+<% end %>
+<% if @ticket.platforms.any? %>
+  <%= render "member/tickets/detail_row", label: t("member.tickets.show.platforms"), test_id: "detail-platforms" do %>
+    <span class="flex items-center flex-wrap gap-1.5">
+      <% @ticket.platforms.ordered.each do |platform| %>
+        <%= render Ui::BadgeComponent.new(label: platform.label, color: platform.color, dot: true) %>
+      <% end %>
+    </span>
+  <% end %>
+<% end %>

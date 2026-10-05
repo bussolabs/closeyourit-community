@@ -1,0 +1,13 @@
+# CYRA-867 — cancel every open automated job of the organization at once.
+en:
+  member:
+    approvals:
+      cancel_all:
+        more_menu: More actions
+        button: Cancel all runs
+        confirm: "Cancel every open automated run? They leave both the decisions and the running list, and work in progress stops. Tickets stay, without automation. This cannot be undone."
+        started:
+          zero: There were no open runs to cancel.
+          one: Cancellation started for one run. Reload the page in a moment.
+          other: "Cancellation started for %{count} runs. It takes a few minutes: reload the page in a moment."
+        reason: Cancelled all together from Approvals, to start over.

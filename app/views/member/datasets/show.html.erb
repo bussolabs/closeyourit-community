@@ -1,0 +1,177 @@
+<% content_for :title, @dataset.name %>
+
+<div class="p-7 space-y-6" data-test="member-dataset-show">
+  <%= render Ui::PageHeaderComponent.new(
+        title: @dataset.name,
+        breadcrumb: [ { label: t("member.datasets.title"), href: member_datasets_path }, { label: @dataset.name } ],
+        counts_test_id: "dataset-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.datasets.status_label"), value: t("member.datasets.status.#{@dataset.status}"), test_id: "dataset-status") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.datasets.counts.inputs"), value: @input_columns.size, test_id: "dataset-inputs") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.datasets.counts.targets"), value: @target_columns.size, value_color: :indigo, test_id: "dataset-targets") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.datasets.counts.samples"), value: @rows_count, test_id: "dataset-samples") %>
+    <% end %>
+    <% h.with_actions do %>
+      <span class="inline-flex items-center gap-1.5">
+        <span class="inline-flex items-center gap-1.5 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="dataset-project">
+          <span class="w-2 h-2 rounded-[2px] <%= Ui::Colors.swatch(@dataset.project.color) %>"></span><%= @dataset.project.name %>
+        </span>
+        <% if @can_manage %>
+          <%= render Ui::ButtonComponent.new(label: t("member.datasets.edit"), href: edit_member_dataset_path(@dataset), variant: :secondary_muted, size: :sm, icon: "pen", test_id: "dataset-edit") %>
+          <%= render Ui::ButtonComponent.new(label: t("member.datasets.delete"), href: member_dataset_path(@dataset), method: :delete, variant: :danger_outline, size: :sm, icon: "trash", confirm: t("member.datasets.delete_confirm"), test_id: "dataset-delete") %>
+        <% end %>
+      </span>
+    <% end %>
+  <% end %>
+
+  <% if @dataset.description.present? %>
+    <%# T1 — the description sits in a panel, not on the page ground. %>
+    <p class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3 text-[13px] text-gray-600 dark:text-zinc-400" data-test="dataset-description"><%= @dataset.description %></p>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="dataset-schema">
+    <div class="px-4 py-3 border-b border-stone-100 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.datasets.schema_title") %></h2>
+    </div>
+    <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <%# Colonne del dataset: Input (dato fornito, es. foto) e Target (attributi da predire). %>
+      <% @display_columns.each do |column| %>
+        <div class="flex items-center justify-between px-4 py-3" data-test="dataset-schema-column">
+          <div class="flex items-center gap-2.5">
+            <%= render Ui::BadgeComponent.new(label: t("member.datasets.form.role_#{column.role}"), color: column.role_target? ? :indigo : :gray) %>
+            <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= column.label %><% if column.required? %><span class="text-red-500 dark:text-red-400 ml-0.5">*</span><% end %></span>
+            <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= column.code %></span>
+          </div>
+          <div class="flex items-center gap-2 text-[12px] text-gray-500 dark:text-zinc-400">
+            <% if column.kind_photo? %><%= render Ui::IconComponent.new(name: "image", class: "text-[11px] text-gray-400 dark:text-zinc-500") %><% end %>
+            <span class="font-mono uppercase text-[10px] tracking-[0.5px]"><%= t("member.datasets.kinds.#{column.kind}") %></span>
+            <% if column.kind_category? %>
+              <span class="text-gray-500 dark:text-zinc-400">(<%= column.option_values.join(", ") %>)</span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="dataset-rows">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-stone-100 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.datasets.rows.title") %> <span class="font-mono text-[12px] text-gray-500 dark:text-zinc-400">(<%= @rows_count %>)</span></h2>
+      <% if @can_manage %>
+        <%= link_to new_member_dataset_row_path(@dataset), class: "inline-flex items-center gap-1.5 h-[30px] px-2.5 rounded-md bg-indigo-600 text-white text-[12px] font-semibold hover:bg-indigo-700", data: { test: "dataset-row-new" } do %>
+          <%= render Ui::IconComponent.new(name: "plus", class: "text-[11px]") %><%= t("member.datasets.rows.new") %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <% if @rows.empty? %>
+      <%= render Ui::EmptyNoteComponent.new(text: t("member.datasets.rows.empty"), inset: true, test_id: "dataset-rows-empty") %>
+    <% else %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: @dataset.name)) do |t| %>
+        <% t.with_head do %>
+          <% @display_columns.each do |column| %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: column.label, classes: "whitespace-nowrap") %>
+          <% end %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: tag.span(t("member.datasets.rows.col_actions"), class: "sr-only"), align: :right, visible: @can_manage) %>
+        <% end %>
+        <% @rows.each_with_index do |row, row_index| %>
+          <%= render Ui::TableComponent::RowComponent.new(test_id: "dataset-row") do %>
+            <% @display_columns.each_with_index do |column, column_index| %>
+              <%= render Ui::TableComponent::CellComponent.new(header: column_index.zero?, label: (column.label unless column_index.zero?), class: "text-gray-700 dark:text-zinc-300 align-middle") do %>
+                <%= render "member/datasets/row_cell", row: row, column: column, row_index: row_index %>
+              <% end %>
+            <% end %>
+            <%= render Ui::TableComponent::CellComponent.new(actions: true, visible: @can_manage) do %>
+              <div class="inline-flex items-center gap-2">
+                <%= link_to t("member.datasets.rows.edit"), edit_member_dataset_row_path(@dataset, row), class: "text-[12px] text-gray-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "dataset-row-edit" } %>
+                <%= render Ui::ConfirmDialogComponent.new(title: t("member.datasets.rows.delete_dialog.title", number: row_index + 1),
+                      url: member_dataset_row_path(@dataset, row), confirm_label: t("member.datasets.rows.delete"),
+                      test_id: "dataset-row-delete-dialog-#{row.id}") do |dialog| %>
+                  <% dialog.with_body { t("member.datasets.rows.delete_dialog.body") } %>
+                  <%= dialog.button_trigger(label: t("member.datasets.rows.delete"), test_id: "dataset-row-delete") %>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <%= render(Ui::PaginationComponent.new(pagination: @rows_pagination, test_id: "dataset-rows-pagination")) %>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="dataset-trainings">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-stone-100 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.datasets.trainings.title") %> <span class="font-mono text-[12px] text-gray-500 dark:text-zinc-400">(<%= @trainings.size %>)</span></h2>
+      <% if @can_train %>
+        <%= button_to member_dataset_trainings_path(@dataset), class: "inline-flex items-center gap-1.5 h-[30px] px-2.5 rounded-md bg-indigo-600 text-white text-[12px] font-semibold hover:bg-indigo-700", form: { class: "inline" }, data: { test: "dataset-train" } do %>
+          <%= render Ui::IconComponent.new(name: "wand-sparkles", class: "text-[11px]") %><%= t("member.datasets.trainings.run") %>
+        <% end %>
+      <% end %>
+    </div>
+    <% if @trainings.empty? %>
+      <%= render Ui::EmptyNoteComponent.new(text: t("member.datasets.trainings.empty"), inset: true, test_id: "dataset-trainings-empty") %>
+    <% else %>
+      <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+        <% @trainings.each do |training| %>
+          <%= link_to member_dataset_training_path(@dataset, training), class: "flex items-center justify-between px-4 py-3 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "dataset-training-row" } do %>
+            <div class="flex items-center gap-2.5">
+              <%= render Ui::BadgeComponent.new(label: t("member.datasets.trainings.status.#{training.status}"), color: (training.status_done? ? :emerald : training.status_failed? ? :red : :gray), dot: true) %>
+              <span class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= l(training.created_at, format: :long) %></span>
+            </div>
+            <% if training.status_done? %>
+              <span class="font-mono text-[12.5px] text-gray-700 dark:text-zinc-300"><%= number_to_percentage(training.metrics["overall_accuracy"].to_f * 100, precision: 0) %></span>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="dataset-predictions">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-stone-100 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.datasets.predictions.title") %> <span class="font-mono text-[12px] text-gray-500 dark:text-zinc-400">(<%= @predictions.size %>)</span></h2>
+      <% if @can_train && @has_trained %>
+        <%= link_to new_member_dataset_prediction_path(@dataset), class: "inline-flex items-center gap-1.5 h-[30px] px-2.5 rounded-md bg-indigo-600 text-white text-[12px] font-semibold hover:bg-indigo-700", data: { test: "dataset-predict" } do %>
+          <%= render Ui::IconComponent.new(name: "wand-sparkles", class: "text-[11px]") %><%= t("member.datasets.predictions.run") %>
+        <% end %>
+      <% end %>
+    </div>
+    <% if @predictions.empty? %>
+      <%= render Ui::EmptyNoteComponent.new(text: @has_trained ? t("member.datasets.predictions.empty") : t("member.datasets.predictions.empty_untrained"),
+            inset: true, test_id: "dataset-predictions-empty") %>
+    <% else %>
+      <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+        <% @predictions.each do |prediction| %>
+          <%= link_to member_dataset_prediction_path(@dataset, prediction), class: "flex items-center justify-between px-4 py-3 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "dataset-prediction-row" } do %>
+            <div class="flex items-center gap-2.5">
+              <%= render Ui::BadgeComponent.new(label: t("member.datasets.predictions.status.#{prediction.status}"), color: (prediction.status_done? ? :emerald : prediction.status_failed? ? :red : :gray), dot: true) %>
+              <span class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= l(prediction.created_at, format: :long) %></span>
+            </div>
+            <% if prediction.status_done? %>
+              <span class="font-mono text-[11.5px] text-gray-500 dark:text-zinc-400 max-w-[280px] truncate"><%= prediction.predicted_values.map { |k, v| "#{k}=#{v}" }.join(" · ") %></span>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Audit: Created/Updated dall'activity-log + cronologia completa nel modale %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-2.5" data-test="dataset-audit">
+    <%= render Ui::AuditMetaComponent.new(
+          created_at: @dataset.created_at,
+          created_by: @dataset.created_by&.name,
+          updated_at: (@last_activity&.created_at || @dataset.updated_at),
+          updated_by: activity_actor_name(@last_activity),
+          test_id: "dataset-audit-meta",
+          data: { controller: "ui--dialog" }
+        ) do |c| %>
+      <% c.with_action do %>
+        <button type="button" data-action="ui--dialog#open" data-test="dataset-history" class="inline-flex items-center gap-1.5 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+          <%= render Ui::IconComponent.new(name: "history", class: "text-[11px]") %><%= t("ui.audit.view_history") %>
+        </button>
+        <%= render "member/shared/activity_modal", subtitle: @dataset.name, events: @activity_events %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

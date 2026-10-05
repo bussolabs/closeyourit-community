@@ -1,0 +1,34 @@
+it:
+  member:
+    guides:
+      index:
+        project_moves:
+          title: Spostare un progetto
+      project_moves:
+        title: Spostare un progetto
+        subtitle: Porta un progetto o un gruppo in un'altra organizzazione di cui sei owner.
+        what_title: Che cos'è
+        what_intro: A volte un progetto nasce nell'organizzazione sbagliata, o passa a un altro cliente. Invece di rifarlo da capo, lo sposti. Resta lo stesso progetto, con tutto quello che contiene.
+        what_who: Può farlo solo chi è owner sia dell'organizzazione di partenza sia di quella di arrivo.
+        what_kept: Secret, file, ticket, storico e chiavi del progetto restano validi. I programmi collegati continuano a funzionare senza cambiare niente.
+        what_group: Se sposti un gruppo, partono con lui tutti i suoi progetti. Se sposti un progetto da solo, esce dal suo gruppo, che resta dov'era.
+        steps_title: Come si fa
+        step1: Apri le impostazioni del progetto, in fondo alla pagina, oppure la pagina del gruppo. Premi «Sposta in un'altra organizzazione».
+        step2: Scegli l'organizzazione di arrivo. Compaiono solo quelle di cui sei owner.
+        step3: Leggi cosa succede. Vedi cosa blocca lo spostamento, cosa verrà creato nell'arrivo e quali collegamenti si staccano. Finché c'è un blocco non puoi andare avanti.
+        step4: Scrivi il nome per confermare. Lo spostamento parte subito e la pagina ti dice quando è fatto. Da lì apri il progetto nella nuova organizzazione.
+        blockers_title: Cosa blocca uno spostamento
+        blocker_key: La sigla del progetto è già usata nell'organizzazione di arrivo.
+        blocker_person: Una persona che lavora sul progetto non è membro dell'organizzazione di arrivo. Invitala prima, poi riprova.
+        blocker_provision: Un secret passa da questo progetto a uno che resta. Spostali insieme, per esempio spostando il loro gruppo.
+        blocker_shared: Nell'arrivo esiste già un secret o un file dell'organizzazione con lo stesso nome ma un valore diverso.
+        blocker_agent: Un agent sta lavorando adesso su un ticket del progetto. Aspetta che finisca. Un lavoro fermo da più di 15 minuti, o sospeso, non conta.
+        blocker_book: Un libro della Conoscenza che resta perderebbe tutti i suoi progetti e le sue pagine che restano non ne hanno. Collegalo prima a un progetto che resta.
+        blocker_knowledge: Una pagina della Conoscenza che si sposta ha una chiave di pubblicazione già usata nell'organizzazione di arrivo.
+        notes_title: Cosa sapere
+        note_created: Se nell'arrivo mancano ambienti, stati o priorità dei ticket, vengono creati uguali. I secret e i file dell'organizzazione usati dal progetto vengono copiati; se ci sono già identici, si usano quelli.
+        note_detached: Si staccano i collegamenti con cose che restano nella partenza, come accessi dei team e regole di avviso. Li vedi tutti prima di confermare.
+        note_knowledge: Le pagine della Conoscenza collegate solo a ciò che sposti partono con lui, con cronologia e allegati, insieme al loro libro. Una pagina collegata anche ad altro resta dov'è e perde solo il collegamento.
+        note_github: Il repository GitHub si scollega sempre. Ricollegalo dall'organizzazione di arrivo.
+        note_undo: Uno spostamento non si annulla. Per tornare indietro, sposta di nuovo nella direzione opposta. Se fallisce, non cambia niente.
+        note_history: Lo spostamento resta scritto nelle attività di entrambe le organizzazioni.

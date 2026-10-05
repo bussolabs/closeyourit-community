@@ -1,0 +1,27 @@
+---
+it:
+  member:
+    guides:
+      index:
+        activity:
+          title: Chi ha fatto cosa
+      activity:
+        title: Chi ha fatto cosa
+        subtitle: Il registro delle azioni delle persone, in un elenco solo.
+        what_title: Cosa ci trovi
+        what_intro: "Il registro mette in fila, dalla più recente, le azioni fatte dalle persone della tua organizzazione. Prima ognuna di queste cose si leggeva in una pagina diversa, e i cambi di permesso non si leggevano da nessuna parte."
+        sources:
+          work: progetti, documenti, traguardi, idee e carico di lavoro creati o modificati.
+          tickets: la cronologia dei ticket dei progetti che vedi — apertura, stato, assegnazioni, revisioni.
+          permissions: ruoli e permessi dati o tolti, squadre cambiate, e le conferme delle azioni delicate.
+          secrets: chi ha letto, cambiato o sincronizzato una chiave riservata dell'organizzazione.
+        out_title: Cosa NON ci trovi
+        out_intro: "Alcune cose restano fuori di proposito. Se cerchi una di queste, il posto giusto è un altro."
+        out_b1: "Il tuo Vault personale e i tuoi file personali: sono tuoi, e nessun amministratore li vede da qui."
+        out_b2: "Gli errori del software: sono guasti del programma, non azioni di una persona. Stanno nella pagina degli errori."
+        out_b3: "Il Vault compare solo a chi ha già il permesso di leggerne l'attività: il registro non aggira quel permesso."
+        how_title: Come si cerca
+        how_step1: "Scegli il registro se già sai dove guardare: lavoro, ticket, permessi o Vault. Lasciandolo vuoto li vedi tutti insieme."
+        how_step2: "Restringi con «Chi» e «Azione» quando la domanda ha un nome: per esempio chi ha concesso un permesso, o chi ha cambiato uno stato."
+        how_step3: "Usa il periodo per tornare a un giorno preciso. I filtri restano come li lasci quando torni sulla pagina."
+        cta: Apri il registro attività

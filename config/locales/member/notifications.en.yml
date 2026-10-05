@@ -1,0 +1,366 @@
+en:
+  member:
+    notifications:
+      groups:
+        tickets: Tickets
+        chat: Conversations
+        errors: Errors
+        logs: Logs
+        performance: Performance
+        uptime: Uptime
+        crons: Scheduled jobs
+        servers: Servers
+        secrets: Secrets
+        tokens: Ingest tokens
+        agents: Automation
+        analytics: Site analytics
+        ideas: Ideas
+        workload: Tasks
+        datasets: Datasets
+        vulnerabilities: Security
+        seo: SEO
+        services: Internal services
+      natures:
+        tickets: Tickets
+        systems: Systems
+        agents: Agents
+      cadences:
+        immediate: Every time
+        daily: Daily digest
+        weekly: Weekly digest
+        "off": "Off"
+      title: Notifications
+      save: Save
+      saved: Notification preferences saved.
+      report:
+        heading: Data summary by email
+        hint: "An email that tells you how things are going: visits, errors and uptime across your projects, compared with the previous period. These are not alerts — it is the whole picture."
+        label: How often you get it
+        label_hint: "It arrives in the morning and only covers the projects you can see."
+        guide: How it works
+        cadences:
+          "off": Never
+          daily: Every day
+          weekly: Every Monday
+          monthly: On the first of the month
+        email_off: Email is switched off above, so the summary will not be sent. Turn it back on to receive it.
+      channels:
+        heading: Channels
+        hint: Where notifications reach you. In-app is always on and can't be disabled.
+        in_app: In-app
+        in_app_state: Always on
+        in_app_hint: "The notification center: every notification always lands here and can't be turned off."
+        email: Email
+        email_hint: "Sent to %{email}."
+        telegram: Telegram
+        telegram_hint: Direct messages from the CloseYourIt bot.
+      telegram:
+        connected: "Connected as @%{username}"
+        connected_generic: Telegram connected
+        connected_since: "Connected on %{date}"
+        disconnect: Disconnect
+        disconnect_confirm: "Disconnect Telegram? You'll stop receiving Telegram notifications."
+        disconnect_hint: You'll stop receiving the bot's messages. You can reconnect whenever you want.
+        connect: Connect Telegram
+        guide_title: Connect your Telegram
+        guide_intro: Turn on the Telegram channel, then link your account to the bot to receive DMs.
+        guide_step_1: "Press “Connect Telegram” below: it opens the chat with the bot already recognised as yours."
+        guide_step_2: In the chat, press Start.
+        guide_step_3: "Come back here and read “Connected as”: from that moment alerts reach you in chat."
+        bot_label: The bot is called
+        bot_note: Searching for it by hand inside Telegram isn't enough to link you — the recognition goes through the button on this page.
+        not_configured: The Telegram bot isn't configured yet — ask your administrator.
+        disconnected: Telegram disconnected.
+        what_heading: What reaches you here
+        what_body_1: "The bot sends you a private message for the alerts you turned on for Telegram: tickets assigned to you, comments and mentions, new errors, sites that stop responding, servers and scheduled jobs."
+        what_body_2: "You decide which alerts come through here and how often: every time, in a daily or weekly digest, or never."
+        choose_alerts: Choose what reaches you on Telegram
+        commands_heading: What you can do from the chat
+        commands_hint: It's not just a speaker — you can write to the bot too.
+        commands:
+          new_ticket: Open a ticket, with a photo too
+          my_tickets: List your open tickets
+          comment: Comment on a ticket
+          help: The full list of commands
+        group:
+          heading: Telegram group with topics
+          hint: "Owner only: alerts arrive in a Telegram group of yours, each in its own topic."
+          body: "Critical, servers, tickets, errors: each kind of alert has its own topic, created with the first message. When an alert arrives in the group it reaches you neither in private nor by email."
+          step_1: "Create a Telegram group and turn on Topics in its settings."
+          step_2: "Press “Link Telegram group” and pick the group: the bot joins as an administrator."
+          step_3: "The bot confirms in the group. Come back here and reload the page."
+          connect: Link Telegram group
+          connected: "Linked to the group “%{title}”"
+          connected_generic: Telegram group linked
+          disconnect: Unlink the group
+          disconnect_confirm: "Unlink the Telegram group? Alerts will go back to your private chat."
+          disconnected: Telegram group unlinked.
+      list:
+        heading: Per notification
+        hint: "Pick a cadence per channel. Off = don't send there; digests are grouped daily or weekly."
+        col_email: Email
+        col_telegram: Telegram
+        highlight_telegram: "You came from Telegram: the highlighted column is the bot's messages one."
+        group_count:
+          one: 1 notification
+          other: "%{count} notifications"
+      search:
+        label: Search notifications
+        placeholder: Search a notification
+        clear: Clear search
+        empty: No notification with that name.
+      presets:
+        heading: Ready-made setups
+        hint: They set the cadence of every notification in one go. They replace hand-picked choices; channels and quiet hours stay as you left them.
+        confirm: Apply this setup? It replaces the cadences you picked by hand.
+        applied: "Setup “%{name}” applied."
+        essential:
+          label: Essential
+          hint: Straight away what concerns you and serious outages, a daily digest for the rest.
+        everything:
+          label: Everything
+          hint: Every notification, every time, on the channels you turned on.
+        urgent_only:
+          label: Urgent only
+          hint: Serious outages only. The rest still lands in the notification center.
+      catalog:
+        ticket_created:
+          title: Ticket created
+          description: A new ticket is opened in a project you can see.
+        ticket_assigned:
+          title: Ticket assigned to you
+          description: A ticket is assigned to you (or unassigned from you).
+        ticket_status_changed:
+          title: Ticket status changed
+          description: The status of a ticket you follow changes.
+        ticket_milestone_changed:
+          title: Ticket milestone changed
+          description: A ticket you follow is added to or removed from a milestone.
+        ticket_commented:
+          title: New comment
+          description: Someone comments on a ticket you follow.
+        ticket_mentioned:
+          title: You are mentioned
+          description: Someone @mentions you in a ticket comment.
+        ticket_review_requested:
+          title: Review requested
+          description: A ticket enters a review status and you are the reviewer.
+        ticket_review_rejected:
+          title: Review rejected
+          description: A review you requested is rejected, with the reason.
+        ticket_review_approved:
+          title: Review approved
+          description: A review is approved and the ticket moves forward.
+        ticket_question_asked:
+          title: Question asked
+          description: Someone asks a question on a ticket you follow.
+        ticket_question_answered:
+          title: Question answered
+          description: An answer arrives for a question on a ticket you follow.
+        chat_message:
+          title: New chat message
+          description: A new message is posted in a conversation you take part in.
+        chat_mentioned:
+          title: Mentioned in chat
+          description: Someone @mentions you in a chat message.
+        error_new:
+          title: New error
+          description: A new error group appears in one of your projects.
+        error_regression:
+          title: Error regression
+          description: A resolved error starts happening again.
+        error_spike:
+          title: Error surge
+          description: An unresolved error suddenly spikes in volume, for example after a deploy.
+        log_alert:
+          title: Error or fatal log
+          description: An error or fatal log entry is ingested in one of your projects.
+        metric_threshold:
+          title: Performance issue
+          description: A slow query or method crosses your alert threshold.
+        uptime_down:
+          title: Uptime down
+          description: A monitored endpoint goes down.
+        uptime_up:
+          title: Uptime recovered
+          description: A monitored endpoint comes back up.
+        uptime_slow:
+          title: Slow response
+          description: A monitored endpoint responds above the slow threshold.
+        uptime_ssl_expiring:
+          title: SSL certificate expiring
+          description: A monitored endpoint's TLS certificate is about to expire.
+        cron_missed:
+          title: Scheduled job missed
+          description: A scheduled job (cron) did not run on time.
+        server_down:
+          title: Server down
+          description: A monitored server stops reporting.
+        server_up:
+          title: Server recovered
+          description: A monitored server starts reporting again.
+        server_cpu:
+          title: High CPU
+          description: A server's CPU usage crosses the threshold.
+        server_mem:
+          title: High memory
+          description: A server's memory usage crosses the threshold.
+        server_disk:
+          title: High disk usage
+          description: A server's disk usage crosses the threshold.
+        server_temp:
+          title: High temperature
+          description: A server's temperature crosses the threshold.
+        server_service_failed:
+          title: Service failed
+          description: A systemd service on a monitored server enters a failed state.
+        server_smart_failing:
+          title: Disk SMART failing
+          description: A disk on a monitored server reports a SMART failure.
+        server_security_updates:
+          title: Security updates pending
+          description: A monitored server has security updates waiting to be installed.
+        server_silent:
+          title: Stale data
+          description: A server is reachable but its data has not been refreshed for too long.
+        server_ingest_rejected:
+          title: Machine data rejected
+          description: "The system rejected the data sent by your machines: their figures stay frozen, but they are not down."
+        cluster_down:
+          title: Cluster silent
+          description: "A Kubernetes cluster has sent no data for 3 minutes: the observer stopped or the cluster does not answer."
+        cluster_up:
+          title: Cluster reachable again
+          description: "A cluster that was silent is sending data again."
+        cluster_node_not_ready:
+          title: Cluster machine not ready
+          description: "A machine of a Kubernetes cluster has not been ready for at least 2 minutes."
+        cluster_node_pressure:
+          title: Cluster machine under pressure
+          description: "A machine of a cluster is almost out of memory, disk or processes."
+        cluster_workload_crashloop:
+          title: App restarting over and over
+          description: "An app of the cluster stops and restarts several times within a few minutes."
+        cluster_workload_degraded:
+          title: App running at half
+          description: "An app of the cluster has had fewer working copies than expected for at least 5 minutes."
+        server_disk_forecast:
+          title: Data volume filling up
+          description: At the current fill rate a server's data volume will be full within days.
+        server_container_down:
+          title: Container down
+          description: A container on a monitored server disappears or stops restarting.
+        server_container_up:
+          title: Containers back up
+          description: Containers that were down on a monitored server are running again.
+        server_container_restart_loop:
+          title: Container restart loop
+          description: A container restarts at least three times within ten minutes.
+        server_container_stable:
+          title: Container stable again
+          description: Containers leave the restart-loop window.
+        server_db_down:
+          title: Database unreachable
+          description: The database on a monitored server stops responding.
+        server_db_connections:
+          title: High database connections
+          description: Open connections on a server database go above the threshold.
+        server_db_connection_usage:
+          title: Database slots nearly exhausted
+          description: Connections cross the configured share of available non-reserved slots.
+        server_replication_lag:
+          title: Replication lagging
+          description: A server database replica falls behind more than the threshold.
+        server_replication_down:
+          title: Replication disconnected
+          description: A known replica stops streaming.
+        server_replication_up:
+          title: Replication recovered
+          description: A disconnected replica starts streaming again.
+        server_data_volume_disk:
+          title: Data volume filling up
+          description: A data mount crosses the configured disk usage threshold.
+        server_inode:
+          title: Inodes nearly exhausted
+          description: A filesystem crosses the configured inode usage threshold.
+        secret_rotation_due:
+          title: Secret due for rotation
+          description: A secret with a rotation policy is due soon or already overdue.
+        secret_deleted:
+          title: Secret deleted
+          description: A secret is deleted from a project, in any environment.
+        secret_sync_failed:
+          title: GitHub sync failed
+          description: Pushing the project's secrets to the GitHub Environment secrets fails.
+        secret_change_requested:
+          title: Secret change request
+          description: A change request on a protected secret is waiting for your approval.
+        secret_change_approved:
+          title: Change request approved
+          description: A change request you made on a protected secret is approved and applied.
+        secret_change_rejected:
+          title: Change request rejected
+          description: A change request you made on a protected secret is rejected, with the reason.
+        secret_read:
+          title: Secret read
+          description: Someone opens a secret value from the web. Automated reads from the terminal do not notify.
+        secret_consolidation_suggested:
+          title: Shared value
+          description: The same secret value is repeated across projects and can be moved to the organization secrets.
+        secret_denied:
+          title: Secret access denied
+          description: Someone tries to open a secret value in an environment they are not allowed into.
+        project_token_expiring:
+          title: Ingest token expiring
+          description: A token with an expiry date is due soon or already expired — apps using it will stop sending.
+        agents_stalled:
+          title: Automation stalled
+          description: Machines are online but no automation work has completed in the last hour.
+        agents_host_failing:
+          title: Machine failing
+          description: "A machine is failing most of its work: it may be broken."
+        agents_host_stale:
+          title: Automation stopped
+          description: "The automation on a machine stopped reporting: the computer is often fine and only the automation is down."
+        analytics_traffic_drop:
+          title: Traffic drop
+          description: Visits to a site you monitor drop suddenly.
+        analytics_traffic_spike:
+          title: Traffic spike
+          description: Visits to a site you monitor rise well above usual.
+        idea_created:
+          title: New idea
+          description: Someone proposes a new idea in a project you can see.
+        idea_commented:
+          title: New comment on an idea
+          description: Someone comments on an idea in a project you can see.
+        workload_due_soon:
+          title: Task due soon
+          description: A task you take part in is approaching its due date or is overdue.
+        dataset_training_completed:
+          title: Training completed
+          description: A dataset's training finishes successfully.
+        dataset_training_failed:
+          title: Training failed
+          description: A dataset's training does not complete successfully.
+        vulnerability_new:
+          title: New vulnerability
+          description: A library used by a project turns out to have a known security problem.
+        seo_issue_new:
+          title: New SEO finding
+          description: The check on a site finds a serious problem that can keep it out of search results.
+        runtime_eol:
+          title: Version no longer updated
+          description: A project runs a language version that no longer receives security fixes.
+        embedding_down:
+          title: Embedding service unreachable
+          description: "The service that understands text is not answering: semantic search, cross-linking and duplicate detection stop working without saying so."
+        ai_unavailable:
+          title: AI unreachable
+          description: "The service that writes and reasons is not answering, or the key is no longer valid: assistant, automatic ticket triage and duplicate detection stop working without saying so."
+        ai_available:
+          title: AI back online
+          description: The service that writes and reasons is answering again.
+        cache_unavailable:
+          title: Shared cache unreachable
+          description: "The shared cache is not answering: alerts to Slack, Discord and other external links may stay silent without saying so."

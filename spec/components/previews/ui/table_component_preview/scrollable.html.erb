@@ -1,0 +1,10 @@
+<%= render(Ui::TableComponent.new(scrollable: true, test_id: "preview-scroll")) do |t| %>
+  <% t.with_head do %>
+    <th class="font-mono text-[9px] uppercase tracking-[1px] px-4 py-2.5 whitespace-nowrap">Colonna molto larga A</th>
+    <th class="font-mono text-[9px] uppercase tracking-[1px] px-4 py-2.5 whitespace-nowrap">Colonna molto larga B</th>
+  <% end %>
+  <tr>
+    <td class="px-4 py-3 whitespace-nowrap text-[13px] text-zinc-900 dark:text-zinc-100">Valore A</td>
+    <td class="px-4 py-3 whitespace-nowrap text-[13px] text-zinc-900 dark:text-zinc-100">Valore B</td>
+  </tr>
+<% end %>

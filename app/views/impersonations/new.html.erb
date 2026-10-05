@@ -1,0 +1,48 @@
+<% content_for :title, t("impersonations.confirm.title") %>
+
+<%# CYRA-719 — conferma col secondo fattore prima di entrare nei panni di qualcuno. Il bersaglio
+    viaggia in un campo nascosto: la POST che avvia porta sempre con sé chi ha visto chi conferma. %>
+<div class="p-7">
+  <%= form_with url: impersonation_path, method: :post, class: "space-y-6", data: { test: "impersonation-confirm-form" } do %>
+    <% if @organization %>
+      <%= hidden_field_tag :organization_id, @organization.id %>
+    <% else %>
+      <%= hidden_field_tag :account_id, @target.id %>
+    <% end %>
+
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("impersonations.confirm.title"),
+          breadcrumb: @organization ?
+            [ { label: t("valhalla.organizations.title"), href: valhalla_organizations_path },
+              { label: @organization.name, href: valhalla_organization_path(@organization) },
+              { label: t("impersonations.confirm.breadcrumb") } ] :
+            [ { label: t("valhalla.accounts.title"), href: valhalla_accounts_path },
+              { label: t("impersonations.confirm.breadcrumb") } ],
+          root_href: valhalla_root_path) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(
+              label: t("impersonations.confirm.cancel"),
+              href: @organization ? valhalla_organization_path(@organization) : valhalla_accounts_path,
+              variant: :secondary_muted, size: :sm, test_id: "impersonation-cancel") %>
+        <%= render Ui::ButtonComponent.new(label: t("impersonations.confirm.submit"), type: "submit", size: :sm, test_id: "impersonation-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 bg-white max-w-xl">
+      <div class="p-6 space-y-5">
+        <p class="text-[12.5px] text-gray-500" data-test="impersonation-confirm-target">
+          <% if @organization %>
+            <%= t("impersonations.confirm.subtitle_organization", name: @organization.name, email: @target.email) %>
+          <% else %>
+            <%= t("impersonations.confirm.subtitle_account", email: @target.email) %>
+          <% end %>
+        </p>
+
+        <%= render Ui::InputComponent.new(
+              name: "code", label: t("impersonations.confirm.code_label"), required: true,
+              test_id: "impersonation-code", autocomplete: "one-time-code", inputmode: "numeric",
+              autofocus: true, hint: t("impersonations.confirm.code_hint")) %>
+      </div>
+    </div>
+  <% end %>
+</div>

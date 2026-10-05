@@ -1,0 +1,47 @@
+<% title = t(".title", name: @subject.label) %>
+<% content_for :title, title %>
+<% active = @move.pending? || @move.running? %>
+<%# CYRA-879 — while the move runs the page reloads itself; a plain reload, no polling code. %>
+<% content_for(:head) { tag.meta("http-equiv": "refresh", content: "3") } if active %>
+
+<%# After success the subject lives in the destination: its source pages would answer 404, so the
+    trail stops linking to it and the way forward is the organization switch. %>
+<div class="p-7 space-y-6" data-test="member-project-move">
+  <%= render Ui::PageHeaderComponent.new(
+        title:,
+        breadcrumb: project_move_breadcrumb(@subject, t("member.project_moves.open"), link: false),
+        test_id: "move-header",
+        counts_test_id: "move-counts") do |header| %>
+    <% header.with_counts do %>
+      <%= render Ui::BadgeComponent.new(label: t(".status.#{@move.status}"), color: project_move_status_color(@move),
+            dot: true, pulse: active, test_id: "move-status") %>
+      <%= render Ui::StatLabelComponent.new(label: t(".destination"), value: @move.destination_organization.name,
+            test_id: "move-destination-name") %>
+    <% end %>
+    <% header.with_actions do %>
+      <% if @move.succeeded? %>
+        <%= render Ui::ButtonComponent.new(label: t(".open_destination"), href: member_organization_switches_path,
+              method: :post, params: { organization_id: @move.destination_organization_id,
+                                       return_to: project_move_destination_path(@subject) }, variant: :primary,
+              size: :sm, icon: "arrow-right", test_id: "move-open-destination") %>
+      <% elsif active %>
+        <%= render Ui::ButtonComponent.new(label: t(".reload"), href: request.path, variant: :secondary_muted,
+              size: :sm, icon: "rotate-cw", test_id: "move-reload") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if @move.failed? %>
+    <%= render Ui::AlertComponent.new(variant: :danger, title: t(".failed_title"), test_id: "move-error") do %>
+      <%= @move.error_message %>
+    <% end %>
+  <% elsif @move.succeeded? %>
+    <%= render Ui::AlertComponent.new(variant: :success, test_id: "move-done") do %>
+      <%= t(".done", destination: @move.destination_organization.name) %>
+    <% end %>
+  <% else %>
+    <%= render Ui::AlertComponent.new(variant: :info, test_id: "move-running") do %>
+      <%= t(".running") %>
+    <% end %>
+  <% end %>
+</div>

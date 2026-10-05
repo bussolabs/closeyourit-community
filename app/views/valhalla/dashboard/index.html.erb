@@ -1,0 +1,28 @@
+<% content_for :title, t("valhalla.dashboard.title") %>
+
+<div class="p-7 space-y-6" data-test="valhalla-dashboard">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("valhalla.dashboard.title"),
+        title_tooltip: t("valhalla.dashboard.help_title"),
+        breadcrumb: [],
+        root_href: valhalla_root_path) do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("valhalla.dashboard.orgs_active"), value: @signals.active_organizations_count, test_id: "stat-orgs-active") %>
+      <%= render Ui::StatLabelComponent.new(label: t("valhalla.dashboard.orgs_suspended"), value: @signals.suspended_organizations_count,
+            value_color: (@signals.suspended_organizations_count.positive? ? :amber : nil), test_id: "stat-orgs-suspended") %>
+      <%= render Ui::StatLabelComponent.new(label: t("valhalla.dashboard.orgs_without_owner"), value: @signals.organizations_without_owner_count,
+            value_color: (@signals.organizations_without_owner_count.positive? ? :amber : nil), test_id: "stat-orgs-without-owner") %>
+    <% end %>
+  <% end %>
+
+  <%= render "valhalla/dashboard/attention", items: @signals.attention %>
+  <%= render "valhalla/dashboard/totals" %>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:items-start">
+    <div class="min-w-0 lg:col-span-3"><%= render "valhalla/dashboard/organizations" %></div>
+    <div class="min-w-0 space-y-6 lg:col-span-2">
+      <%= render "valhalla/dashboard/search_index", tables: @signals.embedding_version_drift.tables %>
+      <%= render "valhalla/dashboard/access" %>
+    </div>
+  </div>
+</div>

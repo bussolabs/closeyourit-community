@@ -1,0 +1,5 @@
+<%# locals: ticket, count
+    Contatore watcher dentro il pulsante watch/unwatch. Target del broadcast realtime (replace)
+    quando qualcuno si iscrive/disiscrive (o un commento auto-iscrive l'autore). Solo il numero
+    è condiviso: lo stato del pulsante (watch vs watching) resta per-viewer e non si broadcasta. %>
+<span id="<%= dom_id(ticket) %>_watchers" class="font-mono font-semibold" data-test="member-ticket-watchers-count"><%= count %></span>

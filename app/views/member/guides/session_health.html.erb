@@ -1,0 +1,16 @@
+<% content_for :title, t("member.guides.session_health.title") %>
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-session_health">
+  <%= render Ui::PageHeaderComponent.new(title: t("member.guides.session_health.title"), subtitle: t("member.guides.session_health.subtitle"), breadcrumb: [{ label: t("member.guides.index.title"), href: member_guides_path }, { label: t("member.guides.session_health.title") }]) do |header| %>
+    <% header.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.session_health.cta"), href: member_monitoring_session_health_path, size: :sm, icon: "heart-pulse", test_id: "member-guide-session-health-cta") %>
+    <% end %>
+  <% end %>
+  <% t("member.guides.session_health.sections").each do |key, section| %>
+    <%= render Ui::SectionComponent.new(title: section.fetch(:title), id: key, test_id: "guide-session_health-#{key}") do %>
+      <p class="text-sm leading-relaxed text-gray-600 dark:text-zinc-400"><%= section.fetch(:body) %></p>
+    <% end %>
+  <% end %>
+  <p class="text-sm leading-relaxed text-gray-600 dark:text-zinc-400"><%= t("member.guides.session_health.installation") %>
+    <%= link_to t("member.guides.session_health.installation_link"), member_guides_installation_path, class: "text-indigo-700 dark:text-indigo-300 underline underline-offset-4", data: { test: "session-guide-installation" } %>
+  </p>
+</div>

@@ -1,0 +1,20 @@
+---
+en:
+  datasets:
+    errors:
+      invalid: The dataset could not be saved. Check the highlighted fields.
+      project_not_found: Project not found or not manageable.
+      no_input: Add at least one Input column (e.g. a photo) — the data the AI reads.
+      no_target: Add at least one Target column — an attribute the AI should predict.
+      row_invalid: The row could not be saved. Check required fields and photos.
+      ai_unreadable: The AI returned an unreadable response.
+      not_enough: Add more labeled rows before training.
+      no_training: Train the dataset before predicting.
+      already_running: "A training run is already in progress on this dataset: wait for it to finish before starting another one."
+      interrupted: "The training run stopped before finishing and will not resume on its own. You can start a new one whenever you want."
+      internal: The operation failed unexpectedly.
+    ai:
+      input_heading: "Input data:"
+      predict_tool_desc: Return the predicted value for each target attribute.
+      build_tool_desc: Register the optimized system prompt.
+      build_prompt_field: The optimized system prompt.

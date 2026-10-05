@@ -1,0 +1,17 @@
+<%# Cards of the actions proposed in this reply; "confirm all" runs them one by one (CYRA-907). %>
+<% open = message.proposals.select(&:confirmable?) %>
+<div id="<%= dom_id(message) %>_proposals" class="flex flex-col gap-2 mt-1" data-test="assistant-proposals">
+  <div class="flex items-center justify-between gap-2">
+    <span class="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+      <%= t("member.assistant.proposals.heading") %>
+      <span class="font-normal text-gray-500 dark:text-zinc-400">· <%= open.any? ? t("member.assistant.proposals.open", count: open.size) : t("member.assistant.proposals.all_done") %></span>
+    </span>
+    <% if open.size > 1 %>
+      <%= button_to t("member.assistant.proposals.confirm_all", count: open.size),
+            member_assistant_conversation_message_confirm_all_proposals_path(message.conversation, message),
+            class: "h-8 px-3 rounded-md bg-indigo-600 text-white text-[12px] font-medium hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400",
+            data: { test: "assistant-proposals-confirm-all" } %>
+    <% end %>
+  </div>
+  <%= render partial: "member/assistant_conversations/proposal", collection: message.proposals, as: :proposal, locals: { error: nil } %>
+</div>

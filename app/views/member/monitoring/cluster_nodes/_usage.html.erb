@@ -1,0 +1,10 @@
+<%# locals: percent: — a usage bar; "—" without metrics-server. Literal classes for the Tailwind scanner. %>
+<% if percent.nil? %>
+  <span class="font-mono text-gray-500 dark:text-zinc-400">—</span>
+<% else %>
+  <% fill = percent >= 90 ? "bg-red-500" : (percent >= 80 ? "bg-amber-500" : "bg-indigo-500") %>
+  <span class="inline-flex items-center gap-2">
+    <span class="inline-block h-1.5 w-20 overflow-hidden rounded-full bg-gray-100 dark:bg-zinc-800"><span class="block h-full <%= fill %>" style="width: <%= [ percent, 100 ].min %>%"></span></span>
+    <span class="font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= percent %>%</span>
+  </span>
+<% end %>

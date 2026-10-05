@@ -1,0 +1,5 @@
+<% scope = "valhalla.integrations.generated" %>
+<%= render Ui::AlertComponent.new(variant: :warning, title: t("#{scope}.title"), test_id: "integrations-generated") do %>
+  <p class="max-w-[75ch]"><%= t("#{scope}.body.#{generated[:field]}") %></p>
+  <p class="mt-2 font-mono text-[12.5px] break-all select-all" data-test="integrations-generated-value"><%= generated[:value] %></p>
+<% end %>

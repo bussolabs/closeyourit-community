@@ -1,0 +1,39 @@
+<%# locals: comment, idea, can_moderate %>
+<% author_name = comment.author&.name || t("member.ideas.author_gone") %>
+<div id="<%= dom_id(comment) %>" class="px-4 py-4 flex gap-3" data-test="member-idea-comment-<%= comment.id %>">
+  <span class="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 text-[11px] font-semibold"><%= avatar_initials(author_name) %></span>
+  <div class="min-w-0 flex-1">
+    <div class="flex items-center gap-2">
+      <span class="text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= author_name %></span>
+      <% if comment.author_id == idea.author_id %>
+        <span class="font-mono uppercase text-[9px] tracking-[1px] text-gray-500 dark:text-zinc-400 border border-stone-200 dark:border-zinc-800 rounded px-1 py-0.5"><%= t("member.ideas.comments.role_author") %></span>
+      <% end %>
+      <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= comment.created_at.strftime("%d/%m · %H:%M") %></span>
+      <% if idea.status_open? && (comment.author_id == Current.account&.id || can_moderate) %>
+        <%= button_to member_idea_comment_path(idea, comment), method: :delete, params: { confirm: 1 }, class: "ml-auto inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-300 dark:text-zinc-600 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15", data: { test: "member-idea-comment-delete-#{comment.id}", turbo_confirm: t("member.ideas.comments.delete_confirm") } do %>
+          <%= render Ui::IconComponent.new(name: "trash", class: "text-[11px]") %>
+        <% end %>
+      <% end %>
+    </div>
+    <%# CYRA-371 — un intervento argomentato può essere lungo: oltre la soglia arriva ritagliato, con
+        il comando per aprirlo (stesso Stimulus dell'analisi tecnica di un ticket). Senza JS resta
+        tutto visibile — il taglio lo mette il controller, non il markup — e il testo in pagina è
+        sempre intero: qui non si tronca niente, si nasconde. %>
+    <% if comment.body.length > ::Ideas::Constants::COMMENT_CLAMP_CHARS %>
+      <div data-controller="ui--clamp" data-ui--clamp-max-value="200"
+           data-ui--clamp-more-value="<%= t("member.ideas.comments.show_all") %>"
+           data-ui--clamp-less-value="<%= t("member.ideas.comments.show_less") %>">
+        <div data-ui--clamp-target="body">
+          <%= render Ui::MarkdownComponent.new(text: comment.body, class: "mt-1 text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed") %>
+        </div>
+        <button type="button" data-ui--clamp-target="toggle" data-action="ui--clamp#toggle"
+                data-test="idea-comment-toggle"
+                class="mt-1 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
+          <span data-ui--clamp-target="label"><%= t("member.ideas.comments.show_all") %></span>
+        </button>
+      </div>
+    <% else %>
+      <%= render Ui::MarkdownComponent.new(text: comment.body, class: "mt-1 text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed") %>
+    <% end %>
+  </div>
+</div>

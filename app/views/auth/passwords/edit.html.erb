@@ -1,0 +1,24 @@
+<% content_for :title, t("auth.passwords.edit_title") %>
+
+<%= render Ui::CardComponent.new do %>
+  <h1 class="font-display text-[20px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("auth.passwords.edit_title") %></h1>
+  <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("auth.passwords.edit_subtitle") %></p>
+
+  <%= form_with url: password_path(@token), method: :patch, class: "mt-5 space-y-4", data: { test: "reset-form" } do %>
+    <div data-controller="ui--password-rules">
+      <%= render Ui::InputComponent.new(name: "password", label: t("auth.fields.new_password"), type: "password", required: true,
+            test_id: "reset-password", error: @errors&.dig(:password)&.first,
+            data: { "ui--password-rules-target" => "input", action: "input->ui--password-rules#check" }) %>
+      <%= render Ui::PasswordRulesComponent.new(test_id: "reset-password-rules") %>
+    </div>
+
+    <%= render Ui::InputComponent.new(name: "password_confirmation", label: t("auth.fields.password_confirmation"), type: "password", required: true,
+          test_id: "reset-password-confirmation", error: @errors&.dig(:password_confirmation)&.first) %>
+
+    <%= render Ui::ButtonComponent.new(label: t("auth.passwords.update"), type: "submit", size: :lg, test_id: "reset-submit", class: "w-full") %>
+  <% end %>
+<% end %>
+
+<p class="mt-5 text-center text-[12.5px] text-gray-500 dark:text-zinc-400">
+  <%= link_to t("auth.passwords.back_to_login"), login_path, class: "font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300" %>
+</p>

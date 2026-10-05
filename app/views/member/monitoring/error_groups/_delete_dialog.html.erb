@@ -1,0 +1,19 @@
+<%# CYRA-192 · locals: group — Errors::Group. Conferma dell'eliminazione. Dice il numero: «spariscono
+    269.469 occorrenze» ferma la mano molto più di «sei sicuro?». Nessun vincolo di stato — chi ha il
+    permesso sa cosa cancella, e imporre «prima risolvilo» non proteggerebbe da nulla. %>
+<%= render Ui::ModalComponent.new(title: t("member.monitoring.delete.title"), size: :sm, test_id: "delete-dialog",
+      data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+  <% modal.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: t("shared.actions_cancel"), variant: :secondary_muted, size: :sm,
+          data: { action: "ui--dialog#close" }) %>
+    <%= render Ui::ButtonComponent.new(label: t("member.monitoring.delete.confirm"),
+          href: member_monitoring_error_group_path(group), method: :delete, variant: :danger, size: :sm,
+          icon: "trash", test_id: "delete-confirm") %>
+  <% end %>
+  <div class="space-y-2">
+    <p class="text-[12.5px] text-zinc-900 dark:text-zinc-100 break-words" data-test="delete-dialog-title"><%= group.title %></p>
+    <p class="text-[12.5px] text-gray-600 dark:text-zinc-400" data-test="delete-dialog-body">
+      <%= t("member.monitoring.delete.body", count: number_with_delimiter(group.events_count)) %>
+    </p>
+  </div>
+<% end %>

@@ -1,0 +1,169 @@
+<% in_flight_view = @in_flight.present? %>
+<% content_for :title, t(in_flight_view ? "member.approvals.in_flight.title" : "member.approvals.title") %>
+
+<%# CYRA-592 — La plancia. Al posto della coda a tre colonne (pila, testo, decisione) una tabella:
+    una riga per lavorazione, una colonna per ciascuna delle cinque fasi. Con centodieci decisioni
+    ferme su diciassette progetti la domanda non è più «cosa decido adesso» — quella la risolveva la
+    pila — ma «dove si accumula il lavoro», e a quella una pila non risponde.
+
+    Due rese, mai insieme: senza `?item=` la plancia, con `?item=` la richiesta aperta col suo
+    pannello di decisione. Tenere anche la pila di fianco avrebbe voluto dire due elenchi della
+    stessa coda sulla stessa pagina.
+
+    CYRA-317 / CYRA-630 — la stessa pagina serve DUE elenchi: quello che aspetta te e quello che va
+    avanti da solo (?view=in_flight). Non è un filtro della plancia: è un altro elenco, con un altro
+    titolo, un altro numero e una query sua (Agents::Workflows::InFlight). Prima conteneva le sole
+    lavorazioni che riprovavano; adesso comprende tutto ciò che è in volo e non chiede niente a
+    nessuno — ed è quello che diceva la pagina «Lavorazioni», che non esiste più. I due numeri non si
+    sommano mai e non contano mai la stessa riga due volte.
+
+    CYRA-825 — il riquadro operativo. Prima non ce n'era nessuno, e il motivo stava scritto qui: i
+    conteggi vivono nell'intestazione, e un riquadro sulla sola tabella li avrebbe lasciati fermi.
+    La risposta non è rinunciare al riquadro ma spostarne il confine: intestazione, esito e corpo
+    stanno DENTRO, quindi una decisione li ridisegna insieme; barra laterale, menu e notifiche —
+    che una decisione non cambia — restano fuori e non si riscaricano.
+    `target: "_top"` è il default per tutto ciò che sta dentro: ogni link della pagina continua a
+    navigare come prima, e solo i due moduli della decisione (singola e in blocco) dichiarano di
+    voler restare nel riquadro. Un link che finisse qui dentro per sbaglio cercherebbe un riquadro
+    che la pagina di destinazione non ha, e Turbo rifarebbe la stessa richiesta a pagina intera.
+    `data-turbo-action="advance"` tiene l'indirizzo al passo (`?item=` è la richiesta aperta:
+    ricaricare deve riaprire quella), e `autoscroll` rimette in cima come faceva il caricamento di
+    pagina — senza, una decisione presa in fondo alla plancia lascerebbe lo sguardo a metà della
+    successiva. Chi sta PRIMO qui dentro conta: Turbo non porta in vista il riquadro ma il suo primo
+    figlio, quindi l'intestazione deve aprire l'elenco (vedi il contenitore dei messaggi in fondo).
+    Nessun aggiornamento automatico: il riquadro si ridisegna quando SEI TU a decidere, mai mentre
+    stai leggendo un piano o scrivendo una motivazione. %>
+<% content_for :page_flash, true %>
+<div class="p-7" data-test="member-home-approvals">
+  <%= turbo_frame_tag Member::Home::ApprovalsController::WORK_FRAME, target: "_top", autoscroll: true,
+        class: "block", data: { turbo_action: "advance", autoscroll_block: "start" } do %>
+    <%# The page's blocks sit in their own stack, the message container after it: as the last child of
+        the stack it made the last panel "not last", and that panel kept a gap under it at the bottom
+        of the page. %>
+    <div class="space-y-6">
+    <%= render Ui::PageHeaderComponent.new(
+          title: t(in_flight_view ? "member.approvals.in_flight.title" : "member.approvals.title"),
+          subtitle: t(in_flight_view ? "member.approvals.in_flight.help_title" : "member.approvals.help_title"),
+          breadcrumb: [ { label: t("member.approvals.title"), href: (member_home_approvals_path if in_flight_view) },
+                        ({ label: t("member.approvals.in_flight.title") } if in_flight_view) ].compact,
+          counts_test_id: (@board ? "approvals-phase-counters" : "approvals-counts"),
+          test_id: "approvals-header") do |header| %>
+      <%# Solo il totale: i conteggi per stato vivono nella riga dei filtri, dove si usano per agire.
+          Ripeterli qui sarebbe lo stesso numero due volte sulla stessa pagina. %>
+      <%# CYRA-630 — i due numeri, sempre e tutti e due: quante cose aspettano te e quante vanno avanti
+          da sole senza chiederti niente. Il secondo è quello che la voce «Lavorazioni» diceva dal menu;
+          senza, quell'elenco non lo troverebbe più nessuno. Non si sommano e non contano mai la stessa
+          riga due volte: il primo sono le decisioni che aspettano una persona, il secondo è tutto ciò
+          che è in volo e non ne aspetta nessuna. %>
+      <%# On the board the counts line holds one count per step, counted on the whole board (not the
+          page). The fullest step is red: it is where the work piles up. A click narrows the board to
+          that step, a second click on the chosen one widens it back (CYRA-899; B3, T12). %>
+      <% if @board %>
+        <% busiest = @board.phase_counts.values.max.to_i %>
+        <% header.with_counts do %>
+          <% @board.phase_counts.each do |step, count| %>
+            <% active = @board.phase == step %>
+            <%= render Ui::StatLabelComponent.new(label: approval_phase_name(step), value: count,
+                  value_color: (busiest.positive? && count == busiest ? :red : :neutral),
+                  href: member_home_approvals_path(state: @batch.filter, project: @batch.project, agent_id: @batch.agent,
+                                                   phase: (step unless active)),
+                  active: active, test_id: "approvals-phase-counter-#{step}",
+                  title: t(active ? "member.approvals.board.phase_counters.clear" : "member.approvals.board.phase_counters.filter",
+                           phase: approval_phase_name(step))) %>
+          <% end %>
+        <% end %>
+      <% else %>
+      <% header.with_counts do %>
+        <% if in_flight_view %>
+          <%= render Ui::StatLabelComponent.new(label: t("member.approvals.in_flight.count"), value: @in_flight.total,
+                value_color: :neutral, test_id: "approvals-count-in-flight") %>
+        <% else %>
+          <%= render Ui::StatLabelComponent.new(label: t("member.approvals.counts.total"), value: @batch.total,
+                value_color: @batch.any? ? :amber : :neutral, test_id: "approvals-count-total") %>
+          <%# CYRA-665 — `nil` vuol dire che di lavorazioni automatiche non rispondo io: la pillola non
+              si rende affatto, altrimenti resterebbe lì con l'etichetta e il numero vuoto. %>
+          <% if @in_flight_total %>
+            <%= render Ui::StatLabelComponent.new(label: t("member.approvals.counts.in_flight"), value: @in_flight_total,
+                  value_color: :neutral, test_id: "approvals-count-in-flight-total") %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <% end %>
+      <% header.with_actions do %>
+        <%# Con una richiesta aperta la via di ritorno è la plancia: senza, si torna indietro col
+            browser o si resta dentro una scheda che non dice più dov'è il resto. %>
+        <% if @card %>
+          <%= render Ui::ButtonComponent.new(label: t("member.approvals.board.back"),
+                href: member_home_approvals_path(state: @batch.filter, project: @batch.project, agent_id: @batch.agent),
+                variant: :secondary_muted, size: :sm, icon: "arrow-left", test_id: "approvals-back-board") %>
+        <% end %>
+        <% if in_flight_view %>
+          <%= render Ui::ButtonComponent.new(label: t("member.approvals.in_flight.back"), href: member_home_approvals_path,
+                variant: :secondary_muted, size: :sm, icon: "arrow-left", test_id: "approvals-back-queue") %>
+        <% elsif @in_flight_total&.positive? %>
+          <%# Il rimando all'altro elenco: compare solo se là dentro c'è qualcosa, e porta il numero —
+              senza, sarebbe un invito a controllare una stanza vuota. Non trascina i filtri di questa
+              coda: è un altro elenco, non un suo taglio. %>
+          <%= render Ui::ButtonComponent.new(label: "#{t('member.approvals.in_flight.link')} (#{@in_flight_total})",
+                href: member_home_approvals_path(view: Agents::Workflows::InFlight::VIEW),
+                variant: :secondary_muted, size: :sm, icon: "workflow", test_id: "approvals-in-flight-link") %>
+        <% end %>
+        <%# CYRA-867 — ripartire da zero: owner e admin annullano ogni lavorazione aperta, con conferma.
+            CYRA-904 — the most dangerous action waits in the More menu, not next to the title. %>
+        <% if !@card && current_membership&.role.in?(%w[admin owner]) %>
+          <%= render Ui::RowMenuComponent.new(width: :lg, test_id: "approvals-more-menu",
+                aria_label: t("member.approvals.cancel_all.more_menu")) do %>
+            <%= button_to member_home_approvals_cancel_all_path, method: :post,
+                  class: Ui::RowMenuComponent.item_class(:danger), form: { class: "block" },
+                  data: { test: "approvals-cancel-all", turbo_confirm: t("member.approvals.cancel_all.confirm") } do %>
+              <%= render Ui::IconComponent.new(name: "ban", class: "w-[1.25em] text-[12px]") %><%= t("member.approvals.cancel_all.button") %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <% if in_flight_view %>
+      <%= render "member/home/approvals/in_flight", board: @in_flight %>
+    <% elsif @card %>
+      <%# La richiesta aperta: il testo per esteso e, di fianco, le sole decisioni che questo account
+          può davvero prendere. %>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <section class="lg:col-span-2 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="approvals-detail">
+          <%= render "member/home/approvals/detail", card: @card %>
+        </section>
+        <%# I filtri accesi viaggiano nell'indirizzo dell'azione — tutti e tre, non il solo stato:
+            senza progetto e agente il redirect li lasciava fuori e la memoria per-indirizzo li
+            dimenticava, allargando la coda sotto le dita di chi stava smaltendo un progetto. %>
+        <%= render "member/home/approvals/decision_panel", card: @card, state: @batch.filter,
+              project: @batch.project, agent: @batch.agent, view: nil,
+              frame: Member::Home::ApprovalsController::WORK_FRAME %>
+      </div>
+    <%# La plancia si mostra finché in coda c'è qualcosa: un filtro che non pesca righe NON è una coda
+        vuota, e annunciare «non c'è più niente da decidere» sopra una chip accesa che ne conta dieci
+        sarebbe la pagina che si contraddice da sola. Il vuoto del filtro lo dice la plancia. %>
+    <% elsif @batch.any? %>
+      <%= render "member/home/approvals/board", batch: @batch, plan: @board,
+            frame: Member::Home::ApprovalsController::WORK_FRAME %>
+    <% else %>
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+        <div class="flex flex-col items-center justify-center text-center px-6 py-16" data-test="approvals-empty">
+          <span class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500">
+            <%= render Ui::IconComponent.new(name: "circle-check", class: "text-[22px]") %>
+          </span>
+          <h2 class="mt-4 font-display text-[16px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.approvals.empty") %></h2>
+          <p class="mt-1.5 text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-sm"><%= t("member.approvals.empty_body") %></p>
+        </div>
+      </div>
+    <% end %>
+
+    </div>
+
+    <%# Il contenitore dei messaggi sta QUI e non nel layout (che lo salta, vedi `page_flash`): è
+        l'esito della decisione appena presa, quindi deve arrivare con la pagina ridisegnata. È
+        `fixed` in fondo a destra, quindi dove sta nel documento non cambia dove si vede. Sta DOPO i
+        blocchi della pagina perché `autoscroll` porta in vista il PRIMO FIGLIO del riquadro: deve
+        essere la pagina, non un elemento `fixed` che è già nel riquadro visibile. %>
+    <%= render "shared/flash", extra: (render("member/home/approvals/settled_notice", settled: @settled) if @settled) %>
+  <% end %>
+</div>

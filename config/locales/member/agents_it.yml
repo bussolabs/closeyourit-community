@@ -1,0 +1,249 @@
+it:
+  member:
+    nav:
+      agents: Agenti
+    agents:
+      title: Agenti
+      help_title: "Le macchine che eseguono le fasi dei ticket."
+      stat_online: Online
+      stat_offline: Offline
+      stat_stale: Fermi
+      stat_stale_title: "In silenzio da troppo tempo. Sono contati anche fra gli offline."
+      heartbeat_never: "Nessun segnale ricevuto finora"
+      stat_total: Totale
+      search_placeholder: Cerca per nome della macchina
+      count:
+        one: "%{count} host"
+        other: "%{count} host"
+      no_match: Nessun host corrisponde alla ricerca.
+      empty: Nessun host registrato
+      empty_body: Un host si registra da solo quando l'automator gira sulla macchina con il token org. Da qui lo certifichi e ne segui l'attività.
+      empty_cta: Token automator
+      tokens_link: Token
+      skill_bundle_link: Skill bundle
+      time_ago: "%{time} fa"
+      col_host: Host
+      col_status: Stato
+      col_activity: Attività
+      col_slots: Slot
+      col_last_heartbeat: Ultimo heartbeat
+      status:
+        online: Online
+        offline: Offline
+        busy: In esecuzione
+        waiting: In attesa
+        recovery_required: Recupero richiesto
+        stale: Fermo
+      phases:
+        triage: triage
+        planner: piano
+        autopilot: lavorazione
+        closer_staging: staging
+        closer_production: produzione
+      activity:
+        title: Attività
+        idle: In attesa di lavoro
+        none: Nessuna attività in corso.
+        active_runs: Run attive
+        started_ago: "avviata %{time} fa"
+        stalled: Ferma
+        last_stop: "Ultimo blocco: %{reason}"
+        # CYRA-498: al posto dei due contatori interni, una frase sola e solo quando serve.
+        unreported:
+          one: "1 lavoro risulta aperto ma la macchina non lo sta segnalando: probabilmente si è fermata senza chiuderlo."
+          other: "%{count} lavori risultano aperti ma la macchina non li sta segnalando: probabilmente si è fermata senza chiuderli."
+        step_status:
+          done: concluso
+          current: in corso
+          pending: da fare
+        products:
+          plan: "piano v%{version}"
+          attempts:
+            one: "%{count} tentativo"
+            other: "%{count} tentativi"
+          none: ancora nessun risultato
+        lease_health:
+          active: lease ok
+          expired: lease scaduto
+          unknown: lease incerto
+      duration:
+        seconds: s
+        minutes: m
+        hours: h
+        days: g
+      performance:
+        title: Rendimento
+        empty: Nessuna lavorazione conclusa in questo periodo.
+        empty_body: Allarga il periodo per vedere se questo agente ha lavorato prima.
+        ranges:
+          7d: 7 giorni
+          30d: 30 giorni
+          90d: 90 giorni
+          all: Sempre
+        tickets: Ticket lavorati
+        rejected: Lavori respinti
+        host_time: Tempo dell'agente
+        workflow_time: Tempo di lavorazione
+        # CYRA-499: due tempi affiancati, e nessuna parola che dicesse in cosa differiscono.
+        host_time_legend: quanto ha lavorato questa macchina sul ticket, sommando i suoi passaggi.
+        workflow_time_legend: quanto è passato da quando il ticket è entrato in coda a quando è
+          stato chiuso; si misura solo per i ticket arrivati alla chiusura.
+        attempts_caption:
+          one: "%{count} passaggio eseguito"
+          other: "%{count} passaggi eseguiti"
+        rejected_caption: "%{count} su %{total} passaggi conclusi"
+        median_caption: "mediana %{value}"
+        workflow_median_caption:
+          one: "mediana %{value} · su 1 ticket chiuso"
+          other: "mediana %{value} · su %{count} ticket chiusi"
+        by_phase: Tempi per passaggio
+        plans_sent_back: "piani rimandati indietro %{count}/%{total} · %{percent}"
+        total: Totale
+        col_phase: Passaggio
+        col_attempts: Eseguiti
+        col_approved: Approvati
+        col_rejected: Respinti
+        col_failed: Falliti
+        col_interrupted: Interrotti
+        col_avg: Durata media
+        col_median: Mediana
+        cost: Costo stimato
+        cost_caption:
+          one: su 1 partenza autorizzata
+          other: "su %{count} partenze autorizzate"
+        cost_partial:
+          one: "su 1 partenza autorizzata · %{untracked} senza costo tracciato"
+          other: "su %{count} partenze autorizzate · %{untracked} senza costo tracciato"
+        cost_unavailable: Nessun costo tracciato in questo periodo.
+        compare_cta: Confronta
+        cell_title: "Apri le lavorazioni del passaggio %{phase}"
+        trend:
+          delta: "%{value} sul periodo precedente"
+          points: "%{value} punti"
+          flat: invariato
+        outcomes:
+          approved: approvati
+          rejected: respinti
+          failed: falliti
+          interrupted: interrotti
+        compare:
+          title: Confronto fra macchine
+          subtitle: Le stesse misure, sullo stesso periodo, una accanto all'altra.
+          pick: Scegli le macchine da confrontare
+          apply: Confronta
+          empty: Nessuna macchina da confrontare.
+          metric: Misura
+          back: Torna alla macchina
+          machines: Macchine
+          period: Periodo
+          median: "%{label} (mediana)"
+      worked:
+        title: Ticket lavorati
+        count:
+          one: "%{count} ticket"
+          other: "%{count} ticket"
+        empty: Nessun ticket lavorato in questo periodo.
+        unknown_ticket: "—"
+        col_ticket: Ticket
+        col_phases: Passaggi svolti
+        col_outcome: Ultimo esito
+        col_host_time: Tempo dell'agente
+        col_workflow_time: Tempo di lavorazione
+        col_last: Ultima attività
+        filter_phase: Passaggio
+        filter_outcome: Esito
+      show:
+        # CYRA-498: la scheda parlava il vocabolario interno del motore (slot, heartbeat, runtime,
+        # fingerprint). Qui restano le parole che si spiegano da sole a chi non lo conosce.
+        host: Macchina
+        capabilities: Cosa sa fare
+        runtime: Programmi installati
+        runtime_toggle:
+          one: Vedi il programma installato
+          other: "Vedi i %{count} programmi installati"
+        runtime_col_name: Programma
+        runtime_col_version: Versione
+        repository: Progetti che segue
+        service_account: Utenza di servizio
+        status_label: Stato
+        slots_label: Lavori in parallelo
+        running_label: Lavori in corso
+        certification_label: Certificazione
+        heartbeat_label: Ultimo segnale
+        certified_value: "Sì"
+        not_certified_value: "No"
+        certified_on: "Certificato il %{date}."
+        certified_on_by: "Certificato il %{date} da %{name}."
+        fingerprint: Impronta della macchina
+        version: Versione
+        platform: Piattaforma
+        heartbeat: Ultimo segnale
+        never: Mai
+      certify: Certifica host
+      decertify: Revoca certificazione
+      certify_ok: Host certificato.
+      decertify_ok: Certificazione revocata.
+      review:
+        title: Chi rilegge il lavoro
+        hint: Prima di consegnare, ogni lavoro viene riletto. Con due motori conviene l'altro; con uno solo, lo stesso in una sessione nuova.
+        label: Rilettura
+        save: Salva
+        updated: Rilettura aggiornata. Vale dal prossimo lavoro.
+        invalid: Scelta non valida.
+        modes:
+          cross: L'altro motore
+          same: Lo stesso motore
+        descriptions:
+          cross: Claude rilegge Codex e Codex rilegge Claude. Servono tutti e due sulla macchina.
+          same: Lo stesso motore rilegge in una sessione nuova. Basta un motore solo.
+      engine:
+        title: Chi fa il lavoro
+        hint: Il motore che lavora i ticket su questa macchina. Deve essere installato e con l'accesso fatto.
+        label: Motore
+        save: Salva
+        updated: Motore aggiornato. Vale dal prossimo lavoro.
+        invalid: Scelta non valida.
+        engines:
+          claude: Claude
+          codex: Codex
+        descriptions:
+          claude: Claude Code lavora i ticket. È la scelta di partenza.
+          codex: Codex lavora i ticket, con gli stessi limiti di Claude su comandi, file e rete.
+      decertify_confirm: Revocare la certificazione? L'host tornerà ineleggibile.
+      destroy: Elimina macchina
+      destroy_confirm: "Eliminare %{hostname}? Sparisce dall'elenco e perde per sempre il suo storico: %{attempts} lavorazioni, %{plans} piani e %{clarifications} richieste di chiarimento. I ticket restano, senza più la cronologia di questa macchina."
+      destroy_ok: "%{hostname} eliminata, insieme a %{attempts} lavorazioni, %{plans} piani e %{clarifications} richieste di chiarimento."
+      destroy_busy: La macchina sta ancora lavorando su dei ticket. Aspetta che finisca, oppure liberala prima di eliminarla.
+      tokens:
+        title: Token automator
+        help_title: "Il token che collega una macchina all'organizzazione. Si vede una volta sola."
+        breadcrumb: Token automator
+        lead: Il token serve solo la prima volta, per collegare la macchina. Dopo, la macchina usa una chiave tutta sua, che si può revocare.
+        link: Token automator
+        reveal_created: "Token \"%{name}\" creato"
+        copy_now: Copialo ora — non verrà più mostrato
+        copied: Copiato
+        secret: Segreto
+        copy: Copia
+        close: Fatto
+        form_title: Crea un token automator
+        form_name: Nome
+        form_submit: Crea token
+        empty: Nessun token automator ancora.
+        col_name: Nome
+        col_prefix: Prefisso
+        col_last_used: Ultimo uso
+        col_status: Stato
+        never_used: Mai
+        status_active: Attivo
+        status_revoked: Revocato
+        revoke: Revoca
+        revoke_dialog:
+          title: "Revocare il token %{name}?"
+          body: "L'automator che lo usa smette subito di sincronizzare. Non si può annullare."
+        revoked: Token revocato.
+        snippet_title: Configura l'automator
+        snippet_lead: Sulla macchina, incolla il token in questo file, poi lancia «automator sync».
+        stat_total: Totale
+        stat_active: Attivi
+        stat_revoked: Revocati

@@ -1,0 +1,27 @@
+<%# locals:
+      finding: (required) — Vulnerabilities::Finding con :advisory, :project e package→manifest caricati
+    Riga dell'elenco vulnerabilità. Le coordinate del pacchetto sono in monospace perché sono un
+    identificatore da leggere carattere per carattere, non prosa. %>
+<%= render Ui::TableComponent::RowComponent.new(href: member_monitoring_vulnerability_path(finding), link_label: finding.package_coordinates, id: dom_id(finding), test_id: "vulnerability-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <%= link_to member_monitoring_vulnerability_path(finding), class: "font-mono text-[12.5px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "vulnerability-link-#{finding.id}" } do %><%= finding.package_coordinates %><% end %>
+    <span class="ml-1.5 text-[11px] text-gray-400 dark:text-zinc-500"><%= finding.package.direct? ? t("member.monitoring.vulnerabilities.direct") : t("member.monitoring.vulnerabilities.transitive") %></span>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.vulnerabilities.columns.severity"))) { render Ui::BadgeComponent.new(label: t("member.monitoring.vulnerabilities.severity.#{finding.severity}"), color: vulnerability_severity_color(finding.severity), dot: true) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.vulnerabilities.columns.advisory"), mono: true, class: "text-[11px] text-gray-500 dark:text-zinc-400")) { finding.display_id } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.vulnerabilities.columns.fixed_version")) do %>
+    <% if finding.fixable? %>
+      <span class="font-mono text-[11px] text-emerald-700 dark:text-emerald-300"><%= finding.fixed_version %></span>
+    <% else %>
+      <span class="text-[11px] text-gray-400 dark:text-zinc-500" title="<%= t("member.monitoring.vulnerabilities.no_fix_hint") %>" data-test="vulnerability-no-fix"><%= t("member.monitoring.vulnerabilities.fixed_version_none") %></span>
+    <% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.vulnerabilities.columns.project"))) { tag.span(finding.project.key, class: "font-mono text-[11px] text-gray-500 dark:text-zinc-400", title: finding.project.name) } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.vulnerabilities.columns.last_seen")) do %>
+    <% if finding.status_open? %>
+      <span class="text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.vulnerabilities.seen_ago", time: time_ago_in_words(finding.last_seen_at)) %></span>
+    <% else %>
+      <%= render Ui::BadgeComponent.new(label: t("member.monitoring.vulnerabilities.status.#{finding.status}"), color: :gray) %>
+    <% end %>
+  <% end %>
+<% end %>

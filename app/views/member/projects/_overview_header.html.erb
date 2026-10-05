@@ -1,0 +1,77 @@
+<%# locals: project, stats, active_tab %>
+<%# Header condiviso tra le tab del progetto: stesso back-link, nome, conteggi e
+    pulsanti di azione → identico tra le tab, i pulsanti non spariscono cambiando tab. %>
+<% can_edit = can?("projects.edit", scope: project) %>
+<%= render Ui::PageHeaderComponent.new(
+      title: project.name,
+      subtitle: project.description.presence,
+      breadcrumb: [ { label: t("member.projects.title"), href: member_projects_path }, { label: project.name } ],
+      test_id: "project", counts_test_id: "project-counts", tabs_test_id: "project-tabs") do |h| %>
+  <%# CYRA-883 — the title row reads like the list pages: identity and subtitle on the left, actions on
+      the right. The ticket key appears once, here; the description is the subtitle. %>
+  <% h.with_mark do %>
+    <%= render Ui::EntityMarkComponent.new(record: project) %>
+  <% end %>
+  <% h.with_badges do %>
+    <%# CYRA-393 — the key's legend: ticket codes travel alone (branches, commits, chat) and not every
+        prefix can be derived from the project name. %>
+    <span class="rounded border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-1.5 py-0.5 font-mono text-[11px] font-medium text-gray-600 dark:text-zinc-400"
+          title="<%= t("member.projects.show.ticket_key") %>" data-test="project-ticket-key">
+      <span class="sr-only"><%= t("member.projects.show.ticket_key") %>: </span><%= project.key %>
+    </span>
+    <%= render Ui::GithubStatusComponent.new(connected: project.github_repository.present?, size: :lg, test_id: "project-github-status") %>
+  <% end %>
+  <% h.with_actions do %>
+    <%# Opens the assistant fixed on this project (ui--assistant reads the address from the button). %>
+    <% if show_assistant_dock? %>
+      <%= render Ui::ButtonComponent.new(label: t("member.projects.show.ask_assistant"), variant: :secondary_muted, size: :sm,
+            icon: "wand-sparkles", icon_only: true, test_id: "project-ask",
+            data: { assistant_project_url: member_assistant_panel_path(project_id: project.id) }) %>
+    <% end %>
+    <% if can_edit %>
+      <%= render Ui::ButtonComponent.new(label: t("member.projects.edit"), href: edit_member_project_path(project), variant: :secondary_muted, size: :sm, icon: "pen", test_id: "project-edit") %>
+    <% end %>
+    <%= render Ui::ButtonComponent.new(label: t("member.projects.show.new_idea"), href: new_member_idea_path(project_id: project.id), variant: :secondary_muted, size: :sm, icon: "lightbulb", test_id: "project-new-idea") %>
+    <%= render Ui::ButtonComponent.new(label: t("member.projects.show.new_ticket"), href: new_member_ticket_path(project_id: project.id), variant: :primary, size: :sm, icon: "plus", test_id: "project-new-ticket") %>
+  <% end %>
+  <%# On the overview the counts sit in the Tickets list title (CYRA-883). The other tabs have no list,
+      so they keep them here. Counts by status CATEGORY (CYRA-358): the sum always matches the total. %>
+  <% unless active_tab.to_s == "overview" %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.projects.show.tickets"), value: stats.total, test_id: "project-count-total") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.projects.show.stat_todo"), value: stats.todo, value_color: :amber, test_id: "project-count-todo") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.projects.show.stat_in_progress"), value: stats.in_progress, value_color: :indigo, test_id: "project-count-in-progress") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.projects.show.stat_done"), value: stats.done, value_color: :emerald, test_id: "project-count-done") %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-883 — the main tabs stay in view; the less used ones live in the More menu. When the active
+      tab is one of those, the trigger takes its name, so the page still says where you are. %>
+  <% h.with_tab(label: t("member.projects.show.tab_overview"), href: member_project_path(project), active: active_tab.to_s == "overview", test_id: "project-tab-overview") %>
+  <% h.with_tab(label: t("member.projects.show.tab_milestones"), href: member_project_milestones_path(project), active: active_tab.to_s == "milestones", icon: "flag", test_id: "project-milestones-link") %>
+  <%# Documents: reading = project visibility (no .view gate, Catalog principle). %>
+  <% h.with_tab(label: t("member.projects.show.tab_documents"), href: member_project_documents_path(project), active: active_tab.to_s == "documents", icon: "folder-open", test_id: "project-documents-link") %>
+  <%# Help desk: a request holds a visitor's address, so the tab asks for its own key, and shows only
+      on a project that receives requests (CYRA-940). %>
+  <% if project.helpdesk_enabled? && can?("helpdesk.manage", scope: project) %>
+    <% h.with_tab(label: t("member.projects.show.tab_helpdesk"), href: member_project_helpdesk_requests_path(project), active: active_tab.to_s == "helpdesk", icon: "inbox", test_id: "project-helpdesk-link") %>
+  <% end %>
+  <% if can_edit %>
+    <% h.with_tab(label: t("member.projects.show.tab_environments"), href: member_project_environments_path(project), active: active_tab.to_s == "environments", icon: "layers", test_id: "project-environments-link") %>
+  <% end %>
+  <% if can?("secrets.read", scope: project) || can?("secrets.manage", scope: project) %>
+    <% h.with_more_tab(label: t("member.projects.show.tab_secrets"), href: member_project_secrets_path(project), active: active_tab.to_s == "secrets", icon: "lock", test_id: "project-secrets-link") %>
+  <% end %>
+  <% if can?("github.manage", scope: project) %>
+    <% h.with_more_tab(label: t("member.projects.show.tab_github"), href: member_project_github_path(project), active: active_tab.to_s == "github", icon: "github", test_id: "project-github-link") %>
+  <% end %>
+  <%# Usage (CYRA-733): reading = project visibility (no .view gate, Catalog principle). %>
+  <% h.with_more_tab(label: t("member.usage.tab"), href: member_project_usage_path(project), active: active_tab.to_s == "usage", icon: "chart-column", test_id: "project-usage-link") %>
+  <% if can_edit %>
+    <% h.with_more_tab(label: t("member.guidance.title"), href: member_project_guidance_path(project), active: active_tab.to_s == "guidance", icon: "compass", test_id: "project-guidance-link") %>
+  <% end %>
+  <%# CYRA-883 — Settings also holds the ingest tokens, so whoever manages them reaches it too. %>
+  <% if can_edit || can?("tokens.manage", scope: project) %>
+    <% h.with_more_tab(label: t("member.projects.show.tab_settings"), href: member_project_settings_path(project), active: active_tab.to_s == "settings", icon: "sliders", test_id: "project-settings-link") %>
+  <% end %>
+<% end %>

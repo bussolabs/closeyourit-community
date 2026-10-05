@@ -1,0 +1,21 @@
+<%# CYRA-408 — le colonne nascoste si dichiarano: una tabella che cambia forma senza dirlo è
+    peggio di una colonna vuota. %>
+<% hidden_columns = [ (t("member.tickets.col_due") unless @show_due), (t("member.tickets.col_assignee") unless @show_assignee) ].compact %>
+<% if hidden_columns.any? && @tickets.any? %>
+  <p class="px-4 pt-2 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="tickets-hidden-columns">
+    <%= t("member.tickets.hidden_columns", columns: hidden_columns.to_sentence) %>
+  </p>
+<% end %>
+<%# CYRA-403 — la legenda: la corrispondenza fra le tre icone e i tre casi si scopriva solo
+    aprendo il pannello dei filtri. Qui sta sotto la tabella, dove la si cerca. %>
+<% if @tickets.any? %>
+  <div class="mt-3 flex items-center flex-wrap gap-x-4 gap-y-1.5 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="tickets-agent-legend">
+    <span class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-400 dark:text-zinc-500"><%= t("member.tickets.agent_eligibility.title") %></span>
+    <% %w[allowed pending blocked].each do |value| %>
+      <span class="inline-flex items-center gap-1.5" data-test="tickets-agent-legend-<%= value %>">
+        <%= render Ui::IconComponent.new(name: agent_eligibility_icon(value), class: "text-[10px] #{agent_eligibility_icon_class(value)}") %>
+        <%= t("member.tickets.agent_eligibility.#{value}") %>
+      </span>
+    <% end %>
+  </div>
+<% end %>

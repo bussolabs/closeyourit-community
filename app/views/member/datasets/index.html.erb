@@ -1,0 +1,64 @@
+<% content_for :title, t("member.datasets.title") %>
+
+<div class="p-7 space-y-6" data-test="member-datasets">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.datasets.title"),
+        subtitle: t("member.datasets.help_title"),
+        breadcrumb: [ { label: t("member.nav.section_automation") }, { label: t("member.datasets.title") } ],
+        counts_test_id: "datasets-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.datasets.counts.total"), value: @status_counts.values.sum, test_id: "datasets-count-total") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.datasets.counts.draft"), value: @status_counts.fetch("draft", 0), test_id: "datasets-count-draft") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.datasets.counts.trained"), value: @status_counts.fetch("trained", 0), value_color: :indigo, test_id: "datasets-count-trained") %>
+    <% end %>
+    <% if @can_create %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.datasets.new"), href: new_member_dataset_path, variant: :primary, size: :sm, icon: "plus", test_id: "datasets-new") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="datasets-table">
+    <% if @datasets.empty? %>
+      <%# CYRA-454 — la sezione è vuota da mesi e il testo che avrebbe dovuto invogliare a usarla
+          descriveva com'è fatto il dato. Qui si parte dal lavoro ripetitivo che si può togliere di
+          mano, con un esempio, il chiarimento su cosa NON è e la strada per approfondire. %>
+      <%= render Ui::EmptyStateComponent.new(title: t("member.datasets.empty"), body: t("member.datasets.empty_body"),
+            example: t("member.datasets.empty_note"), icon: "wand-sparkles", test_id: "datasets-empty") do |empty| %>
+        <% empty.with_action do %>
+          <% if @can_create %>
+            <%= render Ui::ButtonComponent.new(label: t("member.datasets.new"), href: new_member_dataset_path, variant: :primary, size: :sm, icon: "plus", test_id: "datasets-empty-new") %>
+          <% end %>
+          <%= render Ui::ButtonComponent.new(label: t("member.datasets.empty_guide"), href: member_guides_datasets_path, variant: :secondary_muted, size: :sm, icon: "book-open", test_id: "datasets-empty-guide") %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.datasets.title"))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.datasets.col_name"), sort: "name") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.datasets.col_project"), sort: "project") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.datasets.col_columns"), sort: "columns", initial: :desc) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.datasets.col_status"), sort: "status") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.datasets.col_created"), sort: "created", initial: :desc, align: :right) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+        <% end %>
+        <% @datasets.each do |dataset| %>
+          <%= render Ui::TableComponent::RowComponent.new(href: member_dataset_path(dataset), link_label: dataset.name, test_id: "dataset-row") do %>
+            <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+              <%= link_to dataset.name, member_dataset_path(dataset), class: "text-[13px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 max-w-[280px] truncate block" %>
+            <% end %>
+            <%= render Ui::TableComponent::CellComponent.new(label: t("member.datasets.col_project")) do %>
+              <span class="inline-flex items-center gap-1.5 text-gray-500 dark:text-zinc-400"><span class="w-2 h-2 rounded-[2px] <%= Ui::Colors.swatch(dataset.project.color) %>"></span><%= dataset.project.name %></span>
+            <% end %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.datasets.col_columns"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { dataset.columns.size.to_s } %>
+            <%= render Ui::TableComponent::CellComponent.new(label: t("member.datasets.col_status"), test_id: "dataset-status-cell") do %>
+              <%= render Ui::BadgeComponent.new(label: t("member.datasets.status.#{dataset.status}"), color: dataset.status_trained? ? :indigo : :gray, dot: true) %>
+            <% end %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.datasets.col_created"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400")) { l(dataset.created_at.to_date) } %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "datasets-pagination")) %>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,16 @@
+<div id="danger" class="scroll-mt-4 rounded-lg border border-red-200 dark:border-red-500/40 bg-white dark:bg-zinc-900" data-test="project-danger-zone">
+  <div class="px-4 py-3 border-b border-red-200 dark:border-red-500/40">
+    <h2 class="font-display text-[14px] font-semibold text-red-600 dark:text-red-400"><%= t("member.projects.show.danger_title") %></h2>
+  </div>
+  <div class="px-4 py-4 space-y-3">
+    <p class="text-[12.5px] text-gray-500 dark:text-zinc-400 leading-relaxed"><%= t("member.projects.show.danger_desc") %></p>
+    <%= button_to member_project_path(@project), method: :delete, class: "inline-flex items-center justify-center gap-[7px] h-[34px] px-3.5 rounded-md text-[12.5px] bg-red-600 text-white font-semibold hover:bg-red-700", data: { test: "project-delete", turbo_confirm: t("member.projects.delete_confirm") } do %>
+      <%= render Ui::IconComponent.new(name: "trash", class: "text-[12px]") %><%= t("member.projects.show.delete_project") %>
+    <% end %>
+    <%# CYRA-879 — only the owner of this organization and of another one can move the project. %>
+    <% if project_move_available? %>
+      <%= render Ui::ButtonComponent.new(label: t("member.project_moves.open"), href: new_member_project_move_path(@project),
+            variant: :secondary, icon: "arrow-left-right", test_id: "project-move") %>
+    <% end %>
+  </div>
+</div>

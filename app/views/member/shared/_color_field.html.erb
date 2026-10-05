@@ -1,0 +1,32 @@
+<%# locals: record, prefix, scope %>
+<%# Color picker: popover di swatch renderizzato lato server, sincronizzato da ui--picker su un
+    <input hidden name="color">. Senza JS submette il default (rack_test-friendly). %>
+<% current_color = record.color.presence || "indigo" %>
+<div data-test="<%= prefix %>-color">
+  <label class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("#{scope}.color") %></label>
+
+  <div data-controller="ui--picker" data-ui--picker-kind-value="color">
+    <input type="hidden" name="color" value="<%= current_color %>" data-ui--picker-target="input">
+
+    <details class="relative w-full max-w-xs" data-ui--picker-target="details">
+      <summary class="list-none cursor-pointer flex items-center justify-between gap-2 h-[38px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] hover:border-stone-300 dark:hover:border-zinc-700">
+        <span class="flex items-center gap-2 min-w-0">
+          <span data-ui--picker-target="preview" data-base="w-5 h-5 rounded-md shrink-0" data-default-swatch="<%= Ui::Colors.swatch("indigo") %>"
+                class="w-5 h-5 rounded-md shrink-0 <%= Ui::Colors.swatch(current_color) %>"></span>
+          <span data-ui--picker-target="label" class="text-zinc-900 dark:text-zinc-100 truncate"><%= t("ui.colors.#{current_color}") %></span>
+        </span>
+        <%= render Ui::IconComponent.new(name: "chevron-down", class: "text-gray-400 dark:text-zinc-500 text-[11px] shrink-0") %>
+      </summary>
+
+      <div class="absolute left-0 top-[42px] z-10 w-[208px] rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3">
+        <div class="grid grid-cols-4 gap-2.5" data-test="<%= prefix %>-color-grid">
+          <% Ui::Colors::SWATCH_COLORS.each do |c| %>
+            <button type="button" title="<%= t("ui.colors.#{c}") %>" data-value="<%= c %>" data-label="<%= t("ui.colors.#{c}") %>" data-swatch="<%= Ui::Colors.swatch(c) %>"
+                    data-selected-class="ring-2 ring-offset-2 ring-zinc-900" data-ui--picker-target="option" data-action="ui--picker#select"
+                    class="w-7 h-7 rounded-md <%= Ui::Colors.swatch(c) %> <%= "ring-2 ring-offset-2 ring-zinc-900" if current_color == c %>"></button>
+          <% end %>
+        </div>
+      </div>
+    </details>
+  </div>
+</div>

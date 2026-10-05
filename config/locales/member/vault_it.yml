@@ -1,0 +1,106 @@
+it:
+  member:
+    vault:
+      shortcuts_title: "Tutto quello che c'è qui dentro"
+      projects:
+        stat_projects: "Progetti"
+        col_secrets: "Segreti"
+        col_anomalies: "Anomalie"
+        search: "Cerca progetti…"
+        with_anomalies: "Con anomalie"
+        no_match: "Nessun progetto corrisponde ai filtri."
+        col_last_change: "Ultima modifica"
+      # CYRA-428 — il nome del LIVELLO dove vive la chiave: è il titolo della pagina, e quale delle sue
+      # due schede stai guardando lo dice la scheda accesa.
+      # CYRA-356 — «Secret», non «Segreti»: la stessa pagina si intitolava in un modo nell'h1 e in un
+      # altro nella scheda del browser, e il glossario ha già fissato «Secret dell'organizzazione».
+      levels:
+        personal: Secret personali
+        organization: Secret dell'organizzazione
+        project: Secret di progetto
+      tabs:
+        variables: Variabili
+        files: File
+        by_project: Per progetto
+        by_variable: Per variabile
+      title: Vault
+      help_title: "Tutti i segreti: personali, dell'organizzazione e di progetto."
+      onboarding_title: "Dal segreto all'app in tre passi"
+      onboarding_intro: "Il giro completo, senza uscire da qui."
+      onboarding_create_title: "Crealo"
+      onboarding_create_body: "Aggiungi la variabile e il suo valore nello spazio giusto: personale, dell'organizzazione o di progetto."
+      onboarding_delegate_title: "Delegalo"
+      onboarding_delegate_body: "Se è dell'organizzazione, scegli i progetti che potranno usarlo. Un segreto di progetto è già pronto all'uso."
+      onboarding_read_title: "Leggilo"
+      onboarding_read_body: "Dalla tua applicazione, con un comando già compilato: lo trovi qui sotto."
+      choose_project: Seleziona un progetto
+      choose_project_hint: Scegli il progetto di cui gestire i secret.
+      apply: Apri
+      empty_projects: Nessun progetto disponibile
+      empty_projects_body: Non hai ancora accesso a nessun progetto. Chiedi a un amministratore di collegarti.
+      count_personal: "Segreti personali"
+      count_organization: "Segreti dell'organizzazione"
+      # CYRA-430 — «Cosa puoi fare qui»: le funzioni dell'area scritte per intero, ciascuna con un
+      # esempio. Prima vivevano dentro etichette che comparivano al passaggio del mouse, e chi non le
+      # trovava continuava a copiare i valori a mano.
+      capabilities:
+        title: Cosa puoi fare qui
+        subtitle: Le funzioni di quest'area, una per una, con un esempio e il posto dove si usano.
+        count_label: Funzioni
+        see_all: Vedi le funzioni con gli esempi
+        example_label: Esempio
+        command_label: Terminale
+        links:
+          open_projects: Apri i segreti di progetto
+          open_project_github: Scegli il progetto e apri la scheda GitHub
+          open_personal: Apri i tuoi segreti personali
+          open_attention: Vedi cosa aspetta una decisione
+          open_project_settings: Scegli il progetto e apri le sue impostazioni
+          open_audit: Apri le attività sui segreti
+          open_personal_activity: Vedi le attività sui tuoi segreti
+        features:
+          cli_read:
+            title: Leggere i segreti dal tuo computer
+            body: Non serve copiare i valori a mano. Il comando li mette dentro all'applicazione mentre la avvii, senza lasciarli su disco.
+            example: Dal terminale, nella cartella del progetto. Con `cyi secrets download` li scarichi invece in un file da tenere da parte.
+          github_sync:
+            title: Sincronizzare i segreti con GitHub
+            body: I valori del Vault finiscono negli ambienti del repository, così le build li trovano già pronti e nessuno li reincolla a mano.
+            example: Dal terminale, oppure con «Sincronizza ora» nella scheda GitHub del progetto.
+          personal_direnv:
+            title: I tuoi segreti personali, caricati da soli
+            body: I segreti che valgono solo per te. Entrando nella cartella del progetto la tua shell può caricarli da sola, senza che tu faccia niente.
+            example: "Il primo comando avvia qualcosa coi tuoi segreti dentro. La seconda riga va nel file `.envrc` della cartella: da quel momento basta entrarci."
+          unlock_row:
+            title: Sbloccare una riga per cambiare un valore
+            body: "Nella tabella dei segreti di progetto le righe sono chiuse, e si aprono una alla volta: così non si cambia per sbaglio ciò che si stava solo guardando."
+            example: Premi il lucchetto in fondo alla riga, scrivi i nuovi valori negli ambienti che ti servono, poi salva la riga.
+          history_rollback:
+            title: Storico dei valori, con ritorno indietro
+            body: Ogni cambiamento resta. Puoi rivedere i valori precedenti di un segreto e rimettere quello giusto senza cercarlo altrove.
+            example: Apri la cronologia del segreto e ripristina la versione che ti serve.
+          four_eyes:
+            title: Segreti che chiedono una seconda approvazione
+            body: "Sugli ambienti che scegli tu una modifica non parte subito: resta in attesa finché un'altra persona non la approva."
+            example: Accendi l'approvazione nelle impostazioni del progetto e sull'ambiente da proteggere. Da lì in poi chi modifica lascia una richiesta, e a decidere è qualcun altro.
+          read_audit:
+            title: Ogni lettura resta registrata
+            body: Chi ha letto un segreto e quando. Le letture fatte dalla pagina e quelle fatte da riga di comando finiscono nello stesso posto.
+            example: Apri le attività e cerca l'azione «letto» per vedere chi ha letto cosa.
+      # CYRA-430 — lo stato reale dei tre collegamenti automatici, in fondo alla panoramica.
+      integrations:
+        title: Collegamenti automatici
+        intro: Cosa il Vault fa da solo, e dove è già acceso.
+        how: Come si attiva
+        active_on:
+          one: Attivo su 1 progetto
+          other: Attivo su %{count} progetti
+        not_active_yet: Non ancora attivo
+        not_used_yet: Non ancora usato
+        on_your_computer: Sul tuo computer
+        cli_title: Segreti da riga di comando
+        cli_body: L'applicazione parte coi segreti già dentro, senza copiarli a mano.
+        github_title: Sincronizzazione con GitHub
+        github_body: I segreti del Vault finiscono negli ambienti del repository, pronti per le build.
+        direnv_title: Cartella che carica i segreti da sola
+        direnv_body: Entri nella cartella e i tuoi segreti personali ci sono già. Si attiva sul tuo computer, perciò qui non ha un conteggio.

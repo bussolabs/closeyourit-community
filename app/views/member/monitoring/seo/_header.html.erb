@@ -1,0 +1,27 @@
+<%# locals: title, subtitle (optional), total_count, critical_count, high_count, ignored_count, pages_count, sites_count %>
+<%# Header condiviso dalle tre pagine dell'area SEO (Rilievi + Pagine + Siti): stesse chip, stesso
+    pulsante, cambia il titolo. Le schede che stavano qui sono sparite con CYRA-535: da quando le tre
+    pagine hanno una voce ciascuna nel menu, una striscia di linguette in cima è un secondo menu che
+    dice le stesse cose del primo, a mezzo centimetro di distanza.
+
+    Il titolo arriva come local e NON come chiave i18n costante: ogni pagina porta il proprio, perché
+    chi preme una voce deve ritrovarne la parola in cima (spec/i18n/nav_page_titles_spec.rb). La
+    briciola di pane resta ancorata all'area, che è il livello sopra. %>
+<%= render Ui::PageHeaderComponent.new(
+      title: title,
+      subtitle: local_assigns.fetch(:subtitle) { t("member.monitoring.seo.help_title") },
+      breadcrumb: [ { label: title } ],
+      counts_test_id: "seo-counts") do |h| %>
+  <% h.with_counts do %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.seo.stats.total"), value: total_count, test_id: "seo-stat-total") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.seo.stats.critical"), value: critical_count, value_color: :rose, test_id: "seo-stat-critical") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.seo.stats.high"), value: high_count, value_color: :amber, test_id: "seo-stat-high") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.seo.stats.ignored"), value: ignored_count, test_id: "seo-stat-ignored") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.seo.stats.pages"), value: pages_count, test_id: "seo-stat-pages") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.seo.stats.sites"), value: sites_count, test_id: "seo-stat-sites") %>
+  <% end %>
+  <% h.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: t("member.monitoring.seo_sites.new"), href: new_member_monitoring_seo_site_path,
+          icon: "plus", variant: :primary, size: :sm, test_id: "seo-new-site") %>
+  <% end %>
+<% end %>

@@ -1,0 +1,90 @@
+<%# locals: active_runs:, unreported_attempts:, visible_ticket_ids:, tickets_by_code:,
+    leases_by_ticket_code: — sezione Attività della show host.
+    CYRA-183: ogni lavorazione mostra il PERCORSO (i passaggi di PhaseProfile con quello in corso
+    evidenziato) e cosa ha prodotto finora.
+    L'ELENCO viene da `active_runs` (snapshot heartbeat), NON dai lease vivi: una run ferma ha il lease
+    scaduto e sparirebbe proprio quando va vista. Il lease, quando c'è, è la fonte AUTOREVOLE della fase
+    in corso — è ciò che l'host detiene davvero; senza lease la fase si deduce dai timestamp.
+    ANTI-BOLA: `agents.view` è org-level ma i ticket sono visibili per progetto → titolo, link e prodotti
+    solo per i ticket che l'utente può vedere; codice e percorso restano (sono attività dell'host).
+    Partial NON ispezionato dal conformance spec CYRA-25 → Ui::BadgeComponent qui è ammesso. %>
+<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-4" data-test="host-activity">
+  <h2 class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.activity.title") %></h2>
+
+  <% if active_runs.empty? %>
+    <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="host-activity-none"><%= t("member.agents.activity.none") %></p>
+  <% else %>
+    <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% active_runs.each do |run| %>
+        <% code = run["ticket"] %>
+        <% ticket = code && tickets_by_code[code] %>
+        <% visible = ticket && visible_ticket_ids.include?(ticket.id) %>
+        <% workflow = ticket&.agent_workflow %>
+        <%# La fase del lease vince; senza lease (run ferma, lease scaduto) la deduce il presenter. %>
+        <% current_phase = (code && leases_by_ticket_code[code]&.execution_phase).presence %>
+        <% timeline = ::Agents::RunTimeline.new(workflow:, current_phase:) %>
+        <% products = timeline.products %>
+        <li class="space-y-2.5 py-3" data-test="host-run">
+          <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <% if visible %>
+              <%= link_to ticket.code, member_ticket_path(ticket), class: "font-mono text-[12px] font-semibold text-indigo-700 dark:text-indigo-300 hover:underline" %>
+              <span class="text-[12px] text-zinc-900 dark:text-zinc-100"><%= ticket.title %></span>
+            <% else %>
+              <span class="font-mono text-[12px] font-semibold text-zinc-900 dark:text-zinc-100"><%= code.presence || "—" %></span>
+            <% end %>
+            <% if run["lease_health"].present? %>
+              <%= render Ui::BadgeComponent.new(
+                    label: t("member.agents.activity.lease_health.#{run["lease_health"]}", default: run["lease_health"]),
+                    color: (run["lease_health"] == "active" ? :emerald : :amber), size: :sm) %>
+            <% end %>
+            <% if run["stalled"] %>
+              <%= render Ui::BadgeComponent.new(label: t("member.agents.activity.stalled"), color: :amber, dot: true, size: :sm, test_id: "host-run-stalled") %>
+            <% end %>
+            <% if (started_label = agent_run_started_label(run)) %>
+              <span class="ml-auto text-[11px] text-gray-400 dark:text-zinc-500"><%= started_label %></span>
+            <% end %>
+          </div>
+
+          <%# Il percorso: pallini + connettori, etichette sotto. La sequenza viene da PhaseProfile::PHASES.
+              Senza workflow (ticket non risolto) non c'è percorso da raccontare: si mostra solo la riga. %>
+          <% if workflow %>
+            <%= render "member/agents/run_timeline", timeline: timeline %>
+          <% end %>
+
+          <%# Prodotti: solo per i ticket visibili (nome del ramo e numero PR sono contenuto del ticket).
+              Ogni voce compare solo se esiste: una lavorazione appena presa non ha ancora nulla. %>
+          <% if visible %>
+            <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="host-run-products">
+              <% if products.plan_version %>
+                <span><%= t("member.agents.activity.products.plan", version: products.plan_version) %></span>
+              <% end %>
+              <% if products.attempts_count.positive? %>
+                <span><%= t("member.agents.activity.products.attempts", count: products.attempts_count) %></span>
+              <% end %>
+              <% if products.branch_name %>
+                <span class="font-mono"><%= products.branch_name %></span>
+              <% end %>
+              <% if products.pull_request_number %>
+                <span class="font-mono">#<%= products.pull_request_number %></span>
+              <% end %>
+              <% if products.plan_version.nil? && products.attempts_count.zero? && products.branch_name.nil? && products.pull_request_number.nil? %>
+                <span class="text-gray-400 dark:text-zinc-500"><%= t("member.agents.activity.products.none") %></span>
+              <% end %>
+            </div>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <%# CYRA-498 — qui c'erano due contatori interni («Lease vivi», «Attempt attivi») che smentivano sia
+      l'elenco sopra sia l'intestazione. Resta una riga sola, e solo quando c'è davvero qualcosa da
+      dire: dei lavori risultano aperti che la macchina non sta segnalando — di solito perché si è
+      fermata senza chiuderli. In tutti gli altri casi i numeri della pagina concordano e non serve
+      aggiungere niente. %>
+  <% if unreported_attempts.any? %>
+    <p class="text-[11.5px] text-amber-700 dark:text-amber-300 pt-1 border-t border-stone-100 dark:border-zinc-800" data-test="host-unreported-work">
+      <%= t("member.agents.activity.unreported", count: unreported_attempts.size) %>
+    </p>
+  <% end %>
+</section>

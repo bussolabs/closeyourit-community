@@ -1,0 +1,113 @@
+---
+it:
+  member:
+    nav:
+      workload: Attività del team
+    workload:
+      actions:
+        title: Attività del team
+        new: Nuova attività
+        search_placeholder: Cerca attività…
+        apply: Applica
+        count:
+          one: "%{count} attività"
+          other: "%{count} attività"
+        empty: Ancora nessuna attività
+        empty_body: Traccia qui fiere, meeting, chiamate e altro lavoro non-dev del tuo team.
+        empty_example: "Per esempio: Fiera di Colonia, 12-14 marzo, con il team commerciale."
+        created: Attività creata
+        updated: Attività aggiornata
+        deleted: Attività eliminata
+        promoted: Ticket generato dall'attività
+        status_changed: Stato aggiornato
+        view_switch:
+          label: Vista
+          board: Bacheca
+          list: Lista
+        col_due: Scadenza
+        due_label: Scadenza
+        due_title:
+          late: "Scaduta il %{date}"
+          soon: "Scade il %{date}"
+          on_time: "Scadenza: %{date}"
+        details: Dettagli
+        more_menu: Altre azioni
+        no_team: Non fai ancora parte di nessun team.
+        filter_team: Team
+        filter_status: Stato
+        filter_participant: Partecipante
+        filter_ticket: Ticket
+        ticket_linked: Collegata
+        ticket_unlinked: Non collegata
+        participants_count:
+          zero: Nessun partecipante
+          one: "%{count} partecipante"
+          other: "%{count} partecipanti"
+        col_title: Titolo
+        col_team: Team
+        col_status: Stato
+        col_participants: Partecipanti
+        col_scheduled: Pianificata
+        col_ticket: Ticket
+        edit_title: Modifica attività
+        edit: Modifica
+        delete: Elimina
+        delete_confirm: Eliminare questa attività?
+        generate_ticket: Genera ticket
+        team_label: Team
+        status_label: Stato
+        scheduled_label: Pianificata
+        description_label: Descrizione
+        participants_label: Partecipanti
+        ticket_label: Ticket collegato
+        no_participants: Nessun partecipante assegnato.
+        status:
+          planned: Pianificata
+          in_progress: In corso
+          done: Completata
+          cancelled: Annullata
+        # Le chip in testa contano più attività: plurale («Completate: 2»), le colonne restano al singolare.
+        status_counts:
+          planned: Pianificate
+          in_progress: In corso
+          done: Completate
+          cancelled: Annullate
+        board:
+          empty_column: Nessuna attività
+          a11y:
+            grabbed: "Preso {title}. Usa le frecce sinistra e destra per spostare, Spazio per rilasciare, Esc per annullare."
+            grabbed_label: "{title} — in spostamento. Frecce per spostare, Spazio per rilasciare, Esc per annullare."
+            moving: "{title} → {status}"
+            dropped: "Spostato in {status}"
+            cancelled: "{title} torna in {status}"
+        form:
+          cancel: Annulla
+          create: Crea attività
+          save: Salva modifiche
+          title: Titolo
+          title_placeholder: es. Allestimento stand fiera a Milano
+          team: Team
+          team_placeholder: Scegli un team
+          description: Descrizione
+          description_placeholder: Di cosa si tratta?
+          status: Stato
+          ticket: Ticket collegato
+          ticket_placeholder: Nessun ticket
+          ticket_hint: Scrivi la sigla del ticket o una parola del titolo. Sotto, i ticket toccati di recente.
+          ticket_all: Cerca in tutti i progetti, non solo in quelli del team
+          scheduled_at: Pianificata il
+          due_at: Scadenza
+          participants: Partecipanti
+          participants_placeholder: Scegli i partecipanti
+          participants_hint: Solo i membri del team selezionato possono partecipare.
+        promote:
+          title: Genera ticket
+          breadcrumb: Genera ticket
+          submit: Genera ticket
+          hint: Trasforma questa attività in un ticket dev in uno dei tuoi progetti.
+          project: Progetto di destinazione
+          project_placeholder: Scegli un progetto
+          ticket_title: Titolo del ticket
+          ticket_title_placeholder: Predefinito = titolo dell'attività
+          description: Descrizione del ticket
+          description_placeholder: Descrivi il lavoro da implementare

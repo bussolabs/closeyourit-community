@@ -1,0 +1,11 @@
+<%# Recipients field, shared by the sharing page and the dialog on the list. %>
+<% if @members.any? %>
+  <input type="hidden" name="account_ids[]" value="">
+  <%= render Ui::SelectComponent.new(name: "account_ids", multiple: true,
+        label: t("member.todo_lists.share.recipients"),
+        options: @members.map { |m| [ m.name, m.id ] }, selected: @selected,
+        placeholder: t("member.todo_lists.share.recipients"),
+        hint: t("member.todo_lists.share.hint"), test_id: "todo-share-select") %>
+<% else %>
+  <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="todo-share-no-members"><%= t("member.todo_lists.share.no_members") %></p>
+<% end %>

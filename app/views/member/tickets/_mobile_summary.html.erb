@@ -1,0 +1,30 @@
+<%# locals: (ticket:) %>
+<%# CYRA-819 — Riepilogo compatto di stato e priorità, in SOLA LETTURA, nella riga chip dell'header.
+    Sul telefono la griglia della show impila: prima la scheda aperta, poi la sidebar — e stato e
+    priorità, che vivono in fondo al pannello Dettagli (CYRA-65), finivano a oltre due schermate dal
+    titolo, mentre i comandi stavano subito sotto. Qui stanno sopra i comandi, dove la decisione si
+    prende.
+
+    `lg:hidden` sulla RADICE, non su un involucro esterno: questo elemento è il bersaglio di un
+    replace realtime (Ticketing::StatusBroadcasts) e dopo l'aggiornamento resta solo ciò che il
+    partial rende — una classe messa fuori sparirebbe al primo cambio di stato, e il riepilogo
+    ricomparirebbe anche su schermo largo.
+
+    L'id è `_mobile_summary`, NON `_status`: quello è già il bersaglio del badge nel pannello
+    Dettagli, e due elementi con lo stesso id fanno aggiornare a Turbo soltanto il primo — l'altro
+    resterebbe fermo sullo stato vecchio senza che nulla lo segnali. Per lo stesso motivo qui non si
+    ripete `data-test="ticket-status-badge"`.
+
+    Nessun comando dentro: cambiare stato resta una cosa sola, nel pannello Dettagli. %>
+<span id="<%= "#{dom_id(ticket)}_mobile_summary" %>"
+      class="inline-flex items-center flex-wrap gap-1.5 lg:hidden" data-test="ticket-mobile-summary">
+  <span class="inline-flex items-center gap-1 text-[11.5px] text-gray-500 dark:text-zinc-400">
+    <%= t("member.tickets.show.status") %>:
+    <%= render Ui::BadgeComponent.new(label: ticket.status.display_label, color: ticket.status.color, dot: true) %>
+  </span>
+  <span class="inline-flex items-center gap-1 text-[11.5px] text-gray-500 dark:text-zinc-400">
+    <%= t("member.tickets.show.priority") %>:
+    <%= render Ui::BadgeComponent.new(label: ticket.priority.display_label, color: ticket.priority.color,
+          icon: (ticket.priority.code == "high" ? "arrow-up" : nil)) %>
+  </span>
+</span>

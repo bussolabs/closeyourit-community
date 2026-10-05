@@ -1,0 +1,104 @@
+<% content_for :title, t("member.workload.actions.title") %>
+<div class="p-7 space-y-6" data-test="member-workload">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.workload.actions.title"),
+        subtitle: t("member.quick_add.action.when"),
+        breadcrumb: [ { label: t("member.workload.actions.title") } ],
+        counts_test_id: "workload-actions-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.workload_actions", count: @status_counts.values.sum), value: @status_counts.values.sum, test_id: "workload-actions-count-total") %>
+      <% @status_counts.each do |status, count| %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.workload.actions.status_counts.#{status}"), value: count, test_id: "workload-actions-count-#{status}") %>
+      <% end %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.workload.actions.new"), href: new_member_workload_action_path, variant: :primary, size: :sm, icon: "plus", test_id: "workload-actions-new") %>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="workload-actions-table">
+    <%= render(Ui::TableToolbarComponent.new(
+          url: list_member_workload_actions_path, query: params[:q], framed: true,
+          search_placeholder: t("member.workload.actions.search_placeholder"),
+          apply_label: t("member.workload.actions.apply"),
+          search_test_id: "workload-actions-search", apply_test_id: "workload-actions-filter", test_id: "workload-actions-toolbar",
+          results_frame: "workload-actions-results", search_submit_test_id: "workload-actions-search-submit",
+          view_sections: board_list_view_sections("list", scope: "workload", keys: Workload::Constants::VIEW_SHARED_FILTERS,
+            board: :member_workload_actions_path, list: :list_member_workload_actions_path,
+            label_scope: "member.workload.actions.view_switch"))) do |toolbar| %>
+      <% toolbar.with_filter(key: "team_id", label: t("member.workload.actions.filter_team")) do %>
+        <div class="w-40"><%= render Ui::SelectComponent.new(name: "team_id", multiple: true, summary: true, options: visible.teams.order(:name).map { |team| [ team.name, team.id ] }, selected: params[:team_id], placeholder: t("member.workload.actions.filter_team"), test_id: "filter-team") %></div>
+      <% end %>
+      <% toolbar.with_filter(key: "participant_id", label: t("member.workload.actions.filter_participant")) do %>
+        <div class="w-40"><%= render Ui::SelectComponent.new(name: "participant_id", multiple: true, summary: true, options: Current.organization.accounts.order(:name).map { |account| [ account.name, account.id ] }, selected: params[:participant_id], placeholder: t("member.workload.actions.filter_participant"), test_id: "filter-participant") %></div>
+      <% end %>
+      <% toolbar.with_filter(key: "status", label: t("member.workload.actions.filter_status")) do %>
+        <div class="w-36"><%= render Ui::SelectComponent.new(name: "status", multiple: true, summary: true, options: Workload::Action.statuses.keys.map { |status| [ t("member.workload.actions.status.#{status}"), status ] }, selected: params[:status], placeholder: t("member.workload.actions.filter_status"), test_id: "filter-status") %></div>
+      <% end %>
+      <% toolbar.with_filter(key: "has_ticket", label: t("member.workload.actions.filter_ticket")) do %>
+        <div class="w-36"><%= render Ui::SelectComponent.new(name: "has_ticket", options: [ [ t("member.workload.actions.ticket_linked"), "linked" ], [ t("member.workload.actions.ticket_unlinked"), "unlinked" ] ], selected: params[:has_ticket], include_blank: true, placeholder: t("member.workload.actions.filter_ticket"), test_id: "filter-ticket") %></div>
+      <% end %>
+      <% toolbar.with_views do %>
+        <%= render Ui::SavedViewsComponent.new(resource_type: "workload_actions", views: @saved_views,
+              index_helper: :list_member_workload_actions_path, current_filters: params) %>
+      <% end %>
+    <% end %>
+    <div>
+
+      <%= turbo_frame_tag "workload-actions-results", data: { turbo_action: "advance" } do %>
+        <%# CYRA-687 — «filtri che non trovano» e «non c'è ancora niente» sono due casi diversi: dal
+            primo si esce azzerando, il secondo insegna a cominciare. %>
+        <% filtering = params[:q].present? || Array(params[:team_id]).reject(&:blank?).any? ||
+                       Array(params[:participant_id]).reject(&:blank?).any? || params[:has_ticket].present? %>
+        <% if @actions.empty? && filtering %>
+          <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: list_member_workload_actions_path,
+                icon: "clipboard-list", test_id: "workload-actions-no-results", reset_test_id: "workload-actions-reset-filters") %>
+        <% elsif @actions.empty? %>
+          <%= render Ui::EmptyStateComponent.new(
+                title: t("member.workload.actions.empty"), body: "#{t("member.workload.actions.empty_body")} #{t("member.quick_add.action.not_here")}",
+                example: t("member.workload.actions.empty_example"), icon: "clipboard-list",
+                test_id: "workload-actions-empty") do |empty| %>
+            <% empty.with_action do %>
+              <%= render Ui::ButtonComponent.new(label: t("member.workload.actions.new"),
+                    href: new_member_workload_action_path, variant: :primary, size: :sm, icon: "plus",
+                    test_id: "workload-actions-empty-new") %>
+            <% end %>
+          <% end %>
+        <% else %>
+          <%= render(Ui::TableComponent.new(stacked: true, label: t("member.workload.actions.title"))) do |t| %>
+            <% t.with_head do %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.workload.actions.col_title"), sort: "title") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.workload.actions.col_team"), sort: "team") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.workload.actions.col_status"), sort: "status") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.workload.actions.col_participants")) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.workload.actions.col_scheduled"), sort: "scheduled") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.workload.actions.col_due"), sort: "due") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.workload.actions.col_ticket"), align: :right) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+            <% end %>
+            <% @actions.each do |action| %>
+              <%= render Ui::TableComponent::RowComponent.new(href: member_workload_action_path(action), link_label: action.title, frame: "_top", test_id: "workload-action-row") do %>
+                <%= render(Ui::TableComponent::CellComponent.new(header: true)) { link_to action.title, member_workload_action_path(action), class: "text-[13px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 max-w-[260px] truncate block", data: { turbo_frame: "_top" } } %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.workload.actions.col_team"), class: "text-[12.5px] text-gray-500 dark:text-zinc-400")) { action.team.name } %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.workload.actions.col_status"))) { render Ui::BadgeComponent.new(label: t("member.workload.actions.status.#{action.status}"), color: workload_status_color(action.status), dot: true) } %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.workload.actions.col_participants"))) { render "member/workload/actions/participant_initials", action: action } %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.workload.actions.col_scheduled"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { workload_short_date(action.scheduled_at) || "—" } %>
+                <%= render Ui::TableComponent::CellComponent.new(label: t("member.workload.actions.col_due")) do %>
+                  <%= render("member/workload/actions/due_badge", action: action) if action.due_at %><%= tag.span("—", class: "text-[12px] text-gray-300 dark:text-zinc-600") unless action.due_at %>
+                <% end %>
+                <%= render Ui::TableComponent::CellComponent.new(label: t("member.workload.actions.col_ticket"), align: :right) do %>
+                  <% if action.ticket %>
+                    <%= link_to action.ticket.code, member_ticket_path(action.ticket), class: "font-mono text-[12px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { turbo_frame: "_top" } %>
+                  <% else %>
+                    <span class="text-[12px] text-gray-300 dark:text-zinc-600">—</span>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+          <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "workload-actions-pagination")) %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>

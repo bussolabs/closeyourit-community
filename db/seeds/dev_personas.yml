@@ -1,0 +1,23 @@
+# Account di sviluppo per il prefill del login (SOLO development) — fixture pubbliche, non secrets.
+# Vedi rules/rails/seeds.md §"Dev login prefill". Le password rispettano la policy (4 classi).
+# Usati sia per il seed (db/seeds.rb) sia per il <select> dev nella pagina di login.
+- label: "Admin globale (god)"
+  name: "CloseYourIt Admin"
+  email: "god@closeyour.it"
+  password: "Password123!"
+  role: owner
+- label: "Demo — Admin"
+  name: "Demo Admin"
+  email: "admin@demo.test"
+  password: "Password123!"
+  role: admin
+- label: "Demo — Member"
+  name: "Demo Member"
+  email: "member@demo.test"
+  password: "Password123!"
+  role: member
+- label: "Demo — Customer"
+  name: "Demo Customer"
+  email: "customer@demo.test"
+  password: "Password123!"
+  role: customer

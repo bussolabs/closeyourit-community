@@ -1,0 +1,12 @@
+<%# locals: environment, capability_link
+    Uptime extra of an environment cell: a link to the environment's monitor when it exists, otherwise
+    "add monitor" (uptime.manage + uptime on). The monitor's status lives in Monitoring, not here; creation
+    lives there too — CYRA-883. %>
+<% if @supports_uptime %>
+  <% monitor = @uptime_monitors[environment.id] %>
+  <% if monitor %>
+    <%= link_to t("member.projects.environments.uptime_view"), member_monitoring_monitor_path(monitor), class: "text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "project-uptime-view-#{environment.id}" } %>
+  <% elsif @can_manage_uptime && capability_link.uptime_enabled? %>
+    <%= link_to t("member.projects.show.uptime_add"), new_member_monitoring_monitor_path(project_id: @project.id, environment_id: environment.id), class: "text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "project-uptime-add-#{environment.id}" } %>
+  <% end %>
+<% end %>

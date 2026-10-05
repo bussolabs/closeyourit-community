@@ -1,0 +1,9 @@
+<% scope = "member.organization_ai.reindex" %>
+<%= render Ui::AlertComponent.new(variant: :warning, title: t("#{scope}.title"), test_id: "org-ai-confirm-reindex") do %>
+  <p class="max-w-[75ch]"><%= t("#{scope}.body") %></p>
+  <%= hidden_field_tag :pending_keys, pending_keys, id: nil if pending_keys %>
+  <div class="mt-3">
+    <%= render Ui::ButtonComponent.new(label: t("#{scope}.confirm"), type: "submit", size: :sm, variant: :danger,
+          name: "confirm_reindex", value: "1", test_id: "org-ai-confirm-reindex-submit") %>
+  </div>
+<% end %>

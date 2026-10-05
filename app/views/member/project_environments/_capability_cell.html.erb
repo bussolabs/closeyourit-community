@@ -1,0 +1,15 @@
+<%# locals: (environment:, cap:, capability_link:)
+    One capability of one environment: the Inherit/On/Off switch, and
+    beside it what depends on it (the servers button, the "add monitor" link). %>
+<td class="px-4 py-3 align-top" data-test="project-environment-cap-<%= environment.id %>-<%= cap %>"
+    data-controller="environment-capability"
+    data-environment-capability-url-value="<%= member_project_environment_capability_path(@project, environment.id) %>">
+  <div class="flex flex-wrap items-center gap-2">
+    <%= render "member/projects/environment_capability_control", environment:, capability_link:, cap: %>
+    <% if cap == "servers" %>
+      <%= render "member/project_environments/servers_cell", environment:, capability_link: %>
+    <% elsif cap == "uptime" %>
+      <%= render "member/project_environments/uptime_cell", environment:, capability_link: %>
+    <% end %>
+  </div>
+</td>

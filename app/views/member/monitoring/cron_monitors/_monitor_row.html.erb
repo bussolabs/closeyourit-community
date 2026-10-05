@@ -1,0 +1,20 @@
+<%# locals: monitor: — riga della lista cron (anche broadcast via Turbo replace su dom_id(monitor)).
+    L'id è il target del replace: check-in (RecordCheckIn) e missed (EvaluateJob). %>
+<%= render Ui::TableComponent::RowComponent.new(id: dom_id(monitor), href: member_monitoring_cron_monitor_path(monitor), link_label: monitor.name, test_id: "cron-monitor-row-#{monitor.id}") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <%= link_to member_monitoring_cron_monitor_path(monitor), class: "font-medium text-[13px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" do %><%= monitor.name %><% end %>
+    <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= monitor.slug %></p>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.crons.col_project")) do %>
+    <span class="inline-flex items-center gap-1.5 text-[12.5px] text-gray-600 dark:text-zinc-400"><span class="w-2.5 h-2.5 rounded-[3px] <%= Ui::Colors.swatch(monitor.project.color) %> shrink-0"></span><%= monitor.project.name %></span>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.crons.col_interval"), mono: true, class: "text-gray-500 dark:text-zinc-400") do %>
+    <%= cron_interval_label(monitor.expected_interval_minutes) %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.crons.col_status")) do %>
+    <%= render Ui::BadgeComponent.new(label: t("member.crons.status.#{monitor.status}"), color: cron_status_color(monitor.status)) %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.crons.col_last_check_in"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400") do %>
+    <%= monitor.last_check_in_at ? l(monitor.last_check_in_at, format: :short) : "—" %>
+  <% end %>
+<% end %>

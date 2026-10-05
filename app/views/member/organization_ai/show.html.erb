@@ -1,0 +1,23 @@
+<% content_for :title, t("member.organization_ai.title") %>
+
+<div class="p-7">
+  <%= form_with url: member_organization_ai_path, method: :patch, id: "org-ai-form", class: "space-y-6",
+                data: { test: "org-ai-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: t("member.organization_ai.title"),
+          breadcrumb: [ { label: t("member.organization_ai.title") } ]) do |h| %>
+      <% h.with_actions do %>
+        <%# Same trick as Valhalla: this submitter's _method wins and posts to the test action. %>
+        <%= render Ui::ButtonComponent.new(label: t("member.organization_ai.test"), type: "submit", size: :sm,
+              variant: :secondary_muted, icon: "plug", test_id: "org-ai-test",
+              formaction: test_member_organization_ai_path, name: "_method", value: "post") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.organization_ai.save"), type: "submit", size: :sm,
+              icon: "check", test_id: "org-ai-submit") %>
+      <% end %>
+    <% end %>
+
+    <%= render "member/organization_ai/reindex_confirmation", pending_keys: @pending_keys if @confirm_reindex %>
+    <div id="ai-checks"><%= render "valhalla/ai_settings/checks", checks: @checks if @checks %></div>
+    <%= render "member/organization_ai/values", config: Ai::Configuration.for(Current.organization) %>
+    <%= render "member/organization_ai/fields", setting: @setting, errors: @errors %>
+  <% end %>
+</div>

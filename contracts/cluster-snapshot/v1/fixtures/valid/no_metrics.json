@@ -1,0 +1,34 @@
+{
+  "snapshot_id": "9a4e7c2b-1d3f-4e5a-8b6c-7d8e9f0a1b2c",
+  "observed_at": "2026-10-02T09:00:00Z",
+  "observer_version": "0.1.0",
+  "cluster": {
+    "kubernetes_version": "v1.31.4+k3s1",
+    "provider": "k3s",
+    "metrics_available": false
+  },
+  "nodes": [
+    {
+      "name": "pool-a-1c9",
+      "ready": true,
+      "pressure": {
+        "memory": false,
+        "disk": false,
+        "pid": false
+      },
+      "unschedulable": false,
+      "being_removed": false,
+      "cpu_capacity_millicores": 4000,
+      "memory_capacity_bytes": 8221446144,
+      "cpu_usage_millicores": null,
+      "memory_usage_bytes": null,
+      "pods": 12,
+      "created_at": "2026-09-13T08:00:00Z",
+      "provider_id": "hcloud://51234567"
+    }
+  ],
+  "namespaces": [],
+  "workloads": [],
+  "events": [],
+  "truncated": false
+}

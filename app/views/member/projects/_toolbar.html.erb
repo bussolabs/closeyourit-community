@@ -1,0 +1,47 @@
+<%# Toolbar condivisa lista progetti (vista table + cards): search (name/key) + filtro piattaforma.
+    CYRA-924 — cards or table and the card order are View menu choices (C62); the table sorts on its
+    columns, and a column sort rides along as a hidden field so the next search keeps it. %>
+<% table_view = @projects_view == "table" %>
+<% current_sort = params[:sort].presence || "name" %>
+<%# The view choices submit these two forms from the View menu (`form=` attribute): forms cannot nest. %>
+<% %w[cards table].each do |view| %>
+  <%= form_with url: member_preferences_path, method: :patch, id: "projects-view-#{view}-form", class: "hidden" do %>
+    <%= hidden_field_tag :projects_view, view, id: nil %>
+  <% end %>
+<% end %>
+<% sections = [ { heading: t("shared.tables.show_as"), choices: %w[cards table].map { |view|
+     { label: t("member.projects.view_#{view}"), form: "projects-view-#{view}-form", active: @projects_view == view,
+       test_id: "projects-view-#{view}" } } } ] %>
+<% unless table_view %>
+  <% sections << { heading: t("shared.tables.sort_cards"), choices: %w[name -errors -open -release -tickets].map { |value|
+       { label: t("member.projects.sort.#{value.delete_prefix("-")}"), active: current_sort == value,
+         href: member_projects_path(request.query_parameters.except("page").merge("sort" => value)),
+         test_id: "projects-sort-#{value}" } } } %>
+<% end %>
+<%# D20 — on the cards, grouping is a View choice: by group (default) or none. %>
+<% group_by = table_view ? [] : [ [ "group", nil ], [ "none", "none" ] ].map { |key, grouped|
+     { label: t("member.projects.group_by_#{key}"),
+       href: member_projects_path(request.query_parameters.except("page", "limit").merge("grouped" => grouped).compact),
+       active: params[:grouped].presence == grouped, test_id: "projects-group-by-#{key}" } } %>
+<%= render(Ui::TableToolbarComponent.new(framed: true,
+      url: member_projects_path, query: params[:q],
+      search_placeholder: t("member.projects.search_placeholder"),
+      hidden: { sort: params[:sort], grouped: params[:grouped] }, view_sections: sections, group_by: group_by,
+      search_test_id: "projects-search", apply_test_id: "projects-filter",
+      test_id: "projects-toolbar")) do |toolbar| %>
+  <% toolbar.with_filter(key: "platform_id", label: t("member.projects.filter_platform")) do %>
+    <div class="w-44"><%= render Ui::SelectComponent.new(name: "platform_id", multiple: true, summary: true,
+      options: @platforms.map { |p| [ p.label, p.id, p.color ] }, selected: params[:platform_id],
+      placeholder: t("member.projects.filter_platform"), test_id: "filter-platform") %></div>
+  <% end %>
+  <% toolbar.with_filter(key: "group_id", label: t("member.projects.filter_group")) do %>
+    <div class="w-44"><%= render Ui::SelectComponent.new(name: "group_id", multiple: true, summary: true,
+      options: @filter_groups.map { |g| [ g.name, g.id, g.color ] }, selected: params[:group_id],
+      placeholder: t("member.projects.filter_group"), test_id: "filter-group") %></div>
+  <% end %>
+  <% toolbar.with_filter(key: "health", label: t("member.projects.filter_health")) do %>
+    <div class="w-44"><%= render Ui::SelectComponent.new(name: "health",
+      options: [ [ t("member.projects.health_problems"), "problems" ] ], selected: params[:health], include_blank: true,
+      placeholder: t("member.projects.filter_health"), test_id: "filter-health") %></div>
+  <% end %>
+<% end %>

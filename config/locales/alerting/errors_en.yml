@@ -1,0 +1,6 @@
+en:
+  activerecord:
+    errors:
+      messages:
+        # CYRA-236: minimum level given by name but non-existent (e.g. via CLI/SDK).
+        not_a_level: "«%{value}» is not a valid level: choose one of %{allowed}"

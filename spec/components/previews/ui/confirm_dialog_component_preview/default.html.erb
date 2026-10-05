@@ -1,0 +1,7 @@
+<%= render Ui::ConfirmDialogComponent.new(title: "Eliminare l'ambiente Staging?", url: "#", confirm_label: "Elimina",
+      test_id: "environment-delete-dialog") do |dialog| %>
+  <% dialog.with_body { "Si elimina solo se nessun progetto, token, segreto o controllo lo usa, e allora sparisce solo l'ambiente. Non si può annullare." } %>
+  <%= render Ui::RowMenuComponent.new(test_id: "environment-menu") do %>
+    <%= dialog.menu_trigger(label: "Elimina", icon: "trash") %>
+  <% end %>
+<% end %>

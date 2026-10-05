@@ -1,0 +1,196 @@
+<% content_for :title, t("member.servers.tokens.title") %>
+
+<div class="p-7 space-y-6" data-test="member-server-tokens">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.servers.tokens.title"),
+        subtitle: t("member.servers.tokens.help_title"),
+        breadcrumb: [ { label: t("member.servers.title"), href: member_monitoring_servers_path },
+                      { label: t("member.servers.tokens.breadcrumb") } ],
+        counts_test_id: "server-tokens-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.servers.tokens.stat_active"), value: @active_tokens_count, value_color: :emerald, test_id: "server-tokens-stat-active") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.servers.tokens.stat_revoked"), value: @revoked_tokens_count, test_id: "server-tokens-stat-revoked") %>
+    <% end %>
+  <% end %>
+
+  <%# REVEAL-ONCE: il segreto dell'enrollment token è mostrato UNA sola volta %>
+  <% if @revealed %>
+    <div data-test="server-token-reveal" class="rounded-lg border border-indigo-200 dark:border-indigo-500/40 bg-indigo-50/40 dark:bg-indigo-500/10">
+      <div class="flex items-center gap-2 px-4 py-3 border-b border-indigo-200 dark:border-indigo-500/40 flex-wrap">
+        <%= render Ui::IconComponent.new(name: "circle-check", class: "text-indigo-600 dark:text-indigo-400 text-[13px]") %>
+        <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.tokens.reveal_created", name: @revealed[:token].name) %></h3>
+        <span class="ml-auto inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-medium bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300"><%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[10px]") %><%= t("member.servers.tokens.copy_now") %></span>
+      </div>
+      <div class="px-4 py-4 space-y-3">
+        <div data-controller="clipboard" data-clipboard-copied-value="<%= t('member.servers.tokens.copied') %>">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.tokens.secret") %></p>
+          <div class="mt-1.5 flex items-stretch gap-2">
+            <code data-clipboard-target="source" data-test="server-token-secret" class="flex-1 min-w-0 truncate rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 font-mono text-[12px] text-zinc-800 dark:text-zinc-200"><%= @revealed[:secret] %></code>
+            <button type="button" data-action="clipboard#copy" class="inline-flex items-center gap-1.5 h-[37px] px-3 rounded-md text-[12px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800 shrink-0"><%= render Ui::IconComponent.new(name: "copy", class: "text-[12px] text-gray-400 dark:text-zinc-500") %><span data-clipboard-target="label"><%= t("member.servers.tokens.copy") %></span></button>
+          </div>
+        </div>
+        <div class="flex justify-end pt-1">
+          <%= link_to t("member.servers.tokens.close"), member_monitoring_server_tokens_path, class: "inline-flex items-center h-[30px] px-3 rounded-md text-[12px] font-medium text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100", data: { test: "server-token-reveal-close" } %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%# CREATE FORM %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-token-form">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.tokens.form_title") %></h3></div>
+    <%= form_with url: member_monitoring_server_tokens_path, method: :post, class: "px-4 py-4 flex flex-wrap items-end gap-4" do %>
+      <div class="w-64">
+        <label for="name" class="block font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.servers.tokens.form_name") %> <span class="text-rose-500">*</span></label>
+        <input type="text" name="name" id="name" value="<%= params[:name] %>" data-test="server-token-name" placeholder="fleet" class="w-full h-[34px] px-3 rounded-md border <%= @errors&.dig(:name) ? 'border-rose-300 dark:border-rose-500/50' : 'border-stone-200 dark:border-zinc-800' %> text-[13px] focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+        <% if @errors&.dig(:name) %><p class="mt-1 text-[11px] text-rose-600 dark:text-rose-400"><%= @errors[:name].first %></p><% end %>
+      </div>
+      <%= render Ui::ButtonComponent.new(label: t("member.servers.tokens.form_submit"), type: "submit", icon: "plus", test_id: "server-token-submit") %>
+    <% end %>
+  </div>
+
+  <%# LISTA %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-tokens-table">
+    <% if @tokens.empty? %>
+      <p class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="server-tokens-empty"><%= t("member.servers.tokens.empty") %></p>
+    <% else %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.servers.tokens.title"))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.tokens.col_name"), sort: "name") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.tokens.col_prefix"), sort: "prefix") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.tokens.col_servers"), classes: "w-36") %>
+          <%# CYRA-469 — la colonna diceva "Ultimo uso" ma la data misura l'ultima REGISTRAZIONE con
+              questo codice, non l'ultimo dato inviato (dopo l'enrollment gli agent usano la loro
+              credenziale per-macchina): rinominata + tooltip che dice cosa misura davvero. %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.tokens.col_last_enrollment"), sort: "last_used", initial: :desc, hint: t("member.servers.tokens.last_enrollment_hint"), classes: "w-36") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.tokens.col_expiry"), classes: "w-28") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.tokens.col_status"), sort: "status", classes: "w-24") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.tokens.revoke"), label_hidden: true, classes: "w-24") %>
+        <% end %>
+        <% @tokens.each do |token| %>
+          <% connected = @hosts_by_token[token.id].to_i %>
+          <%= render Ui::TableComponent::RowComponent.new(faded: token.revoked?, test_id: "server-token-row") do %>
+              <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-[13px] font-medium text-zinc-900 dark:text-zinc-100")) { token.name } %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.tokens.col_prefix"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { "#{token.token_prefix}…" } %>
+              <%# CYRA-469 — quante macchine sono registrate con questo codice, cliccabile: porta alla
+                  flotta filtrata su questo codice. A zero, testo grigio non cliccabile (niente da vedere). %>
+              <%= render Ui::TableComponent::CellComponent.new(label: t("member.servers.tokens.col_servers"), class: "text-[12.5px]") do %>
+                <% if connected.positive? %>
+                  <%= link_to member_monitoring_servers_path(enrollment_token: token.id),
+                        class: "inline-flex items-center gap-1.5 font-medium text-indigo-600 dark:text-indigo-400 hover:underline",
+                        title: t("member.servers.tokens.servers_view"),
+                        data: { test: "server-token-servers-#{token.id}" } do %>
+                    <span><%= connected %></span><%= render Ui::IconComponent.new(name: "arrow-right", class: "text-[10px]") %>
+                  <% end %>
+                <% else %>
+                  <span class="text-gray-400 dark:text-zinc-500" data-test="server-token-servers-#{token.id}"><%= t("member.servers.tokens.servers_none") %></span>
+                <% end %>
+              <% end %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.tokens.col_last_enrollment"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { server_time_ago(token.last_used_at) } %>
+              <%# CYRA-469 — i codici di enrollment non hanno scadenza: dirlo a chiare lettere invece di
+                  lasciare la colonna vuota (è ciò che chiedeva "scadenza, oppure scritto che non scade"). %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.tokens.col_expiry"), class: "text-[12px] text-gray-500 dark:text-zinc-400")) { t("member.servers.tokens.never_expires") } %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.tokens.col_status"))) { render Ui::BadgeComponent.new(label: token.revoked? ? t("member.servers.tokens.status_revoked") : t("member.servers.tokens.status_active"), color: token.revoked? ? :gray : :emerald, dot: true) } %>
+              <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+                <% unless token.revoked? %>
+                  <%# CYRA-469 — conferma per digitazione: il pulsante di revoca apre un pannello che
+                      dice quante macchine sono collegate e chiede di riscrivere il nome del codice. Il
+                      gate vero è lato server (controller), questo è solo il suo volto. %>
+                  <details class="relative inline-block text-left" data-test="server-token-revoke-#{token.id}">
+                    <summary class="inline-flex items-center h-[28px] px-2.5 rounded-md text-[11.5px] font-medium text-rose-700 dark:text-rose-300 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-rose-50 dark:hover:bg-rose-500/15 cursor-pointer list-none"><%= t("member.servers.tokens.revoke") %></summary>
+                    <div class="absolute right-0 z-10 mt-1 w-72 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg p-3 space-y-2 text-left"
+                         data-controller="confirm-phrase" data-confirm-phrase-phrase-value="<%= token.name %>">
+                      <p class="text-[12px] text-zinc-700 dark:text-zinc-300" data-test="server-token-impact-<%= token.id %>"><%= t("member.servers.tokens.revoke_impact", count: connected) %></p>
+                      <p class="text-[12px] text-zinc-600 dark:text-zinc-400"><%= t("member.servers.tokens.revoke_type_prompt_html", name: tag.span(token.name, class: "font-mono font-medium text-zinc-900 dark:text-zinc-100")) %></p>
+                      <%= form_with url: member_monitoring_server_token_path(token), method: :delete, class: "space-y-2" do %>
+                        <input type="text" name="confirm" autocomplete="off" placeholder="<%= t('member.servers.tokens.revoke_confirm_placeholder') %>"
+                               data-confirm-phrase-target="input" data-action="input->confirm-phrase#check"
+                               data-test="server-token-confirm-<%= token.id %>"
+                               class="w-full h-[32px] px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 text-[12px] focus:outline-none focus:border-rose-500 focus-visible:ring-2 focus-visible:ring-rose-400">
+                        <button type="submit" data-confirm-phrase-target="submit" disabled
+                                data-test="server-token-revoke-submit-<%= token.id %>"
+                                class="w-full inline-flex items-center justify-center h-[32px] px-3 rounded-md text-[12px] font-medium text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed"><%= t("member.servers.tokens.revoke_submit") %></button>
+                      <% end %>
+                    </div>
+                  </details>
+                <% end %>
+              <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "server-tokens-pagination")) %>
+    <% end %>
+  </div>
+
+  <%# Secondary to the table (DESIGN.md T13): side by side in columns, not one after the other. %>
+  <%= render Ui::GridComponent.new(cols: 1, lg: 2, gap: 6, class: "items-start", test_id: "secondary-panels") do %>
+    <%# CYRA-469 — «e se lo perdo?»: la domanda a cui la pagina non rispondeva. La procedura per un
+        codice compromesso, in una riga, orientata all'azione. %>
+    <div class="rounded-lg border border-amber-200 dark:border-amber-500/40 bg-amber-50/50 dark:bg-amber-500/10 px-4 py-3" data-test="server-tokens-compromised">
+      <div class="flex items-start gap-2.5">
+        <%= render Ui::IconComponent.new(name: "shield-half", class: "text-amber-600 dark:text-amber-400 text-[13px] mt-0.5") %>
+        <div>
+          <h3 class="font-display text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.tokens.compromised_title") %></h3>
+          <p class="mt-1 text-[12.5px] text-amber-900/90 dark:text-amber-200/90"><%= t("member.servers.tokens.compromised_body") %></p>
+        </div>
+      </div>
+    </div>
+
+    <%# CYRA-459 — «so se ha funzionato?»: la pagina lo dice da sé, confrontando i token attivi con le
+        macchine che hanno davvero mandato qualcosa. Nessun polling: si aggiorna ricaricando, e la
+        frase dice esattamente in quale dei due stati siamo. %>
+    <div class="rounded-lg border <%= @servers_count.to_i.positive? ? "border-emerald-200 dark:border-emerald-500/40 bg-emerald-50/60 dark:bg-emerald-500/10" : "border-amber-200 dark:border-amber-500/40 bg-amber-50/60 dark:bg-amber-500/10" %> px-4 py-3" data-test="server-tokens-status">
+      <p class="text-[12.5px] <%= @servers_count.to_i.positive? ? "text-emerald-800 dark:text-emerald-200" : "text-amber-800 dark:text-amber-200" %>">
+        <% if @servers_count.to_i.positive? %>
+          <%= t("member.servers.tokens.status_arrived", count: @servers_count) %>
+        <% else %>
+          <%= t("member.servers.tokens.status_waiting") %>
+        <% end %>
+      </p>
+    </div>
+  <% end %>
+
+  <%# SNIPPET INSTALL %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-tokens-snippet">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3">
+      <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.tokens.snippet_title") %></h3>
+      <%# CYRA-459: la guida spiega tutto per esteso e non era raggiungibile da nessuna pagina dell'area. %>
+      <%= link_to t("member.servers.tokens.guide_link"), member_guides_servers_path,
+            class: "inline-flex items-center gap-1.5 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline",
+            data: { test: "server-tokens-guide" } %>
+    </div>
+    <div class="px-4 py-4" data-controller="clipboard" data-clipboard-copied-value="<%= t("member.servers.tokens.copied") %>">
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.tokens.snippet_lead") %></p>
+      <div class="mt-3 flex items-center justify-between gap-3">
+        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.tokens.snippet_docker") %></p>
+        <button type="button" data-action="clipboard#copy" data-test="server-tokens-copy"
+                class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[11.5px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800">
+          <%= render Ui::IconComponent.new(name: "copy", class: "text-[10px]") %><span data-clipboard-target="label"><%= t("member.servers.tokens.copy") %></span>
+        </button>
+      </div>
+      <pre class="mt-1.5 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-4 py-3 font-mono text-[11.5px] leading-relaxed text-zinc-800 dark:text-zinc-200 overflow-x-auto"><code data-clipboard-target="source">services:
+  closeyourit-agent:
+    image: <%= Servers::Constants::AGENT_IMAGE %>
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - closeyourit_agent_data:/var/lib/closeyourit-agent
+    environment:
+      CYI_ENDPOINT: <%= request.base_url %>
+      CYI_TOKEN: cyi_s_…
+volumes:
+  closeyourit_agent_data:</code></pre>
+
+      <%# CYRA-459 — le macchine che ospitano i database erano liquidate in mezza riga dentro il
+          testo introduttivo: qui hanno il loro blocco, con il comando per esteso. %>
+      <div class="mt-4 pt-4 border-t border-stone-100 dark:border-zinc-800" data-test="server-tokens-database-host">
+        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.tokens.snippet_binary") %></p>
+        <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.tokens.snippet_binary_lead") %></p>
+        <pre class="mt-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-4 py-3 font-mono text-[11.5px] leading-relaxed text-zinc-800 dark:text-zinc-200 overflow-x-auto"><code>sudo CYI_ENDPOINT=<%= request.base_url %> \
+     CYI_TOKEN=&lt;<%= t("member.servers.tokens.token_placeholder") %>&gt; \
+     /opt/closeyourit-agent/install.sh</code></pre>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,20 @@
+<%# locals: up_count:, down_count:, total: — pill di stato della fleet nell'header (anche broadcast via
+    Turbo replace su #servers_stats). Il render iniziale (controller) usa visible.servers; il
+    broadcast (Servers::Broadcast) ricalcola org-wide — per i server non c'è discrepanza: la risorsa è
+    org-level, chi vede la fleet la vede tutta. %>
+<%# Wrapper display:contents — le chip partecipano direttamente al flex del counts slot
+    (mt-2.5 flex … gap-1.5 via counts_options, data-test="servers-stats" sul wrapper esterno);
+    l'id resta per il broadcast Turbo replace su #servers_stats. %>
+<div id="servers_stats" class="contents">
+  <%= render Ui::StatLabelComponent.new(label: t("member.servers.stat_up"), value: up_count, value_color: :emerald, test_id: "stat-up") %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.servers.stat_down"), value: down_count, value_color: :rose, test_id: "stat-down") %>
+  <%# CYRA-456 — il riepilogo diceva solo che nessuna macchina è spenta: una al limite non compariva
+      da nessuna parte. Una chip per metrica, e SOLO se c'è qualcuno sopra soglia: a zero sarebbe
+      rumore, e tre zeri fissi insegnano a non leggere la riga. %>
+  <% (local_assigns[:over_threshold] || {}).each do |metric, count| %>
+    <% next unless count.to_i.positive? %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.servers.stat_over.#{metric}"), value: count,
+          value_color: :rose, test_id: "stat-over-#{metric}") %>
+  <% end %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.servers.stat_total"), value: total, test_id: "stat-total") %>
+</div>

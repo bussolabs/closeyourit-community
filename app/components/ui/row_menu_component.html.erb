@@ -1,0 +1,4 @@
+<details class="relative inline-block text-left" data-controller="ui--row-menu" data-action="toggle->ui--row-menu#onToggle">
+  <%= tag.summary(**summary_options) do %><%= render Ui::IconComponent.new(name: @icon, class: @label ? "text-[11px]" : "text-[13px]") %><% if @label %><span><%= @label %></span><% end %><% end %>
+  <div data-ui--row-menu-target="panel" class="absolute right-0 top-9 z-30 <%= @panel_width %> rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-1 text-left"><%= content %></div>
+</details>

@@ -1,0 +1,31 @@
+<%# CYRA-898 — the bell's panel in the top bar: the latest five own notifications. Links leave the
+    frame (_top): they open a whole page, not a page inside the panel. %>
+<%= turbo_frame_tag "notifications_preview" do %>
+  <% if @notifications.any? %>
+    <ul class="max-h-80 overflow-y-auto py-1">
+      <% @notifications.each do |notification| %>
+        <%# Internal paths only (Alerting::Content builds them): anti-XSS guard, as in the full list. %>
+        <% safe_url = notification.url.to_s.start_with?("/") ? notification.url : member_alerting_notifications_path %>
+        <li data-test="notifications-preview-row">
+          <%= link_to safe_url, class: "flex items-start gap-2 px-3 py-2 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { turbo_frame: "_top" } do %>
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full <%= notification.read_at ? 'bg-transparent' : 'bg-indigo-500' %>" aria-hidden="true"></span>
+            <span class="min-w-0 flex-1">
+              <span class="block font-mono text-[10px] uppercase tracking-wide text-gray-400 dark:text-zinc-500"><%= alerting_event_label(notification.event_type) %></span>
+              <span class="block truncate text-[12.5px] <%= notification.read_at ? 'text-gray-600 dark:text-zinc-400' : 'font-semibold text-zinc-900 dark:text-zinc-100' %>"><%= notification.title %></span>
+            </span>
+            <span class="shrink-0 font-mono text-[10.5px] text-gray-400 dark:text-zinc-500"><%= time_ago_in_words(notification.created_at) %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="px-3 py-4 text-[12px] text-gray-500 dark:text-zinc-400" data-test="notifications-preview-empty"><%= t("member.alerting.notifications.preview_empty") %></p>
+  <% end %>
+  <div class="flex items-center justify-between gap-3 border-t border-stone-100 dark:border-zinc-800 px-3 py-2 text-[12px] font-medium">
+    <%= button_to t("member.alerting.notifications.mark_all"), read_all_member_alerting_notifications_path, method: :patch,
+          form: { data: { turbo_frame: "_top" } }, class: "text-indigo-600 dark:text-indigo-400 hover:underline",
+          data: { test: "notifications-preview-read-all" } %>
+    <%= link_to t("member.alerting.notifications.preview_all"), member_alerting_notifications_path,
+          class: "text-indigo-600 dark:text-indigo-400 hover:underline", data: { turbo_frame: "_top", test: "notifications-preview-all" } %>
+  </div>
+<% end %>

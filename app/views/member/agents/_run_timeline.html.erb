@@ -1,0 +1,22 @@
+<%# locals: timeline: (Agents::RunTimeline) — il percorso di una lavorazione: pallini con i
+    connettori sopra, etichette sotto. I due giri leggono la stessa sequenza perché devono restare
+    incolonnati: il connettore che precede un pallino e lo spazio che precede la sua etichetta hanno
+    la stessa larghezza (CYRA-802). %>
+<div data-test="host-run-timeline">
+  <div class="flex items-center gap-1">
+    <% timeline.steps.each_with_index do |step, index| %>
+      <% unless index.zero? %>
+        <span class="<%= agent_step_connector_class(step.status) %>" aria-hidden="true"></span>
+      <% end %>
+      <span class="<%= agent_step_dot_class(step.status) %>"
+            title="<%= t("member.agents.activity.step_status.#{step.status}") %>"
+            data-test="host-run-step" data-phase="<%= step.phase %>" data-status="<%= step.status %>"></span>
+    <% end %>
+  </div>
+  <div class="mt-1 flex items-center gap-1">
+    <% timeline.steps.each_with_index do |step, index| %>
+      <% unless index.zero? %><span class="flex-1" aria-hidden="true"></span><% end %>
+      <span class="<%= agent_step_label_class(step.status) %>"><%= t("member.agents.phases.#{step.phase}") %></span>
+    <% end %>
+  </div>
+</div>

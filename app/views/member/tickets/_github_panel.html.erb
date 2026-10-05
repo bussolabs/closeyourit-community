@@ -1,0 +1,33 @@
+<%# locals: ticket %>
+<% pulls = ticket.github_pull_requests.order(created_at: :desc).to_a %>
+<% branches = ticket.github_branches.order(created_at: :desc).to_a %>
+<% if pulls.any? || branches.any? %>
+  <% pr_colors = { "open" => "sky", "merged" => "violet", "closed" => "rose" } %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ticket-github-panel">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center gap-2">
+      <%= render Ui::IconComponent.new(name: "github", class: "text-[13px] text-zinc-900 dark:text-zinc-100") %>
+      <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.github.panel_title") %></h2>
+    </div>
+    <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% pulls.each do |pull| %>
+        <div class="px-4 py-2.5 flex items-center gap-2 min-w-0" data-test="ticket-github-pr-row">
+          <%= render Ui::IconComponent.new(name: "git-pull-request", class: "text-[11px] text-gray-400 dark:text-zinc-500 shrink-0") %>
+          <%= link_to "##{pull.number}", pull.html_url, target: "_blank", rel: "noopener",
+                class: "font-mono text-[12px] text-indigo-600 dark:text-indigo-400 hover:underline shrink-0" %>
+          <span class="truncate text-[12px] text-zinc-700 dark:text-zinc-300"><%= pull.title %></span>
+          <span class="ml-auto shrink-0">
+            <%= render Ui::BadgeComponent.new(label: t("member.tickets.github.pr_state.#{pull.state}"),
+                  color: pr_colors[pull.state], size: :sm, dot: true) %>
+          </span>
+        </div>
+      <% end %>
+      <% branches.each do |branch| %>
+        <div class="px-4 py-2.5 flex items-center gap-2 min-w-0" data-test="ticket-github-branch-row">
+          <%= render Ui::IconComponent.new(name: "git-branch", class: "text-[11px] text-gray-400 dark:text-zinc-500 shrink-0") %>
+          <%= link_to branch.name, branch.html_url, target: "_blank", rel: "noopener",
+                class: "font-mono text-[12px] text-indigo-600 dark:text-indigo-400 hover:underline truncate" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,54 @@
+<% content_for :title, t("member.guides.index.title") %>
+
+<div class="p-7 space-y-6" data-test="member-guides-index">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.guides.index.title"),
+        subtitle: t("member.guides.index.help_title"),
+        breadcrumb: [ { label: t("member.guides.index.title") } ],
+        test_id: "guides-header") do |h| %>
+    <% h.with_meta do %>
+      <p class="text-[13px] text-gray-500 dark:text-zinc-400 leading-relaxed max-w-3xl"><%= t("member.guides.index.intro") %></p>
+    <% end %>
+  <% end %>
+
+  <%# The guides themselves are listed in the index on the left (member/_guides_shell): this page is the
+      catalog of every space and the guide that explains it. %>
+  <%# CYRA-336 — le schede qui sopra spiegano bene una funzione per volta, ma coprivano un terzo
+      delle destinazioni: chi arrivava non aveva modo di sapere cosa fanno le altre. Questo è
+      l'elenco completo, costruito dalle stesse voci del menu (mai un elenco che resta indietro):
+      una riga di spiegazione per ognuna, e il collegamento alla sua guida quando esiste. %>
+  <%# T1 — the catalog is one panel: its title heads it, the spaces are its parts. %>
+  <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guides-catalog">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <h2 class="font-display text-[16px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.catalog_title") %></h2>
+      <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.catalog_intro") %></p>
+    </div>
+    <div class="divide-y divide-stone-200 dark:divide-zinc-800">
+      <% guides_catalog.each do |group| %>
+        <%# Il titolo del blocco è un <h3>: sotto il titolo del catalogo, non allo stesso livello.
+            A12 — a part of the catalog panel, split by a hairline: never a panel inside a panel. %>
+        <div data-test="guides-catalog-space">
+          <div class="px-4 pt-4 pb-1">
+            <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= group[:label] %></h3>
+          </div>
+          <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+            <% group[:items].each do |item| %>
+              <li class="flex items-start gap-3 px-4 py-2.5" data-test="guides-catalog-item">
+                <%= render Ui::IconComponent.new(name: item[:icon], class: "w-[1.25em] text-[12px] text-gray-400 dark:text-zinc-500 mt-0.5") %>
+                <div class="min-w-0">
+                  <%= link_to item[:label], item[:href], class: "text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-700 dark:hover:text-indigo-300" %>
+                  <p class="text-[12px] text-gray-500 dark:text-zinc-400 leading-relaxed"><%= item[:description] %></p>
+                </div>
+                <% if item[:guide_href] %>
+                  <%= link_to t("member.guides.catalog_open"), item[:guide_href],
+                        class: "ml-auto shrink-0 text-[11.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline",
+                        data: { test: "guides-catalog-guide" } %>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</div>

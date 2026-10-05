@@ -1,0 +1,9 @@
+<%= render Ui::PageHeaderComponent.new(title: "Tickets", breadcrumb: [ { label: "Tickets" } ], counts_test_id: "tickets-counts") do |h| %>
+  <% h.with_counts do %>
+    <%= render Ui::StatLabelComponent.new(label: "Tickets", value: 12) %>
+    <%= render Ui::StatLabelComponent.new(label: "Open", value: 6, value_color: :amber) %>
+  <% end %>
+  <% h.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: "Nuovo ticket", icon: "plus", href: "#") %>
+  <% end %>
+<% end %>

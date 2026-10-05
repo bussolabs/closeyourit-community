@@ -1,0 +1,71 @@
+<% content_for :title, t("member.vault_consolidations.title") %>
+
+<%# CYRA-777 — la conferma di un «valore in comune». È una PAGINA e non una finestrella per lo stesso
+    motivo della fusione dei gruppi di errori (CYRA-192): il gesto tocca più progetti insieme, toglie
+    una variabile da ciascuno e non si annulla. Qui c'è scritto cosa sparisce, da dove, e con che nome
+    ogni progetto continuerà a leggerlo — modificabile prima di confermare. %>
+<div class="p-7 space-y-6" data-test="member-vault-consolidation">
+  <%= form_with url: promote_member_vault_consolidation_path(@suggestion), method: :post, class: "space-y-6",
+        data: { test: "vault-consolidation-form" } do %>
+    <%# La conferma vale su ciò che si è VISTO: se fra questa pagina e il clic un terzo progetto
+        prende lo stesso valore, o uno lo cambia, il digest non combacia più e si rilegge. %>
+    <%= hidden_field_tag :confirmation_digest, @impact["digest"] %>
+    <%= hidden_field_tag :confirm, 1 %>
+
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("member.vault_consolidations.title"),
+          subtitle: t("member.vault_consolidations.help_title"),
+          breadcrumb: [ { label: t("member.vault.title"), href: member_vault_path },
+                        { label: t("member.vault_attention.title"), href: member_vault_attention_path },
+                        { label: t("member.vault_consolidations.title") } ],
+          test_id: "vault-consolidation-header",
+          counts_test_id: "vault-consolidation-counts") do |header| %>
+      <% header.with_counts do %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.vault_consolidations.stat_projects"),
+              value: @impact["projects"].size, value_color: :indigo,
+              test_id: "vault-consolidation-stat-projects") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.vault_consolidations.stat_environment"),
+              value: @suggestion.environment.label, test_id: "vault-consolidation-stat-environment") %>
+      <% end %>
+      <% header.with_actions do %>
+        <% if @impact["projects"].any? %>
+          <%= render Ui::ButtonComponent.new(label: t("member.vault_consolidations.promote"),
+                type: "submit", variant: :primary, size: :sm, icon: "group",
+                test_id: "vault-consolidation-promote") %>
+        <% end %>
+        <%# Fuori dal modulo principale: un `button_to` qui dentro annidarebbe un form in un form.
+            Punta al modulo condiviso in fondo alla pagina (CYRA-571). %>
+        <%= render Ui::ButtonComponent.new(label: t("member.vault_consolidations.dismiss"),
+              href: dismiss_member_vault_consolidation_path(@suggestion), method: :post,
+              form_id: "consolidation-dismiss", variant: :secondary_muted, size: :sm, icon: "ban",
+              test_id: "vault-consolidation-dismiss",
+              confirm: t("member.vault_consolidations.dismiss_confirm")) %>
+      <% end %>
+    <% end %>
+
+    <% if @impact["projects"].empty? %>
+      <%# Il giro notturno non è ancora ripassato: il valore non è più ripetuto e non c'è niente da
+          spostare. Si dice, invece di far cliccare un bottone che fallirebbe. %>
+      <%= render Ui::AlertComponent.new(variant: :warning, test_id: "vault-consolidation-gone") do %>
+        <%= t("member.vault_consolidations.gone") %>
+      <% end %>
+    <% else %>
+      <% if @rotation_policies.positive? %>
+        <%# La regola «ruota ogni N giorni» è della variabile locale e sparisce con lei. Dirlo prima è
+            l'unico modo perché non lo si scopra il giorno in cui l'avviso non arriva. %>
+        <%= render Ui::AlertComponent.new(variant: :warning, test_id: "vault-consolidation-rotation-warning") do %>
+          <%= t("member.vault_consolidations.rotation_lost", count: @rotation_policies) %>
+        <% end %>
+      <% end %>
+      <%= render "member/vault/consolidations/destination" %>
+      <%= render "member/vault/consolidations/projects" %>
+    <% end %>
+  <% end %>
+
+  <%= render Ui::RowActionsFormComponent.new(id: "consolidation-dismiss",
+        test_id: "vault-consolidation-dismiss-form", hidden: true) do %>
+    <%# La conferma richiesta dalle azioni pericolose (CYRA-728): il gesto umano è il turbo_confirm
+        del bottone qui sopra. %>
+    <%= hidden_field_tag :confirm, 1 %>
+  <% end %>
+</div>

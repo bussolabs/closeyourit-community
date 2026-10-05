@@ -1,0 +1,39 @@
+---
+# CYRA-545 — la guida della pagina Integrazioni: cos'è una chiave, chi paga il consumo, perché non
+# si rilegge più, cosa vuol dire ogni stato e cosa si spegne scollegando un servizio.
+it:
+  member:
+    guides:
+      index:
+        integrations:
+          title: Integrazioni
+      integrations:
+        title: Integrazioni
+        subtitle: I servizi di altre aziende che il prodotto usa per te, collegati con le tue chiavi.
+        what_title: A cosa serve
+        what_intro: "Alcune funzioni non girano dentro CloseYourIt: si appoggiano a servizi di altre aziende. Per usarli serve una chiave, che è una specie di tessera personale: dice al servizio che chi sta chiedendo sei tu, e su quale conto va segnato il consumo."
+        what_b1: "Il conto e il limite giornaliero sono tuoi: non li dividi con nessun'altra organizzazione, e se li esaurisci tu non fermi il lavoro degli altri."
+        what_b2: "Dove la chiave non c'è, la funzione non parte affatto e te lo dice: meglio di un pulsante che accetta la richiesta e poi tace."
+        what_b3: Ogni servizio si collega e si toglie per conto suo. Togliere uno non tocca gli altri.
+        services_title: Quali servizi si collegano
+        github_note: "Si collega in modo diverso: non con una chiave da incollare ma installando l'applicazione su GitHub, dalla sua pagina."
+        how_title: Come si collega
+        how_step1: "Apri il pannello del fornitore dal collegamento che trovi nella scheda: è l'unica cosa che non puoi indovinare da qui."
+        how_step2: Crea la chiave sul tuo account e copiala.
+        how_step3: "Incollala nel campo della scheda e salva: il sistema la prova subito, con una richiesta vera al fornitore."
+        how_step4: "Se la chiave va bene il servizio risulta collegato all'istante; se il fornitore la rifiuta te lo dice sul momento e la chiave non viene salvata — quindi non resti con un collegamento che sembra esserci e non funziona."
+        key_title: La chiave non si rilegge
+        key_intro: "Una volta incollata, la chiave non si può più leggere da nessuna schermata: si può solo sostituire con un'altra. È una scelta, non una dimenticanza — una chiave che si può rileggere è una chiave che qualcuno può portarsi via da uno schermo."
+        key_b1: "Il campo resta vuoto anche quando il servizio è collegato: vuoto vuol dire «non l'ho toccata», mai «cancellala»."
+        key_b2: Salvando senza scrivere niente, la chiave che c'è resta al suo posto e continua a funzionare.
+        key_b3: "Se hai perso la chiave, non c'è modo di recuperarla da qui: se ne crea una nuova nel pannello del fornitore e si sostituisce."
+        status_title: Cosa dicono gli stati
+        status_connected: La chiave c'è ed è stata provata con successo. Accanto trovi da quanto tempo.
+        status_broken: "L'ultima prova non è andata a buon fine: la scheda dice il motivo, che di solito è una chiave revocata, scaduta, ristretta, oppure un servizio da attivare nel pannello del fornitore."
+        status_unverified: La chiave c'è ma non è ancora stata provata. Il controllo di ogni giorno la prova entro il giorno dopo.
+        status_missing: Nessuna chiave collegata. Le funzioni che dipendono da questo servizio non partono.
+        off_title: Cosa succede scollegando
+        off_intro: "Prima di confermare, la pagina elenca per nome le funzioni che si fermano: è l'unica informazione che serve davvero per decidere, e non si trova da nessun'altra parte."
+        off_b1: "La chiave viene cancellata da qui: per ricollegare il servizio bisogna incollarla di nuovo."
+        off_b2: "Il servizio non viene toccato dalla parte del fornitore: la chiave continua a esistere sul tuo account, e puoi riusarla o revocarla da lì."
+        cta: Vai alle Integrazioni

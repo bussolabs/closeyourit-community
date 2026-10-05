@@ -1,0 +1,16 @@
+<%= tag.nav(**nav_attributes) do %>
+  <%= tag.ol(class: "flex items-center gap-1.5 text-[13px]") do %>
+    <% all_crumbs.each_with_index do |crumb, i| %>
+      <% if i.positive? %>
+        <%= tag.li("/", "aria-hidden": true, class: "text-gray-300 dark:text-zinc-600", data: { test: "breadcrumb-sep" }) %>
+      <% end %>
+      <%= tag.li do %>
+        <% if link_crumb?(crumb, i) %>
+          <%= link_to crumb[:label], crumb[:href], class: "font-medium text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100", data: { test: "breadcrumb-crumb" } %>
+        <% else %>
+          <%= tag.span(crumb[:label], class: "font-medium text-zinc-900 dark:text-zinc-100", "aria-current": (i == last_index ? "page" : nil), data: { test: "breadcrumb-crumb" }) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

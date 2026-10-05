@@ -1,0 +1,33 @@
+<%# locals: (items:) %>
+<%# What needs the god, worst first: one row per problem, each with the page that fixes it. %>
+<% targets = { ai_settings: [ valhalla_ai_settings_path, t("valhalla.dashboard.open_ai_settings") ],
+               organizations: [ valhalla_organizations_path, t("valhalla.dashboard.open_organizations") ] } %>
+<%= render Ui::SectionComponent.new(heading_size: :md, body_class: nil, test_id: "valhalla-dashboard-attention") do |section| %>
+  <% section.with_title do %>
+    <span class="flex items-center gap-2"><%= t("valhalla.dashboard.attention_title") %>
+      <%= render Ui::BadgeComponent.new(label: items.size.to_s, color: (items.any? ? :red : :green), size: :sm, test_id: "valhalla-attention-count") %></span>
+  <% end %>
+  <% if items.any? %>
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("valhalla.dashboard.attention_title"))) do |table| %>
+      <% table.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.col_severity")) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.col_problem")) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+      <% end %>
+      <% items.each do |item| %>
+        <% href, label = targets.fetch(item.target) %>
+        <%= render Ui::TableComponent::RowComponent.new(test_id: "valhalla-attention-#{item.kind.to_s.dasherize}") do %>
+          <%= render Ui::TableComponent::CellComponent.new(label: t("valhalla.dashboard.col_severity")) do %>
+            <%= render Ui::BadgeComponent.new(label: t("valhalla.dashboard.severity.#{item.severity}"), color: (item.severity == :danger ? :red : :amber), dot: true) %>
+          <% end %>
+          <%= render(Ui::TableComponent::CellComponent.new(header: true)) { t("valhalla.dashboard.attention.#{item.kind}", count: item.count) } %>
+          <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+            <%= render Ui::ButtonComponent.new(label: label, href: href, variant: :secondary_muted, size: :sm) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <p class="px-4 py-6 text-center text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.dashboard.attention_empty") %></p>
+  <% end %>
+<% end %>

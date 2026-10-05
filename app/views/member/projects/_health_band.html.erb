@@ -1,0 +1,67 @@
+<%# CYRA-883 — one strip: the 1px gaps over the stone background draw the dividers, and the cells grow
+    to fill each row, so no empty slot shows whatever cells are present. %>
+<div class="flex flex-wrap gap-px overflow-hidden rounded-lg border border-stone-200 dark:border-zinc-800 bg-stone-200 dark:bg-zinc-700" data-test="project-health">
+  <%= link_to member_monitoring_error_groups_path(project_id: [ @project.id ]), class: "min-w-36 flex-1 basis-36 bg-white dark:bg-zinc-900 px-4 py-3 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "health-errors" } do %>
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.health.errors") %></p>
+    <p class="mt-1 font-mono text-[20px] font-semibold <%= @health_errors_unresolved.positive? ? "text-rose-600 dark:text-rose-400" : "text-zinc-900 dark:text-zinc-100" %>"><%= @health_errors_unresolved %></p>
+    <% if @health_error_buckets&.any? { |v| v.positive? } %><span class="mt-1 inline-flex items-stretch gap-px h-4"><% max = [ @health_error_buckets.max, 1 ].max %><% @health_error_buckets.each do |v| %><span class="w-1 bg-rose-300 rounded-sm self-end" style="height: <%= v.positive? ? [ (v.to_f / max * 16).round, 2 ].max : 1 %>px"></span><% end %></span><% end %>
+  <% end %>
+
+  <% if @supports_uptime %>
+    <%= link_to member_monitoring_monitors_path(project_id: [ @project.id ]), class: "min-w-36 flex-1 basis-36 bg-white dark:bg-zinc-900 px-4 py-3 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "health-uptime" } do %>
+      <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.health.uptime") %></p>
+      <p class="mt-1 font-mono text-[20px] font-semibold <%= uptime_percent_color(@health_uptime_avg) %>"><%= uptime_percent_text(@health_uptime_avg) %></p>
+      <p class="mt-1 text-[10.5px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.health.uptime_24h") %></p>
+    <% end %>
+  <% end %>
+
+  <%= link_to member_monitoring_log_entries_path(project_id: [ @project.id ]), class: "min-w-36 flex-1 basis-36 bg-white dark:bg-zinc-900 px-4 py-3 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "health-logs" } do %>
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.health.logs") %></p>
+    <p class="mt-1 font-mono text-[20px] font-semibold text-zinc-900 dark:text-zinc-100"><%= number_with_delimiter(@health_logs_7d) %></p>
+    <p class="mt-1 text-[10.5px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.health.logs_7d") %></p>
+  <% end %>
+
+  <%# CYRA-16/CYRA-358: card cliccabile → lista ticket filtrata sugli status NON conclusi (categoria
+      da fare + in corso, quindi anche "in revisione"), coerente con Errors/Uptime/Logs. Etichetta,
+      numero e link portano allo stesso insieme; gli id status arrivano dal controller. %>
+  <%= link_to list_member_tickets_path(project_id: [ @project.id ], status_id: @unresolved_status_ids), class: "min-w-36 flex-1 basis-36 bg-white dark:bg-zinc-900 px-4 py-3 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "health-tickets" } do %>
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.health.tickets_unresolved") %></p>
+    <p class="mt-1 font-mono text-[20px] font-semibold text-zinc-900 dark:text-zinc-100"><%= @stats.unresolved %></p>
+    <p class="mt-1 text-[10.5px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.health.tickets_total", n: @stats.total) %></p>
+  <% end %>
+
+  <% if (release = @releases.first) %>
+    <div class="min-w-36 flex-1 basis-36 bg-white dark:bg-zinc-900 px-4 py-3" data-test="health-release">
+      <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.health.last_release") %></p>
+      <p class="mt-1 truncate font-mono text-[20px] font-semibold text-zinc-900 dark:text-zinc-100"><%= release.display_version %></p>
+      <p class="mt-1 text-[10.5px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.health.release_when", time: time_ago_in_words(release.created_at), environment: release.environment) %></p>
+    </div>
+  <% end %>
+
+  <div class="min-w-64 flex-[2] basis-64 bg-white dark:bg-zinc-900 px-4 py-3" data-test="health-slow-queries">
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.health.slow_queries") %></p>
+    <% if @health_slow_queries.any? %>
+      <ul class="mt-1 space-y-0.5">
+        <% @health_slow_queries.each do |group| %>
+          <%# CYRA-367 — la riga si legge per intero: cosa tocca e in che modo, non lo SQL tagliato
+              a metà. Un valore fuori scala porta il suo avviso invece di passare per un fatto. %>
+          <li class="text-[11px]"><%= link_to member_monitoring_metric_group_path(group), class: "flex items-center gap-2 text-gray-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "health-slow-query" } do %>
+            <span class="font-mono text-gray-500 dark:text-zinc-400 shrink-0"><%= metric_duration_label(group.average_duration_ms) %></span>
+            <span class="min-w-0 truncate"><%= group.query_label %></span>
+            <% if group.suspect_duration? %>
+              <span class="shrink-0 inline-flex items-center gap-1 rounded px-1.5 py-px text-[10px] font-semibold bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300"
+                    title="<%= t("metrics.slow_queries.suspect_hint") %>" data-test="health-slow-query-suspect">
+                <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[9px]") %><%= t("metrics.slow_queries.suspect") %>
+              </span>
+            <% end %>
+          <% end %></li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.health.none") %></p>
+    <% end %>
+    <% if @health_slow_queries_excluded.to_i.positive? %>
+      <p class="mt-1.5 text-[10.5px] text-gray-400 dark:text-zinc-500" data-test="health-slow-queries-excluded"><%= t("metrics.slow_queries.excluded", count: @health_slow_queries_excluded) %></p>
+    <% end %>
+  </div>
+</div>

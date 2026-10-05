@@ -1,0 +1,35 @@
+<%# locals: ticket, children %>
+<%# Ticket raccolti sotto un epic (CYRA-223). Card presente SOLO sugli epic: su un epic vuoto resta
+    visibile con lo stato "nessun ticket", perché lì l'assenza è un'informazione (l'epic non è ancora
+    stato riempito), mentre su un ticket qualsiasi la card non ha senso. %>
+<% if ticket.kind_epic? %>
+  <% closed = children.count { |child| child.status.category_done? } %>
+  <%# CYRA-883 — a part of the Connections section: sub-heading, no card of its own. %>
+  <div data-test="ticket-children">
+    <div class="px-4 pt-3 pb-1 flex items-center justify-between gap-2">
+      <h3 class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.children.title") %></h3>
+      <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="ticket-children-progress"><%= t("member.tickets.children.progress", closed: closed, total: children.size) %></span>
+    </div>
+    <% if children.empty? %>
+      <%= render Ui::EmptyNoteComponent.new(text: t("member.tickets.children.empty"), inset: true, test_id: "ticket-children-empty") %>
+    <% else %>
+      <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+        <% children.each do |child| %>
+          <div class="px-4 py-3 flex items-center gap-2.5" data-test="ticket-child-<%= child.id %>">
+            <%= render Ui::BadgeComponent.new(label: t("member.tickets.kind.#{child.kind}"), color: ticket_kind_color(child.kind), size: :sm) %>
+            <div class="min-w-0 flex-1">
+              <%= link_to member_ticket_path(child), class: "block group", data: { test: "ticket-child-link-#{child.id}" } do %>
+                <span class="inline-flex items-center gap-1.5 font-mono text-[10.5px] text-gray-500 dark:text-zinc-400">
+                  <%= render "member/tickets/agent_indicator", ticket: child %>
+                  <%= child.code %>
+                </span>
+                <span class="block text-[12.5px] text-zinc-900 dark:text-zinc-100 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400"><%= child.title %></span>
+              <% end %>
+            </div>
+            <%= render Ui::BadgeComponent.new(label: child.status.display_label, color: child.status.color, size: :sm, dot: true) %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

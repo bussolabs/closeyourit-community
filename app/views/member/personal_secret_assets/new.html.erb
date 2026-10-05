@@ -1,0 +1,30 @@
+<% content_for :title, t("member.personal_secret_assets.new_title") %>
+<div class="p-7">
+  <%= form_with url: member_personal_secret_assets_path, method: :post, multipart: true, class: "space-y-6", data: { test: "personal-secret-asset-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("member.personal_secret_assets.new_title"),
+          breadcrumb: [ { label: t("member.personal_secret_assets.title"), href: member_personal_secret_assets_path },
+                        { label: t("member.breadcrumb.new") } ]) do |header| %>
+      <% header.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.personal_secret_assets.cancel"), href: member_personal_secret_assets_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: t("member.personal_secret_assets.upload"), type: "submit", variant: :primary, size: :sm, icon: "check", test_id: "personal-secret-asset-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%= render Ui::InputComponent.new(name: "name", label: t("member.personal_secret_assets.name"), required: true, value: @asset.name, placeholder: "id_rsa", test_id: "personal-secret-asset-name") %>
+          <div class="md:col-span-2">
+            <label for="file" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.personal_secret_assets.file") %> <span class="text-red-500 dark:text-red-400">*</span></label>
+            <input type="file" name="file" id="file" required class="block w-full text-[13px] text-zinc-900 dark:text-zinc-100 file:mr-3 file:rounded-md file:border file:border-stone-200 dark:file:border-zinc-800 file:bg-white dark:file:bg-zinc-900 file:px-3 file:py-1.5 file:text-[12px] file:font-medium file:text-zinc-900 dark:file:text-zinc-100 hover:file:bg-stone-50 dark:hover:file:bg-zinc-800 file:cursor-pointer" data-test="personal-secret-asset-file">
+            <p class="mt-1.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.personal_secret_assets.file_hint") %></p>
+          </div>
+          <div class="md:col-span-2">
+            <%= render Ui::InputComponent.new(name: "description", label: t("member.personal_secret_assets.description"), value: @asset.description, test_id: "personal-secret-asset-description") %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

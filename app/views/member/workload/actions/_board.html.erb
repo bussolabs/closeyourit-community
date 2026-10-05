@@ -1,0 +1,24 @@
+<%# K9 — the board is one panel: the filter bar on top, a column per action status below. All the
+    actions are loaded, so a column counts its cards; with a search on, the total comes from the server. %>
+<%= render Ui::KanbanComponent.new(controller: "workload-board", test_id: "workload-board-panel", class: "md:border-b-0") do |board| %>
+  <% board.with_toolbar { render "member/workload/actions/board_toolbar" } %>
+  <% @columns.each do |status, actions| %>
+    <% label = t("member.workload.actions.status.#{status}") %>
+    <% found = (actions.size if @column_totals) %>
+    <% board.with_column(key: status, label: label, color: workload_status_color(status),
+          total: @column_totals ? @column_totals[status].to_i : actions.size, found: found, test_prefix: "workload-board",
+          list_id: "workload_board_column_#{status}", count_id: "workload_board_count_#{status}", has_cards: actions.any?,
+          collapsed: Workload::Constants::COLLAPSED_BOARD_STATUSES.include?(status), auto_collapsed: found&.zero?,
+          data: { status: status, status_label: label }) do |slot| %>
+      <% slot.with_empty do %>
+        <div class="flex flex-col items-center justify-center py-8 text-center text-gray-500 dark:text-zinc-400">
+          <%= render Ui::IconComponent.new(name: "circle", class: "text-[16px]") %>
+          <p class="mt-2 text-[11.5px]"><%= t("member.workload.actions.board.empty_column") %></p>
+        </div>
+      <% end %>
+      <% actions.each do |action| %>
+        <%= render "member/workload/actions/board_card", action: action, can_manage: true, highlight: params[:q] %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

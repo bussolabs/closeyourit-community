@@ -1,0 +1,20 @@
+<%= render Ui::SectionComponent.new(title: t("member.traces.related"), body_class: nil, test_id: "trace-related") do %>
+  <% if params[:span_id] %><p class="px-4 py-3 text-[12px] text-gray-500"><%= t("member.traces.related_span") %> <%= link_to t("member.traces.all_spans"), member_monitoring_trace_path(@trace), class: "text-indigo-700 dark:text-indigo-300" %></p><% end %>
+  <% [[:logs, @related.logs], [:errors, @related.errors]].each do |kind, page| %>
+    <details class="border-t border-stone-200 dark:border-zinc-800 p-4" data-test="trace-related-<%= kind %>">
+      <summary class="cursor-pointer text-[13px] font-medium"><%= t("member.traces.#{kind}") %> · <%= page.total %></summary>
+      <% if page.records.empty? %>
+        <%= render Ui::EmptyNoteComponent.new(text: t("member.traces.no_#{kind}"), class: "py-3") %>
+      <% else %>
+        <% page.records.each do |record| %>
+          <div class="border-b border-stone-100 dark:border-zinc-800 py-3 text-[12px]">
+            <% href = kind == :logs ? member_monitoring_log_entry_path(record) : member_monitoring_error_group_path(record.group_id) %>
+            <%= link_to(kind == :logs ? record.message : record.event_id, href, class: "break-all text-indigo-700 dark:text-indigo-300", data: {test: "trace-related-record"}) %>
+            <p class="font-mono text-gray-500 dark:text-zinc-400"><%= l(record.occurred_at, format: :long) %></p>
+          </div>
+        <% end %>
+        <%= render Ui::PaginationComponent.new(pagination: page, page_param: "#{kind}_page") %>
+      <% end %>
+    </details>
+  <% end %>
+<% end %>

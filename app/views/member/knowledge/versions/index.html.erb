@@ -1,0 +1,70 @@
+<% content_for :title, "#{t('member.knowledge.versions.title')} · #{@page.title}" %>
+
+<div class="p-7 space-y-6" data-test="knowledge-versions">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.knowledge.versions.title"),
+        subtitle: t("member.knowledge.versions.help_title"),
+        breadcrumb: [ { label: t("member.knowledge.title"), href: member_knowledge_pages_path },
+                      { label: @page.title, href: member_knowledge_page_path(@page) },
+                      { label: t("member.knowledge.versions.title") } ],
+        counts_test_id: "knowledge-versions-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.versions.stats_label"), value: @pagination.total, test_id: "knowledge-versions-count") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.knowledge.versions.back_to_page"), href: member_knowledge_page_path(@page), variant: :secondary_muted, size: :sm, icon: "arrow-left", test_id: "knowledge-versions-back") %>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="knowledge-versions-table">
+    <% if @versions.empty? %>
+      <%= render Ui::EmptyStateComponent.new(title: t("member.knowledge.versions.empty"), body: t("member.knowledge.versions.empty_body"),
+            icon: "history", test_id: "knowledge-versions-empty") %>
+    <% else %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.knowledge.versions.title"))) do |table| %>
+        <% table.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.versions.col_number"), sort: "number", initial: :desc) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.versions.col_author"), sort: "author") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.versions.col_date"), sort: "date", initial: :desc) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.versions.col_status"), sort: "status", initial: :desc) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: tag.span(t("member.knowledge.versions.restore"), class: "sr-only"), align: :right) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+        <% end %>
+        <% @versions.each do |version| %>
+          <% is_live = version.number == @live_number %>
+          <%= render Ui::TableComponent::RowComponent.new(href: member_knowledge_page_version_path(@page, version),
+                link_label: t("member.knowledge.versions.number_short", number: version.number), test_id: "knowledge-version-row") do %>
+            <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+              <%= link_to t("member.knowledge.versions.number_short", number: version.number), member_knowledge_page_version_path(@page, version), class: "text-[13px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400", data: { turbo_frame: "_top", test: "knowledge-version-link" } %>
+            <% end %>
+            <%= render Ui::TableComponent::CellComponent.new(label: t("member.knowledge.versions.col_author")) do %>
+              <span class="inline-flex items-center gap-1.5 text-[12.5px] text-gray-500 dark:text-zinc-400">
+                <% if version.author_name.present? %>
+                  <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-teal-50 dark:bg-teal-500/15 text-teal-600 dark:text-teal-400 text-[9px] font-semibold"><%= avatar_initials(version.author_name) %></span><%= version.author_name %>
+                <% else %>—<% end %>
+              </span>
+            <% end %>
+            <%= render Ui::TableComponent::CellComponent.new(label: t("member.knowledge.versions.col_date")) do %>
+              <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= l(version.created_at, format: :long) %></span>
+            <% end %>
+            <%= render Ui::TableComponent::CellComponent.new(label: t("member.knowledge.versions.col_status")) do %>
+              <% if is_live %><%= render Ui::BadgeComponent.new(label: t("member.knowledge.versions.live"), color: :green, dot: true) %><% end %>
+            <% end %>
+            <%= render Ui::TableComponent::CellComponent.new(actions: true, align: :right) do %>
+              <% if @can_edit && !is_live %>
+                <%= render Ui::ConfirmDialogComponent.new(title: t("member.knowledge.versions.restore_dialog.title", number: version.number),
+                      url: restore_member_knowledge_page_version_path(@page, version), method: :post,
+                      confirm_label: t("member.knowledge.versions.restore"),
+                      test_id: "knowledge-version-restore-dialog-#{version.id}") do |dialog| %>
+                  <% dialog.with_body { t("member.knowledge.versions.restore_dialog.body") } %>
+                  <%= dialog.button_trigger(label: t("member.knowledge.versions.restore"), variant: :secondary_muted, test_id: "knowledge-version-restore") %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "knowledge-versions-pagination")) %>
+  </div>
+</div>

@@ -1,0 +1,40 @@
+---
+it:
+  member:
+    projects:
+      tool_versions:
+        empty_body: Serve a sapere quale versione era in uso e da quando. Ogni nuova versione compare qui appena la fonte la segnala.
+    personal_secrets:
+      versions_empty_body: Serve a ritrovare i valori che questo segreto ha avuto. Ogni modifica aggiunge qui una versione.
+    secrets:
+      versions_empty_body: Serve a ritrovare i valori che questo segreto ha avuto e a tornare a uno precedente. Ogni modifica aggiunge qui una versione.
+    roles:
+      show_empty_body: I permessi dicono cosa può fare chi ha questo ruolo. Si aggiungono dal modulo di modifica.
+      empty_body: Un ruolo è un insieme di permessi. Lo dai a una persona o a un team, e decide cosa possono fare.
+    overviews:
+      overview_empty_body: Questa pagina raccoglie le sezioni dello spazio che puoi aprire. Se te ne serve una, chiedi l'accesso a chi gestisce l'organizzazione.
+    monitoring:
+      seo_sites:
+        show:
+          issues_empty_body: Qui compaiono i rilievi trovati nelle pagine del sito, cioè le cose da sistemare perché il sito si trovi meglio sui motori di ricerca.
+    crons:
+      setup_no_project_title: Nessun progetto disponibile
+    todo_lists:
+      empty_body: Una lista tiene insieme le cose da fare, da spuntare una alla volta. Puoi tenerla per te o condividerla.
+    product:
+      matrices:
+        empty_title: Nessun gruppo da mappare
+        empty_body: La matrice mostra quali funzionalità ha ogni prodotto, piattaforma per piattaforma. Parte da un gruppo, cioè i progetti di uno stesso prodotto.
+        empty_matrix_title: Nessuna funzionalità ancora
+        empty_matrix_body: Serve a vedere su quali piattaforme esiste ogni funzionalità. Crea una categoria e aggiungi la prima funzionalità.
+    shared_secrets:
+      empty_title: Nessuna variabile dell'organizzazione
+      empty_body: Servono per i valori usati da più progetti. Scrivi un valore per ogni ambiente e lo deleghi ai progetti che devono usarlo.
+    agents:
+      performance:
+        compare:
+          empty_body: Serve a mettere le misure di più macchine una accanto all'altra. Scegli le macchine qui sopra e premi Confronta.
+      tokens:
+        empty_body: Serve a una macchina per collegarsi e lavorare i ticket. Crealo dal modulo qui sopra.
+    teams:
+      empty_body: Un team raccoglie le persone che lavorano insieme. Gli dai uno o più ruoli e scegli su quali progetti valgono.

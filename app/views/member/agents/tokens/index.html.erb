@@ -1,0 +1,107 @@
+<% content_for :title, t("member.agents.tokens.title") %>
+
+<div class="p-7 space-y-6" data-test="member-agent-tokens">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.agents.tokens.title"),
+        subtitle: t("member.agents.tokens.help_title"),
+        breadcrumb: [ { label: t("member.agents.title"), href: member_agents_path },
+                      { label: t("member.agents.tokens.breadcrumb") } ],
+        counts_test_id: "agent-tokens-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.agents.tokens.stat_total"), value: @total_count, test_id: "agent-tokens-total") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.agents.tokens.stat_active"), value: @active_count, value_color: :emerald, test_id: "agent-tokens-active") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.agents.tokens.stat_revoked"), value: @total_count - @active_count, value_color: :gray, test_id: "agent-tokens-revoked") %>
+    <% end %>
+  <% end %>
+
+  <%# REVEAL-ONCE: il segreto del token automator è mostrato UNA sola volta %>
+  <% if @revealed %>
+    <div data-test="agent-token-reveal" class="rounded-lg border border-indigo-200 dark:border-indigo-500/40 bg-indigo-50/40 dark:bg-indigo-500/10">
+      <div class="flex items-center gap-2 px-4 py-3 border-b border-indigo-200 dark:border-indigo-500/40 flex-wrap">
+        <%= render Ui::IconComponent.new(name: "circle-check", class: "text-indigo-600 dark:text-indigo-400 text-[13px]") %>
+        <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.tokens.reveal_created", name: @revealed[:token].name) %></h3>
+        <span class="ml-auto inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-medium bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300"><%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[10px]") %><%= t("member.agents.tokens.copy_now") %></span>
+      </div>
+      <div class="px-4 py-4 space-y-3">
+        <div data-controller="clipboard" data-clipboard-copied-value="<%= t('member.agents.tokens.copied') %>">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.agents.tokens.secret") %></p>
+          <div class="mt-1.5 flex items-stretch gap-2">
+            <code data-clipboard-target="source" data-test="agent-token-secret" class="flex-1 min-w-0 truncate rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 font-mono text-[12px] text-zinc-800 dark:text-zinc-200"><%= @revealed[:secret] %></code>
+            <button type="button" data-action="clipboard#copy" class="inline-flex items-center gap-1.5 h-[37px] px-3 rounded-md text-[12px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800 shrink-0"><%= render Ui::IconComponent.new(name: "copy", class: "text-[12px] text-gray-400 dark:text-zinc-500") %><span data-clipboard-target="label"><%= t("member.agents.tokens.copy") %></span></button>
+          </div>
+        </div>
+        <div class="flex justify-end pt-1">
+          <%= link_to t("member.agents.tokens.close"), member_agents_tokens_path, class: "inline-flex items-center h-[30px] px-3 rounded-md text-[12px] font-medium text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100", data: { test: "agent-token-reveal-close" } %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%# CREATE FORM %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="agent-token-form">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.tokens.form_title") %></h3></div>
+    <%= form_with url: member_agents_tokens_path, method: :post, class: "px-4 py-4 flex flex-wrap items-end gap-4" do %>
+      <div class="w-64">
+        <label for="name" class="block font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.agents.tokens.form_name") %> <span class="text-rose-500">*</span></label>
+        <input type="text" name="name" id="name" value="<%= params[:name] %>" data-test="agent-token-name" placeholder="automator" class="w-full h-[34px] px-3 rounded-md border <%= @errors&.dig(:name) ? 'border-rose-300 dark:border-rose-500/50' : 'border-stone-200 dark:border-zinc-800' %> text-[13px] focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+        <% if @errors&.dig(:name) %><p class="mt-1 text-[11px] text-rose-600 dark:text-rose-400"><%= @errors[:name].first %></p><% end %>
+      </div>
+      <%= render Ui::ButtonComponent.new(label: t("member.agents.tokens.form_submit"), type: "submit", icon: "plus", test_id: "agent-token-submit") %>
+    <% end %>
+  </div>
+
+  <%# LISTA %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="agent-tokens-table">
+    <% if @tokens.empty? %>
+      <%= render Ui::EmptyStateComponent.new(title: t("member.agents.tokens.empty"), body: t("member.agents.tokens.empty_body"),
+            icon: "key", test_id: "agent-tokens-empty") %>
+    <% else %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.agents.tokens.title"))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.tokens.col_name"), sort: "name") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.tokens.col_prefix"), sort: "prefix") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.tokens.col_last_used"), sort: "last_used", initial: :desc, classes: "w-32") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.tokens.col_status"), sort: "status", classes: "w-24") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.tokens.revoke"), label_hidden: true, classes: "w-20") %>
+        <% end %>
+        <% @tokens.each do |token| %>
+          <%= render Ui::TableComponent::RowComponent.new(faded: token.revoked?, test_id: "agent-token-row") do %>
+            <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "font-medium text-zinc-900 dark:text-zinc-100")) { token.name } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.tokens.col_prefix"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { "#{token.token_prefix}…" } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.tokens.col_last_used"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { token.last_used_at ? l(token.last_used_at, format: :short) : t("member.agents.tokens.never_used") } %>
+            <%= render Ui::TableComponent::CellComponent.new(label: t("member.agents.tokens.col_status")) do %>
+              <%= render Ui::BadgeComponent.new(label: token.revoked? ? t("member.agents.tokens.status_revoked") : t("member.agents.tokens.status_active"), color: token.revoked? ? :gray : :emerald, dot: true) %>
+            <% end %>
+            <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+              <% unless token.revoked? %>
+                <%= render Ui::ConfirmDialogComponent.new(title: t("member.agents.tokens.revoke_dialog.title", name: token.name),
+                      url: member_agents_token_path(token), confirm_label: t("member.agents.tokens.revoke"),
+                      test_id: "agent-token-revoke-dialog-#{token.id}") do |dialog| %>
+                  <% dialog.with_body { t("member.agents.tokens.revoke_dialog.body") } %>
+                  <%= dialog.button_trigger(label: t("member.agents.tokens.revoke"), test_id: "agent-token-revoke-#{token.id}") %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "agent-tokens-pagination")) %>
+    <% end %>
+  </div>
+
+  <%# SNIPPET CONFIG AUTOMATOR %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="agent-tokens-snippet">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.tokens.snippet_title") %></h3></div>
+    <div class="px-4 py-4">
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.agents.tokens.lead") %></p>
+      <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.agents.tokens.snippet_lead") %></p>
+      <pre class="mt-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-4 py-3 font-mono text-[11.5px] leading-relaxed text-zinc-800 dark:text-zinc-200 overflow-x-auto"><code># ~/.config/closeyourit-automator/secrets.json
+{
+  "sync": {
+    "apiUrl": "<%= request.base_url %>",
+    "orgToken": "cyi_a_…"
+  }
+}</code></pre>
+    </div>
+  </div>
+</div>

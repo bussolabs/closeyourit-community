@@ -1,0 +1,5 @@
+<% content_for :title, t("member.knowledge.form.new_title") %>
+
+<div class="p-7">
+  <%= render "form", page: @page, url: member_knowledge_pages_path, method: :post %>
+</div>

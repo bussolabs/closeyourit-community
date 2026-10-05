@@ -1,0 +1,93 @@
+{
+  "it": {
+    "member": {
+      "guides": {
+        "measurements": {
+          "title": "Misure e avvisi",
+          "subtitle": "Leggi i valori raccolti e scegli quando ricevere un avviso.",
+          "cta": "Apri Misure",
+          "sections": {
+            "read": {
+              "title": "Scegli la serie da leggere",
+              "body": "In Misure trovi le serie inviate dai tuoi servizi: valori istantanei, somme e distribuzioni. Cerca il nome e filtra per progetto, servizio e ambiente. Un filtro per attributo distingue anche il tipo del valore; per una versione usa l’attributo della risorsa service.version, se inviato."
+            },
+            "values": {
+              "title": "Confronta valori dello stesso tipo",
+              "body": "Apri una serie e scegli periodo, intervallo e statistica disponibile. Per i valori istantanei puoi leggere ultimo valore, minimo e massimo; per le somme, somma e tasso; per le distribuzioni, conteggio, somma e percentile. Un intervallo senza dati resta sconosciuto: non vale zero."
+            },
+            "percentiles": {
+              "title": "Un percentile è una stima",
+              "body": "Il percentile di una distribuzione è accompagnato dai limiti inferiore e superiore. Non è un campione esatto. Quando l’intervallo della stima attraversa la soglia, il confronto resta sconosciuto: non basta che la sola stima la superi."
+            },
+            "alerts": {
+              "title": "Imposta una soglia sulla serie",
+              "body": "Dalla serie puoi aprire le regole collegate. Chi ha il permesso di gestire gli avvisi sceglie una statistica compatibile, il confronto, la soglia e una finestra tra 60 e 86400 secondi. Per un percentile viene confrontato l’intero intervallo della stima."
+            },
+            "missing": {
+              "title": "Distingui assenza di dati e rientro",
+              "body": "Dati mancanti o un risultato incerto non risolvono un avviso già attivo. Controlla il motivo mostrato e che il servizio stia inviando misure prima di interpretare il silenzio come un miglioramento."
+            }
+          }
+        },
+        "session_health": {
+          "title": "Sessioni",
+          "subtitle": "Confronta gli esiti delle sessioni per versione e ambiente.",
+          "cta": "Apri Sessioni",
+          "sections": {
+            "read": {
+              "title": "Scegli periodo e origine",
+              "body": "La pagina parte dagli ultimi 7 giorni e applica il periodo all’inizio della sessione. Filtra per progetto, ambiente e origine; la ricerca trova le versioni. I selettori mostrano fino a 200 valori. Le sessioni singole e i conteggi aggregati restano su righe separate: non sommarli come se fossero persone diverse."
+            },
+            "rate": {
+              "title": "Come leggere la percentuale senza crash",
+              "body": "Il numeratore comprende le sessioni concluse, quelle concluse con errori e quelle con errore non gestito. Il denominatore aggiunge le sessioni con crash. Quindi “senza crash” non significa “senza errori”."
+            },
+            "unknown": {
+              "title": "Gli esiti sconosciuti restano visibili",
+              "body": "Le sessioni ancora aperte e quelle terminate in modo anomalo sono escluse dalla percentuale. Se il denominatore è zero, il valore resta sconosciuto: non diventa 0% né 100%."
+            },
+            "deduplication": {
+              "title": "Controlla l’indicazione sui duplicati",
+              "body": "Le sessioni singole con un identificativo del produttore possono essere riconosciute tra invii successivi; senza identificativo la deduplicazione è parziale. Per i conteggi aggregati la pagina indica deduplicazione non disponibile: gli invii privi di un’identità stabile possono essere conteggiati più volte."
+            },
+            "limits": {
+              "title": "Salute delle sessioni, non registrazioni",
+              "body": "Questa pagina descrive gli esiti comunicati dall’applicazione. Non registra lo schermo e non ricostruisce ciò che ha fatto una persona. Invii mancanti o campionati possono rendere il quadro incompleto; le registrazioni, quando abilitate, sono una funzione separata."
+            }
+          },
+          "installation": "Per iniziare, collega un kit che supporti l’invio degli esiti di sessione e abilita il tracciamento nel kit. La guida di installazione aiuta a scegliere la configurazione del progetto.",
+          "installation_link": "Apri la guida di installazione"
+        },
+        "errors": {
+          "reconstruction": {
+            "title": "Ricostruire gli errori Java e nativi",
+            "body": "Per Java e Android serve la mappa ProGuard/R8 della stessa build, associata al progetto e alla versione corretti. Per i crash nativi servono simboli con identità della build e architettura corrispondenti. Caricare un file di un’altra build non ricostruisce lo stack ricevuto.",
+            "processors": "L’amministratore deve anche predisporre i servizi di elaborazione: RETRACE_PROCESSOR_URL per Java e NATIVE_SYMBOL_PROCESSOR_URL per i simboli nativi. Il solo aggiornamento di CloseYourIt non li attiva. Se il servizio o il file adatto manca, la pagina mostra il motivo. Per ricevere i crash nativi va abilitato anche CRASH_INGEST_ENABLED.",
+            "reading": "Nel dettaglio puoi confrontare lo stack originale con quello ricostruito. Se una posizione Java ha più interpretazioni, le alternative restano visibili: non viene dichiarata una certezza che manca. La presenza di simboli nativi non certifica il supporto di ogni sistema operativo o di ogni kit di raccolta."
+          }
+        },
+        "performance": {
+          "jobs": {
+            "title": "Leggere i lavori in background",
+            "body": "Quando il kit invia il contesto jobs/v1, un rallentamento può distinguere durata del tentativo, attesa in coda e ritardo programmato. Il valore principale rappresenta la misura indicata, non sempre il tempo di esecuzione. I tempi non osservati nel contesto restano sconosciuti; zero significa uno zero misurato.",
+            "outcomes": "Gli esiti del tentativo sono successo, errore, nuovo tentativo, scartato, revocato o sconosciuto. Un errore non dimostra che tutti i tentativi siano finiti. Il nuovo tentativo indica una ripetizione realmente riconosciuta; se non si conosce l’esito finale, questo resta sconosciuto.",
+            "grouping": "I contesti validi raggruppano per versione del contratto, framework, nome, coda e misura, rispettando il tipo di rallentamento. Identificativo, numero del tentativo ed esito non creano gruppi diversi. I gruppi storici non vengono riscritti.",
+            "limits": "Le misure inviate oltre una soglia non contano tutti i lavori eseguiti. I log di fine tentativo sono un segnale separato, da abilitare nel kit che li supporta; se disattivati, campionati o non consegnati non costituiscono una cronologia completa. Argomenti, risultati e intestazioni del lavoro non fanno parte del contesto."
+          }
+        },
+        "index": {
+          "measurements": {
+            "title": "Misure e avvisi"
+          },
+          "session_health": {
+            "title": "Sessioni"
+          }
+        },
+        "catalog": {
+          "measurements": "Leggi i valori raccolti e scegli quando ricevere un avviso.",
+          "session_health": "Confronta gli esiti delle sessioni per versione e ambiente."
+        }
+      }
+    }
+  }
+}

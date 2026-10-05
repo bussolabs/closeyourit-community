@@ -1,0 +1,34 @@
+<%# locals: total:, slow_query:, slow_method:, performance_issue:, total_duration:, active_kind:,
+    kinds_unfiltered: — pill di
+    conteggio nell'header lista. Il render (iniziale dal controller e al page-refresh Turbo di ogni viewer,
+    CYRA-41) usa SEMPRE lo scope visibile/filtrato per-viewer: i conteggi org-wide non si calcolano più nel
+    path caldo d'ingest. L'id #metrics_stats resta come ancora DOM per il morph (Idiomorph). total_duration
+    arriva in ms grezzi (somma delle durate totali): la formattazione (metric_total_duration_label) vive
+    QUI. CYRA-339: non più la media più alta (rumore da 1-2 casi), ma il tempo totale speso.
+
+    CYRA-815 — cinque numeri con lo stesso aspetto che parlavano di insiemi diversi: il totale seguiva i
+    filtri, gli altri quattro contavano tutta la storia dell'organizzazione, e si leggeva «Gruppi: 19»
+    accanto a «Query lente: 1.900». Ora contano tutti sullo stesso insieme filtrato, la somma delle tre
+    categorie È il totale, e ognuna è un filtro applicabile con un clic (stesso confine di CYRA-383 sugli
+    errori). Il tempo è l'eccezione DICHIARATA: i filtri scelgono quali gruppi sommare, ma la somma resta
+    il loro costo da quando esistono — l'etichetta lo dice, non lo lascia indovinare. %>
+<%# Wrapper display:contents (CYRA-70): le chip partecipano direttamente al flex del counts slot
+    (mt-2.5 una sola volta dall'header via counts_options) — niente flex annidato = niente mt-5.
+    id + data-test restano per il broadcast Turbo replace su #metrics_stats. %>
+<div id="metrics_stats" class="contents" data-test="metrics-stats">
+  <%# Il tipo di problema esce dall'indirizzo insieme alla categoria: è una sfaccettatura dei soli
+      «problemi di performance», e trascinarselo dietro su «query lente» darebbe un elenco vuoto
+      senza che nessuno l'abbia chiesto. %>
+  <% kind_url = ->(value) { member_monitoring_metric_groups_path(request.query_parameters.except("page", "subtype").merge(kind: value)) } %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.metrics.stat_groups"), value: total,
+        href: member_monitoring_metric_groups_path(request.query_parameters.except("kind", "subtype", "page")),
+        active: kinds_unfiltered, test_id: "stat-groups") %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.metrics.stat_slow_queries"), value: slow_query, value_color: :sky,
+        href: kind_url.call("slow_query"), active: active_kind == "slow_query", test_id: "stat-slow-queries") %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.metrics.stat_slow_methods"), value: slow_method, value_color: :violet,
+        href: kind_url.call("slow_method"), active: active_kind == "slow_method", test_id: "stat-slow-methods") %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.metrics.stat_performance_issues"), value: performance_issue, value_color: :amber,
+        href: kind_url.call("performance_issue"), active: active_kind == "performance_issue", test_id: "stat-performance-issues") %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.metrics.stat_total_duration"), value: metric_total_duration_label(total_duration),
+        value_color: :rose, title: t("member.metrics.stat_total_duration_title"), test_id: "stat-total-duration") %>
+</div>

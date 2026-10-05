@@ -1,0 +1,122 @@
+---
+en:
+  member:
+    nav:
+      datasets: Datasets
+    datasets:
+      title: Datasets
+      help_title: "Teach CloseYourIt the choices you always make the same way."
+      status_label: Status
+      schema_title: Columns
+      result: Result
+      new: New dataset
+      new_title: New dataset
+      edit_title: Edit dataset
+      create_action: Create dataset
+      save: Save
+      cancel: Cancel
+      edit: Edit
+      delete: Delete
+      delete_confirm: Delete this dataset and all its rows? This cannot be undone.
+      created: Dataset created.
+      updated: Dataset updated.
+      deleted: Dataset deleted.
+      empty: Teach CloseYourIt a choice you make by hand today
+      empty_body: "Example: every report that comes in has to be read and sorted — is it a fault or a new request? Show it a few dozen cases you have already sorted out yourself, and from then on you ask it: it answers, and you check the answer."
+      empty_note: "It has nothing to do with the machines that work on tickets: here you are the one asking, one case at a time, when you need it."
+      empty_guide: How it works
+      col_name: Name
+      col_project: Project
+      col_columns: Columns
+      col_status: Status
+      col_created: Created
+      counts:
+        total: Total
+        draft: Draft
+        trained: Ready
+        inputs: Inputs
+        targets: Targets
+        samples: Rows
+      status:
+        draft: Draft
+        trained: Ready
+      kinds:
+        text: Text
+        number: Number
+        category: Category
+        boolean: Boolean
+        photo: Photo
+      rows:
+        title: Rows
+        new: Add row
+        new_title: New row
+        edit_title: Edit row
+        edit: Edit
+        delete: Delete
+        delete_dialog:
+          title: "Delete row %{number}?"
+          body: "All its cells disappear, uploaded photos included. This cannot be undone."
+        empty: No rows yet. Add examples with inputs and expected results to train on.
+        col_actions: Actions
+        choose: Choose…
+        created: Row added.
+        updated: Row updated.
+        deleted: Row deleted.
+        photo_alt: "%{column} photo (row %{row})"
+        photo_preview_alt: "Current %{column} photo"
+      trainings:
+        title: Trainings
+        run: Train
+        empty: No training yet. Add labeled rows, then train an optimized prompt.
+        need_rows: Add at least a few labeled rows before training.
+        already_running: "A training on this dataset is already running: wait for it to finish before starting another."
+        started: Training started.
+        show_title: Training
+        status_label: Status
+        accuracy: Accuracy
+        running_hint: Building and evaluating the prompt… this may take a moment.
+        retry: Start a new training run
+        failed_generic: Training failed.
+        metrics_title: Accuracy per target
+        prompt_title: Optimized prompt
+        status:
+          pending: Pending
+          running: Running
+          done: Done
+          failed: Failed
+      predictions:
+        title: Predictions
+        run: Predict
+        new_title: Predict
+        show_title: Prediction
+        need_training: Train the dataset first, then you can predict.
+        started: Prediction started.
+        empty: No predictions yet. Add a new input to predict its results.
+        empty_untrained: Train the dataset first, then predict results for new inputs.
+        form_hint: Fill the inputs — the AI predicts the target attributes.
+        status_label: Status
+        running_hint: Running the prompt on your input…
+        failed_generic: Prediction failed.
+        predicted_title: Predicted attributes
+        input_title: Input
+        status:
+          pending: Pending
+          running: Running
+          done: Done
+          failed: Failed
+      form:
+        name: Name
+        description: Description
+        project: Project
+        project_placeholder: Choose a project…
+        columns_title: Columns
+        columns_hint: "Mark each column Input (given — e.g. the photo) or Target (an attribute the AI predicts). A dataset needs at least one Input and one Target."
+        options_placeholder: Comma-separated values (e.g. positive, negative)
+        add_column: Add column
+        remove_column: Remove column
+        no_columns: No columns yet. Add at least one Input (e.g. a photo) and one Target.
+        column_label_placeholder: Column name…
+        role_input: Input
+        role_target: Target
+        required: Required
+        locked: Columns can't be changed once the dataset has rows.

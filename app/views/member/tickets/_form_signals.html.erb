@@ -1,0 +1,22 @@
+<%# locals: () %>
+<%# What a new bug can be linked to: an open error and a slow operation of the selected project —
+    the same link "promote to ticket" writes. CSS shows the block only while the type is bug; the
+    server drops the choice for any other type (Ticketing::LinkSignals). %>
+<% if @error_groups.any? || @metric_groups.any? %>
+  <div class="hidden group-has-[input[name=kind][value=bug]:checked]/ticket:block px-4 py-3.5 space-y-4" data-test="ticket-signals">
+    <% if @error_groups.any? %>
+      <%= render Ui::SelectComponent.new(name: "error_group_id", label: t("member.tickets.form.error_group"),
+            options: @error_groups.map { |group| [ group.title.truncate(80), group.id ] }, include_blank: true,
+            selected: params[:error_group_id],
+            descriptions: @error_groups.to_h { |group| [ group.id.to_s, group.culprit ] },
+            placeholder: t("member.tickets.form.error_group_none"), test_id: "ticket-error-group") %>
+    <% end %>
+    <% if @metric_groups.any? %>
+      <%= render Ui::SelectComponent.new(name: "metric_group_id", label: t("member.tickets.form.metric_group"),
+            options: @metric_groups.map { |group| [ (group.kind_slow_query? ? group.query_label.to_s : group.title).truncate(80), group.id ] },
+            include_blank: true, selected: params[:metric_group_id],
+            placeholder: t("member.tickets.form.metric_group_none"), hint: t("member.tickets.form.signals_hint"),
+            test_id: "ticket-metric-group") %>
+    <% end %>
+  </div>
+<% end %>

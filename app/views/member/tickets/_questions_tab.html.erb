@@ -1,0 +1,36 @@
+<%# locals: (ticket:, questions:, can_manage:) %>
+<%# CYRA-782 — le domande hanno un posto loro, separato dalla discussione. Qui si chiede, si risponde
+    alla domanda che si nomina, e si ritira una domanda che non serve più. %>
+<%# CYRA-883 — no title (the tab names it): the open count sits by the form. Open questions first and
+    marked; answered and withdrawn ones folded at the bottom. %>
+<% open_questions, settled = questions.partition(&:open?) %>
+
+<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ticket-questions">
+  <%= render "member/tickets/question_form", ticket: ticket, can_manage: can_manage, open_count: open_questions.size %>
+
+  <% if questions.empty? %>
+    <div class="px-4 py-8">
+      <%= render Ui::EmptyStateComponent.new(icon: "circle-question-mark", title: t("member.tickets.questions.empty_title"),
+            body: t("member.tickets.questions.empty_body")) %>
+    </div>
+  <% else %>
+    <div class="divide-y divide-stone-200 dark:divide-zinc-800">
+      <% open_questions.each do |question| %>
+        <%= render "member/tickets/question", ticket: ticket, question: question, can_manage: can_manage %>
+      <% end %>
+    </div>
+    <% if settled.any? %>
+      <details class="group border-t border-stone-200 dark:border-zinc-800" data-test="ticket-questions-settled">
+        <summary class="list-none cursor-pointer px-4 py-2.5 flex items-center gap-2 text-[12px] font-medium text-gray-500 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden">
+          <%= render Ui::IconComponent.new(name: "chevron-right", class: "text-[9px] motion-safe:transition-transform group-open:rotate-90") %>
+          <%= t("member.tickets.questions.settled", count: settled.size) %>
+        </summary>
+        <div class="divide-y divide-stone-200 dark:divide-zinc-800 border-t border-stone-100 dark:border-zinc-800 opacity-70">
+          <% settled.each do |question| %>
+            <%= render "member/tickets/question", ticket: ticket, question: question, can_manage: can_manage %>
+          <% end %>
+        </div>
+      </details>
+    <% end %>
+  <% end %>
+</section>

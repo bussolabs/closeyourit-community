@@ -1,0 +1,17 @@
+<%# locals: (support_request:) %>
+<% state = support_request.handled? ? :handled : :pending %>
+<%= render Ui::TableComponent::RowComponent.new(faded: support_request.handled?, id: dom_id(support_request), test_id: "support-request-row") do %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.support_requests.col_when"), mono: true, class: "whitespace-nowrap text-gray-500 dark:text-zinc-400")) { l(support_request.created_at, format: :short) } %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= support_request.account.name.presence || support_request.account.email %></span>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.support_requests.col_organization"))) { support_request.organization&.name || t("valhalla.support_requests.no_organization") } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.support_requests.col_page"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { truncate(support_request.context["page"].to_s, length: 40) } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("valhalla.support_requests.col_request")) do %>
+    <%= link_to truncate(support_request.body, length: 90), valhalla_support_request_path(support_request),
+          class: "text-[13px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "support-request-open" } %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("valhalla.support_requests.col_status")) do %>
+    <%= render Ui::BadgeComponent.new(label: t("valhalla.support_requests.states.#{state}"), color: (state == :pending ? :amber : :green), dot: true) %>
+  <% end %>
+<% end %>

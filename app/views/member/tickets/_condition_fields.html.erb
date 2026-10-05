@@ -1,0 +1,20 @@
+<%# locals: (index:, condition: nil) %>
+<%# Una riga condizione DoD del repeater (nested-fields). %>
+<div class="flex items-center gap-2" data-nested-fields-target="row" data-test="ticket-condition-row">
+  <% if condition&.persisted? %>
+    <input type="hidden" name="conditions_attributes[<%= index %>][id]" value="<%= condition.id %>" data-field="id">
+  <% end %>
+  <input type="hidden" name="conditions_attributes[<%= index %>][_destroy]" value="0" data-nested-fields-target="destroy">
+
+  <%# CYRA-627 — punto neutro: nel modulo con cui SCRIVI il ticket una spunta verde non può
+      dire niente di vero. %>
+  <span class="shrink-0 text-gray-300 dark:text-zinc-600"><%= render Ui::IconComponent.new(name: "minus", class: "text-[11px]") %></span>
+  <input type="text" name="conditions_attributes[<%= index %>][text]" value="<%= condition&.text %>" data-field="text"
+         placeholder="<%= t("member.tickets.form.condition_placeholder") %>" data-test="ticket-condition-text"
+         class="flex-1 px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400 bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2">
+  <button type="button" data-action="nested-fields#remove" data-test="ticket-condition-remove"
+          aria-label="<%= t("member.tickets.form.condition_remove") %>"
+          class="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-md text-gray-400 dark:text-zinc-500 hover:bg-stone-100 dark:hover:bg-zinc-800 hover:text-red-600 dark:hover:text-red-400">
+    <%= render Ui::IconComponent.new(name: "x", class: "text-[13px]") %>
+  </button>
+</div>

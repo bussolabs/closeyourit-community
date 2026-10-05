@@ -1,0 +1,33 @@
+<%# locals: (report:, reports:, ticket:, previous: nil) %>
+<%# CYRA-265 — il resoconto di lavorazione, in sola lettura. Il markdown è RESO: le etichette
+    (**Fatto:**, **Rischi:**…) sono la forma prevista da closeyourit-writing.md.
+    Una versione non si riscrive mai (attr_readonly su Ticketing::Report): correggere un resoconto
+    significa scriverne uno nuovo. Per questo qui non c'è niente da modificare — solo da rileggere.
+    CYRA-389 — una stesura può essere la motivazione con cui il lavoro è stato respinto: porta
+    un'etichetta sua, o si leggerebbe come il racconto di un lavoro fatto. %>
+<%# CYRA-883 — no panel title: version, author and date on one line, earlier versions in a menu,
+    labels as section headings and what changed since the version before. %>
+<div class="flex flex-col gap-2.5">
+  <div class="flex items-center gap-x-3 gap-y-1 flex-wrap text-[12px] text-gray-500 dark:text-zinc-400" data-test="ticket-report-meta">
+    <% if reports.length > 1 %>
+      <%= render "member/tickets/report_versions_menu", report:, reports:, ticket: %>
+    <% else %>
+      <span class="font-mono text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.show.report_version", version: report.version) %></span>
+    <% end %>
+    <span><%= report.author_name.presence || t("member.tickets.show.report_unknown_author") %></span>
+    <span class="font-mono"><%= l(report.created_at, format: :short) %></span>
+    <% if report.source_review_rejection? %>
+      <span class="inline-flex items-center rounded-md bg-red-50 dark:bg-red-500/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.5px] text-red-600 dark:text-red-400"
+            data-test="ticket-report-rejection"><%= t("member.tickets.show.report_rejection") %></span>
+    <% end %>
+  </div>
+
+  <% if previous %>
+    <%= render "member/tickets/report_changes", report:, previous: %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ticket-report">
+    <%= render Ui::MarkdownComponent.new(text: report_with_sections(report.body),
+          class: "px-4 py-3.5 max-w-[70ch] prose-h4:font-mono prose-h4:text-[10px] prose-h4:font-medium prose-h4:uppercase prose-h4:tracking-[1.2px] prose-h4:text-gray-500 dark:prose-h4:text-zinc-400 prose-h4:mt-4 prose-h4:mb-1") %>
+  </div>
+</div>

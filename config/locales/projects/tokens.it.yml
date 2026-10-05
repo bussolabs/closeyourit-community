@@ -1,0 +1,14 @@
+it:
+  projects:
+    tokens:
+      notifications:
+        content:
+          title: "Il token %{name} del progetto %{project} (%{environment}) sta per scadere"
+          expired_title: "Il token %{name} del progetto %{project} (%{environment}) è scaduto"
+  activerecord:
+    errors:
+      models:
+        projects/token:
+          attributes:
+            expires_at:
+              must_be_in_future: "La scadenza deve essere nel futuro"

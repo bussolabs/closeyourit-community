@@ -1,0 +1,8 @@
+<%# With `href` it is a link (a filter one click away), otherwise static text.
+    With `trend` the value carries the change against the previous period. %>
+<% body = capture do %><% if numeric? %><span class="font-mono font-semibold <%= value_klass %>"><%= written_value %></span><%= trend_tag %> <span><%= word_label %></span><% else %><span><%= @label %>:</span> <span class="font-mono font-semibold <%= value_klass %>"><%= written_value %></span><%= trend_tag %><% end %><% end %>
+<% if @href %>
+  <%= link_to(body, @href, **html_options) %>
+<% else %>
+  <%= tag.span(body, **html_options) %>
+<% end %>

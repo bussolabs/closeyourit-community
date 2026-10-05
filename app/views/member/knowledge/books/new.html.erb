@@ -1,0 +1,5 @@
+<% content_for :title, t("member.knowledge.books.form.new_title") %>
+
+<div class="p-7">
+  <%= render "form", book: @book, url: member_knowledge_books_path, method: :post %>
+</div>

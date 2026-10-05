@@ -1,0 +1,107 @@
+---
+en:
+  member:
+    nav:
+      vulnerabilities: Vulnerabilities
+    guides:
+      index:
+        vulnerabilities:
+          title: Vulnerabilities
+      vulnerabilities:
+        title: Vulnerabilities
+        subtitle: How CloseYourIt finds security problems in the libraries you use.
+        what_title: What it checks
+        what_intro: Every night CloseYourIt reads the list of libraries in each project connected to a repository and compares it with the public database of known security problems.
+        what_libraries: Libraries for Ruby, JavaScript, Flutter and Go, including the ones pulled in by other libraries.
+        what_runtimes: Language versions that no longer receive security fixes, or that are about to stop.
+        what_alerts: An alert when something new shows up, and an automatic ticket for the serious ones.
+        setup_title: How to turn it on
+        step_connect_title: Connect the repository to the project
+        step_connect_body: The check works on projects that have a connected repository. Nothing to install in your code.
+        step_wait_title: Wait for the first check
+        step_wait_body: The first list appears after the nightly check. If you don't want to wait, you can ask for one right away from the page.
+        step_triage_title: Decide what to do
+        step_triage_body: For each entry you see the version to update to, when there is one. You can open a ticket or set aside the ones you have already assessed.
+        severity_title: Severity and tickets
+        severity_intro: "Severity comes from the public database and ranges from low to critical. Some entries are unclassified: nobody has assessed their weight yet."
+        severity_ticket: The automatic ticket only fires for high and critical vulnerabilities. The others stay in the list, and you open the ticket when you decide to act.
+        severity_ignore: "If you choose to live with a risk, mark it as ignored: it will not come back at the next check."
+    monitoring:
+      vulnerabilities:
+        title: Vulnerabilities
+        help_title: "Libraries with known security problems and languages no longer fixed."
+        empty: No known vulnerabilities in the projects you can see.
+        empty_hint: The check runs every night on projects connected to a repository.
+        no_results_body:
+          zero: No open vulnerabilities right now.
+          one: "There is %{count} open vulnerability, but it is not part of what you asked for."
+          other: "There are %{count} open vulnerabilities, but none are part of what you asked for."
+        unverified:
+          title:
+            one: "Incomplete check: one dependency file could not be read"
+            other: "Incomplete check: %{count} dependency files could not be read"
+          body: Known vulnerabilities from those files stay on the list. They only disappear after a successful read proves they are gone.
+          more:
+            one: and one more
+            other: and %{count} more
+        ticket_title: "%{severity} · %{package} (%{advisory})"
+        tabs:
+          dependencies: Libraries
+          runtimes: Languages
+        severity:
+          unknown: Unclassified
+          low: Low
+          moderate: Moderate
+          high: High
+          critical: Critical
+        status:
+          open: Open
+          resolved: Resolved
+          ignored: Ignored
+        state:
+          supported: Supported
+          ending_soon: Ending soon
+          eol: End of life
+        stats:
+          open: Open
+          critical: Open critical
+          high: Open high
+          ignored: Ignored
+          runtimes_eol: End of life
+          last_scan: Last scan
+          never_scanned: never
+        columns:
+          package: Library
+          severity: Severity
+          advisory: Reference
+          fixed_version: Fixed in
+          project: Project
+          manifest: File
+          last_seen: Seen
+          runtime: Language
+          version: In use
+          latest: Latest
+          eol_on: End of support
+        seen_ago: "%{time} ago"
+        fixed_version_none: No fixed version
+        no_fix_hint: "No release fixes it yet: ignore it until one exists, or open a ticket to replace the library."
+        direct: Direct
+        transitive: Indirect
+        actions:
+          ignore: Ignore
+          reopen: Reopen
+          promote: Open ticket
+          rescan: Check now
+        notices:
+          ignored: Vulnerability ignored.
+          reopened: Vulnerability reopened.
+          promoted: Ticket created.
+          rescan_started: "Check started: the list will be updated shortly."
+        errors:
+          promote_failed: The ticket could not be created.
+        show:
+          summary: Description
+          details: Details
+          references: Learn more
+          affected_package: Affected library
+          no_summary: The public database provides no description for this vulnerability.

@@ -1,0 +1,40 @@
+<%= render Ui::SectionComponent.new(title: t("member.knowledge.show.links_title"), body_class: nil,
+      test_id: "knowledge-links") do %>
+  <% if @links.none? && @backlinks.none? %>
+    <% example = tag.code("[[#{t("member.knowledge.form.links_hint_example")}]]",
+          class: "mt-1.5 inline-block rounded border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-1 py-0.5 font-mono text-[11px] text-zinc-700 dark:text-zinc-300") %>
+    <%= render Ui::EmptyNoteComponent.new(text: t("member.knowledge.show.links_empty"),
+          hint: safe_join([ t("member.knowledge.show.links_syntax"), tag.br, example ]),
+          inset: true, test_id: "knowledge-links-empty") %>
+  <% else %>
+    <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% if @links.any? %>
+        <div class="px-4 py-3.5" data-test="knowledge-links-outgoing">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.show.links_outgoing") %></p>
+          <ul class="mt-1.5 space-y-1.5">
+            <% @links.each do |link| %>
+              <li class="flex items-baseline gap-1.5">
+                <%= link_to link.related.title, member_knowledge_page_path(link.related), class: "text-[12.5px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" %>
+                <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= link.related.projects.find { |project| @visible_project_ids.include?(project.id) }&.key %></span>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <% if @backlinks.any? %>
+        <div class="px-4 py-3.5" data-test="knowledge-links-incoming">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.show.links_incoming") %></p>
+          <ul class="mt-1.5 space-y-1.5">
+            <% @backlinks.each do |link| %>
+              <li class="flex items-baseline gap-1.5">
+                <%= link_to link.page.title, member_knowledge_page_path(link.page), class: "text-[12.5px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" %>
+                <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= link.page.projects.find { |project| @visible_project_ids.include?(project.id) }&.key %></span>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

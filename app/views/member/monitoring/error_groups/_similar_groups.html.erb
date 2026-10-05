@@ -1,0 +1,16 @@
+<%= render Ui::SectionComponent.new(title: t("member.monitoring.similar_same_message.title", count: @similar_groups.size + 1),
+      tone: :amber, tag: :section, body_class: nil, test_id: "error-similar-same-message") do |section| %>
+  <% section.with_subtitle do %>
+    <p class="mt-0.5 text-[12px] text-gray-600 dark:text-zinc-400"><%= t("member.monitoring.similar_same_message.basis") %></p>
+  <% end %>
+  <ul class="divide-y divide-amber-100 dark:divide-amber-500/20">
+    <% @similar_groups.each do |similar| %>
+      <li class="px-4 py-2.5" data-test="error-similar-row">
+        <%= link_to member_monitoring_error_group_path(similar), class: "flex items-center justify-between gap-3 group" do %>
+          <span class="min-w-0 font-mono text-[11.5px] text-gray-600 dark:text-zinc-400 truncate group-hover:text-indigo-700 dark:group-hover:text-indigo-300"><%= similar.culprit.presence || t("member.monitoring.similar_same_message.no_culprit") %></span>
+          <span class="shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= number_with_delimiter(similar.events_count) %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

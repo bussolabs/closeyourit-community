@@ -1,0 +1,7 @@
+<%# locals: () %>
+<%# Every guide page: the index of the guides on the left, the open guide on the right. %>
+<%= render layout: "member/side_shell", locals: {
+      name: "guides", title: t("member.guides.index.title"), subtitle: t("member.guides.index.help_title"),
+      sections: guides_nav } do %>
+  <%= yield %>
+<% end %>

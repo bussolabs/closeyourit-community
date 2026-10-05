@@ -1,0 +1,26 @@
+<%# locals: active_tab, open_count, critical_count, high_count, ignored_count, runtimes_eol_count %>
+<%# Header condiviso dalle due tab della sezione (Librerie + Linguaggi): stesse chip, cambia solo la
+    tab attiva. Stesso pattern di member/monitoring/_uptime_header.
+
+    CYRA-565 — le prime tre chip contano le sole APERTE, la tabella sotto mostra ogni stato: il nome
+    deve dirlo, altrimenti «Totale: 0» sta sopra otto righe e «Alte: 0» sopra sette righe «Alta», e
+    chi legge non sa quale dei due numeri sia vero. %>
+<%= render Ui::PageHeaderComponent.new(
+      title: t("member.monitoring.vulnerabilities.title"),
+      subtitle: t("member.monitoring.vulnerabilities.help_title"),
+      breadcrumb: [ { label: t("member.monitoring.vulnerabilities.title") } ],
+      counts_test_id: "vulnerabilities-counts", tabs_test_id: "vulnerabilities-tabs") do |h| %>
+  <% h.with_counts do %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.vulnerabilities.stats.open"), value: open_count, test_id: "vulnerabilities-stat-open") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.vulnerabilities.stats.critical"), value: critical_count, value_color: (critical_count.to_i.positive? ? :rose : :neutral), test_id: "vulnerabilities-stat-critical") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.vulnerabilities.stats.high"), value: high_count, value_color: (high_count.to_i.positive? ? :amber : :neutral), test_id: "vulnerabilities-stat-high") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.vulnerabilities.stats.ignored"), value: ignored_count, test_id: "vulnerabilities-stat-ignored") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.vulnerabilities.stats.runtimes_eol"), value: runtimes_eol_count, value_color: (runtimes_eol_count.to_i.positive? ? :rose : :neutral), test_id: "vulnerabilities-stat-runtimes-eol") %>
+    <%# F084 — G5: when the numbers were last checked. %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.vulnerabilities.stats.last_scan"),
+          value: (@last_scan_at ? t("member.monitoring.vulnerabilities.seen_ago", time: time_ago_in_words(@last_scan_at)) : t("member.monitoring.vulnerabilities.stats.never_scanned")),
+          test_id: "vulnerabilities-stat-last-scan") %>
+  <% end %>
+  <% h.with_tab(label: t("member.monitoring.vulnerabilities.tabs.dependencies"), href: member_monitoring_vulnerabilities_path, active: active_tab.to_s == "dependencies", icon: "shield-half", test_id: "vulnerabilities-tab-dependencies") %>
+  <% h.with_tab(label: t("member.monitoring.vulnerabilities.tabs.runtimes"), href: runtimes_member_monitoring_vulnerabilities_path, active: active_tab.to_s == "runtimes", icon: "hourglass", test_id: "vulnerabilities-tab-runtimes") %>
+<% end %>

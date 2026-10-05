@@ -1,0 +1,43 @@
+en:
+  valhalla:
+    integrations:
+      title: Integrations
+      save: Save
+      updated: Integrations saved.
+      value_hint: "Empty = the server variable %{variable} is used."
+      secret_hint: "Never shown. Empty = the saved one stays, or the server variable %{variable}."
+      sources:
+        valhalla: Valhalla
+        environment: Server
+        missing: Not set
+      groups:
+        github:
+          title: GitHub App
+          hint: The GitHub app organizations use to connect their repositories. It needs the ID, private key, client ID and client secret.
+        telegram:
+          title: Telegram bot
+          hint: The bot that sends personal notifications on Telegram.
+      fields:
+        gh_app_id: App ID
+        gh_app_slug: App name in the address
+        gh_app_client_id: Client ID
+        gh_app_client_secret: Client secret
+        gh_app_private_key: Private key (PEM)
+        gh_webhook_secret: Webhook secret
+        telegram_bot_username: Bot name
+        telegram_bot_token: Bot token
+        telegram_webhook_secret: Webhook secret
+      generate:
+        title: Generate a webhook secret
+        hint: Creates a new secret and shows it once, to copy right away.
+        gh_webhook_secret: Generate the GitHub webhook secret
+        telegram_webhook_secret: Generate the Telegram webhook secret
+        confirm: Generate
+        warning:
+          gh_webhook_secret: The current secret stops working at once. Until you paste the new one in the GitHub App settings, GitHub events are refused.
+          telegram_webhook_secret: The current secret stops working at once. Until you register the bot webhook again, messages from Telegram are refused.
+      generated:
+        title: Copy the secret now
+        body:
+          gh_webhook_secret: Paste it in the "Webhook secret" field of the GitHub App settings. It will not be shown again.
+          telegram_webhook_secret: Register the bot webhook again with this secret. It will not be shown again.

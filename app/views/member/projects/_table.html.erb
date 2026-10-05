@@ -1,0 +1,29 @@
+<%# Vista Table della lista progetti. Locale can_manage (kebab Edit/Delete solo admin/owner). %>
+<div data-test="projects-table">
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <%= render "toolbar" %>
+    <% if @projects.empty? %>
+      <div class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="projects-no-match"><%= t("member.projects.no_match") %></div>
+    <% else %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.projects.title"))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.projects.col_project"), sort: "name") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.projects.col_key"), sort: "key", classes: "w-20") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.projects.col_description"), sort: "description") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.projects.col_group"), sort: "group") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.projects.col_tickets"), sort: "tickets", initial: :desc, align: :right) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.projects.col_todo"), sort: "open", initial: :desc, align: :right) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: tag.span(t("member.projects.edit"), class: "sr-only"), classes: "w-10", visible: can_manage) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+        <% end %>
+        <% @projects.each do |project| %>
+          <%= render "project_row", project: project,
+                     total: @ticket_totals[project.id].to_i,
+                     open: @ticket_counts[project.id]&.todo || 0,
+                     can_manage: can_manage %>
+        <% end %>
+      <% end %>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "projects-pagination")) %>
+    <% end %>
+  </div>
+</div>

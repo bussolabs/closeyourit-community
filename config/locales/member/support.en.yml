@@ -1,0 +1,52 @@
+en:
+  support:
+    mailer:
+      subject: "New support request from %{name}"
+      overline: Support
+      intro: "%{name} sent a support request."
+      organization: Organization
+      page: Page
+      version: Version
+      action: Open in Valhalla
+  member:
+    support:
+      button: Support
+      footer_open:
+        one: "%{count} open"
+        other: "%{count} open"
+      title: Support
+      subtitle: Tell us what is not working. We answer by email.
+      back: Back to the page
+      send: Send request
+      context_title: Sent with your request
+      context_note: "This is all we attach: no secrets, no passwords, nothing you typed elsewhere."
+      form_title: Your request
+      body_label: What happened
+      body_placeholder: Write it in your own words, or press the microphone and say it.
+      draft_hint: Your text stays here if you go back to the page.
+      sent_title: Request sent
+      sent_body: "We got it, with the page you were on. The answer comes to %{email}."
+      mine: "My requests"
+      mine_title: "My support requests"
+      mine_subtitle: "What you sent from the Support button, and whether someone took care of it."
+      mine_count: "requests"
+      mine_empty_title: "No request sent yet"
+      mine_empty_body: "Press Support at the bottom of any page to tell us what is not working."
+      col_when: "Sent"
+      col_page: "Page"
+      col_request: "Request"
+      col_status: "Status"
+      state_pending: "Open"
+      state_handled: "Handled"
+      context:
+        page: Page
+        page_title: Page title
+        organization: Organization
+        account: Account
+        role: Role
+        version: Version
+        browser: Browser
+        window: Window
+        theme: Theme · language
+        time: Time
+        request_id: Request id

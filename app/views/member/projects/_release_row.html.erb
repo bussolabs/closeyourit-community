@@ -1,0 +1,11 @@
+<%# locals: (release:, test_id:) %>
+<div class="flex items-center gap-2.5 px-4 py-2.5" data-test="<%= test_id %>">
+  <span class="font-mono text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= release.display_version %></span>
+  <%= render Ui::BadgeComponent.new(label: release.environment, color: environment_badge_color(release.environment), size: :sm, dot: true, test_id: "project-release-environment") %>
+  <% if release.current? %>
+    <%= render Ui::BadgeComponent.new(label: t("member.projects.show.release_live"), color: "emerald", size: :sm, dot: true, test_id: "project-release-live") %>
+  <% end %>
+  <% if release.sha.present? %><span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= release.sha.first(7) %></span><% end %>
+  <span class="ml-auto whitespace-nowrap font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= release.events_count %> <%= t("member.projects.show.releases_events") %></span>
+  <span class="whitespace-nowrap font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= release.last_event_at ? l(release.last_event_at, format: :short) : (release.build_time ? l(release.build_time, format: :short) : "—") %></span>
+</div>

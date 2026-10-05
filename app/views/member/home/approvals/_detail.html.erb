@@ -1,0 +1,49 @@
+<%# locals: card (Home::Approvals::Detail::Card) %>
+<%# Il testo per esteso di ciò su cui si decide. Ogni famiglia ha la sua forma: un piano si legge
+    come un piano, una domanda come una domanda. L'intestazione invece è comune — codice, progetto,
+    fase, e il link per andare all'originale se serve il contesto completo. %>
+<header class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-start justify-between gap-3">
+  <div class="min-w-0">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 truncate" data-test="approvals-detail-title">
+      <%= card.ticket? ? "#{card.ticket.code} · #{card.ticket.title}" : card.record.name %>
+    </h2>
+    <p class="mt-0.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400">
+      <%= card.project&.key || card.project&.name %>
+      <% if card.phase.present? %> · <%= automation_phase_label(card.phase) %><% end %>
+    </p>
+    <%# CYRA-504 — quale build è già in giro: prima di autorizzare la produzione è la cosa da sapere,
+        e senza il tag si autorizzerebbe alla cieca. Stava nella riga della pila (Queue#subtitle_for);
+        con la plancia al posto della pila (CYRA-592) va scritto QUI, dove si decide. Il tag manca
+        quando il tentativo di staging non l'ha registrato: si dichiara il buco invece di mostrare un
+        dato plausibile e sbagliato — l'ultima release del progetto, che con due lavorazioni in
+        parallelo è di un altro ticket. %>
+    <%# CYRA-610 — su un piano da approvare si legge PRIMA di premere che cosa quel «sì» fissa: su
+        quale archivio il lavoro potrà nascere, e qual è la prova che dirà «fatto». Sono le due
+        decisioni che l'approvazione congela e che poi non cambiano più. %>
+    <% if card.phase == "awaiting_approval" && card.ticket? %>
+      <% approval_freeze_lines(card.ticket).each do |row| %>
+        <p class="mt-0.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="approvals-detail-freeze"><%= row %></p>
+      <% end %>
+      <%# Manca un pezzo: l'approvazione funziona lo stesso, ma alla fine sarà una persona a dire
+          «fatto». Va detto qui, non scoperto alla porta d'uscita. %>
+      <% if (warning = approval_freeze_warning(card.ticket)) %>
+        <p class="mt-1 text-[11.5px] text-red-600 dark:text-red-400" data-test="approvals-detail-freeze-warning"><%= warning %></p>
+      <% end %>
+    <% end %>
+  </div>
+  <div class="flex items-center gap-1.5 shrink-0">
+    <%# CYRA-591 — la stessa cosa a tutta pagina, dove il piano ha la larghezza che gli serve: qui
+        dentro arriva schiacciato in una colonna, e su un documento da mille parole si vede. %>
+    <%# Solo icona: la colonna centrale è stretta e il titolo accanto è `truncate` — due etichette
+        intere lo schiacciano a poche lettere, codice del ticket compreso. L'etichetta resta come
+        aria-label e come suggerimento al passaggio del mouse. %>
+    <%= render Ui::ButtonComponent.new(label: t("member.approvals.show.open_full"),
+          href: approval_item_path(card), variant: :secondary_muted, size: :sm, icon_only: true,
+          icon: "maximize-2", test_id: "approvals-open-full") %>
+    <%= render Ui::ButtonComponent.new(label: t("member.approvals.open_source"), href: card.url,
+          variant: :secondary_muted, size: :sm, icon: "arrow-up-right-from-square",
+          test_id: "approvals-open-source") %>
+  </div>
+</header>
+
+<%= render "member/home/approvals/body", card: card, density: :compact %>

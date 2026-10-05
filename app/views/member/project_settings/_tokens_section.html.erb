@@ -1,0 +1,34 @@
+<%# CYRA-883 — the ingest tokens, moved here from their own tab. The tooltip text is part of the subtitle. %>
+<%= render Ui::SectionComponent.new(title: t("member.tokens.section_title"), body_class: nil, id: "tokens",
+      class: "scroll-mt-4", test_id: "project-settings-tokens") do |section| %>
+  <% section.with_subtitle do %>
+    <p class="mt-1 max-w-3xl text-[12.5px] leading-relaxed text-gray-600 dark:text-zinc-400"><%= t("member.tokens.section_lead_html") %> <%= t("member.tokens.help_ingest") %></p>
+  <% end %>
+
+  <%# REVEAL-ONCE: the bearer secret is shown only here, right after creation. %>
+  <% if @revealed %>
+    <%= render "member/project_settings/token_reveal" %>
+  <% end %>
+
+  <%# The project ID is not a secret and the gem needs it every time, not only at creation. %>
+  <div class="flex flex-wrap items-center gap-2 border-b border-stone-200 dark:border-zinc-800 px-4 py-3" data-test="project-id"
+       data-controller="clipboard" data-clipboard-copied-value="<%= t("member.tokens.reveal.copied") %>">
+    <span class="font-mono text-[9.5px] uppercase tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.tokens.reveal.project_id") %></span>
+    <code data-clipboard-target="source" class="min-w-0 truncate rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2.5 py-1 font-mono text-[12px] text-zinc-800 dark:text-zinc-200"><%= @project.id %></code>
+    <button type="button" data-action="clipboard#copy" class="inline-flex h-[28px] items-center gap-1.5 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2.5 text-[12px] font-medium text-gray-600 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800">
+      <%= render Ui::IconComponent.new(name: "copy", class: "text-[11px] text-gray-400 dark:text-zinc-500") %><span data-clipboard-target="label"><%= t("member.tokens.reveal.copy") %></span>
+    </button>
+  </div>
+
+  <% if @environments.any? %>
+    <%= render "member/project_settings/token_form" %>
+  <% else %>
+    <div class="flex flex-wrap items-center gap-2 border-b border-amber-200 dark:border-amber-500/40 bg-amber-50/50 dark:bg-amber-500/10 px-4 py-3" data-test="token-no-environments">
+      <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[12px] text-amber-600 dark:text-amber-400") %>
+      <p class="text-[12.5px] text-amber-800 dark:text-amber-200"><%= t("member.tokens.no_environments") %></p>
+      <%= link_to t("member.tokens.declare_environments"), edit_member_project_path(@project), class: "text-[12px] font-semibold text-amber-800 dark:text-amber-200 underline hover:text-amber-900 dark:hover:text-amber-200", data: { test: "token-declare-environments" } %>
+    </div>
+  <% end %>
+
+  <%= render "member/project_settings/tokens_list" %>
+<% end %>

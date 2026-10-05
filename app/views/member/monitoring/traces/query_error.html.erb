@@ -1,0 +1,6 @@
+<% content_for :title, t("member.traces.title") %>
+<div class="p-7">
+  <%= render Ui::EmptyStateComponent.new(title: t("member.traces.query_error"), body: t("member.traces.query_error_body"), icon: "circle-alert", framed: true, test_id: "traces-query-error") do |state| %>
+    <% state.with_action do %><%= render Ui::ButtonComponent.new(href: member_monitoring_traces_path, label: t("member.traces.reset"), variant: :secondary) %><% end %>
+  <% end %>
+</div>

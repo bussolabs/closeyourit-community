@@ -1,0 +1,79 @@
+<%# locals: monitor:, incident:, can_manage: — timeline degli step dell'incident narrato + azioni
+    (separa il raggruppamento, elimina uno step). button_to = form autonomo (la tabella NON è un form). %>
+<div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50/60 dark:bg-zinc-800/60 p-3" data-test="incident-timeline">
+  <div class="flex items-center gap-2 mb-2">
+    <span class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.incident.timeline") %></span>
+    <% if incident.grouped? %>
+      <span class="font-mono text-[10px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.incident.grouped_note") %></span>
+    <% end %>
+    <% if can_manage && incident.grouped? %>
+      <%# Ungroup con scelta della finestra che conserva lo status (narrazione): dialog con radio,
+          default = primary. Submit → DELETE groups#destroy con keep_incident_id. %>
+      <% windows = [ incident, *incident.children.sort_by(&:started_at) ] %>
+      <div class="ml-auto" data-controller="ui--dialog">
+        <button type="button" data-action="ui--dialog#open" data-test="incident-ungroup"
+                class="inline-flex items-center h-6 px-2 rounded text-[11px] text-gray-500 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-800">
+          <%= t("member.uptime.incident.ungroup") %>
+        </button>
+        <%= render Ui::ModalComponent.new(title: t("member.uptime.incident.ungroup_title"), size: :sm,
+              form: { url: member_monitoring_monitor_incident_group_path(monitor, incident), method: :delete },
+              test_id: "incident-ungroup-dialog",
+              data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+          <% modal.with_actions do %>
+            <%= render Ui::ButtonComponent.new(label: t("shared.actions_cancel"), variant: :secondary_muted, size: :sm,
+                  data: { action: "ui--dialog#close" }) %>
+            <%= render Ui::ButtonComponent.new(label: t("member.uptime.incident.ungroup"), type: "submit", variant: :primary, size: :sm,
+                  icon: "ungroup", test_id: "incident-ungroup-submit") %>
+          <% end %>
+          <div class="space-y-3">
+            <p class="text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.incident.ungroup_keep_hint") %></p>
+            <div class="space-y-1.5" data-test="incident-ungroup-windows">
+              <% windows.each do |window| %>
+                <label class="flex items-center gap-2.5 rounded-md border border-stone-200 dark:border-zinc-800 px-3 py-2 cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-800">
+                  <input type="radio" name="keep_incident_id" value="<%= window.id %>" <%= "checked" if window.id == incident.id %>
+                         data-test="incident-ungroup-window"
+                         class="h-3.5 w-3.5 border-stone-300 dark:border-zinc-700 text-indigo-600 dark:text-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400">
+                  <span class="font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= window.started_at.strftime("%d/%m %H:%M") %></span>
+                  <% if window.id == incident.id %>
+                    <%= render Ui::BadgeComponent.new(label: uptime_phase_label(incident.phase), color: uptime_phase_color(incident.phase), size: :sm) %>
+                    <span class="ml-auto font-mono text-[10px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.incident.keep_current") %></span>
+                  <% end %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# sort in memoria sui record già preloadati (:updates): .chronological rifarebbe una query per riga (N+1) %>
+  <% updates = incident.updates.sort_by { |update| [ update.created_at, update.id ] } %>
+  <% if updates.any? %>
+    <ol class="space-y-2.5">
+      <% updates.each do |update| %>
+        <li class="flex items-start gap-2.5" data-test="incident-update">
+          <span class="mt-0.5 flex items-center justify-center w-5 h-5 rounded-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shrink-0">
+            <%= render Ui::IconComponent.new(name: uptime_phase_icon(update.phase), class: "text-[9px] text-gray-500 dark:text-zinc-400") %>
+          </span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <%= render Ui::BadgeComponent.new(label: uptime_phase_label(update.phase), color: uptime_phase_color(update.phase), size: :sm) %>
+              <span class="font-mono text-[10px] text-gray-500 dark:text-zinc-400"><%= update.created_at.strftime("%d/%m %H:%M") %></span>
+              <% if can_manage %>
+                <%= button_to t("member.uptime.incident.delete_step"), member_monitoring_monitor_incident_update_path(monitor, incident, update),
+                      method: :delete, class: "ml-auto text-[10px] text-gray-500 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400",
+                      data: { turbo_confirm: t("member.uptime.incident.delete_step_confirm"), test: "incident-update-delete" } %>
+              <% end %>
+            </div>
+            <% if update.body.present? %>
+              <%= render Ui::MarkdownComponent.new(text: update.body, class: "mt-0.5 text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed") %>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ol>
+  <% else %>
+    <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.incident.no_updates") %></p>
+  <% end %>
+</div>

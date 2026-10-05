@@ -1,0 +1,9 @@
+en:
+  activerecord:
+    # Human field names for the KB page: they show up in the full_messages surfaced in flashes and
+    # CLI responses (e.g. "Body is over the 4,000 character limit…").
+    attributes:
+      knowledge/page:
+        title: Title
+        body: Body
+        tech_spec: Technical section

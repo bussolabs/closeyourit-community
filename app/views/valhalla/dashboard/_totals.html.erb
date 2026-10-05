@@ -1,0 +1,22 @@
+<%# The platform's four totals as one strip of cells split by lines; each carries its 7-day growth. %>
+<% cells = [
+     { key: "accounts", label: t("valhalla.dashboard.accounts"), value: @accounts_count, growth: @signals.accounts_last_7_days },
+     { key: "organizations", label: t("valhalla.dashboard.organizations"), value: @organizations_count, growth: @signals.organizations_last_7_days },
+     { key: "tickets", label: t("valhalla.dashboard.tickets"), value: @tickets_count, growth: @signals.tickets_last_7_days },
+     { key: "god", label: t("valhalla.dashboard.god_accounts"), value: @god_count, note: t("valhalla.dashboard.god_note") }
+   ] %>
+<div class="grid grid-cols-2 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 lg:grid-cols-4" data-test="valhalla-dashboard-totals">
+  <% cells.each do |cell| %>
+    <div class="flex min-w-0 flex-col gap-1.5 border-stone-200 dark:border-zinc-800 px-5 py-3 odd:border-r [&:nth-child(-n+2)]:border-b lg:border-r lg:last:border-r-0 lg:[&:nth-child(-n+2)]:border-b-0">
+      <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= cell[:label] %></span>
+      <span class="flex flex-wrap items-baseline gap-x-2.5">
+        <span class="font-mono text-[22px] font-semibold leading-none text-zinc-900 dark:text-zinc-100" data-test="stat-<%= cell[:key] %>"><%= cell[:value] %></span>
+        <% if cell[:growth] %>
+          <span class="text-[11.5px] text-indigo-600 dark:text-indigo-400">+<span class="font-mono" data-test="stat-growth-<%= cell[:key] %>"><%= cell[:growth] %></span> <%= t("valhalla.dashboard.growth_window") %></span>
+        <% else %>
+          <span class="font-mono text-[11px] text-red-600 dark:text-red-400"><%= cell[:note] %></span>
+        <% end %>
+      </span>
+    </div>
+  <% end %>
+</div>

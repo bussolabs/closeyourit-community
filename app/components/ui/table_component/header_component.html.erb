@@ -1,0 +1,16 @@
+<%= tag.th(**th_options) do %>
+  <% if @label_hidden %>
+    <span class="sr-only"><%= @label %></span>
+  <% elsif sortable? %>
+    <%= link_to toggle_url, class: "inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100",
+                "aria-label": t("shared.tables.sort_by", label: @label), data: { test: test_id } do %>
+      <span><%= @label %></span>
+      <%= render Ui::IconComponent.new(name: sort_icon.first, class: "#{sort_icon.last} text-[9px]") %>
+    <% end %>
+  <% else %>
+    <%= @label %>
+  <% end %>
+  <% if @hint %><%= render Ui::IconComponent.new(name: "info", label: @hint, class: "text-gray-300 dark:text-zinc-600 ml-1 text-[9px]", test_id: "#{test_id}-hint") %><% end %>
+  <%# CYRA-883 — an optional note under the label (e.g. a column-wide remark instead of one per row). %>
+  <%= content %>
+<% end %>

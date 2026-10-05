@@ -1,0 +1,17 @@
+<%# Greeting and example questions; a click writes the question in the field (ui--assistant#suggest).
+    On a conversation fixed on a project both speak about that project. %>
+<% project = local_assigns[:project] %>
+<% suggestions = t(project ? 'member.assistant.panel.project_suggestions' : 'member.assistant.panel.suggestions') %>
+<div class="flex flex-col gap-1.5" data-test="assistant-greeting">
+  <p class="text-[13.5px] text-gray-600 dark:text-zinc-400"><%= project ? t('member.assistant.panel.project_greeting', name: project.name) : t('member.assistant.panel.greeting') %></p>
+  <p class="text-[12.5px] text-gray-400 dark:text-zinc-500 mt-1"><%= t('member.assistant.panel.examples_lead') %></p>
+  <div class="flex flex-wrap gap-1.5 mt-0.5">
+    <% suggestions.each do |suggestion| %>
+      <button type="button" data-action="ui--assistant#suggest" data-ui--assistant-suggestion-param="<%= suggestion %>"
+              data-test="assistant-suggestion"
+              class="text-[12px] text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 rounded-full px-2.5 py-1 hover:bg-indigo-50 dark:hover:bg-indigo-500/15 hover:border-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
+        <%= suggestion %>
+      </button>
+    <% end %>
+  </div>
+</div>

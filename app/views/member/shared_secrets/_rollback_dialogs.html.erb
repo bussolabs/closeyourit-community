@@ -1,0 +1,14 @@
+<%# locals: variable %>
+<%# CYRA-924 — one dialog per older version, outside the ⋯ menu so closing the menu never hides it (C77). %>
+<% variable.values.each do |shared_value| %>
+  <% rollback_impact = ::Secrets::Shared::Impact.call(shared_value: shared_value, effect: :rollback).value %>
+  <% shared_value.versions.reject { |version| version.number == shared_value.version_number }.each do |version| %>
+    <%= render Ui::ConfirmDialogComponent.new(
+          title: t("member.shared_secrets.rollback_dialog.title", number: version.number, name: variable.name, environment: shared_value.environment.label),
+          url: member_shared_secret_version_path(variable, version), method: :patch,
+          params: { confirmation_digest: rollback_impact["digest"] }, confirm_label: t("member.shared_secrets.rollback"),
+          dialog_id: "shared-secret-rollback-dialog-#{version.id}", test_id: "shared-secret-rollback-dialog-#{version.id}") do |dialog| %>
+      <% dialog.with_body { t("member.shared_secrets.rollback_dialog.body") } %>
+    <% end %>
+  <% end %>
+<% end %>

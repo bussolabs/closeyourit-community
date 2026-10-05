@@ -1,0 +1,100 @@
+# PostgreSQL per primary + queue + cache + cable (Solid stack) negli ambienti deployati;
+# SQLite per cache + cable solo in development/test. 4 database separati — vedi rules/rails/database.md.
+#
+# `timeout` sui blocchi sqlite3 NON è decorativo: senza, l'adapter Rails NON imposta alcun busy_handler
+# e il default è "no wait" (activerecord sqlite3_adapter.rb) — alla PRIMA contesa SQLite solleva
+# SQLITE_BUSY invece di aspettare, e in Rails diventa un ActiveRecord::StatementTimeout che nessuno
+# cattura. In dev `bin/dev` fa girare più processi sugli stessi file: 5 secondi di attesa costano nulla
+# e tolgono una classe intera di errori. (CYRA-289)
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+sqlite_default: &sqlite_default
+  adapter: sqlite3
+  timeout: 5000
+
+development:
+  primary:
+    <<: *default
+    database: closeyourit_development
+  cache:
+    <<: *sqlite_default
+    database: storage/development_cache.sqlite3
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *default
+    database: closeyourit_queue_development
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *sqlite_default
+    database: storage/development_cable.sqlite3
+    migrations_paths: db/cable_migrate
+
+# Due suffissi, non uno, e in quest'ordine (CYRA-587):
+#
+#   TEST_SLOT        lo dichiara chi apre la lavorazione (una cartella di lavoro = uno spazio dati suo).
+#   TEST_ENV_NUMBER  lo impone parallel_tests ai propri processi figli, uno per processo.
+#
+# TEST_ENV_NUMBER NON è riusabile come spazio della lavorazione, per quanto sembri fatto apposta:
+# `parallel_rspec -n 3` lo SOVRASCRIVE in ogni figlio, quindi il valore messo da fuori sparisce e i tre
+# processi tornano a pestarsi. Componendoli, TEST_SLOT=_cyra_587 con tre processi dà
+# closeyourit_test_cyra_587 / _cyra_5872 / _cyra_5873: separati dalle altre lavorazioni E fra loro.
+# Nessuno dei due dichiarato → nomi identici a com'erano: è un'aggiunta, non un cambio di comportamento
+# (spec/config/database_yml_spec.rb).
+#
+# I suffissi vanno su TUTTI e quattro, non solo sui due PostgreSQL: con `parallel_rspec` a più processi
+# veri, cache e cable puntavano allo STESSO file SQLite e la suite cadeva con `SQLite3::IOException:
+# disk I/O error`. In CI non si vedeva perché ogni job esegue un solo gruppo (`--only-group`), quindi un
+# processo solo per macchina — il difetto esiste solo dove il parallelismo è reale, cioè in locale e sugli
+# host worker dell'automator, che è poi dove serve per non far durare la suite quaranta minuti.
+#
+# Gli spazi dati abbandonati si buttano con `bin/rails db:test:prune` (ne erano rimasti 42).
+test:
+  primary:
+    <<: *default
+    database: closeyourit_test<%= ENV["TEST_SLOT"] %><%= ENV["TEST_ENV_NUMBER"] %>
+  cache:
+    <<: *sqlite_default
+    database: storage/test_cache<%= ENV["TEST_SLOT"] %><%= ENV["TEST_ENV_NUMBER"] %>.sqlite3
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *default
+    database: closeyourit_queue_test<%= ENV["TEST_SLOT"] %><%= ENV["TEST_ENV_NUMBER"] %>
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *sqlite_default
+    database: storage/test_cable<%= ENV["TEST_SLOT"] %><%= ENV["TEST_ENV_NUMBER"] %>.sqlite3
+    migrations_paths: db/cable_migrate
+
+# Vale anche per staging, che gira con RAILS_ENV=production.
+#
+# cache e cable sono su PostgreSQL CONDIVISO, non più su SQLite (CYRA-289). I file sqlite stavano su un
+# volume montato sia da web sia da worker: due container che scrivono lo stesso file, più i thread di
+# Puma, più i job. Ogni broadcast Turbo scrive sul cable e ogni throttle scrive sulla cache, quindi
+# bastava un'azione che ne facesse diversi di fila — l'accettazione in blocco delle approvazioni — per
+# far uscire `SQLite3::BusyException: database is locked`, e con essa un 500. Postgres regge la
+# concorrenza per cui è nato: in produzione un server database dedicato, su staging quello di staging.
+#
+# Gli URL arrivano dal vault (CACHE_DATABASE_URL / CABLE_DATABASE_URL). Rails li leggerebbe da sé per
+# convenzione sul nome della connessione, ma restano espliciti — stessa forma di primary e queue —
+# perché è qui che si vede da cosa dipende il boot. Se l'URL manca, l'adapter resta postgresql e la
+# connessione cade sul socket locale, che nel container non esiste: si rompe subito e rumorosamente,
+# invece di ripiegare in silenzio su SQLite rimettendo il problema esattamente dov'era.
+production:
+  primary:
+    <<: *default
+    url: <%= ENV.fetch("DATABASE_URL", nil) %>
+  queue:
+    <<: *default
+    url: <%= ENV.fetch("QUEUE_DATABASE_URL", nil) %>
+    migrations_paths: db/queue_migrate
+  cache:
+    <<: *default
+    url: <%= ENV.fetch("CACHE_DATABASE_URL", nil) %>
+    migrations_paths: db/cache_migrate
+  cable:
+    <<: *default
+    url: <%= ENV.fetch("CABLE_DATABASE_URL", nil) %>
+    migrations_paths: db/cable_migrate

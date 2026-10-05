@@ -1,0 +1,92 @@
+en:
+  member:
+    organization:
+      logs_retention_label: Logs retention (days)
+      logs_retention_placeholder: inherits the system default (14)
+      logs_retention_hint: Default for this organization's projects. Leave blank to inherit the system default.
+      analytics_retention_label: Site analytics retention (days)
+      analytics_retention_placeholder: inherits the system default (365)
+      analytics_retention_hint: Pageview retention for this organization's projects. Leave blank to inherit the system default.
+      errors_retention_label: Errors retention (days)
+      errors_retention_placeholder: inherits the system default (30)
+      errors_retention_hint: Default for this organization's projects. Leave blank to inherit the system default.
+      performance_retention_label: Performance retention (days)
+      performance_retention_placeholder: inherits the system default (30)
+      performance_retention_hint: Default for this organization's projects. Leave blank to inherit the system default.
+      servers_retention_label: Servers retention (days)
+      servers_retention_placeholder: inherits the system default (30)
+      servers_retention_hint: Server sample retention for this organization (no project level). Leave blank to inherit the system default.
+      uptime_retention_label: Uptime retention (days)
+      uptime_retention_placeholder: inherits the system default (730)
+      uptime_retention_hint: Daily uptime history for this organization's projects. Leave blank to inherit the system default.
+      default_assignee_label: Default ticket assignee
+      default_assignee_placeholder: None
+      default_assignee_hint: Fallback for this organization's projects without a default assignee (project and team take precedence).
+    projects:
+      show:
+        tab_settings: Settings
+    project_settings:
+      breadcrumb: Settings
+      updated: Settings saved.
+      save: Save
+      features_hint: "Each switch applies instantly: there is nothing to save here."
+      retention_section: Retention
+      logs_retention_label: Logs retention (days)
+      logs_retention_placeholder: inherits the organization
+      effective: "Effective: %{days} days"
+      analytics_retention_label: Site analytics retention (days)
+      analytics_retention_placeholder: inherits the organization
+      analytics_effective: "Effective: %{days} days"
+      errors_retention_label: Errors retention (days)
+      errors_retention_placeholder: inherits the organization
+      errors_effective: "Effective: %{days} days"
+      performance_retention_label: Performance retention (days)
+      performance_retention_placeholder: inherits the organization
+      performance_effective: "Effective: %{days} days"
+      uptime_retention_label: Uptime retention (days)
+      uptime_retention_placeholder: inherits the organization
+      uptime_effective: "Effective: %{days} days"
+      # CYRA-341 — the two thresholds that colour durations under Performance: hard-coded and the
+      # same for everyone, now decided here project by project.
+      thresholds_section: When an operation counts as slow
+      performance_fast_ms_label: Below how many milliseconds it is fast (green)
+      performance_fast_ms_placeholder: "default: 150"
+      performance_fast_ms_hint: Below this time the operation shows in green. Leave blank to use the default.
+      performance_slow_ms_label: From how many milliseconds it is slow (red)
+      performance_slow_ms_placeholder: "default: 500"
+      performance_slow_ms_hint: From this time up the operation shows in red; in between it is amber. Leave blank to use the default.
+      thresholds_effective: "In force: green below %{fast}, amber up to %{slow}, red above"
+      ingest_section: Public ingest
+      allowed_origins_label: Allowed origins (allowlist)
+      allowed_origins_placeholder: "https://www.yoursite.com"
+      allowed_origins_hint: One origin per line. When set, browser data is accepted only from these sites; leave blank to allow any. It does not protect non-browser clients.
+      features_section: Features
+      quick_bug_report_enabled_label: Quick problem report
+      quick_bug_report_enabled_hint: Shows the AI assistant that turns free text into a structured report.
+      helpdesk_enabled_label: Receive help desk requests from the sites
+      helpdesk_enabled_hint: Visitors of this project's sites can write to the team. Requests arrive in Help desk.
+      analytics_enabled_label: Collect site analytics
+      analytics_enabled_hint: Collects this project's pageviews and shows them under Site analytics. Requires a web platform.
+      session_replay_enabled_label: Record sessions
+      session_replay_enabled_hint: Records how people browse this site and makes it watchable under Session replay. Sensitive values stay masked and recordings are deleted when they expire.
+      secret_approval_enabled_label: Two-person approval for secrets
+      secret_approval_enabled_hint: Requires a second approver to confirm secret changes in protected environments.
+      tickets_section: Tickets
+      default_assignee_label: Default assignee
+      default_assignee_placeholder: None
+      default_assignee_hint: New tickets in this project with no explicit assignee are assigned to this person.
+      # CYRA-883 — the CTO field was written in Italian only.
+      cto_label: Project CTO
+      cto_none: No CTO set
+      cto_inherit: "Inherits %{name}"
+      cto_hint: When empty, the organization's CTO is used. The project's own CTO takes precedence.
+      # CYRA-883 — the side index and the ingest tokens section.
+      nav_label: Settings sections
+      retention_hint: Values for this project only. Leave a field empty to inherit the organization's.
+      tokens_total: Total
+      tokens_active: Active
+      tokens_due_soon: Expiring soon
+      tokens_expired: Expired
+      tokens_revoked: Revoked
+      tokens_search_placeholder: Search by name…
+      tokens_filter_status: Status

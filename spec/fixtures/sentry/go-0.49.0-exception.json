@@ -1,0 +1,45 @@
+{
+  "exception": [
+    {
+      "type": "*errors.errorString",
+      "value": "inner",
+      "mechanism": {
+        "type": "chained",
+        "source": "unwrap",
+        "parent_id": 0,
+        "exception_id": 1
+      }
+    },
+    {
+      "type": "*fmt.wrapError",
+      "value": "outer: inner",
+      "stacktrace": {
+        "frames": [
+          {
+            "function": "main",
+            "module": "main",
+            "lineno": 15,
+            "in_app": true
+          }
+        ]
+      },
+      "mechanism": {
+        "type": "generic",
+        "exception_id": 0
+      }
+    }
+  ],
+  "sdk": {
+    "name": "sentry.go",
+    "version": "0.49.0",
+    "packages": [
+      {
+        "name": "sentry-go",
+        "version": "0.49.0"
+      }
+    ]
+  },
+  "event_id": "677a9f39d3a24219a6a4b559e983730f",
+  "level": "error",
+  "platform": "go"
+}

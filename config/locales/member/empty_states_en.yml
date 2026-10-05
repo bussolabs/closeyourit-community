@@ -1,0 +1,40 @@
+---
+en:
+  member:
+    projects:
+      tool_versions:
+        empty_body: It shows which version was in use and since when. Each new version appears here as soon as the source reports it.
+    personal_secrets:
+      versions_empty_body: It keeps every value this secret has had. Each change adds a version here.
+    secrets:
+      versions_empty_body: It keeps every value this secret has had, so you can go back to an earlier one. Each change adds a version here.
+    roles:
+      show_empty_body: Permissions decide what people with this role can do. You add them from the edit form.
+      empty_body: A role is a set of permissions. Give it to a person or a team, and it decides what they can do.
+    overviews:
+      overview_empty_body: This page gathers the sections of this space you can open. If you need one, ask whoever manages the organization for access.
+    monitoring:
+      seo_sites:
+        show:
+          issues_empty_body: Findings on the site's pages show up here, meaning the things to fix so the site ranks better in search engines.
+    crons:
+      setup_no_project_title: No project available
+    todo_lists:
+      empty_body: A list keeps your to-dos together, to tick off one by one. Keep it to yourself or share it.
+    product:
+      matrices:
+        empty_title: No group to map
+        empty_body: The matrix shows which features each product has, platform by platform. It starts from a group, that is the projects of one product.
+        empty_matrix_title: No features yet
+        empty_matrix_body: It shows which platforms each feature exists on. Create a category and add the first feature.
+    shared_secrets:
+      empty_title: No organization variables
+      empty_body: They hold values used by several projects. Write one value per environment and delegate it to the projects that need it.
+    agents:
+      performance:
+        compare:
+          empty_body: It puts the measures of several machines side by side. Pick the machines above and press Compare.
+      tokens:
+        empty_body: It lets a machine connect and work on tickets. Create it from the form above.
+    teams:
+      empty_body: A team brings together the people who work together. Give it one or more roles and choose which projects they apply to.

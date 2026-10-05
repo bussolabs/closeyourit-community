@@ -1,0 +1,23 @@
+<%# locals: site, visits — quante persone sono arrivate davvero sul sito negli ultimi sette giorni.
+    È l'altra metà della domanda a cui risponde il SEO: qui si vede se il lavoro sulle pagine si
+    traduce in visite. I numeri sono gli stessi della pagina delle statistiche, stesso periodo:
+    due periodi diversi a due clic di distanza sarebbero due numeri che sembrano in disaccordo. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="seo-site-visits">
+  <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.seo_sites.show.visits") %></h2>
+    <%= link_to t("member.monitoring.seo_sites.show.all_visits"),
+          member_monitoring_analytics_path(project_id: site.project_id, environment: site.environment.code),
+          class: "text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "seo-site-all-visits" } %>
+  </div>
+  <dl class="px-5 py-4 grid grid-cols-2 gap-x-4 gap-y-3">
+    <div>
+      <dt class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.stats.pageviews") %></dt>
+      <dd class="mt-0.5 font-mono text-[15px] text-zinc-900 dark:text-zinc-100" data-test="seo-site-pageviews"><%= visits[:pageviews] %></dd>
+    </div>
+    <div>
+      <dt class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.stats.visitors") %></dt>
+      <dd class="mt-0.5 font-mono text-[15px] text-zinc-900 dark:text-zinc-100"><%= visits[:visitors] %></dd>
+    </div>
+  </dl>
+  <p class="px-5 pb-4 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.seo_sites.show.visits_window") %></p>
+</div>

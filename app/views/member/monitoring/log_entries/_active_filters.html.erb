@@ -1,0 +1,47 @@
+<%# CYRA-348 — grouping is chosen in the View menu (CYRA-924); this line only speaks when there is
+    something to say about it: rows left out of the groups, or the one group being looked at. %>
+<% if (@grouped && @ungrouped_count.to_i.positive?) || params[:fingerprint].present? %>
+<div class="px-4 py-2.5 border-b border-stone-200 dark:border-zinc-800 flex items-center gap-3 flex-wrap" data-test="logs-grouping">
+  <% if @grouped && @ungrouped_count.to_i.positive? %>
+    <%# Le righe più vecchie dell'impronta non sono raggruppabili: dirlo è meglio che farle
+        sparire in silenzio o ammucchiarle in un gruppo che non vuol dire niente. %>
+    <span class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="logs-ungrouped"><%= t("member.monitoring.logs.group_ungrouped", count: @ungrouped_count) %></span>
+  <% end %>
+  <% if params[:fingerprint].present? %>
+    <span class="ml-auto inline-flex items-center gap-2 text-[11.5px] text-indigo-700 dark:text-indigo-300" data-test="logs-fingerprint-filter">
+      <%= t("member.monitoring.logs.group_drilldown") %>
+      <%= link_to t("member.monitoring.logs.facets.remove"),
+            member_monitoring_log_entries_path(request.query_parameters.except("page", "fingerprint")),
+            class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "logs-fingerprint-remove" } %>
+    </span>
+  <% end %>
+</div>
+<% end %>
+
+<%# CYRA-579 — il filtro su UNA richiesta arriva dalla scheda di un errore e non si vedeva da
+    nessuna parte: la pagina diceva «1 log» su cinquantamila e sembrava che i registri fossero
+    spariti. Detto qui, e tolto da qui, come per il filtro sui campi. %>
+<% if params[:trace_id].present? %>
+  <div class="px-4 py-2 border-b border-stone-200 dark:border-zinc-800 bg-indigo-50/50 dark:bg-indigo-500/10 flex items-center gap-2" data-test="logs-trace-filter">
+    <span class="shrink-0 text-[11.5px] text-indigo-700 dark:text-indigo-300"><%= t("member.monitoring.logs.trace_filter") %></span>
+    <span class="min-w-0 truncate font-mono text-[11.5px] text-indigo-700 dark:text-indigo-300"><%= params[:trace_id] %></span>
+    <%= link_to t("member.monitoring.logs.facets.remove"),
+          member_monitoring_log_entries_path(request.query_parameters.except("page", "trace_id")),
+          class: "ml-auto shrink-0 text-[11.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline",
+          data: { test: "logs-trace-remove" } %>
+  </div>
+<% end %>
+<%# CYRA-578 — ricerca, filtri, periodo e viste salvate valgono per ENTRAMBE le viste. Finché
+    erano solo della lista, per restringere a un progetto bisognava spegnere il raggruppamento,
+    e si perdeva il punto in cui si era. %>
+<% if @field_filter %>
+  <%# Il filtro acceso resta visibile e si toglie da dov'è: un filtro invisibile è il modo più
+      veloce per credere che i log siano spariti. %>
+  <div class="px-4 py-2 border-b border-stone-200 dark:border-zinc-800 bg-indigo-50/50 dark:bg-indigo-500/10 flex items-center gap-2" data-test="logs-field-filter">
+    <span class="font-mono text-[11.5px] text-indigo-700 dark:text-indigo-300"><%= @field_filter[:key] %>: <%= @field_filter[:value] %></span>
+    <%= link_to t("member.monitoring.logs.facets.remove"),
+          member_monitoring_log_entries_path(request.query_parameters.except("page", "field", "value")),
+          class: "ml-auto text-[11.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline",
+          data: { test: "logs-field-filter-remove" } %>
+  </div>
+<% end %>

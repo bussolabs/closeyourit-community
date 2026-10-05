@@ -1,0 +1,15 @@
+<%= content_tag(@tag, **html_options) do %>
+  <% if @collapsible %>
+    <summary class="<%= summary_classes %>">
+      <div class="min-w-0"><%= heading %><%= subtitle %></div>
+      <span class="flex items-center gap-2"><%= actions %><%= render Ui::IconComponent.new(name: "chevron-down", class: "text-[13px] text-gray-500 dark:text-zinc-400 motion-safe:transition-transform group-open:rotate-180") %></span>
+    </summary>
+  <% elsif header? %>
+    <div class="<%= header_classes %>"><% if subtitle? && actions? %><div><%= heading %><%= subtitle %></div><% else %><%= heading %><%= subtitle %><% end %><%= actions %></div>
+  <% end %>
+  <% if @body_class %>
+    <div class="<%= @body_class %>"><%= content %></div>
+  <% else %>
+    <%= content %>
+  <% end %>
+<% end %>

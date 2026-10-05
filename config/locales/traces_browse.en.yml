@@ -1,0 +1,94 @@
+{
+  "en": {
+    "member": {
+      "nav": {
+        "traces": "Traces"
+      },
+      "traces": {
+        "title": "Traces",
+        "subtitle": "Follow an observed request across services and open related messages.",
+        "empty": "No traces have arrived yet",
+        "empty_body": "Connect a service to see the operations observed during a request.",
+        "operation": "Operation",
+        "service": "Service",
+        "environment": "Environment",
+        "version": "Release",
+        "duration": "Observed interval",
+        "spans": "Received spans",
+        "received": "Last received",
+        "project": "Project",
+        "all_projects": "All visible projects",
+        "project_search": "Find project by name or key",
+        "search": "Search operation or trace ID",
+        "status": "Received status",
+        "all_statuses": "All statuses",
+        "min_duration_ms": "Minimum duration (ms)",
+        "max_duration_ms": "Maximum duration (ms)",
+        "open": "Open",
+        "reset": "Clear filters",
+        "unknown": "Unknown",
+        "received_window": "The period filters the last server receipt, not the producer timestamp.",
+        "duration_note": "Bars show received intervals, not exclusive time. Parallel spans are not added together.",
+        "service_limit": "First 20 of %{count} observed services.",
+        "query_error": "Unable to read these traces",
+        "query_error_body": "Check the filters and period (at most 30 days), or select a smaller page if its data exceeds the limit. Retry if the query timed out.",
+        "path": "Request path",
+        "topology": {
+          "unknown": "Completeness unknown",
+          "incomplete": "Incomplete trace"
+        },
+        "topology_note": "Missing parents: %{missing}. Expired spans: %{expired}. A received root does not prove that all operations arrived.",
+        "parents": {
+          "root": "Received root",
+          "child": "Parent on this page",
+          "outside_page": "Parent received outside this page",
+          "missing": "Parent not received",
+          "cycle": "Received parent relationships contain a cycle"
+        },
+        "no_spans": "No retained spans are available; their timing is unknown.",
+        "observed": "Observed data",
+        "trace_id": "Trace ID",
+        "span_id": "Span ID",
+        "parent_id": "Parent span",
+        "span_details": "Selected span",
+        "evidence": "Attributes, events and links",
+        "exact_times": "Exact received start and end (nanoseconds)",
+        "evidence_budget": "The selected metadata exceeds the 64 KiB display limit. No partial payload is presented.",
+        "related": "Related records",
+        "related_span": "Showing records linked to the selected span.",
+        "all_spans": "Show the whole trace",
+        "logs": "Logs",
+        "errors": "Errors",
+        "no_logs": "No related logs in the observed data.",
+        "no_errors": "No related errors in the observed data.",
+        "statuses": {
+          "error": "Contains an error",
+          "ok": "All received spans declare OK",
+          "unset": "Not declared",
+          "mixed": "Mixed OK and undeclared",
+          "unknown": "No recorded status"
+        }
+      },
+      "guides": {
+        "traces": {
+          "title": "Reading a request path",
+          "subtitle": "Interpret retained spans without assuming all operations arrived.",
+          "cta": "Open traces",
+          "body": "Each span describes one recorded operation. The waterfall uses the earliest start and latest end retained for the trace; parallel spans are not added. Times remain exact to the nanosecond, displayed in milliseconds.",
+          "filters": "The default window is the last 24 hours by server receipt time. Custom windows allow up to 30 days. Service, environment and version must match the same span. The canonical environment wins over its legacy name, including an empty value.",
+          "missing": "An absent root, missing parent or expired span makes the path incomplete. Otherwise completeness remains unknown. A parent outside this page may still exist. An ERROR span marks the observed trace as error; OK and UNSET together are mixed. Missing data never means zero duration.",
+          "related": "Logs and errors are linked only by explicit trace/span identity within this project, including error IDs explicitly carried by logs. Empty related sections do not prove no failure happened. Each section has independent pagination.",
+          "limits": "The waterfall shows up to 50 spans per page, with a selected off-page span opened separately. Evidence exceeding 64 KiB is withheld with a notice. Narrow a query if its time or page budget is exceeded."
+        },
+        "index": {
+          "traces": {
+            "title": "Reading a request path"
+          }
+        },
+        "catalog": {
+          "traces": "Retained operations, timings and explicit correlations along a request path."
+        }
+      }
+    }
+  }
+}

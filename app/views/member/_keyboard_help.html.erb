@@ -1,0 +1,48 @@
+<%# CYRA-28 — Help scorciatoie GLOBALE e condiviso, reso una volta dal layout member DENTRO il
+    wrapper `keyboard` (così i target del controller sono raggiungibili). Centrato con m-auto come
+    gli altri modali (pattern CYRA-27: la preflight Tailwind v4 azzera il margin:auto dello UA).
+    Sezioni universale/navigazione: server-side dallo stesso helper della logica (in sync). Sezione
+    "questa pagina": popolata a runtime dal controller raccogliendo i [data-keyboard-doc] presenti. %>
+<dialog data-keyboard-target="help" data-action="click->keyboard#backdrop"
+        class="m-auto w-full max-w-sm rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-0 backdrop:bg-zinc-900/30"
+        data-test="keyboard-help-dialog">
+  <div class="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.keyboard.title") %></h2>
+    <form method="dialog">
+      <button class="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-stone-100 dark:hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" aria-label="<%= t("member.keyboard.close") %>" data-test="keyboard-help-close">
+        <%= render Ui::IconComponent.new(name: "x", class: "text-[13px]") %>
+      </button>
+    </form>
+  </div>
+
+  <div class="px-4 py-3 space-y-4 max-h-[70vh] overflow-y-auto">
+    <section data-test="keyboard-help-universal">
+      <h3 class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-400 dark:text-zinc-500 mb-2"><%= t("member.keyboard.section_general") %></h3>
+      <ul class="space-y-2 text-[12.5px] text-zinc-700 dark:text-zinc-300">
+        <%= keyboard_help_row(t("member.keyboard.help"), "?") %>
+        <%= keyboard_help_row(t("member.keyboard.global_search"), t("member.search.shortcut")) %>
+        <%= keyboard_help_row(t("member.keyboard.search"), "/") %>
+        <%= keyboard_help_row(t("member.keyboard.new"), "n") %>
+        <%= keyboard_help_row(t("member.keyboard.close_hint"), "Esc") %>
+      </ul>
+    </section>
+
+    <% nav = keyboard_nav_bindings %>
+    <% if nav.any? %>
+      <section data-test="keyboard-help-nav">
+        <h3 class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-400 dark:text-zinc-500 mb-2"><%= t("member.keyboard.section_nav") %></h3>
+        <ul class="space-y-2 text-[12.5px] text-zinc-700 dark:text-zinc-300">
+          <% nav.each do |b| %>
+            <%= keyboard_help_row(b[:label], "g #{b[:key]}") %>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+
+    <%# Popolata a runtime dal controller (nascosta finché la pagina non dichiara binding). %>
+    <section data-keyboard-target="pageSection" data-test="keyboard-help-page" hidden>
+      <h3 class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-400 dark:text-zinc-500 mb-2"><%= t("member.keyboard.section_page") %></h3>
+      <ul class="space-y-2 text-[12.5px] text-zinc-700 dark:text-zinc-300" data-keyboard-target="pageList" data-test="keyboard-help-page-list"></ul>
+    </section>
+  </div>
+</dialog>

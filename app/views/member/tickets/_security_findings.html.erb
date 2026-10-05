@@ -1,0 +1,25 @@
+<%# locals: findings
+    Le segnalazioni di sicurezza trovate dalla lavorazione automatica (CYRA-384). Su un ticket vero
+    l'anomalia — uno script che sondava le credenziali git, un token dentro l'indirizzo di download —
+    era testo corrente dentro un paragrafo di 250 parole, in una scheda secondaria: non la vedeva
+    nessuno. Qui è un avviso in cima al ticket, in ogni scheda.
+
+    Le scrive la macchina in un campo apposta del risultato consegnato (decisione del 2026-08-17), non
+    si cercano nel testo libero: qui indovinare male costa in tutte e due le direzioni. %>
+<%= render Ui::AlertComponent.new(variant: :danger,
+      title: t("member.tickets.automation.security.title", count: findings.size),
+      test_id: "ticket-security-findings") do %>
+  <ul class="space-y-1.5 w-full">
+    <% findings.each do |finding| %>
+      <li class="text-[12.5px] text-red-900 dark:text-red-200 leading-relaxed" data-test="ticket-security-finding">
+        <span class="font-semibold"><%= finding.title %></span>
+        <% if finding.severity %>
+          <span class="ml-1.5 inline-flex items-center rounded-md bg-red-100 dark:bg-red-500/25 px-1.5 py-0 font-mono text-[10px] text-red-700 dark:text-red-300"><%= t("member.tickets.automation.security.severity.#{finding.severity}") %></span>
+        <% end %>
+        <% if finding.detail.present? %>
+          <span class="block text-red-800 dark:text-red-200"><%= finding.detail %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

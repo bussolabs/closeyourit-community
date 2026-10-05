@@ -1,0 +1,63 @@
+<% content_for :title, @card.ticket&.code || t("member.approvals.title") %>
+
+<%# CYRA-591 — la scheda di UNA lavorazione, su una pagina sua.
+    PERCHÉ: il piano è un documento da mille o duemila parole e nella colonna della coda arrivava già
+    troncato. Qui ha la larghezza che gli serve.
+
+    Il CORPO è lo stesso della coda (`_body`), non una seconda resa: l'ordine contestuale — resoconto
+    per primo sulle consegne, tentativo respinto per primo su una lavorazione ferma — vive lì, una
+    volta sola. Questa pagina aggiunge l'intestazione grande e la striscia delle fasi. %>
+<div class="p-7 space-y-6" data-test="approval-show">
+  <%# Il titolo di una card SENZA ticket non ripete il nome del record: su una modifica ai segreti il
+      corpo qui sotto lo stampa già sotto «Variabile», e lo stesso dato due volte nella stessa pagina
+      è proprio ciò che le regole di questo prodotto vietano. %>
+  <%= render Ui::PageHeaderComponent.new(
+        title: @card.ticket? ? "#{@card.ticket.code} · #{@card.ticket.title}" : t("member.approvals.kinds.#{@card.kind}"),
+        breadcrumb: [ { label: t(@from_in_flight ? "member.approvals.in_flight.title" : "member.approvals.title"),
+                        href: member_home_approvals_path(view: @from_in_flight ? Agents::Workflows::InFlight::VIEW : nil) },
+                      { label: @card.ticket&.code || @card.project&.key } ].compact,
+        test_id: "approval-show-header") do |header| %>
+    <%# Slot `meta`, non `counts`: qui non ci sono conteggi ma il progetto e il punto della catena.
+        Usare `counts` significherebbe anche rispondere a `data-test="approvals-counts"`, che l'elenco
+        delle approvazioni già pubblica con dentro un TOTALE — due pagine, stesso selettore, dati
+        diversi. %>
+    <% header.with_meta do %>
+      <div class="flex items-center flex-wrap gap-1.5">
+        <% if @card.project %>
+          <%= render Ui::StatLabelComponent.new(label: t("member.approvals.project"),
+                value: @card.project.key || @card.project.name) %>
+        <% end %>
+        <% if @card.phase.present? %>
+          <%= render Ui::StatLabelComponent.new(label: t("member.approvals.state"),
+                value: automation_phase_label(@card.phase),
+                value_color: (@card.phase == "review_blocked" ? :red : :indigo)) %>
+        <% end %>
+      </div>
+    <% end %>
+    <% header.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.approvals.open_source"), href: @card.url,
+            variant: :secondary, size: :sm, icon: "arrow-up-right-from-square") %>
+      <%# CYRA-630 — si torna da dove si è arrivati: chi apre la scheda dall'elenco di ciò che va
+          avanti da solo non deve ritrovarsi nella coda delle decisioni. %>
+      <%= render Ui::ButtonComponent.new(label: t(@from_in_flight ? "member.approvals.in_flight.back" : "member.approvals.show.back"),
+            href: member_home_approvals_path(view: @from_in_flight ? Agents::Workflows::InFlight::VIEW : nil),
+            variant: :ghost, size: :sm, icon: "arrow-left") %>
+    <% end %>
+  <% end %>
+
+  <%# In its own panel: on the bare page the first step touched the frame. CYRA-998 %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-2.5">
+    <%= render "member/home/approvals/phase_strip", card: @card %>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+    <section class="lg:col-span-2 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <%= render "member/home/approvals/body", card: @card %>
+    </section>
+
+    <%# La decisione. Il pannello è GIÀ contestuale: rende solo i pulsanti che questo account può
+        davvero premere su questa card, e chi lo decide è Home::Approvals::Detail. %>
+    <%= render "member/home/approvals/decision_panel", card: @card, state: nil,
+             view: (Agents::Workflows::InFlight::VIEW if @from_in_flight), from_card: true %>
+  </div>
+</div>

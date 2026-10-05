@@ -1,0 +1,29 @@
+<%= render Ui::SectionComponent.new(header_layout: :row, header_padding: :compact,
+      body_class: "divide-y divide-stone-100 dark:divide-zinc-800", test_id: "trace-correlation") do |section| %>
+  <% section.with_title do %>
+    <%= render Ui::IconComponent.new(name: "link", class: "text-gray-400 dark:text-zinc-500 text-[12px] mr-1.5") %><%= t("member.metrics.trace_title") %>
+  <% end %>
+  <% section.with_actions do %>
+    <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= @selected.trace_id %></span>
+  <% end %>
+    <% if @related_logs.any? %>
+      <% @related_logs.each do |log| %>
+        <%= link_to member_monitoring_log_entry_path(log), class: "flex items-center gap-2.5 px-4 py-2 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "trace-log-#{log.id}" } do %>
+          <%= render Ui::BadgeComponent.new(label: log.level, color: :gray, dot: true) %>
+          <span class="font-mono text-[12px] text-gray-700 dark:text-zinc-300 truncate"><%= log.message %></span>
+          <span class="ml-auto font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= metric_time_ago(log.occurred_at) %></span>
+        <% end %>
+      <% end %>
+    <% end %>
+    <% if @related_errors.any? %>
+      <% @related_errors.each do |event| %>
+        <%= link_to member_monitoring_error_group_path(event.group), class: "flex items-center gap-2.5 px-4 py-2 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "trace-error-#{event.id}" } do %>
+          <%= render Ui::IconComponent.new(name: "bug", class: "text-red-500 dark:text-red-400 text-[11px]") %>
+          <span class="font-mono text-[12px] text-gray-700 dark:text-zinc-300 truncate"><%= event.group.title %></span>
+        <% end %>
+      <% end %>
+    <% end %>
+    <% if @related_logs.none? && @related_errors.none? %>
+      <p class="px-4 py-6 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="trace-empty"><%= t("member.metrics.trace_empty") %></p>
+    <% end %>
+<% end %>

@@ -1,0 +1,26 @@
+en:
+  member:
+    guides:
+      shared_values:
+        title: Shared value
+        subtitle: When the same value is repeated across projects, CloseYourIt tells you and offers to keep just one.
+        what_title: What CloseYourIt looks at
+        what_intro: It looks at the value, not the name. If two projects keep the same value it is the same secret, even when they call it differently; if two projects have a variable with the same name but different values, they have nothing to do with each other.
+        what_value: The comparison is on the content, and happens without anyone reading the values.
+        what_names: "Names can differ from project to project: it changes nothing."
+        what_environments: Each environment stands on its own. Production and staging hold different values, so they are different suggestions.
+        what_minimum: At least two projects are needed. A value living in a single project is already where it belongs.
+        setup_title: How to accept a suggestion
+        setup_step1: The suggestion shows up in "Needs fixing", in the Vault, and on the secrets page of the projects involved.
+        setup_step2: Open it. You see which projects hold that value, the name each one uses, and which repositories will receive it.
+        setup_step3: Pick the name the value will have in the organization and, if you want, change the name a project will keep reading it under.
+        setup_step4: Confirm. The value moves once and every project receives it right away, with no change to its own code.
+        notes_title: What it does not do
+        note_never_automatic: It never moves anything on its own. Without your confirmation nothing changes.
+        note_own_name: "It does not force you to rename your variables: every project keeps the name it uses today, unless you change it."
+        note_rotation: If one of the copies had a "change it every N days" rule, that rule goes away with the copy. The confirmation page tells you, and you set it again on the organization value.
+        note_dismiss: "If two projects share a value by accident and must stay separate, use \"Stop suggesting\": the suggestion will not come back."
+        note_permission: Only whoever manages the organization secrets sees and accepts these suggestions.
+      index:
+        shared_values:
+          title: Shared value

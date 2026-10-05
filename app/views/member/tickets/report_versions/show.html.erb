@@ -1,0 +1,41 @@
+<% content_for :title, t("member.tickets.show.report_version", version: @report.version) %>
+<% content_for :breadcrumb do %>
+  <%= render Ui::BreadcrumbComponent.new(crumbs: [
+        { label: t("member.tickets.title"), href: member_tickets_path },
+        { label: @ticket.code, href: member_ticket_path(@ticket) },
+        { label: t("member.tickets.show.report_version", version: @report.version) }
+      ]) %>
+<% end %>
+
+<%# CYRA-265 — una stesura precedente del resoconto. Sola lettura, e l'avviso in testa serve a non
+    scambiarla per quella corrente: è l'unico modo in cui questa pagina può ingannare chi la apre da
+    un link vecchio. %>
+<div class="space-y-6">
+  <%= render Ui::PageHeaderComponent.new(title: "#{@ticket.code} — #{t("member.tickets.show.report")}") do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.tickets.show.report_back"),
+            href: member_ticket_path(@ticket, tab: "report"), variant: :secondary_muted, size: :sm) %>
+    <% end %>
+  <% end %>
+
+  <% if @report.version != @current_version %>
+    <div class="rounded-lg border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 px-4 py-3" data-test="ticket-report-outdated">
+      <p class="text-[13px] text-amber-800 dark:text-amber-200">
+        <%= t("member.tickets.show.report_outdated", version: @report.version, current: @current_version) %>
+      </p>
+    </div>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ticket-report">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3">
+      <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <%= t("member.tickets.show.report_version", version: @report.version) %>
+      </h2>
+      <p class="shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400">
+        <%= @report.author_name.presence || t("member.tickets.show.report_unknown_author") %> ·
+        <%= l(@report.created_at, format: :short) %>
+      </p>
+    </div>
+    <%= render Ui::MarkdownComponent.new(text: @report.body, class: "px-4 py-3.5 max-w-[70ch]") %>
+  </div>
+</div>

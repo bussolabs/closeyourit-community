@@ -1,0 +1,134 @@
+it:
+  github:
+    release_probe:
+      label: Come si capisce che un rilascio è arrivato davvero
+      undeclared: Non dichiarato — decide una persona
+      hint: >-
+        Senza questa scelta la chiusura del lavoro la decide una persona, come oggi: niente si rompe
+        e niente si blocca. Con la scelta fatta, il sistema dirà «fatto» guardando un fatto invece di
+        chiederlo a te. «Il rilascio in produzione è in piedi» ha bisogno dell'ambiente di produzione
+        qui sopra: senza, nessun rilascio vivo verrebbe mai registrato.
+      options:
+        deploy_smoke: Il rilascio in produzione è in piedi
+        publish: Il pacchetto è pubblicato
+        merge: Il codice è unito
+    registry:
+      label: Su quale scaffale esce il pacchetto
+      undeclared: Nessuno — questo progetto non pubblica pacchetti
+      hint: >-
+        Serve solo se hai scelto «Il pacchetto è pubblicato»: il sistema va a guardare lo scaffale
+        pubblico da fuori, come farebbe chi installa. Il nome è quello con cui si installa il
+        pacchetto, che quasi mai coincide col nome del repository.
+      package_label: Nome del pacchetto
+      options:
+        npm: npm
+        pub: pub.dev
+        rubygems: RubyGems
+        pypi: PyPI
+        docker: Registro delle immagini
+    errors:
+      no_installation: L'organizzazione non ha ancora installato la GitHub App. Installala dalle integrazioni.
+      project_taken: Questo progetto ha già un repo agganciato.
+      repo_taken: Questo repo è già agganciato a un altro progetto.
+      repo_not_available: Il repo selezionato non è accessibile dall'installazione.
+      no_repo: Il progetto non ha un repo GitHub agganciato.
+      branch_exists: Esiste già un branch per questo ticket.
+      no_branch: Crea prima un branch per il ticket, poi apri la PR.
+    pull_request_body: "Chiude il ticket %{code} su CloseYourIt."
+  member:
+    tickets:
+      github:
+        create_branch: Crea branch
+        open_pr: Apri PR
+        branch_created: Branch creato su GitHub.
+        pull_request_opened: Pull request aperta su GitHub.
+        panel_title: GitHub
+        pr_state:
+          open: aperta
+          merged: mergiata
+          closed: chiusa
+    projects:
+      show:
+        tab_github: GitHub
+        release_live: live
+    project_github:
+      rules_section: Regole di binding tag → release
+      save: Salva
+      default_branch_label: Branch di default
+      production_environment_label: Environment di produzione
+      production_environment_hint: I tag stabili (es. v1.2.3) marcano la release live in questo environment.
+      staging_environment_label: Environment di staging
+      staging_environment_hint: I tag pre-release (es. v1.2.3-beta) marcano la release live in questo environment.
+      preview_environment_label: Environment di preview
+      preview_environment_hint: I secret di questo environment vengono sincronizzati sul GitHub Environment "preview" (ambienti effimeri per-PR).
+      no_mapping: Nessun ambiente
+      sync_enabled_label: Sincronizzazione attiva
+      sync_enabled_hint: Ricevi ed elabora gli eventi webhook da questo repo.
+      tag_binding_enabled_label: Binding tag → release
+      tag_binding_enabled_hint: Lega automaticamente il tag alla release deployata dell'environment giusto.
+      autoclose_on_merge_label: Chiudi il ticket alla merge della PR
+      autoclose_on_merge_hint: Alla merge di una PR collegata, porta il ticket in stato completato.
+      sync_secrets_label: Sincronizza i secret con GitHub Actions
+      sync_secrets_hint: Spinge i secret del vault sui GitHub Environment secrets (production/staging) ad ogni modifica. Non tocca i secret impostati a mano.
+      sync_now: Sincronizza ora
+      sync_now_hint: Invia subito i secret del vault agli Environment secrets del repo (in background).
+      sync_enqueued: Sincronizzazione dei secret avviata.
+      sync_blocked: "Sincronizzazione non avviata (%{code}): correggi i secret indicati e riprova."
+      last_sync_title: Ultima sincronizzazione
+      last_sync_ok: Riuscita
+      last_sync_error: Non riuscita
+      last_sync_never: Mai eseguita
+      last_sync_never_hint: I secret di questo progetto non sono ancora stati inviati a GitHub.
+      last_sync_unknown_reason: La sincronizzazione si è fermata, ma il motivo non è stato registrato.
+      last_sync_fact_slot: "Ambiente GitHub: %{slot}"
+      last_sync_fact_file: "File: %{path}"
+      last_sync_fact_line: "File: %{path}, riga %{line}"
+      last_sync_fact_missing: "Valori chiesti dalla configurazione e non presenti nel Vault: %{names}"
+      last_sync_fact_unset: "Valori presenti nel Vault ma senza contenuto: %{names}"
+      last_sync_fact_unmapped: "Ambienti del progetto non collegati al repository: %{names}"
+      last_sync_fact_unreadable: "File di configurazione che non si sono potuti leggere: %{names}"
+      # Il motivo detto con parole semplici, scelto dal codice dell'errore: chi legge questa scheda
+      # deve capire cosa correggere senza aprire i log della pipeline (CYRA-106).
+      sync_errors:
+        R422-GITHUB-006: La sincronizzazione dei secret non è attiva su questo repository, oppure manca il collegamento con GitHub.
+        R422-GITHUB-007: La configurazione del repository chiede un valore che nel Vault non esiste, oppure contiene una riga scritta in una forma che non sappiamo leggere.
+        R422-GITHUB-008: I valori da inviare superano insieme la dimensione massima che GitHub accetta per un secret.
+        R422-GITHUB-009: Un valore richiesto esiste nel Vault ma è privo di contenuto. La sincronizzazione si ferma per non consegnare un valore vuoto alle build.
+        R422-GITHUB-011: Il progetto ha un ambiente che il repository non ha collegato, oppure non ne ha collegato nessuno. La sincronizzazione si ferma invece di scrivere solo su una parte e dichiararsi riuscita.
+        R422-GITHUB-012: "Il pacchetto di credenziali per la pipeline non è stato costruito: i file di configurazione del repository non si riescono a leggere. La sincronizzazione si ferma invece di dichiararsi riuscita senza averlo scritto."
+        R404-GITHUB-010: "Questa risorsa su GitHub non esiste, oppure non è accessibile con i permessi attuali. Non è un guasto temporaneo: riprovare non cambia la risposta."
+        R502-GITHUB-001: GitHub non ha risposto come previsto e la sincronizzazione si è interrotta. Riprova fra qualche minuto.
+      sync_no_repo: Nessun repo GitHub agganciato a questo progetto.
+      needs_installation: L'organizzazione non ha ancora installato la GitHub App. Installala prima di agganciare un repo.
+      go_to_integrations: Vai alle integrazioni
+      no_repos_available: Nessun repo disponibile per l'installazione (o già tutti agganciati).
+      repo_label: Repository
+      repo_placeholder: Scegli un repo…
+      connect: Aggancia repo
+      saved: Impostazioni GitHub salvate.
+      disconnect_title: Scollega repo
+      disconnect_desc: Rimuove il collegamento tra questo progetto e il repo GitHub. Non tocca il repo su GitHub.
+      disconnect: Scollega repo
+      disconnect_confirm: Scollegare il repo da questo progetto?
+      disconnected: Repo scollegato dal progetto.
+    integrations:
+      github:
+        title: GitHub App
+        # CYRA-581 — la descrizione non sta più sotto il titolo (era l'unica prosa dell'area): vive
+        # dentro la scheda, accanto a ciò che si può fare. Il pallino accanto al titolo dice in una
+        # riga a cosa serve la pagina, come nelle altre pagine dell'Amministrazione.
+        help_title: "Il collegamento con GitHub, valido per tutti i progetti."
+        description: Collega i repository GitHub ai progetti. I tag diventano rilasci e dai ticket nascono branch e pull request.
+        status_label: Stato
+        status_installed: Installata
+        status_missing: Non installata
+        repositories_label: Repo agganciati
+        installed_on: "Installata su: %{login}"
+        install: Installa la GitHub App
+        not_configured: "GitHub non è ancora collegato a questa installazione di CloseYourIt. Chi amministra il server crea una GitHub App e ne imposta i dati (GH_APP_ID, GH_APP_PRIVATE_KEY, GH_APP_SLUG): la guida è nella documentazione."
+        not_installed: La GitHub App non è ancora installata su questa organizzazione.
+        disconnect: Disinstalla
+        disconnect_confirm: Rimuovere l'installazione della GitHub App per l'organizzazione? Verranno scollegati anche tutti i repo dei progetti.
+        connected: GitHub App collegata.
+        disconnected: GitHub App disinstallata.
+        callback_failed: Installazione non completata. Riprova.

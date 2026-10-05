@@ -1,0 +1,81 @@
+en:
+  member:
+    nav:
+      todos: Todos
+      todos_open:
+        one: "1 todo left"
+        other: "%{count} todos left"
+    todo_lists:
+      title: Todos
+      help_title: "Your personal lists, to share or link to tickets."
+      new: New list
+      created: List created
+      updated: List updated
+      deleted: List deleted
+      edit: Edit
+      edit_title: Edit list
+      delete: Delete
+      delete_confirm: Delete this list and all its tasks?
+      empty: No lists yet — create your first one.
+      shared_badge: Shared
+      readonly_badge: Read-only
+      shared_by: "Shared by %{name}"
+      shared_by_label: Shared by
+      progress: "%{done} / %{total} done"
+      progress_empty: No tasks
+      progress_label: Progress
+      progress_header: "%{done} of %{total} done"
+      shared_with: "Shared with %{names}"
+      shared_with_readonly: "Shared with %{names} · read only"
+      more_menu: More actions
+      drag_hint: Drag to reorder
+      colors:
+        indigo: Indigo
+        emerald: Green
+        amber: Amber
+        red: Red
+        sky: Sky
+        violet: Violet
+      form:
+        color: Colour
+        name: List name
+        name_placeholder: "e.g. Today, Urgent bugs…"
+        create: Create list
+        save: Save
+        cancel: Cancel
+      panel:
+        add_placeholder: "Add an item…"
+        add_key: "Enter"
+        add_hint: "to add"
+        add_label: "Add an item to %{list}"
+        done_label: "Mark %{title} done"
+        undo_label: "Mark %{title} not done"
+        remove_label: "Remove %{title}"
+      item:
+        completed:
+          one: "Completed (%{count})"
+          other: "Completed (%{count})"
+        link_ticket: Link a ticket
+        rename: Rename
+        save: Save
+        title: Task
+        title_placeholder: What needs doing?
+        ticket: Linked ticket
+        ticket_placeholder: No ticket
+        ticket_hint: Type the ticket key or a word from the title. Below, the recently touched tickets.
+        add: Add
+        created: Task added
+        updated: Task updated
+        deleted: Task removed
+        empty: No tasks yet — add one below.
+        delete_confirm: Remove this task?
+        invalid_ticket: That ticket belongs to another organization
+      share:
+        title: Share list
+        list_label: List
+        action: Share
+        save: Save sharing
+        updated: Sharing updated
+        recipients: Members
+        hint: Selected members can view this list (read-only)
+        no_members: No other members in this organization yet

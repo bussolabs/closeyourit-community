@@ -1,0 +1,15 @@
+{
+  "snapshot_id": "0b8f1c1e-7c1a-4c55-9b39-2f1f7f0a6e01",
+  "observed_at": "2026-10-02T09:00:00Z",
+  "observer_version": "v0.1.0",
+  "cluster": {
+    "kubernetes_version": "v1.31.4+k3s1",
+    "provider": "k3s",
+    "metrics_available": true
+  },
+  "nodes": [],
+  "namespaces": [],
+  "workloads": [],
+  "events": [],
+  "truncated": false
+}

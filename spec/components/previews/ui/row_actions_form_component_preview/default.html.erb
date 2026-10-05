@@ -1,0 +1,15 @@
+<div class="space-y-2">
+  <%= render Ui::RowActionsFormComponent.new %>
+
+  <div class="flex items-center justify-between gap-3 rounded-lg border border-stone-200 bg-white px-4 py-3">
+    <span class="font-mono text-[12.5px] text-zinc-900">API_KEY</span>
+    <%= render Ui::ButtonComponent.new(label: "Approva", href: "#", method: :post, form_id: "row-actions",
+          variant: :success_outline, size: :sm, icon: "circle-check") %>
+  </div>
+
+  <div class="flex items-center justify-between gap-3 rounded-lg border border-stone-200 bg-white px-4 py-3">
+    <span class="font-mono text-[12.5px] text-zinc-900">DATABASE_URL</span>
+    <%= render Ui::ButtonComponent.new(label: "Rimetti", href: "#", method: :delete, form_id: "row-actions",
+          variant: :secondary_muted, size: :sm) %>
+  </div>
+</div>

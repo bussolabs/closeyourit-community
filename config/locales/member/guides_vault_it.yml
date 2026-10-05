@@ -1,0 +1,19 @@
+it:
+  member:
+    guides:
+      index:
+        vault:
+          title: Vault
+      vault:
+        title: Vault
+        subtitle: Un unico spazio per tutti i segreti.
+        what_title: Cos'è il Vault
+        what_intro: Il Vault raccoglie in un solo posto tutti i segreti — sia le variabili (coppie nome/valore) sia i file — organizzati per chi ne è titolare.
+        what_personal: Personale — i tuoi segreti privati, visibili solo a te.
+        what_organization: Organizzazione — i segreti dell'organizzazione, disponibili solo ai progetti a cui vengono delegati.
+        what_project: Progetto — i segreti legati a un singolo progetto.
+        how_title: Come usarlo
+        how_step1: Salva il segreto nello spazio giusto — personale, dell'organizzazione o di progetto — con il suo nome e il suo valore.
+        how_step2: Se è dell'organizzazione, delegalo ai progetti che devono usarlo; un segreto di progetto è già pronto all'uso.
+        how_step3: Leggilo dalla tua applicazione con il comando già pronto — sul computer, nelle build automatiche o sul server — che trovi in fondo a ogni pagina dei segreti.
+        cta: Apri il Vault

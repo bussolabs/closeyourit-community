@@ -1,0 +1,37 @@
+<%# locals: next_decision (Home::NextDecision::Next), in_flight_total (Integer)
+
+    The page header counts (B25): the only numbers that matter here. Il primo è il totale PIENO della coda,
+    non al netto dei rimandi — dice quante decisioni ci sono, non quante me ne sono nascoste; i
+    rimandi hanno il loro numero accanto e i due non si sommano mai.
+
+    «Vanno avanti da sole» è lo stesso numero che la plancia mostra: non conta mai una riga già
+    contata dal primo. %>
+  <% if next_decision.total.positive? %>
+    <span data-test="home-count-total"><b class="font-mono text-[12px] font-semibold text-zinc-900 dark:text-zinc-100"><%= next_decision.total %></b> <%= t("member.home.bar.to_decide") %></span>
+    <%# CYRA-884 — what kind of decisions, with the filter labels, and how long the oldest waits. %>
+    <% shown, rest = queue_breakdown(next_decision.totals) %>
+    <span class="inline-flex flex-wrap items-center gap-2" data-test="home-count-breakdown">
+      <% shown.each do |label, count| %>
+        <i class="not-italic text-stone-300 dark:text-zinc-600">·</i><span><%= label %> <b class="font-mono text-[12px] font-semibold text-zinc-900 dark:text-zinc-100"><%= count %></b></span>
+      <% end %>
+      <% if rest.positive? %>
+        <i class="not-italic text-stone-300 dark:text-zinc-600">·</i><span><%= t("member.home.bar.others") %> <b class="font-mono text-[12px] font-semibold text-zinc-900 dark:text-zinc-100"><%= rest %></b></span>
+      <% end %>
+    </span>
+    <% if next_decision.oldest_at %>
+      <i class="not-italic text-stone-300 dark:text-zinc-600">·</i>
+      <span class="<%= "text-amber-600 dark:text-amber-400" if next_decision.oldest_at < 1.day.ago %>" data-test="home-count-oldest"><%= t("member.home.bar.oldest", time: card_time(next_decision.oldest_at)) %></span>
+    <% end %>
+  <% else %>
+    <span data-test="home-count-total"><%= t("member.home.bar.nothing_queued") %></span>
+  <% end %>
+  <% if next_decision.deferred_count.positive? %>
+    <i class="not-italic text-stone-300 dark:text-zinc-600">·</i>
+    <span data-test="home-count-deferred"><b class="font-mono text-[12px] font-semibold text-zinc-900 dark:text-zinc-100"><%= next_decision.deferred_count %></b> <%= t("member.home.bar.deferred") %></span>
+  <% end %>
+  <%# CYRA-665 — `nil` e zero non sono la stessa cosa: zero vuol dire «non ce n'è nessuna», nil che
+      di lavorazioni automatiche non rispondo io, e allora il numero non deve comparire affatto. %>
+  <% if in_flight_total %>
+    <i class="not-italic text-stone-300 dark:text-zinc-600">·</i>
+    <span data-test="home-count-in-flight"><b class="font-mono text-[12px] font-semibold text-zinc-900 dark:text-zinc-100"><%= in_flight_total %></b> <%= t("member.home.bar.autonomous") %></span>
+  <% end %>

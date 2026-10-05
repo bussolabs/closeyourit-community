@@ -1,0 +1,27 @@
+<%# locals: processes: — top processi per CPU e memoria dall'ultimo campione (CYRA-677), già ordinati dal controller.
+    La lista arriva già top-N e ordinata per CPU dall'agent (CYAG-14): quando scatta un alert di
+    CPU o memoria alta, questa tabella dice CHI è il responsabile. Agent vecchio → blocco assente. %>
+<% if processes.any? %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-processes">
+    <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.show.processes") %></h2>
+      <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.processes_hint") %></span>
+    </div>
+    <%= render(Ui::TableComponent.new(compact: true, stacked: true, label: t("member.servers.show.processes"), test_id: "server-processes-table")) do |t| %>
+      <% t.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.show.processes_name"), sort: "name", param: :processes_sort) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: "PID", sort: "pid", param: :processes_sort, align: :right) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: "CPU %", sort: "cpu", initial: :desc, param: :processes_sort, align: :right) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.show.processes_mem"), sort: "mem", initial: :desc, param: :processes_sort, align: :right) %>
+      <% end %>
+      <% processes.each do |process| %>
+        <%= render Ui::TableComponent::RowComponent.new(test_id: "server-processes-row") do %>
+          <%= render(Ui::TableComponent::CellComponent.new(header: true, mono: true, class: "text-zinc-900 dark:text-zinc-100 truncate max-w-[260px]")) { process["name"] } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: "PID", align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400")) { process["pid"].to_s } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: "CPU %", align: :right, mono: true, class: process["cpu_pct"].to_f >= 80 ? "text-red-600 dark:text-red-400" : "text-zinc-900 dark:text-zinc-100")) { number_with_precision(process["cpu_pct"].to_f, precision: 1) } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.show.processes_mem"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { number_to_human_size(process["mem_bytes"].to_i) } %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

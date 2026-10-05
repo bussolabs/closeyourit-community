@@ -1,0 +1,99 @@
+<% content_for :title, t("member.secret_audit.title", project: @project.name) %>
+
+<%# CYRA-77 — registro degli accessi ai secret del progetto. Nessun valore in chiaro compare qui:
+    la pagina dice CHI ha fatto CHE COSA su QUALE nome, mai il contenuto del segreto. %>
+<div class="p-7 space-y-6" data-test="member-project-secret-events">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "secrets" %>
+
+  <%# T1 — one panel, like the variables tab: tabs, what it holds with its counts and the action, then the table. %>
+  <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="secret-audit-panel">
+    <div class="border-b border-stone-200 dark:border-zinc-800 px-3 py-2"><%= render "member/project_secrets/subnav", project: @project, active: "events" %></div>
+    <div class="flex flex-wrap items-start justify-between gap-3 border-b border-stone-200 dark:border-zinc-800 px-4 py-3">
+      <div class="min-w-0 space-y-2">
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400" data-test="secret-audit-lead"><%= t("member.secret_audit.lead") %></p>
+        <div class="flex items-center flex-wrap gap-1.5" data-test="secret-audit-counts">
+          <%= render Ui::StatLabelComponent.new(label: t("member.secret_audit.count_total"), value: @counts[:total],
+                test_id: "secret-audit-count-total") %>
+          <%= render Ui::StatLabelComponent.new(label: t("member.secret_audit.count_read"), value: @counts[:read],
+                value_color: :indigo, test_id: "secret-audit-count-read") %>
+          <%= render Ui::StatLabelComponent.new(label: t("member.secret_audit.count_denied"), value: @counts[:denied],
+                value_color: :red, test_id: "secret-audit-count-denied") %>
+        </div>
+      </div>
+    </div>
+
+    <% filters_active = params[:event_action].present? || params[:environment_id].present? ||
+                       Array(params[:actor_id]).reject(&:blank?).any? || params[:from].present? || params[:to].present? %>
+    <% if @counts[:total].zero? && !filters_active %>
+      <%= render Ui::EmptyStateComponent.new(title: t("member.secret_audit.empty"), body: t("member.secret_audit.empty_body"),
+            icon: "history", test_id: "secret-audit-empty") %>
+    <% else %>
+      <div data-test="secret-audit-table">
+        <%= render(Ui::TableToolbarComponent.new(
+              url: member_project_secret_events_path(@project), framed: true,
+              apply_test_id: "secret-audit-filter", test_id: "secret-audit-toolbar")) do |toolbar| %>
+          <% toolbar.with_filter(key: "event_action", label: t("member.secret_audit.filter_action")) do %>
+            <div class="w-44"><%= render Ui::SelectComponent.new(name: "event_action", summary: true,
+                  options: Secrets::Event::ACTIONS.map { |a| [ secret_action_label(a), a ] },
+                  selected: params[:event_action], placeholder: t("member.secret_audit.filter_action"),
+                  test_id: "secret-audit-filter-action") %></div>
+          <% end %>
+          <% toolbar.with_filter(key: "environment_id", label: t("member.secret_audit.filter_environment")) do %>
+            <div class="w-44"><%= render Ui::SelectComponent.new(name: "environment_id", summary: true,
+                  options: @environments.map { |e| [ e.label, e.id ] },
+                  selected: params[:environment_id], placeholder: t("member.secret_audit.filter_environment"),
+                  test_id: "secret-audit-filter-environment") %></div>
+          <% end %>
+          <% toolbar.with_filter(key: "actor_id", label: t("member.secret_audit.filter_actor")) do %>
+            <div class="w-52"><%= render Ui::SelectComponent.new(name: "actor_id", multiple: true, summary: true,
+                  options: @actors.map { |a| [ a.email, a.id ] },
+                  selected: params[:actor_id], placeholder: t("member.secret_audit.filter_actor"),
+                  test_id: "secret-audit-filter-actor") %></div>
+          <% end %>
+          <% toolbar.with_filter(key: "from", label: t("member.secret_audit.filter_from")) do %>
+            <input type="datetime-local" name="from" value="<%= params[:from] %>"
+                   aria-label="<%= t('member.secret_audit.filter_from') %>" data-test="secret-audit-filter-from"
+                   class="h-[34px] px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 text-[12.5px] text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400">
+          <% end %>
+          <% toolbar.with_filter(key: "to", label: t("member.secret_audit.filter_to")) do %>
+            <input type="datetime-local" name="to" value="<%= params[:to] %>"
+                   aria-label="<%= t('member.secret_audit.filter_to') %>" data-test="secret-audit-filter-to"
+                   class="h-[34px] px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 text-[12.5px] text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400">
+          <% end %>
+        <% end %>
+        <div>
+
+          <% if @events.empty? %>
+            <div class="px-4 py-10 text-center" data-test="secret-audit-no-match">
+              <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.secret_audit.no_match") %></p>
+            </div>
+          <% else %>
+            <%= render(Ui::TableComponent.new(stacked: true, label: t("member.secret_audit.title", project: @project.name), body_test_id: "secret-audit-rows")) do |table| %>
+              <% table.with_head do %>
+                <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.secret_audit.col_when"), sort: "occurred_at", initial: :desc, classes: "w-40") %>
+                <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.secret_audit.col_action"), classes: "w-36") %>
+                <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.secret_audit.col_name")) %>
+                <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.secret_audit.col_environment"), classes: "w-32") %>
+                <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.secret_audit.col_actor"), classes: "w-56") %>
+                <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.secret_audit.col_channel"), classes: "w-28") %>
+              <% end %>
+              <% @events.each do |event| %>
+                <%= render Ui::TableComponent::RowComponent.new(test_id: "secret-audit-row") do %>
+                  <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-[12.5px] text-gray-500 dark:text-zinc-400 whitespace-nowrap")) { l(event.created_at, format: :long) } %>
+                  <%= render Ui::TableComponent::CellComponent.new(label: t("member.secret_audit.col_action"), class: "text-[12.5px] text-zinc-900 dark:text-zinc-100 whitespace-nowrap") do %>
+                    <%= render Ui::IconComponent.new(name: secret_event_icon(event.action), class: "text-[10px] text-gray-400 dark:text-zinc-500 mr-1.5") %><%= secret_action_label(event.action) %>
+                  <% end %>
+                  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.secret_audit.col_name"), mono: true, class: "text-zinc-900 dark:text-zinc-100")) { event.name.presence || "—" } %>
+                  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.secret_audit.col_environment"), class: "text-[12.5px] text-gray-600 dark:text-zinc-400")) { event.environment&.label || "—" } %>
+                  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.secret_audit.col_actor"), class: "text-[12.5px] text-gray-600 dark:text-zinc-400")) { event.actor&.email || t("member.secret_audit.system") } %>
+                  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.secret_audit.col_channel"), class: "text-[12.5px] text-gray-500 dark:text-zinc-400")) { event.channel.present? ? t("member.secret_audit.channels.#{event.channel}") : "—" } %>
+                <% end %>
+              <% end %>
+            <% end %>
+            <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "secret-audit-pagination")) %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </section>
+</div>

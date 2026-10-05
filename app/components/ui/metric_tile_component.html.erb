@@ -1,0 +1,9 @@
+<%= tile_wrapper do %>
+  <div class="flex items-center justify-between">
+    <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= @label %></span>
+    <% if @icon %><%= render Ui::IconComponent.new(name: @icon, class: "text-gray-400 dark:text-zinc-500 text-[13px]") %><% end %>
+  </div>
+  <%= tag.p(@value, **value_options) %>
+  <% if @delta %><p class="<%= delta_klass %>"><%= @delta %></p><% end %>
+  <% if @caption %><p class="<%= Ui::MetricTileComponent::CAPTION %>"><%= @caption %></p><% end %>
+<% end %>

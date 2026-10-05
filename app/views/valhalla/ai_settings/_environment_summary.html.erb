@@ -1,0 +1,34 @@
+<%# What the server variables already switch on, so "Environment" is never a blind choice.
+    Addresses show only their host; the key shows only whether it is there, never its value. %>
+<% scope = "valhalla.ai_settings.environment" %>
+<% host = ->(url) { url.present? ? (URI(url).host rescue url) : nil } %>
+<% features = [
+     [ :chat, config.chat_configured?, config.chat_base_url, config.chat_model ],
+     [ :embeddings, config.embeddings_configured?, config.embed_base_url, config.embedding_model ],
+     [ :rerank, config.rerank_configured?, config.rerank_base_url, config.rerank_model ],
+     [ :transcription, config.transcription_configured?, config.chat_base_url, config.transcription_model ],
+     [ :review, config.review_configured?, config.review_base_url, config.chat_model ]
+   ] %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ai-environment-summary">
+  <div class="border-b border-stone-200 dark:border-zinc-800 px-6 py-4">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("#{scope}.title") %></h2>
+    <p class="mt-1 text-[13px] text-stone-500 dark:text-zinc-400"><%= t("#{scope}.hint") %></p>
+  </div>
+  <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+    <li class="flex flex-wrap items-center gap-x-3 gap-y-1 px-6 py-3" data-test="ai-env-key-<%= config.api_key.present? ? "present" : "missing" %>">
+      <span class="text-[13.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("#{scope}.key") %></span>
+      <%= render Ui::BadgeComponent.new(label: t("#{scope}.key_#{config.api_key.present? ? "present" : "missing"}"),
+            color: config.api_key.present? ? :green : :red, dot: true) %>
+      <span class="font-mono text-[12px] text-gray-500 dark:text-zinc-400">AI_API_KEY</span>
+    </li>
+    <% features.each do |key, on, url, model| %>
+      <li class="flex flex-wrap items-center gap-x-3 gap-y-1 px-6 py-3" data-test="ai-env-<%= key %>-<%= on ? "on" : "off" %>">
+        <span class="text-[13.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("valhalla.ai_settings.checks.#{key}") %></span>
+        <%= render Ui::BadgeComponent.new(label: t("#{scope}.#{on ? "on" : "off"}"), color: on ? :green : :gray, dot: true) %>
+        <% if on %>
+          <span class="font-mono text-[12px] text-gray-500 dark:text-zinc-400"><%= [ host.call(url), model ].compact.join(" · ") %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</div>

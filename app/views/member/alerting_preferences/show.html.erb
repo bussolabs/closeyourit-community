@@ -1,0 +1,76 @@
+<% content_for :title, t("member.preferences.title") %>
+<% levels = ::Alerting::Rule::LEVELS.map { |code, value| [ t("member.alerting.levels.#{code}"), value ] } %>
+<% hours = (0..23).map { |h| [ format("%02d:00", h), h ] } %>
+<% zones = %w[Europe/Rome UTC Europe/London Europe/Berlin America/New_York America/Los_Angeles].map { |z| [ z, z ] } %>
+<% quiet_on = @preference.quiet_hours_start.present? %>
+<%# CYRA-443 — apertura selettiva dei gruppi: aperti quelli dove hai già scelto qualcosa, e se non
+    hai mai toccato niente solo il primo. Tutti aperti insieme era il difetto di questa pagina. %>
+<% customized = @preference.customized_event_types %>
+<% open_group_keys = ::Notifications::Catalog.groups_for(Current.account).select { |g| g.event_types.intersect?(customized) }.map(&:key) %>
+<% open_group_keys = [ ::Notifications::Catalog.groups_for(Current.account).first.key ] if open_group_keys.empty? %>
+<%# telegram_connected gata il toggle Telegram e la colonna cadenze; la CONNESSIONE vive nella tab Telegram. %>
+<% telegram_connected = Current.account.connected_telegram? || Alerting::TelegramGroup.for_recipient(account: Current.account, organization: Current.organization).present? %>
+<%# CYRA-444 — chi arriva dalla tab Telegram cerca una colonna fra due: gliela indichiamo. Il ring ha
+    offset, così evidenzia senza spostare di un pixel la griglia delle celle. %>
+<% highlight_telegram = @highlight_telegram.present? %>
+<% telegram_cell_class = highlight_telegram ? "w-28 shrink-0 rounded-md ring-1 ring-sky-300 dark:ring-sky-500/50 ring-offset-2 ring-offset-white" : "w-28 shrink-0" %>
+<% telegram_col_class = highlight_telegram ? "w-28 text-center text-sky-700 dark:text-sky-300" : "w-28 text-center" %>
+
+<div class="p-7">
+  <%= form_with url: member_notification_preferences_path, method: :patch, id: "alerting-preferences-form", data: { test: "alerting-preferences-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("member.preferences.title"),
+          breadcrumb: [ { label: t("member.preferences.title") } ]) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.notifications.save"), type: "submit", variant: :primary, size: :sm, icon: "check", test_id: "alerting-preferences-submit") %>
+      <% end %>
+      <%= render "member/preferences/tabs", header: h, active_tab: "notifications" %>
+    <% end %>
+
+    <div class="mt-6 space-y-5">
+      <!-- Channels -->
+      <%= render "member/alerting_preferences/channels_panel", telegram_connected: telegram_connected %>
+
+      <%# CYRA-160 — il riepilogo periodico dei DATI. Sta qui, sotto i canali, perché è un'email in
+          più che si sceglie di ricevere: la matrice sotto decide quali AVVISI arrivano, questo
+          blocco decide se arriva il quadro d'insieme e ogni quanto. %>
+      <%= render "member/alerting_preferences/report_panel" %>
+
+      <%# Cadenza per avviso, raggruppata per dominio (CYRA-443). Erano 40+ avvisi × 3 colonne tutti
+          aperti insieme, con una colonna che ripeteva 40 volte «Sempre» senza poterla cambiare: la
+          colonna in-app è sparita (lo dice una volta sola il blocco Canali qui sopra) e i gruppi sono
+          richiudibili, con aperto solo quello pertinente. Ricerca e configurazioni pronte in testa.
+          Le righe filtrate restano nel form con il loro valore: nascondere non è deselezionare. %>
+      <%= render "member/alerting_preferences/event_matrix", open_group_keys: open_group_keys,
+            telegram_cell_class: telegram_cell_class, telegram_col_class: telegram_col_class,
+            highlight_telegram: highlight_telegram %>
+
+      <!-- Minimum error level + Quiet hours -->
+      <%= render "member/alerting_preferences/quiet_hours_panel", levels: levels, hours: hours,
+            zones: zones, quiet_on: quiet_on %>
+    </div>
+
+
+    <%# CYRA-480 — chi decide che cosa: la regola decide se l'avviso NASCE, le impostazioni personali
+        decidono se arriva A TE e su quale canale. Lifted over the sticky save bar below. %>
+    <% content_for :floating_notice do %>
+      <%= render Ui::FloatingNoticeComponent.new(key: "alerting_hierarchy", title: t("member.alerting.hierarchy.title"),
+                                                 lifted: true, test_id: "alerting-hierarchy-notice") do %>
+        <p data-test="alerting-hierarchy">
+          <%= t("member.alerting.hierarchy.preferences") %>
+          <%= link_to t("member.alerting.hierarchy.to_rules"), member_alerting_rules_path,
+                class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "alerting-link-rules" } %>
+        </p>
+      <% end %>
+    <% end %>
+
+    <%# CYRA-443 — la pagina è lunga: il Salva dell'header sparisce dopo due scrollate. Questa barra
+        resta appiccicata in fondo per tutta la pagina. Su mobile si alza di 4rem: sotto c'è la
+        navigazione fissa. %>
+    <div class="sticky bottom-16 md:bottom-0 z-20 -mx-7 md:mx-0 mt-5 px-7 py-3 flex items-center justify-end gap-3 bg-white dark:bg-zinc-900 border-t border-stone-200 dark:border-zinc-800"
+         data-test="pref-save-bar">
+      <%= render Ui::ButtonComponent.new(label: t("member.notifications.save"), type: "submit",
+            variant: :primary, size: :sm, icon: "check", test_id: "pref-save-bar-submit") %>
+    </div>
+  <% end %>
+</div>

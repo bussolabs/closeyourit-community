@@ -1,0 +1,50 @@
+<%# locals: (body: nil, error: nil) %>
+<%# CYRA-935 — one form: the header keeps Back and Send in sight, the left column shows what goes
+    with the message, the field takes dictation like the comments do. %>
+<%= turbo_frame_tag "support-request", class: "block" do %>
+  <%= form_with url: member_support_requests_path, method: :post, class: "p-7 space-y-6 md:-m-px md:p-0",
+                data: { test: "support-form", action: "turbo:submit-end->ui--support#submitted" } do %>
+    <%= render Ui::SectionComponent.new(title: t("member.support.title"), heading_size: :lg, test_id: "support-header",
+          class: "sticky top-0 z-10") do |section| %>
+      <% section.with_actions do %>
+        <div class="flex items-center gap-1.5">
+          <%= render Ui::ButtonComponent.new(label: t("member.support.mine"), href: member_support_requests_path, icon: "list",
+                variant: :ghost, size: :sm, test_id: "support-mine", data: { turbo_frame: "_top" }) %>
+          <%= render Ui::ButtonComponent.new(label: t("member.support.back"), icon: "arrow-down", variant: :secondary, size: :sm,
+                test_id: "support-back", data: { action: "ui--support#close" }) %>
+          <%= render Ui::ButtonComponent.new(label: t("member.support.send"), icon: "send", type: "submit", size: :sm,
+                test_id: "support-send") %>
+        </div>
+      <% end %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.support.subtitle") %></p>
+    <% end %>
+
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-[320px_minmax(0,1fr)] md:items-start">
+      <div class="order-2 md:order-1"><%= render "member/support_requests/context" %></div>
+
+      <%= render Ui::SectionComponent.new(title: t("member.support.form_title"), test_id: "support-request-panel",
+            class: "order-1 md:order-2") do %>
+        <% if error.present? %>
+          <%= render(Ui::AlertComponent.new(variant: :danger, test_id: "support-error", class: "mb-3")) { error } %>
+        <% end %>
+        <%= label_tag "support-body", t("member.support.body_label"), class: "block mb-1.5 text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100" %>
+        <% dictation = dictation_available? %>
+        <div data-controller="char-counter" data-char-counter-max-value="<%= Support::Constants::BODY_MAX_CHARS %>"
+             data-char-counter-warn-ratio-value="<%= App::Constants::LENGTH_WARN_RATIO %>"
+             data-char-counter-unit-value="<%= t("shared.char_counter.unit") %>">
+          <%= tag.div class: "relative", data: (dictation ? dictation_voice_data : {}) do %>
+            <%= text_area_tag "body", body, rows: 9, id: "support-body", required: true, placeholder: t("member.support.body_placeholder"),
+                  data: { test: "support-body", char_counter_target: "field", "ui--support-target": "body",
+                          action: "input->char-counter#update input->ui--support#saveDraft", "ui--voice-inline-target": "input" },
+                  class: "block w-full min-h-52 resize-y #{dictation ? "pl-3 pr-11" : "px-3"} py-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+            <%= render "member/shared/dictation_controls" if dictation %>
+          <% end %>
+          <div class="mt-2 flex items-center justify-between gap-3">
+            <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.support.draft_hint") %></p>
+            <p class="shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400 tabular-nums" data-char-counter-target="output" data-test="support-counter"></p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

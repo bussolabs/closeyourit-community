@@ -1,0 +1,14 @@
+<%# CYRA-61: nota retention. La retention è per-progetto (nearest-wins) ma la pagina Logs è cross-app →
+    @logs_retention = { min:, max: } sui progetti visibili/filtrati (calcolato nel controller). single
+    quando coincidono, range altrimenti. Reso nell'empty-state, nel no-match e nel footer così l'utente
+    sa che i log oltre la finestra vengono purgati (evita il ticket "i log non arrivano"). Reso solo se
+    @logs_retention è presente (nil quando l'utente non vede alcun progetto). `classes` = stile del punto. %>
+<% if @logs_retention %>
+  <p class="<%= classes %>" data-test="logs-retention-note"><%=
+    if @logs_retention[:min] == @logs_retention[:max]
+      t("member.monitoring.logs.retention_note.single", count: @logs_retention[:min])
+    else
+      t("member.monitoring.logs.retention_note.range", min: @logs_retention[:min], max: @logs_retention[:max])
+    end
+  %></p>
+<% end %>

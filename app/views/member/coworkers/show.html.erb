@@ -1,0 +1,49 @@
+<% content_for :title, "Coworkers" %>
+<section class="flex h-full min-h-0 flex-col bg-white dark:bg-zinc-900" data-test="coworkers-workspace">
+  <details class="md:hidden border-b border-stone-200 dark:border-zinc-800 p-4">
+    <summary class="min-h-11 cursor-pointer font-medium"><%= @puck&.name || "Coworkers" %></summary>
+    <%= render "new_puck_button", button_class: "min-h-11" %>
+    <% @puckies.each do |puck| %>
+      <%= render "member/coworkers/puck_link", puck: puck %>
+    <% end %>
+    <%= render Ui::NavLinkComponent.new(label: t("member.coworkers.back"), path: member_home_path, size: :top) %>
+  </details>
+  <% if @puck.nil? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.coworkers.empty_puckies_title"), body: t("member.coworkers.empty_puckies_body"), icon: "users", class: "flex-1", test_id: "coworkers-empty") do |empty| %>
+      <% empty.with_action do %><%= render "new_puck_button" %><% end %>
+    <% end %>
+  <% else %>
+    <%= turbo_stream_from Realtime::Streams.coworker(@puck, I18n.locale) %>
+    <% panel = params[:panel].presence_in(%w[memory tasks]) %>
+    <div class="flex flex-1 min-h-0 min-w-0 flex-col" data-controller="coworker-conversation"
+         data-action="turbo:before-stream-render@document->coworker-conversation#streamed">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 px-4 py-1.5 dark:border-zinc-800" data-test="coworkers-header">
+        <%= render "animated_mascot", puck: @puck %>
+        <nav class="inline-flex rounded-md border border-stone-200 bg-stone-50 p-0.5 dark:border-zinc-800 dark:bg-zinc-800" aria-label="<%= t("member.coworkers.panels") %>" data-test="coworkers-panel-switch">
+          <% [ [ nil, "chat" ], [ "memory", "memory" ], [ "tasks", "tasks" ] ].each do |value, key| %>
+            <%= link_to t("member.coworkers.#{key}"), member_coworker_path(@puck, panel: value), aria: { current: ("page" if panel == value) },
+                  class: "inline-flex h-[26px] items-center rounded-[5px] px-2.5 text-[12px] font-medium max-md:h-10 #{panel == value ? 'border border-stone-200 bg-white text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100' : 'text-gray-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'}" %>
+          <% end %>
+        </nav>
+      </div>
+      <div class="flex flex-1 min-h-0 min-w-0">
+        <div class="<%= 'max-md:hidden' if panel %> relative flex flex-col flex-1 min-w-0 min-h-0">
+          <div class="flex-1 overflow-y-auto px-5 py-5" data-panel-edge data-test="coworkers-conversation" data-coworker-conversation-target="scroller"
+               data-action="scroll->coworker-conversation#scrolled turbo:before-frame-render->coworker-conversation#holdPosition turbo:frame-render->coworker-conversation#restorePosition">
+            <div class="flex w-full flex-col gap-5">
+              <% if @chats.empty? %><p class="text-[13px] text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.empty_chat") %></p><% end %>
+              <%= render "conversation_page", chats: @chats, older: @previous_chat.present?, puck: @puck %>
+            </div>
+          </div>
+          <%= render Ui::ButtonComponent.new(label: t("member.coworkers.latest"), icon: "arrow-down", variant: :secondary, size: :sm, hidden: true,
+                class: "absolute left-1/2 z-10 -translate-x-1/2", test_id: "coworkers-jump",
+                data: { coworker_conversation_target: "jump", action: "coworker-conversation#jump" }) %>
+          <%= render "composer", puck: @puck %>
+        </div>
+        <% if panel %><%= render "details", puck: @puck %><% end %>
+      </div>
+    </div>
+  <% end %>
+  <%= render "new_puck" %>
+  <%= render partial: "member/coworkers/edit_puck", collection: @puckies, as: :puck %>
+</section>

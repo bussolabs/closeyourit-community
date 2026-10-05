@@ -1,0 +1,102 @@
+---
+it:
+  member:
+    guides:
+      index:
+        agents:
+          title: Come lavorano gli agenti
+        skill_bundles:
+          title: Versioni delle competenze
+      agents:
+        title: Come lavorano gli agenti
+        subtitle: Il giro che fa un lavoro, cosa significa ogni esito e cosa succede se non rispondi.
+        what_title: Cosa sono
+        what_intro: "Un agente è una macchina che prende in carico un ticket e lo porta avanti da sola, un passaggio per volta. Quello che non fa da sola è decidere: i passaggi che contano restano in mano a una persona."
+        what_b1: Lavora solo i progetti che le sono stati assegnati, e solo dopo che qualcuno le ha dato il via libera.
+        what_b2: "Porta avanti un numero limitato di lavori insieme e, mentre lavora, dice a che punto è."
+        what_b3: "Resta scritto tutto: quale macchina ha fatto cosa, quando e com'è finita."
+        cycle_title: Il giro di un lavoro
+        cycle_intro: "Sempre nello stesso ordine. Il passaggio dopo parte solo quando quello prima è chiuso."
+        steps:
+          to_plan:
+            body: "Il lavoro è stato preso in carico: la macchina legge la richiesta, capisce di cosa si tratta e scrive come intende farla. Se qualcosa non è chiaro fa una domanda invece di tirare a indovinare."
+          plan_to_approve:
+            body: "La proposta è pronta e nessuno ha ancora detto se va bene. Qui non è stato toccato niente."
+            gate: "Tocca a te — finché non approvi il piano, la lavorazione non parte."
+          in_progress:
+            body: "La macchina esegue il piano che hai approvato e prepara quello che ha cambiato."
+          to_review:
+            body: "Il lavoro è stato consegnato e aspetta di essere guardato."
+            gate: "Tocca a te — finché non accetti il lavoro fatto, non va avanti."
+          closing:
+            body: "Il lavoro va sull'ambiente di prova e poi sul sito vero, e il sistema controlla da solo che ci sia arrivato davvero."
+          done:
+            body: "Il lavoro è vivo sul sito vero e qualcuno l'ha visto rispondere. Solo allora è finito."
+        exits_title: Come si esce dal percorso
+        exits_intro: "Due modi, e nessuno dei due è una tappa: sono i posti in cui un lavoro smette di andare avanti."
+        exits:
+          blocked:
+            body: "La lavorazione ha smesso di riprovare da sola e aspetta una decisione: si rimette in moto, oppure si chiude."
+          cancelled:
+            body: "Qualcuno l'ha fermata scrivendo il motivo. Resta scritto chi, quando e perché, e da sola non riparte."
+        outcomes_title: Come può finire un passaggio
+        outcomes_intro: "La differenza conta: uno è un tuo giudizio sul lavoro, uno è un guasto, uno è un lavoro che non è mai arrivato in fondo."
+        outcomes:
+          approved:
+            title: Approvato
+            body: Hai dato il via libera e si passa al passaggio dopo.
+          rejected:
+            title: Respinto
+            body: "È quello che succede quando premi «Respingi»: il lavoro torna indietro con la motivazione che hai scritto e viene rifatto tenendone conto. Non si butta via niente, si ricomincia da quel passaggio."
+          interrupted:
+            title: Interrotto
+            body: "È finito senza consegnare niente: quasi sempre la macchina si è spenta o ha perso il collegamento. Non è un giudizio sul lavoro e non conta come sbaglio."
+          failed:
+            title: Fallito
+            body: "Il passaggio si è rotto per un guasto e la macchina lo dichiara. Diverso da «Respinto», che è una tua decisione: qui il lavoro non è proprio arrivato."
+        waiting_title: Quando la parola passa a te
+        waiting:
+          intro: "Tutto ciò che aspetta una tua risposta si trova in Approvazioni, con le richieste più vecchie in cima."
+          plan: "Il piano è pronto: lo approvi, oppure lo respingi scrivendo cosa non va."
+          work: "Il lavoro è finito: lo guardi e dici se va bene così."
+          question: "L'agente non ha capito qualcosa e chiede: si risponde nella discussione del ticket, come a un collega."
+          no_reply: "Se non rispondi non succede niente: quel lavoro resta fermo dov'è. Chi aveva chiesto riprova più tardi, trova ancora silenzio e continua ad aspettare."
+          no_deadline: "Nessuna richiesta scade e nessuna si approva da sola. Senza una risposta quel ticket non va avanti, e nessuno lo porta avanti al posto tuo."
+          cta: Vai alle Approvazioni
+        certification_title: Dare e togliere il via libera a una macchina
+        certification:
+          intro: "Una macchina appena collegata non lavora: prima una persona deve dire che può farlo. È una scelta reversibile, in qualsiasi momento."
+          certify_body: Da qui in poi può prendere lavori dei progetti che le competono.
+          revoke_body: "Smette subito di ricevere nuovi lavori. Resta collegata e continua a farsi vedere, ma nessun ticket le viene più affidato finché non le ridai il via libera."
+          note: "Togliere il via libera non cancella niente di quello che ha già fatto. Un lavoro già iniziato non le viene strappato di mano: se non lo consegna, prima o poi risulta interrotto."
+        stopped_title: Quando una macchina si ferma
+        stopped_intro: "Le macchine si spengono, perdono la rete, restano indietro. Sono tre situazioni diverse e la pagina le distingue, perché richiedono cose diverse."
+        stopped_b1: "«Offline» vuol dire che non si fa sentire da poco: può essere un riavvio, e spesso si risolve da solo."
+        stopped_b2: "«Fermo» vuol dire che non si fa sentire da troppo: quasi sempre è rimasta accesa e bloccata, o spenta e dimenticata."
+        stopped_b3: "Se risultano aperti dei lavori che la macchina non sta segnalando, la pagina lo scrive: si è fermata senza chiuderli."
+        stopped_versions: "C'è un altro motivo per cui una macchina può lavorare male: sta seguendo istruzioni vecchie."
+        stopped_versions_link: Versioni delle competenze
+        cta: Vai agli agenti
+      skill_bundles:
+        title: Versioni delle competenze
+        subtitle: Quali istruzioni stanno seguendo le macchine e come si torna indietro se una versione fa danni.
+        what_title: Cos'è
+        what_intro: "Le macchine non sanno lavorare da sole: seguono un pacchetto di istruzioni scritte, che ha un numero di versione come qualsiasi programma. Qui si dice quale versione devono seguire tutte."
+        what_b1: "La versione è una sola per tutta l'organizzazione: non capita che una macchina segua istruzioni diverse dalle altre per caso."
+        what_b2: "Di solito si aggiorna da sola quando ne esce una nuova: questa pagina si guarda, non si tocca."
+        what_b3: "Si mette mano a mano solo per fissare di proposito una versione precisa, ed è cosa di chi amministra le macchine."
+        check_title: È arrivata a tutte?
+        check_intro: "La versione fissata dice cosa dovrebbero seguire, non cosa seguono davvero. La tabella in cima alla pagina mette le due cose una accanto all'altra, una riga per macchina."
+        check_aligned: Sta seguendo la versione che deve seguire.
+        check_mismatched: "Sta seguendo altro: di solito non ha ancora ripreso le istruzioni nuove."
+        check_unknown: "Non dice quale versione sta seguendo. Non è un disallineamento: è un'informazione che manca."
+        rollback_title: Tornare a una versione precedente
+        rollback_intro: "Se una versione nuova fa danni si riportano tutte le macchine a quella di prima. Non è la strada normale, quindi va chiesto in modo esplicito."
+        rollback_b1: "Di solito si può solo andare avanti: per andare indietro c'è una spunta apposta, che vuol dire «lo sto facendo di proposito»."
+        rollback_b2: "Vale per tutte le macchine insieme, non per una sola."
+        rollback_b3: "Di ogni lavoro resta scritto con quale versione è stato fatto: se qualcosa va storto si sa da dove ripartire."
+        rollback_note: "Cambiare versione non tocca i lavori già fatti né i ticket: cambia solo le istruzioni che le macchine seguiranno d'ora in poi."
+        who: "Chi fa il lavoro vero e proprio sono le macchine, e il giro che fanno è raccontato qui:"
+        who_link: come lavorano gli agenti
+        locked: La pagina delle versioni la apre chi amministra le macchine.
+        cta: Apri le versioni

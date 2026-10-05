@@ -1,0 +1,23 @@
+<%# Dove va a finire il valore: un secret dell'organizzazione nuovo, col nome che si sceglie qui,
+    oppure quello che l'organizzazione tiene già con lo stesso contenuto. %>
+<%= render Ui::SectionComponent.new(test_id: "vault-consolidation-destination") do |section| %>
+  <% section.with_title { t("member.vault_consolidations.destination_title") } %>
+  <% if @existing_shared %>
+    <%# Crearne un secondo identico rifarebbe, dentro l'organizzazione, il disordine che questa
+        proposta esiste per togliere: il nome non si sceglie, è quello del secret che c'è già. %>
+    <div class="space-y-2" data-test="vault-consolidation-existing">
+      <p class="text-[12.5px] text-gray-600 dark:text-zinc-400"><%= t("member.vault_consolidations.existing_body") %></p>
+      <span class="inline-flex items-center gap-2 rounded border border-indigo-200 dark:border-indigo-500/40 bg-indigo-50/40 dark:bg-indigo-500/10 px-2 py-1 font-mono text-xs text-zinc-900 dark:text-zinc-100">
+        <%= @existing_shared.name %>
+        <%= render Ui::BadgeComponent.new(label: t("member.shared_secrets.shared_badge"), color: "indigo") %>
+      </span>
+    </div>
+  <% else %>
+    <div class="max-w-sm">
+      <%= render Ui::InputComponent.new(name: "name", label: t("member.vault_consolidations.name_label"),
+            value: @suggestion.suggested_name, required: true,
+            hint: t("member.vault_consolidations.name_hint"),
+            test_id: "vault-consolidation-name") %>
+    </div>
+  <% end %>
+<% end %>

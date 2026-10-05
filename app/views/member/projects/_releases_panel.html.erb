@@ -1,0 +1,17 @@
+<%# The last releases; "See all" opens every recent one in a dialog, read with the page. %>
+<% shown = @releases.first(Member::ProjectsController::RELEASES_IN_PANEL) %>
+<%= render Ui::SectionComponent.new(title: t("member.projects.show.releases"), body_class: nil,
+      test_id: "project-releases", data: { controller: "ui--dialog" }) do |section| %>
+  <% if @releases.size > shown.size %>
+    <% section.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.projects.show.releases_all"), variant: :ghost, size: :sm,
+            test_id: "project-releases-all", data: { action: "ui--dialog#open" }) %>
+    <% end %>
+  <% end %>
+  <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+    <%= render partial: "member/projects/release_row", collection: shown, as: :release, locals: { test_id: "project-release-row" } %>
+  </div>
+  <% if @releases.size > shown.size %>
+    <%= render "member/projects/releases_modal" %>
+  <% end %>
+<% end %>

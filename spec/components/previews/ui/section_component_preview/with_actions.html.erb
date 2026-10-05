@@ -1,0 +1,6 @@
+<%= render(Ui::SectionComponent.new(title: "Andamento")) do |section| %>
+  <% section.with_actions do %>
+    <%= render(Ui::ButtonComponent.new(label: "Ultimi 7 giorni", variant: :secondary_muted, size: :sm)) %>
+  <% end %>
+  <p class="text-[12.5px] text-gray-500 dark:text-zinc-400">Corpo della sezione.</p>
+<% end %>

@@ -1,0 +1,33 @@
+# CYRA-545 — la pagina da cui un'organizzazione collega i propri servizi esterni. I nomi dei
+# servizi, cosa fanno e dove si prende la chiave vivono in config/locales/integrations/*.yml
+# (sono del dominio, non della pagina); qui sta solo ciò che si legge in questa schermata.
+it:
+  member:
+    integrations:
+      title: Integrazioni
+      help_title: "I servizi esterni collegati con le chiavi dell'organizzazione."
+      services_label: Servizi
+      connected_label: Collegati
+      broken_label: Da controllare
+      status_connected: Collegato
+      status_missing: Non collegato
+      status_broken: Da controllare
+      status_unverified: Non ancora provato
+      features_title: Cosa accende
+      verified_ago: "Chiave provata %{ago} fa: funzionava."
+      never_verified: "La chiave c'è ma non è ancora stata provata: il controllo di ogni giorno la prova entro domani."
+      console_link: Apri il pannello del fornitore
+      key_label: Chiave
+      key_placeholder_missing: Incolla qui la chiave
+      key_placeholder_connected: Lascia vuoto per tenere la chiave che c'è
+      key_hint: "La chiave non si rilegge più: si può solo sostituire."
+      connect: Collega
+      replace: Sostituisci la chiave
+      disconnect: Scollega
+      disconnect_confirm: "Scollegare %{service}? Smettono di funzionare: %{features}."
+      open_github: Configura GitHub
+      connected_notice: "%{service} è collegato: la chiave è stata provata e funziona."
+      disconnected_notice: "%{service} non è più collegato."
+      unchanged_notice: "Niente da cambiare: la chiave di %{service} è rimasta quella di prima."
+      missing_key: "Incolla la chiave di %{service}: senza, non c'è niente da collegare."
+      unknown_service: Questo servizio non esiste.

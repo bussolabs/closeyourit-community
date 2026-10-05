@@ -1,0 +1,54 @@
+<% content_for :title, t("member.guides.crons.title") %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-crons">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "history", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-sky-50 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.crons.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.crons.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.crons.cta"), href: member_monitoring_cron_monitors_path, variant: :primary, size: :sm, icon: "history", test_id: "member-guide-crons-cta") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.crons.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.crons.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.crons.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "bell", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.crons.what_b1") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "hourglass", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.crons.what_b2") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "circle-alert", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.crons.what_b3") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <%# La differenza fra le due parole vive anche qui, non solo sulla pagina del lavoro: chi legge la
+      guida prima di configurare deve sapere cosa aspettarsi. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.crons.words_title") %></h2></div>
+    <div class="px-4 py-4">
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[12.5px]">
+        <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
+          <dt class="font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.crons.status.missed") %></dt>
+          <dd class="mt-0.5 text-gray-500 dark:text-zinc-400"><%= t("member.crons.legend_missed") %></dd>
+        </div>
+        <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
+          <dt class="font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.crons.check_status.fail") %></dt>
+          <dd class="mt-0.5 text-gray-500 dark:text-zinc-400"><%= t("member.crons.legend_fail") %></dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.crons.setup_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.crons.setup_intro") %></p>
+      <%= render Ui::ButtonComponent.new(label: t("member.crons.setup_cta"), href: setup_member_monitoring_cron_monitors_path, variant: :secondary, size: :sm, icon: "plus", test_id: "guide-crons-setup") %>
+    </div>
+  </div>
+</div>

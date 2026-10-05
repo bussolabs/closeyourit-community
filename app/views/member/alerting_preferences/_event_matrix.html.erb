@@ -1,0 +1,97 @@
+<%# locals: (open_group_keys:, telegram_cell_class:, telegram_col_class:, highlight_telegram:) %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-controller="alerting--preferences">
+  <div class="px-5 py-4 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.notifications.list.heading") %></h2>
+    <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.notifications.list.hint") %></p>
+
+    <% if highlight_telegram %>
+      <p class="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-sky-50 dark:bg-sky-500/15 border border-sky-200 dark:border-sky-500/40 text-[11.5px] text-sky-800 dark:text-sky-200"
+         data-test="pref-highlight-telegram">
+        <%= render Ui::IconComponent.new(name: "send", class: "text-[12px] text-sky-500") %><%= t("member.notifications.list.highlight_telegram") %>
+      </p>
+    <% end %>
+
+    <%# Configurazioni pronte: submit del form con `preset`, il server scrive la matrice intera.
+        Funzionano anche senza JS, e la conferma Turbo avvisa che sostituiscono le scelte a mano. %>
+    <div class="mt-4 flex flex-wrap items-center gap-1.5" data-test="pref-presets">
+      <span class="text-[11px] font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wide mr-1"><%= t("member.notifications.presets.heading") %></span>
+      <% ::Notifications::Preset.all.each do |preset| %>
+        <button type="submit" name="preset" value="<%= preset.key %>"
+                data-test="pref-preset-<%= preset.key %>"
+                data-turbo-confirm="<%= t("member.notifications.presets.confirm") %>"
+                title="<%= preset.hint %>"
+                class="inline-flex items-center gap-1.5 h-7 px-3 rounded-md text-[12px] font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/15 border border-indigo-200 dark:border-indigo-500/40 hover:bg-indigo-100 dark:hover:bg-indigo-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1">
+          <%= render Ui::IconComponent.new(name: "wand-sparkles", class: "text-[11px]") %><%= preset.label %>
+        </button>
+      <% end %>
+    </div>
+    <p class="mt-2 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.notifications.presets.hint") %></p>
+
+    <%# Ricerca client-side sul nome dell'avviso: chi arriva per spegnere UNA cosa la trova
+        senza scorrere. Invio non manda il form — filtra e basta. %>
+    <div class="mt-4 relative">
+      <%= render Ui::IconComponent.new(name: "search", class: "absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-gray-400 dark:text-zinc-500") %>
+      <input type="search" data-test="pref-search"
+             data-alerting--preferences-target="search"
+             data-action="input->alerting--preferences#filter search->alerting--preferences#filter keydown.enter->alerting--preferences#noSubmit"
+             aria-label="<%= t("member.notifications.search.label") %>"
+             placeholder="<%= t("member.notifications.search.placeholder") %>"
+             class="w-full h-[34px] pl-8 pr-9 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[12.5px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-500/20">
+      <button type="button" data-action="alerting--preferences#clear" data-test="pref-search-clear"
+              aria-label="<%= t("member.notifications.search.clear") %>"
+              class="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-6 h-6 rounded text-gray-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-stone-100 dark:hover:bg-zinc-800">
+        <%= render Ui::IconComponent.new(name: "x", class: "text-[11px]") %>
+      </button>
+    </div>
+  </div>
+
+  <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+    <% ::Notifications::Catalog.groups_for(Current.account).each do |group| %>
+      <details class="group" data-test="pref-group-<%= group.key %>"
+               data-alerting--preferences-target="group" <%= "open" if open_group_keys.include?(group.key) %>>
+        <summary class="list-none cursor-pointer flex items-center justify-between gap-4 px-5 py-3.5 hover:bg-stone-50 dark:hover:bg-zinc-800">
+          <span class="flex items-center gap-2.5 min-w-0">
+            <%= render Ui::IconComponent.new(name: "chevron-right", class: "text-[11px] text-gray-400 dark:text-zinc-500 transition-transform group-open:rotate-90") %>
+            <span class="font-display text-[13.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= group.label %></span>
+            <span class="text-[11px] text-gray-500 dark:text-zinc-400 font-mono"><%= t("member.notifications.list.group_count", count: group.entries.size) %></span>
+          </span>
+          <span class="hidden md:flex items-center gap-2 text-[10px] font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wide shrink-0">
+            <span class="w-28 text-center"><%= t("member.notifications.list.col_email") %></span>
+            <span class="<%= telegram_col_class %>"><%= t("member.notifications.list.col_telegram") %></span>
+          </span>
+        </summary>
+        <div class="divide-y divide-stone-100 dark:divide-zinc-800 border-t border-stone-100 dark:border-zinc-800">
+          <% group.entries.each do |entry| %>
+            <% ev = entry.event_type %>
+            <div class="flex flex-wrap items-center gap-3 px-5 py-3" data-test="pref-row-<%= ev %>"
+                 data-alerting--preferences-target="row"
+                 data-search="<%= "#{entry.title} #{entry.description}".downcase %>">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-full <%= entry.tone[:bg] %> <%= entry.tone[:fg] %> shrink-0"><%= render Ui::IconComponent.new(name: entry.icon, class: "text-[12px]") %></span>
+              <div class="min-w-0 flex-1">
+                <p class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= entry.title %></p>
+                <p class="text-[11px] text-gray-500 dark:text-zinc-400"><%= entry.description %></p>
+              </div>
+              <%# I controlli vanno a capo sotto il titolo su mobile (basis-full); su md+ restano in riga.
+                  Le label colonna sono hidden md:flex nell'header → su mobile le riproponiamo inline. %>
+              <div class="flex items-end md:items-center gap-3 basis-full md:basis-auto md:shrink-0 pl-10 md:pl-0">
+                <div class="w-28 shrink-0" data-test="pref-cell-email-<%= ev %>">
+                  <span class="md:hidden block text-[9px] font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wide mb-0.5"><%= t("member.notifications.list.col_email") %></span>
+                  <%= render "cadence_select", name: "email_cadences[#{ev}]", selected: @preference.stored_email_cadence(ev), test_id: "pref-email-#{ev}",
+                        aria_label: "#{entry.title} — #{t('member.notifications.list.col_email')}" %>
+                </div>
+                <div class="<%= telegram_cell_class %>" data-test="pref-cell-telegram-<%= ev %>">
+                  <span class="md:hidden block text-[9px] font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wide mb-0.5"><%= t("member.notifications.list.col_telegram") %></span>
+                  <%= render "cadence_select", name: "telegram_cadences[#{ev}]", selected: @preference.stored_telegram_cadence(ev), test_id: "pref-telegram-#{ev}",
+                        aria_label: "#{entry.title} — #{t('member.notifications.list.col_telegram')}" %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </details>
+    <% end %>
+  </div>
+
+  <p class="px-5 py-6 text-[12px] text-gray-500 dark:text-zinc-400" data-test="pref-search-empty"
+     data-alerting--preferences-target="empty" hidden><%= t("member.notifications.search.empty") %></p>
+</div>

@@ -1,0 +1,255 @@
+# Files in the config/locales directory are used for internationalization and
+# are automatically loaded by Rails. If you want to use locales other than
+# English, add the necessary files in this directory.
+#
+# To use the locales, use `I18n.t`:
+#
+#     I18n.t "hello"
+#
+# In views, this is aliased to just `t`:
+#
+#     <%= t("hello") %>
+#
+# To use a different locale, set it with `I18n.locale`:
+#
+#     I18n.locale = :es
+#
+# This would use the information in config/locales/es.yml.
+#
+# To learn more about the API, please read the Rails Internationalization guide
+# at https://guides.rubyonrails.org/i18n.html.
+#
+# Be aware that YAML interprets the following case-insensitive strings as
+# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
+# must be quoted to be interpreted as strings. For example:
+#
+#     en:
+#       "yes": yup
+#       enabled: "ON"
+
+en:
+  # Compact formats for the monitoring chart axes/tooltip (l(time, format: :chart_*)).
+  time:
+    formats:
+      chart_time: "%H:%M"
+      chart_day: "%d/%m"
+      chart_year: "%d/%m/%y"
+  # CYRA-324 — short form with the weekday for the cards ("Mon 5 Aug"): past a few days it says when
+  # something happened without making you do the arithmetic. Rails' English defaults cover the names.
+  date:
+    formats:
+      card: "%a %-d %b"
+      day_month: "%b %-d"
+      day_month_year: "%b %-d, %Y"
+  # Fallback per i simboli di validazione custom (no rails-i18n nel progetto): evita
+  # "translation missing" nei messaggi d'errore dei model. Vedi concern Attachable / Ticket / Comment.
+  errors:
+    messages:
+      not_member: "is not a member of this organization"
+      same_idea: "is the idea itself"
+      other_project: "belongs to another project"
+      already_linked: "is already linked to this idea"
+      is_evolution: "is already the evolution of another idea: evolutions have a single level"
+      has_evolutions: "already has evolutions: it cannot become an evolution itself"
+      already_evolves: "is already the evolution of another idea"
+      is_service: "is a service account: it never opens the pages, so it cannot receive a list"
+      greater_than_or_equal_to_slow: "must be lower than the threshold above which an operation counts as slow"
+      not_in_project: "are not among the project's platforms"
+      too_large: "are too large (max 10 MB, video 20 MB)"
+      invalid_type: "have an unsupported type"
+      monitor_exists: "already has a monitor for this project"
+      too_short: "must be at least three characters: a shorter fragment would hide real services too"
+      too_long: "cannot be longer than %{count} characters each"
+      uptime_unsupported: "needs a web/server platform to be monitored for uptime"
+      not_epic: "must be an epic"
+      self_reference: "cannot be the ticket itself"
+      epic_cannot_be_nested: "does not apply to an epic: an epic cannot sit under another epic"
+      epic_has_children: "cannot change while the epic has child tickets: detach them first"
+      keyword_needs_body: "is not available with the HEAD method (no body)"
+      webhook_url_invalid: "must have a valid public http(s) URL"
+      cross_tenant: "belongs to another organization"
+      host_already_linked: "is already linked to this environment"
+      revoked_host: "is revoked and cannot be linked"
+      servers_disabled: "Servers are disabled for this environment on this project"
+      uptime_disabled: "Uptime is disabled for this environment on this project"
+      secrets_disabled: "Secrets are disabled for this environment on this project"
+      shared_secret_conflict: "is already delegated to this project by an organization secret"
+      local_secret_conflict: "the project already has its own secret with this name in this environment"
+      delegation_conflict: "the project already receives another organization secret with this name in this environment"
+      length_budget_exceeded: "is over the %{count} character limit (currently %{actual}): shorten it or split it up"
+  pagination:
+    per_page: "rows:"
+    info: "%{from}–%{to} of %{total}"
+    previous: "Previous"
+    next: "Next"
+  shared:
+    skip_to_content: "Skip to content"
+    modal_label: "Form"
+    modal_loading: "Loading…"
+    scroll_horizontal: "Scroll for more"
+    actions_cancel: "Cancel"
+    code_block:
+      copy: "Copy"
+      copied: "Copied"
+    actions:
+      close: "Close"
+      row_menu: "Row actions"
+    # CYRA-570: how a chart states it has nothing to draw for the period. Deliberately generic —
+    # callers with a sharper word (messages, visits, occurrences) pass their own.
+    histogram:
+      empty: "No data in this period."
+    # Live character counter next to long text fields (Stimulus char-counter): the JS composes
+    # "N / MAX <unit>", so the string carries no interpolation across to the browser.
+    char_counter:
+      unit: "characters"
+    # CYRA-45: bulk triage bar (errors/metrics), labels shared across the two domains.
+    bulk_triage:
+      selected: "selected"
+      resolve: "Resolve"
+      ignore: "Ignore"
+      reopen: "Reopen"
+      merge: "Merge"
+      select_all: "Select all"
+      select_row: "Select row"
+    tables:
+      filters_menu: "Filters"
+      view_menu: "View"
+      group_by: "Group by"
+      show_as: "Show as"
+      sort_cards: "Sort cards by"
+      clear_search: "Clear search"
+      search: "Search"
+      remove_filter: "Remove %{label} filter"
+      apply: "Filter"
+      reset: "Clear filters"
+      sort_by: "Sort by %{label}"
+      search_mode:
+        label: "Search mode"
+        semantic: "By meaning"
+        exact: "Exact words"
+        placeholder: "%{base} · %{mode}"
+    # CYRA-340: the time range picker, identical across errors, performance and logs.
+    time_range:
+      label: "Range"
+      apply: "Apply"
+      since: "from %{time}"
+      until: "until %{time}"
+      custom: "Custom"
+      from: "From date and time"
+      to: "To date and time"
+      presets:
+        30m: "30 min"
+        24h: "24 hours"
+        7d: "7 days"
+        30d: "30 days"
+      empty_window: "Nothing in the selected range."
+      widen: "Look at the last 30 days"
+    changelog:
+      title: "What's new"
+      new: "New"
+      page_title: "What's new"
+      latest_label: "Latest"
+      view_all: "View full history"
+      close: "Close"
+      empty: "No versions available yet."
+      unknown: "dev"
+      more: "more"
+      # CYRA-445 — filters, search and counts of the full history.
+      search_placeholder: "Search what's new…"
+      filter_area: "Area"
+      filter_kind: "Change type"
+      apply: "Filter"
+      count:
+        one: "1 entry"
+        other: "%{count} entries"
+      counts:
+        releases: "Versions"
+        entries: "Entries"
+      no_results: "Nothing matches these filters"
+      no_results_body: "The history tells what changed in each area of the product: pick the area, the type of change, or search for the words you expect to read."
+      no_results_example: "For example: area “Uptime” and type “Added” to see what appeared on website checks."
+      reset: "Clear filters"
+      sections:
+        added: "Added"
+        changed: "Changed"
+        fixed: "Fixed"
+        removed: "Removed"
+        deprecated: "Deprecated"
+        security: "Security"
+    saved_views:
+      views: "Views"
+      section_title: "Saved filters"
+      save: "Save view"
+      saved: "View saved."
+      deleted: "View deleted."
+      add: "Add another"
+      title: "Save this view"
+      name_placeholder: "View name…"
+      search_placeholder: "Search views…"
+      empty: "No saved views"
+      empty_hint: "Filter the list the way you need, then save it: one click brings it back, filters and sorting included."
+      save_current: "Save this view"
+      presets: "Ready made"
+      preset_mine: "Waiting for me"
+      preset_metrics_recent: "Most recently seen"
+      preset_metrics_costliest: "The ones that cost the most"
+      preset_metrics_untriaged: "To look at, with no ticket"
+      preset_logs_recent_errors: "Errors only, last 24 hours"
+      preset_logs_fatal: "The most serious only"
+      preset_logs_latest_release: "Latest release (%{release})"
+      preset_high_open: "Open, high priority"
+      summary_label: "This view's filters"
+      summary_none: "No active filters"
+      include_filters: "Save the filters too"
+      include_filters_hint: "Without them, the view keeps only how the list looks: grouping and sort."
+      cancel: "Cancel"
+      delete_confirm: "Delete this saved view?"
+      filters:
+        kind: "Kind"
+        status: "Status"
+        status_id: "Status"
+        priority_id: "Priority"
+        assignee_id: "Assignee"
+        project_id: "Project"
+        level: "Level"
+        environment: "Environment"
+        role: "Role"
+        subtype: "Subtype"
+        tag: "Tag"
+        q: "Search"
+        sort: "Sorting"
+        invitations_sort: "Invitations sorting"
+        view: "Grouping"
+        range: "Period"
+      view_values:
+        grouped: "By group"
+        table: "One list"
+      errors:
+        invalid: "Give the view a name."
+  ui:
+    page_header:
+      more: "More"
+      collapse: "Collapse the header"
+      expand: "Expand the header"
+    floating_notice:
+      dismiss: "Close and do not show again"
+    colors:
+      indigo: "Indigo"
+      emerald: "Emerald"
+      violet: "Violet"
+      amber: "Amber"
+      teal: "Teal"
+      sky: "Sky"
+      rose: "Rose"
+      gray: "Gray"
+      blue: "Blue"
+      cyan: "Cyan"
+      green: "Green"
+      lime: "Lime"
+      orange: "Orange"
+      red: "Red"
+      fuchsia: "Fuchsia"
+      pink: "Pink"
+    picker:
+      search: "Search icons…"
+      none: "No icon"

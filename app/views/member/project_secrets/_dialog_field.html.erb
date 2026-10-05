@@ -1,0 +1,20 @@
+<%# locals: (environment:, variable:, delegation:, enabled:, can_read:) %>
+<%# One environment in the row dialog: a shared value is read-only here, a disabled environment says
+    why, otherwise the value, filled on open when readable. %>
+<% field_class = "block w-full rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2.5 py-1.5 font-mono text-[12.5px] text-zinc-900 dark:text-zinc-100 focus:border-indigo-600 dark:focus:border-indigo-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+<div data-test="secret-dialog-field-<%= environment.code %>">
+  <label for="secret-value-<%= environment.id %>-<%= variable&.id || "new" %>" class="flex items-center gap-1.5 text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+    <span class="h-1.5 w-1.5 rounded-full <%= Ui::Colors.swatch(environment.color) %>"></span><%= environment.label %>
+  </label>
+  <% if delegation %>
+    <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.secrets.shared_readonly") %></p>
+  <% elsif variable || enabled %>
+    <textarea id="secret-value-<%= environment.id %>-<%= variable&.id || "new" %>" name="values[<%= environment.id %>]" rows="2"
+              data-secret-row-target="input" data-test="secret-input-<%= variable&.id || "empty-#{environment.code}" %>"
+              <%= tag.attributes(data: { secret_reveal_url: reveal_member_project_secret_path(@project, variable) }) if variable && can_read %>
+              <%= tag.attributes(placeholder: t("member.secrets.value_hidden")) if variable && !can_read %>
+              class="mt-1 <%= field_class %>"></textarea>
+  <% else %>
+    <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.secrets.capability_off") %></p>
+  <% end %>
+</div>

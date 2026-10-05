@@ -1,0 +1,25 @@
+en:
+  member:
+    vault_variables:
+      title: Variable search
+      help_title: Search a variable name across the projects you can see — shows where it exists and where it is missing (project and environment), never the value.
+      search_placeholder: Search by variable name…
+      stat_results: Results
+      stat_absences: Missing
+      count_results:
+        one: 1 result
+        other: "%{count} results"
+      empty_query: Search for a variable
+      empty_query_body: Type a name (or part of it) to see which projects and environments define it, and where it is missing.
+      no_match: No variable found
+      no_match_body: No variable name, among the projects you can see, contains the searched text.
+      filter_project: Project
+      filter_environment: Environment
+      all_projects: All projects
+      all_environments: All environments
+      sort_label: Sort
+      sort_name: By name
+      sort_occurrences: Most present first
+      present_of: "%{present}/%{total} present"
+      cell_present: "%{environment}: present"
+      cell_absent: "%{environment}: missing"

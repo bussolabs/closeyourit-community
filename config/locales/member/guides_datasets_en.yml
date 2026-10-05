@@ -1,0 +1,37 @@
+---
+en:
+  member:
+    guides:
+      index:
+        datasets:
+          title: Datasets
+      datasets:
+        title: Datasets
+        subtitle: Teaching CloseYourIt a choice you redo by hand today.
+        what_title: What it is for
+        what_intro: "There is a choice you keep making, always by the same criteria: you look at something, you read it and you decide. Here you teach it that choice by showing a few dozen cases you have already sorted out yourself; from then on, when a new case comes in, you ask it and you check the answer."
+        what_b1: "Is every report that comes in a fault or a new request? Show it forty you have already sorted, then ask it about the rest."
+        what_b2: "A photo of a part that just came off the line: good or scrap? Show it a few of each and it tells you how it sees the new ones."
+        what_b3: "A customer message: urgent or can it wait? Same story — examples first, questions after."
+        when_title: When it is worth it
+        when_b1: The same question comes back often, not once in a while.
+        when_b2: "The answer is short: one choice out of a few, a yes or no, a number. If the answer is a whole discussion, this is not the right tool."
+        when_b3: You already have the decided cases. Three are enough to start, but under twenty the answer is not reliable.
+        when_b4: A person still decides. What you read here is a suggestion, not a verdict.
+        how_title: How to do it
+        how_step1: Create the collection and pick which project it belongs to. Whoever sees that project sees it.
+        how_step2: "State what you will give it (the text of a report, a photo, a number) and what it has to tell you back. On screen the first column is called \"Input\", the second one \"Target\"."
+        how_step3: Add the cases you have already decided, one per row, with the right answer next to it. Those are the examples it learns from.
+        how_step4: "Press \"Train\": it reads your examples, then tries to answer on its own on a part you kept hidden from it, to see how often it gets it right. It takes a few minutes."
+        how_step5: "From then on open \"Predict\", give it a new case and read the answer."
+        trust_title: How much you can trust it
+        trust_intro: "When it is done you get the percentage of times it answered the way you would have, measured on the cases that were kept hidden from it: it is the most honest estimate there is."
+        trust_b1: If the percentage is low, usually there are not enough examples or the question is not sharp enough.
+        trust_b2: You can redo it as many times as you like after adding more cases. The last run is the one that counts.
+        trust_b3: The answer on a new case stays a suggestion to check, like a colleague's advice.
+        not_title: What it is NOT
+        not_intro: "It has nothing to do with the machines that work on tickets. It does not sort what comes in, it does not answer on its own and it does not start anything automatically: here you are the one asking, one case at a time, when you need it."
+        not_b1: "It does not touch your tickets: what you teach here stays here."
+        not_b2: "It does not learn on its own along the way: it learns from the cases you give it, when you give them."
+        not_b3: It is not a search through your data. It answers about one case at a time, the one you put in front of it.
+        cta: Go to Datasets

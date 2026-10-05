@@ -1,0 +1,24 @@
+<%# locals: (milestone:, can_manage:) %>
+<%# Details panel on the right: code, status (a switch for managers) and due date. %>
+<%= render Ui::SectionComponent.new(title: t("member.milestones.show.details"), body_class: "divide-y divide-stone-100 dark:divide-zinc-800",
+      test_id: "milestone-details") do %>
+  <%= render "member/tickets/detail_row", label: t("member.milestones.col_code"), test_id: "milestone-detail-code" do %>
+    <span class="font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= milestone.code %></span>
+  <% end %>
+  <% if can_manage %>
+    <%# The switch is a full row of its own: it saves by itself and says so. %>
+    <div data-test="milestone-detail-status">
+      <%= render Ui::SwitchComponent.new(name: "active", url: member_project_milestone_path(milestone.project, milestone),
+            checked: milestone.active?, label: t("member.milestones.status_active"),
+            hint: t("member.milestones.show.active_hint"), test_id: "milestone-active-toggle") %>
+    </div>
+  <% else %>
+    <%= render "member/tickets/detail_row", label: t("member.milestones.col_status"), test_id: "milestone-detail-status" do %>
+      <%= render Ui::BadgeComponent.new(label: t("member.milestones.status_#{milestone.active? ? 'active' : 'inactive'}"),
+            color: milestone.active? ? :emerald : :gray, dot: true) %>
+    <% end %>
+  <% end %>
+  <%= render "member/tickets/detail_row", label: t("member.milestones.col_due"), test_id: "milestone-detail-due" do %>
+    <%= render "member/project_milestones/due", milestone: milestone %>
+  <% end %>
+<% end %>

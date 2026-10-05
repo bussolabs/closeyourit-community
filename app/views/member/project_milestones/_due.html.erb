@@ -1,0 +1,15 @@
+<%# locals: (milestone:) %>
+<%# Short due date plus the time left, coloured when close or past. A dash without a due date. %>
+<% if milestone.due_on %>
+  <% state = milestone_due_state(milestone) %>
+  <span class="inline-flex items-center gap-1.5 whitespace-nowrap" data-test="milestone-due" data-due-state="<%= state %>">
+    <% if state == :on_time %>
+      <span class="text-[12.5px] <%= milestone.active? ? 'text-zinc-700 dark:text-zinc-300' : 'text-gray-500 dark:text-zinc-400' %>"><%= milestone_short_date(milestone.due_on) %></span>
+    <% else %>
+      <%= render Ui::BadgeComponent.new(label: milestone_short_date(milestone.due_on), color: MilestonesHelper::MILESTONE_DUE_COLORS.fetch(state), icon: "hourglass", size: :sm) %>
+    <% end %>
+    <span class="text-[11px] text-gray-500 dark:text-zinc-400"><%= milestone_due_relative(milestone.due_on) %></span>
+  </span>
+<% else %>
+  <span class="text-gray-400 dark:text-zinc-500">—</span>
+<% end %>

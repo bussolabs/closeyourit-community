@@ -1,0 +1,8 @@
+<%= t("notifications.digest.mailer.heading", count: @notifications.size) %>
+<%= t("notifications.digest.mailer.intro", org: @organization.name) %>
+
+<% @notifications.each do |n| -%>
+- <%= n.title %><%= " — #{mail_absolute_url(n.url)}" if n.url.present? %>
+<% end -%>
+
+<%= t("notifications.digest.mailer.footer") %>

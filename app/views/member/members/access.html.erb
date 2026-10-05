@@ -1,0 +1,136 @@
+<% content_for :title, t("member.members.access.manage_title") %>
+
+<% is_unscoped = @membership.owner? %>
+<%# CYRA-580 — la scheda «Effettivi» è di sola lettura: i comandi di modifica (e quindi i pulsanti di
+    salvataggio) compaiono solo nelle altre due. %>
+<% editing = !is_unscoped && @tab != "effective" %>
+
+<div class="p-7">
+  <div>
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("member.members.access.manage_title"),
+          counts_test_id: "member-access-counts", tabs_test_id: "member-access-tabs",
+          breadcrumb: [ { label: t("member.members.title"), href: member_members_path }, { label: t("member.members.access.manage_title") } ]) do |h| %>
+      <%# CYRA-580 — three tabs chosen by ?tab=, rendered server-side; the first is read-only and opens the page.
+          T2 — they live in the page header, not on the page ground. %>
+      <% unless is_unscoped %>
+        <% [ [ "effective", "shield-half" ], [ "access", "network" ], [ "overrides", "sliders" ] ].each do |name, icon| %>
+          <% h.with_tab(label: t("member.members.access.tabs.#{name}"), icon: icon, active: @tab == name,
+                        href: access_member_member_path(@membership, tab: (name == "effective" ? nil : name)),
+                        test_id: "member-access-tab-#{name}") %>
+        <% end %>
+      <% end %>
+      <% unless is_unscoped %>
+        <% h.with_counts do %>
+          <%= render Ui::StatLabelComponent.new(label: t("stats.groups", count: @selected_group_ids.size), value: @selected_group_ids.size, test_id: "member-access-count-groups") %>
+          <%= render Ui::StatLabelComponent.new(label: t("stats.projects", count: @selected_project_ids.size), value: @selected_project_ids.size, test_id: "member-access-count-projects") %>
+          <%= render Ui::StatLabelComponent.new(label: t("stats.roles", count: @selected_role_ids.size), value: @selected_role_ids.size, test_id: "member-access-count-roles") %>
+          <%= render Ui::StatLabelComponent.new(label: t("stats.exceptions", count: @overrides.size), value: @overrides.size,
+                value_color: (:indigo if @overrides.any?), test_id: "member-access-count-overrides") %>
+        <% end %>
+      <% end %>
+      <% if editing %>
+        <% h.with_actions do %>
+          <%= render Ui::ButtonComponent.new(label: t("member.members.access.cancel"), href: member_members_path, variant: :secondary_muted, size: :sm) %>
+          <%= render Ui::ButtonComponent.new(label: t("member.members.access.save"), type: "submit", form: "member-access-form", icon: "check", variant: :primary, size: :sm, test_id: "member-access-submit") %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <div class="mt-5 flex items-center gap-2.5 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3" data-test="member-access-identity">
+      <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[11px] font-semibold shrink-0"><%= avatar_initials(@account.name) %></span>
+      <div class="min-w-0">
+        <p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100 truncate"><%= @account.name %></p>
+        <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 truncate"><%= @account.email %></p>
+      </div>
+      <span class="ml-auto">
+        <% role_color = { "owner" => :indigo, "admin" => :sky, "customer" => :teal }.fetch(@membership.role, :gray) %>
+        <%= render Ui::BadgeComponent.new(label: t("member.roles.#{@membership.role}"), color: role_color) %>
+      </span>
+    </div>
+
+    <% if is_unscoped %>
+      <div class="mt-5 flex items-start gap-2.5 rounded-lg border border-indigo-200 dark:border-indigo-500/40 bg-indigo-50 dark:bg-indigo-500/15 px-4 py-3" data-test="member-access-all-notice">
+        <%= render Ui::IconComponent.new(name: "info", class: "text-indigo-500 dark:text-indigo-400 text-[13px] mt-0.5") %>
+        <p class="text-[12px] text-indigo-900 dark:text-indigo-200"><%= t("member.members.access.all_access_notice") %></p>
+      </div>
+    <% else %>
+      <% if @tab == "effective" %>
+        <%# La risposta alla domanda vera in cima alla pagina: prima lo schema dei permessi effettivi
+            (solo per chi può vederlo), poi da dove arriva l'accesso. Nessun campo modificabile. %>
+        <div class="mt-5 space-y-5">
+          <% if @access_matrix %>
+            <%= render "member/shared/access_matrix", subjects: @access_matrix %>
+          <% end %>
+          <%= render "member/members/access_summary",
+                groups: @groups.select { |group| @selected_group_ids.include?(group.id) },
+                projects: @projects.select { |project| @selected_project_ids.include?(project.id) },
+                roles: @roles.select { |role| @selected_role_ids.include?(role.id) },
+                overrides: @overrides,
+                secret_environments: (if @grantable_environments.any?
+                                        { org_wide: @secret_environment_codes,
+                                          per_project: @secret_environment_projects.filter_map { |project|
+                                            codes = @project_secret_environments[project.id]
+                                            [ project, codes ] if codes.present?
+                                          } }
+                                      end) %>
+        </div>
+      <% else %>
+        <%# Il modulo invia i campi della SOLA scheda aperta: il controller applica un blocco solo se
+            lo riceve (Member::MembersController#apply_access), altrimenti salvare le eccezioni
+            azzererebbe gruppi, progetti e ruoli. La scheda viaggia nell'indirizzo dell'azione così un
+            salvataggio rifiutato riporta esattamente qui. %>
+        <%= form_with url: access_member_member_path(@membership, tab: @tab), method: :patch, id: "member-access-form",
+                      class: "mt-5", data: { test: "member-access-form" } do %>
+          <div class="grid grid-cols-1 <%= "lg:grid-cols-[minmax(0,1fr)_360px]" if @access_matrix %> gap-5 items-start">
+            <div class="space-y-5">
+              <% if @tab == "access" %>
+                <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                  <div class="px-5 py-4 border-b border-stone-200 dark:border-zinc-800" data-test="member-access-groups">
+                    <input type="hidden" name="group_ids[]" value="">
+                    <%= render Ui::SelectComponent.new(name: "group_ids", multiple: true, label: t("member.members.access.groups"),
+                          options: @groups.map { |g| [ g.name, g.id, g.color ] }, selected: @selected_group_ids,
+                          hint: t("member.members.access.groups_hint"), placeholder: t("member.members.access.groups"), test_id: "member-access-groups") %>
+                  </div>
+                  <div class="px-5 py-4" data-test="member-access-projects">
+                    <input type="hidden" name="project_ids[]" value="">
+                    <%= render Ui::SelectComponent.new(name: "project_ids", multiple: true, label: t("member.members.access.projects"),
+                          options: @projects.map { |p| [ p.name, p.id, p.color ] }, selected: @selected_project_ids,
+                          hint: t("member.members.access.projects_hint"), placeholder: t("member.members.access.projects"), test_id: "member-access-projects") %>
+                  </div>
+                </div>
+
+                <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-5" data-test="member-direct-roles">
+                  <input type="hidden" name="role_ids[]" value="">
+                  <%= render Ui::SelectComponent.new(name: "role_ids", multiple: true, label: t("member.members.access.direct_roles"),
+                        options: @roles.map { |r| [ r.name, r.id, r.color ] }, selected: @selected_role_ids,
+                        hint: t("member.members.access.direct_roles_hint"), placeholder: t("member.members.access.add_role"), test_id: "member-direct-roles") %>
+                </div>
+
+                <%# CYRA-78 — confine ambienti sui segreti: dove questa persona può leggerli e cambiarli.
+                    Vuoto = ovunque; l'eccezione per un singolo progetto vince sulla riga generale. %>
+                <% if @grantable_environments.any? %>
+                  <%= render "member/members/access_secret_environments" %>
+                <% end %>
+              <% else %>
+                <%= render "member/members/access_overrides" %>
+              <% end %>
+            </div>
+
+            <%# Lo schema what-if resta accanto ai comandi, non sotto: su una scheda alta come quella
+                delle eccezioni, un riquadro in fondo non lo raggiunge nessuno mentre modifica. %>
+            <% if @access_matrix %>
+              <div class="lg:sticky lg:top-[calc(var(--page-header-h,0px)+0.5rem)]" data-controller="rbac-preview"
+                   data-rbac-preview-url-value="<%= access_preview_member_member_path(@membership) %>"
+                   data-rbac-preview-form-value="member-access-form">
+                <div data-rbac-preview-target="schema">
+                  <%= render "member/shared/access_matrix", subjects: @access_matrix %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

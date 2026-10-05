@@ -1,0 +1,11 @@
+<% content_for :title, t("member.guides.traces.title") %>
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-traces">
+  <%= render Ui::PageHeaderComponent.new(title: t("member.guides.traces.title"), subtitle: t("member.guides.traces.subtitle"), breadcrumb: [{ label: t("member.guides.index.title"), href: member_guides_path }, { label: t("member.guides.traces.title") }]) do |header| %>
+    <% header.with_actions do %><%= render Ui::ButtonComponent.new(label: t("member.guides.traces.cta"), href: member_monitoring_traces_path, size: :sm, icon: "git-branch") %><% end %>
+  <% end %>
+  <%= render Ui::SectionComponent.new(title: t("member.guides.traces.title")) do %>
+    <%= render Ui::StackComponent.new(gap: 4) do %>
+      <% %w[body filters missing related limits].each do |key| %><p class="text-sm text-gray-600 dark:text-zinc-400"><%= t("member.guides.traces.#{key}") %></p><% end %>
+    <% end %>
+  <% end %>
+</div>

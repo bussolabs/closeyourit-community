@@ -1,0 +1,60 @@
+<%# locals: list, mine — one list in the index as a panel edited in place: tick, remove and add items without
+    opening it. Own panels are drag targets for todo-reorder; a shared list is read only. The frame keeps
+    each edit inside its panel. %>
+<% items = list.items.sort_by { |item| [ item.done? ? 1 : 0, item.position.to_i ] } %>
+<%= turbo_frame_tag dom_id(list, :panel), class: "block min-w-0",
+      target: ("_top" if @query.present?),
+      data: { test: mine ? "todo-list-card" : "todo-list-shared-card", id: list.id, todo_reorder_target: ("item" if mine && @query.blank?) } do %>
+  <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="space-y-2 border-b border-stone-200 dark:border-zinc-800 px-4 py-3">
+      <div class="flex min-w-0 items-center gap-2">
+        <% if mine %>
+          <% if @query.blank? %>
+            <%= render Ui::IconComponent.new(name: "grip-vertical", label: t("member.todo_lists.drag_hint"), class: "shrink-0 cursor-grab text-[11px] text-gray-300 dark:text-zinc-600") %>
+          <% end %>
+          <span data-test="todo-list-color" class="h-2 w-2 shrink-0 rounded-[3px] <%= todo_list_color_class(list) %>"></span>
+        <% end %>
+        <%= link_to list.name, member_todo_list_path(list), data: { turbo_frame: "_top" },
+              class: "min-w-0 flex-1 truncate font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100 hover:underline" %>
+        <% if mine %>
+          <span class="shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="todo-list-progress">
+            <%= list.items_count.zero? ? t("member.todo_lists.progress_empty") : t("member.todo_lists.progress", done: list.done_count, total: list.items_count) %>
+          </span>
+        <% else %>
+          <span class="shrink-0"><%= render Ui::BadgeComponent.new(label: t("member.todo_lists.readonly_badge"), color: :gray, icon: "eye", size: :sm) %></span>
+        <% end %>
+      </div>
+      <% unless list.items_count.zero? %>
+        <div data-test="todo-list-bar" class="h-1 overflow-hidden rounded-full bg-stone-100 dark:bg-zinc-800">
+          <div class="h-full bg-indigo-500" style="width: <%= todo_list_progress_percent(list) %>%"></div>
+        </div>
+      <% end %>
+      <%# A text line, not a badge: the names can be long and must truncate on a phone. %>
+      <% if mine && list.shares.any? %>
+        <p data-test="todo-list-shared-with" class="truncate text-[11.5px] text-indigo-600 dark:text-indigo-400">
+          <%= render Ui::IconComponent.new(name: "share-2", class: "mr-1 text-[10px]") %><%= t("member.todo_lists.shared_with", names: list.shares.filter_map { |share| share.account&.name }.sort.join(", ")) %>
+        </p>
+      <% elsif !mine %>
+        <p class="text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.todo_lists.shared_by", name: list.account.name) %></p>
+      <% end %>
+    </div>
+    <ul>
+      <%= render partial: "member/todo_lists/panel_item", collection: items, as: :item, locals: { list: list, mine: mine } %>
+    </ul>
+    <% if mine %>
+      <%= form_with url: member_todo_list_items_path(list, from: "index", q: @query.presence), method: :post, class: "flex items-center gap-2 px-4 py-2" do %>
+        <%= render Ui::IconComponent.new(name: "plus", class: "shrink-0 text-[12px] text-gray-400 dark:text-zinc-500") %>
+        <input type="text" name="title" required autocomplete="off" placeholder="<%= t("member.todo_lists.panel.add_placeholder") %>"
+               aria-label="<%= t("member.todo_lists.panel.add_label", list: list.name) %>"
+               <%= 'data-controller="focus-on-connect"'.html_safe if params[:focus] == list.id %>
+               class="h-7 min-w-0 flex-1 border-0 bg-transparent p-0 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-0"
+               data-test="todo-panel-add-<%= list.id %>">
+        <%# The field has no button: say which key adds the item. %>
+        <span class="shrink-0 text-[11px] text-gray-500 dark:text-zinc-400" data-test="todo-panel-add-hint">
+          <kbd class="rounded-sm border border-stone-200 dark:border-zinc-800 px-1 font-mono text-[10px]"><%= t("member.todo_lists.panel.add_key") %></kbd>
+          <%= t("member.todo_lists.panel.add_hint") %>
+        </span>
+      <% end %>
+    <% end %>
+  </section>
+<% end %>

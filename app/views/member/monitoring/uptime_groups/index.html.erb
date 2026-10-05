@@ -1,0 +1,85 @@
+<% content_for :title, t("member.uptime_groups.title") %>
+<% can_manage = can?("uptime_groups.manage") %>
+
+<div class="p-7 space-y-6" data-test="member-uptime-groups">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.uptime_groups.title"),
+        subtitle: t("member.uptime_groups.help_title"),
+        breadcrumb: [ { label: t("member.uptime.title"), href: member_monitoring_monitors_path }, { label: t("member.uptime_groups.title") } ],
+        test_id: "uptime-groups-header",
+        counts_test_id: "uptime-groups-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.uptime_groups.stat_groups"), value: @pagination.total, test_id: "uptime-groups-count-groups") %>
+    <% end %>
+    <% if can_manage %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.uptime_groups.new"), href: new_member_monitoring_uptime_group_path, variant: :primary, size: :sm, icon: "plus", test_id: "uptime-groups-new") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if @groups.empty? && params[:q].blank? %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="uptime-groups-empty">
+      <div class="flex flex-col items-center justify-center text-center px-6 py-16">
+        <span class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500"><%= render Ui::IconComponent.new(name: "layers", class: "text-[22px]") %></span>
+        <h2 class="mt-4 font-display text-[16px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.uptime_groups.empty") %></h2>
+        <p class="mt-1.5 text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-sm"><%= t("member.uptime_groups.empty_body") %></p>
+        <% if can_manage %>
+          <%= link_to new_member_monitoring_uptime_group_path, class: "mt-5 inline-flex items-center justify-center rounded-md h-[34px] px-3.5 gap-[7px] text-[12.5px] bg-indigo-600 text-white font-semibold hover:bg-indigo-700", data: { test: "uptime-groups-empty-new" } do %>
+            <%= render Ui::IconComponent.new(name: "plus", class: "text-[13px]") %><%= t("member.uptime_groups.new") %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="uptime-groups-table">
+      <%= render(Ui::TableToolbarComponent.new(
+            url: member_monitoring_uptime_groups_path, query: params[:q], framed: true,
+            search_placeholder: t("member.uptime_groups.search_placeholder"),
+            search_test_id: "uptime-groups-search", test_id: "uptime-groups-toolbar")) do |toolbar| %>
+        <% toolbar.with_views do %>
+          <%= render Ui::SavedViewsComponent.new(resource_type: "uptime_groups", views: @saved_views,
+                index_helper: :member_monitoring_uptime_groups_path, current_filters: params) %>
+        <% end %>
+      <% end %>
+      <div>
+        <% if @groups.empty? %>
+          <p class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="uptime-groups-no-match"><%= t("member.uptime_groups.no_match") %></p>
+        <% else %>
+          <%= render(Ui::TableComponent.new(stacked: true, label: t("member.uptime_groups.title"))) do |t| %>
+            <% t.with_head do %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime_groups.col_group"), sort: "group") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime_groups.col_monitors"), sort: "monitors", initial: :desc, align: :right, classes: "w-32") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: tag.span(t("member.uptime_groups.edit"), class: "sr-only"), classes: "w-10", visible: can_manage) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+            <% end %>
+            <% @groups.each do |group| %>
+              <%= render Ui::TableComponent::RowComponent.new(href: member_monitoring_uptime_group_path(group), link_label: group.name, test_id: "uptime-group-row-#{group.id}") do %>
+                <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+                  <%= link_to member_monitoring_uptime_group_path(group), class: "flex items-center gap-2.5", data: { test: "uptime-group-row-link-#{group.id}" } do %>
+                    <%= render Ui::EntityMarkComponent.new(record: group) %>
+                    <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= group.name %></span>
+                  <% end %>
+                <% end %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.uptime_groups.col_monitors"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { @monitor_counts[group.id].to_i.to_s } %>
+                <%= render Ui::TableComponent::CellComponent.new(actions: true, visible: can_manage) do %>
+                  <%= render Ui::ConfirmDialogComponent.new(title: t("member.uptime_groups.delete_dialog.title", name: group.name),
+                        url: member_monitoring_uptime_group_path(group), confirm_label: t("member.uptime_groups.delete"),
+                        test_id: "uptime-group-delete-dialog-#{group.id}") do |dialog| %>
+                    <% dialog.with_body { t("member.uptime_groups.delete_dialog.body") } %>
+                    <%= render(Ui::RowMenuComponent.new(test_id: "uptime-group-row-menu-#{group.id}", aria_label: t("member.uptime_groups.row_menu_label", name: group.name))) do %>
+                      <%= link_to edit_member_monitoring_uptime_group_path(group), class: Ui::RowMenuComponent.item_class, data: { test: "uptime-group-row-edit-#{group.id}" } do %><%= render Ui::IconComponent.new(name: "pen", class: "w-[1.25em] text-gray-400 dark:text-zinc-500 text-[12px]") %><%= t("member.uptime_groups.edit") %><% end %>
+                      <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+                      <%= dialog.menu_trigger(label: t("member.uptime_groups.delete"), icon: "trash", test_id: "uptime-group-row-delete-#{group.id}") %>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+          <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "uptime-groups-pagination")) %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,30 @@
+<% content_for :title, t("member.guides.assistant.title") %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-assistant">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "mic", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.assistant.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.assistant.title") } ]) do |h| %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.assistant.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <%# Every bullet is a sentence to say or type; the limits section lists rules instead. %>
+  <% [ [ "how", %w[how_b1 how_b2 how_b3], "check" ],
+       [ "ask", %w[ask_b1 ask_b2 ask_b3 ask_b4 ask_b5 ask_b6], "message-circle" ],
+       [ "do", %w[do_b1 do_b2 do_b3 do_b4 do_b5 do_b6 do_b7], "message-circle" ],
+       [ "limits", %w[limits_b1 limits_b2 limits_b3 limits_b4], "check" ] ].each do |section, bullets, icon| %>
+    <%= render Ui::SectionComponent.new(title: t("member.guides.assistant.#{section}_title"), test_id: "guide-assistant-section") do %>
+      <div class="space-y-3">
+        <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.assistant.#{section}_intro") %></p>
+        <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+          <% bullets.each do |key| %>
+            <li class="flex items-start gap-2.5" data-test="<%= icon == "check" ? "guide-assistant-rule" : "guide-assistant-example" %>"><%= render Ui::IconComponent.new(name: icon, class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.assistant.#{key}") %></span></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,14 @@
+<%# locals: (ticket:) %>
+<%# The upload form, shared by the full list and the compact empty row (CYRA-883). %>
+<%= form_with url: member_ticket_attachments_path(ticket), method: :post, multipart: true, data: { test: "member-ticket-attachment-form", controller: "attachment-upload", attachment_upload_selected_value: t("member.tickets.attachments.selected"), attachment_upload_uploading_value: t("member.tickets.attachments.uploading") } do %>
+  <label class="flex flex-col items-center justify-center gap-1.5 px-4 py-5 rounded-md border border-dashed border-stone-300 dark:border-zinc-700 bg-stone-50/60 dark:bg-zinc-800/60 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/40 dark:hover:bg-indigo-500/10" data-action="dragover->attachment-upload#dragover dragleave->attachment-upload#dragleave drop->attachment-upload#drop">
+    <%= render Ui::IconComponent.new(name: "cloud-upload", class: "text-[18px] text-stone-400 dark:text-zinc-500") %>
+    <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.attachments.add") %></span>
+    <span class="font-mono text-[10px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.attachments.add_hint") %></span>
+    <%= file_field_tag "files[]", multiple: true, id: "member-ticket-attachment-input", class: "hidden", data: { test: "member-ticket-attachment-input", attachment_upload_target: "input", action: "change->attachment-upload#change" }, accept: App::Constants::ATTACHMENT_CONTENT_TYPES.join(",") + ",.md,.mov,.mp4,.webm,.mkv,.avi" %>
+  </label>
+  <p class="mt-2 text-[12px] text-zinc-700 dark:text-zinc-300 truncate" hidden data-attachment-upload-target="status" data-test="member-ticket-attachment-selected"></p>
+  <div class="mt-2 flex justify-end">
+    <%= render Ui::ButtonComponent.new(label: t("member.tickets.attachments.add"), type: "submit", variant: :secondary, size: :sm, icon: "paperclip", test_id: "member-ticket-attachment-submit", data: { attachment_upload_target: "submit" }) %>
+  </div>
+<% end %>

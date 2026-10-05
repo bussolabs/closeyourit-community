@@ -1,0 +1,12 @@
+#!/bin/bash -e
+
+# Prepara il database all'avvio del server. In Rails 8 `db:prepare` è connect-first: migra il
+# primary e carica gli schemi solid_queue/cache/cable, ma NON chiama db:create sui DB postgres
+# già provisionati → sicuro anche senza privilegio CREATEDB. (`solid:prepare` NON esiste come task.)
+# Solo il role web esegue `./bin/rails server`; il worker (solid_queue:start) salta questo blocco.
+if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+  ./bin/rails db:prepare
+  ./bin/rails db:seed
+fi
+
+exec "${@}"

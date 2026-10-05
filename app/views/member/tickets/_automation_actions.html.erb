@@ -1,0 +1,40 @@
+<%# locals: (ticket:, workflow:, decides:, can_manage:) %>
+<%# CYRA-883 — reassess and close on one row, in their own panel (T1); the reason for closing opens on click. Both effects stay
+    written below, so nobody presses them blind. %>
+<%# Rivaluta (CYRA-675): quando comparire lo dice il dominio (Agents::Workflow#reassessable?). %>
+<% reassess = decides && workflow.reassessable? %>
+<%# Annulla: fuori dal banner quando la lavorazione NON è review_blocked (nel banner c'è già), in secondo
+    piano (`secondary_muted`, CYRA-410) e con l'effetto dichiarato sotto. %>
+<% cancel = can_manage && workflow.phase != "review_blocked" && !workflow.cancelled_at? && !workflow.completed_at? %>
+<% if reassess || cancel %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3.5 space-y-1.5" data-test="automation-actions">
+    <div class="flex items-start gap-2 flex-wrap">
+      <% if reassess %>
+        <div data-test="automation-reassess">
+          <%= render Ui::ButtonComponent.new(label: t("member.approvals.actions.reassess"),
+                href: member_ticket_automation_reassessment_path(ticket), method: :post,
+                variant: :secondary, size: :sm, icon: "rotate-cw", test_id: "automation-reassess-submit") %>
+        </div>
+      <% end %>
+      <% if cancel %>
+        <details class="group min-w-0 flex-1" data-test="automation-cancel-toggle">
+          <summary class="list-none cursor-pointer inline-flex items-center gap-1.5 h-[30px] px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[12px] font-medium text-gray-500 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+            <%= render Ui::IconComponent.new(name: "ban", class: "text-[11px]") %><%= t("member.tickets.automation.cancel_open") %>
+          </summary>
+          <%= form_with url: member_ticket_automation_cancellation_path(ticket), method: :post, class: "mt-2 flex items-center gap-2" do %>
+            <input name="reason" required placeholder="<%= t("member.tickets.automation.cancel_reason") %>"
+                   class="min-w-0 flex-1 h-[34px] rounded-md border border-stone-200 dark:border-zinc-800 px-3 text-[12.5px] placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-400">
+            <%= render Ui::ButtonComponent.new(label: t("member.tickets.automation.cancel"), type: "submit",
+                  variant: :secondary_muted, size: :sm, icon: "ban", test_id: "automation-cancel") %>
+          <% end %>
+        </details>
+      <% end %>
+    </div>
+    <% if reassess %>
+      <p class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="automation-reassess-effect"><%= t("member.approvals.reassess_hint") %></p>
+    <% end %>
+    <% if cancel %>
+      <p class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="automation-cancel-effect"><%= t("member.tickets.automation.cancel_effect") %></p>
+    <% end %>
+  </div>
+<% end %>

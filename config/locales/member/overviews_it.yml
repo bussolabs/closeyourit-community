@@ -1,0 +1,140 @@
+it:
+  member:
+    overviews:
+      subtitles:
+        product: Il lavoro da fare, le proposte del team e quanto ha ciascuno.
+        observability: Gli errori, i log e la velocità delle tue applicazioni.
+        infrastructure: "Le macchine, i siti e i lavori programmati: cosa non sta funzionando adesso."
+        alerts: Quando il sistema ti avvisa, cosa ti ha già detto e dove ti arriva.
+        automation: Le macchine che lavorano per te e le decisioni che aspettano.
+        seo: Come i motori di ricerca vedono i tuoi siti, pagina per pagina.
+        settings: Chi entra, cosa può fare e le impostazioni che valgono per tutti.
+      settings_sections:
+        people: Persone e accessi
+        projects: Progetti
+        organization: Organizzazione
+      alerts:
+        matrix:
+          label: Avvisi per progetto
+        rules:
+          label: Regole
+          caption:
+            one: regola attiva sua
+            other: regole attive sue
+          zero: solo le regole dell'organizzazione
+        muted:
+          label: In silenzio
+          caption:
+            one: regola zittita adesso
+            other: regole zittite adesso
+          zero: niente in silenzio
+        unread:
+          label: Da leggere
+          caption:
+            one: notifica di progetto per te
+            other: notifiche di progetto per te
+          zero: niente da leggere
+        received:
+          label: Ultimi 7 giorni
+          caption:
+            one: notifica di progetto ricevuta
+            other: notifiche di progetto ricevute
+          zero: niente ricevuto
+      seo:
+        matrix:
+          label: Motori di ricerca per progetto
+        sites:
+          label: Siti
+          set_up: Aggiungi un sito
+          caption:
+            one: sito configurato
+            other: siti configurati
+          zero: nessun sito
+        issues:
+          label: Rilievi
+          caption:
+            one: ancora aperto
+            other: ancora aperti
+          zero: niente di aperto
+        critical:
+          label: Critici
+          caption:
+            one: da sistemare per primo
+            other: da sistemare per primi
+          zero: niente di critico
+        pages:
+          label: Pagine
+          caption:
+            one: pagina visitata
+            other: pagine visitate
+          zero: non ancora visitate
+      knowledge:
+        matrix:
+          label: Conoscenza per progetto
+        pages:
+          label: Pagine
+          caption:
+            one: pagina da leggere
+            other: pagine da leggere
+          zero: ancora niente di scritto
+        decisions:
+          label: Decisioni
+          caption:
+            one: decisione messa per iscritto
+            other: decisioni messe per iscritto
+          zero: nessuna decisione scritta
+        review:
+          label: Da approvare
+          caption:
+            one: proposta in attesa
+            other: proposte in attesa
+          zero: niente in attesa
+        to_file:
+          label: Da archiviare
+          caption:
+            one: accettata, non ancora al suo posto
+            other: accettate, non ancora al loro posto
+          zero: tutto al suo posto
+      vault:
+        matrix:
+          label: Segreti per progetto
+        variables:
+          label: Variabili
+          caption:
+            one: variabile custodita
+            other: variabili custodite
+          zero: nessuna variabile
+        files:
+          label: File
+          caption:
+            one: file custodito
+            other: file custoditi
+          zero: nessun file
+        anomalies:
+          label: Anomalie
+          caption:
+            one: ancora aperta
+            other: ancora aperte
+          zero: niente che non va
+          kinds:
+            drift_hole:
+              one: "%{count} mancante in un ambiente"
+              other: "%{count} mancanti in un ambiente"
+            empty_environment:
+              one: "%{count} ambiente senza segreti"
+              other: "%{count} ambienti senza segreti"
+            broken_delegation:
+              one: "%{count} delega rotta"
+              other: "%{count} deleghe rotte"
+        rotation:
+          label: Da ruotare
+          caption:
+            one: valore oltre la data
+            other: valori oltre la data
+          zero: niente di scaduto
+        requests:
+          label: Richieste
+          caption:
+            one: modifica che decidi tu
+            other: modifiche che decidi tu
+          zero: niente da decidere

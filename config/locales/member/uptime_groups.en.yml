@@ -1,0 +1,70 @@
+en:
+  member:
+    uptime:
+      ungrouped: Ungrouped
+      group_by_grouped: Uptime group
+      group_by_table: None
+      group_by_table_hint: one list
+      ranges:
+        30m: "30 min"
+        24h: "24 hours"
+        7d: "7 days"
+        30d: "30 days"
+        1y: "1 year"
+      stat_incidents_open: Open incidents
+      incident_feed:
+        title: Recent incidents
+        empty: No recent incidents.
+      form:
+        group: Group
+        group_placeholder: No group
+        group_hint: "Optional. A public group shows this monitor on its public status page, even when the monitor’s own page is private."
+    uptime_groups:
+      title: Uptime groups
+      help_title: "Checks grouped, even across projects, with their status page."
+      new: New group
+      edit: Edit
+      delete: Delete
+      row_menu_label: "Actions for group %{name}"
+      delete_confirm: Delete this group? Monitors stay but become ungrouped.
+      delete_dialog:
+        title: "Delete the %{name} group?"
+        body: "Its monitors stay, but become ungrouped, and its public status page no longer opens. This cannot be undone."
+      empty: No uptime groups yet.
+      empty_body: Group related monitors under one group — e.g. "Critical services" across projects.
+      count: "%{count} groups"
+      search_placeholder: Search groups…
+      no_match: No group matches your search.
+      col_group: Group
+      col_monitors: Monitors
+      stat_groups: Groups
+      stat_monitors: Monitors
+      monitors_count:
+        one: 1 monitor
+        other: "%{count} monitors"
+      created: Group created.
+      updated: Group saved.
+      deleted: Group deleted.
+      publish: Publish status page
+      unpublish: Unpublish status page
+      published: Group status page published.
+      unpublished: Group status page unpublished.
+      form:
+        new_title: New uptime group
+        edit_title: Edit uptime group
+        name: Name
+        name_placeholder: Critical services
+        color: Color
+        icon: Icon
+        icon_hint: Pick a Font Awesome icon, or upload an image below — the image takes precedence.
+        icon_image: Or upload an image
+        icon_image_hint: "PNG, JPG or WEBP · max 1 MB"
+        description: Description
+        description_placeholder: What this group of services covers…
+        description_hint: Shown on the group's public status page.
+        save_new: Create group
+        save_edit: Save changes
+        cancel: Cancel
+      show:
+        monitors: Monitors in this group
+        no_monitors: No monitors in this group yet.

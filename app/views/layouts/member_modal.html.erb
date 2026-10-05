@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<%# CYRA-933 — what the member modal asks for: the New form alone, in the frame the modal fills. %>
+<html lang="<%= I18n.locale %>">
+  <head>
+    <title><%= content_for(:title) || "CloseYourIt" %></title>
+  </head>
+  <body>
+    <turbo-frame id="<%= turbo_frame_request_id %>">
+      <%# The page's toasts stay behind the modal: a form that fails with only a flash says why here. %>
+      <% if flash.any? %>
+        <div class="space-y-2 p-4 pb-0" data-test="modal-flash">
+          <% flash.each do |type, message| %>
+            <%= render Ui::AlertComponent.new(variant: flash_variant(type), test_id: "modal-flash-#{type}") do %><%= message %><% end %>
+          <% end %>
+        </div>
+      <% end %>
+      <% if content_for?(:modal_size) %><div hidden data-modal-size="<%= content_for(:modal_size) %>"></div><% end %>
+      <%= yield %>
+    </turbo-frame>
+  </body>
+</html>

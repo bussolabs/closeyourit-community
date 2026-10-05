@@ -1,0 +1,48 @@
+<% content_for :title, "#{@project.name} — #{t('member.monitoring.analytics.title')}" %>
+<% summary = @snapshot[:summary] %>
+
+<main id="main-content" class="flex-1 w-full max-w-4xl mx-auto px-4 py-8" data-test="public-analytics">
+  <div class="flex items-center justify-between flex-wrap gap-3 mb-5">
+    <h1 class="font-display text-[20px] font-semibold text-zinc-900"><%= @project.name %></h1>
+    <div class="inline-flex rounded-md border border-stone-200 p-0.5 bg-stone-50" data-test="public-range">
+      <% ::Analytics::Pageview::BUCKETS.keys.each do |r| %>
+        <%= link_to r, share_analytics_path(@slug, range: r),
+              class: "h-[26px] px-2.5 inline-flex items-center rounded-[5px] text-[12px] font-medium #{@range == r ? 'bg-white text-zinc-900 border border-stone-200' : 'text-gray-500 hover:text-zinc-900'}" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="flex items-center flex-wrap gap-1.5 mb-5">
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.pageviews"), value: summary[:pageviews]) %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.visitors"), value: summary[:visitors], value_color: :indigo) %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.bounce"), value: analytics_bounce_label(summary[:bounce_rate])) %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.duration"), value: analytics_duration_label(summary[:visit_duration])) %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.views_per_visit"), value: summary[:views_per_visit]) %>
+  </div>
+
+  <% max_bucket = @snapshot[:timeseries].map { |b| b[:pageviews].to_i }.max.to_i %>
+  <div class="rounded-lg border border-stone-200 bg-white p-4 mb-6">
+    <div class="flex items-end gap-0.5 h-32">
+      <% @snapshot[:timeseries].each do |bucket| %>
+        <div class="flex-1 rounded-sm <%= bucket[:pageviews].to_i.zero? ? 'bg-stone-100' : 'bg-indigo-400' %>"
+             style="height: <%= [ analytics_bucket_height(bucket[:pageviews], max_bucket), 2 ].max %>%"
+             title="<%= analytics_bucket_title(bucket) %>"></div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <%= render "panel", title: t("member.monitoring.analytics.pages_title"), rows: @snapshot[:top_pages], key: :path %>
+    <%= render "panel", title: t("member.monitoring.analytics.referrers_title"), rows: @snapshot[:top_referrers], key: :referrer_host %>
+    <%= render "panel", title: t("member.monitoring.analytics.channels_title"), rows: @snapshot[:channels], key: :value, channel_labels: true %>
+    <%= render "panel", title: t("member.monitoring.analytics.locations_title"), rows: @snapshot[:breakdowns]["country_code"], key: :value, flag: true %>
+  </div>
+
+</main>
+
+<footer class="w-full max-w-4xl mx-auto px-4 py-6 mt-2 text-center">
+  <p class="text-[11.5px] text-gray-500">
+    <%= link_to "CloseYourIt", website_root_path, class: "hover:text-gray-600" %> — <%= t("member.monitoring.analytics.title") %>
+  </p>
+  <p class="px-4 py-4 text-center text-xs"><%= render "shared/publisher_credit" %></p>
+</footer>

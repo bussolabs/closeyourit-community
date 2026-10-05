@@ -1,0 +1,81 @@
+{
+  "en": {
+    "member": {
+      "installation": {
+        "title": "Install an integration",
+        "subtitle": "Choose an observed tuple, configure your application and check persisted receipt.",
+        "observations": "observations",
+        "select": "Choose your project and observation",
+        "project": "Project",
+        "observation": "Observed tuple",
+        "version": "Different package version (optional)",
+        "load": "Load selection",
+        "selection_note": "Search visible projects by name or key, then load an exact observation. Another version does not inherit support.",
+        "claims": {
+          "implemented": "Code available · local observation",
+          "verified": "Verified tuple",
+          "released": "Released tuple"
+        },
+        "observed": "observed locally",
+        "not_attested": "not attested",
+        "claim_note": "A passing signal does not promote the whole integration. One project receipt proves persistence only, not package provenance or a complete trace.",
+        "evidence": "Evidence and limits",
+        "run": "Run ID",
+        "finished": "Observed at",
+        "artifact": "Package SHA-256",
+        "manifest": "Manifest SHA-256",
+        "backend": "Backend commit",
+        "history": "Observation history",
+        "claim": "Support claim",
+        "unobserved": "Version not observed",
+        "unobserved_body": "Select an exact catalog observation. No compatibility range or latest-version support is inferred.",
+        "install": "Install the exact artifact",
+        "artifact_note": "Check the package SHA-256 shown above before installation. Local candidates are not published packages; do not substitute a registry download with the same version. Registry commands select a version; independently verify the artifact digest.",
+        "both_php": "Both PHP observations install the same adapter and require both an ingest bearer and a numeric Sentry DSN for the same project. They are partitions of one execution, not independent adapter modes.",
+        "private_note": "Inject private server credentials at runtime from your authorized CloseYourIt vault. This guide never reads or displays the bearer. Never put it in browser or mobile code.",
+        "reveal": "Show public Sentry DSN",
+        "token_environment": "Selected active ingest token environment: %{environment}. Use matching runtime configuration.",
+        "key_unavailable": "A public DSN is unavailable here. A visible-project token manager can select an active ingest token; use SENTRY_DSN as a runtime placeholder.",
+        "configure": "Configure and capture once",
+        "lifecycle": "These standalone diagnostic examples capture a local ID, not proof of delivery. Initialize once; flush or close only at the application shutdown boundary. Compose existing callbacks instead of replacing them.",
+        "php_bootstrap": "Load the prelude before Composer on every HTTP, Artisan, queue and test entrypoint. Preserve other dont-discover exclusions and existing routing/exception handlers. Set OTEL_PHP_TRACE_CLI_ENABLED=true before Composer for queue workers. Existing disabled flags or another provider owner keep the adapter inactive. Restart workers after ownership changes; never cache secret-bearing configuration.",
+        "php_full": "Full PHP bootstrap and ownership guide",
+        "removal": "To remove the integration, stop its owned instrumentation, remove initialization/provider/exception hooks and the dependency, then restart long-running processes. Do not shut down another provider owner. Retained telemetry follows project retention.",
+        "copy": "Copy code",
+        "copied": "Copied",
+        "copy_error": "Copy failed",
+        "receipt": "Check the first persisted signal",
+        "receipt_note": "Use the exact ID returned by your application and matching environment/release. The check searches this project’s server receipts from the last 15 minutes. Missing data stays pending; an SDK enqueue or HTTP acknowledgment is not a receipt.",
+        "php_capture": "Run this only inside the already initialized protected application diagnostic. A trace context must be valid inside the actual request; wait for request termination to finish the span. Do not shut down the provider inside the route. A null event ID is not receipt success.",
+        "environment": "Environment",
+        "release": "Application release",
+        "event_id": "Event ID",
+        "trace_id": "Trace ID",
+        "span_id": "Span ID",
+        "check": "Check receipt",
+        "not_checked": "Not checked. No event is sent by this page.",
+        "pending": "No matching persisted receipt yet. Check the exact IDs, configuration and interval, then retry.",
+        "checking": "Checking persisted metadata…",
+        "received_errors": "One error event was persisted at",
+        "received_traces": "One OTLP span was persisted at",
+        "invalid": "Select a valid observation and provide exact IDs, environment, release and valid UTC bounds.",
+        "unavailable": "The catalog or receipt check is unavailable. Retry after the service is available.",
+        "no_projects": "No visible projects",
+        "no_projects_body": "Installation examples remain available. Select a project you can access before revealing its public configuration or checking a receipt.",
+        "selection_limits": "Only exact observations are listed. The selector shows up to 100 observations and 200 visible projects; history remains paginated. A different version has no inferred support.",
+        "project_search": "Find a project by name or key",
+        "no_matching_projects": "No matching visible projects",
+        "no_matching_projects_body": "Change or clear the project search. No receipt check has been performed.",
+        "not_found": "Receipt resource not found."
+      },
+      "guides": {
+        "index": {
+          "installation": {
+            "title": "Install an integration",
+            "body": "Choose an observed tuple, configure your application and check persisted receipt."
+          }
+        }
+      }
+    }
+  }
+}

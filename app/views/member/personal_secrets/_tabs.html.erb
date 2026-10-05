@@ -1,0 +1,6 @@
+<%# locals: header:, active_tab — adds the tabs to the page header (DESIGN.md T2). %>
+<%# CYRA-428 — le due schede dei segreti personali. Erano due voci di menu distinte: chi cerca una
+    chiave non sa se sia stata salvata come testo o come file, e doveva sceglierlo prima di cercare.
+    Idioma member/preferences/_tabs: route distinte, schede che dicono quale stai guardando. %>
+<% header.with_tab(label: t("member.vault.tabs.variables"), href: member_personal_secrets_path, active: active_tab.to_s == "variables", icon: "code", test_id: "personal-tab-variables") %>
+<% header.with_tab(label: t("member.vault.tabs.files"), href: member_personal_secret_assets_path, active: active_tab.to_s == "files", icon: "file-lock", test_id: "personal-tab-files") %>

@@ -1,0 +1,7 @@
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+  <%= render Ui::MetricTileComponent.new(label: "Unresolved errors", value: 7, icon: "bug", value_color: :red, href: "#", aria_label: "Vedi errori") %>
+  <%= render Ui::MetricTileComponent.new(label: "Monitors down", value: 1, icon: "heart-pulse", value_color: :red, href: "#", aria_label: "Vedi monitor giù") %>
+  <%= render Ui::MetricTileComponent.new(label: "Incidents", value: 0, icon: "triangle-alert") %>
+  <%= render Ui::MetricTileComponent.new(label: "Logs today", value: 12, icon: "file-text", value_color: :red, href: "#", aria_label: "Vedi log") %>
+  <%= render Ui::MetricTileComponent.new(label: "Silent", value: 1, icon: "eye-off", value_color: :amber, tooltip: "Sembrano sani solo per assenza di dati") %>
+</div>

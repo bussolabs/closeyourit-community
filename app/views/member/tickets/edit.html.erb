@@ -1,0 +1,6 @@
+<%= render "form",
+      ticket: @ticket,
+      url: member_ticket_path(@ticket),
+      method: :patch,
+      title: t("member.tickets.form.edit_title"),
+      submit_label: t("member.tickets.form.save_edit") %>

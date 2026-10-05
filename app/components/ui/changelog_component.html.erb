@@ -1,0 +1,45 @@
+<% if sidebar? %>
+  <div class="md:hidden shrink-0 border-t border-stone-200 dark:border-zinc-800 px-3 py-2">
+    <%= link_to helpers.member_changelog_path, data: { test: "sidebar-version" },
+          class: "w-full flex items-center gap-2.5 px-3 h-8 rounded-md text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors" do %>
+      <%= render Ui::IconComponent.new(name: "git-branch", class: "w-[1.25em] text-[13px] text-indigo-500 dark:text-indigo-400 shrink-0") %>
+      <span class="font-mono text-[12px] text-gray-600 dark:text-zinc-400"><%= version_label %></span>
+    <% end %>
+  </div>
+<% else %>
+<%= tag.div class: "inline-flex", data: wrapper_data do %>
+  <%= render Ui::ButtonComponent.new(variant: :ghost, size: :sm, icon: "git-branch", test_id: "footer-version",
+        data: { action: trigger_action }) do |button| %>
+    <span class="font-mono"><%= version_label %></span>
+    <% if unseen? %>
+      <% button.with_trailing do %>
+        <span class="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400"
+              data-ui--seen-signal-target="signal" data-test="footer-version-new">
+          <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400" aria-hidden="true"></span>
+          <%= t("shared.changelog.new") %>
+        </span>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render Ui::ModalComponent.new(title: t("shared.changelog.title"), subtitle: @current&.label, padded: false,
+        test_id: "changelog-modal",
+        data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+    <% modal.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("shared.changelog.view_all"), href: helpers.member_changelog_path,
+            variant: :secondary, size: :sm, test_id: "changelog-view-all") %>
+      <%= render Ui::ButtonComponent.new(label: t("shared.changelog.close"), variant: :secondary_muted, size: :sm,
+            data: { action: "ui--dialog#close" }, test_id: "changelog-close") %>
+    <% end %>
+    <div class="max-h-[60vh] overflow-y-auto px-4 divide-y divide-stone-100 dark:divide-zinc-800">
+      <% if @releases.any? %>
+        <% @releases.each do |release| %>
+          <%= render Ui::ChangelogReleaseComponent.new(release: release) %>
+        <% end %>
+      <% else %>
+        <%= render Ui::EmptyNoteComponent.new(text: t("shared.changelog.empty"), class: "py-6", test_id: "changelog-empty") %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
+<% end %>

@@ -1,0 +1,98 @@
+<% content_for :title, t("member.teams.title") %>
+
+<div class="p-7">
+  <div>
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("member.teams.title"),
+          subtitle: t("member.teams.help_title"),
+          breadcrumb: [ { label: t("member.teams.title") } ],
+          counts_test_id: "teams-counts") do |h| %>
+      <% h.with_counts do %>
+        <%= render Ui::StatLabelComponent.new(label: t("stats.teams", count: @total_teams), value: @total_teams, test_id: "teams-count-teams") %>
+      <% end %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.teams.new"), href: new_member_team_path, variant: :primary, size: :sm, icon: "plus", test_id: "teams-new") %>
+      <% end %>
+    <% end %>
+
+    <div class="mt-6 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <%= render(Ui::TableToolbarComponent.new(
+            url: member_teams_path, query: params[:q], framed: true,
+            search_placeholder: t("member.teams.search_placeholder"),
+            search_test_id: "teams-search", test_id: "teams-toolbar")) %>
+      <div>
+
+        <%# CYRA-555 — cercare un nome che non c'è faceva scrivere «ancora nessun team» a chi ne ha sei,
+            e per rivederli bisognava svuotare il campo a mano. %>
+        <% if @teams.empty? && params[:q].present? %>
+          <%= render Ui::NoResultsComponent.new(query: params[:q], reset_href: member_teams_path,
+                body: t("member.teams.no_results_body", count: @total_teams),
+                icon: "users", test_id: "teams-no-results", reset_test_id: "teams-reset-search") %>
+        <% elsif @teams.empty? %>
+          <%= render Ui::EmptyStateComponent.new(title: t("member.teams.empty"), body: t("member.teams.empty_body"),
+                icon: "users", test_id: "teams-empty") do |empty| %>
+            <% empty.with_action do %>
+              <%= render Ui::ButtonComponent.new(label: t("member.teams.new"), href: new_member_team_path, variant: :primary, size: :sm, icon: "plus", test_id: "teams-empty-new") %>
+            <% end %>
+          <% end %>
+        <% else %>
+          <%= render(Ui::TableComponent.new(stacked: true, label: t("member.teams.title"))) do |t| %>
+            <% t.with_head do %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.teams.th_team"), sort: "team") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.teams.th_roles"), sort: "roles", initial: :desc) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.teams.th_scope")) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.teams.th_members"), sort: "members", initial: :desc) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.teams.edit_title"), label_hidden: true, classes: "w-10") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+            <% end %>
+            <% @teams.each do |team| %>
+              <% scope_names = (team.scoped_groups.map(&:name) + team.scoped_projects.map(&:name)) %>
+              <%= render Ui::TableComponent::RowComponent.new(href: edit_member_team_path(team), link_label: team.name, test_id: "teams-row-#{team.id}") do %>
+                <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+                  <%= link_to edit_member_team_path(team), class: "inline-flex items-center gap-2 text-[13px] font-medium text-zinc-900 dark:text-zinc-100" do %>
+                    <span class="w-2.5 h-2.5 rounded-[3px] <%= Ui::Colors.swatch(team.color.presence || "gray") %>"></span><%= team.name %>
+                  <% end %>
+                <% end %>
+                <%= render Ui::TableComponent::CellComponent.new(label: t("member.teams.th_roles")) do %>
+                  <div class="flex flex-wrap gap-1">
+                    <% if team.roles.empty? %>
+                      <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.teams.no_roles") %></span>
+                    <% else %>
+                      <% team.roles.each do |role| %>
+                        <%= render Ui::BadgeComponent.new(label: role.name, color: (role.color.presence || "gray").to_sym, dot: true) %>
+                      <% end %>
+                    <% end %>
+                  </div>
+                <% end %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.teams.th_scope"), class: "text-[12px] text-gray-500 dark:text-zinc-400")) { scope_names.empty? ? t("member.teams.no_scope") : scope_names_summary(scope_names) } %>
+                <%= render Ui::TableComponent::CellComponent.new(label: t("member.teams.th_members")) do %>
+                  <div class="flex gap-1">
+                    <% team.members.first(3).each do |m| %>
+                      <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 text-[10px] font-semibold ring-2 ring-white dark:ring-zinc-900"><%= avatar_initials(m.name) %></span>
+                    <% end %>
+                    <% if team.members.size > 3 %>
+                      <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 text-[10px] font-semibold ring-2 ring-white dark:ring-zinc-900">+<%= team.members.size - 3 %></span>
+                    <% end %>
+                  </div>
+                <% end %>
+                <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+                  <%= render Ui::ConfirmDialogComponent.new(title: t("member.teams.delete_dialog.title", name: team.name),
+                        url: member_team_path(team), confirm_label: t("member.teams.delete"),
+                        test_id: "team-delete-dialog-#{team.id}") do |dialog| %>
+                    <% dialog.with_body { t("member.teams.delete_dialog.body", members: t("member.teams.used_members", count: team.members.size)) } %>
+                    <%= render Ui::RowMenuComponent.new(test_id: "teams-menu-#{team.id}") do %>
+                      <%= link_to t("member.teams.edit_title"), edit_member_team_path(team), class: Ui::RowMenuComponent.item_class %>
+                      <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+                      <%= dialog.menu_trigger(label: t("member.teams.delete"), icon: "trash", test_id: "teams-delete-#{team.id}") %>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+      <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "teams-pagination") %>
+    </div>
+  </div>
+</div>

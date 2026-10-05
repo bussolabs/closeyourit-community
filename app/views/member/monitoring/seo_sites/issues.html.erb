@@ -1,0 +1,31 @@
+<% content_for :title, t("member.monitoring.seo.titles.issues") %>
+
+<div class="p-7 space-y-6" data-test="member-seo-site-issues">
+  <%= render "member/monitoring/seo_sites/header", site: @site, active_tab: "issues",
+        open_count: @open_count, critical_count: @critical_count, high_count: @high_count,
+        ignored_count: @ignored_count, pages_count: @site_pages_count %>
+
+  <% if @issues.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.seo_sites.show.issues_empty"),
+          body: t("member.monitoring.seo_sites.show.issues_empty_body"), icon: "circle-check",
+          framed: true, test_id: "seo-site-issues-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="seo-site-issues-table">
+      <%# Lo stesso partial di riga dell'elenco generale: due rese diverse della stessa cosa
+          significherebbero due posti da correggere ogni volta. %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.monitoring.seo.title"))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.check"), sort: "check") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.url")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.severity"), sort: "severity", classes: "w-28") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.area"), classes: "w-32") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.last_seen"), sort: "seen", classes: "w-36") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+        <% end %>
+        <%= render partial: "member/monitoring/seo/issue", collection: @issues, as: :issue,
+              locals: { show_project: false } %>
+      <% end %>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "seo-site-issues-pagination")) %>
+    </div>
+  <% end %>
+</div>

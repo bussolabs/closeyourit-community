@@ -1,0 +1,9 @@
+en:
+  assistant:
+    errors:
+      blank: "Write a question."
+      no_answer: "I could not find an answer to this question."
+      too_long: "The question is too long: %{max} characters at most."
+      unavailable: "The assistant is not available right now."
+      too_many_turns: "I could not answer: the question took too many steps. Try splitting it in two."
+      too_much_context: "I could not answer: the question pulls in too much data. Try narrowing it to one project or one period."

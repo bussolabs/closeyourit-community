@@ -1,0 +1,68 @@
+<%# locals: projects:, project:, environments:, environment:, range:, show_ranges:, include_automated:,
+    share_link:
+    Toolbar dashboard: progetto + environment (GET form), range (link che preservano il resto) e
+    condivisione pubblica.
+    CYRA-449 — resa anche sopra la schermata di collegamento: senza, chi capitava su un progetto mai
+    collegato non aveva modo di passare a un altro progetto. Il selettore di periodo invece compare
+    solo con dei dati, perché su zero visite non sceglie niente. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="analytics-toolbar">
+  <div class="flex items-center flex-wrap gap-3 px-4 py-3">
+    <%# CYRA-500 — il form si applica al cambio di un campo, come i periodi qui accanto: prima
+        progetto e ambiente aspettavano un bottone e gli altri controlli no. %>
+    <%= form_with url: member_monitoring_analytics_path, method: :get,
+          class: "flex items-center flex-wrap gap-3",
+          data: { controller: "ui--auto-submit", action: "change->ui--auto-submit#submit" } do %>
+      <%= hidden_field_tag :range, range %>
+      <%= hidden_field_tag :automated, ("1" if include_automated), id: "toolbar-automated" %>
+      <div class="w-56"><%= render Ui::SelectComponent.new(name: "project_id", multiple: false,
+            options: projects.map { |p| [ p.name, p.id, p.color ] }, selected: project.id,
+            placeholder: t("member.monitoring.analytics.filter_project"), test_id: "analytics-project") %></div>
+      <div class="w-40"><%= render Ui::SelectComponent.new(name: "environment", multiple: false,
+            options: (environments | [ environment ]).map { |e| [ e, e ] }, selected: environment,
+            placeholder: t("member.monitoring.analytics.filter_environment"), test_id: "analytics-environment") %></div>
+      <button type="submit" class="h-[30px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[12px] font-medium text-zinc-900 dark:text-zinc-100 hover:bg-stone-50 dark:hover:bg-zinc-800" data-test="analytics-apply"><%= t("member.monitoring.analytics.apply") %></button>
+    <% end %>
+    <%# Le visite di controllo («il sito è acceso?») sono escluse dai conti: qui si rivedono, quando
+        servono davvero. Il link porta con sé progetto, ambiente, periodo e filtri attivi. %>
+    <%= link_to member_monitoring_analytics_path(request.query_parameters.merge("automated" => (include_automated ? nil : "1")).compact),
+          class: "h-[30px] px-2.5 inline-flex items-center gap-1.5 rounded-md border text-[12px] font-medium #{include_automated ? 'border-indigo-300 dark:border-indigo-500/50 bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : 'border-stone-200 dark:border-zinc-800 text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}",
+          data: { test: "analytics-automated-toggle" } do %>
+      <%= render Ui::IconComponent.new(name: include_automated ? "eye" : "eye-off", class: "text-[11px]") %>
+      <%= t("member.monitoring.analytics.automated_toggle") %>
+    <% end %>
+    <div class="ml-auto flex items-center flex-wrap gap-2">
+      <% if show_ranges %>
+        <div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800" data-test="range-selector">
+          <% ::Analytics::Pageview::BUCKETS.keys.each do |r| %>
+            <%# Il periodo conserva il resto della barra (filtri attivi e visite automatiche comprese):
+                cambiare periodo non deve azzerare in silenzio quello che si stava guardando. %>
+            <%= link_to r, member_monitoring_analytics_path(request.query_parameters.merge("project_id" => project.id, "environment" => environment, "range" => r)),
+                  class: "h-[26px] px-2.5 inline-flex items-center rounded-[5px] text-[12px] font-medium #{range == r ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-stone-200 dark:border-zinc-800' : 'text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}",
+                  data: { test: "range-#{r}" } %>
+          <% end %>
+        </div>
+      <% end %>
+      <%# CYRA-503 — creare il link pubblico era l'ultima cosa della pagina, dopo quattordici riquadri
+          che nella configurazione predefinita sono vuoti: chi arrivava aveva smesso di scorrere molto
+          prima. Qui sta accanto al periodo, e c'è anche quando non c'è ancora nessun dato. Se il link
+          esiste già l'azione non si ripete: porta all'elenco in fondo, dove si copia e si revoca. %>
+      <% if share_link %>
+        <%= link_to "#analytics-share",
+              class: "h-[30px] px-2.5 inline-flex items-center gap-1.5 rounded-md border border-indigo-300 dark:border-indigo-500/50 bg-indigo-50 dark:bg-indigo-500/15 text-[12px] font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-500/25",
+              data: { test: "analytics-share-open" } do %>
+          <%= render Ui::IconComponent.new(name: "share-2", class: "text-[11px]") %>
+          <%= t("member.monitoring.analytics.share.active") %>
+        <% end %>
+      <%# CYRA-697 — senza la chiave il pulsante non c'e': pubblicare la dashboard porta i dati fuori
+          dall'organizzazione, e mostrare un'azione che il server nega e' solo un vicolo cieco. %>
+      <% elsif can?("analytics.share.manage", scope: project) %>
+        <%= button_to member_monitoring_analytics_share_path(project_id: project.id),
+              class: "h-[30px] px-2.5 inline-flex items-center gap-1.5 rounded-md bg-zinc-900 text-white text-[12px] font-medium hover:bg-zinc-800",
+              form_class: "inline-flex", data: { test: "analytics-share-create" } do %>
+          <%= render Ui::IconComponent.new(name: "share-2", class: "text-[11px]") %>
+          <%= t("member.monitoring.analytics.share.create") %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,103 @@
+<%# locals: batch, plan, frame (CYRA-825: il riquadro in cui tornare dopo l'accettazione in blocco) %>
+<%# CYRA-592 — La plancia. Una riga per lavorazione, una colonna per ciascuna delle cinque fasi.
+    Una riga si legge da sinistra a destra (dove è arrivata), una colonna dall'alto in basso (dove si
+    fermano tutte): la seconda lettura è il motivo per cui questa pagina esiste, e funziona solo se
+    le colonne ci sono SEMPRE tutte — anche quelle non ancora raggiunte. Una riga con meno celle
+    sposterebbe le altre di posto e la verticale salterebbe.
+
+    I nomi delle fasi stanno SOLO qui nelle intestazioni: ripeterli su ogni riga scriverebbe la
+    stessa parola centodieci volte.
+
+    Le caselle di selezione (CYRA-284) restano quelle della pila: stesso form, stesso controller,
+    stesse righe idonee. Cambia solo dove stanno — la prima colonna invece del margine sinistro. %>
+<% selectable = plan.page.records.any? { |row| row.item.bulk_approvable } %>
+<%# CYRA-899 — the keyboard controller sits on the whole board: rows, their buttons and checkboxes. %>
+<div class="space-y-3" data-test="approvals-board" data-controller="approvals-board-keys"
+     data-keyboard-doc="<%= approvals_board_keyboard_docs.to_json %>">
+  <%# CYRA-899 — approving from the row: one empty form OUTSIDE the bulk one, which each row button
+      joins through its `form` attribute. The button sends only its own key; inside the bulk form it
+      would also send every ticked checkbox. %>
+  <%= form_with url: member_home_approvals_bulk_path(state: batch.filter, project: batch.project, agent_id: batch.agent,
+                                                     phase: plan.phase),
+                method: :post, id: "approvals-approve-one", data: { turbo_frame: local_assigns[:frame] } do %>
+  <% end %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden" data-test="approvals-board-panel">
+    <%# CYRA-924 — the filter bar sits inside the panel (C61) but OUTSIDE the bulk form: it is a GET
+        form, and HTML forbids nested forms (CYRA-651). %>
+    <%= render "member/home/approvals/filters", batch: batch, phase: plan.phase %>
+    <%# CYRA-825 — l'indirizzo dell'azione porta TUTTI e tre i filtri accesi, non il solo stato: dopo
+        una sforbiciata in blocco si torna nella stessa coda, e con progetto e agente fuori la coda si
+        riallargava da sola. `turbo_frame` tiene il resoconto e i conteggi dentro il riquadro. %>
+    <%= form_with url: member_home_approvals_bulk_path(state: batch.filter, project: batch.project,
+                                                       agent_id: batch.agent, phase: plan.phase),
+                  method: :post,
+                  data: { controller: "ui--bulk-select", turbo_frame: local_assigns[:frame] } do %>
+      <%# La barra sta sopra la tabella, fuori da ciò che scorre: dentro sparirebbe appena si scende. %>
+      <% if selectable %>
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1.5 px-4 py-2 border-b border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800"
+             data-ui--bulk-select-target="bar" hidden data-test="approvals-bulk-bar">
+          <span class="font-mono text-[11px] text-gray-600 dark:text-zinc-400 whitespace-nowrap">
+            <span data-ui--bulk-select-target="count">0</span> <%= t("member.approvals.bulk.selected") %>
+          </span>
+          <span class="ml-auto">
+            <%= render Ui::ButtonComponent.new(label: t("member.approvals.bulk.approve"), type: "submit",
+                  variant: :success, size: :sm, icon: "check", test_id: "approvals-bulk-approve") %>
+          </span>
+        </div>
+      <% end %>
+
+      <%# Filtro acceso su uno stato che si è svuotato: lo si dice, invece di mostrare una tabella muta. %>
+      <% if plan.page.records.empty? %>
+        <div class="px-4 py-6 text-center" data-test="approvals-board-empty">
+          <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.approvals.filters.empty") %></p>
+          <%= link_to t("member.approvals.filters.show_all"), member_home_approvals_path,
+                class: "mt-1 inline-block text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300" %>
+        </div>
+      <% else %>
+        <%# CYRA-904 — the action column is pinned to the right edge: the decision never scrolls out of sight. %>
+        <%= render(Ui::TableComponent.new(stacked: true, grouped: true, sticky: :last, label: t("member.approvals.title"),
+              selectable: (selectable && { test_id: "approvals-select-all" }))) do |table| %>
+          <% table.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.approvals.board.columns.ticket")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.approvals.board.columns.project")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.approvals.board.columns.version"), sort: "version", initial: :desc) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.approvals.board.columns.wait"), sort: "wait", initial: :desc, test_id: "approvals-board-head-wait") %>
+            <%# CYRA-904 — the six steps are one narrow column of dots: six wide columns pushed wait,
+                agent and the approve button past the right edge. %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.approvals.board.columns.steps"), test_id: "approvals-board-head-steps") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.approvals.board.columns.state")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.approvals.board.columns.action"), align: :right) %>
+          <% end %>
+
+          <% plan.groups.each do |group| %>
+            <% key = group.key %>
+            <%# CYRA-899 — the group header is the kind of decision, with the words of the state filter
+                and how many rows it holds HERE. Without JS it stays open and the board still reads. %>
+            <%# CYRA-904 — rows without a report are ticked together from here, not tagged one by one. %>
+            <% bare = selectable ? group.rows.count { |row| row.item.no_report && row.item.bulk_approvable } : 0 %>
+            <% label = safe_join([ tag.span(class: "inline-block w-1.5 h-1.5 mr-2 rounded-full align-middle #{Ui::Colors.swatch(group.rows.first.item.tone)}", "aria-hidden": "true"),
+                                   t("member.approvals.filters.#{group.state}") ]) %>
+            <%= render(Ui::TableComponent::GroupRowComponent.new(key: key, colspan: table.column_count, label: label,
+                  count: count_label("member.approvals.board.group_count", group.size), test_id: "approvals-board-group",
+                  toggle_test_id: "approvals-board-group-#{key}")) do |group_row| %>
+              <% if bare.positive? %>
+                <% group_row.with_actions do %>
+                  <button type="button" data-action="approvals-board-keys#selectBare"
+                          data-approvals-board-keys-group-param="<%= key %>" data-test="approvals-select-no-report"
+                          class="rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2 py-0.5 text-[11.5px] font-medium text-zinc-900 dark:text-zinc-100 hover:bg-stone-100 dark:hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+                    <%= t("member.approvals.board.select_no_report", count: bare) %>
+                  </button>
+                <% end %>
+              <% end %>
+            <% end %>
+            <% group.rows.each do |row| %>
+              <%= render "member/home/approvals/board_row", row: row, batch: batch,
+                    selectable: selectable, group_key: key, columns: table.column_count %>
+            <% end %>
+          <% end %>
+        <% end %>
+        <%= render(Ui::PaginationComponent.new(pagination: plan.page, test_id: "approvals-pagination")) %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

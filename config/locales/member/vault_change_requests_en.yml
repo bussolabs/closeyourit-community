@@ -1,0 +1,42 @@
+en:
+  member:
+    vault_change_requests:
+      title: Secret changes
+      help_title: Changes to protected secrets waiting to be approved or rejected by a second responsible person (two-person approval). This is a separate queue from «Approvals», which collects decisions about work (analyses, tickets, questions).
+      stat_total: Pending
+      stat_decidable: To decide
+      stat_mine: Your requests
+      stat_total_hint: Every pending change you can see — the ones you can decide plus your own.
+      stat_decidable_hint: "The ones you can approve or reject. Never your own: the confirmation belongs to a second approver."
+      stat_mine_hint: The changes you requested, waiting for another responsible person to sign off.
+      empty: No secret changes pending
+      empty_body: When someone edits a protected secret, the request shows up here until a second responsible person approves or rejects it.
+      how_title: How protection works
+      how_protected: "A secret is protected when its project turns on two-person approval and the environment is marked as protected: from then on every change or deletion comes through here instead of being applied right away."
+      how_approver: Anyone allowed to manage the secrets of that project can approve or reject, as long as they are not the same person who requested the change.
+      how_meanwhile: "In the meantime the value does not change: the request stays pending until a decision arrives, and whoever requested it can always withdraw it."
+      protect_cta: Turn on protection in a project
+      col_project: Project
+      col_environment: Environment
+      col_variable: Variable
+      col_action: Action
+      col_requester: Requester
+      col_value: Value
+      col_actions: Actions
+      action_set: Change
+      action_remove: Deletion
+      requester_deleted: Deleted account
+      requested_ago: "requested %{time} ago"
+      approve: Approve
+      approve_confirm: Approve this request? The secret will be updated right away.
+      reject: Reject
+      reject_title: Reject the request
+      reason_label: Reason for rejection
+      reason_placeholder: Explain why you're rejecting this request...
+      reject_dialog_cancel: Cancel
+      reject_confirm: Confirm rejection
+      withdraw: Withdraw
+      withdraw_confirm: Withdraw this request? It will not be applied.
+      approved: "Change request for %{name} approved and applied."
+      rejected: "Change request for %{name} rejected."
+      cancelled: "Change request for %{name} withdrawn."

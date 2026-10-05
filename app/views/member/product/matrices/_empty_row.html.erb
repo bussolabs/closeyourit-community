@@ -1,0 +1,20 @@
+<%# Invito ad agire su un prodotto ancora vuoto (Scenario 2), al posto di una riga di zeri. Chi può
+    gestire raggiunge la creazione in un clic: la prima categoria se il prodotto è del tutto vuoto,
+    altrimenti la prima funzionalità. A chi guarda soltanto resta un promemoria neutro. %>
+<% if can_manage %>
+  <% if category_count.zero? %>
+    <%= link_to new_member_product_category_path(matrix_id: group.id),
+          class: "inline-flex items-center gap-1.5 text-[12.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300",
+          data: { test: "product-matrix-empty-cta-#{group.id}" } do %>
+      <%= render Ui::IconComponent.new(name: "plus", class: "text-[11px]") %><%= t("member.product.matrices.empty_row.cta_category") %>
+    <% end %>
+  <% else %>
+    <%= link_to new_member_product_feature_path(matrix_id: group.id),
+          class: "inline-flex items-center gap-1.5 text-[12.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300",
+          data: { test: "product-matrix-empty-cta-#{group.id}" } do %>
+      <%= render Ui::IconComponent.new(name: "plus", class: "text-[11px]") %><%= t("member.product.matrices.empty_row.cta_feature") %>
+    <% end %>
+  <% end %>
+<% else %>
+  <span class="text-[12.5px] text-gray-400 dark:text-zinc-500" data-test="product-matrix-empty-hint-<%= group.id %>"><%= t("member.product.matrices.empty_row.view_only") %></span>
+<% end %>

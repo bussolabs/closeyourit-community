@@ -1,0 +1,24 @@
+<%# Top paesi per visitatori unici (geo IP → country inline, l'IP non è mai persistito; v1 solo country). %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="analytics-locations">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.analytics.locations_title") %></h2>
+  </div>
+  <div class="p-4">
+    <% if countries.empty? %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.no_data") %></p>
+    <% else %>
+      <% max = countries.map { |c| c[:visitors].to_i }.max %>
+      <ul class="space-y-2">
+        <% countries.each do |row| %>
+          <li class="relative" data-test="analytics-country-row">
+            <div class="absolute inset-y-0 left-0 rounded bg-indigo-50 dark:bg-indigo-500/15" style="width: <%= analytics_row_width(row[:visitors], max) %>%"></div>
+            <div class="relative flex items-center justify-between gap-2 px-2 py-1">
+              <span class="truncate text-[12.5px] text-zinc-900 dark:text-zinc-100"><span class="mr-1.5"><%= analytics_country_flag(row[:value]) %></span><%= link_to row[:value], analytics_filter_url("country_code", row[:value]), class: "hover:text-indigo-600 dark:hover:text-indigo-400" %></span>
+              <span class="shrink-0 font-mono text-[12px] text-gray-500 dark:text-zinc-400"><%= row[:visitors] %></span>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+</div>

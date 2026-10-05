@@ -1,0 +1,15 @@
+<%# Append incrementale del blocco successivo di card nella colonna, poi footer aggiornato (CYRA-390). %>
+<%# Le card entrano nella STESSA lista board_column_<id> (target di drag e broadcast), così restano %>
+<%# spostabili e i realtime le trovano. Il footer si rimpiazza con la pagina dopo, o si svuota. %>
+<% @cards.each do |ticket| %>
+  <%= turbo_stream.append "board_column_#{@status.id}" do %>
+    <%= render "member/tickets/board_card", ticket: ticket, can_manage: @can_manage, highlight: params[:q], blocked: @blocked_ticket_ids.include?(ticket.id), awaiting: @awaiting_ticket_ids.include?(ticket.id), open_questions: @open_questions_counts.fetch(ticket.id, 0) %>
+  <% end %>
+<% end %>
+<%= turbo_stream.replace "board_more_#{@status.id}" do %>
+  <div id="board_more_<%= @status.id %>" class="mt-2.5">
+    <% if @has_more %>
+      <%= render "member/tickets/board_more", status: @status, next_page: @next_page %>
+    <% end %>
+  </div>
+<% end %>

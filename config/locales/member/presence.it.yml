@@ -1,0 +1,16 @@
+it:
+  member:
+    presence:
+      online_title: Online ora
+      online_count: "%{count} online"
+      only_you: Solo tu
+      trigger_label:
+        one: Connessione realtime, %{count} utente online
+        other: Connessione realtime, %{count} utenti online
+      empty: Nessun altro utente online
+      more_title:
+        one: e un altro membro online
+        other: e altri %{count} membri online
+      viewers_count:
+        one: "%{count} sta guardando"
+        other: "%{count} stanno guardando"

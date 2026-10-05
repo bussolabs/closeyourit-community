@@ -1,0 +1,27 @@
+<% thresholds = Metrics::Thresholds.for(@project) %>
+<%= render Ui::SectionComponent.new(title: t("member.project_settings.thresholds_section"), id: "thresholds",
+      class: "scroll-mt-20", body_class: "px-4 py-4 space-y-4", test_id: "project-thresholds-section") do |section| %>
+  <% section.with_actions do %><%= render "member/project_settings/save_action", anchor: "thresholds" %><% end %>
+  <%= render Ui::GridComponent.new(cols: 1, md: 2, gap: 5) do %>
+    <%= render Ui::InputComponent.new(
+          name: "performance_fast_ms", type: "number", min: 1, max: 600_000,
+          label: t("member.project_settings.performance_fast_ms_label"),
+          test_id: "performance-fast-ms", value: @project.performance_fast_ms,
+          placeholder: t("member.project_settings.performance_fast_ms_placeholder"),
+          hint: t("member.project_settings.performance_fast_ms_hint"),
+          error: @errors&.dig(:performance_fast_ms)&.first) %>
+
+    <%= render Ui::InputComponent.new(
+          name: "performance_slow_ms", type: "number", min: 1, max: 600_000,
+          label: t("member.project_settings.performance_slow_ms_label"),
+          test_id: "performance-slow-ms", value: @project.performance_slow_ms,
+          placeholder: t("member.project_settings.performance_slow_ms_placeholder"),
+          hint: t("member.project_settings.performance_slow_ms_hint"),
+          error: @errors&.dig(:performance_slow_ms)&.first) %>
+  <% end %>
+
+  <div class="flex items-center gap-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2" data-test="project-settings-thresholds-effective">
+    <%= render Ui::IconComponent.new(name: "timer", class: "text-[12px] text-gray-400 dark:text-zinc-500") %>
+    <span class="text-[12.5px] text-zinc-700 dark:text-zinc-300"><%= t("member.project_settings.thresholds_effective", fast: metric_duration_label(thresholds[:fast]), slow: metric_duration_label(thresholds[:slow])) %></span>
+  </div>
+<% end %>

@@ -1,0 +1,31 @@
+# CYRA-630 — see the Italian file for the why.
+en:
+  member:
+    approvals:
+      counts:
+        in_flight: Going on their own
+      in_flight:
+        title: Running, nothing for you to do
+        help_title: "What the agents are doing right now. Nothing here waits on your decision."
+        count: Running
+        link: Running, nothing for you to do
+        back: Back to decisions
+        retry_hint: "The system cannot read something on GitHub (%{code}). It retries at %{at}. Nothing is needed from you."
+        production_soak: "Being tried on staging. If no new errors show up, it goes to production from %{at}."
+        production_staging_errors: "Held before production: a new error showed up on staging."
+        production_hold: Stop
+        production_hold_confirm: "Stop this release? The code is already on main: while it stays stopped, no release of this repository goes to production."
+        filters:
+          all: All
+          running: Running
+          idle: Not started
+        col_project: Project
+        col_ticket: Ticket
+        col_state: Where it is
+        col_outcome: Last outcome
+        col_agent: Agent
+        col_host_time: Agent time
+        col_last: Last activity
+        no_match: No run matches these filters.
+        empty: No run in progress
+        empty_body: When an agent picks up a ticket, the run shows up here and stays until it reaches the end.

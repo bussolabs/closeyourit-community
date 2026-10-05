@@ -1,0 +1,52 @@
+<%# locals: card (Home::Approvals::Detail::Card) %>
+<%# CYRA-591 — i cinque passaggi della catena, sempre tutti, con segnato quello su cui si sta
+    decidendo. SEMPRE tutti anche quelli non ancora raggiunti: una striscia che mostra solo i passi
+    fatti non dice quanta strada manca, ed è metà dell'informazione.
+
+    Su una lavorazione ferma il passaggio è segnato RESPINTO, non corrente: dire «sei qui» dove
+    invece si è inciampato racconta la cosa sbagliata.
+
+    Lo stato NON è affidato al solo colore: ogni voce porta il suo stato anche a parole (title +
+    testo per i lettori di schermo). Un daltonico e chi naviga a voce devono poter distinguere fatto,
+    in corso e respinto — il prodotto dichiara WCAG AA. %>
+<% pipeline = approval_pipeline(card) %>
+<% if pipeline.present? %>
+  <ol class="flex items-center flex-wrap gap-1.5" data-test="approval-phase-strip">
+    <% pipeline.each_with_index do |step, index| %>
+      <% state = step[:state] %>
+      <% readable_state = t("member.approvals.phase_state.#{state}") %>
+      <li class="flex items-center gap-1.5">
+        <span class="inline-flex items-center gap-1.5 h-6 px-2 rounded-md border text-[11.5px] <%=
+              case state
+              when "done"    then "border-emerald-200 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+              when "current" then "border-indigo-300 dark:border-indigo-500/50 bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-semibold"
+              when "failed"  then "border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 font-semibold"
+              else "border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-400 dark:text-zinc-500"
+              end %>"
+              title="<%= readable_state %>"
+              aria-current="<%= "step" if state == "current" %>"
+              data-phase="<%= step[:phase] %>"
+              data-status="<%= state %>"
+              data-test="approval-phase-<%= state %>">
+          <% if state == "done" %>
+            <%= render Ui::IconComponent.new(name: "check", class: "text-[9px]") %>
+          <% elsif state == "failed" %>
+            <%= render Ui::IconComponent.new(name: "x", class: "text-[9px]") %>
+          <% elsif state == "current" %>
+            <%= render Ui::IconComponent.new(name: "circle-dot", class: "text-[9px]") %>
+          <% end %>
+          <%# CYRA-837 — i passaggi sono i SEI di `PhaseResolver::STEPS`, e il loro nome vive in
+              `member.tickets.automation.stage.*`: lo stesso vocabolario della guida e della plancia,
+              letto dallo stesso helper. `member.agents.phases.*` è il vocabolario delle FASI interne
+              della macchina (triage, planner…), e cercare lì un passaggio dava sei
+              `translation_missing` in produzione. %>
+          <%= approval_phase_name(step[:phase]) %>
+          <span class="sr-only"> — <%= readable_state %></span>
+        </span>
+        <% unless index == pipeline.size - 1 %>
+          <%= render Ui::IconComponent.new(name: "chevron-right", class: "text-[9px] text-stone-300 dark:text-zinc-600") %>
+        <% end %>
+      </li>
+    <% end %>
+  </ol>
+<% end %>

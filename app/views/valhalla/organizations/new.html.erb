@@ -1,0 +1,24 @@
+<% content_for :title, t("valhalla.organizations.new_title") %>
+
+<div class="p-7">
+  <%= form_with url: valhalla_organizations_path, method: :post, class: "space-y-6", data: { test: "valhalla-organization-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("valhalla.organizations.new_title"),
+          breadcrumb: [ { label: t("valhalla.organizations.title"), href: valhalla_organizations_path }, { label: t("member.breadcrumb.new") } ],
+          root_href: valhalla_root_path) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("valhalla.cancel"), href: valhalla_organizations_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: t("valhalla.organizations.new"), type: "submit", size: :sm, test_id: "valhalla-organization-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%= render Ui::InputComponent.new(name: "name", label: t("valhalla.organizations.form_name"), required: true, test_id: "organization-name", value: params[:name], hint: t("valhalla.organizations.form_name_hint"), error: @errors&.dig(:name)&.first) %>
+          <%= render Ui::InputComponent.new(name: "owner_email", label: t("valhalla.organizations.form_owner_email"), type: "email", required: true, test_id: "organization-owner-email", value: params[:owner_email], hint: t("valhalla.organizations.form_owner_email_hint"), error: @errors&.dig(:email)&.first) %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

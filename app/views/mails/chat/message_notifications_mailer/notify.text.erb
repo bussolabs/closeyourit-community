@@ -1,0 +1,7 @@
+<%= @notification.title %>
+
+<% if @notification.body.present? %>
+<%= @notification.body %>
+
+<% end %>
+<%= t("chat.message_notifications.mailer.notify.cta") %>: <%= mail_absolute_url(@notification.url) %>

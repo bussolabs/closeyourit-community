@@ -1,0 +1,24 @@
+it:
+  integrations:
+    providers:
+      pagespeed:
+        label: Google PageSpeed
+        summary: Le misure di velocità dei siti che tieni d'occhio, da telefono e da computer.
+        where: La chiave si crea nella console Google Cloud, attivando il servizio PageSpeed Insights.
+    features:
+      assistant: Assistente in chat
+      ask: Domande su ticket e conoscenza
+      summaries: Riassunti e rietichettature
+      agent_gate: Vaglio dei ticket per gli agenti
+      site_speed: Velocità dei siti
+      quick_bug_report: Segnalazione rapida di un problema
+      triage: Triage assistito
+      duplicates: Doppioni fra errori
+      datasets: Previsioni sui dati
+    errors:
+      not_connected: "%{service} non è collegato a questa organizzazione, quindi questa funzione non parte. Chi amministra l'organizzazione può collegarlo dalle Integrazioni."
+      invalid_key: La chiave non è valida. Controlla di averla copiata per intero.
+      service_disabled: La chiave è valida ma il servizio non è attivo sul tuo account. Attivalo nella console del fornitore.
+      key_restricted: "La chiave è valida ma le sue restrizioni non la lasciano usare qui. Allargale nella console del fornitore: ricopiare la chiave non serve."
+      unreachable: Il fornitore non ha risposto. Riprova fra poco.
+      upstream_error: Il fornitore ha risposto in un modo che non sappiamo leggere.

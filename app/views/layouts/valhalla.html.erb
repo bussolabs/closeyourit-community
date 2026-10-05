@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<%# DESIGN.md A32 — the person's theme, as in the member area. %>
+<% theme = Current.account&.theme.presence || "light" %>
+<html lang="<%= I18n.locale %>" class="<%= "dark" if theme == "dark" %>" data-theme="<%= theme %>">
+  <head>
+    <%# CYRA-690 — safe_join, non interpolazione: evita il doppio escape degli apostrofi nel title. %>
+    <title><%= content_for(:title) ? safe_join([ content_for(:title), "Valhalla" ], " · ") : "CloseYourIt · Valhalla" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= csp_mode_meta_tag %>
+    <%= render "layouts/system_theme", theme: theme %>
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-stone-100 dark:bg-zinc-950 font-sans text-zinc-900 dark:text-zinc-100 antialiased">
+    <a href="#main-content" data-test="skip-link"
+       class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:rounded-md focus:bg-indigo-600 focus:px-3 focus:py-2 focus:text-[13px] focus:font-medium focus:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 dark:focus-visible:ring-indigo-500/50">
+      <%= t("shared.skip_to_content") %>
+    </a>
+
+    <%# The member shell (CYRA-883): from md up sidebar and content are panels detached 14px from the
+        window edges. What tells Valhalla apart is the red "god" mark, not a different frame. %>
+    <div class="flex h-dvh md:gap-3.5 md:p-3.5" data-controller="ui--mobile-nav">
+      <aside data-ui--mobile-nav-target="panel" id="valhalla-sidebar"
+             class="fixed top-0 bottom-0 left-0 z-50 w-64 flex flex-col bg-white dark:bg-zinc-900 border-r border-stone-200 dark:border-zinc-800 -translate-x-full max-md:invisible transition-transform duration-200 ease-out motion-reduce:transition-none md:relative md:h-full md:shrink-0 md:translate-x-0 md:z-auto md:rounded-xl md:border">
+        <div class="flex items-center gap-2.5 h-14 px-4 shrink-0">
+          <%= render "shared/brand_mark", size: "w-6 h-6" %>
+          <span class="font-display text-[15px] font-semibold tracking-[0.2px] text-zinc-900 dark:text-zinc-100">CloseYourIt</span>
+          <span class="ml-auto font-mono uppercase text-[9px] tracking-[1.2px] text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/40 rounded px-1.5 py-0.5">god</span>
+        </div>
+        <nav class="flex-1 overflow-y-auto px-3 py-3 space-y-4 border-t border-stone-200 dark:border-zinc-800">
+          <div class="space-y-0.5">
+            <%# CYRA-331 — the way back to the application, one click from the top of the god panel. %>
+            <%= render Ui::NavLinkComponent.new(label: t("valhalla.nav.back_to_app"), path: root_path, icon: "arrow-left",
+                  test_id: "valhalla-nav-back-to-app") %>
+          </div>
+          <div class="space-y-0.5">
+            <%= render Ui::NavLinkComponent.new(label: t("valhalla.nav.dashboard"), path: valhalla_root_path, icon: "gauge",
+                  active: controller_name == "dashboard", test_id: "valhalla-nav-dashboard") %>
+          </div>
+          <div>
+            <p class="px-3 pb-1.5 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400" data-test="valhalla-nav-section-admin"><%= t("valhalla.nav.section_admin") %></p>
+            <div class="space-y-0.5">
+              <%= render Ui::NavLinkComponent.new(label: t("valhalla.nav.accounts"), path: valhalla_accounts_path, icon: "shield-user",
+                    active: controller_name == "accounts", test_id: "valhalla-nav-accounts") %>
+              <%= render Ui::NavLinkComponent.new(label: t("valhalla.nav.organizations"), path: valhalla_organizations_path, icon: "building",
+                    active: controller_name == "organizations", test_id: "valhalla-nav-organizations") %>
+              <%= render Ui::NavLinkComponent.new(label: t("valhalla.nav.settings"), path: valhalla_settings_path, icon: "sliders",
+                    active: controller_name == "settings", test_id: "valhalla-nav-settings") %>
+              <%= render Ui::NavLinkComponent.new(label: t("valhalla.nav.ai_settings"), path: valhalla_ai_settings_path, icon: "sparkles",
+                    active: controller_name == "ai_settings", test_id: "valhalla-nav-ai-settings") %>
+              <%= render Ui::NavLinkComponent.new(label: t("valhalla.nav.integrations"), path: valhalla_integrations_path, icon: "plug",
+                    active: controller_name == "integrations", test_id: "valhalla-nav-integrations") %>
+              <%# Hosted service only: the public copy has no such route (config/routes/ai_gateway.rb). %>
+              <% if Rails.application.routes.named_routes.key?(:valhalla_ai_gateway_keys) %>
+                <%= render Ui::NavLinkComponent.new(label: t("valhalla.nav.ai_gateway_keys"), path: valhalla_ai_gateway_keys_path, icon: "key-round",
+                      active: controller_name == "ai_gateway_keys", test_id: "valhalla-nav-ai-keys") %>
+              <% end %>
+              <%= render Ui::NavLinkComponent.new(label: t("valhalla.nav.support_requests"), path: valhalla_support_requests_path, icon: "life-buoy",
+                    active: controller_name == "support_requests", test_id: "valhalla-nav-support") %>
+              <%= render Ui::NavLinkComponent.new(label: t("valhalla.nav.health"), path: valhalla_health_path, icon: "heart-pulse",
+                    active: controller_name == "health", test_id: "valhalla-nav-health") %>
+            </div>
+          </div>
+        </nav>
+        <div class="shrink-0 border-t border-stone-200 dark:border-zinc-800 px-3 py-3">
+          <div class="flex items-center gap-2.5">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 font-semibold text-xs shrink-0"><%= avatar_initials(Current.account&.name) %></span>
+            <div class="min-w-0">
+              <p class="text-[12px] font-medium text-zinc-900 dark:text-zinc-100 truncate"><%= Current.account&.email %></p>
+              <p class="text-[10px] text-gray-500 dark:text-zinc-400">god</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <%# Scrim of the mobile drawer: closes on click, never visible from md up. %>
+      <div data-ui--mobile-nav-target="overlay" data-action="click->ui--mobile-nav#close" class="fixed inset-0 z-40 bg-black/40 md:hidden" hidden></div>
+
+      <div class="flex-1 flex flex-col min-w-0 md:gap-3.5">
+        <header class="sticky top-0 z-30 h-14 flex items-center gap-3 px-4 bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 md:static md:h-[34px] md:shrink-0 md:px-0 md:bg-transparent dark:md:bg-transparent md:border-0">
+          <button type="button" data-ui--mobile-nav-target="toggle" data-action="ui--mobile-nav#toggle" data-test="valhalla-nav-toggle" aria-controls="valhalla-sidebar" aria-expanded="false" aria-label="<%= t("valhalla.nav.toggle") %>" class="md:hidden inline-flex items-center justify-center h-11 w-11 -ml-2 rounded-md text-gray-500 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100">
+            <%= render Ui::IconComponent.new(name: "menu", class: "text-[16px]") %>
+          </button>
+          <span class="font-mono uppercase text-[9px] tracking-[1.2px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/15 rounded px-2 py-1" data-test="valhalla-god-mark"><%= t("valhalla.god_mode") %></span>
+          <div class="ml-auto flex items-center">
+            <%= render Ui::UserMenuComponent.new(
+                  name: account_display_name,
+                  email: Current.account&.email,
+                  logout_path: logout_path,
+                  trigger_test_id: "valhalla-user-menu",
+                  logout_test_id: "valhalla-logout") %>
+          </div>
+        </header>
+
+        <%= render "shared/flash" %>
+        <%# T1 — from md up the page wrapper sheds its padding and reaches 1px past the frame, which
+            clips it: the panels touch the frame and its border is the only line on that side. %>
+        <div class="relative flex-1 min-h-0 overflow-hidden md:rounded-xl md:border md:border-stone-200 dark:md:border-zinc-800">
+          <main id="main-content" tabindex="-1" data-panels="flush" data-controller="ui--panel-edges" class="relative h-full overflow-y-auto md:overflow-x-hidden md:[&>.p-7]:-m-px md:[&>.p-7]:max-w-none md:[&>.p-7]:p-0"><%= yield %></main>
+          <%= yield :floating_notice %>
+        </div>
+      </div>
+    </div>
+    <%= render "shared/remote_modals" %>
+    <%= render "shared/icon_templates" %>
+  </body>
+</html>

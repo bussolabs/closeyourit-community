@@ -1,0 +1,19 @@
+<%# locals: check_in: — riga della lista check-in nella show (anche broadcast via Turbo prepend su
+    #cron_monitor_check_ins_<id>). %>
+<%= render Ui::TableComponent::RowComponent.new do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <%= render Ui::BadgeComponent.new(label: t("member.crons.check_status.#{check_in.status}"), color: check_in.status_ok? ? "emerald" : "rose") %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.crons.col_duration"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400") do %>
+    <%= check_in.duration_ms ? "#{check_in.duration_ms} ms" : "—" %>
+  <% end %>
+  <%# CYRA-484 — il motivo del fallimento accanto all'esito: senza, «fallito» costringeva ad andarlo
+      a cercare nei log dell'applicazione. Vuoto per i tentativi andati bene, e per quelli falliti da
+      un programma che il motivo non lo manda ancora. %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.crons.col_reason"), test_id: "check-in-reason", class: "text-gray-600 dark:text-zinc-400") do %>
+    <%= check_in.reason.presence || "—" %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.crons.col_at"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400") do %>
+    <%= l(check_in.checked_in_at, format: :short) %>
+  <% end %>
+<% end %>

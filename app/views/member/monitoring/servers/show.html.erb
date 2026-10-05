@@ -1,0 +1,16 @@
+<% content_for :title, @host.name %>
+
+<%# Live: al push agent (~60s) e alla staleness il server manda un page-refresh Turbo sullo stream
+    dell'host; il browser ri-fetcha QUESTO URL (incluso ?tab e ?range) e morpha il <body>, così la
+    scheda aperta si aggiorna da sola senza reload manuale. Il morph preserva lo scroll. %>
+<%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+
+<div class="p-7 space-y-6" data-test="server-show">
+  <%= turbo_stream_from Realtime::Streams.server_host(@host) %>
+  <%= render "member/monitoring/servers/header", host: @host, active_tab: @tab, journal_count: @journal_count %>
+  <%# CYRA-245 — lo stato della credenziale di questa macchina: niente quando non c'è nulla da dire. %>
+  <%= render "member/monitoring/servers/enrollment_state", host: @host %>
+
+  <%# The page had become one very long scroll; each tab now holds one kind of detail. %>
+  <%= render "member/monitoring/servers/tabs/#{@tab}" %>
+</div>

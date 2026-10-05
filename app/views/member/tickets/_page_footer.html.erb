@@ -1,0 +1,21 @@
+<%# CYRA-883 — created, updated and the full history close the page, as on the project page. The
+    activity-log extremes come from the controller; the full history loads in the modal frame. %>
+<%= render Ui::SectionComponent.new(body_class: "px-4 py-2.5", test_id: "ticket-page-footer") do %>
+  <%= render Ui::AuditMetaComponent.new(
+        created_at: @ticket.created_at,
+        created_by: audit_actor_name(@created_event) || @ticket.reporter.name,
+        created_by_machine: audit_actor_machine?(@created_event),
+        updated_at: (@last_event&.created_at || @ticket.updated_at),
+        updated_by: audit_actor_name(@last_event),
+        updated_by_machine: audit_actor_machine?(@last_event),
+        test_id: "ticket-audit",
+        data: { controller: "ui--dialog" }
+      ) do |c| %>
+    <% c.with_action do %>
+      <button type="button" data-action="ui--dialog#open" data-test="ticket-history" class="inline-flex items-center gap-1.5 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+        <%= render Ui::IconComponent.new(name: "history", class: "text-[11px]") %><%= t("ui.audit.view_history") %>
+      </button>
+      <%= render "member/tickets/activity_modal", ticket: @ticket %>
+    <% end %>
+  <% end %>
+<% end %>

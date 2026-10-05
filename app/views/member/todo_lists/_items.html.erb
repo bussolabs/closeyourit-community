@@ -1,0 +1,18 @@
+<%# locals: list, items, can_edit — open items first (draggable when editable), then the done ones in a
+    Completed group. The id is the turbo_stream target of a toggle: a ticked item changes group. %>
+<% open_items, done_items = items.partition { |item| !item.done? } %>
+<div id="todo_items" data-test="todo-items-list"
+     <% if can_edit %>data-controller="todo-reorder" data-todo-reorder-url-value="<%= reorder_member_todo_list_items_path(list) %>"<% end %>>
+  <% if items.empty? %>
+    <p class="px-4 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="todo-items-empty"><%= t("member.todo_lists.item.empty") %></p>
+  <% end %>
+  <%= render partial: "member/todo_lists/items/item", collection: open_items, as: :item, locals: { list:, can_edit: } %>
+  <% if done_items.any? %>
+    <details data-test="todo-items-done" class="border-t border-stone-100 dark:border-zinc-800">
+      <summary class="cursor-pointer select-none px-4 py-2 bg-stone-50 dark:bg-zinc-800 text-[12px] font-medium text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
+        <%= t("member.todo_lists.item.completed", count: done_items.size) %>
+      </summary>
+      <%= render partial: "member/todo_lists/items/item", collection: done_items, as: :item, locals: { list:, can_edit: } %>
+    </details>
+  <% end %>
+</div>

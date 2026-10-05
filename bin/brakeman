@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+require "rubygems"
+require "bundler/setup"
+
+# CYRA-753 — un avviso di sicurezza si mette da parte scrivendo la sua impronta in
+# `config/brakeman.ignore`, e senza queste due opzioni l'elenco marcisce in silenzio da due lati.
+#
+# `--ensure-ignore-notes`: un'impronta nuda dice che qualcuno ha guardato, non che cosa ha visto.
+# Mesi dopo l'unico modo di sapere se era davvero innocua è rifare da capo l'analisi. Con l'opzione
+# accesa, mettere da parte un avviso senza scrivere il perché fa fallire il controllo.
+#
+# `--ensure-no-obsolete-ignore-entries`: quando il codice segnalato viene sistemato o cancellato, la
+# riga che lo zittiva resta. Ne erano rimaste due — una puntava a un partial cancellato da un'altra
+# lavorazione — e continuavano a zittire avvisi che nessuno poteva più ricevere: se un giorno quel
+# nome tornasse, l'avviso nuovo nascerebbe già muto.
+ARGV.unshift("--ensure-latest", "--ensure-ignore-notes", "--ensure-no-obsolete-ignore-entries")
+
+load Gem.bin_path("brakeman", "brakeman")

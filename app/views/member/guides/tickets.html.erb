@@ -1,0 +1,56 @@
+<% content_for :title, t("member.guides.tickets.title") %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-tickets">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "layers", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.tickets.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.tickets.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.tickets.cta"), href: member_tickets_path, variant: :primary, size: :sm, icon: "ticket", test_id: "member-guide-tickets-cta") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.tickets.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.tickets.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.tickets.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% %w[bug story task epic].each_with_index do |kind, i| %>
+          <li class="flex items-start gap-2.5">
+            <%= render Ui::BadgeComponent.new(label: t("member.tickets.kind.#{kind}"), color: ticket_kind_color(kind), size: :sm) %>
+            <span><%= t("member.guides.tickets.what_b#{i + 1}") %></span>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.tickets.setup_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ol class="space-y-4">
+        <% 1.upto(3) do |step| %>
+          <li class="flex gap-3">
+            <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5"><%= step %></span>
+            <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.tickets.setup_step#{step}") %></div>
+          </li>
+        <% end %>
+      </ol>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-tickets-rules">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.tickets.rules_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% 1.upto(4) do |rule| %>
+          <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "ban", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.tickets.rules_b#{rule}") %></span></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+</div>

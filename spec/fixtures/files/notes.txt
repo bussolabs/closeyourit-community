@@ -1,0 +1,3 @@
+server started
+request processed
+nothing happened on checkout

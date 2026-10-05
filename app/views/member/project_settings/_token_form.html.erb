@@ -1,0 +1,42 @@
+<%# CYRA-883 — the form opens in place from its button; it comes back open when the last attempt failed.
+    Native <details>: no script needed to reach it. %>
+<details class="group border-b border-stone-200 dark:border-zinc-800" data-test="token-form-disclosure" <%= "open" if @token_errors %>>
+  <summary class="list-none cursor-pointer px-4 py-3 [&::-webkit-details-marker]:hidden" data-test="token-form-toggle">
+    <span class="inline-flex h-7 items-center gap-1.5 rounded-md bg-indigo-600 px-2.5 text-[12px] font-semibold text-white hover:bg-indigo-700">
+      <%= render Ui::IconComponent.new(name: "plus", class: "text-[11px] group-open:hidden") %><%= render Ui::IconComponent.new(name: "minus", class: "hidden text-[11px] group-open:inline") %><%= t("member.tokens.form.title") %>
+    </span>
+  </summary>
+  <%= form_with url: member_project_tokens_path(@project), method: :post, class: "px-4 pb-4 grid grid-cols-1 sm:grid-cols-12 gap-4 items-end", data: { test: "token-form" } do %>
+    <div class="sm:col-span-4">
+      <label for="name" class="block font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.tokens.form.name") %> <span class="text-rose-500">*</span></label>
+      <input type="text" name="name" id="name" value="<%= params[:name] %>" data-test="token-name" placeholder="<%= t('member.tokens.form.name_placeholder') %>" class="w-full h-[34px] px-3 rounded-md border <%= @token_errors&.dig(:name) ? 'border-rose-300 dark:border-rose-500/50' : 'border-stone-200 dark:border-zinc-800' %> text-[13px] focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+      <% if @token_errors&.dig(:name) %><p class="mt-1 text-[11px] text-rose-600 dark:text-rose-400"><%= @token_errors[:name].first %></p><% end %>
+    </div>
+    <div class="sm:col-span-4">
+      <label class="block font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.tokens.form.environment") %> <span class="text-rose-500">*</span></label>
+      <div class="inline-flex flex-wrap rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800" data-test="token-environment">
+        <% @environments.each_with_index do |environment, i| %>
+          <label class="cursor-pointer">
+            <input type="radio" name="environment_id" value="<%= environment.id %>" class="sr-only peer" <%= "checked" if i.zero? %> data-test="token-environment-<%= environment.code %>">
+            <span class="inline-flex items-center gap-1.5 h-[28px] px-3 rounded-[5px] text-[12.5px] font-medium text-gray-500 dark:text-zinc-400 peer-checked:bg-white dark:peer-checked:bg-zinc-900 peer-checked:text-zinc-900 dark:peer-checked:text-zinc-100 peer-checked:border peer-checked:border-stone-200 dark:peer-checked:border-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100">
+              <span class="w-1.5 h-1.5 rounded-full <%= Ui::Colors.swatch(environment.color) %>"></span><%= environment.label %>
+            </span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+    <%# CYRA-716: optional expiry. Empty = no expiry, like every token issued before. %>
+    <div class="sm:col-span-2">
+      <label for="expires_at" class="block font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.tokens.form.expires_at") %></label>
+      <input type="date" name="expires_at" id="expires_at" value="<%= params[:expires_at] %>" min="<%= Date.current.iso8601 %>" data-test="token-expires-at" class="w-full h-[34px] px-3 rounded-md border <%= @token_errors&.dig(:expires_at) ? 'border-rose-300 dark:border-rose-500/50' : 'border-stone-200 dark:border-zinc-800' %> text-[13px] focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+      <% if @token_errors&.dig(:expires_at) %>
+        <p class="mt-1 text-[11px] text-rose-600 dark:text-rose-400"><%= @token_errors[:expires_at].first %></p>
+      <% else %>
+        <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.tokens.form.expires_at_hint") %></p>
+      <% end %>
+    </div>
+    <div class="sm:col-span-2 flex sm:justify-end">
+      <%= render Ui::ButtonComponent.new(label: t("member.tokens.form.create"), type: "submit", test_id: "token-create") %>
+    </div>
+  <% end %>
+</details>

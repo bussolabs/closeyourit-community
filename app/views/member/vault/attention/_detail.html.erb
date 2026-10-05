@@ -1,0 +1,23 @@
+<%# locals: item %>
+<%# La mezza frase che dice PERCHÉ quella riga è nella lista. Ogni provenienza ha la sua, presa dal
+    vocabolario che quella pagina usava già: chi arriva dalla vecchia pagina ritrova le stesse parole. %>
+<% case item.kind %>
+<% when :anomaly %>
+  <%= t("member.vault_health.detail.#{item.source.kind}", environment: item.environment.label) %>
+<% when :rotation_overdue %>
+  <%= t("member.secrets.rotation_overdue", days: item.source.rotation_days_until_due.abs) %>
+<% when :rotation_due_soon %>
+  <%= t("member.secrets.rotation_due_soon", days: item.source.rotation_days_until_due) %>
+<% when :consolidation %>
+  <%= t("member.vault_attention.detail_consolidation") %>
+<% when :change_request %>
+  <%= t("member.vault_attention.requested_by",
+        who: item.source.requested_by&.name || t("member.vault_change_requests.requester_deleted"),
+        action: item.source.set? ? t("member.vault_change_requests.action_set") : t("member.vault_change_requests.action_remove")) %>
+  <% unless item.source.proposed_description.nil? %>
+    <span class="mt-1 block text-sm" data-test="secret-proposed-description">
+      <%= t("member.review_completion.proposed_description") %>:
+      <%= item.source.proposed_description.presence || t("member.review_completion.description_cleared") %>
+    </span>
+  <% end %>
+<% end %>

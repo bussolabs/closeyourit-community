@@ -1,0 +1,20 @@
+<%# locals: rows:, pagination:, show_server:, no_match: — tabella condivisa dalla pagina flotta e
+    dalla tab del singolo server. `show_server` è la sola differenza: nella tab la colonna del
+    server sarebbe una costante ripetuta su ogni riga. %>
+<% if rows.empty? %>
+  <p class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="databases-no-match"><%= no_match %></p>
+<% else %>
+  <%= render(Ui::TableComponent.new(stacked: true, label: t("member.databases.title"), test_id: "databases-table")) do |t| %>
+    <% t.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.databases.col_database"), sort: "database") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.databases.col_server"), sort: "server", visible: show_server) %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.databases.col_size"), sort: "size", initial: :desc, align: :right, classes: "w-32") %>
+      <%# Variazione a 7 giorni, ordinabile: rispondere a "cosa cresce" senza aprire i database uno per uno. %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.databases.col_change"), sort: "change", initial: :desc, align: :right, classes: "w-32") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.databases.col_share"), align: :right, classes: "w-44") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+    <% end %>
+    <%= render partial: "member/monitoring/databases/row", collection: rows, as: :row, locals: { show_server: show_server } %>
+  <% end %>
+  <%= render(Ui::PaginationComponent.new(pagination: pagination, test_id: "databases-pagination")) %>
+<% end %>

@@ -1,0 +1,140 @@
+<%# The GET form (search, controls, filter chips, Apply) is `display:contents`: its fields join the
+    div's flex. The Filters menu, the View menu (its saved views hold POST forms) and the trailing stay
+    OUTSIDE it, since HTML forbids nested forms. Inactive chips are `hidden` with their native select
+    still in the DOM; Apply stays as the no-JS fallback and ui--filter-bar hides it on connect. With
+    `semantic_search` results swap in place in `results_frame` and the filter region dims while loading. %>
+<%= tag.div class: container_class, data: form_data do %>
+  <%= form_with url: @url, method: :get, class: "contents", data: form_html_data do %>
+    <%# id: nil — un multi-valore rende più campi con lo stesso nome e genererebbe id duplicati. %>
+    <% hidden_fields.each do |name, value| %><%= hidden_field_tag name, value, id: nil %><% end %>
+    <%# CYRA-817 — stato di un'altra lista: parte dall'indirizzo e all'indirizzo viene riallineato
+        prima dell'invio. Senza valore il campo è disabilitato, quindi non viaggia affatto. %>
+    <% sync_fields.each do |name, value| %><%= hidden_field_tag name, value, id: nil, disabled: value.blank?, data: { "ui--url-state-target": "field", url_state_param: name } %><% end %>
+    <% sort_hidden.each do |name, value| %><%= hidden_field_tag name, value %><% end %>
+    <% if remember_marker? %><%= hidden_field_tag RememberableFilters::MARKER_PARAM, "1", id: nil %><% end %>
+    <% if @search_placeholder %>
+      <%# CYRA-902 — one field for every bar: the mode picker (when the list has one) at the start and
+          the search arrow at the end, both inside the field. %>
+      <div class="relative flex-1 min-w-[180px] max-w-xs" data-controller="<%= search_field_controllers %>">
+        <% if mode_picker? %>
+          <%# Design-system dropdown, never a native select: a button plus a listbox, the value in a hidden field. %>
+          <%= hidden_field_tag :semantic, current_search_mode, id: nil, data: { "ui--search-mode-target": "value" } %>
+          <button type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="<%= t("shared.tables.search_mode.label") %>"
+                  title="<%= current_mode[:label] %>" data-test="<%= @test_id %>-search-mode"
+                  data-ui--search-mode-target="trigger" data-action="ui--search-mode#toggle"
+                  class="absolute left-1.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-0.5 h-6 px-1.5 rounded bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+            <%= render Ui::IconComponent.new(name: current_mode[:icon], class: "text-[11px]", data: { "ui--search-mode-target": "icon" }) %>
+            <%= render Ui::IconComponent.new(name: "chevron-down", class: "text-[9px]") %>
+          </button>
+          <ul role="listbox" hidden aria-label="<%= t("shared.tables.search_mode.label") %>" data-ui--search-mode-target="menu"
+              class="absolute left-0 top-[38px] z-20 w-48 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-1.5">
+            <% search_modes.each do |mode| %>
+              <% chosen = mode[:value] == current_search_mode %>
+              <li>
+                <button type="button" role="option" aria-selected="<%= chosen %>" data-value="<%= mode[:value] %>"
+                        data-icon="<%= mode[:icon] %>" data-placeholder="<%= mode[:placeholder] %>" data-label="<%= mode[:label] %>"
+                        data-action="ui--search-mode#choose" data-test="<%= @test_id %>-search-mode-<%= mode[:key] %>"
+                        class="w-full text-left flex items-center gap-2 px-3 h-8 text-[12.5px] text-zinc-700 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800 aria-selected:text-indigo-600 dark:aria-selected:text-indigo-400">
+                  <%= render Ui::IconComponent.new(name: mode[:icon], class: "w-4 text-[11px] text-gray-400 dark:text-zinc-500") %>
+                  <span class="truncate"><%= mode[:label] %></span>
+                  <%= render Ui::IconComponent.new(name: "check", class: "ml-auto text-[11px] text-indigo-600 dark:text-indigo-400", hidden: !chosen, data: { check: "" }) %>
+                </button>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <%= render Ui::IconComponent.new(name: "search", class: "text-gray-400 dark:text-zinc-500 text-[12px] absolute left-3 top-1/2 -translate-y-1/2") %>
+        <% end %>
+        <%# data-keyboard-search: hook del tasto universale "/" (focus ricerca) — CYRA-28. %>
+        <%= text_field_tag @search_param, @query, placeholder: search_field_placeholder, data: { test: @search_test_id, keyboard_search: "", "ui--search-clear-target": "input", "ui--search-mode-target": ("input" if mode_picker?) }, autocomplete: "off", class: "peer w-full h-[34px] #{mode_picker? ? "pl-14" : "pl-9"} pr-16 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+        <%# CYRA-883 — empty and unfocused: the "/" key that reaches it; with text: a ✕ that empties it. %>
+        <kbd class="pointer-events-none absolute right-9 top-1/2 -translate-y-1/2 rounded border border-b-2 border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-1.5 font-mono text-[10.5px] text-gray-500 dark:text-zinc-400 peer-focus:hidden peer-[:not(:placeholder-shown)]:hidden" aria-hidden="true" data-test="<%= search_hint_test_id %>">/</kbd>
+        <button type="button" data-action="ui--search-clear#clear" data-test="<%= search_clear_test_id %>"
+                aria-label="<%= t("shared.tables.clear_search") %>" title="<%= t("shared.tables.clear_search") %>"
+                class="absolute right-9 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-5 h-5 rounded text-gray-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 peer-placeholder-shown:hidden">
+          <%= render Ui::IconComponent.new(name: "circle-x", class: "text-[13px]") %>
+        </button>
+        <%# The first submit of the form, so Enter in the field presses it too. %>
+        <button type="submit" data-ui--filter-bar-target="submitButton" data-test="<%= search_submit_test_id %>"
+                aria-label="<%= search_submit_label %>" title="<%= search_submit_label %>"
+                class="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-6 h-6 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
+          <%= render Ui::IconComponent.new(name: "arrow-right", class: "text-[11px]", data: { "ui--filter-bar-target": "submitIcon" }) %>
+        </button>
+      </div>
+    <% end %>
+    <% if @semantic_search && !mode_picker? %>
+      <%# Ricerca sempre semantica da questa barra (fallback ILIKE lato server se il servizio è giù). %>
+      <%= hidden_field_tag :semantic, "1" %>
+    <% end %>
+    <% filters_block = capture do %>
+      <% controls.each do |control| %><%= control %><% end %>
+      <% filters.each do |filter| %><%= filter %><% end %>
+      <% if filters.any? %>
+        <%= render Ui::ButtonComponent.new(label: apply_label, type: "submit", variant: :secondary, size: :md, icon: "filter", test_id: apply_test_id) %>
+      <% end %>
+    <% end %>
+    <% if @semantic_search %>
+      <%# Regione dim-abile durante il caricamento (opacity/pointer-events via ui--filter-bar#start). %>
+      <span data-ui--filter-bar-target="filterRegion" class="inline-flex flex-wrap items-center gap-2"><%= filters_block %></span>
+    <% else %>
+      <%= filters_block %>
+    <% end %>
+    <% if reset_visible? %>
+      <%# CYRA-694 — l'uscita dai filtri: un GET col solo marker, che azzera anche la memoria. %>
+      <%= link_to t("shared.tables.reset"), reset_href, data: { test: reset_test_id },
+            class: "order-2 h-[34px] px-2 inline-flex items-center text-[12.5px] font-medium text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100" %>
+    <% end %>
+    <% if !trailing? && @count %>
+      <span class="order-2 ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= @count %></span>
+    <% end %>
+  <% end %>
+  <%# CYRA-902 — the Filters menu sits OUTSIDE the GET form, like the View menu; order-1 keeps it
+      right after the chips. %>
+  <% if filters_menu? %>
+    <div class="relative order-1">
+      <button type="button" data-ui--filter-bar-target="menuButton" data-action="ui--filter-bar#toggleMenu"
+              aria-haspopup="true" aria-expanded="false" data-test="<%= filters_menu_test_id %>"
+              class="h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[12.5px] font-medium text-gray-500 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 inline-flex items-center gap-2">
+        <%= render Ui::IconComponent.new(name: "plus", class: "text-[11px] text-gray-400 dark:text-zinc-500") %><%= t("shared.tables.filters_menu") %>
+      </button>
+      <div data-ui--filter-bar-target="menuPanel" class="hidden absolute left-0 top-[38px] z-20 w-48 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-1.5">
+        <% filters.each do |f| %>
+          <button type="button" data-action="ui--filter-bar#chooseFilter" data-filter-key="<%= f.key %>"
+                  data-test="filter-menu-<%= f.key %>"
+                  class="w-full text-left flex items-center gap-2 px-3 h-8 text-[12.5px] hover:bg-stone-50 dark:hover:bg-zinc-800">
+            <span class="truncate"><%= f.label %></span>
+            <%# hidden as an ATTRIBUTE (not a class): the icon's inline-block utility would beat .hidden %>
+            <%= render Ui::IconComponent.new(name: "check", class: "text-indigo-600 dark:text-indigo-400 text-[11px] ml-auto", hidden: !f.active?, data: { "menu-check": "" }) %>
+          </button>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+  <% if trailing? %>
+    <div class="order-2 ml-auto"><%= trailing %></div>
+  <% end %>
+  <%# C62, CYRA-924 — the View menu, on the right: group by, then the saved views. A native <details>
+      opens without JavaScript; ui--row-menu adds Esc, click-outside and the right-aligned position.
+      The saved views carry POST forms, so this too stays outside the GET form. %>
+  <% if view_menu? %>
+    <details class="<%= view_menu_class %>" data-controller="ui--row-menu" data-action="toggle->ui--row-menu#onToggle" data-test="<%= view_menu_test_id %>">
+      <summary data-ui--row-menu-target="trigger"
+               class="list-none [&::-webkit-details-marker]:hidden cursor-pointer h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[12.5px] font-medium text-gray-500 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 inline-flex items-center gap-2">
+        <%= t("shared.tables.view_menu") %><%= render Ui::IconComponent.new(name: "chevron-down", class: "text-[10px] text-gray-400 dark:text-zinc-500") %>
+      </summary>
+      <div data-ui--row-menu-target="panel" class="absolute right-0 top-[38px] z-20 w-64 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-1.5">
+        <% menu_sections.each_with_index do |section, index| %>
+          <% if index.positive? %><div class="my-1 border-t border-stone-100 dark:border-zinc-800"></div><% end %>
+          <%= tag.div data: section[:data] do %>
+            <p class="px-3 pt-1 pb-1.5 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-400 dark:text-zinc-500"><%= section[:heading] %></p>
+            <% section[:choices].each do |choice| %>
+              <%= view_choice(choice) %>
+            <% end %>
+          <% end %>
+        <% end %>
+        <% if views? && menu_sections.any? %><div class="my-1 border-t border-stone-100 dark:border-zinc-800"></div><% end %>
+        <%= views if views? %>
+      </div>
+    </details>
+  <% end %>
+<% end %>

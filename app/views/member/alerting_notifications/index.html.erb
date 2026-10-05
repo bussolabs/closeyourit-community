@@ -1,0 +1,130 @@
+<% content_for :title, t("member.alerting.notifications.title") %>
+
+<%# CYRA-488 — schede per natura: gli avvisi dei sistemi, i messaggi sui ticket e gli allarmi sugli
+    agenti hanno urgenze incomparabili; separarli evita che il guasto vero resti sepolto. Link con
+    query string (condivisibili, senza JS), che preservano gli altri filtri. Ogni scheda porta il
+    numero di non lette della sua natura. T1 — they are the page header's tabs. %>
+<% nature_href = ->(key) {
+     base = request.query_parameters.except("nature", "page")
+     member_alerting_notifications_path(key == "all" ? base : base.merge(nature: key))
+   } %>
+<% natures = ::Notifications::Catalog.natures %>
+<% current_nature = natures.map { |nature| nature.key.to_s }.include?(params[:nature]) ? params[:nature] : nil %>
+<% nature_tabs = [ [ "all", t("member.alerting.notifications.nature_all"), @total_unread ] ] +
+                 natures.map { |nature| [ nature.key.to_s, nature.label, @nature_unread[nature.key] ] } %>
+
+<div class="p-7 space-y-6" data-test="member-alerting-notifications">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.alerting.notifications.title"),
+        subtitle: t("member.alerting.notifications.help_title"),
+        breadcrumb: [ { label: t("member.alerting.notifications.title") } ]) do |h| %>
+    <% h.with_counts do %>
+      <span class="inline-flex items-center gap-1.5 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2 py-0.5 text-[11.5px]"><span class="text-gray-500 dark:text-zinc-400"><%= t("member.alerting.notifications.unread") %></span><span class="font-mono font-semibold text-indigo-600 dark:text-indigo-400" data-test="notifications-unread-count"><%= @unread_count %></span></span>
+    <% end %>
+    <% quiet_window = alerting_quiet_window(@preference) %>
+    <%# CYRA-813 — quando si arriva dalla scheda di una macchina, la pagina dice di quale macchina sta
+        mostrando gli avvisi e come tornare a vederli tutti: senza, il taglio è invisibile e l'elenco
+        sembra la casella generale mezza vuota. Un solo slot meta (renders_one: due chiamate si
+        sovrascrivono), quindi le pill convivono qui dentro. %>
+    <% if @host_filter_id || quiet_window %>
+      <% h.with_meta do %>
+        <div class="flex items-center flex-wrap gap-1.5">
+          <% if @host_filter_id %>
+            <%# Il nome è della flotta: senza il permesso di vederla resta il taglio, non il nome. %>
+            <span class="inline-flex items-center gap-1.5 rounded-md border border-indigo-200 dark:border-indigo-500/40 bg-indigo-50 dark:bg-indigo-500/15 px-2 py-0.5 text-[11.5px] text-indigo-700 dark:text-indigo-300" data-test="notifications-filter-host">
+              <%= render Ui::IconComponent.new(name: "server", class: "text-[10px]") %>
+              <span class="text-indigo-500 dark:text-indigo-400"><%= t("member.alerting.notifications.filter_host") %></span>
+              <span class="font-mono font-semibold"><%= @filtered_host&.name || t("member.alerting.notifications.filter_host_hidden") %></span>
+              <%= link_to member_alerting_notifications_path, class: "text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300",
+                    title: t("member.alerting.notifications.filter_host_clear"),
+                    data: { test: "notifications-filter-host-clear" } do %>
+                <%= render Ui::IconComponent.new(name: "x", class: "text-[10px]") %>
+              <% end %>
+            </span>
+          <% end %>
+          <% if quiet_window %>
+            <span class="inline-flex items-center gap-1.5 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2 py-0.5 text-[11.5px] text-gray-600 dark:text-zinc-400" data-test="notifications-quiet-hours" title="<%= t("member.alerting.notifications.quiet_active_hint") %>">
+              <%= render Ui::IconComponent.new(name: "moon", class: "text-indigo-500 dark:text-indigo-400 text-[10px]") %><%= t("member.alerting.notifications.quiet_active", window: quiet_window) %>
+            </span>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+    <% nature_tabs.each do |key, label, count| %>
+      <% h.with_tab(label:, href: nature_href.call(key), active: (key == "all" ? current_nature.nil? : current_nature == key),
+                    count:, count_test_id: "nature-#{key}-unread", test_id: "notifications-nature-#{key}") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.alerting.notifications.preferences"), href: member_notification_preferences_path, variant: :secondary_muted, size: :sm, icon: "sliders", test_id: "notifications-preferences") %>
+      <%= render Ui::ButtonComponent.new(label: t("member.alerting.notifications.mark_all"), href: read_all_member_alerting_notifications_path, method: :patch, variant: :secondary_muted, size: :sm, icon: "check-check", test_id: "notifications-read-all") %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-478 — i filtri: centinaia di non lette su oltre cento pagine, e senza un taglio il guasto
+      vero resta sepolto sotto le ripetizioni. Link normali con query string, quindi condivisibili e
+      funzionanti senza JS, come gli altri elenchi. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-2.5 flex items-center flex-wrap gap-x-4 gap-y-2" data-test="notifications-filters">
+    <%= form_with url: member_alerting_notifications_path, method: :get, class: "flex items-center flex-wrap gap-2" do %>
+      <%# CYRA-813 — il form GET riparte dal path nudo: senza questo campo, applicare un altro filtro
+          riaprirebbe la casella generale e perderebbe la macchina da cui si è arrivati. %>
+      <% if @host_filter_id %>
+        <%= hidden_field_tag :host_id, @host_filter_id %>
+      <% end %>
+      <div class="w-44">
+        <%# CYRA-315 — l'elenco dei tipi è il catalogo completo, nell'ordine dei gruppi: prima
+            offriva i soli eventi che nascono da una regola, e commenti, menzioni ed esiti di review
+            — cioè le conversazioni — non si potevano scegliere. %>
+        <%= render Ui::SelectComponent.new(name: "event_type", multiple: true, summary: true,
+              options: ::Notifications::Catalog.groups_for(Current.account).flat_map(&:entries).map { |entry| [ entry.title, entry.event_type ] },
+              selected: params[:event_type], placeholder: t("member.alerting.notifications.filter_event"),
+              test_id: "notifications-filter-event") %>
+      </div>
+      <div class="w-44">
+        <%= render Ui::SelectComponent.new(name: "project_id", multiple: true, summary: true,
+              options: @projects.map { |project| [ project.name, project.id, project.color ] },
+              selected: params[:project_id], placeholder: t("member.alerting.notifications.filter_project"),
+              test_id: "notifications-filter-project") %>
+      </div>
+      <div class="w-36">
+        <%= render Ui::SelectComponent.new(name: "read", include_blank: true,
+              options: [ [ t("member.alerting.notifications.filter_unread"), "unread" ],
+                         [ t("member.alerting.notifications.filter_read"), "read" ] ],
+              selected: params[:read], placeholder: t("member.alerting.notifications.filter_read_state"),
+              test_id: "notifications-filter-read") %>
+      </div>
+      <%= submit_tag t("member.alerting.notifications.filter_apply"),
+            class: "h-[34px] px-3 rounded-md text-[12.5px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800",
+            data: { test: "notifications-filter-apply" } %>
+      <% if params[:event_type].present? || params[:project_id].present? || params[:read].present? || @host_filter_id %>
+        <%= link_to t("member.alerting.notifications.filter_clear"), member_alerting_notifications_path,
+              class: "text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "notifications-filter-clear" } %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if @notifications.empty? %>
+    <%# CYRA-813 — col filtro macchina attivo il vuoto è una risposta, non una casella da riempire:
+        dice che su QUELLA macchina non è scattato niente, e offre di tornare a vedere tutto. %>
+    <%= render Ui::EmptyStateComponent.new(
+          title: @filtered_host ? t("member.alerting.notifications.empty_host", host: @filtered_host.name) : t("member.alerting.notifications.empty"),
+          body: @host_filter_id ? t("member.alerting.notifications.empty_host_body") : (current_nature ? t("member.review_fixes.notifications_category_empty") : t("member.alerting.notifications.empty_body")),
+          icon: "bell-off", framed: true, test_id: "notifications-empty") do |empty| %>
+      <% if @host_filter_id || current_nature.nil? %>
+        <% empty.with_action do %>
+          <%= render Ui::ButtonComponent.new(
+                label: @host_filter_id ? t("member.alerting.notifications.filter_host_clear") : t("member.alerting.notifications.manage_alerts"),
+                href: @host_filter_id ? member_alerting_notifications_path : member_alerting_rules_path,
+                variant: :primary, size: :sm, icon: "bell",
+                test_id: @host_filter_id ? "notifications-empty-clear-host" : nil) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden" data-test="notifications-list">
+      <ul id="notifications" class="divide-y divide-stone-200 dark:divide-zinc-800">
+        <%= render partial: "member/alerting_notifications/notification", collection: @groups, as: :group, locals: { recoveries: @recoveries } %>
+      </ul>
+      <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "notifications-pagination") %>
+    </div>
+  <% end %>
+</div>

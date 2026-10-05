@@ -1,0 +1,37 @@
+<% content_for :title, t("member.monitoring.vulnerabilities.tabs.runtimes") %>
+
+<div class="p-7 space-y-6" data-test="member-vulnerability-runtimes">
+  <%= render "member/monitoring/vulnerabilities/header", active_tab: "runtimes",
+        open_count: @open_count, critical_count: @critical_count, high_count: @high_count,
+        ignored_count: @ignored_count, runtimes_eol_count: @runtimes_eol_count %>
+
+  <% if @runtime_statuses.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.review_fixes.runtimes_empty"), body: t("member.review_fixes.runtimes_empty_hint"), icon: "hourglass", framed: true, test_id: "runtimes-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="runtimes-table">
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.monitoring.vulnerabilities.tabs.runtimes"))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.vulnerabilities.columns.runtime"), sort: "runtime") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.vulnerabilities.columns.version"), sort: "version", classes: "w-28") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.vulnerabilities.columns.latest"), sort: "latest", classes: "w-28") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.vulnerabilities.columns.eol_on"), sort: "eol_on", classes: "w-36") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.vulnerabilities.columns.project"), sort: "project", classes: "w-24") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.vulnerabilities.columns.manifest"), sort: "manifest", classes: "w-40") %>
+        <% end %>
+        <% @runtime_statuses.each do |status| %>
+          <%= render Ui::TableComponent::RowComponent.new(test_id: "runtime-row") do %>
+            <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+              <span class="text-[13px] text-zinc-900 dark:text-zinc-100"><%= status.name %></span>
+              <%= render Ui::BadgeComponent.new(label: t("member.monitoring.vulnerabilities.state.#{status.state}"), color: runtime_state_color(status.state), dot: true) %>
+            <% end %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.vulnerabilities.columns.version"), mono: true, class: "text-[11px] text-zinc-900 dark:text-zinc-100")) { status.version } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.vulnerabilities.columns.latest"), mono: true, class: "text-[11px] #{status.outdated? ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-zinc-400'}")) { status.latest.presence || "—" } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.vulnerabilities.columns.eol_on"), class: "text-[12px] text-gray-500 dark:text-zinc-400")) { status.eol_on.present? ? l(status.eol_on, format: :long) : "—" } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.vulnerabilities.columns.project"))) { tag.span(status.project.key, class: "font-mono text-[11px] text-gray-500 dark:text-zinc-400", title: status.project.name) } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.vulnerabilities.columns.manifest"), mono: true, class: "text-[11px] text-gray-400 dark:text-zinc-500")) { status.source_path } %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

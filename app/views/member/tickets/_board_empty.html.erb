@@ -1,0 +1,11 @@
+<%# CYRA-555, K14 — with a search on an empty column has no match, not no tickets: the head already
+    gives the real count. %>
+<% if @search_active %>
+  <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_tickets_path,
+        compact: true, test_id: "board-column-no-results", reset_test_id: "board-reset-search") %>
+<% else %>
+  <div class="flex flex-col items-center justify-center py-8 text-center text-gray-500 dark:text-zinc-400" data-test="board-column-empty">
+    <%= render Ui::IconComponent.new(name: "circle", class: "text-[16px]") %>
+    <p class="mt-2 text-[11.5px]"><%= t(status.category_done? ? "member.tickets.board.empty_recent" : "member.tickets.board.empty_column", days: Ticketing::Constants::BOARD_DONE_WINDOW.in_days.to_i) %></p>
+  </div>
+<% end %>

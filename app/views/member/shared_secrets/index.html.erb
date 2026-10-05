@@ -1,0 +1,132 @@
+<% content_for :title, t("member.shared_secrets.title") %>
+<% can_manage = can?("shared_secrets.manage") %>
+<% existing_names = @variables.map(&:name) %>
+<%# Errori attribuiti alla riga-crea: quando @open_row è un nome NON esistente — inclusi nome vuoto
+    (@open_row nil/blank), così un 422 su nome mancante mostra l'errore invece di ri-nascondere la riga. %>
+<% new_row_errors = (@row_errors if @row_errors.present? && existing_names.exclude?(@open_row)) %>
+
+<div class="p-7 space-y-6" data-test="member-shared-secrets" data-controller="secret-new-row">
+  <%# CYRA-428 — header e schede sono un blocco solo, e il titolo è quello del LIVELLO: variabili e
+      file dell'organizzazione sono due schede della stessa pagina, non due pagine diverse. %>
+  <%= render Ui::PageHeaderComponent.new(title: t("member.vault.levels.organization"),
+        breadcrumb: [ { label: t("member.vault.title"), href: member_vault_path },
+                      { label: t("member.vault.levels.organization") } ],
+        test_id: "shared-secrets-header",
+        counts_test_id: "shared-secrets-counts", tabs_test_id: "organization-tabs") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.shared_secrets.variables"), value: @variables.size) %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.shared_secrets.delegations"), value: @variables.sum { |v| v.values.sum { |x| x.projects.size } }) %>
+    <% end %>
+
+    <% if can_manage %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.shared_secrets.add"), variant: :primary,
+              size: :sm, icon: "plus", test_id: "shared-secret-add",
+              data: { action: "secret-new-row#show", "secret-new-row-target": "addButton" }) %>
+      <% end %>
+    <% end %>
+    <%= render "member/shared_secrets/tabs", header: h, active_tab: :variables %>
+  <% end %>
+
+  <%# CYRA-416: what «delegation» means is said on the page, not left implicit. It floats and can be closed
+      for good (T1); closing it here closes it on the files page too, which explains the same thing. %>
+  <% content_for :floating_notice do %>
+    <%= render Ui::FloatingNoticeComponent.new(key: "vault_delegation", title: t("member.shared_secrets.delegation_help_title"),
+                                               test_id: "shared-secrets-delegation-help") do %>
+      <p><%= t("member.shared_secrets.delegation_help") %></p>
+    <% end %>
+  <% end %>
+
+  <%# Conferma impatto AGGREGATO: rotazione di uno o più valori delegati. Preserva i valori inseriti. %>
+  <% if @impact.present? %>
+    <div class="rounded-lg border border-amber-300 dark:border-amber-500/50 bg-amber-50 dark:bg-amber-500/15 p-4" data-test="shared-secret-impact">
+      <h2 class="text-sm font-semibold text-amber-900 dark:text-amber-200"><%= t("member.shared_secrets.confirm_title") %></h2>
+      <p class="mt-1 text-xs text-amber-800 dark:text-amber-200"><%= t("member.shared_secrets.effect.#{@impact['effect']}") %></p>
+      <ul class="mt-3 space-y-1 text-xs text-amber-900 dark:text-amber-200">
+        <% @impact["entries"].each do |entry| %>
+          <li>
+            <span class="font-mono font-medium"><%= entry["name"] %></span> · <%= entry["environment"] %>
+            <% entry["projects"].each do |item| %>
+              <span class="text-amber-700 dark:text-amber-300">· <%= item["name"] %><% if item["repository"] %> · GitHub <span class="font-mono"><%= item["repository"] %></span><% end %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+      <%= form_with url: member_shared_secrets_path, method: :post, class: "mt-3" do %>
+        <%= hidden_field_tag :name, params[:name] %>
+        <% @environments.each do |environment| %>
+          <% submitted = params.dig(:values, environment.id.to_s) %>
+          <%= hidden_field_tag "values[#{environment.id}]", submitted unless submitted.nil? %>
+        <% end %>
+        <%= hidden_field_tag :confirmation_digest, @impact["digest"] %>
+        <%= submit_tag t("member.shared_secrets.confirm"), class: "h-8 rounded-md bg-amber-700 px-3 text-xs font-semibold text-white", data: { test: "shared-secret-confirm" } %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="shared-secrets-table">
+    <div class="flex items-center gap-2 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100 mr-1"><%= t("member.shared_secrets.table_title") %></h3>
+      <span class="ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.shared_secrets.count", count: @variables.size) %></span>
+    </div>
+    <%= render(Ui::TableComponent.new(stacked: true, sticky: :first, label: t("member.shared_secrets.table_title"), body_test_id: "shared-secrets-matrix")) do |t| %>
+      <% t.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.shared_secrets.col_variable")) %>
+        <% @environments.each do |environment| %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: safe_join([ tag.span(class: "w-1.5 h-1.5 rounded-full #{Ui::Colors.swatch(environment.color)}"), environment.label ], " ")) %>
+        <% end %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.shared_secrets.save_row"), label_hidden: true) %>
+      <% end %>
+
+      <% if can_manage %>
+        <%= render "new_row", environments: @environments, errors: new_row_errors %>
+      <% end %>
+
+      <% if @variables.empty? && new_row_errors.blank? %>
+        <tr data-test="shared-secrets-empty" data-secret-new-row-target="empty">
+          <td colspan="<%= @environments.size + 2 %>">
+            <%= render Ui::EmptyStateComponent.new(title: t("member.shared_secrets.empty_title"), body: t("member.shared_secrets.empty_body"),
+                  icon: "key") do |empty| %>
+              <% if can_manage %>
+                <% empty.with_action do %>
+                  <%= render Ui::ButtonComponent.new(label: t("member.shared_secrets.add"), variant: :primary,
+                        size: :sm, icon: "plus", test_id: "shared-secret-empty-add",
+                        data: { action: "secret-new-row#show" }) %>
+                <% end %>
+              <% end %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+
+      <% @variables.each do |variable| %>
+        <%= render "row", variable: variable, environments: @environments, projects: @projects,
+                   can_manage: can_manage, open: (@open_row == variable.name),
+                   errors: (@row_errors if @open_row == variable.name) %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4" data-test="shared-secrets-activity">
+    <h2 class="text-sm font-semibold"><%= t("member.shared_secrets.activity") %></h2>
+    <%# G10 — empty inside a panel is one line, not a title left alone. %>
+    <% if @events.empty? %>
+      <div class="mt-2"><%= render Ui::EmptyNoteComponent.new(text: t("member.shared_secrets.activity_empty"), test_id: "shared-secrets-activity-empty") %></div>
+    <% end %>
+    <% @events.each do |event| %><p class="mt-2 text-xs text-gray-600 dark:text-zinc-400" data-test="shared-secret-event"><span class="font-mono"><%= event.name %></span> · <%= secret_action_label(event.action) %> · <%= event.actor&.name || t("member.secrets.activity_system") %> · <%= secret_event_time(event.created_at) %></p><% end %>
+  </div>
+
+  <%# Secondary to the table (DESIGN.md T13): side by side in columns, not one after the other. %>
+  <%= render Ui::GridComponent.new(cols: 1, lg: 3, gap: 6, class: "items-start", test_id: "secondary-panels") do %>
+    <%# CYRA-422 — «Chi può vedere questi segreti» dell'organizzazione: chi ha shared_secrets.manage. %>
+    <%= render SecretReadersComponent.new(readers: @secret_readers, reveal_names: @secret_readers_reveal,
+          permissions_href: @secret_readers_permissions_href) %>
+
+    <%# CYRA-422 — riga permanente: cifratura, tracciamento delle letture e retention del registro. %>
+    <%= render SecretProtectionComponent.new(kind: :shared) %>
+
+    <%# CYRA-401 — «Usa questo segreto» nel corpo: gli shared si usano delegandoli a un progetto e poi
+        leggendoli come i suoi secret. Segnaposto progetto/ambiente (il valore vive sul progetto delegato). %>
+    <%= render SecretUsageComponent.new(kind: :shared) %>
+  <% end %>
+</div>

@@ -1,0 +1,81 @@
+{
+  "it": {
+    "member": {
+      "installation": {
+        "title": "Installa un’integrazione",
+        "subtitle": "Scegli una combinazione osservata, configura l’app e controlla la ricezione persistita.",
+        "observations": "osservazioni",
+        "select": "Scegli progetto e osservazione",
+        "project": "Progetto",
+        "observation": "Combinazione osservata",
+        "version": "Altra versione del pacchetto (facoltativa)",
+        "load": "Carica selezione",
+        "selection_note": "Cerca i progetti visibili per nome o chiave, poi carica un’osservazione esatta. Un’altra versione non eredita il supporto.",
+        "claims": {
+          "implemented": "Codice disponibile · osservazione locale",
+          "verified": "Combinazione verificata",
+          "released": "Combinazione rilasciata"
+        },
+        "observed": "osservato localmente",
+        "not_attested": "non attestato",
+        "claim_note": "Un segnale riuscito non promuove l’intera integrazione. La ricevuta del progetto prova solo la persistenza, non la provenienza del pacchetto o la completezza della traccia.",
+        "evidence": "Evidenze e limiti",
+        "run": "ID esecuzione",
+        "finished": "Osservato il",
+        "artifact": "SHA-256 del pacchetto",
+        "manifest": "SHA-256 del manifest",
+        "backend": "Commit backend",
+        "history": "Storico delle osservazioni",
+        "claim": "Livello di supporto",
+        "unobserved": "Versione non osservata",
+        "unobserved_body": "Seleziona un’osservazione esatta del catalogo. Non vengono dedotti intervalli compatibili o supporto per l’ultima versione.",
+        "install": "Installa l’artefatto esatto",
+        "artifact_note": "Controlla lo SHA-256 del pacchetto mostrato sopra prima dell’installazione. I candidati locali non sono pacchetti pubblicati: non sostituirli con un download dal registro della stessa versione. I comandi di registro scelgono una versione; verifica separatamente il digest.",
+        "both_php": "Entrambe le osservazioni PHP installano lo stesso adattatore e richiedono sia un bearer di ingest sia una DSN Sentry numerica dello stesso progetto. Sono partizioni di una sola esecuzione, non modalità indipendenti.",
+        "private_note": "Inserisci le credenziali private del server a runtime dal vault CloseYourIt autorizzato. Questa guida non legge né mostra il bearer. Non inserirlo nel codice browser o mobile.",
+        "reveal": "Mostra DSN Sentry pubblica",
+        "token_environment": "Ambiente del token ingest attivo selezionato: %{environment}. Usa una configurazione runtime corrispondente.",
+        "key_unavailable": "La DSN pubblica non è disponibile qui. Chi gestisce i token del progetto visibile può selezionare un token ingest attivo; usa SENTRY_DSN come segnaposto runtime.",
+        "configure": "Configura e acquisisci una volta",
+        "lifecycle": "Questi esempi diagnostici autonomi acquisiscono un ID locale, non una prova di consegna. Inizializza una volta; esegui flush o chiusura solo al termine dell’app. Componi i callback esistenti senza sostituirli.",
+        "php_bootstrap": "Carica il prelude prima di Composer in ogni ingresso HTTP, Artisan, queue e test. Preserva le altre esclusioni dont-discover e i gestori esistenti. Per i worker imposta OTEL_PHP_TRACE_CLI_ENABLED=true prima di Composer. Flag di disabilitazione o un altro proprietario dei provider mantengono l’adattatore inattivo. Riavvia i worker quando cambia la proprietà; non memorizzare configurazioni con segreti in cache.",
+        "php_full": "Guida completa bootstrap e proprietà PHP",
+        "removal": "Per rimuovere l’integrazione, ferma la strumentazione di sua proprietà, rimuovi inizializzazione, provider, gestori e dipendenza, poi riavvia i processi persistenti. Non chiudere provider altrui. I dati già ricevuti seguono la conservazione del progetto.",
+        "copy": "Copia codice",
+        "copied": "Copiato",
+        "copy_error": "Copia non riuscita",
+        "receipt": "Controlla il primo segnale persistito",
+        "receipt_note": "Usa l’ID esatto restituito dall’app e ambiente/release corrispondenti. Il controllo cerca ricevute server del progetto negli ultimi 15 minuti. I dati assenti restano in attesa; una coda SDK o una risposta HTTP non sono una ricevuta.",
+        "php_capture": "Esegui questo frammento solo nella diagnostica protetta dell’app già inizializzata. Il contesto traccia deve essere valido nella richiesta reale; attendi la fine della richiesta per completare lo span. Non chiudere il provider nella route. Un ID evento nullo non prova la ricezione.",
+        "environment": "Ambiente",
+        "release": "Release dell’app",
+        "event_id": "ID evento",
+        "trace_id": "ID traccia",
+        "span_id": "ID span",
+        "check": "Controlla ricezione",
+        "not_checked": "Non controllato. Questa pagina non invia eventi.",
+        "pending": "Nessuna ricevuta persistita corrispondente. Controlla ID esatti, configurazione e intervallo, poi riprova.",
+        "checking": "Controllo dei metadati persistiti…",
+        "received_errors": "Un evento di errore è stato persistito il",
+        "received_traces": "Uno span OTLP è stato persistito il",
+        "invalid": "Seleziona un’osservazione valida e inserisci ID esatti, ambiente, release e limiti UTC validi.",
+        "unavailable": "Il catalogo o il controllo ricezione non è disponibile. Riprova quando il servizio è disponibile.",
+        "no_projects": "Nessun progetto visibile",
+        "no_projects_body": "Gli esempi di installazione restano disponibili. Seleziona un progetto a cui puoi accedere prima di visualizzarne la configurazione pubblica o verificare una ricevuta.",
+        "selection_limits": "Sono elencate solo osservazioni esatte. Il selettore mostra fino a 100 osservazioni e 200 progetti visibili; lo storico è paginato. Un’altra versione non eredita il supporto.",
+        "project_search": "Cerca progetto per nome o chiave",
+        "no_matching_projects": "Nessun progetto visibile corrispondente",
+        "no_matching_projects_body": "Modifica o cancella la ricerca del progetto. Non è stato eseguito alcun controllo ricezione.",
+        "not_found": "Risorsa della ricevuta non trovata."
+      },
+      "guides": {
+        "index": {
+          "installation": {
+            "title": "Installa un’integrazione",
+            "body": "Scegli una combinazione osservata, configura l’app e controlla la ricezione persistita."
+          }
+        }
+      }
+    }
+  }
+}

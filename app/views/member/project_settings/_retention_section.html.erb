@@ -1,0 +1,35 @@
+<%# CYRA-883 — the inherit rule is said once in the subtitle; each field carries the value in force. %>
+<% fields = [
+     { name: "logs_retention_days", max: 365, key: "logs", test: "logs-retention-days", effective_key: "effective",
+       effective_test: "project-settings-effective", days: Logs::Retention.for(@project), icon: "history" },
+     { name: "analytics_retention_days", max: 730, key: "analytics", test: "analytics-retention-days", effective_key: "analytics_effective",
+       effective_test: "project-settings-analytics-effective", days: Analytics::Retention.for(@project), icon: "chart-line" },
+     { name: "errors_retention_days", max: 365, key: "errors", test: "errors-retention-days", effective_key: "errors_effective",
+       effective_test: "project-settings-errors-effective", days: Errors::Retention.for(@project), icon: "bug" },
+     { name: "performance_retention_days", max: 365, key: "performance", test: "performance-retention-days", effective_key: "performance_effective",
+       effective_test: "project-settings-performance-effective", days: Metrics::Retention.for(@project), icon: "gauge" },
+     { name: "uptime_retention_days", max: 730, key: "uptime", test: "uptime-retention-days", effective_key: "uptime_effective",
+       effective_test: "project-settings-uptime-effective", days: Uptime::Retention.for(@project), icon: "signal" }
+   ] %>
+<%= render Ui::SectionComponent.new(title: t("member.project_settings.retention_section"), id: "retention",
+      class: "scroll-mt-20", body_class: "px-4 py-4", test_id: "project-retention-section") do |section| %>
+  <% section.with_actions do %><%= render "member/project_settings/save_action", anchor: "retention" %><% end %>
+  <% section.with_subtitle do %>
+    <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.project_settings.retention_hint") %></p>
+  <% end %>
+  <%= render Ui::GridComponent.new(cols: 1, md: 2, gap: 5) do %>
+    <% fields.each do |field| %>
+      <div>
+        <%= render Ui::InputComponent.new(
+              name: field[:name], type: "number", min: 1, max: field[:max],
+              label: t("member.project_settings.#{field[:key]}_retention_label"),
+              test_id: field[:test], value: @project.public_send(field[:name]),
+              placeholder: t("member.project_settings.#{field[:key]}_retention_placeholder"),
+              error: @errors&.dig(field[:name].to_sym)&.first) %>
+        <p class="mt-1.5 flex items-center gap-1.5 text-[11.5px] text-zinc-700 dark:text-zinc-300" data-test="<%= field[:effective_test] %>">
+          <%= render Ui::IconComponent.new(name: field[:icon], class: "text-[11px] text-gray-400 dark:text-zinc-500") %><%= t("member.project_settings.#{field[:effective_key]}", days: field[:days]) %>
+        </p>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

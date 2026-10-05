@@ -1,0 +1,56 @@
+<%# locals:
+      site: (required) — Seo::Site con :project e :environment caricati
+      open_counts: (required) — { site_id => rilievi aperti }, calcolato in batch (niente N+1)
+      last_audits: (required) — { site_id => Seo::Audit } dell'ultimo giro
+    Riga dell'elenco siti. L'esito dell'ultimo giro sta accanto alla data: un giro fallito che
+    somigliasse a un giro riuscito sarebbe la cosa peggiore che questa tabella possa fare.
+
+    CYRA-536 — la riga apre la SCHEDA del sito. Prima portava fuori dall'applicazione, sul sito
+    stesso: l'unica cosa che si poteva già aprire da soli, mentre tutto quello che il sistema sa di
+    quel sito restava sparso in elenchi globali da filtrare a mano. L'indirizzo resta leggibile qui e
+    si apre dalla scheda. %>
+<% audit = last_audits[site.id] %>
+<% can_manage = can?("seo.manage", scope: site.project) %>
+<%= render Ui::TableComponent::RowComponent.new(href: member_monitoring_seo_site_path(site), link_label: site.base_url, faded: !site.enabled?, test_id: "seo-site-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <%= link_to site.base_url, member_monitoring_seo_site_path(site),
+          class: "font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 break-all",
+          data: { test: "seo-site-link-#{site.id}" } %>
+    <% unless site.enabled? %>
+      <span class="ml-1.5 text-[11px] text-gray-400 dark:text-zinc-500"><%= t("member.monitoring.seo_sites.paused") %></span>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.seo.columns.project")) do %>
+    <span class="text-[12px] text-zinc-900 dark:text-zinc-100"><%= site.project.name %></span>
+    <span class="ml-1 text-[11px] text-gray-400 dark:text-zinc-500"><%= site.environment.label %></span>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.seo_sites.columns.frequency"), class: "text-[11px] text-gray-500 dark:text-zinc-400")) { t("member.monitoring.seo_sites.frequency.#{site.frequency}") } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.seo_sites.columns.open_issues"), mono: true, class: "text-[11px] #{open_counts[site.id].to_i.positive? ? 'text-rose-600 dark:text-rose-400' : 'text-gray-400 dark:text-zinc-500'}")) { open_counts[site.id].to_i.to_s } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.seo_sites.columns.last_audit")) do %>
+    <% if site.last_audited_at.blank? %>
+      <span class="text-[11px] text-gray-400 dark:text-zinc-500"><%= t("member.monitoring.seo_sites.never_audited") %></span>
+    <% elsif site.last_error.present? %>
+      <span class="text-[11px] text-rose-600 dark:text-rose-400" data-test="seo-site-failed"><%= t("member.monitoring.seo_sites.failed", error: site.last_error) %></span>
+    <% else %>
+      <%# CYRA-808 — «12 pagine» da solo fa sembrare controllato anche ciò che non si è riusciti a
+          leggere. Il non letto sta accanto al numero, non al suo posto: sono due fatti diversi. %>
+      <span class="text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.seo_sites.checked_ago", duration: time_ago_in_words(site.last_audited_at)) %><% if audit %> · <%= t("member.monitoring.seo_sites.pages_seen", count: audit.pages_count) %><% end %></span>
+      <% if audit&.pages_unverified_count&.positive? %>
+        <span class="text-[11px] text-amber-700 dark:text-amber-300" data-test="seo-site-row-unverified"> · <%= t("member.monitoring.seo_sites.pages_unverified_short", count: audit.pages_unverified_count) %></span>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%# I comandi non devono far scattare anche l'apertura della riga: un clic, un effetto solo. %>
+  <%= render Ui::TableComponent::CellComponent.new(actions: true, data: { "ui--row-link-skip": true }) do %>
+    <% if can_manage %>
+      <div class="inline-flex items-center gap-1.5">
+        <%= button_to t("member.monitoring.seo_sites.actions.rescan"), rescan_member_monitoring_seo_index_path(site_id: site.id),
+              method: :post, class: "inline-flex items-center whitespace-nowrap h-7 px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 text-[12px] font-medium text-zinc-900 dark:text-zinc-100 hover:bg-stone-50 dark:hover:bg-zinc-800",
+              data: { test: "seo-site-rescan-#{site.id}" } %>
+        <%= link_to t("member.monitoring.seo_sites.actions.edit"), edit_member_monitoring_seo_site_path(site),
+              class: "inline-flex items-center whitespace-nowrap h-7 px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 text-[12px] font-medium text-zinc-900 dark:text-zinc-100 hover:bg-stone-50 dark:hover:bg-zinc-800",
+              data: { test: "seo-site-edit-#{site.id}" } %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

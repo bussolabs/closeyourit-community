@@ -1,0 +1,42 @@
+<% content_for :title, @project.name %>
+<% can_delete = @can_edit_settings && can?("projects.delete", scope: @project) %>
+
+<div class="p-7 space-y-6" data-test="member-project-settings">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "settings" %>
+
+  <%# CYRA-883 — the side index stays in view while the page scrolls; below lg it wraps above the sections. %>
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-[240px_minmax(0,1fr)]" data-controller="section-panels"
+       data-section-panels-initial-value="<%= @section %>"
+       data-section-panels-active-class="<%= Ui::NavLinkComponent::LINK_ACTIVE %>"
+       data-section-panels-idle-class="<%= Ui::NavLinkComponent::LINK_IDLE %>"
+       data-section-panels-icon-active-class="<%= Ui::NavLinkComponent::ICON_ACTIVE %>"
+       data-section-panels-icon-idle-class="<%= Ui::NavLinkComponent::ICON_IDLE %>">
+    <%= render "member/project_settings/nav", can_delete: can_delete %>
+
+    <%# One panel at a time: the side menu switches them (`section-panels`), the address keeps the open one
+        (#retention) and every panel that has fields saves with its own form. Without JS all stay visible. %>
+    <div class="min-w-0 space-y-6">
+      <% if @can_manage_tokens %>
+        <div data-section-panels-target="panel" data-anchor="tokens"><%= render "member/project_settings/tokens_section" %></div>
+      <% end %>
+
+      <% if @can_edit_settings %>
+        <%# CYRA-883 — how data reaches the project first, next to the tokens; then what is touched most.
+            CYRA-341 — the thresholds colour durations in Performance, per project. %>
+        <% { "ingest" => "ingest_section", "tickets" => "assignee_section",
+             "retention" => "retention_section", "thresholds" => "thresholds_section" }.each do |anchor, partial| %>
+          <%= form_with url: member_project_settings_path(@project), method: :patch,
+                data: { test: "project-settings-form-#{anchor}", section_panels_target: "panel", anchor: anchor } do %>
+            <%= render "member/project_settings/#{partial}" %>
+          <% end %>
+        <% end %>
+
+        <div data-section-panels-target="panel" data-anchor="features"><%= render "member/project_settings/features_section" %></div>
+      <% end %>
+
+      <% if can_delete %>
+        <div data-section-panels-target="panel" data-anchor="danger"><%= render "member/project_settings/danger_zone" %></div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,21 @@
+<%# locals: (ticket:, hidden: false) %>
+<%= render Ui::TableComponent::RowComponent.new(href: member_ticket_path(ticket), link_label: ticket.code,
+      group: ("closed" if hidden), hidden: hidden, test_id: "milestone-ticket-#{ticket.id}") do %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.milestones.show.col_code")) do %>
+    <span class="inline-flex items-center gap-1.5">
+      <%= render "member/tickets/agent_indicator", ticket: ticket %>
+      <%= link_to ticket.code, member_ticket_path(ticket), class: "font-mono text-[12px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300" %>
+    </span>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(header: true)) { link_to ticket.title, member_ticket_path(ticket), class: "text-[13px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 max-w-[300px] truncate block" } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.milestones.show.col_kind"))) { render Ui::BadgeComponent.new(label: t("member.tickets.kind.#{ticket.kind}"), color: ticket_kind_color(ticket.kind), dot: true) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.milestones.show.col_status"))) { render Ui::BadgeComponent.new(label: ticket.status.display_label, color: ticket.status.color) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.milestones.show.col_weight"), align: :right, mono: true, class: "text-zinc-700 dark:text-zinc-300")) { ticket.weight&.to_s || content_tag(:span, "—", class: "text-gray-300 dark:text-zinc-600") } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.milestones.show.col_assignee"), align: :right) do %>
+    <% if ticket.assignee %>
+      <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold" title="<%= ticket.assignee.name %>"><%= avatar_initials(ticket.assignee.name) %></span>
+    <% else %>
+      <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 text-[10px]" title="<%= t('member.tickets.unassigned') %>"><%= render Ui::IconComponent.new(name: "user", class: "text-[10px]") %></span>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,15 @@
+<%# CYRA-553 — sopra i risultati: quale modalità sta cercando, e come passare all'altra in un
+    clic. Se il servizio non risponde lo si dice qui, e i risultati restano quelli per parole
+    esatte. turbo_frame _top come i bottoni dell'empty state: il selettore della barra sta
+    FUORI da questo frame e resterebbe indietro. %>
+<% if @semantic_degraded %>
+  <p class="px-4 py-2 text-[11.5px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/15 border-b border-amber-100 dark:border-amber-500/30" data-test="tickets-semantic-degraded"><%= t("member.tickets.semantic.degraded_hint") %></p>
+<% elsif @search_query.present? %>
+  <div class="px-4 py-2 text-[11.5px] text-gray-600 dark:text-zinc-400 bg-stone-50 dark:bg-zinc-800 border-b border-stone-200 dark:border-zinc-800 flex items-center flex-wrap gap-x-2 gap-y-1" data-test="tickets-search-mode-banner">
+    <span><%= @semantic_mode ? t("member.tickets.semantic.using_semantic") : t("member.tickets.semantic.using_exact") %></span>
+    <%= link_to (@semantic_mode ? t("member.tickets.semantic.switch_to_exact") : t("member.tickets.semantic.switch_to_semantic")),
+          list_member_tickets_path(request.query_parameters.except("page").merge(semantic: @semantic_mode ? "0" : "1")),
+          class: "font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 underline underline-offset-2",
+          data: { test: "tickets-search-mode-switch", turbo_frame: "_top" } %>
+  </div>
+<% end %>

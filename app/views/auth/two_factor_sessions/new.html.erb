@@ -1,0 +1,18 @@
+<% content_for :title, t("auth.two_factor.title") %>
+
+<%= render Ui::CardComponent.new do %>
+  <h1 class="font-display text-[20px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("auth.two_factor.title") %></h1>
+  <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("auth.two_factor.subtitle") %></p>
+
+  <%= form_with url: two_factor_challenge_path, method: :post, class: "mt-5 space-y-4", data: { test: "two-factor-form" } do %>
+    <%= render Ui::InputComponent.new(
+          name: "code", label: t("auth.two_factor.code_label"), required: true,
+          test_id: "two-factor-code", autocomplete: "one-time-code", inputmode: "text",
+          autofocus: true, hint: t("auth.two_factor.code_hint")) %>
+    <%= render Ui::ButtonComponent.new(label: t("auth.two_factor.submit"), type: "submit", size: :lg, test_id: "two-factor-submit", class: "w-full") %>
+  <% end %>
+<% end %>
+
+<p class="mt-5 text-center text-[12.5px] text-gray-500 dark:text-zinc-400">
+  <%= link_to t("auth.two_factor.back_to_login"), login_path, class: "font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "two-factor-cancel" } %>
+</p>

@@ -1,0 +1,34 @@
+{
+  "id": "chatcmpl-8e44248b687babce",
+  "created": 1788449041,
+  "model": "vlm-fast",
+  "object": "chat.completion",
+  "system_fingerprint": "vllm-0.28.1.dev0+g2cf0a6915.d20260827-7b10158d",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Ecco il numero di errori aperti per i due progetti:\n\n- **CYRA**: 12 errori aperti\n- **EKETO**: 3 errori aperti\n\nIn totale, i due progetti hanno **15 errori aperti**.",
+        "role": "assistant",
+        "provider_specific_fields": {
+          "refusal": null,
+          "reasoning": null
+        }
+      },
+      "provider_specific_fields": {
+        "token_ids": null,
+        "stop_reason": null,
+        "routed_experts": null
+      }
+    }
+  ],
+  "usage": {
+    "completion_tokens": 48,
+    "prompt_tokens": 459,
+    "total_tokens": 507,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  }
+}

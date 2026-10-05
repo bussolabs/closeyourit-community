@@ -1,0 +1,48 @@
+<%# locals: () %>
+<%# CYRA-883 — desktop only: on a phone the bottom bar covers the page end, and privacy lives in the menu drawer. %>
+<footer class="hidden md:flex shrink-0 items-center justify-between gap-4 px-1 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="member-footer">
+  <div>
+    <%= render "shared/publisher_credit" %>
+    <%# The privacy notice is closeyour.it's: a self-hosted install has none (CYRA-917). %>
+    <% if Website::MarketingGate.enabled? %>
+      <span aria-hidden="true">·</span>
+      <%= link_to t("website.footer.privacy"), privacy_path, class: "hover:text-zinc-900 dark:hover:text-zinc-100" %>
+    <% end %>
+  </div>
+  <%# The buttons sit together on the right: guides, support, with the requests still open, the language and the version. %>
+  <div class="flex items-center gap-1" data-test="footer-actions">
+    <% if (guides = guides_nav_item) %>
+      <%= render Ui::ButtonComponent.new(label: guides.label, href: guides.path, icon: guides.icon, variant: :ghost, size: :sm,
+            test_id: "footer-guides", aria: { current: ("page" if guides.active) }) %>
+    <% end %>
+    <%# CYRA-935 — slides the page up and shows the support screen underneath. %>
+    <% if current_organization %>
+      <%= render Ui::ButtonComponent.new(label: t("member.support.button"), icon: "life-buoy", variant: :ghost, size: :sm,
+            test_id: "footer-support", data: { action: "ui--support#open" }) %>
+      <% open_requests = footer_open_support_requests %>
+      <% if open_requests.positive? %>
+        <%= render Ui::ButtonComponent.new(href: member_support_requests_path, variant: :ghost, size: :sm,
+              test_id: "footer-support-open") do %>
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400" aria-hidden="true"></span>
+          <%= t("member.support.footer_open", count: open_requests) %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <%# The interface language: a menu that opens upwards (the footer is the page end). Choosing one
+        saves it on the account (same endpoint as the Preferences page) and the page comes back as it was. %>
+    <% current_language = t("member.preferences.language_options.#{I18n.locale}") %>
+    <%= render Ui::RowMenuComponent.new(icon: "languages", label: current_language, test_id: "footer-locale",
+          aria_label: "#{t("member.preferences.language_title")}: #{current_language}") do %>
+      <% App::Constants::LOCALES.each do |locale| %>
+        <% active = locale == I18n.locale.to_s %>
+        <%= button_to member_preferences_path, method: :patch, params: { locale: }, form_class: "contents",
+              class: Ui::RowMenuComponent.item_class, data: { test: "footer-locale-#{locale}" },
+              aria: { current: (true if active) } do %>
+          <span class="flex-1"><%= t("member.preferences.language_options.#{locale}") %></span>
+          <%= render Ui::IconComponent.new(name: "check", class: "text-[12px] text-indigo-600 dark:text-indigo-400") if active %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <%= render Ui::ChangelogComponent.new(unseen: footer_release_unseen?) %>
+  </div>
+</footer>

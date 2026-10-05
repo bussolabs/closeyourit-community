@@ -1,0 +1,20 @@
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+  <%= render(Ui::TableComponent.new(stacked: true, compact: true)) do |t| %>
+    <% t.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: "Server") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: "State") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: "CPU", align: :right) %>
+      <th scope="col"><span class="sr-only">Open</span></th>
+    <% end %>
+    <% t.with_foot do %>
+      <tr><td class="ui-table-cell font-semibold" colspan="2">Total</td><td class="ui-table-cell text-right font-mono">117%</td><td></td></tr>
+    <% end %>
+    <% [ [ "web-01", "Up", "34%", {} ], [ "worker-01", "Suspended", "0%", { faded: true } ], [ "db-primary", "Up", "83%", { selected: true } ] ].each do |name, state, cpu, flags| %>
+      <%= render Ui::TableComponent::RowComponent.new(href: "#", link_label: "Open #{name}", **flags) do %>
+        <%= render(Ui::TableComponent::CellComponent.new(header: true)) { name } %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: "State")) { state } %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: "CPU", align: :right, mono: true)) { cpu } %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

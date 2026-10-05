@@ -1,0 +1,100 @@
+en:
+  member:
+    vault:
+      shortcuts_title: "Everything in here"
+      projects:
+        stat_projects: "Projects"
+        col_secrets: "Secrets"
+        col_anomalies: "Anomalies"
+        search: "Search projects…"
+        with_anomalies: "With anomalies"
+        no_match: "No project matches the filters."
+        col_last_change: "Last change"
+      # CYRA-428 — the name of the LEVEL where the key lives: it is the page title, and which of its
+      # two tabs you are looking at is told by the active tab.
+      levels:
+        personal: Personal secrets
+        organization: Organization secrets
+        project: Project secrets
+      tabs:
+        variables: Variables
+        files: Files
+        by_project: By project
+        by_variable: By variable
+      title: Vault
+      help_title: "All secrets: personal, organization and project."
+      onboarding_title: "From secret to app in three steps"
+      onboarding_intro: "The full round trip, without leaving this page."
+      onboarding_create_title: "Create it"
+      onboarding_create_body: "Add the variable and its value in the right space: personal, organization or project."
+      onboarding_delegate_title: "Delegate it"
+      onboarding_delegate_body: "If it's an organization secret, pick the projects that can use it. A project secret is ready as-is."
+      onboarding_read_title: "Read it"
+      onboarding_read_body: "From your application, with a ready-made command: you'll find it right below."
+      choose_project: Select a project
+      choose_project_hint: Choose the project whose secrets you want to manage.
+      apply: Open
+      empty_projects: No projects available
+      empty_projects_body: You don't have access to any project yet. Ask an administrator to link you.
+      count_personal: "Personal secrets"
+      count_organization: "Organization secrets"
+      capabilities:
+        title: What you can do here
+        subtitle: The features of this area, one by one, with an example and where each is used.
+        count_label: Features
+        see_all: See the features with examples
+        example_label: Example
+        command_label: Terminal
+        links:
+          open_projects: Open project secrets
+          open_project_github: Pick the project and open its GitHub tab
+          open_personal: Open your personal secrets
+          open_attention: See what is waiting for a decision
+          open_project_settings: Pick the project and open its settings
+          open_audit: Open secret activity
+          open_personal_activity: See activity on your secrets
+        features:
+          cli_read:
+            title: Read secrets from your own computer
+            body: No copying values by hand. The command puts them inside the application as it starts, without leaving them on disk.
+            example: From the terminal, in the project folder. With `cyi secrets download` you get them in a file instead.
+          github_sync:
+            title: Sync secrets with GitHub
+            body: Vault values land in the repository environments, so builds find them ready and nobody pastes them again by hand.
+            example: From the terminal, or with «Sync now» in the project's GitHub tab.
+          personal_direnv:
+            title: Your personal secrets, loaded on their own
+            body: The secrets that are yours alone. Entering the project folder, your shell can load them by itself.
+            example: "The first command starts something with your secrets inside. The second line goes in the folder's `.envrc` file: from then on, entering the folder is enough."
+          unlock_row:
+            title: Unlock a row to change a value
+            body: In the project secret table rows are locked and open one at a time, so you never change what you were only looking at.
+            example: Press the padlock at the end of the row, type the new values in the environments you need, then save the row.
+          history_rollback:
+            title: Value history, with a way back
+            body: Every change is kept. You can look at a secret's previous values and put the right one back without hunting for it elsewhere.
+            example: Open the secret's history and restore the version you need.
+          four_eyes:
+            title: Secrets that ask for a second approval
+            body: "On the environments you choose, a change doesn't go through right away: it waits until someone else approves it."
+            example: Turn approval on in the project settings and on the environment to protect. From then on whoever edits leaves a request, and someone else decides.
+          read_audit:
+            title: Every read is recorded
+            body: Who read a secret and when. Reads from the page and reads from the command line end up in the same place.
+            example: Open the activity list and look for the "read" action to see who read what.
+      integrations:
+        title: Automatic links
+        intro: What the Vault does on its own, and where it is already on.
+        how: How to turn it on
+        active_on:
+          one: On for 1 project
+          other: On for %{count} projects
+        not_active_yet: Not on yet
+        not_used_yet: Not used yet
+        on_your_computer: On your computer
+        cli_title: Secrets from the command line
+        cli_body: The application starts with its secrets already inside, with no copying by hand.
+        github_title: Sync with GitHub
+        github_body: Vault secrets land in the repository environments, ready for builds.
+        direnv_title: A folder that loads secrets on its own
+        direnv_body: You enter the folder and your personal secrets are already there. It is turned on from your own computer, so it has no count here.

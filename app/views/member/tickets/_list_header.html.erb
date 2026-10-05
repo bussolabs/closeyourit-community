@@ -1,0 +1,37 @@
+<%= render Ui::PageHeaderComponent.new(
+      title: t("member.tickets.title"),
+      subtitle: t("member.tickets.help_title"),
+      breadcrumb: [ { label: t("member.tickets.title"), href: member_tickets_path }, { label: t("member.tickets.list_view") } ],
+      counts_test_id: "tickets-counts") do |h| %>
+  <% h.with_counts do %>
+    <%# CYRA-374 — «quante decisioni aspettano me, adesso»: è la prima domanda della giornata, e
+        finché non c'era questo numero si rispondeva aprendo i ticket uno per uno. Cliccandolo
+        l'elenco mostra ESATTAMENTE quei ticket: il link non porta con sé gli altri filtri, così il
+        numero letto e le righe viste coincidono sempre. Ri-cliccato, spegne. A zero resta scritto
+        ma non è un link: non c'è niente da aprire. %>
+    <%= render Ui::StatLabelComponent.new(label: t("stats.awaiting_me"), value: @awaiting_count,
+          value_color: (@awaiting_count.positive? ? :amber : :gray),
+          href: ((list_member_tickets_path(awaiting: ("me" unless awaiting_filter?)) if @awaiting_count.positive? || awaiting_filter?)),
+          active: awaiting_filter?, title: t("member.tickets.awaiting.chip_title"),
+          test_id: "tickets-count-awaiting") %>
+    <%# CYRA-844 — i ticket con domande senza risposta, con la stessa regola del contatore sopra:
+        il link non porta gli altri filtri, a zero non è un link, ri-cliccato spegne. %>
+    <%= render Ui::StatLabelComponent.new(label: t("stats.open_questions", count: @open_questions_count), value: @open_questions_count,
+          value_color: (@open_questions_count.positive? ? :amber : :gray),
+          href: ((list_member_tickets_path(questions: ("open" unless open_questions_filter?)) if @open_questions_count.positive? || open_questions_filter?)),
+          active: open_questions_filter?, title: t("member.tickets.open_questions.chip_title"),
+          test_id: "tickets-count-open-questions") %>
+    <%= render Ui::StatLabelComponent.new(label: t("stats.tickets", count: @tickets_total), value: @tickets_total, test_id: "tickets-count-tickets") %>
+    <%= render Ui::StatLabelComponent.new(label: t("stats.in_progress"), value: @list_in_progress, value_color: :indigo, test_id: "tickets-count-in-progress", title: in_progress_chip_title(@in_progress_labels)) %>
+    <%= render Ui::StatLabelComponent.new(label: t("stats.pending_agent_eligibility"), value: @list_pending_eligibility, value_color: :amber, test_id: "tickets-count-pending-eligibility") %>
+  <% end %>
+  <%# Tutti i ruoli possono aprire ticket %>
+  <% h.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: t("member.tickets.ask.title"),
+          href: ask_member_tickets_path, variant: :secondary_muted, size: :sm,
+          icon: "wand-sparkles", test_id: "tickets-ask") %>
+    <%= render Ui::ButtonComponent.new(label: t("member.tickets.new"),
+          href: new_member_ticket_path, variant: :primary, size: :sm,
+          icon: "plus", test_id: "tickets-new") %>
+  <% end %>
+<% end %>

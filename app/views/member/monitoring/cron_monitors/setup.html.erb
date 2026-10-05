@@ -1,0 +1,87 @@
+<% content_for :title, t("member.crons.setup_title") %>
+
+<div class="p-7 max-w-3xl space-y-6" data-test="cron-setup">
+  <%= render Ui::PageHeaderComponent.new(title: t("member.crons.setup_title"),
+        breadcrumb: [ { label: t("member.crons.title"), href: member_monitoring_cron_monitors_path },
+                      { label: t("member.crons.setup_title") } ]) do |h| %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.crons.setup_lead") %></p>
+    <% end %>
+  <% end %>
+
+  <% if @project.nil? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.crons.setup_no_project_title"),
+          body: t("member.crons.setup_no_project"), icon: "folder-open",
+          framed: true, test_id: "cron-setup-no-project") %>
+  <% else %>
+    <%# Un lavoro appartiene a un progetto: l'indirizzo cambia con lui, quindi la scelta viene prima
+        delle istruzioni. Senza JS resta un form GET normale. %>
+    <% if @projects.size > 1 %>
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3.5" data-test="cron-setup-project">
+        <%= form_with url: setup_member_monitoring_cron_monitors_path, method: :get, class: "flex items-end gap-3" do %>
+          <div class="w-72">
+            <%= render Ui::SelectComponent.new(name: "project_id", label: t("member.crons.setup_project"),
+                  options: @projects.map { |p| [ p.name, p.id ] }, selected: @project.id,
+                  test_id: "cron-setup-project-select") %>
+          </div>
+          <%= render Ui::ButtonComponent.new(label: t("member.crons.setup_project_apply"), type: "submit", variant: :secondary, size: :sm, test_id: "cron-setup-project-apply") %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.crons.setup_steps_title") %></h2></div>
+      <div class="px-4 py-4">
+        <ol class="space-y-5">
+          <li class="flex gap-3">
+            <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">1</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed mb-2"><%= t("member.crons.setup_step1") %></p>
+              <%= link_to t("member.crons.setup_token_link"), member_project_tokens_path(@project),
+                    class: "inline-flex items-center gap-1.5 text-[12.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300",
+                    data: { test: "cron-setup-token-link" } %>
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">2</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed mb-2"><%= t("member.crons.setup_step2") %></p>
+              <%= render "member/secrets/usage_snippet", label: t("member.crons.setup_url_label"),
+                    lines: [ cron_check_in_url(@project, "backup-notturno") ] %>
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">3</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed mb-2"><%= t("member.crons.setup_step3") %></p>
+              <%= render "member/secrets/usage_snippet", label: t("member.crons.setup_curl_label"),
+                    lines: cron_check_in_curl(@project, "backup-notturno") %>
+              <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.crons.setup_defaults") %></p>
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">4</span>
+            <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.crons.setup_step4") %></div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <%# Il fallimento con motivo: è la differenza fra «è fallito» e «è fallito perché». %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.crons.setup_fail_title") %></h2></div>
+      <div class="px-4 py-4 space-y-2">
+        <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.crons.setup_fail_body") %></p>
+        <%= render "member/secrets/usage_snippet", label: t("member.crons.setup_fail_label"),
+              lines: cron_check_in_curl(@project, "backup-notturno", failing: true) %>
+      </div>
+    </div>
+
+    <%# T1 — the guide link sits in a panel, not on the page ground. %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3">
+      <%= link_to t("member.crons.setup_guide_link"), member_guides_crons_path,
+            class: "inline-flex items-center gap-1.5 text-[12.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300",
+            data: { test: "cron-setup-guide-link" } %>
+    </div>
+  <% end %>
+</div>

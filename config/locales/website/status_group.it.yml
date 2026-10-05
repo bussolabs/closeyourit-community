@@ -1,0 +1,13 @@
+it:
+  website:
+    status_group:
+      title: Stato dei servizi
+      meta_description: "Stato in tempo reale dei servizi di %{group}."
+      headline:
+        operational: Tutti i sistemi operativi
+        down: Interruzione in corso
+        degraded: Servizio degradato
+        unknown: Stato non disponibile
+      services: Servizi
+      no_services: Nessun servizio in questo gruppo.
+      service_timeline_summary: "Timeline uptime delle ultime %{range}: %{up} su, %{partial}, %{down} giù, %{empty} senza dati, su %{total} blocchi totali."

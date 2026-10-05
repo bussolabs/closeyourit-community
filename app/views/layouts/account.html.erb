@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<%# DESIGN.md A32 — the person's theme, as on the member pages. %>
+<% theme = Current.account&.theme.presence || "light" %>
+<html lang="<%= I18n.locale %>" class="<%= "dark" if theme == "dark" %>" data-theme="<%= theme %>">
+  <head>
+    <%# CYRA-690 — safe_join, non interpolazione: evita il doppio escape degli apostrofi nel title. %>
+    <title><%= content_for(:title) ? safe_join([ content_for(:title), "CloseYourIt" ], " · ") : "CloseYourIt" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= csp_mode_meta_tag %>
+    <%= render "layouts/system_theme", theme: theme %>
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-stone-100 dark:bg-zinc-950 font-sans text-zinc-900 dark:text-zinc-100 antialiased">
+    <%# Layout area account (CYRA-170): le pagine /account/* sono raggiungibili anche dal god SENZA
+        organizzazione (ci arriva via require_god_two_factor! per l'enrollment 2FA). Solo topbar, niente
+        sidebar org → zero dipendenze da Current.organization. Uscita sempre disponibile: brand→root,
+        corona god→Valhalla, menu utente→Esci. %>
+    <header class="sticky top-0 z-30 h-14 flex items-center gap-3 px-4 bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800">
+      <%= link_to root_path, class: "flex items-center gap-2.5", data: { test: "account-nav-home" } do %>
+        <%= render "shared/brand_mark", size: "w-6 h-6" %>
+        <span class="font-display text-[15px] font-semibold tracking-[0.2px] text-zinc-900 dark:text-zinc-100">CloseYourIt</span>
+      <% end %>
+
+      <div class="ml-auto flex items-center gap-2">
+        <% if Current.account&.god? %>
+          <%# Corona Valhalla — uscita canonica del god (tipicamente qui in enrollment 2FA). %>
+          <%= link_to valhalla_root_path,
+                class: "inline-flex items-center justify-center h-[34px] w-[34px] rounded-md text-gray-500 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100",
+                title: t("member.nav.valhalla"), "aria-label": t("member.nav.valhalla"),
+                data: { test: "account-nav-valhalla" } do %>
+            <%= render Ui::IconComponent.new(name: "crown", class: "text-[14px] text-amber-500 dark:text-amber-400") %>
+          <% end %>
+        <% end %>
+        <%= render Ui::UserMenuComponent.new(
+              name: account_display_name,
+              email: Current.account&.email,
+              account_path: nil,
+              logout_path: logout_path,
+              trigger_test_id: "account-user-menu",
+              logout_test_id: "account-logout") %>
+      </div>
+    </header>
+
+    <% if impersonating? %>
+      <div class="flex items-center gap-3 px-4 py-2 bg-amber-50 dark:bg-amber-500/15 border-b border-amber-200 dark:border-amber-500/40" data-test="impersonation-banner">
+        <%= render Ui::IconComponent.new(name: "venetian-mask", class: "text-amber-600 dark:text-amber-400 text-[13px]") %>
+        <p class="text-[12.5px] text-amber-800 dark:text-amber-200"><%= t("impersonations.banner", email: Current.account.email) %></p>
+        <%= button_to t("impersonations.exit"), impersonation_path, method: :delete, class: "ml-auto inline-flex items-center h-7 px-2.5 rounded-md text-[12px] font-medium text-amber-800 dark:text-amber-200 bg-white dark:bg-zinc-900 border border-amber-300 dark:border-amber-500/50 hover:bg-amber-100 dark:hover:bg-amber-500/25", data: { test: "impersonation-exit" } %>
+      </div>
+    <% end %>
+
+    <%= render "shared/flash" %>
+
+    <main><%= yield %></main>
+    <%= render "shared/icon_templates" %>
+  </body>
+</html>

@@ -1,0 +1,100 @@
+<%# locals: (environment:, variable:, can_manage:) %>
+<%# Altri ambienti ATTIVI del progetto verso cui questa cella può essere copiata (esclude la
+    colonna corrente). Progetto con un solo ambiente attivo → lista vuota → voce di menu assente
+    (non ha senso "copiare in un ambiente" quando non ce n'è un altro). %>
+<% promote_targets = @environments.reject { |candidate| candidate.id == environment.id } %>
+<%= render Ui::RowMenuComponent.new(test_id: "secret-menu-#{variable.id}", aria_label: t("member.secrets.history")) do %>
+  <%= link_to t("member.secrets.history"), member_project_secret_versions_path(@project, variable),
+              class: Ui::RowMenuComponent.item_class, data: { test: "secret-history-#{variable.id}" } %>
+  <% if can_manage %>
+    <button type="button" data-action="secret-row#editDescription" class="<%= Ui::RowMenuComponent.item_class %>"><%= t("member.secrets.menu_description") %></button>
+    <% if promote_targets.any? %>
+      <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+      <%# Copia (promote, CYRA-137): dialog di conferma <dialog> nativo (pattern ui--dialog del
+          progetto). Il valore resta SEMPRE mascherato nel markup — non viaggia mai verso il client:
+          il submit posta solo l'ambiente target, il valore in chiaro è letto server-side dal
+          controller (variable.value, già decifrato in-model) e passato a Secrets::Variables::Set. %>
+      <div class="contents" data-controller="ui--dialog">
+        <button type="button" data-action="ui--dialog#open" data-test="secret-promote-<%= variable.id %>"
+                class="<%= Ui::RowMenuComponent.item_class %>"><%= t("member.secrets.menu_promote") %></button>
+
+        <%= render Ui::ModalComponent.new(title: t("member.secrets.promote_title"), size: :sm, padded: false,
+              test_id: "secret-promote-modal-#{variable.id}",
+              form: { url: promote_member_project_secret_path(@project, variable), method: :post },
+              data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+          <% modal.with_actions do %>
+            <%= render Ui::ButtonComponent.new(label: t("member.secrets.promote_cancel"), variant: :secondary_muted, size: :sm,
+                  data: { action: "ui--dialog#close" }) %>
+            <%= render Ui::ButtonComponent.new(label: t("member.secrets.promote_submit"), type: "submit", variant: :primary, size: :sm,
+                  icon: "copy", test_id: "secret-promote-submit-#{variable.id}") %>
+          <% end %>
+          <div class="px-4 py-4 space-y-3">
+            <div>
+              <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1"><%= t("member.secrets.col_variable") %></p>
+              <p class="font-mono text-[13px] text-zinc-900 dark:text-zinc-100"><%= variable.name %></p>
+            </div>
+            <div>
+              <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1"><%= t("member.secrets.promote_source_environment") %></p>
+              <span class="inline-flex items-center gap-1.5 text-[12.5px] text-zinc-700 dark:text-zinc-300">
+                <span class="w-1.5 h-1.5 rounded-full <%= Ui::Colors.swatch(environment.color) %>"></span><%= environment.label %>
+              </span>
+            </div>
+            <div>
+              <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1"><%= t("member.secrets.promote_value_label") %></p>
+              <span class="block font-mono text-[12px] text-gray-400 dark:text-zinc-500 select-none" data-test="secret-promote-value-<%= variable.id %>"><%= t("member.secrets.masked") %></span>
+            </div>
+
+            <%= render Ui::SelectComponent.new(name: "target_environment_id",
+                  label: t("member.secrets.promote_target_label"),
+                  options: promote_targets.map { |candidate| [ candidate.label, candidate.id ] },
+                  test_id: "secret-promote-target-#{variable.id}") %>
+
+            <p class="text-[11.5px] text-amber-700 dark:text-amber-300 flex items-start gap-1.5" data-test="secret-promote-warning-<%= variable.id %>">
+              <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[10px] mt-0.5") %><%= t("member.secrets.promote_overwrite_warning") %>
+            </p>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+    <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+    <%# Imposta rotazione (CYRA-138): STESSO pattern del dialog di promote — <dialog> nativo via
+        ui--dialog, un input numero "ogni N giorni" (vuoto/0 = rimuove la policy). La scadenza è
+        SOLO un avviso: nessun valore sensibile viaggia qui, quindi nessun mascheramento serve. %>
+    <div class="contents" data-controller="ui--dialog">
+      <button type="button" data-action="ui--dialog#open" data-test="secret-rotation-<%= variable.id %>"
+              class="<%= Ui::RowMenuComponent.item_class %>"><%= t("member.secrets.menu_set_rotation") %></button>
+
+      <%= render Ui::ModalComponent.new(title: t("member.secrets.rotation_title"), size: :sm, padded: false,
+            test_id: "secret-rotation-modal-#{variable.id}",
+            form: { url: rotation_member_project_secret_path(@project, variable), method: :post },
+            data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+        <% modal.with_actions do %>
+          <%= render Ui::ButtonComponent.new(label: t("member.secrets.rotation_cancel"), variant: :secondary_muted, size: :sm,
+                data: { action: "ui--dialog#close" }) %>
+          <%= render Ui::ButtonComponent.new(label: t("member.secrets.rotation_submit"), type: "submit", variant: :primary, size: :sm,
+                icon: "refresh-cw", test_id: "secret-rotation-submit-#{variable.id}") %>
+        <% end %>
+        <div class="px-4 py-4 space-y-3">
+          <div>
+            <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1"><%= t("member.secrets.col_variable") %></p>
+            <p class="font-mono text-[13px] text-zinc-900 dark:text-zinc-100"><%= variable.name %></p>
+          </div>
+
+          <div>
+            <label class="block text-[11.5px] font-medium text-gray-600 dark:text-zinc-400 mb-1" for="rotation_interval_days_<%= variable.id %>">
+              <%= t("member.secrets.rotation_interval_label") %>
+            </label>
+            <input type="number" min="0" step="1" name="rotation_interval_days" id="rotation_interval_days_<%= variable.id %>"
+                   value="<%= variable.rotation_interval_days %>" data-test="secret-rotation-input-<%= variable.id %>"
+                   class="block w-full px-2.5 py-1.5 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+            <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.secrets.rotation_interval_hint") %></p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+    <%= button_to t("member.secrets.delete"), member_project_secret_path(@project, variable),
+                  method: :delete, params: { confirm: 1 }, form: { data: { turbo_confirm: t("member.secrets.delete_confirm") } },
+                  class: Ui::RowMenuComponent.item_class(:danger), data: { test: "secret-delete-#{variable.id}" } %>
+  <% end %>
+<% end %>

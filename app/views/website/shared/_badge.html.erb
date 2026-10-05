@@ -1,0 +1,9 @@
+<%# locals: state:, label:, url: — pillola incorporabile (pallino + stato), unica per monitor e gruppo.
+    `target` è obbligatorio: senza, il clic aprirebbe la status page DENTRO la pillola alta 36px. `_blank`
+    e non `_top` perché il badge sta in casa d'altri: si apre una scheda nuova, invece di portarsi via la
+    pagina che il visitatore stava guardando. Il pallino è decorativo (aria-hidden): lo stato è già scritto
+    nella label, quindi non è veicolato dal solo colore. %>
+<a class="cyi-badge" href="<%= url %>" target="_blank" rel="noopener" data-test="status-badge" data-state="<%= state %>">
+  <span class="cyi-badge__dot cyi-badge__dot--<%= state %>" aria-hidden="true"></span>
+  <span class="cyi-badge__label"><%= label %></span>
+</a>

@@ -1,0 +1,26 @@
+<%# Pagine di ingresso e uscita delle sessioni (prima/ultima pagina per sessione). %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="analytics-entry-exit">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.analytics.entry_exit_title") %></h2>
+  </div>
+  <div class="grid grid-cols-2 divide-x divide-stone-100 dark:divide-zinc-800">
+    <% [ [ t("member.monitoring.analytics.entry_pages"), entry_pages, "analytics-entry-row" ],
+         [ t("member.monitoring.analytics.exit_pages"), exit_pages, "analytics-exit-row" ] ].each do |label, rows, test_id| %>
+      <div class="p-4">
+        <p class="font-mono text-[10.5px] uppercase tracking-wide text-gray-500 dark:text-zinc-400 mb-2"><%= label %></p>
+        <% if rows.empty? %>
+          <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.no_data") %></p>
+        <% else %>
+          <ul class="space-y-1.5">
+            <% rows.each do |row| %>
+              <li class="flex items-center justify-between gap-2" data-test="<%= test_id %>">
+                <span class="truncate text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= row[:path] %></span>
+                <span class="shrink-0 font-mono text-[12px] text-gray-500 dark:text-zinc-400"><%= row[:sessions] %></span>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

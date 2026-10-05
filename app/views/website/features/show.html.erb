@@ -1,0 +1,52 @@
+<% content_for :title, "#{t("website.features.#{@feature.key}.title")} · CloseYourIt" %>
+<% content_for :meta_description, t("website.features.#{@feature.key}.meta_description") %>
+
+<%= render "website/shared/header" %>
+
+<main id="main-content" class="flex-1 w-full" data-test="website-feature-<%= @feature.slug %>">
+  <%# Hero: breadcrumb mono + titolo + evidenza di prodotto affiancata %>
+  <section class="bg-white border-b border-stone-200">
+    <div class="max-w-5xl mx-auto px-4 py-14 md:py-20 grid lg:grid-cols-[1fr_1.1fr] gap-10 items-center">
+      <div>
+        <p class="font-mono text-[11px] text-gray-500">features/<span class="text-indigo-600"><%= @feature.slug %></span></p>
+        <h1 class="mt-3 font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.12] tracking-[-0.015em] font-semibold text-zinc-900 text-balance"><%= t("website.features.#{@feature.key}.heading") %></h1>
+        <p class="mt-4 text-[14.5px] leading-relaxed text-gray-600 max-w-[52ch]"><%= t("website.features.#{@feature.key}.summary") %></p>
+        <div class="mt-7">
+          <%= link_to t("website.features.shared.cta"), website_page_path(:access_request),
+                class: "h-10 px-5 inline-flex items-center rounded-md bg-indigo-600 text-white text-[14px] font-medium hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600",
+                data: { test: "website-feature-cta" } %>
+        </div>
+      </div>
+      <%= render "website/features/evidence_#{@feature.key}" %>
+    </div>
+  </section>
+
+  <%# Punti: ledger unico, righe hairline — non griglia di card %>
+  <section class="max-w-5xl mx-auto px-4 py-12">
+    <div class="rounded-lg border border-stone-200 bg-white divide-y divide-stone-100">
+      <% t("website.features.#{@feature.key}.points").each do |point| %>
+        <div class="flex items-start gap-3.5 px-5 py-4">
+          <%= render Ui::IconComponent.new(name: "check", class: "text-indigo-600 text-[12px] mt-1") %>
+          <span class="text-[13.5px] leading-relaxed text-zinc-900"><%= point %></span>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <%# Altre feature %>
+  <section class="max-w-5xl mx-auto px-4 pb-14">
+    <h2 class="font-mono text-[11px] text-gray-500"><%= t("website.features.shared.others") %> · features/</h2>
+    <div class="mt-3.5 flex flex-wrap gap-2.5">
+      <% @features.reject { |f| f.slug == @feature.slug }.each do |feature| %>
+        <%= link_to website_page_path(:feature, slug: feature.slug),
+              class: "inline-flex items-center gap-2 h-8 px-3 rounded-md border border-stone-200 bg-white text-[12.5px] font-medium text-zinc-900 hover:border-stone-300 hover:text-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600",
+              data: { test: "website-feature-link-#{feature.slug}" } do %>
+          <%= render Ui::IconComponent.new(name: feature.icon, class: "text-indigo-600 text-[11px]") %>
+          <%= t("website.features.#{feature.key}.name") %>
+        <% end %>
+      <% end %>
+    </div>
+  </section>
+</main>
+
+<%= render "website/shared/footer" %>

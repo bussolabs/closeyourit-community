@@ -1,0 +1,18 @@
+<%# locals: (idea:) %>
+<%# One idea in the cards view: project and status, title, one line of the problem, votes and comments. %>
+<%= link_to member_idea_path(idea), class: "flex flex-col gap-2 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 hover:border-indigo-300 dark:hover:border-indigo-500/50",
+      data: { test: "idea-card" } do %>
+  <div class="flex items-center justify-between gap-2 min-w-0">
+    <span class="inline-flex items-center gap-1.5 text-[11.5px] text-gray-500 dark:text-zinc-400 min-w-0"><span class="w-2 h-2 shrink-0 rounded-[2px] <%= Ui::Colors.swatch(idea.project.color) %>"></span><span class="truncate"><%= idea.project.name %></span></span>
+    <%= render Ui::BadgeComponent.new(label: t("member.ideas.status.#{idea.status}"), color: idea_status_color(idea.status), dot: true, size: :sm) %>
+  </div>
+  <p class="text-[13.5px] font-semibold text-zinc-900 dark:text-zinc-100 leading-snug"><%= idea.title %></p>
+  <p class="text-[12px] text-gray-500 dark:text-zinc-400 leading-snug"><%= idea_problem_excerpt(idea) %></p>
+  <div class="mt-auto pt-2 border-t border-stone-100 dark:border-zinc-800 flex items-center justify-between gap-2 font-mono text-[11px] text-gray-500 dark:text-zinc-400">
+    <span class="inline-flex items-center gap-3">
+      <span title="<%= t("member.ideas.col_votes") %>"><%= render Ui::IconComponent.new(name: "chevron-up", class: "mr-1") %><%= idea.votes_count %></span>
+      <span title="<%= t("member.ideas.col_comments") %>"><%= render Ui::IconComponent.new(name: "message-circle", class: "mr-1") %><%= idea.comments_count %></span>
+    </span>
+    <span title="<%= l(idea.updated_at, format: :long) %>"><%= l(idea.updated_at.to_date, format: :day_month) %></span>
+  </div>
+<% end %>

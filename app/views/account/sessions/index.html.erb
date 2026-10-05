@@ -1,0 +1,62 @@
+<% content_for :title, t("account.sessions.title") %>
+
+<div class="mx-auto max-w-5xl px-6 py-8" data-test="account-sessions">
+  <div class="flex items-center justify-between gap-3 mb-1">
+    <div class="flex items-center gap-2.5">
+      <h1 class="font-display text-[18px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("account.sessions.title") %></h1>
+      <span class="inline-flex items-center rounded-md bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-gray-600 dark:text-zinc-400" data-test="account-sessions-count"><%= @sessions.size %></span>
+    </div>
+    <div class="flex items-center gap-2">
+      <%= link_to t("account.sessions.cli_tokens"), account_cli_tokens_path, class: "inline-flex items-center h-[34px] px-3 rounded-md text-[13px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "account-sessions-cli-tokens" } %>
+      <% if @sessions.size > 1 %>
+        <%= render Ui::ConfirmDialogComponent.new(title: t("account.sessions.revoke_others_dialog.title"),
+              url: others_account_sessions_path, confirm_label: t("account.sessions.revoke_others"),
+              test_id: "account-sessions-revoke-others-dialog") do |dialog| %>
+          <% dialog.with_body { t("account.sessions.revoke_others_dialog.body") } %>
+          <%= dialog.button_trigger(label: t("account.sessions.revoke_others"), test_id: "account-sessions-revoke-others") %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+  <p class="text-[13px] text-gray-500 dark:text-zinc-400 mb-6"><%= t("account.sessions.lead") %></p>
+
+  <div class="overflow-hidden rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("account.sessions.title"))) do |t| %>
+      <% t.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("account.sessions.columns.device"), sort: "device") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("account.sessions.columns.address"), sort: "address") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("account.sessions.columns.last_active"), sort: "last_active", initial: :desc) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("account.sessions.columns.signed_in"), sort: "signed_in", initial: :desc) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: tag.span(t("account.sessions.columns.actions"), class: "sr-only"), align: :right) %>
+      <% end %>
+      <% @sessions.each do |record| %>
+        <% current = record.id == @current_session_id %>
+        <%= render Ui::TableComponent::RowComponent.new(test_id: "account-sessions-row-#{record.id}") do %>
+          <%= render Ui::TableComponent::CellComponent.new(header: true, class: "text-zinc-900 dark:text-zinc-100") do %>
+            <div class="flex items-center gap-2">
+              <span><%= record.device_label || t("account.sessions.unknown_device") %></span>
+              <% if current %>
+                <span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-500/15 px-2 py-0.5 text-[11px] font-medium text-green-700 dark:text-green-300" data-test="account-sessions-current-<%= record.id %>"><%= t("account.sessions.current") %></span>
+              <% end %>
+            </div>
+          <% end %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("account.sessions.columns.address"), mono: true, class: "text-zinc-600 dark:text-zinc-400")) { record.ip_address.presence || "—" } %>
+          <%= render Ui::TableComponent::CellComponent.new(label: t("account.sessions.columns.last_active"), class: "text-zinc-600 dark:text-zinc-400") do %>
+            <%= record.last_active_at ? t("account.sessions.time_ago", time: time_ago_in_words(record.last_active_at)) : "—" %>
+          <% end %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("account.sessions.columns.signed_in"), mono: true, class: "text-zinc-600 dark:text-zinc-400")) { l(record.created_at, format: :default) } %>
+          <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+            <% unless current %>
+              <%= render Ui::ConfirmDialogComponent.new(title: t("account.sessions.revoke_dialog.title", device: record.device_label || t("account.sessions.unknown_device")),
+                    url: account_session_path(record), confirm_label: t("account.sessions.revoke"),
+                    test_id: "account-sessions-revoke-dialog-#{record.id}") do |dialog| %>
+                <% dialog.with_body { t("account.sessions.revoke_dialog.body") } %>
+                <%= dialog.button_trigger(label: t("account.sessions.revoke"), test_id: "account-sessions-revoke-#{record.id}") %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

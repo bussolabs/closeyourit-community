@@ -1,0 +1,12 @@
+<% case kind %>
+<% when :image %>
+  <span class="inline-flex items-center justify-center <%= box %> rounded-md overflow-hidden border border-stone-200 dark:border-zinc-800 shrink-0">
+    <%= image_tag image_path, alt: "", class: "w-full h-full object-cover" %>
+  </span>
+<% when :glyph %>
+  <span class="inline-flex items-center justify-center <%= box %> rounded-md <%= chip_classes %> shrink-0">
+    <%= render Ui::IconComponent.new(name: record.icon, class: icon_size) %>
+  </span>
+<% else %>
+  <span class="<%= box %> rounded-md <%= swatch_classes %> shrink-0"></span>
+<% end %>

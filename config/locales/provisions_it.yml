@@ -1,0 +1,10 @@
+it:
+  provisions:
+    errors:
+      idempotency_required: "idempotency_key è obbligatoria"
+      idempotency_conflict: "idempotency_key già usata per una richiesta diversa"
+      invalid: "Richiesta di distribuzione non valida"
+      invalid_environment: "Environment non dichiarato dal progetto"
+      invalid_scopes: "Scope del token non valido"
+      github_required: "Il progetto destinatario non ha la sincronizzazione GitHub abilitata"
+      sync_failed: "Sincronizzazione GitHub non riuscita"

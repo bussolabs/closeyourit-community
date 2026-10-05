@@ -1,0 +1,74 @@
+<% content_for :title, t("member.secret_overrides.title", project: @project.name) %>
+
+<div class="p-7 space-y-6" data-test="member-project-secret-overrides">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "secrets" %>
+
+  <%# T1 — one panel, like the variables tab: tabs, what it holds with its counts and the action, then the table. %>
+  <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="secret-overrides-panel">
+    <div class="border-b border-stone-200 dark:border-zinc-800 px-3 py-2"><%= render "member/project_secrets/subnav", project: @project, active: "overrides" %></div>
+    <div class="flex flex-wrap items-start justify-between gap-3 border-b border-stone-200 dark:border-zinc-800 px-4 py-3">
+      <div class="min-w-0 space-y-2">
+        <p class="flex items-center gap-1.5 text-[13px] text-zinc-600 dark:text-zinc-400" data-test="secret-overrides-lead">
+          <%= t("member.secret_overrides.lead") %>
+          <%= render Ui::TooltipComponent.new(text: t("member.secret_overrides.section_lead"), test_id: "secret-overrides-lead-tip") %>
+        </p>
+        <div class="flex items-center flex-wrap gap-1.5" data-test="secret-overrides-counts">
+          <%= render Ui::StatLabelComponent.new(label: t("member.secret_overrides.count_label"), value: @overrides.size,
+                test_id: "secret-overrides-count-total") %>
+          <%= render Ui::StatLabelComponent.new(label: t("member.secret_overrides.recipients_label"), value: @recipients_count,
+                value_color: :indigo, test_id: "secret-overrides-count-recipients") %>
+        </div>
+      </div>
+      <%= render Ui::ButtonComponent.new(label: t("member.secret_overrides.new_cta"), href: new_member_project_secret_override_path(@project),
+            variant: :primary, size: :sm, icon: "plus", test_id: "secret-override-new") %>
+    </div>
+
+    <% if @overrides.empty? %>
+      <%= render Ui::EmptyStateComponent.new(title: t("member.secret_overrides.empty"), body: t("member.secret_overrides.empty_body"),
+            icon: "user-pen", test_id: "secret-overrides-empty") %>
+    <% else %>
+      <div data-test="secret-overrides-table">
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.secret_overrides.title", project: @project.name), body_test_id: "secret-overrides-rows")) do |table| %>
+          <% table.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.secret_overrides.col_recipient"), sort: "recipient") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.secret_overrides.col_environment"), sort: "environment") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.secret_overrides.col_name"), sort: "name") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.secret_overrides.col_assigned_by"), sort: "assigned", initial: :desc) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.secret_overrides.remove"), label_hidden: true) %>
+          <% end %>
+
+          <% @overrides.each do |override| %>
+            <%= render Ui::TableComponent::RowComponent.new(test_id: "secret-override-row") do %>
+              <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-[13px] text-zinc-900 dark:text-zinc-100")) { override.account.name } %>
+              <%= render Ui::TableComponent::CellComponent.new(label: t("member.secret_overrides.col_environment")) do %>
+                <span class="inline-flex items-center gap-1.5 font-mono text-[11px] text-gray-600 dark:text-zinc-400">
+                  <span class="w-1.5 h-1.5 rounded-full <%= Ui::Colors.swatch(override.environment.color) %>"></span><%= override.environment.label %>
+                </span>
+              <% end %>
+              <%= render Ui::TableComponent::CellComponent.new(label: t("member.secret_overrides.col_name")) do %>
+                <span class="font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= override.name %></span>
+                <%# Il VALORE non compare mai in questa pagina: è un segreto e si legge solo dove è
+                    gated e tracciato (matrice del vault, `cyi run` di chi lo riceve). %>
+                <% if override.description.present? %>
+                  <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= override.description %></p>
+                <% end %>
+              <% end %>
+              <%= render Ui::TableComponent::CellComponent.new(label: t("member.secret_overrides.col_assigned_by"), class: "text-[12px] text-gray-500 dark:text-zinc-400") do %>
+                <%= override.created_by&.name || t("member.secret_overrides.assigned_by_unknown") %>
+                <span class="text-gray-300 dark:text-zinc-600">·</span>
+                <%= secret_event_time(override.created_at) %>
+              <% end %>
+              <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+                <%= render Ui::ButtonComponent.new(label: t("member.secret_overrides.remove"),
+                      href: member_project_secret_override_path(@project, override), method: :delete,
+                      variant: :danger_outline, size: :sm, icon: "trash",
+                      confirm: t("member.secret_overrides.remove_confirm", name: override.name, recipient: override.account.name),
+                      test_id: "secret-override-remove-#{override.id}") %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+</div>

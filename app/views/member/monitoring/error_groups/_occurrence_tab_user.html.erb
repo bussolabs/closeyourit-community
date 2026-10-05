@@ -1,0 +1,6 @@
+<%# Tab of one occurrence: the user id only (email and IP are removed as personal data). %>
+<div class="px-4 py-3" data-test="error-user">
+  <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400">ID</p>
+  <p class="mt-1 font-mono text-[12px] text-zinc-900 dark:text-zinc-100 break-all"><%= event.payload["user"]["id"] %></p>
+  <p class="mt-2 text-[11px] text-gray-500 dark:text-zinc-400"><%= render Ui::IconComponent.new(name: "shield-half", class: "text-[10px]") %> <%= t("member.monitoring.user_pii_note") %></p>
+</div>

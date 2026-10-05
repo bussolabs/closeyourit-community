@@ -1,0 +1,34 @@
+<%# locals: card (Home::Approvals::Detail::Card)
+
+    I modi per NON decidere adesso, staccati dai pulsanti che decidono e con meno peso: qui non
+    succede niente al record, e il title dei due pulsanti lo dice (CYRA-861).
+
+    «Salta» e «rimanda» sembrano la stessa cosa e non lo sono: il primo muore con la sessione, il
+    secondo dura fino a domani anche da un altro computer. Senza spiegare la differenza, uno dei due
+    diventa inutile.
+
+    La chiave della card viaggia nella query string dell'azione, come già fa il pannello di
+    decisione: `Ui::ButtonComponent` con `method:` genera il `button_to` (CSRF e verbo gestiti da
+    Rails), quindi non si scrive un form a mano. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-3 flex flex-col gap-2" data-test="decision-not-now">
+  <span class="font-mono text-[9.5px] tracking-[0.1em] uppercase text-gray-400 dark:text-zinc-500"><%= t("member.home.decision.not_now") %></span>
+
+  <div class="flex items-center flex-wrap gap-1.5">
+    <%= render Ui::ButtonComponent.new(label: t("member.home.decision.skip"),
+                                       href: member_home_card_skip_path(item: card.key), method: :post,
+                                       variant: :secondary_muted, size: :sm, icon: "skip-forward",
+                                       test_id: "decision-skip", title: t("member.home.decision.skip_hint")) %>
+    <%= render Ui::ButtonComponent.new(label: t("member.home.decision.defer"),
+                                       href: member_home_card_defer_path(item: card.key), method: :post,
+                                       variant: :secondary_muted, size: :sm, icon: "history",
+                                       test_id: "decision-defer", title: t("member.home.decision.defer_hint")) %>
+  </div>
+
+
+  <div class="flex items-center flex-wrap gap-1.5 border-t border-stone-200 dark:border-zinc-800 pt-2.5">
+    <%= render Ui::ButtonComponent.new(label: t("member.home.decision.open_full"),
+                                       href: member_home_approvals_item_path(kind: card.kind, id: card.id),
+                                       variant: :ghost, size: :sm, icon: "arrow-up-right-from-square",
+                                       test_id: "decision-open-full") %>
+  </div>
+</div>

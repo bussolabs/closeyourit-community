@@ -1,0 +1,19 @@
+<%# locals: tables: — the largest tables of the database panel. The databases themselves are listed in
+    full right below the panel, so the short "by size" extract is gone (it repeated them). %>
+<div class="border-t border-stone-100 dark:border-zinc-800">
+  <div class="px-5 py-4" data-test="server-database-tables">
+    <p class="font-mono text-[10px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.database_tables") %></p>
+    <% if tables.any? %>
+      <div class="mt-1.5 space-y-1">
+        <% tables.each do |table| %>
+          <div class="flex items-baseline justify-between gap-3 font-mono text-[11.5px]" data-test="server-database-table-row">
+            <span class="text-zinc-900 dark:text-zinc-100 truncate"><% if table["database"].present? %><span class="text-gray-500 dark:text-zinc-400"><%= table["database"] %> · </span><% end %><%= table["name"] %></span>
+            <span class="text-gray-500 dark:text-zinc-400 shrink-0"><%= server_bytes_text(table["size_bytes"]) %></span>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="mt-1.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.database_empty") %></p>
+    <% end %>
+  </div>
+</div>

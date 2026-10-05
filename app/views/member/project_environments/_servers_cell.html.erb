@@ -1,0 +1,54 @@
+<%# locals: environment, capability_link
+    Servers extra of an environment cell: multiselect (host_ids[]) that syncs the hosts linked to
+    [project, environment] (Servers::Links::SetHosts). Servers exist only on uptime-capable projects —
+    the page says so once, so nothing renders here — and with the servers capability on. Without
+    uptime.manage the linked hosts are read-only chips. %>
+<% linked = @server_links[environment.id] || [] %>
+<% if !@supports_uptime %>
+  <%# Said once above the table (CYRA-883). %>
+<% elsif @can_manage_uptime && capability_link.servers_enabled? && @linkable_hosts.empty? %>
+  <span class="text-[11px] text-gray-500 dark:text-zinc-400" data-test="project-servers-none-<%= environment.id %>">
+    <%= t("member.projects.environments.servers_none") %>
+    <%= link_to t("member.projects.environments.servers_go"), member_monitoring_servers_path, class: "ml-1 font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300" %>
+  </span>
+<% elsif @can_manage_uptime && capability_link.servers_enabled? %>
+  <%# The picker opens in a dialog from a button that says how many servers are linked: the cell keeps
+      one line. In a dialog the dropdown's menu is fixed-positioned, so the shell does not clip it. %>
+  <div data-controller="ui--dialog">
+    <%= render Ui::ButtonComponent.new(label: t("member.projects.environments.servers_open", count: linked.size),
+          icon: "server", variant: :secondary, size: :sm, data: { action: "ui--dialog#open" },
+          test_id: "project-servers-open-#{environment.id}") %>
+    <%= render Ui::ModalComponent.new(title: t("member.projects.environments.servers_dialog_title", environment: environment.label),
+          size: :sm, padded: false, test_id: "project-servers-dialog-#{environment.id}",
+          form: { url: member_project_servers_path(@project), method: :post, data: { test: "project-servers-form-#{environment.id}" } },
+          data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+      <% modal.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("ui.confirm_dialog.cancel"), variant: :secondary_muted, size: :sm,
+              data: { action: "ui--dialog#close" }) %>
+        <%= render Ui::ButtonComponent.new(label: t("member.projects.environments.servers_save"), type: "submit",
+              variant: :primary, size: :sm, icon: "check", test_id: "project-servers-submit-#{environment.id}") %>
+      <% end %>
+      <div class="px-4 py-4">
+        <%= hidden_field_tag :environment_id, environment.id %>
+        <%# Empty hidden: deselecting every host still sends host_ids[] (=> unlinks all). %>
+        <input type="hidden" name="host_ids[]" value="">
+        <%= render Ui::SelectComponent.new(name: "host_ids", multiple: true, size: :sm,
+              options: @linkable_hosts.map { |host| [ host.name, host.id ] }, selected: linked.map(&:host_id),
+              placeholder: t("member.projects.show.servers_add"), aria_label: t("member.projects.environments.servers_aria", environment: environment.label),
+              test_id: "project-servers-select-#{environment.id}") %>
+      </div>
+    <% end %>
+  </div>
+<% elsif @can_manage_uptime %>
+  <span class="text-[11px] text-gray-500 dark:text-zinc-400" data-test="project-servers-disabled-<%= environment.id %>"><%= t("member.projects.show.servers_disabled_note") %></span>
+<% elsif linked.any? %>
+  <%# Read-only (no uptime.manage): linked host chips, no multiselect. %>
+  <div class="flex flex-wrap items-center gap-1.5" data-test="project-servers-readonly-<%= environment.id %>">
+    <% linked.each do |server_link| %>
+      <span class="inline-flex items-center gap-1.5 rounded-md border border-stone-200 dark:border-zinc-800 py-0.5 px-2" data-test="project-server-chip">
+        <span class="text-[12px] font-medium text-zinc-900 dark:text-zinc-100"><%= server_link.host.name %></span>
+        <%= render Ui::BadgeComponent.new(label: server_status_label(server_link.host), color: server_status_color(server_link.host), dot: true) %>
+      </span>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,28 @@
+<%# Notifica ticket — corpo della mail (frame: layouts/mailer.html.erb). Accento indigo del dominio ticket. %>
+<% content_for :accent, MailerHelper::MAIL_ACCENT %>
+<% content_for :preheader, @notification.title %>
+
+<!-- pill codice ticket -->
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 12px 0;"><tr>
+  <td style="background-color:<%= MailerHelper::MAIL_SUBTLE %>;border-radius:6px;padding:3px 10px;font-family:<%= MailerHelper::FONT_MONO %>;font-size:11.5px;font-weight:600;color:<%= MailerHelper::MAIL_ACCENT %>;"><%= @ticket.code %></td>
+</tr></table>
+
+<h1 style="<%= mail_h1_style(size: 20) %>"><%= @notification.title %></h1>
+
+<!-- meta box: progetto + titolo del ticket -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 0 0;border:1px solid <%= MailerHelper::MAIL_BORDER %>;border-radius:10px;background-color:<%= MailerHelper::MAIL_SUBTLE %>;">
+  <tr><td style="padding:14px 16px;">
+    <% if @notification.project %>
+      <p style="margin:0 0 8px 0;<%= mail_mono_style %>"><span style="color:<%= MailerHelper::MAIL_MUTED %>;"><%= t("ticketing.ticket_notifications.mailer.notify.label_project") %>&nbsp;&nbsp;</span><span style="color:<%= MailerHelper::MAIL_ACCENT %>;font-weight:500;"><%= @notification.project.key %></span> · <%= @notification.project.name %></p>
+    <% end %>
+    <p style="margin:0;<%= mail_mono_style %>"><span style="color:<%= MailerHelper::MAIL_MUTED %>;"><%= t("ticketing.ticket_notifications.mailer.notify.label_ticket") %>&nbsp;&nbsp;</span><%= @ticket.title %></p>
+  </td></tr>
+</table>
+
+<% if @notification.url.present? %>
+  <div style="margin:22px 0 0 0;">
+    <%= render "mails/shared/button", label: t("ticketing.ticket_notifications.mailer.notify.action"), url: mail_absolute_url(@notification.url), color: MailerHelper::MAIL_ACCENT %>
+  </div>
+<% end %>
+
+<p style="<%= mail_note_style %>"><%= t("ticketing.ticket_notifications.mailer.notify.footer") %></p>

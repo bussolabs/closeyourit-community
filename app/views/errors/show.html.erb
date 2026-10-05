@@ -1,0 +1,19 @@
+<% content_for :title, t("errors.pages.#{@status}.title") %>
+
+<%# CYRA-372 — la pagina di errore del PRODOTTO: in italiano, col menu quando il contesto c'è, e
+    sempre con una via d'uscita. Chi ci finisce è già disorientato. %>
+<div class="p-7" data-test="error-page" data-status="<%= @status %>">
+  <div class="mx-auto max-w-lg rounded-lg border border-stone-200 bg-white px-6 py-10 text-center">
+    <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-stone-100 text-gray-400">
+      <%= render Ui::IconComponent.new(name: @status == :not_found ? "compass" : "triangle-alert", class: "text-[18px]") %>
+    </span>
+    <h1 class="mt-3 font-display text-[18px] font-semibold text-zinc-900"><%= t("errors.pages.#{@status}.title") %></h1>
+    <p class="mt-1.5 text-[12.5px] text-gray-500 max-w-sm mx-auto"><%= t("errors.pages.#{@status}.body") %></p>
+    <div class="mt-5 flex items-center justify-center gap-2">
+      <%= render Ui::ButtonComponent.new(label: t("errors.pages.home"), href: root_path, variant: :primary, size: :sm, icon: "house", test_id: "error-page-home") %>
+      <% if @member_context %>
+        <%= render Ui::ButtonComponent.new(label: t("errors.pages.tickets"), href: member_tickets_path, variant: :secondary_muted, size: :sm, icon: "ticket", test_id: "error-page-tickets") %>
+      <% end %>
+    </div>
+  </div>
+</div>

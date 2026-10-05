@@ -1,0 +1,39 @@
+en:
+  notifications:
+    digest:
+      mailer:
+        summary:
+          one: "Your CloseYourIt digest — 1 notification"
+          other: "Your CloseYourIt digest — %{count} notifications"
+        heading:
+          one: "1 notification"
+          other: "%{count} notifications"
+        intro: "Here's what happened in %{org} while you were away."
+        footer: You receive this digest based on your notification preferences.
+      telegram:
+        header:
+          one: "CloseYourIt digest — 1 notification:"
+          other: "CloseYourIt digest — %{count} notifications:"
+    telegram:
+      link:
+        ticket: "Open ticket"
+        chat: "Open conversation"
+        error: "Open error"
+        log: "Open log"
+        uptime: "Open monitor"
+        metric: "Open metric"
+        cron: "Open cron"
+        server: "Open server"
+        # Generic: covers rotation/deletion/sync — the 3 secret_* event types point to different vault
+        # pages (org-wide rotation, project Secrets tab, project GitHub tab).
+        secret: "Open vault"
+        agents: "Open agents"
+        analytics: "Open analytics"
+        idea: "Open idea"
+        workload: "Open task"
+        dataset: "Open dataset"
+        vulnerability: "Open vulnerability"
+        # CYRA-712: the generative service is fixed from the connected services page, not from agents.
+        ai: "Open connected services"
+        # CYRA-716: an expiring token is replaced from the project tokens page.
+        project_token: "Open project tokens"

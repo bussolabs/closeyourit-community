@@ -1,0 +1,53 @@
+---
+it:
+  member:
+    symbolication:
+      view: Vista dello stack
+      source: Sorgente originale
+      reconstructed: Stack ricostruito
+      received: Stack ricevuto
+      refresh: Aggiorna
+      immutable: Stack ricevuto, evento e raggruppamento restano invariati.
+      no_frames: Non ci sono frame disponibili per la ricostruzione.
+      unknown_function: Funzione originale non disponibile
+      mapped_name: 'Nome nella mappa: %{name}'
+      received_line: 'Ricevuto: %{value}'
+      ambiguous:
+        one: "%{count} ricostruzione possibile. Nessuna alternativa è stata selezionata."
+        other: "%{count} ricostruzioni possibili. Nessuna alternativa è stata selezionata."
+      alternative: Alternativa %{number}
+      removed: La mappa rimuove questo frame sintetico.
+      upload_help: Carica la mappa della build corrispondente
+      build_hint: Usa la CLI con progetto, release e identità della build esatti.
+        Le mappe caricate restano private.
+      status:
+        pending: Ricostruzione in attesa. Lo stack ricevuto è disponibile.
+        resolved: Ricostruzione disponibile
+        partial: Ricostruzione parziale. I frame non risolti e ambigui sono indicati
+          sotto.
+        unresolved: Ricostruzione non disponibile
+      reason:
+        missing_artifact: Non è stata caricata una mappa corrispondente.
+        missing_build_identity: Nell’evento manca l’identità della build richiesta.
+        identity_mismatch: La mappa caricata appartiene a una build diversa.
+        unsupported_stack: Questo stack non può essere ricostruito con il profilo
+          supportato.
+        processing_rejected: Il processore ha rifiutato lo stack. Verifica la mappa
+          e i dati ricevuti.
+        processing_unavailable: Il processore non è disponibile. Aggiorna per verificare
+          il prossimo tentativo.
+        artifact_deleted: La mappa è stata eliminata o è scaduta.
+        symbolication_budget: Lo stack supera i limiti di ricostruzione. Lo stack
+          ricevuto resta disponibile.
+        symbolication_response_budget: I dati ricostruiti superano il limite della
+          pagina. Seleziona meno occorrenze.
+        unmapped: Questo frame non ha una posizione sorgente corrispondente.
+        missing_position: Questo frame non ha coordinate sorgente utilizzabili.
+        unsupported: Il formato di questo frame non è supportato.
+        artifact_budget: La mappa supera i limiti di ricostruzione.
+        unavailable: Non è disponibile una ricostruzione per questo frame.
+      more:
+        one: Un altro gruppo
+        other: Altri %{count} gruppi
+      inline: "%{count} frame ricostruiti da un solo frame ricevuto"
+      unchanged: Non modificato dalla mappa

@@ -1,0 +1,29 @@
+<% content_for :title, t("member.guidance.title") %>
+
+<div class="p-7 space-y-6" data-test="member-organization-guidance">
+  <%= render Ui::PageHeaderComponent.new(title: t("member.guidance.title"),
+        subtitle: t("member.guidance.help.organization"),
+        breadcrumb: [ { label: t("member.guidance.title") } ],
+        counts_test_id: "guidance-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.guidance.counts.references"), value: @references.size, test_id: "guidance-references-count") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.guidance.counts.procedures"), value: @procedures.size, test_id: "guidance-procedures-count") %>
+    <% end %>
+  <% end %>
+
+  <div class="space-y-6 max-w-4xl">
+    <%= render "member/guidance/references_section",
+          references: @references,
+          add_path: new_member_organization_guidance_reference_path,
+          reorder_path: reorder_member_organization_guidance_references_path,
+          edit_path: ->(reference) { edit_member_organization_guidance_reference_path(reference) },
+          delete_path: ->(reference) { member_organization_guidance_reference_path(reference) } %>
+
+    <%= render "member/guidance/procedures_section",
+          procedures: @procedures,
+          add_path: new_member_organization_guidance_procedure_path,
+          reorder_path: reorder_member_organization_guidance_procedures_path,
+          edit_path: ->(procedure) { edit_member_organization_guidance_procedure_path(procedure) },
+          delete_path: ->(procedure) { member_organization_guidance_procedure_path(procedure) } %>
+  </div>
+</div>

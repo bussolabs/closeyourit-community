@@ -1,0 +1,85 @@
+<%# locals: worked:, visible_ticket_ids:, host:, range:, filters: — i ticket che l'host ha lavorato,
+    dal più recente. Anti-BOLA come nella sezione Attività: il CODICE è attività dell'host e resta
+    sempre visibile, il titolo e il link al ticket solo per i progetti che chi guarda può vedere.
+    CYRA-451: quando si arriva da una cella del riepilogo per passaggio, i chip dicono da quale
+    numero si viene e permettono di tornare all'elenco intero.
+    CYRA-823: l'elenco vive in un frame suo — girare pagina o togliere un filtro chiede al server
+    SOLO questa lista, non anche attività e rendimento (che sfogliando non cambiano). `turbo_action:
+    advance` fa avanzare l'indirizzo del browser a quello del link, che è quello della pagina INTERA:
+    il collegamento che si copia dalla barra riapre tutto, con periodo, filtro e pagina al loro posto.
+    I link alle righe portano fuori (`turbo_frame: "_top"`): un ticket non si apre dentro l'elenco. %>
+<%= turbo_frame_tag "host-worked", class: "block", data: { turbo_action: "advance" } do %>
+<section id="worked" class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="host-worked-tickets">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3 flex-wrap">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.worked.title") %></h2>
+    <div class="flex items-center gap-2 flex-wrap">
+      <% filters.each do |key, value| %>
+        <%= link_to member_agent_path(host, range: range, **filters.except(key), anchor: "worked"),
+              class: "inline-flex items-center gap-1.5 h-[24px] px-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-[11.5px] text-zinc-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800",
+              data: { test: "worked-filter-chip" } do %>
+          <span><span class="text-gray-500 dark:text-zinc-400"><%= t("member.agents.worked.filter_#{key}") %>:</span>
+            <%= key == :phase ? t("member.agents.phases.#{value}") : t("member.agents.performance.outcomes.#{value}") %></span>
+          <%= render Ui::IconComponent.new(name: "x", class: "text-[10px] text-gray-400 dark:text-zinc-500") %>
+        <% end %>
+      <% end %>
+      <span class="inline-flex items-center rounded-md bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-gray-600 dark:text-zinc-400" data-test="worked-count">
+        <%= t("member.agents.worked.count", count: worked.total) %>
+      </span>
+    </div>
+  </div>
+
+  <% if worked.records.empty? %>
+    <%= render Ui::EmptyNoteComponent.new(text: t("member.agents.worked.empty"), inset: true, test_id: "host-worked-empty") %>
+  <% else %>
+    <%# CYRA-499 — il tempo di lavorazione esiste solo per le lavorazioni arrivate alla chiusura:
+        finché nessuna riga ne ha uno la colonna non compare, invece di ripetere un trattino su ogni
+        riga. Il criterio è la pagina che si sta guardando — è esattamente ciò che si vede. %>
+    <% show_workflow_time = worked.records.any?(&:workflow_seconds) %>
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("member.agents.worked.title"))) do |table| %>
+      <% table.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.worked.col_ticket"), sort: "ticket", param: :worked_sort) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.worked.col_phases")) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.worked.col_outcome"), sort: "outcome", param: :worked_sort) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.worked.col_host_time"), sort: "host_time", initial: :desc, param: :worked_sort, align: :right,
+              hint: t("member.agents.performance.host_time_legend"), test_id: "worked-host-time") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.worked.col_workflow_time"), sort: "workflow_time", initial: :desc, param: :worked_sort, align: :right,
+              hint: t("member.agents.performance.workflow_time_legend"), test_id: "worked-workflow-time", visible: show_workflow_time) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.worked.col_last"), sort: "last", initial: :desc, param: :worked_sort, align: :right) %>
+      <% end %>
+      <% worked.records.each do |row| %>
+        <% ticket = row.ticket %>
+        <% visible = ticket && visible_ticket_ids.include?(ticket.id) %>
+        <% outcome = automation_outcome_for(row.last_status) %>
+        <%= render Ui::TableComponent::RowComponent.new(test_id: "worked-row") do %>
+          <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+            <% if visible %>
+              <%= link_to member_ticket_path(ticket), class: "group inline-flex items-baseline gap-2 min-w-0",
+                  data: { turbo_frame: "_top" } do %>
+                <span class="font-mono text-[12px] text-gray-500 dark:text-zinc-400 shrink-0"><%= ticket.code %></span>
+                <span class="text-zinc-900 dark:text-zinc-100 truncate group-hover:underline"><%= ticket.title %></span>
+              <% end %>
+            <% else %>
+              <span class="font-mono text-[12px] text-gray-500 dark:text-zinc-400"><%= ticket&.code || t("member.agents.worked.unknown_ticket") %></span>
+            <% end %>
+          <% end %>
+          <%= render Ui::TableComponent::CellComponent.new(label: t("member.agents.worked.col_phases")) do %>
+            <div class="flex flex-wrap items-center gap-1">
+              <% row.phases.each do |phase| %>
+                <span class="inline-flex items-center rounded-md bg-stone-100 dark:bg-zinc-800 px-1.5 py-0.5 font-mono text-[10.5px] text-gray-600 dark:text-zinc-400"><%= t("member.agents.phases.#{phase}") %></span>
+              <% end %>
+            </div>
+          <% end %>
+          <%= render Ui::TableComponent::CellComponent.new(label: t("member.agents.worked.col_outcome")) do %>
+            <%= render Ui::BadgeComponent.new(label: outcome[:label], color: outcome[:color], icon: outcome[:icon]) %>
+          <% end %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.worked.col_host_time"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400")) { agent_duration(row.host_seconds) } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.worked.col_workflow_time"), align: :right, mono: true, visible: show_workflow_time,
+                class: (row.workflow_seconds ? "text-gray-500 dark:text-zinc-400" : "text-gray-300 dark:text-zinc-600"))) { agent_duration(row.workflow_seconds) } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.worked.col_last"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400")) { row.last_at ? l(row.last_at, format: :short) : "—" } %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <%= render(Ui::PaginationComponent.new(pagination: worked, test_id: "worked-pagination")) %>
+  <% end %>
+</section>
+<% end %>

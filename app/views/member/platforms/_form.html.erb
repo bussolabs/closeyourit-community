@@ -1,0 +1,44 @@
+<%# locals: platform, url, method, title, submit_label %>
+<% content_for :title, title %>
+<% breadcrumb = [ { label: t("member.platforms.title"), href: member_platforms_path },
+                  *(platform.persisted? ? [ { label: platform.label }, { label: t("member.breadcrumb.edit") } ] : [ { label: t("member.breadcrumb.new") } ]) ] %>
+
+<div class="p-7">
+  <%= form_with url: url, method: method, class: "space-y-6", data: { test: "platform-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: title, breadcrumb: breadcrumb) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.platforms.form.cancel"), href: member_platforms_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: submit_label, type: "submit", icon: "check", test_id: "platform-submit", size: :sm) %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%= render Ui::InputComponent.new(name: "label", label: t("member.platforms.form.label"), required: true, value: platform.label, placeholder: "iOS", test_id: "platform-label", error: @errors&.dig(:label)&.first) %>
+          <%= render Ui::InputComponent.new(name: "code", label: t("member.platforms.form.code"), required: true, value: platform.code, placeholder: "ios", hint: t("member.platforms.form.code_hint"), test_id: "platform-code", error: @errors&.dig(:code)&.first) %>
+
+          <%= render "member/shared/color_field", record: platform, prefix: "platform", scope: "member.platforms.form" %>
+
+          <div data-test="platform-active">
+            <input type="hidden" name="active" value="0">
+            <label class="inline-flex items-center gap-2.5 cursor-pointer">
+              <input type="checkbox" name="active" value="1" <%= "checked" if platform.active? %> class="w-4 h-4 rounded border-stone-300 dark:border-zinc-700 accent-indigo-600">
+              <span class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.platforms.form.active") %></span>
+              <span class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.platforms.active_hint") %></span>
+            </label>
+          </div>
+
+          <div data-test="platform-supports-uptime">
+            <input type="hidden" name="supports_uptime" value="0">
+            <label class="inline-flex items-center gap-2.5 cursor-pointer">
+              <input type="checkbox" name="supports_uptime" value="1" <%= "checked" if platform.supports_uptime? %> class="w-4 h-4 rounded border-stone-300 dark:border-zinc-700 accent-indigo-600">
+              <span class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.platforms.form.supports_uptime") %></span>
+              <span class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.platforms.form.supports_uptime_hint") %></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

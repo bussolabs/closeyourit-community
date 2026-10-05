@@ -1,0 +1,13 @@
+<%= tag.div(**html_options) do %>
+  <%= content %>
+  <%= render Ui::ModalComponent.new(title: @title, size: :sm, test_id: @test_id, id: @dialog_id,
+        data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+    <% modal.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("ui.confirm_dialog.cancel"), variant: :secondary_muted, size: :sm,
+            data: { action: "ui--dialog#close" }) %>
+      <%= render Ui::ButtonComponent.new(label: @confirm_label, href: @url, method: @method, variant: :danger, size: :sm,
+            form_class: "contents", params: confirm_params, test_id: confirm_test_id) %>
+    <% end %>
+    <%= body if body? %>
+  <% end %>
+<% end %>

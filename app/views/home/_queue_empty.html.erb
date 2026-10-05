@@ -1,0 +1,34 @@
+<%# locals: next_decision, in_flight_total
+
+    Due vuoti diversi, e vanno detti diversamente: «non aspetta niente da te» è una buona notizia,
+    «hai messo via tutto» è una cosa che hai fatto tu e che puoi disfare. Dire la prima frase quando
+    vale la seconda vorrebbe dire nascondere del lavoro raccontandolo come finito. %>
+<% hidden = next_decision.all_hidden? %>
+<%# CYRA-665 — a chi non risponde di lavorazioni automatiche non si racconta cosa stanno facendo:
+    resta la frase che dice la sola cosa che lo riguarda, cioè che non aspetta niente da lui. %>
+<% body = if hidden
+            t("member.home.empty.hidden_body", count: next_decision.total)
+          else
+            in_flight_total ? t("member.home.empty.body_autonomous", count: in_flight_total) : t("member.home.empty.body")
+          end %>
+<%= render Ui::EmptyStateComponent.new(title: t(hidden ? "member.home.empty.hidden_title" : "member.home.empty.title"),
+      body: body, icon: hidden ? "eye-off" : "circle-check", framed: true,
+      test_id: hidden ? "home-empty-hidden" : "home-empty-done") do |empty| %>
+  <% if in_flight_total || hidden %>
+    <% empty.with_action do %>
+      <div class="flex items-center justify-center flex-wrap gap-1.5">
+        <%# L'elenco di ciò che va avanti da solo per chi non ne risponde non esiste (404): offrirne il
+            pulsante sarebbe una porta che si apre su un errore. %>
+        <% if in_flight_total %>
+          <%= render Ui::ButtonComponent.new(label: t("member.home.empty.see_autonomous"),
+                                             href: member_home_approvals_path(view: Agents::Workflows::InFlight::VIEW),
+                                             variant: :secondary, size: :sm) %>
+        <% end %>
+        <% if hidden %>
+          <%= render Ui::ButtonComponent.new(label: t("member.home.empty.see_all"),
+                                             href: member_home_approvals_path, variant: :secondary_muted, size: :sm) %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

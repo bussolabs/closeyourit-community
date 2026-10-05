@@ -1,0 +1,10 @@
+en:
+  provisions:
+    errors:
+      idempotency_required: "idempotency_key is required"
+      idempotency_conflict: "idempotency_key was already used for a different request"
+      invalid: "Invalid provisioning request"
+      invalid_environment: "Environment is not declared by the project"
+      invalid_scopes: "Invalid token scope"
+      github_required: "The destination project does not have GitHub secret sync enabled"
+      sync_failed: "GitHub synchronization failed"

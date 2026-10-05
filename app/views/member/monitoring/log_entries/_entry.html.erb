@@ -1,0 +1,23 @@
+<%# locals:
+      entry: (required) — Logs::Entry (con :project caricato per evitare N+1)
+    Riga dello stream log, renderizzata nell'index (collection). Il realtime è un page-refresh Turbo
+    (CYRA-57: Logs::Broadcast fa broadcast_refresh_to sullo stream dell'org, la index morpha) → la riga
+    ricompare al morph, non serve più un target di prepend. L'id dom_id(entry) (= "logs_entry_<id>")
+    resta come identificatore stabile della riga per il morph. %>
+<%= render Ui::TableComponent::RowComponent.new(id: dom_id(entry), href: member_monitoring_log_entry_path(entry), link_label: entry.message.truncate(80),
+      frame: "_top", test_id: "log-entry-row") do %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.logs.col_when"), mono: true, class: "text-gray-500 dark:text-zinc-400 whitespace-nowrap")) { error_time_ago(entry.occurred_at) } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.logs.col_level")) do %>
+    <%= render Ui::BadgeComponent.new(label: error_level_label(entry.level), color: log_level_color(entry.level), dot: true) %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.logs.col_project")) do %>
+    <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= entry.project.key %></span>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <%# CYRA-821 — la riga vive dentro il frame dei risultati: senza `_top` la scheda del
+        registro si aprirebbe DENTRO l'elenco, al posto delle righe. %>
+    <%= link_to member_monitoring_log_entry_path(entry), class: "block text-[13px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 truncate max-w-xl", data: { test: "log-entry-link-#{entry.id}", turbo_frame: "_top" } do %><%= entry.message %><% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.logs.col_logger"), mono: true, class: "text-gray-500 dark:text-zinc-400",
+        visible: local_assigns.fetch(:show_logger, true))) { entry.logger_name.presence || "—" } %>
+<% end %>

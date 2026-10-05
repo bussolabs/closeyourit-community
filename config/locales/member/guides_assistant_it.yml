@@ -1,0 +1,37 @@
+it:
+  member:
+    guides:
+      index:
+        assistant:
+          title: L'assistente
+      assistant:
+        title: L'assistente
+        subtitle: Cosa puoi chiedergli, a voce o per iscritto, e cosa fa per te.
+        how_title: Come funziona
+        how_intro: "L'assistente sta nella barra in alto: il microfono per parlare, la bacchetta per scrivere. Risponde con quello che c'è nella tua organizzazione, e vede solo quello che puoi vedere tu."
+        how_b1: "Parla o scrivi con parole tue: non ci sono comandi da imparare."
+        how_b2: "Risponde nella lingua che hai usato."
+        how_b3: "Quando gli chiedi di cambiare qualcosa, mostra una scheda con quello che sta per fare. Non succede niente finché non confermi."
+        ask_title: Domande a cui risponde
+        ask_intro: "Chiedi dello stato del lavoro, di un ticket, o di quello che il gruppo sa già. Alcuni esempi da dire così come sono:"
+        ask_b1: "«Come sta Payments API?» — ticket da fare, in corso e conclusi, errori aperti, monitor giù."
+        ask_b2: "«Quali ticket sono aperti su Storefront?» — elenchi e conteggi, anche per persona."
+        ask_b3: "«Mostrami API-3» — titolo, stato, assegnatario, descrizione e ultimi commenti."
+        ask_b4: "«Cosa sappiamo del login lento?» — cerca nei ticket per significato, non per parole esatte."
+        ask_b5: "«Perché teniamo i log per 14 giorni?» — cerca fra note, decisioni e guide della knowledge base."
+        ask_b6: "«Come invito un collega?» — spiega i passi e ti porta alla pagina giusta."
+        do_title: Cose che prepara per te
+        do_intro: "Per ognuna mostra una scheda da confermare. Puoi correggerla prima di dire sì."
+        do_b1: "«Apri un bug su Storefront: il checkout non va su Safari» — un ticket nuovo; ti mostra anche quelli simili che esistono già."
+        do_b2: "«Sposta API-3 in revisione» — un cambio di stato."
+        do_b3: "«Assegna DASH-2 a me» — un cambio di assegnatario."
+        do_b4: "«Alza la priorità di STR-1 ad alta» — un cambio di priorità."
+        do_b5: "«Commenta su API-1 che la correzione è su staging» — un commento su un ticket."
+        do_b6: "«Salva un'idea per Dashboard: esportazione in PDF» — un'idea nuova su un progetto."
+        do_b7: "«Ricordami di chiamare il cliente venerdì» — un todo personale. I todo non hanno scadenza: il giorno resta nel testo."
+        limits_title: Cosa non fa
+        limits_intro: "Conoscere i limiti fa risparmiare qualche tentativo."
+        limits_b1: "Non cambia mai niente senza la tua conferma."
+        limits_b2: "Non vede progetti o ticket a cui non hai accesso."
+        limits_b3: "Non cancella niente, e non tocca segreti, membri o impostazioni."
+        limits_b4: "Può sbagliare: leggi la scheda prima di confermare, e controlla la risposta sulla pagina collegata quando conta."

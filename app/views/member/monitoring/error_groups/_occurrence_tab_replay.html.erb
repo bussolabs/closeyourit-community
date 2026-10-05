@@ -1,0 +1,6 @@
+<%# The replay tab: the player when this occurrence has a recorded session, the reason when it has none. %>
+<% if event.replay_session_id.present? && @replay_session_ids.include?(event.replay_session_id) %>
+  <%= render "member/monitoring/error_groups/occurrence_replay", event: event %>
+<% else %>
+  <%= render "member/monitoring/error_groups/occurrence_replay_none", event: event %>
+<% end %>

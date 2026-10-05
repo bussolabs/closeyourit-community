@@ -1,0 +1,87 @@
+---
+it:
+  authorization:
+    scopes:
+      project: progetto
+      org: org
+    areas:
+      tickets: Ticket
+      helpdesk: Assistenza
+      ideas: Idee
+      monitoring: Monitoraggio
+      projects: Progetti
+      knowledge: Conoscenza
+      chat: Conversazioni
+      settings: Impostazioni
+      people: Persone
+      datasets: Dataset
+      automation: Automazione
+      product: Prodotto
+    permissions:
+      "tickets.edit": Modifica ticket
+      "tickets.assign": Assegna ticket
+      "tickets.delete": Elimina ticket
+      "tickets.comment.delete_any": Elimina commenti altrui
+      "tickets.attachments.manage": Gestisci allegati
+      "tickets.audit.view": Consulta l'audit della presa in carico
+      "ideas.edit": Modifica idee altrui
+      "ideas.delete": Elimina idee altrui
+      "ideas.convert": Converti in ticket idee altrui
+      "ideas.comment.delete_any": Elimina commenti altrui sulle idee
+      "helpdesk.manage": Gestisci le richieste di assistenza
+      "errors.triage": Triage errori
+      "errors.promote": Promuovi errore a ticket
+      "errors.assign": Assegna errori a una persona
+      "errors.grouping.manage": Gestisci regole di raggruppamento errori
+      "artifacts.manage": Gestisci artefatti di compilazione
+      "metrics.promote": Promuovi query/metodo lento a ticket
+      "uptime.manage": Gestisci monitor uptime
+      "vulnerabilities.triage": Gestisci le vulnerabilità trovate
+      "seo.manage": Gestisci i siti sotto controllo SEO
+      "seo.triage": Gestisci i rilievi SEO trovati
+      "analytics.share.manage": Pubblica la dashboard delle statistiche
+      "tokens.manage": Gestisci token di ingest
+      "secrets.provision": Distribuisci credenziali senza mostrarle
+      "secrets.read": Leggi i valori dei secret
+      "secrets.manage": Gestisci i secret del vault
+      "secret_files.read": Scarica i file segreti
+      "secret_files.manage": Gestisci i file segreti
+      "shared_secret_files.manage": Gestisci i file segreti condivisi
+      "shared_secrets.manage": Gestisci i secret condivisi
+      "secrets_audit.view": Consulta l'audit del Vault
+      "activity.view": Consulta il registro attività
+      "github.manage": Gestisci integrazione GitHub
+      "documents.manage": Gestisci documenti di progetto
+      "projects.edit": Modifica progetti
+      "projects.delete": Elimina progetti
+      "projects.create": Crea progetti
+      "project_groups.view": Vedi gruppi di progetti
+      "project_groups.manage": Gestisci gruppi di progetti
+      "platforms.view": Vedi piattaforme
+      "platforms.manage": Gestisci piattaforme
+      "environments.view": Vedi ambienti
+      "environments.manage": Gestisci ambienti
+      "members.view": Vedi membri
+      "members.manage": Gestisci membri e accessi
+      "members.edit": Modifica dati membro
+      "members.invite": Invita membri
+      "permissions.manage": Gestisci ruoli e permessi
+      "organization.manage": Gestisci impostazioni org
+      "ai.manage": Gestisci l'AI dell'organizzazione
+      "datasets.manage": Gestisci dataset (AI)
+      "datasets.train": Allena dataset (AI)
+      "agents.view": Vedi agenti di automazione
+      "agents.manage": Gestisci agenti di automazione
+      "product_features.view": Vedi la matrice funzionalità
+      "product_features.manage": Gestisci la matrice funzionalità
+      "errors.destroy": Fondi ed elimina errori
+      "logs.link": Collega un registro a un ticket
+      "knowledge.edit": Modifica pagine di conoscenza altrui
+      "knowledge.delete": Elimina pagine di conoscenza altrui
+      "chat.moderate": Modera la chat di progetto
+      "alerts.manage": Gestisci le regole di avviso
+      "servers.view": Vedi le macchine
+      "servers.manage": Gestisci le macchine
+      "servers.execute": Esegui comandi sulle macchine
+      "uptime_groups.view": Vedi i gruppi di controlli
+      "uptime_groups.manage": Gestisci i gruppi di controlli

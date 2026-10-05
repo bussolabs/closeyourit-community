@@ -1,0 +1,32 @@
+<details id="knowledge-review-rejected" class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 group" data-test="knowledge-review-rejected">
+  <summary class="flex items-baseline flex-wrap gap-2 px-4 py-3 cursor-pointer list-none">
+    <%= render Ui::IconComponent.new(name: "chevron-right", class: "text-gray-400 dark:text-zinc-500 text-[11px] transition-transform group-open:rotate-90") %>
+    <span class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.knowledge.reviews.rejected_title") %></span>
+    <span class="font-mono text-[11px] text-gray-400 dark:text-zinc-500"><%= t("member.knowledge.reviews.rejected_note") %></span>
+    <span class="ml-auto font-mono text-[11px] text-gray-400 dark:text-zinc-500"><%= t("member.knowledge.reviews.pages_count", count: @rejected_total) %></span>
+  </summary>
+  <%= render(Ui::TableComponent.new(stacked: true, label: t("member.knowledge.reviews.rejected_title"))) do |t| %>
+    <% t.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.reviews.col_page"), sort: "page", param: :rejected_sort) %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.reviews.col_rejected"), sort: "rejected", initial: :desc, param: :rejected_sort, classes: "w-36") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.reviews.col_by"), sort: "by", param: :rejected_sort, classes: "w-40") %>
+    <% end %>
+    <% @rejected.each do |page| %>
+      <%= render Ui::TableComponent::RowComponent.new(test_id: "knowledge-review-rejected-row") do %>
+        <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+          <span class="block text-[12.5px] text-gray-500 dark:text-zinc-400 line-through"><%= page.title %></span>
+          <span class="block font-mono text-[11px] text-gray-400 dark:text-zinc-500 mt-0.5">
+            <%= page.projects.map(&:key).join(" · ").presence || t("member.knowledge.reviews.org_wide") %>
+            · <%= t("member.knowledge.kind.#{page.kind}") %>
+          </span>
+        <% end %>
+        <%= render Ui::TableComponent::CellComponent.new(label: t("member.knowledge.reviews.col_rejected"), mono: true, class: "text-gray-400 dark:text-zinc-500") do %>
+          <%= page.reviewed_at ? l(page.reviewed_at, format: :short) : "—" %>
+        <% end %>
+        <%= render Ui::TableComponent::CellComponent.new(label: t("member.knowledge.reviews.col_by"), mono: true, class: "text-gray-400 dark:text-zinc-500") do %>
+          <%= page.reviewed_by&.name || "—" %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</details>

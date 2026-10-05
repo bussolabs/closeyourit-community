@@ -1,0 +1,97 @@
+<% content_for :title, t("member.environments.title") %>
+<% can_manage = can?("environments.manage") %>
+
+<div class="p-7 space-y-6" data-test="member-environments">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.environments.title"),
+        subtitle: t("member.environments.help_title"),
+        breadcrumb: [ { label: t("member.environments.title") } ],
+        counts_test_id: "environments-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.environments", count: @pagination.total), value: @pagination.total, test_id: "environments-stat-total") %>
+    <% end %>
+    <% if can_manage %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.environments.new"), href: new_member_environment_path, variant: :primary, size: :sm, icon: "plus", test_id: "environments-new") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% filtering = params[:q].present? || params[:status].present? %>
+  <% if @environments.empty? && !filtering %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.environments.empty"), body: t("member.environments.empty_body"),
+          icon: "layers", framed: true, test_id: "environments-empty") do |empty| %>
+      <% if can_manage %>
+        <% empty.with_action do %>
+          <%= render Ui::ButtonComponent.new(label: t("member.environments.new"), href: new_member_environment_path, variant: :primary, size: :sm, icon: "plus", test_id: "environments-empty-new") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div data-test="environments-table">
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+        <%= render(Ui::TableToolbarComponent.new(framed: true,
+              url: member_environments_path, query: params[:q],
+              search_placeholder: t("member.environments.search_placeholder"),
+              search_test_id: "environments-search", apply_test_id: "environments-filter",
+              test_id: "environments-toolbar")) do |toolbar| %>
+          <% toolbar.with_filter(key: "status", label: t("member.environments.filter_status")) do %>
+            <div class="w-36"><%= render Ui::SelectComponent.new(name: "status", multiple: true, summary: true,
+              options: [ [ t("member.environments.status_active"), "true" ], [ t("member.environments.status_inactive"), "false" ] ],
+              selected: params[:status], placeholder: t("member.environments.filter_status"),
+              test_id: "filter-status") %></div>
+          <% end %>
+          <% toolbar.with_views do %>
+            <%= render Ui::SavedViewsComponent.new(resource_type: "environments", views: @saved_views,
+                  index_helper: :member_environments_path, current_filters: params) %>
+          <% end %>
+        <% end %>
+        <% if @environments.empty? %>
+          <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_environments_path,
+                icon: "layers", test_id: "environments-no-match", reset_test_id: "environments-reset-filters") %>
+        <% else %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.environments.title"))) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.environments.col_environment"), sort: "environment") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.environments.col_code"), sort: "code", classes: "w-28") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.environments.col_status"), sort: "status", initial: :desc, classes: "w-24") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.environments.col_projects"), sort: "projects", initial: :desc, align: :right, classes: "w-24") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: tag.span(t("member.environments.edit"), class: "sr-only"), classes: "w-10", visible: can_manage) %>
+          <% end %>
+          <% @environments.each do |environment| %>
+              <%= render Ui::TableComponent::RowComponent.new(faded: !environment.active?, test_id: "member-environment") do %>
+                <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+                  <%= render Ui::BadgeComponent.new(label: environment.label, color: environment.color, dot: true) %>
+                <% end %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.environments.col_code"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { environment.code } %>
+                <%= render Ui::TableComponent::CellComponent.new(label: t("member.environments.col_status")) do %>
+                  <% if environment.active? %>
+                    <span class="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-emerald-600 dark:text-emerald-400 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><%= t("member.environments.status_active") %></span>
+                  <% else %>
+                    <span class="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-gray-500 dark:text-zinc-400 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-zinc-600"></span><%= t("member.environments.status_inactive") %></span>
+                  <% end %>
+                <% end %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.environments.col_projects"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { @project_counts[environment.id].to_i.to_s } %>
+                <%= render Ui::TableComponent::CellComponent.new(actions: true, visible: can_manage) do %>
+                  <%= render Ui::ButtonGroupComponent.new(class: "border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900") do |group| %>
+                    <% group.with_button(label: t("member.environments.edit"), href: edit_member_environment_path(environment),
+                         variant: :ghost, size: :sm, icon: "pen", icon_only: true, test_id: "environment-edit-#{environment.id}") %>
+                  <% end %>
+                  <%= render Ui::ConfirmDialogComponent.new(title: t("member.environments.delete_dialog.title", label: environment.label),
+                        url: member_environment_path(environment), confirm_label: t("member.environments.delete"),
+                        test_id: "environment-delete-dialog-#{environment.id}") do |dialog| %>
+                    <% dialog.with_body { t("member.environments.delete_dialog.body") } %>
+                    <%= render Ui::RowMenuComponent.new(test_id: "environment-menu-#{environment.id}") do %>
+                      <%= dialog.menu_trigger(label: t("member.environments.delete"), icon: "trash", test_id: "environment-delete-#{environment.id}") %>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+        <% end %>
+        <% end %>
+        <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "environments-pagination")) %>
+      </div>
+    </div>
+  <% end %>
+</div>

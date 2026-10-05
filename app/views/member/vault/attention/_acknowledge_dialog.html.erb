@@ -1,0 +1,33 @@
+<%# locals: nessuno — il dialog è UNO per pagina, non uno per riga %>
+<%# Dichiarare che un'assenza è voluta, con la motivazione OBBLIGATORIA (senza motivo non è una
+    decisione, è solo silenziare — CYRA-409).
+
+    CYRA-571 — il campo stava dentro ogni riga, dentro un modulo per riga. Ora la riga porta solo il
+    bottone che apre questo, e gli passa indirizzo e nome del segreto (ui--shared-dialog): l'elenco
+    pesa quanto le righe che si vedono, non quanto le azioni che offrono. %>
+<%# F24 — the standard shell. Submit sits in the header, outside the shared form: `form:` ties it to it. %>
+<%= render Ui::ModalComponent.new(title: t("member.vault_health.acknowledge.title"), size: :sm, padded: false,
+      test_id: "vault-attention-acknowledge-modal",
+      data: { "ui--shared-dialog-target": "dialog", dialog_name: "health-acknowledge", action: "click->ui--shared-dialog#backdrop" }) do |modal| %>
+  <% modal.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: t("member.vault_health.acknowledge.cancel"), variant: :secondary_muted, size: :sm,
+          data: { action: "ui--shared-dialog#close" }) %>
+    <%= render Ui::ButtonComponent.new(label: t("member.vault_health.acknowledge.submit"), type: "submit", variant: :primary, size: :sm,
+          icon: "circle-check", form: "vault-attention-acknowledge-form", test_id: "vault-attention-acknowledge-submit") %>
+  <% end %>
+  <%= render Ui::RowActionsFormComponent.new(id: "vault-attention-acknowledge-form", hidden: false) do %>
+    <div class="px-4 py-4 space-y-3">
+      <div>
+        <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1"><%= t("member.vault_change_requests.col_variable") %></p>
+        <p class="font-mono text-[13px] text-zinc-900 dark:text-zinc-100" data-dialog-subject data-test="vault-attention-acknowledge-name"></p>
+      </div>
+      <div>
+        <label class="block font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5" for="vault-attention-acknowledge-reason"><%= t("member.vault_health.acknowledge.reason_label") %></label>
+        <input type="text" name="reason" id="vault-attention-acknowledge-reason" required maxlength="240"
+               placeholder="<%= t("member.vault_health.acknowledge.reason_placeholder") %>"
+               data-test="vault-attention-acknowledge-reason"
+               class="w-full h-9 px-3 text-[13px] rounded-md border border-stone-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+      </div>
+    </div>
+  <% end %>
+<% end %>

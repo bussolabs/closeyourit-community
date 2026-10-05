@@ -1,0 +1,109 @@
+<%# locals: host: — blocco `database` dell'ultimo push (snapshot jsonb denormalizzato sull'host).
+    Reso SOLO dove l'agent ha rilevato un database: senza il blocco lo snapshot resta {} e il
+    pannello non compare (host senza DB invariati). reachable false = DB rilevato ma non sondabile
+    (giù o auth): i sotto-oggetti possono mancare, si mostra ciò che c'è. %>
+<% snapshot = host.database_snapshot.is_a?(Hash) ? host.database_snapshot : {} %>
+<% if snapshot.present? %>
+  <% reachable = snapshot["reachable"] %>
+  <% connections = snapshot["connections"].is_a?(Hash) ? snapshot["connections"] : {} %>
+  <% replication = snapshot["replication"].is_a?(Hash) ? snapshot["replication"] : {} %>
+  <% states = connections["by_state"].is_a?(Hash) ? connections["by_state"] : {} %>
+  <% replicas = Array(replication["replicas"]) %>
+  <% tables = Array(snapshot["top_tables"]) %>
+  <% total = connections["total"] %>
+  <% max = connections["max"] %>
+  <%# CYRA-515 — il rapporto è sugli slot DAVVERO utilizzabili (massimo meno quelli che il database
+      tiene da parte per il superuser): è la stessa base su cui scatta l'avviso «slot quasi
+      esauriti», e misurarlo qui sul massimo teorico mostrava una percentuale più bassa di quella
+      appena notificata. Senza slot riservati i due numeri coincidono. %>
+  <% reserved = connections["reserved"].to_i %>
+  <% usable = max.to_i.positive? ? [ max.to_i - reserved, 0 ].max : nil %>
+  <% usage_pct = total.present? && usable.to_i.positive? ? (total.to_f * 100 / usable) : nil %>
+  <% status = reachable.nil? ? "unknown" : (reachable ? "up" : "down") %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-database">
+    <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2 min-w-0">
+        <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.show.database") %></h2>
+        <%= render Ui::TooltipComponent.new(title: t("member.servers.show.database"), text: t("member.servers.show.help_database"), test_id: "help-database") %>
+        <%= render Ui::BadgeComponent.new(
+              label: t("member.servers.show.database_status.#{status}"),
+              color: { "up" => :emerald, "down" => :red, "unknown" => :gray }.fetch(status),
+              dot: true, test_id: "server-db-status") %>
+        <% if snapshot["role"].present? %>
+          <%= render Ui::BadgeComponent.new(
+                label: t("member.servers.db_role.#{snapshot['role']}"),
+                color: snapshot["role"] == "primary" ? :indigo : :sky, test_id: "server-db-role") %>
+        <% end %>
+      </div>
+      <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 shrink-0 truncate">
+        <%= snapshot["engine"].presence || "—" %><% if snapshot["version"].present? %> · <%= snapshot["version"] %><% end %>
+      </span>
+    </div>
+
+    <% if reachable == false %>
+      <p class="px-5 py-2.5 border-b border-stone-100 dark:border-zinc-800 bg-red-50 dark:bg-red-500/15 text-[12px] text-red-700 dark:text-red-300" data-test="server-database-unreachable">
+        <%= t("member.servers.show.database_unreachable") %>
+      </p>
+    <% end %>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 px-5 py-4">
+      <div data-test="server-database-connections">
+        <p class="font-mono text-[10px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.database_connections") %></p>
+        <div class="mt-1.5 flex items-center gap-2">
+          <span class="font-mono text-[12px] <%= usage_pct ? server_pct_color(usage_pct) : 'text-zinc-900 dark:text-zinc-100' %> shrink-0">
+            <%= total.nil? ? "—" : total %><% if usable %> / <%= usable %><% end %>
+          </span>
+          <% if usage_pct %>
+            <span class="flex-1 h-1.5 rounded-full bg-stone-100 dark:bg-zinc-800 overflow-hidden"><span class="block h-full rounded-full <%= server_bar_class(usage_pct) %>" style="width: <%= usage_pct.clamp(0, 100) %>%"></span></span>
+          <% end %>
+        </div>
+        <%# Gli slot messi da parte non spariscono dal conto: dichiararli spiega perché il totale qui
+            è più basso del massimo configurato sul database. %>
+        <% if reserved.positive? %>
+          <p class="mt-1 text-[10.5px] text-gray-500 dark:text-zinc-400" data-test="server-database-reserved">
+            <%= t("member.servers.show.database_reserved", count: reserved, max: max) %>
+          </p>
+        <% end %>
+        <% if states.any? %>
+          <div class="mt-2 flex flex-wrap items-center gap-1.5" data-test="server-database-states">
+            <% states.each do |state, count| %>
+              <%# CYRA-467 — lo stato a parole, col nome tecnico nel tooltip per chi lo cerca. %>
+              <span class="inline-flex items-center gap-1 rounded px-1.5 h-[18px] text-[10.5px] bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400"
+                    title="<%= state %>" data-test="server-database-state">
+                <%= server_connection_state_label(state) %><span class="font-mono text-zinc-900 dark:text-zinc-100"><%= count %></span>
+              </span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <div data-test="server-database-replication">
+        <p class="font-mono text-[10px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.database_replication") %></p>
+        <div class="mt-1.5 flex items-center gap-2">
+          <span class="font-mono text-[12px] text-zinc-900 dark:text-zinc-100">
+            <%= replication["lag_seconds"].nil? ? "—" : t("member.servers.show.database_lag_value", value: number_with_precision(replication["lag_seconds"], precision: 2)) %>
+          </span>
+          <% unless replication["streaming"].nil? %>
+            <%= render Ui::BadgeComponent.new(
+                  label: t(replication["streaming"] ? "member.servers.show.database_streaming_on" : "member.servers.show.database_streaming_off"),
+                  color: replication["streaming"] ? :emerald : :amber, size: :sm, test_id: "server-db-streaming") %>
+          <% end %>
+        </div>
+        <% if replicas.any? %>
+          <div class="mt-2 space-y-1" data-test="server-database-replicas">
+            <% replicas.each do |replica| %>
+              <div class="flex items-center justify-between gap-2 font-mono text-[11px]">
+                <span class="text-zinc-900 dark:text-zinc-100 truncate"><%= replica["client"].presence || "—" %></span>
+                <span class="text-gray-500 dark:text-zinc-400 shrink-0"><%= replica["state"].presence || "—" %></span>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <% if tables.any? %>
+      <%= render "member/monitoring/servers/database_storage", tables: tables %>
+    <% end %>
+  </div>
+<% end %>

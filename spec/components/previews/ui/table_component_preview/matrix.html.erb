@@ -1,0 +1,20 @@
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+  <%= render(Ui::TableComponent.new(stacked: true, sticky: :first, label: "Variables by environment")) do |t| %>
+    <% t.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: "Variable") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: "Development") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: "Production") %>
+      <th scope="col"><span class="sr-only">Actions</span></th>
+    <% end %>
+    <% [ [ "APP_HOST", :missing, nil, false ], [ "DATABASE_URL", nil, :shared, true ], [ "STRIPE_KEY", nil, nil, false ] ].each do |name, dev_tone, prod_tone, highlighted| %>
+      <%= render Ui::TableComponent::RowComponent.new(highlighted: highlighted) do %>
+        <%= render(Ui::TableComponent::CellComponent.new(header: true)) { tag.span(name, class: "font-mono text-[12.5px] font-medium") } %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: "Development")) { dev_tone ? render(Ui::BadgeComponent.new(label: "Missing", color: "orange", dot: true, pulse: true)) : "••••••••" } %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: "Production")) { prod_tone ? render(Ui::BadgeComponent.new(label: "Shared", color: "indigo")) : "••••••••" } %>
+        <%= render(Ui::TableComponent::CellComponent.new(actions: true)) do %>
+          <%= render Ui::ButtonComponent.new(label: "Show", icon: "eye", icon_only: true, variant: :secondary_muted, size: :sm) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,181 @@
+<% content_for :title, t("member.monitoring.analytics.title") %>
+
+<% if @project %>
+  <%# Realtime via cable: al nuovo pageview Analytics::Broadcast fa broadcast_refresh_to sullo stream
+      del progetto → ogni viewer ri-fetcha la PROPRIA show (range/environment/filtri) e morpha il DOM,
+      così header/grafico/tabelle/chip diventano live. Sostituisce il polling turbo-frame a 30s. %>
+  <%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+  <%= turbo_stream_from Realtime::Streams.analytics(@project) %>
+<% end %>
+
+<div class="p-7 space-y-6" data-test="member-analytics">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.monitoring.analytics.title"),
+        breadcrumb: [ { label: t("member.monitoring.analytics.title") } ],
+        counts_test_id: "analytics-counts") do |h| %>
+    <% if @project %>
+      <% h.with_counts do %>
+        <%# CYRA-500 — ogni numero porta la variazione sul periodo precedente: «come va il mio sito» è
+            una domanda comparativa, e prima la pagina rispondeva solo «quanto». %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.pageviews"), value: @pageviews_count,
+              trend: analytics_trend(@pageviews_count, @previous&.dig(:pageviews)), test_id: "analytics-count-pageviews") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.visitors"), value: @visitors_count, value_color: :indigo,
+              trend: analytics_trend(@visitors_count, @previous&.dig(:visitors)), test_id: "analytics-count-visitors") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.bounce"), value: analytics_bounce_label(@bounce_rate),
+              trend: analytics_trend(@bounce_rate, @previous&.dig(:bounce_rate), lower_is_better: true), test_id: "analytics-count-bounce") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.duration"), value: analytics_duration_label(@visit_duration),
+              trend: analytics_trend(@visit_duration, @previous&.dig(:visit_duration), lower_is_better: false), test_id: "analytics-count-duration") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.views_per_visit"), value: @views_per_visit,
+              trend: analytics_trend(@views_per_visit, @previous&.dig(:views_per_visit), lower_is_better: false), test_id: "analytics-count-vpv") %>
+      <% end %>
+    <% end %>
+    <%# CYRA-584 — questa pagina dice QUANTE visite e su quali pagine; le registrazioni dicono cosa ha
+        fatto una persona, una per una. Sono le due metà della stessa domanda, e stanno in due aree
+        diverse del menu (qui SEO, di là Osservabilità): chi cerca il comportamento delle persone
+        arriva prima qui, e senza questo rimando non ha nessun indizio che l'altra metà esista.
+        Il nome è quello della voce del menu — un nome solo — e porta con sé il progetto aperto. %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.nav.replays"),
+            href: member_monitoring_replays_path(@project ? { project_id: @project.id } : {}),
+            variant: :secondary, size: :sm, icon: "film", test_id: "analytics-replays-link") %>
+    <% end %>
+  <% end %>
+
+  <% if @project.nil? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.analytics.empty"), body: t("member.monitoring.analytics.empty_body"), icon: "chart-line", framed: true, test_id: "analytics-empty") %>
+  <%# CYRA-449 — il sito non ha MAI mandato una visita: al posto di quattordici riquadri vuoti, come
+      si collega. È l'altra faccia di «Nessun dato nel periodo», e confonderle faceva concludere che
+      la funzione fosse rotta. %>
+  <% elsif !@ever_received %>
+    <%= render "toolbar", projects: @projects, project: @project, environments: @environments,
+          environment: @environment, range: @range, show_ranges: false,
+          include_automated: @include_automated, share_link: @share_link %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="analytics-onboarding"
+         data-controller="clipboard" data-clipboard-copied-value="<%= t("member.monitoring.analytics.onboarding.copied") %>">
+      <div class="px-5 py-4 border-b border-stone-200 dark:border-zinc-800">
+        <h3 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.analytics.onboarding.title") %></h3>
+        <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.onboarding.body", project: @project.name) %></p>
+      </div>
+
+      <div class="px-5 py-4 space-y-4">
+        <div class="flex items-center justify-between gap-3">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.onboarding.snippet_label") %></p>
+          <button type="button" data-action="clipboard#copy" data-test="analytics-onboarding-copy"
+                  class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[11.5px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800">
+            <%= render Ui::IconComponent.new(name: "copy", class: "text-[10px]") %><span data-clipboard-target="label"><%= t("member.monitoring.analytics.onboarding.copy") %></span>
+          </button>
+        </div>
+        <%# La versione nell'indirizzo è la stessa della guida (CYRA-542): senza, una pubblicazione
+            nuova dello script arriva da sola su ogni sito già collegato. Presidiata da
+            spec/config/analytics_snippet_version_spec.rb, che vieta la URL nuda ovunque. %>
+        <pre class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-4 py-3 font-mono text-[11.5px] leading-relaxed text-zinc-800 dark:text-zinc-200 overflow-x-auto"><code data-clipboard-target="source">&lt;script src="https://cdn.jsdelivr.net/npm/@bussolabs/closeyourit-js@0/dist/closeyourit.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  CloseYourIt.init({
+    endpointUrl: '<%= request.base_url %>',
+    publicKey: '<%= @onboarding_public_key %>',
+    projectId: '<%= @project.id %>',
+    environment: '<%= @environment %>',
+    trackPageviews: true,
+  })
+&lt;/script&gt;</code></pre>
+
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[12.5px]">
+          <div>
+            <dt class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.onboarding.expected_domain") %></dt>
+            <dd class="mt-1 text-zinc-900 dark:text-zinc-100" data-test="analytics-onboarding-domain">
+              <% if @onboarding_origins.any? %>
+                <%= safe_join(@onboarding_origins.map { |origin| tag.span(origin, class: "font-mono text-[11.5px]") }, tag.br) %>
+              <% else %>
+                <span class="text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.onboarding.domain_unknown") %></span>
+              <% end %>
+            </dd>
+          </div>
+          <div>
+            <dt class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.onboarding.token_label") %></dt>
+            <dd class="mt-1">
+              <% if @can_read_tokens %>
+                <%= link_to t("member.monitoring.analytics.onboarding.token_link"), member_project_tokens_path(@project), class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "analytics-onboarding-token" } %>
+              <% else %>
+                <%# La pagina dei codici sta dietro tokens.manage: mandarci chi non ce l'ha darebbe un 403. %>
+                <span class="text-gray-500 dark:text-zinc-400" data-test="analytics-onboarding-token-locked"><%= t("member.monitoring.analytics.onboarding.token_locked") %></span>
+              <% end %>
+            </dd>
+          </div>
+        </dl>
+
+        <div class="flex items-center flex-wrap gap-3 pt-1 border-t border-stone-100 dark:border-zinc-800">
+          <p class="mt-3 flex items-center gap-2 text-[12.5px] text-gray-600 dark:text-zinc-400" data-test="analytics-onboarding-waiting">
+            <%= render Ui::IconComponent.new(name: "hourglass", class: "text-[11px] text-amber-500 dark:text-amber-400") %><%= t("member.monitoring.analytics.onboarding.waiting") %>
+          </p>
+          <p class="mt-3 text-[12px]"><%= link_to t("member.monitoring.analytics.onboarding.guide"), member_guides_analytics_path, class: "text-indigo-600 dark:text-indigo-400 hover:underline" %></p>
+        </div>
+      </div>
+    </div>
+
+    <%# Il link pubblico si può creare anche prima della prima visita: se c'è, qui sotto si copia. %>
+    <% if @share_link %>
+      <%= render "share", link: @share_link, project: @project %>
+    <% end %>
+
+  <% else %>
+    <%= render "toolbar", projects: @projects, project: @project, environments: @environments,
+          environment: @environment, range: @range, show_ranges: true,
+          include_automated: @include_automated, share_link: @share_link %>
+
+    <% if @filters.any? %>
+      <div class="flex items-center flex-wrap gap-2" data-test="analytics-active-filters">
+        <span class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.filters.active") %>:</span>
+        <% @filters.each do |column, value| %>
+          <%= link_to analytics_unfilter_url(column),
+                class: "inline-flex items-center gap-1.5 h-[26px] px-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-[12px] text-zinc-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800",
+                data: { test: "analytics-filter-chip" } do %>
+            <span><span class="text-gray-500 dark:text-zinc-400"><%= analytics_filter_label(column) %>:</span> <%= value %></span>
+            <%= render Ui::IconComponent.new(name: "x", class: "text-[10px] text-gray-400 dark:text-zinc-500") %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%# Blocco realtime (visitatori online + sparkline 30min): reso inline e aggiornato dal
+        page-refresh Turbo su nuovo pageview — non più turbo-frame in polling a 30s. %>
+    <div data-test="analytics-realtime">
+      <%= render "realtime", count: @realtime_count, series: @realtime_series %>
+    </div>
+
+    <%# Le variazioni stanno accanto ai numeri, in cima: una riga a parte le allontanava proprio da
+        ciò che descrivono. Qui resta la didascalia che dice rispetto a quale periodo. %>
+    <% if @previous.present? %>
+      <p class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="analytics-comparison">
+        <%= t("member.monitoring.analytics.comparison.vs_previous") %>
+      </p>
+    <% end %>
+
+    <%= render "chart", buckets: @buckets, range: @range %>
+
+    <% if @range_empty %>
+      <%= render "empty_range", last_at: @last_pageview_at, suggested: @suggested_range,
+            project: @project, environment: @environment,
+            panels: %w[pages referrers channels entry_exit locations devices device_types utm] %>
+    <% else %>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <%= render "pages", top_paths: @top_paths %>
+      <%= render "referrers", top_referrers: @top_referrers %>
+      <%= render "channels", channels: @channels %>
+      <%= render "entry_exit", entry_pages: @entry_pages, exit_pages: @exit_pages %>
+      <%# CYRA-500 — senza il dato geografico il riquadro restava lì, vuoto, in mezzo a riquadri
+          pieni: sembrava rotto. Se non c'è niente da mostrare non compare affatto. %>
+      <% if @countries.any? %><%= render "locations", countries: @countries %><% end %>
+      <%= render "devices", browsers: @browsers, oses: @oses %>
+      <%= render "device_types", device_types: @device_types, screens: @screen_classes %>
+      <%= render "utm", sources: @utm_sources, mediums: @utm_mediums, campaigns: @utm_campaigns,
+            terms: @utm_terms, contents: @utm_contents %>
+    </div>
+    <% end %>
+
+    <%= render "goals", goals: @goals, conversions: @goal_conversions, project: @project %>
+    <% if @share_link %>
+      <%= render "share", link: @share_link, project: @project %>
+    <% end %>
+  <% end %>
+</div>

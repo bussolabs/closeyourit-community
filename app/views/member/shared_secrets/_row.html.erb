@@ -1,0 +1,67 @@
+<%# locals: variable, environments, projects, can_manage, open (bool), errors (Hash | nil) %>
+<% form_id = "shared-secret-row-form-#{variable.name.parameterize}" %>
+<%= render Ui::TableComponent::RowComponent.new(test_id: "shared-secret-#{variable.name.parameterize}", class: "group",
+      data: { controller: "secret-matrix-row", secret_matrix_row_open_value: open, secret_matrix_row_reveal_error_value: t("member.shared_secrets.reveal_failed") }) do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true, class: "align-top") do %>
+    <span class="font-mono text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= variable.name %></span>
+    <% if errors.present? %>
+      <p class="mt-1 text-[11px] text-rose-600 dark:text-rose-400" data-test="shared-secret-row-error-<%= variable.name.parameterize %>"><%= errors.values.flatten.first %></p>
+    <% end %>
+  <% end %>
+
+  <% environments.each do |environment| %>
+    <%= render "cell", variable: variable, environment: environment,
+               value: variable.values.find { |v| v.environment_id == environment.id },
+               projects: projects, form_id: form_id, can_manage: can_manage %>
+  <% end %>
+
+  <%= render Ui::TableComponent::CellComponent.new(actions: true, class: "align-top") do %>
+    <% if can_manage %>
+      <%= form_with url: member_shared_secrets_path, method: :post, id: form_id, class: "inline" do %>
+        <%= hidden_field_tag :name, variable.name %>
+      <% end %>
+      <div class="inline-flex items-center gap-1">
+        <button type="button" data-action="secret-matrix-row#unlock" data-secret-matrix-row-target="lockButton"
+                data-test="shared-secret-unlock-<%= variable.name.parameterize %>" aria-label="<%= t('member.shared_secrets.unlock') %>"
+                class="inline-flex items-center justify-center w-7 h-7 rounded text-gray-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-stone-100 dark:hover:bg-zinc-800">
+          <%= render Ui::IconComponent.new(name: "lock", class: "text-[11px]") %>
+        </button>
+        <button type="submit" form="<%= form_id %>" data-secret-matrix-row-target="saveButton" hidden
+                data-test="shared-secret-save-<%= variable.name.parameterize %>"
+                class="inline-flex items-center gap-1 h-7 rounded-md bg-indigo-600 px-2.5 text-xs font-semibold text-white hover:bg-indigo-700">
+          <%= render Ui::IconComponent.new(name: "check", class: "text-[10px]") %><%= t("member.shared_secrets.save_row") %>
+        </button>
+        <button type="button" data-action="secret-matrix-row#cancel" data-secret-matrix-row-target="cancelButton" hidden
+                class="h-7 rounded px-2 text-xs font-medium text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"><%= t("member.shared_secrets.cancel_edit") %></button>
+        <%= render "rollback_dialogs", variable: variable %>
+        <% delete_impacts = variable.values.map { |shared_value| ::Secrets::Shared::Impact.call(shared_value: shared_value, effect: :delete).value } %>
+        <%= render Ui::ConfirmDialogComponent.new(title: t("member.shared_secrets.delete_dialog.title", name: variable.name),
+              url: member_shared_secret_path(variable), params: { confirmation_digests: delete_impacts.map { |impact| impact["digest"] } },
+              confirm_label: t("member.shared_secrets.delete"), test_id: "shared-secret-delete-dialog-#{variable.name.parameterize}") do |dialog| %>
+          <% dialog.with_body { t("member.shared_secrets.delete_dialog.body") } %>
+          <%= render Ui::RowMenuComponent.new(test_id: "shared-secret-menu-#{variable.name.parameterize}", aria_label: t("member.shared_secrets.history")) do %>
+            <div class="px-3 py-2 text-[11px] text-gray-500 dark:text-zinc-400 w-64">
+              <p class="font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.shared_secrets.history") %></p>
+              <% variable.values.sort_by { |shared_value| shared_value.environment.label }.each do |shared_value| %>
+                <p class="mt-2 font-medium text-zinc-700 dark:text-zinc-300"><%= shared_value.environment.label %></p>
+                <% shared_value.versions.sort_by(&:number).reverse_each do |version| %>
+                  <div class="mt-1 flex items-center justify-between gap-2">
+                    <span class="font-mono">v<%= version.number %> · <%= l(version.created_at, format: :short) %></span>
+                    <% if version.number != shared_value.version_number %>
+                      <%= render Ui::ConfirmDialogComponent::RemoteTriggerComponent.new(dialog_id: "shared-secret-rollback-dialog-#{version.id}",
+                            label: t("member.shared_secrets.rollback"), test_id: "shared-secret-rollback-#{version.id}") %>
+                    <% else %>
+                      <span><%= t("member.shared_secrets.current") %></span>
+                    <% end %>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+            <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+            <%= dialog.menu_trigger(label: t("member.shared_secrets.delete"), icon: "trash", test_id: "shared-secret-delete-#{variable.name.parameterize}") %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,8 @@
+<%= render Ui::SectionComponent.new(title: @title, body_class: nil, test_id: @test_id, **@options) do %>
+  <div class="divide-y divide-stone-100 dark:divide-zinc-800 text-[12.5px]">
+    <% rows.each do |row| %><%= row %><% end %>
+  </div>
+  <% if footer? %>
+    <div class="border-t border-stone-200 dark:border-zinc-800 px-4 py-3"><%= footer %></div>
+  <% end %>
+<% end %>

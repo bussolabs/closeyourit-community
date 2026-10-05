@@ -1,0 +1,47 @@
+<% content_for :title, t("valhalla.accounts.new_title") %>
+
+<div class="p-7">
+  <%= form_with url: valhalla_accounts_path, method: :post, class: "space-y-6", data: { test: "valhalla-account-form", controller: "ui--toggle-fields" } do %>
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("valhalla.accounts.new_title"),
+          breadcrumb: [ { label: t("valhalla.accounts.title"), href: valhalla_accounts_path }, { label: t("member.breadcrumb.new") } ],
+          root_href: valhalla_root_path) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("valhalla.cancel"), href: valhalla_accounts_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: t("valhalla.accounts.new"), type: "submit", size: :sm, test_id: "valhalla-account-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%= render Ui::InputComponent.new(name: "name", label: t("auth.fields.name"), required: true, test_id: "account-name", value: params[:name], error: @errors&.dig(:name)&.first) %>
+          <%= render Ui::InputComponent.new(name: "email", label: t("auth.fields.email"), type: "email", required: true, test_id: "account-email", value: params[:email], error: @errors&.dig(:email)&.first) %>
+
+          <label class="md:col-span-2 flex items-start gap-2.5 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5 cursor-pointer">
+            <input type="checkbox" name="self_password" value="1" data-test="account-self-password" data-action="change->ui--toggle-fields#toggle" class="mt-0.5 w-[18px] h-[18px] rounded-[5px] border-stone-300 dark:border-zinc-700 text-indigo-600 dark:text-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+            <span>
+              <span class="block text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("valhalla.accounts.self_password") %></span>
+              <span class="block text-[11px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.accounts.self_password_hint") %></span>
+            </span>
+          </label>
+
+          <div data-ui--toggle-fields-target="field" data-controller="ui--password-rules">
+            <%= render Ui::InputComponent.new(name: "password", label: t("auth.fields.password"), type: "password", required: true,
+                  test_id: "account-password", error: @errors&.dig(:password)&.first,
+                  data: { "ui--password-rules-target" => "input", action: "input->ui--password-rules#check" }) %>
+            <%= render Ui::PasswordRulesComponent.new(test_id: "account-password-rules") %>
+          </div>
+          <div data-ui--toggle-fields-target="field">
+            <%= render Ui::InputComponent.new(name: "password_confirmation", label: t("auth.fields.password_confirmation"), type: "password", required: true, test_id: "account-password-confirmation") %>
+          </div>
+
+          <div class="md:col-span-2 flex items-center justify-between rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
+            <div><p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("valhalla.accounts.god_label") %></p><p class="text-[11px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.accounts.god_hint") %></p></div>
+            <input type="checkbox" name="god" value="1" data-test="account-god" class="w-[18px] h-[18px] rounded-[5px] border-stone-300 dark:border-zinc-700 text-indigo-600 dark:text-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

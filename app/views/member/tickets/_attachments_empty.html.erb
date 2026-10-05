@@ -1,0 +1,19 @@
+<%# locals: (ticket:, can_manage:) %>
+<%= render Ui::SectionComponent.new(body_class: nil, test_id: "member-ticket-attachments-compact") do %>
+  <% if can_manage %>
+    <details class="group">
+      <summary class="list-none cursor-pointer flex items-center gap-3 px-4 py-2.5 text-[12.5px]" data-test="member-ticket-attachments-open">
+        <%= render Ui::IconComponent.new(name: "paperclip", class: "text-[12px] text-gray-400 dark:text-zinc-500") %>
+        <span class="text-gray-500 dark:text-zinc-400" data-test="member-ticket-attachments-empty"><%= t("member.tickets.attachments.empty") %></span>
+        <span class="ml-auto font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 group-open:hidden">+ <%= t("member.tickets.attachments.add") %></span>
+      </summary>
+      <div class="border-t border-stone-100 dark:border-zinc-800 px-4 py-3">
+        <%= render "member/tickets/attachment_form", ticket: ticket %>
+      </div>
+    </details>
+  <% else %>
+    <p class="flex items-center gap-3 px-4 py-2.5 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="member-ticket-attachments-empty">
+      <%= render Ui::IconComponent.new(name: "paperclip", class: "text-[12px] text-gray-400 dark:text-zinc-500") %><%= t("member.tickets.attachments.empty") %>
+    </p>
+  <% end %>
+<% end %>

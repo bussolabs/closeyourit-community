@@ -1,0 +1,9 @@
+# Self-hosted CloseYourIt: the application areas stay out of search indexes.
+User-agent: *
+Disallow: /api/
+Disallow: /cli/
+Disallow: /member/
+Disallow: /valhalla/
+Disallow: /account/
+Disallow: /login
+Disallow: /signup

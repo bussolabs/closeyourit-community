@@ -1,0 +1,87 @@
+---
+en:
+  authorization:
+    scopes:
+      project: project
+      org: org
+    areas:
+      tickets: Tickets
+      helpdesk: Help desk
+      ideas: Ideas
+      monitoring: Monitoring
+      projects: Projects
+      knowledge: Knowledge
+      chat: Conversations
+      settings: Settings
+      people: People
+      datasets: Datasets
+      automation: Automation
+      product: Product
+    permissions:
+      "tickets.edit": Edit tickets
+      "tickets.assign": Assign tickets
+      "tickets.delete": Delete tickets
+      "tickets.comment.delete_any": Delete others' comments
+      "tickets.attachments.manage": Manage attachments
+      "tickets.audit.view": View the claim audit
+      "ideas.edit": Edit others' ideas
+      "ideas.delete": Delete others' ideas
+      "ideas.convert": Convert others' ideas to tickets
+      "ideas.comment.delete_any": Delete others' idea comments
+      "helpdesk.manage": Manage help desk requests
+      "errors.triage": Triage errors
+      "errors.promote": Promote error to ticket
+      "errors.assign": Assign errors to a person
+      "errors.grouping.manage": Manage error grouping rules
+      "artifacts.manage": Manage build artifacts
+      "metrics.promote": Promote slow query/method to ticket
+      "uptime.manage": Manage uptime monitors
+      "vulnerabilities.triage": Triage vulnerabilities
+      "seo.manage": Manage the sites under SEO check
+      "seo.triage": Triage SEO findings
+      "analytics.share.manage": Publish the analytics dashboard
+      "tokens.manage": Manage ingest tokens
+      "secrets.provision": Distribute credentials without revealing them
+      "secrets.read": Read secret values
+      "secrets.manage": Manage vault secrets
+      "secret_files.read": Download secret files
+      "secret_files.manage": Manage secret files
+      "shared_secret_files.manage": Manage shared secret files
+      "shared_secrets.manage": Manage shared secrets
+      "secrets_audit.view": View the Vault audit
+      "activity.view": View the activity log
+      "github.manage": Manage GitHub integration
+      "documents.manage": Manage project documents
+      "projects.edit": Edit projects
+      "projects.delete": Delete projects
+      "projects.create": Create projects
+      "project_groups.view": View project groups
+      "project_groups.manage": Manage project groups
+      "platforms.view": View platforms
+      "platforms.manage": Manage platforms
+      "environments.view": View environments
+      "environments.manage": Manage environments
+      "members.view": View members
+      "members.manage": Manage members & access
+      "members.edit": Edit member details
+      "members.invite": Invite members
+      "permissions.manage": Manage roles & permissions
+      "organization.manage": Manage organization settings
+      "ai.manage": Manage the organization AI
+      "datasets.manage": Manage datasets (AI)
+      "datasets.train": Train datasets (AI)
+      "agents.view": View automation agents
+      "agents.manage": Manage automation agents
+      "product_features.view": View the feature matrix
+      "product_features.manage": Manage the feature matrix
+      "errors.destroy": Merge and delete errors
+      "logs.link": Link a log to a ticket
+      "knowledge.edit": Edit others' knowledge pages
+      "knowledge.delete": Delete others' knowledge pages
+      "chat.moderate": Moderate project chat
+      "alerts.manage": Manage alert rules
+      "servers.view": View machines
+      "servers.manage": Manage machines
+      "servers.execute": Run commands on machines
+      "uptime_groups.view": View monitor groups
+      "uptime_groups.manage": Manage monitor groups

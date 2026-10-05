@@ -1,0 +1,42 @@
+<% content_for :title, t("account.two_factor.setup_title") %>
+
+<div class="mx-auto max-w-2xl px-6 py-8" data-test="account-two-factor-setup">
+  <h1 class="font-display text-[18px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1"><%= t("account.two_factor.setup_title") %></h1>
+  <p class="text-[13px] text-gray-500 dark:text-zinc-400 mb-6"><%= t("account.two_factor.setup_lead") %></p>
+
+  <%= render Ui::CardComponent.new do %>
+    <ol class="space-y-6">
+      <li>
+        <p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100 mb-3"><span class="font-mono text-indigo-600 dark:text-indigo-400 mr-1">1.</span><%= t("account.two_factor.step_scan") %></p>
+        <%# The QR stays on white in the dark look too: dark modules on a dark ground do not scan. %>
+        <div class="inline-block rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-white p-3 [&_svg]:w-44 [&_svg]:h-44" data-test="two-factor-qr">
+          <%= @qr_svg.html_safe %>
+        </div>
+        <p class="mt-3 text-[12px] text-gray-500 dark:text-zinc-400">
+          <%= t("account.two_factor.manual_entry") %>
+          <code class="ml-1 rounded bg-stone-100 dark:bg-zinc-800 px-1.5 py-0.5 font-mono text-[12px] text-zinc-800 dark:text-zinc-200 select-all" data-test="two-factor-secret"><%= @account.otp_secret %></code>
+        </p>
+      </li>
+      <li>
+        <p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100 mb-3"><span class="font-mono text-indigo-600 dark:text-indigo-400 mr-1">2.</span><%= t("account.two_factor.step_verify") %></p>
+        <%# FIX-G: attivare fa render della pagina codici di recupero (200). Con Turbo un POST 200 senza
+            redirect non naviga → i codici one-shot non verrebbero mostrati. turbo:false = full-page load. %>
+        <%= form_with url: enable_account_two_factor_path, method: :post, class: "space-y-4 max-w-xs", data: { test: "two-factor-enable-form", turbo: false } do %>
+          <%= render Ui::InputComponent.new(
+                name: "code", label: t("account.two_factor.code_label"), required: true,
+                test_id: "two-factor-setup-code", autocomplete: "one-time-code", inputmode: "text",
+                autofocus: true, hint: t("account.two_factor.code_hint")) %>
+          <%# FIX-A: attivare richiede la password corrente (una sessione rubata non può attivare un 2FA). %>
+          <%= render Ui::InputComponent.new(
+                name: "password", type: "password", label: t("account.two_factor.activate_password_label"),
+                required: true, autocomplete: "current-password", test_id: "two-factor-setup-password",
+                hint: t("account.two_factor.activate_password_hint")) %>
+          <div class="flex items-center gap-2">
+            <%= render Ui::ButtonComponent.new(label: t("account.two_factor.activate"), type: "submit", test_id: "two-factor-activate") %>
+            <%= render Ui::ButtonComponent.new(label: t("account.two_factor.cancel"), href: account_two_factor_path, variant: :ghost, test_id: "two-factor-setup-cancel") %>
+          </div>
+        <% end %>
+      </li>
+    </ol>
+  <% end %>
+</div>

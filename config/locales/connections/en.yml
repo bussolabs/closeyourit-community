@@ -1,0 +1,21 @@
+en:
+  connections:
+    invitations:
+      mailer:
+        subject: "You've been invited to %{organization}"
+        overline: "Invitation"
+        greeting: "Hello,"
+        intro: "You've been invited to collaborate in the organization below. Accept to create your account and get started."
+        body: "You've been invited to join %{organization} as %{role}."
+        action: "Accept invitation"
+        expiry: "This link expires in 7 days. If you weren't expecting this email, you can ignore it."
+  activerecord:
+    errors:
+      models:
+        connections/ticket_dependency:
+          attributes:
+            blocker:
+              not_self_dependency: can't be the ticket itself
+              same_organization: must belong to the same organization
+            base:
+              creates_cycle: would create a circular dependency between tickets

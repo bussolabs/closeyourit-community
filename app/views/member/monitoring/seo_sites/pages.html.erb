@@ -1,0 +1,27 @@
+<% content_for :title, t("member.monitoring.seo.titles.pages") %>
+
+<div class="p-7 space-y-6" data-test="member-seo-site-pages">
+  <%= render "member/monitoring/seo_sites/header", site: @site, active_tab: "pages",
+        open_count: @open_count, critical_count: @critical_count, high_count: @high_count,
+        ignored_count: @ignored_count, pages_count: @site_pages_count %>
+
+  <% if @pages.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.seo_sites.show.pages_empty"), body: t("member.monitoring.seo_sites.show.pages_empty_hint"), icon: "file-text", framed: true, test_id: "seo-site-pages-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="seo-site-pages-table">
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.monitoring.seo.titles.pages"))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.url"), sort: "url") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.status"), sort: "status", classes: "w-24") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.title_tag")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.h1"), classes: "w-20") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.words"), sort: "words", classes: "w-24") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.seo.columns.last_seen"), sort: "seen", classes: "w-36") %>
+        <% end %>
+        <%= render partial: "member/monitoring/seo/page", collection: @pages, as: :page,
+              locals: { show_project: false } %>
+      <% end %>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "seo-site-pages-pagination")) %>
+    </div>
+  <% end %>
+</div>

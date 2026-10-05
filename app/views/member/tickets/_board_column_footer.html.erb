@@ -1,0 +1,16 @@
+<%# board_more_<status.id> is the Turbo replace target of «Show more», always present so the next
+    block has somewhere to land (CYRA-390). %>
+<% status = column.status %>
+<div id="board_more_<%= status.id %>" class="mt-2.5">
+  <% if column.has_more %>
+    <%= render "member/tickets/board_more", status: status, next_page: 2 %>
+  <% end %>
+</div>
+<%# Done columns: history beyond the recent window lives in the list filtered by status (CYRA-390). %>
+<% if status.category_done? && column.total > column.tickets.size %>
+  <%= link_to list_member_tickets_path(status_id: [ status.id ]), data: { test: "board-view-all-#{status.code}" },
+        class: "mt-2 flex items-center justify-center gap-1.5 text-[11px] text-gray-400 dark:text-zinc-500 hover:text-indigo-700 dark:hover:text-indigo-300" do %>
+    <%= render Ui::IconComponent.new(name: "list", class: "text-[9px]") %>
+    <%= t("member.tickets.board.view_all_in_list") %>
+  <% end %>
+<% end %>

@@ -1,0 +1,126 @@
+<%# Overview tab of one monitor: uptime strip with range and SLA, incidents, recent checks, alerting and configuration. %>
+<div class="space-y-6">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <%# LEFT: response chart + incidents %>
+    <div class="lg:col-span-2 space-y-6">
+      <%# A15 — an open incident turns this card's border red instead of a banner over the page. %>
+      <div class="rounded-lg border <%= @open_incident ? "border-red-300 dark:border-red-500/60" : "border-stone-200 dark:border-zinc-800" %> bg-white dark:bg-zinc-900" data-test="response-chart">
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex-wrap">
+          <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.uptime.title") %></h2>
+          <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.timeline_sub", range: @range, count: @buckets.size) %></span>
+          <% if @open_incident %>
+            <span class="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-red-600 dark:text-red-400" data-test="open-incident">
+              <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[11px]") %>
+              <%= t("member.uptime.ongoing_incident") %> · <%= t("member.uptime.started_ago", time: time_ago_in_words(@open_incident.started_at)) %>
+            </span>
+          <% end %>
+          <div class="ml-auto flex items-center gap-3 flex-wrap">
+            <span class="inline-flex items-center gap-3 text-[11px] text-gray-500 dark:text-zinc-400">
+              <% { empty: :no_data, up: :up, partial: :partial, down: :down }.each do |status, key| %>
+                <%# L'attributo si costruisce con `tag`, non concatenando HTML: una stringa marcata
+                    html_safe attorno a un valore interpolato è la porta d'ingresso classica dell'XSS
+                    (e l'analisi statica la ferma, giustamente). %>
+                <%= tag.span(class: "inline-flex items-center gap-1",
+                             title: (uptime_empty_reason(@monitor, @range) if status == :empty),
+                             data: { test: "uptime-legend-#{key}" }) do %><span class="inline-block w-2.5 h-2.5 rounded-[2px] <%= uptime_bucket_class(status) %>"></span><%= t("member.uptime.bucket.#{key}").downcase %><% end %>
+              <% end %>
+            </span>
+            <div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800" data-test="range-selector">
+              <% Uptime::Monitor::RANGES.keys.each do |r| %>
+                <%= link_to (r == "1y" ? t("member.uptime.range_sla", range: r) : r), member_monitoring_monitor_path(@monitor, range: r),
+                      class: "h-[26px] px-2.5 inline-flex items-center rounded-[5px] font-mono text-[12px] font-medium #{@range == r ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-stone-200 dark:border-zinc-800' : 'text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}",
+                      data: { test: "range-#{r}" } %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+        <div class="px-4 py-4">
+          <%# Colore non da solo: la striscia è puramente visiva (aria-hidden) + un riassunto
+              testuale sr-only col conteggio per stato (pattern istogramma errori). %>
+          <% bucket_counts = @buckets.group_by { |b| b[:status] }.transform_values(&:size) %>
+          <div class="flex items-stretch gap-[2px] h-16 overflow-x-auto scrollbar-none" data-test="uptime-buckets" aria-hidden="true">
+            <% @buckets.each do |bucket| %>
+              <span class="flex-1 min-w-[2px] rounded-[2px] <%= uptime_bucket_class(bucket[:status]) %>" title="<%= uptime_bucket_title(bucket) %>"></span>
+            <% end %>
+          </div>
+          <p class="sr-only" data-test="uptime-buckets-summary"><%= t("member.uptime.buckets_summary",
+                up: bucket_counts[:up].to_i, partial: t("member.uptime.buckets_partial", count: bucket_counts[:partial].to_i), down: bucket_counts[:down].to_i,
+                empty: bucket_counts[:empty].to_i, total: @buckets.size, range: @range) %></p>
+          <div class="mt-2 flex items-center justify-between font-mono text-[10px] text-gray-500 dark:text-zinc-400"><span>-<%= @range %></span><span><%= t("member.uptime.now") %></span></div>
+          <%# Perché mancano dei blocchi: per queste finestre la conservazione non c'entra (i controlli
+              grezzi si tengono tre giorni), quindi o la raccolta è iniziata dopo, o in quel momento
+              non è stato registrato nessun controllo. %>
+          <% if bucket_counts[:empty].to_i.positive? %>
+            <p class="mt-1.5 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="uptime-empty-reason"><%= uptime_empty_reason(@monitor, @range) %></p>
+          <% end %>
+        </div>
+        <%# T1 — the SLA figures belong to the Uptime panel, not to the page ground. %>
+        <div class="px-4 py-3 border-t border-stone-200 dark:border-zinc-800">
+          <div class="flex items-center flex-wrap gap-1.5" data-test="sla-summary">
+            <%= render Ui::TooltipComponent.new(text: t("member.uptime.help_sla"), test_id: "help-sla") %>
+            <% %w[24h 7d 30d 1y].each do |r| %>
+              <%= render Ui::StatLabelComponent.new(label: (r == "1y" ? t("member.uptime.sla_1y") : r), value: uptime_percent_text(@sla[r]), value_color: uptime_percent_symbol(@sla[r]), test_id: "sla-#{r}") %>
+            <% end %>
+            <%# CYRA-487 — su quanta parte del periodo è calcolata la percentuale del range aperto. Un
+                «100% · 24h» che copre tre ore è una dichiarazione falsa: il numero resta, ma dice su cosa
+                si regge. Compare solo quando la copertura è parziale. %>
+            <% coverage = uptime_coverage(@buckets, @range) %>
+            <% if coverage %>
+              <span class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="uptime-coverage"><%= coverage %></span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <%= render "member/monitoring/monitors/incidents", monitor: @monitor,
+            can_manage: can?("uptime.manage", scope: @monitor.project) %>
+
+      <%# Tentativi recenti — lista live: i nuovi check arrivano in cima via prepend (stream del monitor). %>
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="monitor-checks">
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+          <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.uptime.recent_checks") %></h2>
+          <% if @checks.any? %><span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.last_checks", count: @checks.size) %></span><% end %>
+        </div>
+        <div id="monitor_checks_<%= @monitor.id %>" class="divide-y divide-stone-100 dark:divide-zinc-800" data-test="monitor-checks-list">
+          <%= render partial: "member/monitoring/monitors/check", collection: @checks, as: :check %>
+        </div>
+        <% if @checks.empty? %>
+          <p class="px-4 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="monitor-checks-empty"><%= t("member.uptime.checks_empty") %></p>
+        <% end %>
+      </div>
+    </div>
+
+    <%# RIGHT: chi viene avvisato + config (no created_by/on) %>
+    <div class="space-y-6">
+      <%= render "member/monitoring/monitors/alerting_coverage", monitor: @monitor, rules: @alerting_rules %>
+
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="monitor-config">
+        <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.uptime.config") %></h2></div>
+        <div class="px-4 py-4 grid grid-cols-2 gap-y-3 gap-x-4">
+          <div class="col-span-2"><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.config_target") %></p><p class="mt-1 font-mono text-[12px] text-zinc-900 dark:text-zinc-100 break-all"><%= @monitor.target %></p></div>
+          <div class="col-span-2">
+            <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.config_project_env") %></p>
+            <p class="mt-1 flex items-center gap-1.5 flex-wrap">
+              <span class="w-3 h-3 rounded-[3px] <%= Ui::Colors.swatch(@monitor.project.color) %> shrink-0"></span>
+              <%= link_to @monitor.project.name, member_project_path(@monitor.project), class: "text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" %>
+              <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 rounded px-1.5 py-0.5"><%= @monitor.project.key %></span>
+              <%= render Ui::BadgeComponent.new(label: @monitor.environment.label, color: @monitor.environment.color, dot: true) %>
+            </p>
+          </div>
+          <div class="col-span-2 pt-2 border-t border-stone-100 dark:border-zinc-800"></div>
+          <div><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.config_type") %></p><p class="mt-1 font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= t("member.uptime.check_types.#{@monitor.check_type}") %></p></div>
+          <% if @monitor.check_type_http? %>
+            <div><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.config_method") %></p><p class="mt-1 font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= @monitor.http_method %></p></div>
+            <div><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.config_expected") %></p><p class="mt-1 font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= @monitor.expected_status %></p></div>
+          <% end %>
+          <div><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.config_interval") %></p><p class="mt-1 font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= @monitor.interval_seconds %>s</p></div>
+          <div><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.config_timeout") %></p><p class="mt-1 font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= @monitor.timeout_seconds %>s</p></div>
+          <div><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.config_failure_threshold") %></p><p class="mt-1 font-mono text-[12px] text-zinc-900 dark:text-zinc-100">×<%= @monitor.failure_threshold %></p></div>
+          <% if @monitor.latency_threshold_ms.present? %>
+            <div><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.uptime.config_latency") %></p><p class="mt-1 font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= @monitor.latency_threshold_ms %>ms</p></div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

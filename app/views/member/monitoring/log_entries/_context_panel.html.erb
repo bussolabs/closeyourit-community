@@ -1,0 +1,20 @@
+<%# Contesto %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.logs.show.context") %></h2></div>
+  <div class="px-4 py-4 grid grid-cols-2 gap-y-3 gap-x-4">
+    <div data-test="log-context-environment"><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.logs.show.environment") %></p><p class="mt-1 font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= @entry.environment.presence || "—" %></p></div>
+    <div data-test="log-context-release"><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.logs.show.release") %></p><p class="mt-1 font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= @entry.release.presence || "—" %></p></div>
+    <div><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.logs.show.logger") %></p><p class="mt-1 font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= @entry.logger_name.presence || "—" %></p></div>
+    <div><p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.logs.show.project") %></p><p class="mt-1"><%= link_to @entry.project.key, member_project_path(@entry.project), class: "font-mono text-[12px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300" %></p></div>
+    <%# CYRA-347 — lo stato del lavoro nato da qui, come sulla scheda di un rallentamento: si
+        vede a colpo d'occhio se questo messaggio è già diventato un ticket. %>
+    <div class="col-span-2">
+      <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.logs.show.ticket") %></p>
+      <% if @linked_ticket %>
+        <%= link_to member_ticket_path(@linked_ticket), class: "mt-1 inline-flex items-center gap-1.5 text-[12.5px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "log-ticket-link" } do %><%= render Ui::IconComponent.new(name: "ticket", class: "text-[10px]") %><%= @linked_ticket.code %><% end %>
+      <% else %>
+        <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="log-not-promoted"><%= t("member.monitoring.logs.not_promoted") %></p>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,68 @@
+<%# locals: record, prefix, scope %>
+<%# Icona: picker Lucide (popover renderizzato lato server, sincronizzato da ui--picker su un
+    <input hidden name="icon">) OPPURE upload immagine (icon_image). A display l'immagine ha la
+    precedenza (Iconable#icon_kind). Markup completo in ERB così Tailwind compila le classi. %>
+<div class="md:col-span-2" data-test="<%= prefix %>-icon">
+  <label class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("#{scope}.icon") %></label>
+  <p class="text-[11px] text-gray-500 dark:text-zinc-400 mb-2.5"><%= t("#{scope}.icon_hint") %></p>
+
+  <div data-controller="ui--picker" data-ui--picker-kind-value="icon" data-ui--picker-none-label-value="<%= t("ui.picker.none") %>">
+    <input type="hidden" name="icon" value="<%= record.icon %>" data-ui--picker-target="input">
+
+    <details class="relative w-full max-w-xs" data-ui--picker-target="details">
+      <summary class="list-none cursor-pointer flex items-center justify-between gap-2 h-[38px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] hover:border-stone-300 dark:hover:border-zinc-700">
+        <span class="flex items-center gap-2 min-w-0">
+          <% if record.icon.present? %>
+            <span data-ui--picker-target="preview" class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shrink-0"><%= render Ui::IconComponent.new(name: record.icon, class: "text-[11px]") %></span>
+          <% else %>
+            <span data-ui--picker-target="preview" class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shrink-0"><%= render Ui::IconComponent.new(name: "ban", class: "text-[11px]") %></span>
+          <% end %>
+          <span data-ui--picker-target="label" class="text-zinc-900 dark:text-zinc-100 truncate"><%= record.icon.presence || t("ui.picker.none") %></span>
+        </span>
+        <%= render Ui::IconComponent.new(name: "chevron-down", class: "text-gray-400 dark:text-zinc-500 text-[11px]") %>
+      </summary>
+
+      <div class="absolute left-0 top-[42px] z-20 w-[340px] rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3">
+        <div class="relative mb-2.5">
+          <%= render Ui::IconComponent.new(name: "search", class: "text-gray-400 dark:text-zinc-500 text-[12px] absolute left-3 top-1/2 -translate-y-1/2") %>
+          <input type="text" placeholder="<%= t("ui.picker.search") %>" data-ui--picker-target="search" data-action="input->ui--picker#filter"
+                 class="w-full h-[34px] pl-9 pr-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+        </div>
+
+        <div class="grid grid-cols-8 gap-1.5 max-h-[196px] overflow-y-auto" data-test="<%= prefix %>-icon-grid">
+          <% Ui::Icons::NAMES.each do |name| %>
+            <button type="button" title="<%= name %>" data-value="<%= name %>" data-label="<%= name %>"
+                    data-selected-class="bg-indigo-600 text-white" data-ui--picker-target="option" data-action="ui--picker#select"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-md text-gray-400 dark:text-zinc-500 hover:bg-stone-100 dark:hover:bg-zinc-800 hover:text-indigo-600 dark:hover:text-indigo-400 <%= "bg-indigo-600 text-white" if record.icon == name %>">
+              <%= render Ui::IconComponent.new(name: name, class: "text-[12px]") %>
+            </button>
+          <% end %>
+        </div>
+
+        <div class="mt-2 pt-2 border-t border-stone-200 dark:border-zinc-800">
+          <button type="button" data-value="" data-ui--picker-target="option" data-action="ui--picker#select"
+                  class="inline-flex items-center gap-2 h-8 px-2 rounded-md text-[12.5px] text-gray-500 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100">
+            <%= render Ui::IconComponent.new(name: "ban", class: "text-[11px]") %><%= t("ui.picker.none") %>
+          </button>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="mt-4 flex items-center gap-3" data-test="<%= prefix %>-icon-image">
+    <% if record.respond_to?(:icon_image) && record.icon_image.attached? %>
+      <span class="inline-flex items-center justify-center w-10 h-10 rounded-md overflow-hidden border border-stone-200 dark:border-zinc-800 shrink-0">
+        <%= image_tag rails_blob_path(record.icon_image, disposition: :inline), alt: "", class: "w-full h-full object-cover" %>
+      </span>
+    <% else %>
+      <span class="inline-flex items-center justify-center w-10 h-10 rounded-md border border-dashed border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-800 text-gray-300 dark:text-zinc-600 shrink-0"><%= render Ui::IconComponent.new(name: "image", class: "text-[14px]") %></span>
+    <% end %>
+    <div class="min-w-0">
+      <label class="inline-flex items-center gap-2 h-[34px] px-3 rounded-md text-[12.5px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800 cursor-pointer">
+        <%= render Ui::IconComponent.new(name: "upload", class: "text-[11px]") %><%= t("#{scope}.icon_image") %>
+        <%= file_field_tag "icon_image", accept: "image/png,image/jpeg,image/webp", class: "sr-only", data: { test: "#{prefix}-icon-image-input" } %>
+      </label>
+      <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("#{scope}.icon_image_hint") %></p>
+    </div>
+  </div>
+</div>

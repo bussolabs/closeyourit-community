@@ -1,0 +1,16 @@
+<%# Disks and the database. With a database, its panel and the full list of databases take two columns
+    and SMART the third. The machine's facts live in the overview's Details box. %>
+<% has_database = @host.database_snapshot.is_a?(Hash) && @host.database_snapshot.present? %>
+<% if has_database %>
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+    <div class="xl:col-span-2 space-y-6">
+      <%= render "member/monitoring/servers/database", host: @host %>
+      <% if @database_rows %>
+        <%= render "member/monitoring/servers/database_list", host: @host, rows: @database_rows, pagination: @pagination %>
+      <% end %>
+    </div>
+    <%= render "member/monitoring/servers/smart", host: @host %>
+  </div>
+<% else %>
+  <%= render "member/monitoring/servers/smart", host: @host %>
+<% end %>

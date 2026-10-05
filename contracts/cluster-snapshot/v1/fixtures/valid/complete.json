@@ -1,0 +1,45 @@
+{
+  "snapshot_id": "5d2b8a9e-3f0c-4d7e-8a51-0c6f1b2d3e44",
+  "observed_at": "2026-10-02T09:01:00Z",
+  "observer_version": "0.1.0",
+  "cluster": { "kubernetes_version": "v1.31.4", "provider": "hcloud", "metrics_available": true },
+  "nodes": [
+    {
+      "name": "pool-a-1c9", "ready": true,
+      "pressure": { "memory": false, "disk": false, "pid": false },
+      "unschedulable": false, "being_removed": false,
+      "cpu_capacity_millicores": 4000, "memory_capacity_bytes": 8221446144,
+      "cpu_usage_millicores": 1680, "memory_usage_bytes": 4768420864,
+      "pods": 12, "created_at": "2026-09-13T08:00:00Z", "provider_id": "hcloud://51234567"
+    },
+    {
+      "name": "pool-b-7f2", "ready": false,
+      "pressure": { "memory": true, "disk": false, "pid": false },
+      "unschedulable": true, "being_removed": true,
+      "cpu_capacity_millicores": 4000, "memory_capacity_bytes": 8221446144,
+      "cpu_usage_millicores": null, "memory_usage_bytes": null,
+      "pods": 0, "created_at": "2026-10-02T08:55:00Z", "provider_id": "hcloud://51234999"
+    }
+  ],
+  "namespaces": [ { "name": "shop-production" }, { "name": "kube-system" } ],
+  "workloads": [
+    {
+      "kind": "Deployment", "namespace": "shop-production", "name": "checkout",
+      "desired": 3, "ready": 1, "available": 1, "image": "shop/checkout:2.14.0",
+      "restarts": 34, "last_reason": "OOMKilled"
+    },
+    {
+      "kind": "DaemonSet", "namespace": "kube-system", "name": "svclb-traefik",
+      "desired": 2, "ready": 2, "available": 2, "image": "rancher/klipper-lb:v0.4.9",
+      "restarts": 0, "last_reason": null
+    }
+  ],
+  "events": [
+    {
+      "reason": "BackOff", "object_kind": "Pod", "object_name": "checkout-7d9f8-x2k4p",
+      "namespace": "shop-production", "message": "Back-off restarting failed container checkout",
+      "count": 14, "last_seen_at": "2026-10-02T09:00:41Z"
+    }
+  ],
+  "truncated": false
+}

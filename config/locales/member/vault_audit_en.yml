@@ -1,0 +1,34 @@
+en:
+  member:
+    vault_audit:
+      title: History
+      help_title: Who read, changed or synced secrets, with filters and search.
+      empty: No activity yet
+      empty_body: Operations on secrets (read, change, sync) will show up here.
+      no_match: No activity matches the filters.
+      search_placeholder: Search by secret name…
+      count:
+        one: 1 event
+        other: "%{count} events"
+      stat_events: Events
+      filter_action: Action
+      whole_environment: "Whole environment (%{count})"
+      system: System
+      detail:
+        channel_web: from the app
+        channel_cli: from the command line
+        version: "version %{version}"
+        version_change: "version %{from} → %{to}"
+        as_name: "as %{name}"
+      col_when: When
+      col_scope: Level
+      col_action: Action
+      col_name: Secret
+      col_actor: Who
+      col_project: Project
+      col_environment: Environment
+      sources:
+        variable: Project
+        shared: Organization
+        file: File
+      # CYRA-426: i verbi vivono in member.secrets.actions, vocabolario unico con le liste di attività.

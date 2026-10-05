@@ -1,0 +1,94 @@
+it:
+  member:
+    organization:
+      logs_retention_label: Retention log (giorni)
+      logs_retention_placeholder: eredita dal default di sistema (14)
+      logs_retention_hint: Default per i progetti di questa organizzazione. Lascia vuoto per ereditare dal sistema.
+      analytics_retention_label: Retention statistiche del sito (giorni)
+      analytics_retention_placeholder: eredita dal default di sistema (365)
+      analytics_retention_hint: Retention delle statistiche del sito per i progetti di questa organizzazione. Lascia vuoto per ereditare dal sistema.
+      errors_retention_label: Retention errori (giorni)
+      errors_retention_placeholder: eredita dal default di sistema (30)
+      errors_retention_hint: Default per i progetti di questa organizzazione. Lascia vuoto per ereditare dal sistema.
+      performance_retention_label: Retention performance (giorni)
+      performance_retention_placeholder: eredita dal default di sistema (30)
+      performance_retention_hint: Default per i progetti di questa organizzazione. Lascia vuoto per ereditare dal sistema.
+      servers_retention_label: Retention server (giorni)
+      servers_retention_placeholder: eredita dal default di sistema (30)
+      servers_retention_hint: Retention dei campioni server di questa organizzazione (niente livello progetto). Lascia vuoto per ereditare dal sistema.
+      uptime_retention_label: Retention disponibilità (giorni)
+      uptime_retention_placeholder: eredita dal default di sistema (730)
+      uptime_retention_hint: Storico giornaliero di uptime per i progetti di questa organizzazione. Lascia vuoto per ereditare dal sistema.
+      default_assignee_label: Assegnatario di default dei ticket
+      default_assignee_placeholder: Nessuno
+      default_assignee_hint: Ripiego per i progetti dell'organizzazione senza assegnatario di default (progetto e team hanno la precedenza).
+    projects:
+      show:
+        tab_settings: Impostazioni
+    project_settings:
+      breadcrumb: Impostazioni
+      updated: Impostazioni salvate.
+      save: Salva
+      # CYRA-563 — la pagina insegna due regole opposte: i campi aspettano il Salva, gli
+      # interruttori si applicano da soli. Ciascun blocco dice la sua, una volta.
+      features_hint: "Ogni interruttore si applica subito: qui non c'è niente da salvare."
+      retention_section: Retention
+      logs_retention_label: Retention log (giorni)
+      logs_retention_placeholder: eredita dall'organizzazione
+      effective: "Effettiva: %{days} giorni"
+      analytics_retention_label: Retention statistiche del sito (giorni)
+      analytics_retention_placeholder: eredita dall'organizzazione
+      analytics_effective: "Effettiva: %{days} giorni"
+      errors_retention_label: Retention errori (giorni)
+      errors_retention_placeholder: eredita dall'organizzazione
+      errors_effective: "Effettiva: %{days} giorni"
+      performance_retention_label: Retention performance (giorni)
+      performance_retention_placeholder: eredita dall'organizzazione
+      performance_effective: "Effettiva: %{days} giorni"
+      uptime_retention_label: Retention disponibilità (giorni)
+      uptime_retention_placeholder: eredita dall'organizzazione
+      uptime_effective: "Effettiva: %{days} giorni"
+      # CYRA-341 — le due soglie che colorano le durate in Performance: erano cablate nel codice e
+      # uguali per tutti, ora si decidono qui progetto per progetto.
+      thresholds_section: Quando un'operazione è lenta
+      performance_fast_ms_label: Sotto quanti millisecondi è veloce (verde)
+      performance_fast_ms_placeholder: "predefinito: 150"
+      performance_fast_ms_hint: Sotto questo tempo l'operazione si mostra in verde. Lascia vuoto per usare il valore predefinito.
+      performance_slow_ms_label: Da quanti millisecondi è lenta (rosso)
+      performance_slow_ms_placeholder: "predefinito: 500"
+      performance_slow_ms_hint: Da questo tempo in su l'operazione si mostra in rosso; nel mezzo è ambra. Lascia vuoto per usare il valore predefinito.
+      thresholds_effective: "In vigore: verde sotto %{fast}, ambra fino a %{slow}, rosso oltre"
+      ingest_section: Ingest pubblico
+      allowed_origins_label: Origini consentite (allowlist)
+      allowed_origins_placeholder: "https://www.tuosito.it"
+      allowed_origins_hint: Una origine per riga. Se compilata, i dati inviati dal browser sono accettati solo da questi siti; lascia vuoto per non porre vincoli. Non protegge i client non browser.
+      features_section: Funzionalità
+      quick_bug_report_enabled_label: Segnalazione rapida di un problema
+      quick_bug_report_enabled_hint: Mostra l'assistente AI che trasforma testo libero in una segnalazione strutturata.
+      helpdesk_enabled_label: Ricevi le richieste di assistenza dai siti
+      helpdesk_enabled_hint: Chi visita i siti di questo progetto può scrivere al team. Le richieste arrivano in Assistenza.
+      analytics_enabled_label: Raccogli le statistiche del sito
+      analytics_enabled_hint: Raccoglie i pageview di questo progetto e li mostra in Statistiche del sito. Richiede una piattaforma web.
+      session_replay_enabled_label: Registra le sessioni
+      session_replay_enabled_hint: Registra la navigazione di chi usa questo sito e la rende riguardabile in Session replay. I valori delicati restano nascosti e le registrazioni si cancellano da sole alla scadenza.
+      secret_approval_enabled_label: Approvazione in due per i secret
+      secret_approval_enabled_hint: Attiva la richiesta di conferma da un secondo responsabile per le modifiche ai secret negli ambienti protetti.
+      tickets_section: Ticket
+      default_assignee_label: Assegnatario di default
+      default_assignee_placeholder: Nessuno
+      default_assignee_hint: I nuovi ticket di questo progetto senza assegnatario esplicito vengono assegnati a questa persona.
+      # CYRA-883 — the CTO field was written in Italian only.
+      cto_label: CTO del progetto
+      cto_none: Nessun CTO configurato
+      cto_inherit: "Eredita %{name}"
+      cto_hint: Se vuoto usa il CTO dell'organizzazione. Quello del progetto ha la precedenza.
+      # CYRA-883 — the side index and the ingest tokens section.
+      nav_label: Sezioni delle impostazioni
+      retention_hint: Valori solo per questo progetto. Lascia vuoto un campo per ereditare quello dell'organizzazione.
+      tokens_total: Totale
+      tokens_active: Attivi
+      tokens_due_soon: In scadenza
+      tokens_expired: Scaduti
+      tokens_revoked: Revocati
+      tokens_search_placeholder: Cerca per nome…
+      tokens_filter_status: Stato

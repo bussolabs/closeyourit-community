@@ -1,0 +1,89 @@
+---
+it:
+  member:
+    product:
+      cancel: Annulla
+      matrices:
+        title: Matrice funzionalità
+        help: Per ogni gruppo di progetti, quali funzionalità esistono e su quale piattaforma sono disponibili.
+        no_platforms: Nessuna piattaforma dichiarata dai progetti di questo gruppo. Puoi comunque segnare una funzionalità su una piattaforma per farla comparire come colonna.
+        counts:
+          categories: Categorie
+          features: Funzionalità
+          platforms: Piattaforme
+          missing_release: Senza versione
+        columns:
+          feature: Funzionalità
+          # CYRA-362 — la riga della matrice È un gruppo di progetti: la colonna lo chiama come la
+          # sua lista e la sua briciola di pane. La chiave resta `product` (si rinomina la resa, mai
+          # il dato); l'area del menu continua a chiamarsi «Prodotto».
+          product: Gruppo
+        inactive_platform: non attiva
+        open_group: Apri il gruppo
+        missing_release_hint: Risulta disponibile ma non è indicato da quale versione.
+        documented: Apri la pagina che spiega questa funzionalità
+        intro:
+          example_label: Esempio
+          example_category: Accesso
+          example_feature: Autenticazione a due fattori
+          example_hint: "Una riga già compilata. Per ogni piattaforma i numeri dicono quante funzionalità attese sono già disponibili: «1/1» tutto pronto, «0/1» ancora da fare."
+        coverage:
+          none: Nessuna piattaforma segnata
+          ratio_hint: Funzionalità disponibili sulle attese, per piattaforma
+        empty_row:
+          cta_category: Crea la prima categoria
+          cta_feature: Aggiungi la prima funzionalità
+          view_only: Ancora nessuna funzionalità
+      categories:
+        new: Nuova categoria
+        edit: Modifica categoria
+        created: Categoria creata.
+        updated: Categoria aggiornata.
+        deleted: Categoria eliminata.
+        delete: Elimina categoria
+        delete_dialog:
+          title: "Eliminare la categoria %{name}?"
+          body: "Con la categoria spariscono tutte le sue funzionalità e le loro caselle. Non si può annullare."
+        name: Nome
+        position: Ordine
+        features_count: "%{count} funzionalità"
+        errors:
+          not_empty: "La categoria contiene ancora delle funzionalità: spostale o eliminale prima."
+      features:
+        new: Nuova funzionalità
+        edit: Modifica funzionalità
+        created: Funzionalità creata.
+        updated: Funzionalità aggiornata.
+        deleted: Funzionalità eliminata.
+        delete: Elimina funzionalità
+        delete_dialog:
+          title: "Eliminare la funzionalità %{name}?"
+          body: "Con la funzionalità spariscono le sue caselle su ogni piattaforma. Non si può annullare."
+        name: Nome
+        description: Descrizione
+        position: Ordine
+        category: Categoria
+        knowledge_page: Pagina della base di conoscenza
+        knowledge_page_blank: Nessuna
+        errors:
+          page_not_found: La pagina della base di conoscenza scelta non esiste o non è visibile.
+          category_not_found: Scegli una categoria di questo gruppo.
+      cells:
+        edit: "%{feature} su %{platform}"
+        new: Segna «%{feature}» su un'altra piattaforma
+        new_help: La colonna compare nella matrice appena segni la funzionalità su quella piattaforma.
+        platform: Piattaforma
+        save: Salva
+        no_assignable_platforms: Questa funzionalità è già segnata su tutte le piattaforme attive.
+        updated: Cella aggiornata.
+        cleared: Cella azzerata.
+        status: Stato
+        release: Disponibile dalla versione
+        release_blank: Non indicata
+        release_none: Nessuna versione registrata per i progetti di questo gruppo su questa piattaforma.
+        clear: Azzera
+        live: in produzione
+        unset: Non impostata
+        errors:
+          status_not_found: Lo stato scelto non esiste o non è più attivo.
+          release_not_found: La versione scelta non appartiene a questo gruppo su questa piattaforma.

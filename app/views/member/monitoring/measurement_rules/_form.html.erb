@@ -1,0 +1,46 @@
+<% title = measurement_label(@rule.persisted? ? "edit_rule" : "new_rule") %>
+<% content_for :title, title %>
+<div class="p-7 space-y-6" data-test="measurement-rule-form">
+  <%= render Ui::PageHeaderComponent.new(title: title, subtitle: measurement_label("subtitle"), breadcrumb: [{label: measurement_label("title"), href: member_monitoring_measurements_path}, {label: measurement_label("alerts"), href: member_monitoring_measurement_rules_path}, {label: title}]) do |header| %>
+    <% header.with_counts do %><%= render Ui::StatLabelComponent.new(label: measurement_label("series"), value: @series ? 1 : 0) %><% end %>
+    <% header.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: measurement_label("cancel"), href: @rule.persisted? ? member_monitoring_measurement_rule_path(@rule) : member_monitoring_measurement_rules_path, variant: :secondary_muted, size: :sm) %>
+      <%= render Ui::ButtonComponent.new(label: measurement_label("save"), type: "submit", form: "measurement-rule-form", size: :sm, disabled: @series.nil?, test_id: "measurement-rule-save") %>
+    <% end %>
+  <% end %>
+  <% if @invalid %><%= render Ui::SectionComponent.new(title: measurement_label("invalid"), test_id: "measurement-rule-error") %><% end %>
+  <%= render Ui::SectionComponent.new(title: measurement_label("identity")) do %>
+    <p class="text-sm text-gray-500 dark:text-zinc-400 mb-4"><%= measurement_label("select_note") %></p>
+    <%= form_with url: @rule.persisted? ? edit_member_monitoring_measurement_rule_path(@rule) : new_member_monitoring_measurement_rule_path, method: :get do %>
+      <%= render Ui::GridComponent.new(cols: 1, md: 2, gap: 4) do %>
+        <%= render Ui::SelectComponent.new(name: "project_id", label: measurement_label("project"), options: @projects.map { |project| [project.name,project.id] }, selected: @form["project_id"], include_blank: true, required: true) %>
+        <%= render Ui::InputComponent.new(name: "series_q", label: measurement_label("series_search"), value: params[:series_q], maxlength: 256) %>
+        <%= render Ui::SelectComponent.new(name: "measurement_series_id", label: measurement_label("series"), options: @choices.map { |series| ["#{series.name} · #{series.metric_type} · #{series.unit} · #{series.identity_digest.first(12)}",series.id] }, selected: @form["measurement_series_id"], include_blank: true) %>
+        <div class="self-end"><%= render Ui::ButtonComponent.new(label: measurement_label("load"), type: "submit", size: :sm, variant: :secondary_muted) %></div>
+      <% end %>
+    <% end %>
+    <% if @series %><p class="font-mono text-xs break-all mt-4" data-test="measurement-rule-identity"><%= @series.id %> · <%= @series.identity_digest %></p><% else %><p class="text-sm mt-4"><%= measurement_label("unavailable_series") %></p><% end %>
+  <% end %>
+  <%= form_with url: @rule.persisted? ? member_monitoring_measurement_rule_path(@rule) : member_monitoring_measurement_rules_path, method: @rule.persisted? ? :patch : :post, id: "measurement-rule-form" do %>
+    <%= hidden_field_tag :project_id, @series&.project_id %><%= hidden_field_tag :measurement_series_id, @series&.id %>
+    <%= render Ui::StackComponent.new(gap: 6) do %>
+      <%= render Ui::SectionComponent.new(title: measurement_label("condition")) do %>
+        <%= render Ui::GridComponent.new(cols: 1, md: 2, gap: 4) do %>
+          <%= render Ui::InputComponent.new(name: "name", label: measurement_label("name"), value: @form["name"], required: true, maxlength: 255) %>
+          <%= render Ui::SelectComponent.new(name: "statistic", label: measurement_label("statistic"), options: (@series ? Alerting::Measurements::Configuration::STATISTICS.fetch(@series.metric_type) : []).map { |key| [measurement_label(key),key] }, selected: @form["statistic"], required: true) %>
+          <%= render Ui::SelectComponent.new(name: "comparison", label: measurement_label("comparison"), options: [[">","gt"],["≥","gte"],["<","lt"],["≤","lte"]], selected: @form["comparison"], required: true) %>
+          <%= render Ui::InputComponent.new(name: "threshold", label: measurement_label("threshold"), value: @form["threshold"], required: true, inputmode: "decimal", maxlength: 64) %>
+          <% if @series && %w[histogram exponentialHistogram].include?(@series.metric_type) %><%= render Ui::InputComponent.new(name: "quantile", label: measurement_label("quantile"), value: @form["quantile"] || "0.95", inputmode: "decimal") %><% end %>
+          <%= render Ui::InputComponent.new(name: "window_seconds", label: measurement_label("window_seconds"), type: "number", min: 60, max: 86400, step: 1, value: @form["window_seconds"], required: true) %>
+          <%= render Ui::InputComponent.new(name: "throttle_seconds", label: measurement_label("throttle_seconds"), type: "number", min: 1, step: 1, value: @form["throttle_seconds"], required: true) %>
+          <%= render Ui::SelectComponent.new(name: "enabled", label: measurement_label("enabled"), options: [[measurement_label("yes"),"1"],[measurement_label("no"),"0"]], selected: @form["enabled"], required: true) %>
+        <% end %>
+        <p class="text-sm text-gray-500 dark:text-zinc-400 mt-4"><%= measurement_label("condition_note") %></p>
+      <% end %>
+      <%= render Ui::SectionComponent.new(title: measurement_label("channels")) do %>
+        <%= hidden_field_tag "channel_ids[]", "" %>
+        <%= render Ui::SelectComponent.new(name: "channel_ids", multiple: true, label: measurement_label("channels"), options: @channels.map { |channel| [channel.name,channel.id] }, selected: @form["channel_ids"], hint: measurement_label("channels_note")) %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

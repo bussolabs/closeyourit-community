@@ -1,0 +1,32 @@
+en:
+  website:
+    skip_to_content: "Skip to content"
+    status:
+      title: Status
+      meta_description: "%{project} %{environment} — service status and uptime SLA."
+      powered_by: Powered by CloseYourIt
+      headline:
+        operational: All systems operational
+        down: Service outage
+        paused: Monitoring paused
+        unknown: Status unknown
+      updated: "Last check %{time}"
+      ongoing_incident: Ongoing incident
+      started_ago: started %{time} ago
+      sla: Uptime SLA
+      sla_1y: 1y
+      timeline: Uptime
+      range_sla: "%{range} · SLA"
+      timeline_summary: "Uptime timeline for the last %{range}: %{up} up, %{partial}, %{down} down, %{empty} no data, out of %{total} blocks."
+      timeline_partial:
+        one: "%{count} partial"
+        other: "%{count} partial"
+      bucket:
+        no_data: No data
+        up: Up
+        partial: Partial
+        down: Down
+      incidents: Incident history
+      incident_resolved: Resolved
+      incident_ongoing: Ongoing
+      no_incidents: No incidents recorded.

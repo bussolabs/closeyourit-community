@@ -1,0 +1,59 @@
+it:
+  member:
+    nav:
+      # CYRA-356 — la voce diceva «Replays» e apriva una pagina intitolata «Session replay»: due nomi
+      # per la stessa cosa, e nessuno dei due era quello dell'altro. Vince il nome della funzione, che
+      # è quello scritto anche nelle impostazioni del progetto e sul sito.
+      #
+      # CYRA-584 — al nome canonico segue la parola con cui la funzione si CERCA. «Session replay» è
+      # il nome voluto dal glossario, ma non contiene nessuna delle parole che uno ha in testa
+      # («registrazioni», «visite», «come si muovono le persone»): chi la cercava leggeva il menu
+      # intero senza un aggancio. La qualifica non rinomina niente — il titolo della pagina, le
+      # impostazioni del progetto e il sito continuano a dire «Session replay».
+      #
+      # Il separatore è l'interpunto, quello già usato da «Valhalla · God mode», e non è una scelta di
+      # gusto: la voce sta in 180 px e col trattino lungo il testo ne misura 178,5 (Inter 12,5 px), un
+      # margine e mezzo di pixel che il primo font di ripiego si mangia — la parola con cui la funzione
+      # si cerca finirebbe troncata proprio dove serve. Con l'interpunto sono 169,6.
+      replays: Session replay · registrazioni
+    monitoring:
+      replays:
+        title: Session replay
+        help_title: "Le visite registrate: come si muovono gli utenti, con gli errori."
+        count_label: Sessioni
+        count:
+          one: 1 sessione
+          other: "%{count} sessioni"
+        session_label: Sessione
+        session_named: "Sessione · %{day} %{time}"
+        search_placeholder: Cerca per pagina d'ingresso…
+        filter_environment: Ambiente
+        filter_project: Progetto
+        filter_errors: Errori
+        errors_all: Tutte
+        errors_only: Solo con errori
+        empty: Nessuna sessione registrata
+        empty_body: Le sessioni compaiono qui quando un progetto con session replay attivo riceve navigazione dagli utenti.
+        empty_activate_intro: "La registrazione si accende progetto per progetto, dalle sue impostazioni: nessuna modifica al codice."
+        empty_activate_on: "Attiva su %{project}"
+        empty_active_on: "Già attiva su: %{projects}."
+        empty_no_web: "Nessuno dei progetti che vedi dichiara una piattaforma web. Le sessioni si registrano solo lì: dichiarala sul progetto e l'interruttore compare nelle sue impostazioni."
+        empty_ask_admin: Puoi vedere questi progetti ma non cambiarne le impostazioni. Chiedi a chi li gestisce di accendere la registrazione delle sessioni.
+        empty_guide: Come funziona il session replay
+        no_match: Nessuna sessione corrisponde ai filtri.
+        col_session: Sessione
+        col_project: Progetto
+        col_user: Utente
+        col_entry: Pagina d'ingresso
+        col_errors: Errori
+        user_unknown: Visitatore non identificato
+        entry_unknown: Pagina iniziale non registrata
+        col_duration: Durata
+        col_started: Iniziata
+        pages_count:
+          one: "+1 pagina"
+          other: "+%{count} pagine"
+        details: Dettagli
+        env: Ambiente
+        pages: Pagine visitate
+        errors_in_session: Errori nella sessione

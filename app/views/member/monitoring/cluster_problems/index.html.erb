@@ -1,0 +1,25 @@
+<% content_for :title, t("member.clusters.tabs.problems") %>
+<%= turbo_stream_from Realtime::Streams.cluster(@cluster) %>
+<%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+
+<div class="p-7 space-y-6" data-test="member-cluster-problems">
+  <%= render "member/monitoring/clusters/header", cluster: @cluster, active_tab: :problems, problems: @problems %>
+  <% if @problems.empty? %>
+    <%= render Ui::EmptyNoteComponent.new(text: t(@cluster.status_pending? ? "member.clusters.reveal.waiting" : "member.clusters.problems.none"),
+          hint: (@cluster.status_pending? ? nil : t("member.clusters.problems.none_hint")), test_id: "cluster-problems-none") %>
+  <% else %>
+    <%= render Ui::SectionComponent.new(title: t("member.clusters.problems.title"), body_class: nil, test_id: "cluster-problems") do %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.clusters.problems.title"))) do |table| %>
+        <% table.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.problems.col_severity"), classes: "w-32") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.problems.col_problem")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.problems.col_namespace"), classes: "w-40") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.problems.col_reason"), classes: "w-48") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.problems.col_since"), classes: "w-32") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: "", classes: "w-40") %>
+        <% end %>
+        <%= render partial: "member/monitoring/cluster_problems/row", collection: @problems, as: :problem, locals: { cluster: @cluster } %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

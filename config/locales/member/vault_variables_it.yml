@@ -1,0 +1,25 @@
+it:
+  member:
+    vault_variables:
+      title: Ricerca variabili
+      help_title: Cerca il nome di una variabile tra i progetti che vedi — mostra dove esiste e dove manca (progetto e ambiente), mai il valore.
+      search_placeholder: Cerca per nome variabile…
+      stat_results: Risultati
+      stat_absences: Assenze
+      count_results:
+        one: 1 risultato
+        other: "%{count} risultati"
+      empty_query: Cerca una variabile
+      empty_query_body: Scrivi il nome (o parte del nome) di una variabile per vedere in quali progetti e ambienti è definita, e dove manca.
+      no_match: Nessuna variabile trovata
+      no_match_body: Nessun nome di variabile, tra i progetti che vedi, contiene il testo cercato.
+      filter_project: Progetto
+      filter_environment: Ambiente
+      all_projects: Tutti i progetti
+      all_environments: Tutti gli ambienti
+      sort_label: Ordina
+      sort_name: Per nome
+      sort_occurrences: Più presenti prima
+      present_of: "%{present}/%{total} presenti"
+      cell_present: "%{environment}: presente"
+      cell_absent: "%{environment}: manca"

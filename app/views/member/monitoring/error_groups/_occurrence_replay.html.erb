@@ -1,0 +1,13 @@
+<%# The "Session replay" tab of ONE occurrence (rrweb video). errors--replay-player fetches the
+    events from url-value the first time the tab is on screen and mounts rrweb-player in the target. %>
+<div data-test="error-replay-player"
+     data-controller="errors--replay-player"
+     data-errors--replay-player-url-value="<%= replay_member_monitoring_error_group_path(@group, rid: event.replay_session_id) %>"
+     data-errors--replay-player-loading-value="<%= t("member.monitoring.replay.loading") %>"
+     data-errors--replay-player-error-value="<%= t("member.monitoring.replay.error") %>"
+     data-errors--replay-player-empty-value="<%= t("member.monitoring.replay.empty") %>">
+  <p class="px-4 pt-3 text-[12px] text-stone-500 dark:text-zinc-400 empty:hidden" data-errors--replay-player-target="status"></p>
+  <div class="p-4">
+    <div class="flex justify-center" data-errors--replay-player-target="mount"></div>
+  </div>
+</div>

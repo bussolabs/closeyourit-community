@@ -1,0 +1,26 @@
+<%# locals: (report:) %>
+<%# CYRA-557 — cosa è stato CONSEGNATO, in cima e prima di tutto ciò che era stato scritto quando il
+    lavoro non era ancora cominciato. La scheda mostrava descrizione, analisi tecnica e criteri di
+    accettazione e poi offriva Approva e Respingi: con ottanta decisioni in attesa si approvava sulla
+    fiducia. È lo stesso resoconto della scheda Resoconto del ticket, letto senza uscire dalla coda. %>
+<div class="px-4 py-3.5 border-b border-stone-100 dark:border-zinc-800 space-y-2" data-test="approvals-detail-report">
+  <div class="flex items-baseline justify-between gap-3 flex-wrap">
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-emerald-700 dark:text-emerald-300"><%= t("member.approvals.delivered.title") %></p>
+    <% if report %>
+      <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="approvals-detail-report-meta">
+        <%= t("member.tickets.show.report_version", version: report.version) %> ·
+        <%= report.author_name.presence || t("member.tickets.show.report_unknown_author") %> ·
+        <%= l(report.created_at, format: :short) %>
+      </p>
+    <% end %>
+  </div>
+  <% if report %>
+    <%= render Ui::MarkdownComponent.new(text: report.body,
+          class: "text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-[70ch]",
+          test_id: "approvals-detail-report-text") %>
+  <% else %>
+    <%# Dirlo è già un'informazione per chi decide: sta decidendo senza il racconto del lavoro, e
+        deve saperlo. Lasciare il posto vuoto lo nasconderebbe. %>
+    <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="approvals-detail-report-none"><%= t("member.approvals.delivered.none") %></p>
+  <% end %>
+</div>

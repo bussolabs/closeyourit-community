@@ -1,0 +1,32 @@
+<%# locals: host:, last_sample:, buckets:, range: — CYRA-703. net_out/net_in erano già calcolati da
+    Servers::Sample.buckets_for e non venivano disegnati da nessuna parte: il grafico qui sotto non
+    costa una query in più. Le interfacce sono i totali dall'avvio della macchina, non una velocità:
+    servono a capire CHI porta il traffico, non quanto va veloce adesso. %>
+<% nics = server_network_interfaces(last_sample) %>
+<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-section-network">
+  <div class="px-5 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3 flex-wrap">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.show.section_network") %></h2>
+    <%= render "member/monitoring/servers/range_selector", host: host, range: range, buckets: buckets, note: false %>
+  </div>
+  <div class="grid grid-cols-1 gap-5 px-5 py-5">
+    <%= render "member/monitoring/servers/chart", host: host, metric: :net,
+          label: t("member.servers.show.chart_net"), buckets: buckets, range: range,
+          threshold: nil, total_bytes: nil, last_sample: last_sample %>
+    <% if nics.any? %>
+      <div data-test="server-nics">
+        <p class="font-mono text-[10px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.nics") %></p>
+        <dl class="mt-2.5 space-y-1.5">
+          <% nics.each do |nic| %>
+            <div class="flex items-baseline justify-between gap-3" data-test="server-nic">
+              <dt class="font-mono text-[10px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 shrink-0 truncate"><%= nic[:name] %></dt>
+              <dd class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 text-right">
+                <%= "#{server_bytes_text(nic[:sent_bytes])} #{t('member.servers.show.nic_sent')}" %> ·
+                <%= "#{server_bytes_text(nic[:recv_bytes])} #{t('member.servers.show.nic_recv')}" %>
+              </dd>
+            </div>
+          <% end %>
+        </dl>
+      </div>
+    <% end %>
+  </div>
+</section>

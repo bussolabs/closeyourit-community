@@ -1,0 +1,7 @@
+<%= t("connections.invitations.mailer.greeting") %>
+
+<%= t("connections.invitations.mailer.body", organization: @organization.name, role: @invitation.role) %>
+
+<%= edit_invitation_url(@token) %>
+
+<%= t("connections.invitations.mailer.expiry") %>

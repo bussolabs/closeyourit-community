@@ -1,0 +1,38 @@
+<%= render Ui::SectionComponent.new(title: t("member.traces.path"), body_class: nil, test_id: "trace-waterfall") do %>
+  <div class="px-4 py-3 text-[12px] text-gray-600 dark:text-zinc-400" data-test="trace-topology">
+    <p><%= t("member.traces.topology.#{@trace.topology[:completeness]}") %></p>
+    <p><%= t("member.traces.topology_note", missing: @trace.topology[:missing_parent_count], expired: @trace.expired_spans_count) %></p>
+  </div>
+  <% if @waterfall.empty? %>
+    <%= render Ui::EmptyNoteComponent.new(text: t("member.traces.no_spans"), class: "p-4", test_id: "trace-no-spans") %>
+  <% else %>
+    <%= render Ui::TableComponent.new(stacked: true, label: t("member.traces.path")) do |table| %>
+      <% table.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.traces.operation")) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: "0 ms → #{trace_duration(@detail.extent.last.to_i - @detail.extent.first.to_i)}") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+      <% end %>
+      <% @waterfall.each do |row| %>
+        <% span = row[:span] %>
+        <%= render Ui::TableComponent::RowComponent.new(href: trace_span_link(span), link_label: span.name.truncate(256), selected: span.span_id == @selected&.span_id, test_id: "trace-span-row", data: {span_id: span.span_id}) do %>
+          <%= render Ui::TableComponent::CellComponent.new(label: t("member.traces.operation")) do %>
+            <div style="padding-left:<%= [row[:depth], 8].min * 10 %>px">
+              <p class="break-all font-mono text-[12px]"><%= span.name.truncate(256) %></p>
+              <p class="text-[12px] text-gray-500 dark:text-zinc-400 break-all"><%= trace_identity(span, :service_name).truncate(128) %></p>
+              <p class="text-[11px] text-gray-500 dark:text-zinc-400" data-test="trace-parent-state"><%= t("member.traces.parents.#{row[:relation]}") %></p>
+            </div>
+          <% end %>
+          <%= render Ui::TableComponent::CellComponent.new(label: t("member.traces.duration"), class: "w-full md:w-1/2") do %>
+            <div class="min-w-0 space-y-1">
+              <div class="relative h-5 rounded bg-stone-50 dark:bg-zinc-800" aria-hidden="true">
+                <span class="absolute top-1 h-3 min-w-[2px] rounded bg-indigo-400 dark:bg-indigo-500" style="left:<%= row[:left] %>%;width:<%= row[:width] %>%" data-test="trace-duration-bar" data-start-ns="<%= span.start_time_unix_nano.to_i %>" data-end-ns="<%= span.end_time_unix_nano.to_i %>"></span>
+              </div>
+              <p class="font-mono text-[11px] text-gray-600 dark:text-zinc-400"><%= trace_duration(row[:offset_ns]) %> → <%= trace_duration(row[:offset_ns] + row[:duration_ns]) %> · <%= trace_duration(row[:duration_ns]) %></p>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <%= render Ui::PaginationComponent.new(pagination: @detail.pagination, page_param: :spans_page, per_param: :spans_per) do |footer| %><% footer.with_legend { t("member.traces.duration_note") } %><% end %>
+  <% end %>
+<% end %>

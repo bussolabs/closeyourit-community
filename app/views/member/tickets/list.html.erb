@@ -1,0 +1,27 @@
+<% content_for :title, t("member.tickets.title") %>
+<div class="p-7 space-y-6" data-test="member-tickets">
+  <%= render "member/tickets/list_header" %>
+
+
+  <div data-test="tickets-table">
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <%= render "member/tickets/list_toolbar" %>
+
+
+      <%# Risultati in place: ricerca/filtri/paginazione/sort aggiornano SOLO questo frame (advance = URL). %>
+      <%= turbo_frame_tag "tickets-results", data: { turbo_action: "advance" } do %>
+      <%= render "member/tickets/list_search_banner" %>
+
+      <% if @tickets.empty? && @search_active %>
+        <%= render "member/tickets/list_no_results" %>
+      <% elsif @tickets.empty? %>
+        <%= render "member/tickets/list_empty" %>
+      <% else %>
+        <%= render "member/tickets/list_table" %>
+      <% end %>
+      <%= render "member/tickets/list_footnotes" %>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "tickets-pagination")) %>
+      <% end %>
+    </div>
+  </div>
+</div>

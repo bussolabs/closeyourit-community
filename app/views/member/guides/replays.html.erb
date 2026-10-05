@@ -1,0 +1,168 @@
+<% content_for :title, t("member.guides.replays.title") %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-replays">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "film", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-violet-50 dark:bg-violet-500/15 text-violet-600 dark:text-violet-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.replays.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.replays.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.replays.cta"), href: member_monitoring_replays_path, variant: :primary, size: :sm, icon: "film", test_id: "member-guide-replays-cta") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.replays.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.replays.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.replays.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "play", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.replays.what_watch") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "bug", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.replays.what_errors") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "filter", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.replays.what_filters") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <%# CYRA-648 — il passo mancante. L'interruttore sul progetto apre il canale lato server, ma il
+      sito non manda niente finché non chiede il replay nel codice di avvio E non carica la libreria
+      che lo registra: il kit è zero-dipendenze e la usa solo se la pagina gliela mette a
+      disposizione, altrimenti non registra e non protesta. Qui il codice sta per intero, già
+      compilato per il progetto scelto, come nella guida delle statistiche. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-replays-setup"
+       data-controller="clipboard" data-clipboard-copied-value="<%= t("member.guides.replays.copied") %>">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.replays.setup_title") %></h2></div>
+    <div class="px-4 py-4">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed mb-3"><%= t("member.guides.replays.setup_intro") %></p>
+      <ol class="space-y-4">
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">1</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.replays.setup_step1") %></p>
+            <% if @projects.any? %>
+              <%# Il progetto si sceglie qui: il codice qui sotto cambia con lui, chiave compresa. %>
+              <%= form_with url: member_guides_replays_path, method: :get, class: "mt-2.5 flex items-center gap-2",
+                    data: { controller: "ui--auto-submit", action: "change->ui--auto-submit#submit" } do %>
+                <div class="w-64"><%= render Ui::SelectComponent.new(name: "project_id", multiple: false,
+                      options: @projects.map { |p| [ p.name, p.id, p.color ] }, selected: @project.id,
+                      placeholder: t("member.guides.replays.pick_project"),
+                      test_id: "guide-replays-project-picker") %></div>
+                <%# Il bottone è il fallback senza JavaScript: il codice deve poter cambiare progetto
+                    anche a script spenti. %>
+                <button type="submit" class="h-[30px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[12px] font-medium text-zinc-900 dark:text-zinc-100 hover:bg-stone-50 dark:hover:bg-zinc-800" data-test="guide-replays-apply"><%= t("member.guides.replays.apply") %></button>
+              <% end %>
+            <% else %>
+              <%# Nessun progetto con una piattaforma web: una guida non ha empty state — il codice
+                  resta leggibile con i segnaposti e si dice cosa manca per riempirli. %>
+              <p class="mt-2 text-[12.5px] text-gray-500 dark:text-zinc-400 leading-relaxed" data-test="guide-replays-no-project">
+                <%= t("member.guides.replays.no_project") %>
+                <%= link_to t("member.guides.replays.no_project_link"), member_projects_path, class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline" %>
+              </p>
+            <% end %>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">2</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.replays.setup_step2") %></p>
+            <% if @project && @can_edit_project %>
+              <div class="mt-2.5">
+                <%= render Ui::ButtonComponent.new(
+                      label: t("member.guides.replays.setup_cta", project: @project.name),
+                      href: member_project_settings_path(@project), variant: :secondary_muted, size: :sm,
+                      icon: "sliders", test_id: "member-guide-replays-project") %>
+              </div>
+            <% elsif @project %>
+              <%# L'interruttore c'è, ma non su questo account: meglio dire a chi chiedere che
+                  mandare su una porta chiusa. %>
+              <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="member-guide-replays-settings-locked"><%= t("member.guides.replays.setup_locked") %></p>
+            <% end %>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">3</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-3">
+              <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.replays.setup_step3") %></p>
+              <button type="button" data-action="clipboard#copy" data-test="guide-replays-copy"
+                      class="shrink-0 inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[11.5px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800">
+                <%= render Ui::IconComponent.new(name: "copy", class: "text-[10px]") %><span data-clipboard-target="label"><%= t("member.guides.replays.copy") %></span>
+              </button>
+            </div>
+            <%# Due righe di script, e servono entrambe. La prima è la libreria che registra davvero
+                la navigazione: non arriva col kit (che resta zero-dipendenze) e va caricata PRIMA,
+                perché l'avvio la cerca subito e, se non la trova, non registra in silenzio. Le
+                versioni sono nell'indirizzo di proposito (CYRA-542): senza, ogni pubblicazione
+                arriva da sola su tutti i siti già installati. Presidiato da
+                spec/config/analytics_snippet_version_spec.rb.
+                L'indirizzo di rrweb è `umd/rrweb.min.js`, l'entrypoint che il pacchetto dichiara per
+                jsDelivr — NON `dist/rrweb.umd.min.cjs`, che è lo stesso identico file ma servito con
+                `content-type: application/node` e `x-content-type-options: nosniff`: il browser
+                rifiuta di eseguirlo, e la guida tornerebbe a promettere registrazioni che non
+                arrivano. %>
+            <pre class="mt-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto" data-test="guide-replays-snippet"><code data-clipboard-target="source">&lt;script src="https://cdn.jsdelivr.net/npm/rrweb@2/umd/rrweb.min.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/@bussolabs/closeyourit-js@0/dist/closeyourit.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  CloseYourIt.init({
+    endpointUrl: '<%= request.base_url %>',
+    publicKey: '<%= @public_key || t("member.monitoring.analytics.onboarding.key_placeholder") %>',
+    projectId: '<%= @project&.id || t("member.guides.replays.project_placeholder") %>',
+    environment: 'production',
+    replay: true,
+  })
+&lt;/script&gt;</code></pre>
+            <% if @project && !@can_read_tokens %>
+              <%# La chiave pubblica è una credenziale di ingest: la sua pagina sta dietro la gestione
+                  dei codici, e la guida la legge chiunque. Chi non ce l'ha vede il segnaposto e sa
+                  a chi chiederla, invece di copiare un codice che non funziona senza saperlo. %>
+              <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="guide-replays-token-locked"><%= t("member.guides.replays.token_locked") %></p>
+            <% elsif @project && @public_key.nil? %>
+              <%# Può gestire i codici, ma il progetto non ne ha ancora nessuno attivo: nel riquadro
+                  c'è il segnaposto, quindi «la chiave è quella del progetto scelto» sarebbe una
+                  bugia. Qui manca un passo prima, e si dice quale. %>
+              <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="guide-replays-token-missing">
+                <%= t("member.guides.replays.token_missing") %>
+                <%= link_to t("member.guides.replays.token_link"), member_project_tokens_path(@project), class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "guide-replays-token" } %>
+              </p>
+            <% elsif @project %>
+              <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400">
+                <%= t("member.guides.replays.token_where") %>
+                <%= link_to t("member.guides.replays.token_link"), member_project_tokens_path(@project), class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "guide-replays-token" } %>
+              </p>
+            <% end %>
+            <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.replays.snippet_note") %></p>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">4</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.replays.setup_step4") %></div>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-replays-errors">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.replays.errors_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.replays.errors_intro") %></p>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.replays.errors_none") %></p>
+      <div>
+        <%= render Ui::ButtonComponent.new(label: t("member.guides.replays.errors_cta"), href: member_monitoring_error_groups_path, variant: :secondary_muted, size: :sm, icon: "bug", test_id: "member-guide-replays-errors-cta") %>
+      </div>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-replays-privacy">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.replays.privacy_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.replays.privacy_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "eye-off", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.replays.privacy_masked") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "venetian-mask", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.replays.privacy_user") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "history", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.replays.privacy_retention") %></span></li>
+      </ul>
+    </div>
+  </div>
+</div>

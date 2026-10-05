@@ -1,0 +1,48 @@
+# CYRA-441 — i contenitori dentro cui vive tutto il resto: organizzazione, gruppi, progetti,
+# ambienti, piattaforme. Erano concetti che ogni pagina dava per noti e che nessuna introduceva, e si
+# incrociano anche fra loro. L'insieme di progetti si chiama «Gruppo» (CYRA-362): mai un secondo nome.
+---
+it:
+  member:
+    guides:
+      index:
+        structure:
+          title: Dove vivono le cose
+      structure:
+        title: Dove vivono le cose
+        subtitle: I contenitori dentro cui sta tutto il resto, dal più grande al più piccolo.
+        chain_title: I cinque contenitori, in ordine
+        chain_intro: "Ogni cosa che scrivi qui dentro — un ticket, un errore, una chiave riservata — è appesa a uno di questi. Dall'insieme al dettaglio, l'ordine è sempre lo stesso."
+        chain:
+          organization:
+            title: Organizzazione
+            body: "Il perimetro di tutto: le persone, i ruoli, i progetti e le informazioni riservate stanno qui dentro. Ne hai una, e chi non ne fa parte non vede niente."
+          group:
+            title: Gruppo
+            body: "Raccoglie i progetti che appartengono allo stesso prodotto — nove pezzi, un sistema solo — e la sua pagina dice come stanno tutti insieme. Non è obbligatorio: un progetto può stare da solo."
+          project:
+            title: Progetto
+            body: "La cosa vera che segui: un sito, un'applicazione, un servizio. I ticket, gli errori, i tempi di risposta e le chiavi riservate sono appesi qui."
+          environment:
+            title: Ambiente
+            body: "Una copia del progetto che gira per conto suo: quella vera che usano i clienti, quella di prova, quella su cui si sviluppa. Lo stesso progetto manda dati da più ambienti, e quasi ogni elenco si filtra per ambiente."
+          platform:
+            title: Piattaforma
+            body: "Com'è fatto quel progetto: un sito, un'app per telefono, un servizio senza interfaccia, un programma da riga di comando. Dice quali funzioni ha senso accendere."
+        cross_title: Come si incrociano
+        cross_intro: "Le due parole in fondo alla catena non stanno lì per l'archivio: insieme decidono cosa un progetto può fare."
+        cross_uptime: "Per controllare che un sito risponda servono due cose insieme: una piattaforma che sostenga il controllo e almeno un ambiente dichiarato sul progetto. Senza, la sezione non compare e sembra che manchi la funzione."
+        cross_ingest: "I token di ingest — i codici con cui un'applicazione manda qui i suoi dati — sono legati a un ambiente: quello che scegli decide sotto quale etichetta arrivano errori, registri e tempi di risposta."
+        cross_ticket: "Un ticket dice anche quali piattaforme ha colpito: è così che si vede se il guasto è di tutti o solo di chi usa il telefono."
+        cross_analytics: "Le visite valgono solo dove c'è un sito: su un progetto senza piattaforma web quella sezione non ha niente da mostrare."
+        where_title: Dove si dichiarano
+        where_intro: "Piattaforme e ambienti si scrivono una volta per tutta l'organizzazione; poi ogni progetto sceglie i suoi fra quelli."
+        where_platforms: "In %{area} › %{page} scrivi l'elenco di com'è fatto quello che seguite."
+        where_platforms_cta: Vai alle piattaforme
+        where_environments: "In %{area} › %{page} scrivi le copie in cui girano i progetti: di solito production, staging, development."
+        where_environments_cta: Vai agli ambienti
+        where_projects: "Sulla pagina di un progetto spunti quali di quelle piattaforme e quali di quegli ambienti valgono per lui. Un progetto vede solo ciò che ha dichiarato."
+        people_title: Le persone sono un'altra cosa
+        people_body: "Chi entra, chi può guardare e chi può cambiare non dipende da questi contenitori ma dai ruoli e dai permessi, che hanno una guida loro."
+        people_cta: Chi può fare cosa
+        cta: Vai ai progetti

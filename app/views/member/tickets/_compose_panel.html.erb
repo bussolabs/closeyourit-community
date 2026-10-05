@@ -1,0 +1,130 @@
+<%# locals: (ticket:, locked_project:) %>
+<%# The "Write it for me" tab of New ticket: on the left you write and correct, on the right you
+    read the draft. The ticket-compose controller lives on the <form>, so it sees both this panel
+    and the fields "Fill the form" writes into. %>
+<div class="overflow-hidden rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ticket-compose-panel">
+
+  <%# What the tab does, said once here: repeating it per field would stack three levels of
+      explanation over one textarea (CYRA-398). %>
+  <p class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 text-[12px] text-gray-500 dark:text-zinc-400 leading-relaxed"><%= t("member.tickets.compose.explain") %></p>
+
+  <%# ===== Progetto: sopra le due colonne, perché vale per entrambe ===== %>
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 bg-stone-50/60 dark:bg-zinc-800/60 space-y-2">
+    <div class="flex items-center gap-2.5 flex-wrap">
+      <% if locked_project %>
+        <span class="text-[12px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.compose.project_label") %></span>
+        <span class="inline-flex items-center gap-2 h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px]"
+              data-test="ticket-compose-project-locked">
+          <span class="w-2.5 h-2.5 rounded-[3px] <%= Ui::Colors.swatch(locked_project.color) %>"></span>
+          <span class="font-medium text-zinc-900 dark:text-zinc-100"><%= locked_project.name %></span>
+        </span>
+      <% else %>
+        <label for="ticket-compose-project" class="text-[12px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.compose.project_label") %></label>
+        <%# Specchio del select del form, che sta nell'altra scheda: il controller tiene allineati
+            i due versi, così scegliere qui aggiorna il ticket e scegliere là aggiorna questo.
+
+            SENZA `name`, e <select> nativo invece di Ui::SelectComponent: quel componente
+            rende un <select> che MANTIENE il name (è il suo progressive enhancement), e due
+            campi `project_id` dentro lo stesso form li submitterebbe entrambi — oltre a far
+            vincere questo nel querySelector del controller, che cerca proprio quel name per
+            sapere su quale progetto si sta salvando. La verità resta un campo solo, quello
+            della colonna di destra; questo è una copia da cui si sceglie. %>
+        <select id="ticket-compose-project" data-ticket-compose-target="projectSelect"
+                data-action="ticket-compose#projectChanged" data-test="ticket-compose-project"
+                class="h-[34px] min-w-[260px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400 bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 focus:outline-none focus-visible:ring-2">
+          <option value=""><%= t("member.tickets.form.select_project") %></option>
+          <% @projects.each do |option| %>
+            <option value="<%= option.id %>" <%= "selected" if option.id == ticket.project_id %>><%= option.name %></option>
+          <% end %>
+        </select>
+      <% end %>
+      <span class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.compose.project_hint") %></span>
+    </div>
+    <%# L'avviso è QUI e non in fondo al corpo: prima compariva solo dopo aver scritto tutta la
+        richiesta e premuto, cioè quando il lavoro era già fatto. %>
+    <p data-ticket-compose-target="projectNotice" data-test="ticket-compose-project-notice" hidden
+       class="flex items-start gap-2 rounded-md border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 px-2.5 py-2 text-[12px] text-amber-800 dark:text-amber-200">
+      <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[11px] mt-0.5") %>
+      <span><%= t("member.tickets.compose.project_required") %></span>
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-[4fr_5fr]">
+
+    <%# ----- SINISTRA: si scrive e si corregge ----- %>
+    <div class="p-4 border-b lg:border-b-0 lg:border-r border-stone-200 dark:border-zinc-800 flex flex-col gap-3.5">
+      <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-400 dark:text-zinc-500"><%= t("member.tickets.compose.assistant") %></p>
+
+      <div>
+        <label for="ai-buddy-prompt" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1"><%= t("member.tickets.compose.label") %></label>
+        <p class="mb-2 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.compose.hint") %></p>
+        <%# The microphone dictates into the field: what is said is added to what is already written. %>
+        <% dictation = dictation_available? %>
+        <%= tag.div class: "relative", data: (dictation ? dictation_voice_data : {}) do %>
+          <textarea id="ai-buddy-prompt" rows="5" data-ticket-compose-target="prompt" data-ui--voice-inline-target="input" data-test="ticket-compose-prompt"
+                    placeholder="<%= t("member.tickets.compose.placeholder") %>"
+                    class="block w-full <%= dictation ? "pl-3 pr-11" : "px-3" %> py-2 rounded-md border border-stone-200 dark:border-zinc-800 focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400 bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2"></textarea>
+          <%= render "member/shared/dictation_controls" if dictation %>
+        <% end %>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap">
+        <%= render Ui::ButtonComponent.new(label: t("member.tickets.compose.ask"), type: "button", variant: :tinted, icon: "wand-sparkles",
+              test_id: "ticket-compose-run", data: { action: "ticket-compose#run", "ticket-compose-target": "button" }) %>
+        <p data-ticket-compose-target="status" data-test="ticket-compose-status" class="hidden text-[12px]"></p>
+      </div>
+
+      <%# Lo spazio della correzione compare solo DOPO la prima bozza: prima non ha niente da
+          correggere, e mostrarlo vuoto insegnerebbe che serve compilarlo per partire.
+          [hidden] e non .hidden — .hidden perde il cascade contro flex/inline-flex
+          (TS-TAILWIND-001). %>
+      <div data-ticket-compose-target="correctionPanel" data-test="ticket-compose-correction-panel" hidden
+           class="flex flex-col gap-3.5 pt-1">
+        <p class="flex items-center gap-2.5 font-mono text-[9px] uppercase tracking-[1px] text-gray-400 dark:text-zinc-500
+                  before:content-[''] before:h-px before:flex-1 before:bg-stone-200 dark:before:bg-zinc-700
+                  after:content-[''] after:h-px after:flex-1 after:bg-stone-200 dark:after:bg-zinc-700"><%= t("member.tickets.compose.correction_divider") %></p>
+        <div>
+          <label for="ai-buddy-correction" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1"><%= t("member.tickets.compose.correction_label") %></label>
+          <p class="mb-2 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.compose.correction_hint") %></p>
+          <textarea id="ai-buddy-correction" rows="3" data-ticket-compose-target="correction" data-test="ticket-compose-correction"
+                    placeholder="<%= t("member.tickets.compose.correction_placeholder") %>"
+                    class="w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400 bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2"></textarea>
+        </div>
+        <div>
+          <%= render Ui::ButtonComponent.new(label: t("member.tickets.compose.rerun"), type: "button", variant: :secondary, icon: "rotate-cw",
+                test_id: "ticket-compose-rerun", data: { action: "ticket-compose#rerun", "ticket-compose-target": "rerunButton" }) %>
+        </div>
+      </div>
+    </div>
+
+    <%# ----- DESTRA: si legge la bozza ----- %>
+    <div class="p-4 bg-stone-50/60 dark:bg-zinc-800/60 flex flex-col gap-3.5">
+      <div class="flex items-center justify-between gap-2">
+        <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-400 dark:text-zinc-500"><%= t("member.tickets.compose.preview") %></p>
+        <span data-ticket-compose-target="rewritten" hidden
+              class="inline-flex items-center px-2 py-0.5 rounded-md bg-green-50 dark:bg-green-500/15 text-[11px] font-medium text-green-700 dark:text-green-300"><%= t("member.tickets.compose.rewritten") %></span>
+      </div>
+
+      <%# L'anteprima vuota dice cosa comparirà: uno spazio bianco accanto a un campo di testo
+          si legge come una parte rotta della pagina. %>
+      <div data-ticket-compose-target="empty" data-test="ticket-compose-empty"
+           class="flex flex-col items-center justify-center gap-1.5 text-center min-h-[240px] rounded-md border border-dashed border-stone-300 dark:border-zinc-700 p-6 text-gray-400 dark:text-zinc-500">
+        <%= render Ui::IconComponent.new(name: "wand-sparkles", class: "text-[18px]") %>
+        <p class="text-[12.5px] max-w-[34ch] leading-relaxed"><%= t("member.tickets.compose.preview_empty") %></p>
+      </div>
+
+      <div data-ticket-compose-target="result" data-test="ticket-compose-result" hidden class="flex flex-col gap-3"></div>
+      <div data-ticket-compose-target="knowledge" data-test="ticket-compose-knowledge" hidden
+           class="rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-2.5 flex flex-col gap-1.5"></div>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-end gap-2.5 px-4 py-3 border-t border-stone-200 dark:border-zinc-800">
+    <span data-ticket-compose-target="keepEditing" hidden class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.compose.keep_editing") %></span>
+    <%# Hidden by attribute until the draft is ready. Filling the form shows its tab again: the
+        fields are what gets saved. %>
+    <%= render Ui::ButtonComponent.new(label: t("member.tickets.compose.fill_now"), type: "button", icon: "check", hidden: true,
+          test_id: "ticket-compose-fill",
+          data: { action: "ticket-compose#applyFill ticket-entry#showFirst", "ticket-compose-target": "fillButton" }) %>
+  </div>
+</div>

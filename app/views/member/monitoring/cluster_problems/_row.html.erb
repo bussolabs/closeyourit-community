@@ -1,0 +1,21 @@
+<%# locals: cluster:, problem: — one row of "what is wrong now", with the link to the tab that shows it. %>
+<% subject = problem.subject %>
+<% workload = subject.is_a?(Clusters::Workload) ? subject : nil %>
+<% name = subject.respond_to?(:name) ? subject.name : cluster.name %>
+<% href, link = if problem.kind.to_s.start_with?("node_") then [ member_monitoring_cluster_nodes_path(cluster), t("member.clusters.problems.open_nodes") ]
+               elsif problem.kind.to_s.start_with?("workload_") then [ member_monitoring_cluster_workloads_path(cluster), t("member.clusters.problems.open_workloads") ]
+               end %>
+<%= render Ui::TableComponent::RowComponent.new(test_id: "cluster-problem-#{problem.kind}") do %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.clusters.problems.col_severity")) do %>
+    <%= render Ui::BadgeComponent.new(label: t("member.clusters.problems.severity.#{problem.severity}"), color: (problem.severity == :danger ? :red : :amber), dot: true) %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(header: true)) { t("member.clusters.problems.#{problem.kind}", name: name, time: (problem.since ? l(problem.since, format: :short) : "—")) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.clusters.problems.col_namespace"), mono: true)) { workload ? workload.namespace.name : "—" } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.clusters.problems.col_reason"), mono: true)) { workload&.last_reason.presence || "—" } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.clusters.problems.col_since"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { problem.since ? time_ago_in_words(problem.since) : "—" } %>
+  <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+    <% if href %>
+      <%= render Ui::ButtonComponent.new(label: link, href: href, variant: :secondary_muted, size: :sm) %>
+    <% end %>
+  <% end %>
+<% end %>

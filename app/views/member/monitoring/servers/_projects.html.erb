@@ -1,0 +1,48 @@
+<%# locals: links:, detected: — environment di progetto collegati all'host (declared + progetti visibili
+    al viewer) e progetti RICONOSCIUTI dai dati della macchina (container/database) ma non ancora
+    collegati, proposti come collegamento da confermare a mano (CYRA-471). %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-projects">
+  <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.show.projects") %></h2>
+    <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= links.size %></span>
+  </div>
+  <%# Scenario 1: cos'è un collegamento e come si crea — sempre, così il numero non si confonde con
+      un conteggio automatico di ciò che gira sulla macchina. %>
+  <p class="px-5 pt-3 text-[12px] text-gray-500 dark:text-zinc-400" data-test="server-projects-help"><%= t("member.servers.show.projects_help") %></p>
+
+  <% if links.any? %>
+    <div class="mt-1 divide-y divide-stone-100 dark:divide-zinc-800">
+      <% links.each do |link| %>
+        <div class="flex items-center gap-2.5 px-5 py-2.5" data-test="server-projects-row">
+          <%= link_to link.project.name, member_project_path(link.project), class: "text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-700 dark:hover:text-indigo-300 truncate" %>
+          <span class="ml-auto shrink-0"><%= render Ui::BadgeComponent.new(label: link.environment.label, color: link.environment.color, dot: true) %></span>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <%# Scenario 2: un vuoto che invita. Se ci sono progetti riconosciuti, l'uscita sono i loro link
+        qui sotto; altrimenti un rimando alla lista progetti da cui aprire quello giusto. %>
+    <div class="px-5 pb-8 pt-4 text-center" data-test="server-projects-empty">
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.projects_none") %></p>
+      <% if detected.empty? %>
+        <%= link_to t("member.servers.show.projects_link_cta"), member_projects_path,
+              class: "mt-3 inline-flex items-center text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300",
+              data: { test: "server-projects-empty-cta" } %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if detected.any? %>
+    <div class="px-5 py-4 border-t border-stone-200 dark:border-zinc-800" data-test="server-projects-detected">
+      <p class="text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= t("member.servers.show.projects_detected", count: detected.size) %></p>
+      <div class="mt-2 flex flex-wrap items-center gap-1.5">
+        <% detected.each do |project| %>
+          <%= link_to project.name, member_project_environments_path(project),
+                class: "inline-flex items-center rounded-md border border-stone-200 dark:border-zinc-800 py-0.5 px-2 text-[12px] font-medium text-zinc-900 dark:text-zinc-100 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:text-indigo-700 dark:hover:text-indigo-300",
+                data: { test: "server-projects-detected-link" } %>
+        <% end %>
+      </div>
+      <p class="mt-2 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.projects_detected_hint") %></p>
+    </div>
+  <% end %>
+</div>

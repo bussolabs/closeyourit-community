@@ -1,0 +1,52 @@
+<%# locals: environment, url, method, title, lead, submit_label %>
+<% content_for :title, title %>
+<% breadcrumb = [ { label: t("member.environments.title"), href: member_environments_path },
+                  *(environment.persisted? ? [ { label: environment.label }, { label: t("member.breadcrumb.edit") } ] : [ { label: t("member.breadcrumb.new") } ]) ] %>
+
+<div class="p-7">
+  <%= form_with url: url, method: method, class: "space-y-6", data: { test: "environment-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: title, breadcrumb: breadcrumb) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.environments.form.cancel"), href: member_environments_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: submit_label, type: "submit", icon: "check", test_id: "environment-submit", size: :sm) %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%= render Ui::InputComponent.new(name: "label", label: t("member.environments.form.label"), required: true, value: environment.label, placeholder: "production", test_id: "environment-label", error: @errors&.dig(:label)&.first) %>
+          <%= render Ui::InputComponent.new(name: "code", label: t("member.environments.form.code"), required: true, value: environment.code, placeholder: "production", hint: t("member.environments.form.code_hint"), test_id: "environment-code", error: @errors&.dig(:code)&.first) %>
+
+          <%= render "member/shared/color_field", record: environment, prefix: "environment", scope: "member.environments.form" %>
+
+          <div data-test="environment-active">
+            <input type="hidden" name="active" value="0">
+            <label class="inline-flex items-center gap-2.5 cursor-pointer">
+              <input type="checkbox" name="active" value="1" <%= "checked" if environment.active? %> class="w-4 h-4 rounded border-stone-300 dark:border-zinc-700 accent-indigo-600">
+              <span class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.environments.form.active") %></span>
+              <span class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.environments.active_hint") %></span>
+            </label>
+          </div>
+
+          <div class="md:col-span-2 border-t border-stone-100 dark:border-zinc-800 pt-5" data-test="environment-capabilities">
+            <div class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.environments.form.capabilities") %></div>
+            <p class="text-[11.5px] text-gray-500 dark:text-zinc-400 mb-3"><%= t("member.environments.form.capabilities_hint") %></p>
+            <div class="space-y-2.5">
+              <% [ %w[servers servers_enabled], %w[uptime uptime_enabled], %w[secrets secrets_enabled] ].each do |cap, field| %>
+                <div data-test="environment-<%= cap %>-enabled">
+                  <input type="hidden" name="<%= field %>" value="0">
+                  <label class="inline-flex items-center gap-2.5 cursor-pointer">
+                    <input type="checkbox" name="<%= field %>" value="1" <%= "checked" if environment.public_send("#{field}?") %> class="w-4 h-4 rounded border-stone-300 dark:border-zinc-700 accent-indigo-600">
+                    <span class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.environments.form.#{field}") %></span>
+                    <span class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.environments.form.#{cap}_hint") %></span>
+                  </label>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

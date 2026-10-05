@@ -1,0 +1,29 @@
+<%= link_to @href, **html_options do %>
+  <div class="flex items-center gap-2 min-w-0">
+    <% if mark? %>
+      <span class="inline-flex shrink-0 <%= LIT %> group-hover/card:scale-[1.08] group-focus-visible/card:scale-[1.08]"><%= mark %></span>
+    <% end %>
+    <span class="font-display text-[13.5px] font-semibold text-zinc-900 dark:text-zinc-100 truncate <%= LIT %> group-hover/card:text-indigo-600 dark:group-hover/card:text-indigo-400 group-focus-visible/card:text-indigo-600 dark:group-focus-visible/card:text-indigo-400"><%= @title %></span>
+    <span class="ml-auto inline-flex items-center gap-2 shrink-0">
+      <%= meta %>
+      <% if @key.present? %>
+        <span class="font-mono text-[11px] font-medium text-gray-500 dark:text-zinc-400 <%= LIT %> group-hover/card:text-indigo-600 dark:group-hover/card:text-indigo-400 group-focus-visible/card:text-indigo-600 dark:group-focus-visible/card:text-indigo-400"><%= @key %></span>
+      <% end %>
+    </span>
+  </div>
+  <% if @description.present? %>
+    <p class="text-[12px] text-gray-500 dark:text-zinc-400 truncate"><%= @description %></p>
+  <% end %>
+  <% if badges? %>
+    <div class="flex flex-wrap items-center gap-1.5"><%= badges %><%= open_hint if hint_on_badges? %></div>
+  <% end %>
+  <% if footer_row? %>
+    <div class="mt-auto flex items-center gap-3 font-mono text-[11px] text-gray-500 dark:text-zinc-400 <%= LIT %> group-hover/card:text-zinc-700 dark:group-hover/card:text-zinc-300 group-focus-visible/card:text-zinc-700 dark:group-focus-visible/card:text-zinc-300">
+      <%= footer %>
+      <% if footer_end? %>
+        <span class="ml-auto min-w-0 truncate<%= " group-hover/card:hidden group-focus-visible/card:hidden" if @open_label.present? %>"><%= footer_end %></span>
+      <% end %>
+      <%= open_hint if @open_label.present? && !hint_on_badges? %>
+    </div>
+  <% end %>
+<% end %>

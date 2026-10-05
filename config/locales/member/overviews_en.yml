@@ -1,0 +1,140 @@
+en:
+  member:
+    overviews:
+      subtitles:
+        product: The work to do, the team's proposals and how much each person has.
+        observability: The errors, the logs and the speed of your applications.
+        infrastructure: "Machines, sites and scheduled jobs: what is not working right now."
+        alerts: When the system warns you, what it already told you and where it reaches you.
+        automation: The machines that work for you and the decisions they are waiting for.
+        seo: How search engines see your sites, page by page.
+        settings: Who gets in, what they can do and the settings that apply to everyone.
+      settings_sections:
+        people: People and access
+        projects: Projects
+        organization: Organization
+      alerts:
+        matrix:
+          label: Alerts by project
+        rules:
+          label: Rules
+          caption:
+            one: active rule of its own
+            other: active rules of its own
+          zero: only the organization's rules
+        muted:
+          label: Muted
+          caption:
+            one: rule silenced right now
+            other: rules silenced right now
+          zero: nothing silenced
+        unread:
+          label: To read
+          caption:
+            one: project notification for you
+            other: project notifications for you
+          zero: nothing to read
+        received:
+          label: Last 7 days
+          caption:
+            one: project notification received
+            other: project notifications received
+          zero: nothing received
+      seo:
+        matrix:
+          label: Search engines by project
+        sites:
+          label: Sites
+          set_up: Add a site
+          caption:
+            one: site configured
+            other: sites configured
+          zero: no site
+        issues:
+          label: Findings
+          caption:
+            one: still open
+            other: still open
+          zero: nothing open
+        critical:
+          label: Critical
+          caption:
+            one: to fix first
+            other: to fix first
+          zero: nothing critical
+        pages:
+          label: Pages
+          caption:
+            one: page visited
+            other: pages visited
+          zero: not visited yet
+      knowledge:
+        matrix:
+          label: Knowledge by project
+        pages:
+          label: Pages
+          caption:
+            one: page to read
+            other: pages to read
+          zero: nothing written yet
+        decisions:
+          label: Decisions
+          caption:
+            one: decision written down
+            other: decisions written down
+          zero: no decision written
+        review:
+          label: To approve
+          caption:
+            one: proposal waiting
+            other: proposals waiting
+          zero: nothing waiting
+        to_file:
+          label: To file
+          caption:
+            one: accepted, not yet in its place
+            other: accepted, not yet in their place
+          zero: everything filed
+      vault:
+        matrix:
+          label: Secrets by project
+        variables:
+          label: Variables
+          caption:
+            one: variable kept
+            other: variables kept
+          zero: no variable
+        files:
+          label: Files
+          caption:
+            one: file kept
+            other: files kept
+          zero: no file
+        anomalies:
+          label: Anomalies
+          caption:
+            one: still open
+            other: still open
+          zero: nothing wrong
+          kinds:
+            drift_hole:
+              one: "%{count} missing in an environment"
+              other: "%{count} missing in an environment"
+            empty_environment:
+              one: "%{count} environment with no secrets"
+              other: "%{count} environments with no secrets"
+            broken_delegation:
+              one: "%{count} broken delegation"
+              other: "%{count} broken delegations"
+        rotation:
+          label: To rotate
+          caption:
+            one: value past its date
+            other: values past their date
+          zero: nothing overdue
+        requests:
+          label: Requests
+          caption:
+            one: change for you to decide
+            other: changes for you to decide
+          zero: nothing to decide

@@ -1,0 +1,99 @@
+<%# I passi della lavorazione (CYRA-219): un blocco per Agents::Attempt, cronologico. Tutto è già in
+    tabella (phase, host, started/finished, result, review) e non era reso da nessuna parte — nemmeno i
+    tentativi bocciati, che sono proprio quelli che spiegano perché il lavoro non avanza.
+
+    CYRA-281 — chiusi di default: su una lavorazione lunga sono decine di blocchi aperti, e per arrivare
+    al piano bisogna scorrerli tutti. Si usa <details>/<summary> nativi: nessuno stato da tenere sul
+    server, funziona senza JS e resta navigabile da tastiera. Il contenuto resta nel DOM anche da chiuso,
+    quindi la ricerca del browser continua a trovarlo. %>
+<% last_failed_id = attempts.select(&:status_review_failed?).last&.id %>
+<%# CYRA-282 — un guasto tecnico (status failed) porta il motivo del fallimento: come l'ultima bocciatura,
+    l'ultimo fallito si apre d'ufficio, perché è lì che sta il perché la lavorazione si è fermata. %>
+<% last_technical_failure_id = attempts.select(&:status_failed?).last&.id %>
+<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="automation-steps">
+  <%# CYRA-619 — le ancore dei sei passaggi. La plancia manda qui premendo un quadratino: prima
+      portava al referto di un singolo tentativo — un oggetto interno, a volte l'ultimo di diciannove —
+      e chi arrivava non capiva a che punto fosse il lavoro. Sono ancore e basta, senza ingombro: la
+      pagina resta identica, cambia solo dove ci si ferma arrivando. %>
+  <% Agents::Workflows::PhaseResolver::STEPS.each do |step| %>
+    <span id="passaggio-<%= step %>" class="block scroll-mt-6"
+          data-test="automation-anchor-<%= step %>"></span>
+  <% end %>
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.automation.steps.title") %></h2>
+    <div class="flex items-center flex-wrap gap-1.5">
+      <span class="inline-flex items-center rounded-md bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-gray-600 dark:text-zinc-400"><%= t("member.tickets.automation.steps.count", count: attempts.size) %></span>
+      <span class="inline-flex items-center rounded-md bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-gray-600 dark:text-zinc-400">v<%= workflow.ticket_snapshot_version %></span>
+    </div>
+  </div>
+
+  <div class="px-4 py-4">
+    <% if attempts.empty? %>
+      <%# CYRA-410 — su un ticket appena creato qui si leggeva «La lavorazione non è mai partita» mentre
+          il badge due righe sopra diceva «In coda per la valutazione»: la stessa scheda si contraddiceva,
+          e la frase si legge come un guasto invece che come l'attesa normale che è. Con una fase in coda
+          il testo la nomina con LE STESSE PAROLE del badge (automation_phase_label, unica resa) e dice da
+          quando aspetta e quanto ci vuole di solito. Senza coda in corso (mai richiesta, o annullata prima
+          di partire) resta il testo neutro: promettere un avvio che non arriverà sarebbe peggio. %>
+      <% if (queued_since = automation_queued_since(workflow)) %>
+        <div class="space-y-1" data-test="automation-steps-queued">
+          <p class="text-[12.5px] text-gray-500 dark:text-zinc-400 leading-relaxed">
+            <%# CYRA-608 — la parola dello stato NON si ripete qui: la dice già il riquadro due righe
+                sopra. Ripeterla con le parole nuove la contraddirebbe — «In lavorazione» accanto a
+                «finché non parte non c'è niente da leggere». %>
+            <%= t("member.tickets.automation.steps.queued") %>
+          </p>
+          <p class="font-mono text-[11px] text-gray-400 dark:text-zinc-500">
+            <%= t("member.tickets.automation.steps.queued_since",
+                  ago: time_ago_in_words(queued_since), time: l(queued_since, format: :short)) %>
+          </p>
+        </div>
+      <% else %>
+        <%= render Ui::EmptyNoteComponent.new(text: t("member.tickets.automation.steps.empty")) %>
+      <% end %>
+    <% else %>
+      <%# Aperti d'ufficio i passi che dicono DOVE sta la lavorazione adesso: quello in corso, l'ultimo
+          respinto, l'ultimo guasto. Sono gli stessi che restano fuori dai gruppi (CYRA-384): raccolti
+          in una riga ripiegata sarebbero nascosti proprio quando servono. %>
+      <% pinned_ids = attempts.filter_map { |a| a.id if a.status_running? || a.status_awaiting_review? || a.id == last_failed_id || a.id == last_technical_failure_id } %>
+      <ol class="relative space-y-1" data-test="automation-step-list">
+        <%# Linea della timeline: parte dietro i pallini, che la coprono ai loro estremi. %>
+        <span class="absolute left-[5px] top-2 bottom-2 w-px bg-stone-200 dark:bg-zinc-700" aria-hidden="true"></span>
+        <% automation_step_groups(attempts, pinned_ids:).each do |group| %>
+          <% if group[:collapsed] %>
+            <%# CYRA-384 — «19 tentativi interrotti fra 02:58 e 08:55»: in fila coprivano tutto il
+                resto della scheda, e per arrivare al piano bisognava scorrerli uno per uno. Raccolti
+                non vuol dire persi — il dettaglio è qui dentro, a un click. %>
+            <li class="relative pl-6">
+              <span class="absolute left-0 top-3 w-[11px] h-[11px] rounded-full ring-4 ring-white dark:ring-zinc-900 <%= Ui::Colors.swatch(group[:outcome][:color]) %>" aria-hidden="true"></span>
+              <details class="group rounded-md border border-dashed border-stone-300 dark:border-zinc-700 bg-stone-50/60 dark:bg-zinc-800/60" data-test="automation-step-group">
+                <summary class="px-3.5 py-2.5 flex items-center justify-between gap-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden rounded-md hover:bg-stone-100/60 dark:hover:bg-zinc-800/60 group-open:rounded-b-none group-open:border-b group-open:border-stone-200 dark:group-open:border-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+                  <span class="min-w-0 text-[12.5px] text-zinc-700 dark:text-zinc-300">
+                    <%# `attempts:`, non `count:`: il conteggio arriva già pluralizzato e stampato, e
+                        `count:` è riservato ai conteggi delle liste, che passano dal loro helper. %>
+                    <%= t("member.tickets.automation.steps.group",
+                          attempts: t("member.tickets.automation.steps.count", count: group[:attempts].size),
+                          outcome: group[:outcome][:plural],
+                          from: l(group[:from], format: :short), to: l(group[:to], format: :short)) %>
+                  </span>
+                  <span class="shrink-0 flex items-center gap-2">
+                    <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.automation.steps.group_open") %></span>
+                    <%= render Ui::IconComponent.new(name: "chevron-right", class: "text-[10px] text-gray-400 dark:text-zinc-500 motion-safe:transition-transform group-open:rotate-90") %>
+                  </span>
+                </summary>
+                <ol class="px-3.5 py-2 space-y-1">
+                  <% group[:attempts].each do |attempt| %>
+                    <%= render "member/tickets/automation_step", attempt:, expanded: false %>
+                  <% end %>
+                </ol>
+              </details>
+            </li>
+          <% else %>
+            <% attempt = group[:attempts].first %>
+            <%= render "member/tickets/automation_step", attempt:, expanded: pinned_ids.include?(attempt.id) %>
+          <% end %>
+        <% end %>
+      </ol>
+    <% end %>
+  </div>
+</section>

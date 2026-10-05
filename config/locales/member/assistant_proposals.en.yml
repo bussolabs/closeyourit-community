@@ -1,0 +1,51 @@
+en:
+  member:
+    assistant:
+      proposals:
+        heading: "Proposed actions"
+        open:
+          one: "1 to confirm"
+          other: "%{count} to confirm"
+        all_done: "all handled"
+        confirm: "Confirm"
+        confirm_all:
+          one: "Confirm"
+          other: "Confirm all (%{count})"
+        edit: "Edit"
+        save: "Save"
+        discard: "Discard"
+        restore: "Undo"
+        failed: "It did not work: fix it and try again."
+        similar: "Maybe it already exists:"
+        assign_to: "Assign to %{name}"
+        on_list: "List: %{name}"
+        kinds:
+          create_ticket: "New ticket"
+          comment_ticket: "Comment"
+          change_ticket_status: "Status change"
+          change_ticket_priority: "Priority change"
+          assign_ticket: "Assignment"
+          create_todo: "New todo"
+          create_idea: "New idea"
+        done:
+          create_ticket: "Ticket created"
+          comment_ticket: "Comment added"
+          change_ticket_status: "Status changed"
+          change_ticket_priority: "Priority changed"
+          assign_ticket: "Assigned"
+          create_todo: "Todo added"
+          create_idea: "Idea created"
+        fields:
+          title: "Title"
+          description: "Description"
+          body: "Text"
+          problem: "Problem"
+          project_id: "Project"
+          priority_id: "Priority"
+          status_id: "Status"
+          assignee_id: "Assignee"
+          list_id: "List"
+        errors:
+          not_confirmable: "This action has already been handled."
+          not_visible: "You no longer see what this action was about."
+          forbidden: "You do not have permission for this action."

@@ -1,0 +1,60 @@
+<%# locals: host:, active_runs:, waiting_decisions:, can_manage:, history_size:, unreported_attempts:,
+    visible_ticket_ids:, tickets_by_code:, leases_by_ticket_code: — intestazione della scheda host
+    E la sezione Attività, dentro lo STESSO turbo frame.
+
+    CYRA-823 — stanno insieme perché sono una sola osservazione: i chip dicono quante lavorazioni la
+    macchina ha in corso e l'elenco sotto dice quali. Ricaricarli con due richieste rimetterebbe in
+    pagina la contraddizione di CYRA-498 (l'intestazione che dice «0 in esecuzione» mentre l'elenco
+    ne mostra tre), perché fra le due risposte l'agente ha battuto di nuovo.
+
+    `target: "_top"` — il frame è un pezzo di pagina che si ricarica da sé, non un'area di
+    navigazione: certificazione, eliminazione e i link ai ticket devono portare via l'intera pagina.
+
+    Conformance CYRA-25: i metadati dell'header sono SOLO chip Ui::StatLabelComponent (mai badge in
+    questo file). Stalled/lease-health vivono nel partial _activity. %>
+<%= turbo_frame_tag "host-activity", target: "_top", class: "block space-y-6" do %>
+  <%= render Ui::PageHeaderComponent.new(
+        title: host.hostname,
+        breadcrumb: [ { label: t("member.agents.title"), href: member_agents_path }, { label: host.hostname } ],
+        counts_test_id: "host-labels") do |header| %>
+    <% header.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.agents.show.status_label"), value: agent_host_status_label(host), value_color: agent_host_status_color(host), test_id: "host-status") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.agents.show.slots_label"), value: "#{active_runs.size}/#{host.slots}", test_id: "host-slots") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.agents.show.running_label"), value: active_runs.size, test_id: "host-running") %>
+      <%# CYRA-448 — quante decisioni questa macchina sta aspettando da chi legge, col link alla coda
+          già filtrata su di lei: prima dalla scheda non si arrivava a ciò che aveva lasciato in
+          sospeso. Zero compreso: "non aspetta niente" è una risposta, non un vuoto. %>
+      <%= link_to member_home_approvals_path(agent_id: host.id), data: { test: "host-waiting-link" } do %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.approvals.waiting_for_you"), value: waiting_decisions,
+              value_color: waiting_decisions.to_i.positive? ? :amber : :neutral, test_id: "host-waiting") %>
+      <% end %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.agents.show.certification_label"), value: (host.certified? ? t("member.agents.show.certified_value") : t("member.agents.show.not_certified_value")), value_color: (host.certified? ? :emerald : :amber), test_id: "host-certification") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.agents.show.heartbeat_label"), value: agent_host_time_ago(host.last_heartbeat_at), test_id: "host-heartbeat") %>
+    <% end %>
+    <% if can_manage %>
+      <% header.with_actions do %>
+        <% if host.certified? %>
+          <%= render Ui::ButtonComponent.new(label: t("member.agents.decertify"),
+                href: decertify_member_agent_path(host, confirm: 1), method: :post,
+                variant: :secondary_muted, size: :sm, test_id: "decertify-host",
+                data: { turbo_confirm: t("member.agents.decertify_confirm") }) %>
+        <% else %>
+          <%= render Ui::ButtonComponent.new(label: t("member.agents.certify"),
+                href: certify_member_agent_path(host, confirm: 1), method: :post,
+                variant: :primary, size: :sm, icon: "check", test_id: "certify-host") %>
+        <% end %>
+        <%# CYRA-516 — la macchina dismessa esce dall'elenco. La conferma quantifica la perdita invece
+            di chiedere un generico "sei sicuro?": è l'unico posto dove quei numeri si vedono prima. %>
+        <%= render Ui::ButtonComponent.new(label: t("member.agents.destroy"),
+              href: member_agent_path(host), method: :delete,
+              confirm: t("member.agents.destroy_confirm", hostname: host.hostname, **history_size),
+              variant: :danger_outline, size: :sm, test_id: "destroy-host") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render "member/agents/activity",
+        active_runs: active_runs, unreported_attempts: unreported_attempts,
+        visible_ticket_ids: visible_ticket_ids, tickets_by_code: tickets_by_code,
+        leases_by_ticket_code: leases_by_ticket_code %>
+<% end %>

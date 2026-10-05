@@ -1,0 +1,17 @@
+<section class="mt-4 space-y-3" data-test="coworkers-proposal">
+  <h3 class="text-[14px] font-semibold"><%= t("member.coworkers.proposal_title") %></h3>
+  <dl class="space-y-3">
+    <% %w[objective activities limits].each do |field| %>
+      <div><dt class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.proposal_#{field}") %></dt><dd class="whitespace-pre-wrap"><%= run.proposed_task.fetch(field) %></dd></div>
+    <% end %>
+  </dl>
+  <% if (task = run.approved_task) %>
+    <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.proposal_started") %></p>
+    <%= render "member/coworkers/task_progress", run: task, puck: puck %>
+  <% elsif run.approvable_proposal? %>
+    <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.proposal_hint") %></p>
+    <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.proposal_budget") %></p>
+  <% else %>
+    <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.proposal_expired") %></p>
+  <% end %>
+</section>

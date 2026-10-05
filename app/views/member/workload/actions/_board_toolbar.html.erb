@@ -1,0 +1,20 @@
+<%# K9 — the toolbar of the board panel. Filters = team/participant/has_ticket (status is the column
+    axis); param keys shared with the list. Full-page GET, so drag and drop starts afresh. %>
+<%= render(Ui::TableToolbarComponent.new(framed: true,
+      url: member_workload_actions_path, query: params[:q],
+      search_placeholder: t("member.workload.actions.search_placeholder"),
+      apply_label: t("member.workload.actions.apply"),
+      search_test_id: "workload-board-search", apply_test_id: "workload-board-filter", test_id: "workload-board-toolbar",
+      view_sections: board_list_view_sections("board", scope: "workload", keys: Workload::Constants::VIEW_SHARED_FILTERS,
+        board: :member_workload_actions_path, list: :list_member_workload_actions_path,
+        label_scope: "member.workload.actions.view_switch"))) do |toolbar| %>
+  <% toolbar.with_filter(key: "team_id", label: t("member.workload.actions.filter_team")) do %>
+    <div class="w-40"><%= render Ui::SelectComponent.new(name: "team_id", multiple: true, summary: true, options: visible.teams.order(:name).map { |team| [ team.name, team.id ] }, selected: params[:team_id], placeholder: t("member.workload.actions.filter_team"), test_id: "filter-team") %></div>
+  <% end %>
+  <% toolbar.with_filter(key: "participant_id", label: t("member.workload.actions.filter_participant")) do %>
+    <div class="w-40"><%= render Ui::SelectComponent.new(name: "participant_id", multiple: true, summary: true, options: Current.organization.accounts.order(:name).map { |account| [ account.name, account.id ] }, selected: params[:participant_id], placeholder: t("member.workload.actions.filter_participant"), test_id: "filter-participant") %></div>
+  <% end %>
+  <% toolbar.with_filter(key: "has_ticket", label: t("member.workload.actions.filter_ticket")) do %>
+    <div class="w-36"><%= render Ui::SelectComponent.new(name: "has_ticket", options: [ [ t("member.workload.actions.ticket_linked"), "linked" ], [ t("member.workload.actions.ticket_unlinked"), "unlinked" ] ], selected: params[:has_ticket], include_blank: true, placeholder: t("member.workload.actions.filter_ticket"), test_id: "filter-ticket") %></div>
+  <% end %>
+<% end %>

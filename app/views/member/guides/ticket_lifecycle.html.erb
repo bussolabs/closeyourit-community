@@ -1,0 +1,83 @@
+<% content_for :title, t("member.guides.ticket_lifecycle.title") %>
+
+<%# CYRA-435 — «Tipi di ticket» si ferma a guasto/storia/compito/epica: il percorso — stati, dove si
+    cambiano, dove si guardano, cosa si scrive sopra — non era raccontato da nessuna parte. %>
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-ticket-lifecycle">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "route", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.ticket_lifecycle.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.ticket_lifecycle.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.ticket_lifecycle.cta"), href: member_tickets_path, variant: :primary, size: :sm, icon: "ticket", test_id: "member-guide-ticket-lifecycle-cta") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.ticket_lifecycle.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.ticket_lifecycle.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.ticket_lifecycle.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% 1.upto(3) do |i| %>
+          <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.ticket_lifecycle.what_b#{i}") %></span></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="guide-lifecycle-states">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.ticket_lifecycle.states_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.ticket_lifecycle.states_intro") %></p>
+      <%# CYRA-631 — gli stati sono quelli DELL'ORGANIZZAZIONE che sta leggendo, non un elenco scritto
+          a mano. Prima erano quattro numerati nei testi mentre quelli installati sono cinque:
+          «Risolto» non compariva da nessuna parte, e uno stato aggiunto da un'organizzazione non
+          sarebbe comparso mai. La parola è quella resa dalla bacheca (`display_label`), l'ordine è
+          quello della bacheca. %>
+      <ol class="space-y-3">
+        <% @states.each_with_index do |status, index| %>
+          <li class="flex gap-3" data-test="guide-lifecycle-state-<%= status.code %>">
+            <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5"><%= index + 1 %></span>
+            <div class="min-w-0">
+              <p class="text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= status.display_label %></p>
+              <%# La frase è quella CANONICA per stato, la stessa che la scheda del ticket mostra sotto
+                  lo stato: `ticketing.status_hints.<code>`. Una seconda sorgente qui vorrebbe dire due
+                  spiegazioni per la stessa parola, che è il difetto che questo ticket chiude. Gli
+                  stati aggiunti da un'organizzazione non ne hanno una — come sulla scheda — e
+                  compaiono col loro nome, senza segnaposto. %>
+              <% explanation = t("ticketing.status_hints.#{status.code}", default: "") %>
+              <% if explanation.present? %>
+                <p class="text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= explanation %></p>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ol>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="guide-lifecycle-where">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.ticket_lifecycle.where_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ul class="space-y-2.5 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% 1.upto(3) do |i| %>
+          <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "chevron-right", class: "text-gray-400 dark:text-zinc-500 text-[11px] mt-1 w-3 text-center") %><span><%= t("member.guides.ticket_lifecycle.where_#{i}") %></span></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="guide-lifecycle-work">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.ticket_lifecycle.work_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ul class="space-y-2.5 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% 1.upto(3) do |i| %>
+          <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "chevron-right", class: "text-gray-400 dark:text-zinc-500 text-[11px] mt-1 w-3 text-center") %><span><%= t("member.guides.ticket_lifecycle.work_#{i}") %></span></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+</div>

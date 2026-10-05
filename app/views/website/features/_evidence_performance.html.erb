@@ -1,0 +1,20 @@
+<%# Pannello-evidenza illustrativo: verdetto N+1 + barre di durata. %>
+<div class="rounded-lg border border-stone-200 bg-white overflow-hidden" aria-hidden="true">
+  <div class="flex items-center gap-2 px-4 h-9 border-b border-stone-200">
+    <span class="font-mono text-[11px] text-gray-500">performance / verdicts</span>
+    <span class="ml-auto inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 font-mono text-[10.5px] font-medium text-amber-600">N+1</span>
+  </div>
+  <div class="px-4 py-3.5">
+    <p class="font-mono text-[12px] text-zinc-900 truncate">SELECT * FROM line_items WHERE order_id = $1</p>
+    <p class="mt-1 font-mono text-[11px] text-gray-500">×32 per request · OrdersController#show · p95 <span class="text-amber-600">840ms</span></p>
+    <div class="mt-3.5 space-y-2">
+      <% { "line_items load" => [ 88, "bg-amber-400" ], "orders load" => [ 34, "bg-indigo-300" ], "render show" => [ 22, "bg-indigo-300" ] }.each do |label, (width, color)| %>
+        <div class="flex items-center gap-3">
+          <span class="font-mono text-[10.5px] text-gray-500 w-28 shrink-0 truncate"><%= label %></span>
+          <span class="h-2.5 rounded-[2px] <%= color %>" style="width: <%= width %>%"></span>
+        </div>
+      <% end %>
+    </div>
+    <p class="mt-3 font-mono text-[10.5px] text-gray-500">trace <span class="text-indigo-600">a41f-9c02</span> → same request: 1 error · 3 logs</p>
+  </div>
+</div>

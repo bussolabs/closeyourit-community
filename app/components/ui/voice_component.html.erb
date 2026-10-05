@@ -1,0 +1,54 @@
+<div data-controller="ui--voice" data-test="voice"
+     data-ui--voice-url-value="<%= helpers.member_assistant_voice_path %>"
+     data-ui--voice-max-seconds-value="<%= Assistant::Constants::VOICE_MAX_SECONDS %>"
+     data-ui--voice-labels-value="<%= labels %>">
+  <button type="button" hidden data-ui--voice-target="trigger" data-action="ui--voice#start"
+          aria-label="<%= t("member.assistant.voice.open") %>" data-test="voice-trigger"
+          class="inline-grid h-11 w-11 shrink-0 place-items-center rounded-md bg-white dark:bg-zinc-900 text-gray-500 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100
+                 md:h-8 md:w-[34px] md:rounded-none md:border-r md:border-stone-200 dark:md:border-zinc-800
+                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600">
+    <%= render Ui::IconComponent.new(name: "mic", class: "text-base md:text-[14px]") %>
+  </button>
+
+  <%# Blur over the whole page; the waves sit in the middle with no frame around them. %>
+  <div hidden data-ui--voice-target="overlay" data-test="voice-overlay" role="dialog" aria-modal="true"
+       aria-label="<%= t("member.assistant.voice.open") %>"
+       class="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-5 bg-stone-100/35 dark:bg-zinc-800/35 backdrop-blur-[14px]">
+    <%# What to ask: three examples and the way to the full guide. The link stops the recording first. %>
+    <div class="flex max-w-[90vw] flex-col items-center gap-2 px-4 text-center" data-test="voice-examples">
+      <p class="font-mono text-[10.5px] uppercase tracking-[0.12em] text-gray-500 dark:text-zinc-400"><%= t("member.assistant.voice.examples_title") %></p>
+      <ul class="space-y-1 text-[13px] text-zinc-700 dark:text-zinc-300">
+        <% %w[example_ask example_find example_do].each do |key| %>
+          <li>«<%= t("member.assistant.voice.#{key}") %>»</li>
+        <% end %>
+      </ul>
+      <%= link_to t("member.assistant.voice.guide_link"), helpers.member_guides_assistant_path,
+            class: "text-[12.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline",
+            data: { action: "ui--voice#cancel", test: "voice-guide" } %>
+    </div>
+    <button type="button" data-action="ui--voice#send" aria-label="<%= t("member.assistant.voice.send") %>"
+            class="border-0 bg-transparent p-0">
+      <canvas data-ui--voice-target="canvas" class="block h-[110px] w-[420px] max-w-[90vw]"></canvas>
+    </button>
+    <div class="flex flex-col items-center gap-1 px-4 text-center" aria-live="polite">
+      <p data-ui--voice-target="title" class="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"></p>
+      <p data-ui--voice-target="hint" class="text-[13px] text-gray-600 dark:text-zinc-400 data-[silent]:font-semibold data-[silent]:text-amber-700 dark:data-[silent]:text-amber-300"></p>
+    </div>
+    <%# Filled by the controller once the browser lists the microphones; shown only with 2 or more. %>
+    <div hidden data-ui--voice-target="devices" data-test="voice-devices" class="w-[300px] max-w-[90vw]">
+      <%= render Ui::SelectComponent.new(name: "voice_device", options: [], aria_label: t("member.assistant.voice.device"),
+                                         placeholder: t("member.assistant.voice.device_default"),
+                                         prefix: { text: t("member.assistant.voice.device"), icon: "mic" }) %>
+    </div>
+    <div data-ui--voice-target="recordingActions" class="flex gap-2">
+      <%= render Ui::ButtonComponent.new(label: t("member.assistant.voice.send"), test_id: "voice-send",
+                                         data: { action: "ui--voice#send" }) %>
+      <%= render Ui::ButtonComponent.new(label: t("member.assistant.voice.cancel"), variant: :secondary,
+                                         test_id: "voice-cancel", data: { action: "ui--voice#cancel" }) %>
+    </div>
+    <div data-ui--voice-target="closeActions" hidden>
+      <%= render Ui::ButtonComponent.new(label: t("member.assistant.voice.close"), variant: :secondary,
+                                         test_id: "voice-close", data: { action: "ui--voice#cancel" }) %>
+    </div>
+  </div>
+</div>

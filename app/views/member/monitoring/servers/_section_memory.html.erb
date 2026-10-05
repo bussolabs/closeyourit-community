@@ -1,0 +1,27 @@
+<%# locals: host:, last_sample:, buckets:, range:, threshold:, total_bytes: — CYRA-703.
+    La memoria di scambio non si vedeva da nessuna parte: spark ne usava 12.57 GB su 16 e in pagina
+    non compariva. È il segnale che la macchina ha finito la memoria vera e sta lavorando su disco.
+    Il blocco esiste solo dove lo scambio è configurato: "0 di 0" è spazio sprecato. %>
+<% swap = server_swap(last_sample) %>
+<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-section-memory">
+  <div class="px-5 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3 flex-wrap">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.show.section_memory") %></h2>
+    <%= render "member/monitoring/servers/range_selector", host: host, range: range, buckets: buckets, note: false %>
+  </div>
+  <div class="grid grid-cols-1 gap-5 px-5 py-5">
+    <%= render "member/monitoring/servers/chart", host: host, metric: :mem,
+          label: t("member.servers.show.chart_mem"), buckets: buckets, range: range,
+          threshold: threshold, total_bytes: total_bytes, last_sample: last_sample %>
+    <% if swap %>
+      <div data-test="server-swap">
+        <p class="font-mono text-[10px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.swap") %></p>
+        <div class="mt-2.5">
+          <%= render Ui::MeterComponent.new(label: t("member.servers.show.swap"),
+                value_text: "#{format('%.4g', swap[:used_gb])} / #{format('%.4g', swap[:total_gb])} GB",
+                pct: swap[:pct], color: server_meter_color(swap[:pct])) %>
+        </div>
+        <p class="mt-2 text-[10px] text-gray-400 dark:text-zinc-500"><%= t("member.servers.show.swap_hint") %></p>
+      </div>
+    <% end %>
+  </div>
+</section>

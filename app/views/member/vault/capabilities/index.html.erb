@@ -1,0 +1,61 @@
+<% content_for :title, t("member.vault.capabilities.title") %>
+
+<%# CYRA-430 — l'elenco delle funzioni dell'area, una per una: cosa fa, un esempio concreto e il
+    collegamento al posto dove si usa. Sta dentro il Vault, non fra le guide, perché la domanda «cosa
+    posso fare qui» si fa qui. %>
+<div class="p-7 space-y-6" data-test="member-vault-capabilities">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.vault.capabilities.title"),
+        subtitle: t("member.vault.capabilities.subtitle"),
+        breadcrumb: [ { label: t("member.vault.title"), href: member_vault_path },
+                      { label: t("member.vault.capabilities.title") } ],
+        counts_test_id: "vault-capabilities-counts",
+        test_id: "vault-capabilities-header") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.vault.capabilities.count_label"),
+            value: @features.size, test_id: "vault-capabilities-count") %>
+    <% end %>
+  <% end %>
+
+  <%# DESIGN.md T13 — seven explanations stacked full width became a long scroll: two columns. %>
+  <%= render Ui::GridComponent.new(cols: 1, lg: 2, gap: 6, class: "items-start", test_id: "secondary-panels") do %>
+    <% @features.each do |feature| %>
+      <% path, link_key = vault_capability_link(feature) %>
+      <section id="<%= vault_capability_anchor(feature) %>"
+               class="scroll-mt-24 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+               data-test="vault-capability-<%= feature.to_s.dasherize %>">
+        <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-start gap-2.5">
+          <span class="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-md bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400">
+            <%= render Ui::IconComponent.new(name: vault_capability_icon(feature), class: "text-[13px]") %>
+          </span>
+          <div class="min-w-0">
+            <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.vault.capabilities.features.#{feature}.title") %></h2>
+            <p class="text-[12.5px] text-gray-500 dark:text-zinc-400 leading-relaxed"><%= t("member.vault.capabilities.features.#{feature}.body") %></p>
+          </div>
+        </div>
+
+        <div class="px-4 py-3 space-y-2.5">
+          <%# L'esempio è sempre presente e sempre nel corpo: nessuna di queste funzioni resta
+              raccontata solo da un'etichetta che compare al passaggio del mouse (DoD). %>
+          <div class="space-y-1.5" data-test="vault-capability-example">
+            <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-400 dark:text-zinc-500"><%= t("member.vault.capabilities.example_label") %></p>
+            <p class="text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= render Ui::MarkdownComponent.new(text: t("member.vault.capabilities.features.#{feature}.example"), inline: true) %></p>
+            <% commands = vault_capability_commands(feature) %>
+            <% if commands.any? %>
+              <%# The same copyable block as "Use this secret": a command to run is a command to copy. %>
+              <%= render "member/secrets/usage_snippet", label: t("member.vault.capabilities.command_label"), lines: commands %>
+            <% end %>
+          </div>
+
+          <%# Dove si usa. Le destinazioni gated ripiegano su una pagina che chi legge può davvero
+              aprire: mai la porta di una stanza chiusa. %>
+          <%= link_to path, class: "inline-flex items-center gap-1.5 text-[12.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline",
+                data: { test: "vault-capability-link-#{feature.to_s.dasherize}" } do %>
+            <%= t("member.vault.capabilities.links.#{link_key}") %>
+            <%= render Ui::IconComponent.new(name: "arrow-right", class: "text-[10px]") %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,42 @@
+<% content_for :title, t("valhalla.support_requests.title") %>
+
+<div class="p-7 space-y-6" data-test="valhalla-support-requests">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("valhalla.support_requests.title"),
+        title_tooltip: t("valhalla.support_requests.help_title"),
+        breadcrumb: [ { label: t("valhalla.support_requests.title") } ],
+        root_href: valhalla_root_path,
+        counts_test_id: "support-requests-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("valhalla.support_requests.count_new"), value: @pending_count, test_id: "support-requests-new") %>
+      <%= render Ui::StatLabelComponent.new(label: t("valhalla.support_requests.count_total"), value: @pagination.total, test_id: "support-requests-total") %>
+    <% end %>
+  <% end %>
+
+  <% if @requests.empty? && params[:q].blank? %>
+    <%= render Ui::EmptyStateComponent.new(icon: "life-buoy", framed: true, test_id: "support-requests-empty",
+          title: t("valhalla.support_requests.empty_title"), body: t("valhalla.support_requests.empty_body")) %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <%= render Ui::TableToolbarComponent.new(framed: true, url: valhalla_support_requests_path, query: params[:q],
+            search_placeholder: t("valhalla.support_requests.search_placeholder"), search_test_id: "support-requests-search",
+            test_id: "support-requests-toolbar") %>
+      <% if @requests.any? %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("valhalla.support_requests.title"))) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.support_requests.col_when")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.support_requests.col_from")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.support_requests.col_organization")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.support_requests.col_page")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.support_requests.col_request")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.support_requests.col_status")) %>
+          <% end %>
+          <%= render partial: "valhalla/support_requests/request", collection: @requests, as: :support_request %>
+        <% end %>
+        <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "support-requests-pagination") %>
+      <% else %>
+        <%= render Ui::NoResultsComponent.new(reset_href: valhalla_support_requests_path, query: params[:q], test_id: "support-requests-no-results") %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

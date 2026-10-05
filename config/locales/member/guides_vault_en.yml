@@ -1,0 +1,19 @@
+en:
+  member:
+    guides:
+      index:
+        vault:
+          title: Vault
+      vault:
+        title: Vault
+        subtitle: One space for all your secrets.
+        what_title: What the Vault is
+        what_intro: The Vault brings every secret together in one place — both variables (name/value pairs) and files — organized by who owns them.
+        what_personal: Personal — your private secrets, visible only to you.
+        what_organization: Organization — the organization's secrets, available only to the projects they are delegated to.
+        what_project: Project — secrets tied to a single project.
+        how_title: How to use it
+        how_step1: Save the secret in the right space — personal, organization or project — with its name and value.
+        how_step2: If it's an organization secret, delegate it to the projects that need it; a project secret is ready to use as-is.
+        how_step3: Read it from your application with the ready-made command — on your computer, in automated builds or on the server — found at the bottom of every secrets page.
+        cta: Open the Vault

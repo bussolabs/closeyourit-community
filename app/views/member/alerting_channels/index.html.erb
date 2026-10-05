@@ -1,0 +1,65 @@
+<%# CYRA-496 — la scheda del browser diceva solo «CloseYourIt»: con più schede aperte questa pagina
+    era l'unica dell'area a non riconoscersi. %>
+<% content_for :title, t("member.alerting.channels.title") %>
+<div class="p-7">
+  <%= render Ui::PageHeaderComponent.new(title: t("member.alerting.channels.title"),
+        subtitle: t("member.alerting.channels.help_title"),
+        breadcrumb: [ { label: t("member.alerting.channels.title") } ],
+        counts_test_id: "alerting-channels-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.alerting.channels.stat_total"), value: @channels.size, test_id: "alerting-channels-count-total") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.alerting.channels.stat_enabled"), value: @channels.count(&:enabled?), value_color: :emerald, test_id: "alerting-channels-count-enabled") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.alerting.channels.new"), href: new_member_alerting_channel_path, icon: "plus", size: :sm, test_id: "alerting-channels-new") %>
+    <% end %>
+  <% end %>
+
+  <div class="mt-6 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("member.alerting.channels.title"), body_test_id: "alerting-channels-rows")) do |t| %>
+      <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.alerting.channels.col_name"), sort: "name") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.alerting.channels.col_kind"), sort: "kind") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.alerting.channels.col_target")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.alerting.channels.col_rules"), sort: "rules", initial: :desc) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.alerting.channels.col_status"), sort: "status", initial: :desc) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.alerting.channels.edit"), label_hidden: true) %>
+      <% end %>
+        <% if @channels.empty? %>
+          <tr><td colspan="6">
+            <%= render Ui::EmptyStateComponent.new(title: t("member.alerting.channels.empty_title"), body: t("member.alerting.channels.empty_body"),
+                  icon: "webhook", test_id: "alerting-channels-empty") do |empty| %>
+              <% empty.with_action do %>
+                <%= render Ui::ButtonComponent.new(label: t("member.alerting.channels.new"), href: new_member_alerting_channel_path,
+                      icon: "plus", size: :sm, test_id: "alerting-channels-empty-new") %>
+                <%= render Ui::ButtonComponent.new(label: t("member.alerting.channels.empty_telegram"), href: member_preferences_path,
+                      variant: :secondary_muted, size: :sm, icon: "send", test_id: "alerting-channels-empty-telegram") %>
+              <% end %>
+            <% end %>
+          </td></tr>
+        <% end %>
+        <% @channels.each do |channel| %>
+          <%= render Ui::TableComponent::RowComponent.new(faded: !channel.enabled?, test_id: "alerting-channel-row-#{channel.id}") do %>
+            <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-zinc-900 dark:text-zinc-100 font-medium")) { channel.name } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.alerting.channels.col_kind"), class: "text-gray-500 dark:text-zinc-400")) { t("member.alerting.channels.kinds.#{channel.kind}") } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.alerting.channels.col_target"), mono: true, class: "text-gray-500 dark:text-zinc-400 max-w-[280px] truncate")) { channel.webhook_url } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.alerting.channels.col_rules"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { @rule_counts[channel.id].to_i.to_s } %>
+            <%= render Ui::TableComponent::CellComponent.new(label: t("member.alerting.channels.col_status")) do %>
+              <%= render Ui::BadgeComponent.new(label: channel.enabled? ? t("member.alerting.channels.enabled") : t("member.alerting.channels.disabled"), color: channel.enabled? ? "emerald" : "stone") %>
+            <% end %>
+            <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+              <div class="inline-flex items-center gap-3">
+                <%= link_to t("member.alerting.channels.edit"), edit_member_alerting_channel_path(channel), class: "text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200", data: { test: "alerting-channel-edit-#{channel.id}" } %>
+                <%= render Ui::ConfirmDialogComponent.new(title: t("member.alerting.channels.delete_dialog.title", name: channel.name),
+                      url: member_alerting_channel_path(channel), confirm_label: t("member.alerting.channels.delete"),
+                      test_id: "alerting-channel-delete-dialog-#{channel.id}") do |dialog| %>
+                  <% dialog.with_body { t("member.alerting.channels.delete_dialog.body") } %>
+                  <%= dialog.button_trigger(label: t("member.alerting.channels.delete"), test_id: "alerting-channel-delete-#{channel.id}") %>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        <% end %>
+    <% end %>
+  </div>
+</div>

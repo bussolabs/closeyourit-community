@@ -1,0 +1,49 @@
+<%# locals:
+      group: (required) — Metrics::Group (project/ticket caricati in lista; ricaricato fresh su broadcast)
+    Riga della lista gruppi-metrica. Render iniziale dal controller (scope visibile/filtrato) e su
+    broadcast realtime (Metrics::Ingest::Record) via replace sul target dom_id(group): aggiorna
+    samples_count, durate avg/max e last_seen senza ricaricare la pagina. Lo stream è org-prefissato
+    (Realtime::Streams.metrics) → isolamento tenant garantito; il replace è no-op nei viewer che non
+    hanno quella riga (gruppo non visibile / non ancora in pagina). CYRA-45: la td checkbox (ids[]) è
+    SEMPRE resa (colonne allineate col broadcast) + colonna stato di triage con muting resolved/ignored. %>
+<% muted = group.status_resolved? || group.status_ignored? %>
+<%= render Ui::TableComponent::RowComponent.new(id: dom_id(group), href: member_monitoring_metric_group_path(group, **(local_assigns[:time_range_params] || {})), link_label: metric_display_signature(group), frame: "_top",
+      select: { value: group.id, name: "ids[]", test_id: "metric-select-#{group.id}" }, test_id: "metric-group-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <div class="flex items-center gap-2 min-w-0">
+      <%# CYRA-821 — la riga vive dentro il frame dei risultati: senza `_top` la scheda si
+          aprirebbe DENTRO l'elenco, al posto delle righe. Vale per ogni link della riga.
+      <%# CYRA-340: il dettaglio si apre sullo STESSO periodo dell'elenco. La riga è resa anche dal
+          broadcast in tempo reale, dove il periodo non esiste: lì il collegamento resta quello di
+          sempre (local_assigns, mai una chiamata al controller). %>
+      <%= link_to member_monitoring_metric_group_path(group, **(local_assigns[:time_range_params] || {})), class: "block font-mono text-[12.5px] #{muted ? 'text-gray-500 dark:text-zinc-400' : 'text-zinc-900 dark:text-zinc-100'} truncate max-w-[17rem] hover:text-indigo-600 dark:hover:text-indigo-400", title: metric_display_signature(group), data: { test: "metric-group-link-#{group.id}", turbo_frame: "_top" } do %><%= metric_display_signature(group) %><% end %>
+      <%# CYRA-339: meno di LOW_SAMPLE_THRESHOLD casi → media non significativa, riga marcata. %>
+      <% if group.low_sample? %><%= render Ui::BadgeComponent.new(label: t("member.metrics.low_sample"), color: :gray, size: :sm, test_id: "metric-low-sample-#{group.id}", title: t("member.metrics.low_sample_title", count: Metrics::Group::LOW_SAMPLE_THRESHOLD)) %><% end %>
+    </div>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.metrics.col_project")) do %>
+    <span class="inline-flex items-center gap-1.5">
+      <span class="w-2.5 h-2.5 rounded-[3px] <%= Ui::Colors.swatch(group.project.color) %> shrink-0"></span>
+      <span class="font-mono text-[12px] text-gray-600 dark:text-zinc-400"><%= group.project.key %></span>
+    </span>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.metrics.col_kind")) do %><% if group.kind_performance_issue? %><%= render Ui::BadgeComponent.new(label: perf_subtype_label(group.subtype), color: perf_subtype_color(group.subtype), dot: true) %><% else %><%= render Ui::BadgeComponent.new(label: metric_kind_label(group.kind), color: metric_kind_color(group.kind), dot: true) %><% end %><% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.metrics.col_status"))) { render Ui::BadgeComponent.new(label: t("member.metrics.status.#{group.status}"), color: metric_status_color(group.status), dot: true) } %>
+  <%# CYRA-339: tempo totale speso = costo complessivo (media × occorrenze). Chiave di sort di default. %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.metrics.col_total_duration"), align: :right, mono: true, class: "font-semibold text-zinc-900 dark:text-zinc-100", test_id: "metric-group-total-#{group.id}")) { metric_total_duration_label(group.duration_total_ms) } %>
+  <%# CYRA-341 — il colore usa le soglie del PROGETTO della riga e le dichiara al passaggio del
+      mouse: era l'unico giudizio della tabella, e da che valore in su un numero diventasse rosso
+      non era scritto da nessuna parte. %>
+  <% thresholds = Metrics::Thresholds.for(group.project) %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.metrics.col_avg"), align: :right, mono: true, class: "font-semibold #{metric_duration_color(group.average_duration_ms, thresholds)}", title: metric_threshold_hint(thresholds), test_id: "metric-group-avg-#{group.id}")) { metric_duration_label(group.average_duration_ms) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.metrics.col_occurrences"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100", test_id: "metric-group-count-#{group.id}")) { number_with_delimiter(group.samples_count) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.metrics.col_last_seen"), align: :right, mono: true, class: "whitespace-nowrap text-gray-500 dark:text-zinc-400", test_id: "metric-group-last-seen-#{group.id}")) { metric_time_ago(group.last_seen_at) } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.metrics.col_ticket")) do %>
+    <% if group.promoted? %>
+      <%= link_to member_ticket_path(group.ticket), class: "inline-flex items-center gap-1 whitespace-nowrap text-[12px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "metric-ticket-#{group.id}", turbo_frame: "_top" } do %><%= render Ui::IconComponent.new(name: "ticket", class: "text-[10px]") %><%= group.ticket.code %><% end %>
+    <% else %>
+      <span class="text-[12px] text-gray-300 dark:text-zinc-600">—</span>
+    <% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.metrics.col_max"), align: :right, mono: true, class: "text-gray-600 dark:text-zinc-400")) { metric_duration_label(group.duration_max_ms) } %>
+<% end %>

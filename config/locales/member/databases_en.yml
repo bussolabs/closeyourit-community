@@ -1,0 +1,44 @@
+en:
+  member:
+    nav:
+      databases: Databases
+    databases:
+      title: Databases
+      subtitle: All the PostgreSQL databases found on the monitored machines
+      stat_databases: Databases
+      stat_servers: Servers
+      stat_size: Total size
+      stat_freshness: Oldest data
+      count: "%{count} databases"
+      search_placeholder: Search by database or server name…
+      filter_server: Server
+      col_database: Database
+      col_server: Server
+      col_size: Size
+      col_change: "7-day change"
+      col_share: "% of server databases"
+      share_title: "%{size} of %{total} of databases on %{host}"
+      change_new_title: "Not enough history yet for the change: it shows up after a few days of measurements."
+      range_label:
+        "24h": 24 hours
+        "7d": 7 days
+        "30d": 30 days
+      replica_count:
+        one: "+%{count} replica"
+        other: "+%{count} replicas"
+      no_match: No database matches the filters.
+      empty: No database detected
+      empty_host: No database on this server
+      empty_body: The list appears once the agent installed on a server finds a database and can query it.
+      show:
+        help_title: "Space used, growth, machines and heaviest tables."
+        stat_change: "Change (%{period})"
+        stat_project: Project
+        project_guessed: project inferred from the database name
+        change_none: unchanged
+        growth: Growth
+        growth_summary: "Space used by %{name} over the period, %{size} today."
+        growth_empty: No measurement in this period — growth shows up after a few hours of data.
+        presences: Where it lives
+        tables: Largest tables
+        tables_empty: The agent reports no tables for this database — only the machine's largest ones are listed.

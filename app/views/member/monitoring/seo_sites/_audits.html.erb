@@ -1,0 +1,37 @@
+<%# locals: audits — gli ultimi giri, compresi quelli falliti. Un giro fallito porta il suo motivo e
+    si distingue a colpo d'occhio: la storia dei controlli serve proprio a vedere se un guasto si
+    ripete, e nasconderlo la renderebbe inutile. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="seo-site-audits">
+  <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.seo_sites.show.audits") %></h2>
+  </div>
+  <% if audits.empty? %>
+    <p class="px-5 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="seo-site-audits-empty"><%= t("member.monitoring.seo_sites.show.audits_empty") %></p>
+  <% else %>
+    <ul class="divide-y divide-stone-200 dark:divide-zinc-800">
+      <% audits.each do |audit| %>
+        <li class="px-5 py-2.5" data-test="seo-site-audit">
+          <div class="flex items-baseline justify-between gap-2">
+            <span class="text-[12px] text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.seo_sites.show.ago", duration: time_ago_in_words(audit.started_at)) %></span>
+            <% if audit.status_failed? %>
+              <span class="font-mono text-[10.5px] uppercase tracking-[1px] text-rose-600 dark:text-rose-400" data-test="seo-site-audit-failed"><%= t("member.monitoring.seo_sites.show.audit_failed") %></span>
+            <% elsif audit.status_running? %>
+              <span class="font-mono text-[10.5px] uppercase tracking-[1px] text-gray-400 dark:text-zinc-500"><%= t("member.monitoring.seo_sites.show.audit_running") %></span>
+            <% else %>
+              <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.seo_sites.pages_seen", count: audit.pages_count) %></span>
+            <% end %>
+          </div>
+          <% if audit.status_failed? && audit.error.present? %>
+            <p class="mt-0.5 text-[11.5px] text-rose-600 dark:text-rose-400 break-words"><%= audit.error %></p>
+          <% end %>
+          <%# CYRA-808 — un giro che non è riuscito a leggere una parte delle pagine somiglia in tutto
+              a un giro riuscito, e i problemi che non scendono sembrano un guasto. Detto qui, sulla
+              riga di quel giro, la lettura torna onesta. %>
+          <% if audit.pages_unverified_count.positive? %>
+            <p class="mt-0.5 text-[11.5px] text-amber-700 dark:text-amber-300" data-test="seo-site-audit-unverified"><%= t("member.monitoring.seo_sites.show.pages_unverified", count: audit.pages_unverified_count) %></p>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>

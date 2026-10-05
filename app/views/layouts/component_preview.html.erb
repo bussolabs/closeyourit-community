@@ -1,0 +1,17 @@
+<%# Lookbook previews. DESIGN.md A32: the theme switch puts `dark` on <html>, the only place dark turns on today. %>
+<!DOCTYPE html>
+<html lang="<%= I18n.locale %>" class="<%= "dark" if params.dig(:lookbook, :display, :theme) == "dark" %>">
+  <head>
+    <title>CloseYourIt components</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-stone-100 dark:bg-zinc-950 font-sans text-zinc-900 dark:text-zinc-100 antialiased">
+    <%= yield %>
+    <%= render "shared/icon_templates" %>
+  </body>
+</html>

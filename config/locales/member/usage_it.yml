@@ -1,0 +1,28 @@
+it:
+  member:
+    usage:
+      title: "Uso · %{project}"
+      tab: Uso
+      section_title: Cosa viene usato
+      count_total: Voci
+      count_features: Funzioni
+      count_routes: Pagine
+      empty: Nessun segnale ancora
+      empty_body: Qui compare che cosa di questo progetto viene aperto davvero, appena arriva il primo segnale d'uso.
+      no_match: Nessuna voce corrisponde ai filtri.
+      count:
+        one: 1 voce
+        other: "%{count} voci"
+      filter_kind: Tipo
+      filter_environment: Ambiente
+      col_kind: Tipo
+      col_symbol: Nome
+      col_environment: Ambiente
+      col_hits: Aperture
+      col_first_seen: Vista la prima volta
+      col_last_seen: Vista l'ultima volta
+      kinds:
+        feature_view: Funzione
+        route: Pagina
+        job: Lavorazione
+        custom: Altro

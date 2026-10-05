@@ -1,0 +1,93 @@
+{
+  "en": {
+    "member": {
+      "guides": {
+        "measurements": {
+          "title": "Measurements and alerts",
+          "subtitle": "Read collected values and choose when to receive an alert.",
+          "cta": "Open Measurements",
+          "sections": {
+            "read": {
+              "title": "Choose a series to read",
+              "body": "Measurements lists series sent by your services: gauges, sums and distributions. Search by name and filter by project, service and environment. Attribute filters also distinguish the value type; to filter a version, use the resource attribute service.version when it is provided."
+            },
+            "values": {
+              "title": "Compare values of the same type",
+              "body": "Open a series and select the period, interval and available statistic. Gauges support last value, minimum and maximum; sums support sum and rate; distributions support count, sum and percentile. An interval without data stays unknown: it does not equal zero."
+            },
+            "percentiles": {
+              "title": "A percentile is an estimate",
+              "body": "A distribution percentile includes lower and upper bounds. It is not an exact sample. When its interval crosses the threshold, the comparison stays unknown: the estimate alone exceeding the threshold is not enough."
+            },
+            "alerts": {
+              "title": "Set a threshold for the series",
+              "body": "Open the linked rules from the series. People allowed to manage alerts can select a compatible statistic, comparison, threshold and a window from 60 to 86400 seconds. Percentiles compare the entire estimated interval."
+            },
+            "missing": {
+              "title": "Separate missing data from recovery",
+              "body": "Missing data or an uncertain result does not resolve an active alert. Check the displayed reason and whether the service is sending measurements before treating silence as an improvement."
+            }
+          }
+        },
+        "session_health": {
+          "title": "Sessions",
+          "subtitle": "Compare session outcomes by version and environment.",
+          "cta": "Open Sessions",
+          "sections": {
+            "read": {
+              "title": "Choose the period and source",
+              "body": "The page starts with the last 7 days and applies the period to session start time. Filter by project, environment and source; search finds versions. Selectors show up to 200 values. Individual sessions and aggregate counts stay on separate rows: do not add them as if they represented different people."
+            },
+            "rate": {
+              "title": "Read the crash-free percentage",
+              "body": "The numerator includes exited sessions, sessions that exited with errors and sessions with an unhandled error. The denominator also includes crashed sessions. Therefore, “crash-free” does not mean “error-free”."
+            },
+            "unknown": {
+              "title": "Unknown outcomes stay visible",
+              "body": "Open sessions and sessions that ended abnormally are excluded from the percentage. If the denominator is zero, the result stays unknown: it does not become 0% or 100%."
+            },
+            "deduplication": {
+              "title": "Check the duplicate indicator",
+              "body": "Individual sessions with a producer identifier can be recognised across updates; without that identifier, deduplication is partial. For aggregate counts, the page reports deduplication unavailable: deliveries without a stable identity can be counted more than once."
+            },
+            "limits": {
+              "title": "Session health, not recordings",
+              "body": "This page describes outcomes reported by the application. It does not record the screen or reconstruct a person’s actions. Missing or sampled deliveries can leave the picture incomplete; recordings, when enabled, are a separate feature."
+            }
+          },
+          "installation": "To get started, connect a kit that supports session outcomes and enable session tracking in that kit. The installation guide helps you choose the project configuration.",
+          "installation_link": "Open the installation guide"
+        },
+        "errors": {
+          "reconstruction": {
+            "title": "Reconstruct Java and native errors",
+            "body": "Java and Android require the ProGuard/R8 map from the same build, linked to the correct project and version. Native crashes require symbols matching the build identity and architecture. Uploading a file from another build does not reconstruct the received stack.",
+            "processors": "An administrator must also configure the processing services: RETRACE_PROCESSOR_URL for Java and NATIVE_SYMBOL_PROCESSOR_URL for native symbols. Updating CloseYourIt alone does not enable them. If a service or matching file is missing, the page explains why. Receiving native crashes also requires CRASH_INGEST_ENABLED.",
+            "reading": "The detail page lets you compare the original and reconstructed stacks. If a Java location has several interpretations, the alternatives remain visible rather than implying certainty. Native symbols do not certify support for every operating system or collection kit."
+          }
+        },
+        "performance": {
+          "jobs": {
+            "title": "Read background work",
+            "body": "When a kit sends the jobs/v1 context, a slow operation can distinguish attempt duration, queue wait and scheduled delay. The main value represents the selected measurement, which is not always execution time. Unobserved times in the context stay unknown; zero means an observed zero.",
+            "outcomes": "Attempt outcomes are success, error, retry, discarded, revoked or unknown. An error does not prove that all attempts are exhausted. Retry means another attempt was actually recognised; if the final outcome is not known, it stays unknown.",
+            "grouping": "Valid contexts group by contract version, framework, name, queue and measurement, preserving the kind of slow operation. Job identity, attempt number and outcome do not create separate groups. Historical groups are not rewritten.",
+            "limits": "Measurements sent above a threshold do not count every executed job. Attempt-completion logs are a separate signal that must be enabled in a supporting kit; disabled, sampled or undelivered logs cannot provide a complete history. Job arguments, results and headers are not part of the context."
+          }
+        },
+        "index": {
+          "measurements": {
+            "title": "Measurements and alerts"
+          },
+          "session_health": {
+            "title": "Sessions"
+          }
+        },
+        "catalog": {
+          "measurements": "Read collected values and choose when to receive an alert.",
+          "session_health": "Compare session outcomes by version and environment."
+        }
+      }
+    }
+  }
+}

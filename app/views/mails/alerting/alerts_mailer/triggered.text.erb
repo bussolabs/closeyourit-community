@@ -1,0 +1,10 @@
+<%= t("alerting.alerts.mailer.triggered.greeting") %>
+
+<%= @notification.title %>
+<%= @notification.body %>
+
+<%= t("alerting.alerts.mailer.triggered.context", project: @notification.project&.name) %>
+
+<%= mail_absolute_url(@notification.url) %>
+
+<%= t("alerting.alerts.mailer.triggered.footer") %>

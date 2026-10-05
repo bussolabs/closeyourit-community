@@ -1,0 +1,24 @@
+<%# locals: card (Home::Approvals::Detail::Card), density (:compact | :full) %>
+<%# CYRA-702 — due densità, un solo partial: :compact per la coda (home e plancia), dove si decide
+    su brief, pericoli e conteggi; :full per la scheda a tutta pagina, dove il documento resta per
+    esteso. Una seconda copia di questo file divergerebbe al primo campo aggiunto (vedi sotto). %>
+<% density = local_assigns.fetch(:density, :full) %>
+<% compact = density == :compact %>
+<%# CYRA-591 — il testo per esteso di ciò su cui si decide, ESTRATTO da `_detail` perché ora lo
+    rendono in due: la coda dentro la sua colonna, e la scheda della singola lavorazione su una
+    pagina intera. Due copie sarebbero divergute al primo campo aggiunto — è già successo, ed è
+    esattamente ciò contro cui mette in guardia il commento del tentativo qui sotto.
+
+    Ogni famiglia ha la sua forma e il suo ORDINE: sulle fasi di consegna si apre col resoconto, su
+    una lavorazione ferma con ciò che l'ha bloccata, su un piano col piano. L'ordine è la parte che
+    conta, ed è qui una volta sola. %>
+<% case card.kind %>
+<% when "agent_plan" %>
+  <%= render "member/home/approvals/body_agent_plan", card: card, compact: compact %>
+<% when "review" %>
+  <%= render "member/home/approvals/body_review", card: card, compact: compact %>
+<% when "clarification" %>
+  <%= render "member/home/approvals/body_clarification", card: card %>
+<% when "secret_change" %>
+  <%= render "member/home/approvals/body_secret_change", card: card %>
+<% end %>

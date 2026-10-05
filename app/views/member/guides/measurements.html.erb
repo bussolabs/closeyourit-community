@@ -1,0 +1,13 @@
+<% content_for :title, t("member.guides.measurements.title") %>
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-measurements">
+  <%= render Ui::PageHeaderComponent.new(title: t("member.guides.measurements.title"), subtitle: t("member.guides.measurements.subtitle"), breadcrumb: [{ label: t("member.guides.index.title"), href: member_guides_path }, { label: t("member.guides.measurements.title") }]) do |header| %>
+    <% header.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.measurements.cta"), href: member_monitoring_measurements_path, size: :sm, icon: "chart-no-axes-combined", test_id: "member-guide-measurements-cta") %>
+    <% end %>
+  <% end %>
+  <% t("member.guides.measurements.sections").each do |key, section| %>
+    <%= render Ui::SectionComponent.new(title: section.fetch(:title), id: key, test_id: "guide-measurements-#{key}") do %>
+      <p class="text-sm leading-relaxed text-gray-600 dark:text-zinc-400"><%= section.fetch(:body) %></p>
+    <% end %>
+  <% end %>
+</div>

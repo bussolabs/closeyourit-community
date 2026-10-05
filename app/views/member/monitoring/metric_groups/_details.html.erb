@@ -1,0 +1,60 @@
+<%# locals: (is_perf_issue:) %>
+<%= render Ui::SectionComponent.new(title: t("member.metrics.details"), body_class: nil, test_id: "metric-details") do %>
+  <%= render Ui::DescriptionListComponent.new(class: "px-4 py-4") do |list| %>
+    <% list.with_item(label: t("member.metrics.detail_project"), span: 2) do %>
+      <p class="mt-1 flex items-center gap-1.5">
+        <span class="w-3 h-3 rounded-[3px] <%= Ui::Colors.swatch(@group.project.color) %> shrink-0"></span>
+        <span class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= @group.project.name %></span>
+        <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 rounded px-1.5 py-0.5"><%= @group.project.key %></span>
+      </p>
+    <% end %>
+    <% list.with_item(label: t("member.metrics.detail_ticket"), span: 2, class: "pb-3 border-b border-stone-100 dark:border-zinc-800") do %>
+      <% if @group.promoted? %>
+        <%= link_to member_ticket_path(@group.ticket), class: "mt-1 inline-flex items-center gap-1.5 text-[12.5px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "detail-ticket-link" } do %><%= render Ui::IconComponent.new(name: "ticket", class: "text-[10px]") %><%= @group.ticket.code %><% end %>
+      <% else %>
+        <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="detail-not-promoted"><%= t("member.metrics.not_promoted") %></p>
+      <% end %>
+    <% end %>
+    <%# CYRA-342: per un verdetto performance_issue categoria e sottotipo erano due righe entrambe
+        etichettate «Tipo». Ora una sola riga gerarchica «Categoria › Tipo» (es. «Problema di
+        performance › Query N+1»); per le metriche raw resta la riga «Categoria» + «DB system». %>
+    <% if is_perf_issue %>
+      <% list.with_item(label: t("member.metrics.detail_classification"), span: 2, test_id: "detail-classification",
+                        value: "#{metric_kind_label(@group.kind)} › #{perf_subtype_label(@group.subtype)}") %>
+    <% else %>
+      <% list.with_item(label: t("member.metrics.detail_kind"), value: metric_kind_label(@group.kind)) %>
+      <%# CYRA-353 — una riga con un trattino non dice «vuoto», dice «manca qualcosa e non so
+          cosa»: se il dato non c'è, la riga non si mostra. %>
+      <% if occurrence_db_system(@selected).present? %>
+        <% list.with_item(label: t("member.metrics.detail_db_system"), test_id: "detail-db-system",
+                          value: occurrence_db_system(@selected)) %>
+      <% end %>
+    <% end %>
+    <% if occurrence_http_host(@selected).present? %>
+      <% list.with_item(label: t("member.metrics.detail_http_host"), span: 2, value: occurrence_http_host(@selected)) %>
+    <% end %>
+    <%# CYRA-341 — il tooltip dice le soglie in vigore e porta dove si cambiano: il colore era
+        l'unico giudizio in pagina, e nessuno poteva sapere da che valore in su diventava rosso. %>
+    <% list.with_item(label: t("member.metrics.detail_avg"), hint: metric_threshold_tooltip(@thresholds, @group.project),
+                      hint_title: t("member.metrics.threshold_help_title"), hint_test_id: "help-metric-threshold") do %>
+      <p class="mt-1 font-mono text-[12px] font-semibold <%= metric_duration_color(@group.average_duration_ms, @thresholds) %>" title="<%= metric_threshold_hint(@thresholds) %>"><%= metric_duration_label(@group.average_duration_ms) %></p>
+    <% end %>
+    <% list.with_item(label: t("member.metrics.detail_occurrences"), value: number_with_delimiter(@group.samples_count)) %>
+    <% list.with_item(label: t("member.metrics.detail_percentiles"), span: 2) do %>
+      <p class="mt-1 font-mono text-[12px] font-semibold <%= metric_duration_color(@percentiles[99], @thresholds) %>" title="<%= metric_threshold_hint(@thresholds) %>" data-test="detail-percentiles"><%= metric_percentiles_label(@percentiles) %></p>
+    <% end %>
+    <% list.with_item(label: t("member.metrics.detail_minmax"),
+                      value: "#{metric_duration_label(@group.duration_min_ms)} / #{metric_duration_label(@group.duration_max_ms)}") %>
+    <% list.with_item(label: t("member.metrics.detail_last_seen"), value: metric_time_ago(@group.last_seen_at)) %>
+    <% list.with_item(label: t("member.metrics.detail_first_seen"), span: 2,
+                      value: @group.first_seen_at ? @group.first_seen_at.strftime("%d/%m %H:%M") : "—") %>
+    <% if occurrence_sdk(@selected).present? %>
+      <% list.with_item(label: t("member.metrics.detail_sdk"), span: 2, test_id: "detail-sdk",
+                        value: occurrence_sdk(@selected), class: "pt-3 border-t border-stone-100 dark:border-zinc-800") %>
+    <% end %>
+    <% list.with_item(label: t("member.metrics.detail_fingerprint"), span: 2, value: @group.fingerprint,
+                      value_class: "mt-1 font-mono text-[11px] text-gray-500 dark:text-zinc-400 truncate",
+                      hint: t("member.metrics.help_fingerprint"), hint_test_id: "help-metric-fingerprint",
+                      class: "pt-3 border-t border-stone-100 dark:border-zinc-800") %>
+  <% end %>
+<% end %>

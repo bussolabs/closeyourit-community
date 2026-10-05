@@ -1,0 +1,22 @@
+<%# One conversation in the list: title (the first question), the start of the last answer as plain text, when and how many messages. %>
+<% answer = @last_answers[conversation.id] %>
+<li data-test="assistant-conversation-row-<%= conversation.id %>">
+  <%= link_to member_assistant_conversation_path(conversation),
+        class: "flex items-start gap-3 px-4 py-2.5 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "assistant-conversation-link" } do %>
+    <span class="min-w-0 flex-1">
+      <span class="flex items-center gap-2 min-w-0">
+        <span class="truncate text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= conversation.title.presence || t("member.assistant.panel.untitled") %></span>
+        <% if conversation.kind_tools? %>
+          <%= render Ui::BadgeComponent.new(label: t("member.assistant.list.from_terminal"), test_id: "assistant-from-terminal") %>
+        <% end %>
+      </span>
+      <% if answer %>
+        <span data-test="assistant-conversation-preview" class="mt-0.5 block truncate text-[12px] text-gray-500 dark:text-zinc-400"><%= strip_tags(assistant_message_html(answer)).squish.truncate(140) %></span>
+      <% end %>
+    </span>
+    <span class="shrink-0 text-right text-[11px] text-gray-500 dark:text-zinc-400">
+      <span class="block"><%= t("member.assistant.list.last_activity", time: time_ago_in_words(conversation.last_message_at)) %></span>
+      <span data-test="assistant-conversation-count" class="block font-mono"><%= t("member.assistant.list.messages", count: @message_counts.fetch(conversation.id, 0)) %></span>
+    </span>
+  <% end %>
+</li>

@@ -1,0 +1,35 @@
+---
+en:
+  member:
+    guides:
+      index:
+        helpdesk:
+          title: Help desk
+      helpdesk:
+        title: Help desk
+        subtitle: The visitors of your sites write to the team, and the request lands in the right project.
+        what_title: What it is for
+        what_intro: "A visitor has a problem and writes from the site. The request arrives in the Help desk page, tied to that site's project. It is not a ticket: it is a request to read."
+        what_b1: Every request carries the message, the page it was written from and the kind of device.
+        what_b2: "The writer's email is optional: it is there only if the visitor left it."
+        what_b3: No email is ever sent automatically to the writer.
+        enable_title: Turning it on
+        enable_intro: "The Help desk is off until you turn it on, project by project. A project that is off refuses every request."
+        enable_b1: "Open the project settings and turn on “Receive help desk requests from the sites”."
+        enable_b2: Only the sites the project allows can write. The list is the one used for errors.
+        enable_b3: "The project gets a Help desk tab: there you find the ready-made code for the site and the text to hand to a coding assistant."
+        read_title: Reading and sorting
+        read_intro: "The page opens on the new requests. Only those with the “Manage help desk requests” permission on the project see the page."
+        read_b1: Search the text and filter by project or status.
+        read_b2: "Discard takes a request out of the new ones: ads, tests, duplicates."
+        read_b3: A discarded request is found with the Status filter and can be restored.
+        read_b4: A click on the row opens the whole message and the details.
+        read_b5: "\"Turn into a ticket\" opens a draft with what the visitor wrote. The ticket is created in your name, without the visitor's email."
+        read_b6: "If the problem already has a ticket, link the request to it. The ticket shows how many requests stand behind it."
+        read_b7: "Answer from the request: the answer leaves by email and stays in the conversation. If the person replies to that email, their reply does not arrive here."
+        read_b8: "With AI configured, the requests that say the same thing show up as similar and can be linked to the same ticket."
+        privacy_title: The writer's data
+        privacy_intro: "The writer is a person outside your organization. As little as possible is kept about them."
+        privacy_b1: The email is stored encrypted and erases itself after 180 days. The message stays.
+        privacy_b2: "You can erase the email earlier, from the request. It cannot be undone."
+        privacy_b3: The writer's network address is not stored.

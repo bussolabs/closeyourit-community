@@ -1,0 +1,40 @@
+<% buckets = Array(@buckets) %>
+<% max = buckets.map { |b| b[:count].to_i }.max.to_i %>
+<%= render Ui::SectionComponent.new(title: t("member.monitoring.chart_title"), header_layout: :row,
+      body_class: nil, test_id: "error-histogram") do |section| %>
+  <% section.with_actions do %>
+    <div class="ml-auto inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800" data-test="range-selector">
+      <% Errors::Group::RANGES.keys.each do |r| %>
+        <%= link_to r, member_monitoring_error_group_path(@group, **filter_params, range: r),
+              class: "h-11 md:h-[34px] px-2.5 inline-flex items-center rounded-[5px] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 text-[12px] font-medium #{@range == r ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-stone-200 dark:border-zinc-800' : 'text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}",
+              data: { test: "range-#{r}" } %>
+      <% end %>
+    </div>
+  <% end %>
+  <%# CYRA-562 — senza nessuna occorrenza da disegnare il grafico lo DICHIARA, invece di mostrare
+      quarantotto blocchi vuoti sotto una riga che ne annuncia il numero: quei blocchi sono la
+      cosa che si guarda per prima, e non c'è niente da guardarci. Con un filtro acceso la via
+      d'uscita è toglierlo; senza filtri non c'è niente da togliere e si dice solo il fatto. %>
+  <% if max.positive? %>
+    <div class="px-4 pt-3 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.timeline_sub", range: @range, count: buckets.size) %> · <%= t("member.monitoring.chart_peak", count: max) %></div>
+    <%# Barre cliccabili: cliccare un blocco filtra le occorrenze alla sua finestra (from/to), coi
+        filtri correnti preservati; il blocco attivo si evidenzia (@bucket_from). CYRA-46. %>
+    <%= render Ui::HistogramComponent.new(
+          bars: error_chart_bars(buckets, max, @range,
+                  bucket_href: ->(from, to) { member_monitoring_error_group_path(@group, **filter_params, range: @range, chart_at: @chart_anchor.iso8601(6), from: from.iso8601(6), to: to.iso8601(6)) },
+                  active_from: @bucket_from, active_to: @bucket_to),
+          gridlines: chart_gridlines(max),
+          xticks: chart_xticks(buckets, @range),
+          buckets_test_id: "error-buckets",
+          summary: t("member.monitoring.chart_summary", count: max, range: @range)) %>
+  <% elsif @chart_filtered %>
+    <%= render Ui::NoResultsComponent.new(
+          title: t("member.monitoring.chart_no_match"),
+          body: t("member.monitoring.chart_no_match_body", range: @range),
+          reset_href: member_monitoring_error_group_path(@group, range: @range),
+          reset_label: t("member.monitoring.clear_filters"),
+          icon: "chart-column", compact: true, test_id: "error-chart-no-results") %>
+  <% else %>
+    <p class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="error-chart-empty"><%= t("member.monitoring.chart_empty", range: @range) %></p>
+  <% end %>
+<% end %>

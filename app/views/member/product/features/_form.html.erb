@@ -1,0 +1,39 @@
+<%# locals: feature, group, categories, pages, url, method, title, submit_label %>
+<% content_for :title, title %>
+<% crumbs = [ { label: t("member.product.matrices.title"), href: member_product_matrices_path },
+              { label: group.name, href: member_product_matrix_path(group) },
+              { label: feature.persisted? ? t("member.breadcrumb.edit") : t("member.breadcrumb.new") } ] %>
+
+<div class="p-7">
+  <%= form_with url: url, method: method, class: "space-y-6", data: { test: "product-feature-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: title, breadcrumb: crumbs) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.product.cancel"), href: member_product_matrix_path(group), variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: submit_label, type: "submit", icon: "check", size: :sm, test_id: "product-feature-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6 space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%= render Ui::InputComponent.new(name: "name", label: t("member.product.features.name"), required: true,
+                value: feature.name, placeholder: "2FA", test_id: "product-feature-name",
+                error: @errors&.dig(:name)&.first) %>
+          <%= render Ui::SelectComponent.new(name: "category_id", label: t("member.product.features.category"),
+                options: categories.map { |category| [ category.name, category.id ] },
+                selected: feature.category_id, required: true, test_id: "product-feature-category") %>
+          <%# Il rimando alla base di conoscenza: elenco delle sole pagine visibili all'account. %>
+          <%= render Ui::SelectComponent.new(name: "knowledge_page_id", label: t("member.product.features.knowledge_page"),
+                options: pages.map { |page| [ page.title, page.id ] },
+                selected: feature.knowledge_page_id, include_blank: true,
+                placeholder: t("member.product.features.knowledge_page_blank"),
+                test_id: "product-feature-knowledge-page") %>
+          <%= render Ui::InputComponent.new(name: "position", label: t("member.product.features.position"), type: "number",
+                value: feature.position, test_id: "product-feature-position") %>
+        </div>
+        <%= render Ui::InputComponent.new(name: "description", label: t("member.product.features.description"),
+              value: feature.description, test_id: "product-feature-description") %>
+      </div>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,14 @@
+en:
+  projects:
+    tokens:
+      notifications:
+        content:
+          title: "Token %{name} in project %{project} (%{environment}) is about to expire"
+          expired_title: "Token %{name} in project %{project} (%{environment}) has expired"
+  activerecord:
+    errors:
+      models:
+        projects/token:
+          attributes:
+            expires_at:
+              must_be_in_future: "The expiry date must be in the future"

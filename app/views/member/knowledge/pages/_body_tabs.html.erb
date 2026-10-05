@@ -1,0 +1,27 @@
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="knowledge-tabs">
+  <input type="radio" name="knowledge-view" id="knowledge-view-simple" class="peer/simple sr-only" checked>
+  <input type="radio" name="knowledge-view" id="knowledge-view-tech" class="peer/tech sr-only">
+
+  <%# Le tab sono siblings dei radio (necessario per lo stile attivo via peer-checked). %>
+  <label for="knowledge-view-simple" data-test="knowledge-tab-simple"
+         class="inline-block cursor-pointer px-4 py-2.5 text-[12.5px] font-medium text-gray-500 dark:text-zinc-400 border-b-2 border-transparent peer-checked/simple:text-zinc-900 dark:peer-checked/simple:text-zinc-100 peer-checked/simple:border-indigo-600 dark:peer-checked/simple:border-indigo-400">
+    <%= t("member.knowledge.show.tabs.simple") %>
+  </label>
+  <label for="knowledge-view-tech" data-test="knowledge-tab-tech"
+         class="inline-block cursor-pointer px-4 py-2.5 text-[12.5px] font-medium text-gray-500 dark:text-zinc-400 border-b-2 border-transparent peer-checked/tech:text-zinc-900 dark:peer-checked/tech:text-zinc-100 peer-checked/tech:border-indigo-600 dark:peer-checked/tech:border-indigo-400">
+    <%= t("member.knowledge.show.tabs.tech") %>
+  </label>
+  <div class="border-t border-stone-200 dark:border-zinc-800"></div>
+
+  <%# Vista Semplice: il corpo markdown (contenitore data-test invariato per gli spec). %>
+  <div class="hidden peer-checked/simple:block" data-test="knowledge-body">
+    <%= render Ui::MarkdownComponent.new(text: @page.body, page: @page, links: @links,
+          remote_images: true, class: "px-6 py-5 max-w-[70ch]") %>
+  </div>
+
+  <%# Vista Tecnica: qui tech_spec c'è per forza (senza, non arriviamo alle tab). %>
+  <div class="hidden peer-checked/tech:block" data-test="knowledge-tech">
+    <%= render Ui::MarkdownComponent.new(text: @page.tech_spec, remote_images: true,
+          class: "px-6 py-5 max-w-[70ch]") %>
+  </div>
+</div>

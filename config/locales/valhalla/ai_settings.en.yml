@@ -1,0 +1,71 @@
+en:
+  valhalla:
+    nav:
+      ai_settings: AI settings
+      # Menu label of a hosted-only page: kept here because the public copy drops ai_gateway_keys.*.yml.
+      ai_gateway_keys: CloseYourIt AI keys
+    ai_settings:
+      title: AI settings
+      updated: AI settings saved.
+      save: Save
+      test: Test connection
+      provider:
+        title: AI service
+        hint: Where the assistant, analysis, dictation and smart search come from.
+        label: Service
+        options:
+          environment: Environment variables
+          closeyourit: CloseYourIt AI
+          custom: My provider
+        descriptions:
+          environment: Uses the server variables, as before. No AI features if they are missing.
+          closeyourit: Paste only the CloseYourIt AI key. Addresses and models are ready.
+          custom: Any OpenAI-compatible service, including a model you host.
+      fields:
+        api_key: Key
+        api_key_hint: Stays hidden. Leave empty to keep the saved one.
+        base_url: Address
+        base_url_hint: Only for "My provider". It usually ends with /v1.
+        chat_model: Model for text and answers
+        chat_model_hint: Only for "My provider". For example gpt-4o-mini.
+        embedding_model: Model for smart search
+        embedding_model_hint: Only for "My provider". Empty = smart search off.
+        embedding_dimensions: Vector size
+        embedding_dimensions_hint: How many numbers the model returns for each text, 2000 at most. "Test connection" tells you.
+        transcription_model: Model for dictation
+        transcription_model_hint: Only for "My provider". Empty = dictation off.
+      cap:
+        title: Cap per organization
+        hint: How many chat tokens each organization may use in a month with the platform AI. An organization can only lower it; it does not apply to an organization's own provider.
+        label: Monthly token cap
+        field_hint: Empty = no cap.
+      rerank:
+        title: Reranking service
+        hint: Optional. After a search, it puts the results back in order from most to least useful. Without it search still works, but the first results are less precise. Works with Cohere, Jina, Voyage and LiteLLM. Included with a CloseYourIt key.
+        base_url: Reranking address
+        api_key: Reranking key
+        model: Reranking model
+      reindex:
+        title: Smart search will be recalculated
+        body: You picked a different search model. The results stored so far do not work with the new model, so they are deleted and recalculated for tickets, errors, ideas and pages. While that runs, smart search finds fewer results.
+        confirm: Confirm and recalculate
+      environment:
+        title: "Already set on the server"
+        hint: "What the server variables switch on today. Saved settings below take their place."
+        key: "Key"
+        key_present: "Present"
+        key_missing: "Missing"
+        on: "On"
+        off: "Off"
+      checks:
+        title: Test result
+        hint: Values on the form, not saved yet.
+        chat: Assistant, analysis and drafts
+        embeddings: Smart search
+        transcription: Dictation
+        rerank: Result reranking
+        review: Knowledge page review
+        status:
+          ok: Works
+          failed: Does not work
+          "off": "Off"

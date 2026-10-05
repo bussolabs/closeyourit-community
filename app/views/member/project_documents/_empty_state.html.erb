@@ -1,0 +1,25 @@
+<%# locals: can_manage %>
+<%# CYRA-883 — what is missing, what it is for, an example and the way to add one. The drop area lives
+    here when the list is empty; with documents the whole list takes drops. %>
+<%= render Ui::EmptyStateComponent.new(
+      title: t("member.documents.empty"), body: t("member.documents.empty_body"),
+      example: (t("member.documents.empty_example") if can_manage), icon: "folder-open",
+      test_id: "documents-empty") do |empty| %>
+  <% if can_manage %>
+    <% empty.with_action do %>
+      <div class="flex flex-col items-center gap-3">
+        <label for="project-document-input" data-test="document-dropzone" data-attachment-upload-target="zone"
+               data-action="dragover->attachment-upload#dragover dragleave->attachment-upload#dragleave drop->attachment-upload#drop"
+               class="flex flex-col items-center gap-1.5 w-[22rem] max-w-full px-4 py-5 rounded-lg border border-dashed border-stone-300 dark:border-zinc-700 bg-stone-50/60 dark:bg-zinc-800/60 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/40 dark:hover:bg-indigo-500/10">
+          <%= render Ui::IconComponent.new(name: "cloud-upload", class: "text-[18px] text-stone-400 dark:text-zinc-500") %>
+          <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.documents.upload.drop") %></span>
+          <span class="font-mono text-[10px] text-gray-500 dark:text-zinc-400"><%= t("member.documents.upload.add_hint") %></span>
+        </label>
+        <label for="project-document-input" data-test="documents-empty-upload"
+               class="inline-flex items-center gap-[7px] h-7 px-3 rounded-md bg-indigo-600 text-white text-[12px] font-semibold cursor-pointer hover:bg-indigo-700">
+          <%= render Ui::IconComponent.new(name: "cloud-upload", class: "text-[11px]") %><%= t("member.documents.upload.add") %>
+        </label>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

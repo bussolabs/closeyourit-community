@@ -1,0 +1,82 @@
+<% content_for :title, t("member.guides.skill_bundles.title") %>
+
+<%# CYRA-501 — la pagina delle versioni è un form di amministrazione con quattro campi obbligatori e
+    una spunta che riporta le macchine indietro di una versione: chi ci arriva senza sapere cosa
+    sono le competenze non ha modo di capirlo dalla pagina stessa. %>
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-skill-bundles">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "boxes", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.skill_bundles.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.skill_bundles.title") } ]) do |h| %>
+    <% if can?("agents.manage") %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.guides.skill_bundles.cta"), href: member_skill_bundle_path,
+              variant: :primary, size: :sm, icon: "arrow-right", test_id: "member-guide-skill-bundles-cta") %>
+      <% end %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.skill_bundles.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-skill-bundles-what">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.skill_bundles.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.skill_bundles.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% %w[what_b1 what_b2 what_b3].each do |key| %>
+          <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.skill_bundles.#{key}") %></span></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <%# Il pin dice cosa DOVREBBE girare, non cosa gira: la tabella della pagina risponde a «il
+      rilascio è arrivato ovunque?», ed è la sola ragione per aprirla in giornata. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-skill-bundles-check">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.skill_bundles.check_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.skill_bundles.check_intro") %></p>
+      <dl class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[12.5px]">
+        <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
+          <dt class="font-medium text-emerald-700 dark:text-emerald-300"><%= t("member.skill_bundle.conformance.aligned") %></dt>
+          <dd class="block text-gray-600 dark:text-zinc-400 mt-0.5 leading-relaxed"><%= t("member.guides.skill_bundles.check_aligned") %></dd>
+        </div>
+        <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
+          <dt class="font-medium text-amber-700 dark:text-amber-300"><%= t("member.skill_bundle.conformance.mismatched") %></dt>
+          <dd class="block text-gray-600 dark:text-zinc-400 mt-0.5 leading-relaxed"><%= t("member.guides.skill_bundles.check_mismatched") %></dd>
+        </div>
+        <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
+          <dt class="font-medium text-gray-600 dark:text-zinc-400"><%= t("member.skill_bundle.conformance.unknown") %></dt>
+          <dd class="block text-gray-600 dark:text-zinc-400 mt-0.5 leading-relaxed"><%= t("member.guides.skill_bundles.check_unknown") %></dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-skill-bundles-rollback">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.skill_bundles.rollback_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.skill_bundles.rollback_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% %w[rollback_b1 rollback_b2 rollback_b3].each do |key| %>
+          <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "rotate-ccw", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.skill_bundles.#{key}") %></span></li>
+        <% end %>
+      </ul>
+      <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.skill_bundles.rollback_note") %></p>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-4">
+    <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed">
+      <%= t("member.guides.skill_bundles.who") %>
+      <%= link_to t("member.guides.skill_bundles.who_link"), member_guides_agents_path, class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "guide-skill-bundles-agents" } %>
+    </p>
+    <%# La pagina delle versioni sta dietro l'amministrazione delle macchine: mandarci chi non ce
+        l'ha significherebbe promettere una porta chiusa. La guida invece la legge chiunque. %>
+    <% unless can?("agents.manage") %>
+      <p class="mt-3 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="member-guide-skill-bundles-locked"><%= t("member.guides.skill_bundles.locked") %></p>
+    <% end %>
+  </div>
+</div>

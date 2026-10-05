@@ -1,0 +1,24 @@
+<%# Card della board workload. id=dom_id(action) ("workload_action_<id>"). draggable bakeato %>
+<%# server-side da can_manage; il controller workload-board lo riallinea per-viewer (canManageValue). %>
+<%# role=listitem: la card resta <a href> (link nativo, drag/keyboard invariati) ma dentro la %>
+<%# colonna role=list sovrascrive il ruolo link implicito ai fini della struttura lista (a11y, WP2.9). %>
+<%= link_to member_workload_action_path(action), id: dom_id(action),
+      draggable: local_assigns.fetch(:can_manage, false),
+      role: "listitem",
+      class: "block rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-2 hover:border-indigo-300 dark:hover:border-indigo-500/50",
+      data: { test: "workload-board-card-#{action.id}", workload_board_target: "card", action_id: action.id, title: action.title } do %>
+  <p class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 leading-snug"><%= board_card_title(action.title, local_assigns[:highlight]) %></p>
+  <div class="mt-1.5 flex items-center justify-between gap-2">
+    <span class="inline-flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-zinc-400 min-w-0"><%= render Ui::IconComponent.new(name: "users-round", class: "text-[10px]") %><span class="truncate"><%= action.team.name %></span></span>
+    <%= render "member/workload/actions/participant_initials", action: action %>
+  </div>
+  <% if action.scheduled_at || action.due_at || action.ticket %>
+    <div class="mt-1.5 flex items-center gap-2">
+      <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= workload_short_date(action.scheduled_at) %></span>
+      <%= render "member/workload/actions/due_badge", action: action %>
+      <% if action.ticket %>
+        <span class="ml-auto font-mono text-[10.5px] text-indigo-600 dark:text-indigo-400"><%= action.ticket.code %></span>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

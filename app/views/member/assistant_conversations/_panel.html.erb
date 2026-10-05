@@ -1,0 +1,78 @@
+<%# Corpo del pannello assistente, dentro il turbo-frame caricato lazy dal FAB. `conversation` può essere
+    nil (nessuna conversazione ancora): in quel caso il primo invio la crea (POST conversations#create).
+    Quando esiste, i messaggi si appendono via broadcast e il composer posta su messages#create.
+    `project` is the project the conversation is (or will be) fixed on, nil on a plain one. %>
+<% project = local_assigns[:project] %>
+<%# The target travels with the frame: creating a conversation replaces the whole element. %>
+<%= turbo_frame_tag "assistant_panel", class: "flex flex-col h-full min-h-0", data: { "ui--assistant-target": "frame" } do %>
+  <% if conversation %>
+    <%= turbo_stream_from Realtime::Streams.assistant_conversation(conversation) %>
+  <% end %>
+
+  <header class="flex items-center gap-2 px-4 py-3 border-b border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 shrink-0">
+    <span class="w-[7px] h-[7px] rounded-full bg-green-600 shrink-0" title="<%= t('member.assistant.panel.title') %>"></span>
+    <h2 class="font-display text-[14px] font-semibold tracking-[-0.01em] text-zinc-900 dark:text-zinc-100"><%= t('member.assistant.panel.title') %></h2>
+    <span class="flex-1"></span>
+    <%# The list page is reachable only from here: _top leaves the frame for a full page. %>
+    <%= link_to member_assistant_conversations_path, data: { test: "assistant-all-conversations", turbo_frame: "_top" },
+          title: t("member.assistant.panel.all_conversations"), "aria-label": t("member.assistant.panel.all_conversations"),
+          class: "w-[30px] h-[30px] grid place-items-center rounded-md text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" do %>
+      <%= render Ui::IconComponent.new(name: "history", class: "text-[14px]") %>
+    <% end %>
+    <%# POST (non GET) così hover/prefetch non crea conversazioni fantasma; la risposta rimpiazza il frame. %>
+    <%= button_to member_assistant_conversations_path(project_id: project&.id), method: :post,
+                form: { class: "contents" }, data: { test: "assistant-new" },
+                title: t('member.assistant.panel.new'), "aria-label": t('member.assistant.panel.new'),
+                class: "w-[30px] h-[30px] grid place-items-center rounded-md text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" do %>
+      <%= render Ui::IconComponent.new(name: "plus", class: "text-[14px]") %>
+    <% end %>
+    <button type="button" data-action="ui--assistant#close" title="<%= t('member.assistant.panel.close') %>"
+            aria-label="<%= t('member.assistant.panel.close') %>" data-test="assistant-close"
+            class="w-[30px] h-[30px] grid place-items-center rounded-md text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+      <%= render Ui::IconComponent.new(name: "x", class: "text-[15px]") %>
+    </button>
+  </header>
+  <%= render "member/assistant_conversations/project_bar", project: project if project %>
+
+  <div class="flex-1 min-h-0 overflow-y-auto px-4 py-4" data-ui--assistant-target="scroll">
+    <% if messages.empty? %>
+      <%= render "member/assistant_conversations/suggestions", project: project %>
+    <% end %>
+
+    <% if conversation %>
+      <div id="assistant_messages_<%= conversation.id %>" class="flex flex-col gap-3.5" data-test="assistant-messages">
+        <%= render partial: "member/assistant_conversations/message", collection: messages, as: :message %>
+      </div>
+    <% end %>
+  </div>
+
+  <footer class="border-t border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5 shrink-0">
+    <%# Con una conversazione il messaggio va su di essa; senza, il primo invio la crea (POST create). %>
+    <% composer_url = conversation ? member_assistant_conversation_messages_path(conversation) : member_assistant_conversations_path(project_id: project&.id) %>
+    <%# CYRA-908: the microphone sits inside the field and records into the conversation on screen;
+        while it listens, the waves take the field's place and the send button sends the audio. %>
+    <%# A spoken message with no conversation yet goes to the latest of all, which is not fixed on
+        this project: the microphone waits for the first written message. %>
+    <% voice = dictation_available? && (conversation.present? || project.nil?) %>
+    <% voice_data = voice ? assistant_inline_voice_data(conversation, open_panel: true) : {} %>
+    <%= form_with url: composer_url, method: :post,
+                  data: { action: "turbo:submit-end->ui--assistant#reset", **voice_data }, class: "flex items-end gap-2" do |f| %>
+      <%= hidden_field_tag :correction_of, nil, id: nil, data: { "ui--assistant-target": "correction" } %>
+      <div class="relative flex-1 min-w-0">
+        <%= f.text_area :text, rows: 1, required: true, maxlength: Assistant::Constants::MAX_MESSAGE_CHARS,
+              data: { "ui--assistant-target": "input", "ui--voice-inline-target": "input", action: "keydown.enter->ui--assistant#submitOnEnter input->ui--assistant#grow", test: "assistant-input" },
+              placeholder: t('member.assistant.panel.placeholder'),
+              class: "block w-full resize-none border border-stone-300 dark:border-zinc-700 rounded-lg px-3 py-2 #{'pr-10' if voice} text-[13.5px] text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 outline-none max-h-[120px] focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-500/20" %>
+        <%= render "member/assistant_conversations/voice_controls" if voice %>
+      </div>
+      <%= f.button type: :submit, "aria-label": t('member.assistant.panel.send'),
+            data: { test: "assistant-send", action: ("ui--voice-inline#send" if voice) },
+            class: "w-[38px] h-[38px] shrink-0 grid place-items-center rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors" do %>
+        <%= render Ui::IconComponent.new(name: "send", class: "text-[15px]") %>
+      <% end %>
+    <% end %>
+    <%# CYRA-436: what the assistant does stays visible while writing, now one line under the field. %>
+    <p data-test="assistant-note" class="mt-2 text-[11px] text-gray-500 dark:text-zinc-400"><%= t('member.assistant.panel.note') %></p>
+    <p data-test="assistant-compose-hint" class="mt-0.5 text-[10.5px] text-gray-400 dark:text-zinc-500"><%= t('member.assistant.panel.compose_hint') %></p>
+  </footer>
+<% end %>

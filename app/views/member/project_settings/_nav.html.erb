@@ -1,0 +1,27 @@
+<%# locals: (can_delete:) %>
+<%# CYRA-883 — one link per section the viewer can see, in page order. %>
+<% sections = [] %>
+<% sections << [ "tokens", t("member.tokens.section_title"), "key" ] if @can_manage_tokens %>
+<% if @can_edit_settings %>
+  <% sections << [ "ingest", t("member.project_settings.ingest_section"), "globe" ] %>
+  <% sections << [ "tickets", t("member.project_settings.tickets_section"), "ticket" ] %>
+  <% sections << [ "retention", t("member.project_settings.retention_section"), "history" ] %>
+  <% sections << [ "thresholds", t("member.project_settings.thresholds_section"), "timer" ] %>
+  <% sections << [ "features", t("member.project_settings.features_section"), "toggle-right" ] %>
+<% end %>
+<% sections << [ "danger", t("member.projects.show.danger_title"), "triangle-alert" ] if can_delete %>
+<%# The same look as the Administration list: a white panel with its title, then the menu's own links.
+    Below lg it becomes a row above the sections that scrolls sideways. %>
+<aside class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 lg:sticky lg:top-[calc(var(--page-header-h,0px)+0.5rem)] lg:self-start" data-test="project-settings-aside">
+  <div class="hidden lg:block px-5 pt-5 pb-3">
+    <p class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.project_settings.breadcrumb") %></p>
+  </div>
+  <nav aria-label="<%= t("member.project_settings.nav_label") %>" data-test="project-settings-nav"
+       class="flex gap-1.5 overflow-x-auto scrollbar-none px-4 py-3 lg:flex-col lg:gap-0.5 lg:px-3 lg:pt-0 lg:pb-5">
+    <% sections.each do |anchor, label, icon| %>
+      <%= render Ui::NavLinkComponent.new(label:, path: "##{anchor}", icon:, test_id: "project-settings-nav-#{anchor}",
+            data: { section_panels_target: "link", action: "section-panels#open" },
+            class: "shrink-0 whitespace-nowrap") %>
+    <% end %>
+  </nav>
+</aside>

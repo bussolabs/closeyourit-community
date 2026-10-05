@@ -1,0 +1,69 @@
+<% content_for :title, t("member.organization.edit_title") %>
+
+<div class="p-7">
+  <%= form_with url: member_organization_path, method: :patch, class: "space-y-6", data: { test: "member-organization-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: t("member.organization.edit_title"),
+          breadcrumb: [ { label: t("member.organization.edit_title") } ]) do |h| %>
+      <% h.with_meta do %>
+        <span class="inline-flex items-center rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.organization.meta", created: @organization.created_at.strftime("%d/%m/%Y"), count: @organization.memberships.size) %></span>
+      <% end %>
+      <%# T1 — Save is the header action, not a button on the page ground. %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.organization.save"), type: "submit", test_id: "member-organization-submit", size: :sm) %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%# T3 — one panel, three parts split by a hairline and a small label: who we are, how long data is kept, who answers by default. %>
+          <p class="md:col-span-2 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400" data-test="organization-section-identity"><%= t("member.organization.sections.identity") %></p>
+          <%= render Ui::InputComponent.new(name: "name", label: t("member.organization.name"), required: true, test_id: "organization-name", value: @organization.name, error: @errors&.dig(:name)&.first) %>
+          <%= render Ui::InputComponent.new(name: "slug", label: t("member.organization.slug"), required: true, test_id: "organization-slug", value: @organization.slug, hint: t("member.organization.slug_hint"), error: @errors&.dig(:slug)&.first) %>
+          <p class="md:col-span-2 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 border-t border-stone-200 dark:border-zinc-800 pt-5" data-test="organization-section-retention"><%= t("member.organization.sections.retention") %></p>
+          <%= render Ui::InputComponent.new(name: "logs_retention_days", type: "number", min: 1, max: 365, label: t("member.organization.logs_retention_label"), test_id: "logs-retention-days", value: @organization.logs_retention_days, placeholder: t("member.organization.logs_retention_placeholder"), hint: t("member.organization.logs_retention_hint"), error: @errors&.dig(:logs_retention_days)&.first) %>
+          <%= render Ui::InputComponent.new(name: "analytics_retention_days", type: "number", min: 1, max: 730, label: t("member.organization.analytics_retention_label"), test_id: "analytics-retention-days", value: @organization.analytics_retention_days, placeholder: t("member.organization.analytics_retention_placeholder"), hint: t("member.organization.analytics_retention_hint"), error: @errors&.dig(:analytics_retention_days)&.first) %>
+          <%= render Ui::InputComponent.new(name: "errors_retention_days", type: "number", min: 1, max: 365, label: t("member.organization.errors_retention_label"), test_id: "errors-retention-days", value: @organization.errors_retention_days, placeholder: t("member.organization.errors_retention_placeholder"), hint: t("member.organization.errors_retention_hint"), error: @errors&.dig(:errors_retention_days)&.first) %>
+          <%= render Ui::InputComponent.new(name: "performance_retention_days", type: "number", min: 1, max: 365, label: t("member.organization.performance_retention_label"), test_id: "performance-retention-days", value: @organization.performance_retention_days, placeholder: t("member.organization.performance_retention_placeholder"), hint: t("member.organization.performance_retention_hint"), error: @errors&.dig(:performance_retention_days)&.first) %>
+          <%= render Ui::InputComponent.new(name: "servers_retention_days", type: "number", min: 1, max: 365, label: t("member.organization.servers_retention_label"), test_id: "servers-retention-days", value: @organization.servers_retention_days, placeholder: t("member.organization.servers_retention_placeholder"), hint: t("member.organization.servers_retention_hint"), error: @errors&.dig(:servers_retention_days)&.first) %>
+          <%= render Ui::InputComponent.new(name: "uptime_retention_days", type: "number", min: 1, max: 730, label: t("member.organization.uptime_retention_label"), test_id: "uptime-retention-days", value: @organization.uptime_retention_days, placeholder: t("member.organization.uptime_retention_placeholder"), hint: t("member.organization.uptime_retention_hint"), error: @errors&.dig(:uptime_retention_days)&.first) %>
+
+          <p class="md:col-span-2 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 border-t border-stone-200 dark:border-zinc-800 pt-5" data-test="organization-section-people"><%= t("member.organization.sections.people") %></p>
+          <div class="md:col-span-2" data-test="org-default-assignee">
+            <%= render Ui::SelectComponent.new(
+                  name: "default_assignee_id",
+                  label: t("member.organization.default_assignee_label"),
+                  options: @accounts.map { |a| [ a.name, a.id ] },
+                  selected: @organization.default_assignee_id,
+                  include_blank: true,
+                  placeholder: t("member.organization.default_assignee_placeholder"),
+                  hint: t("member.organization.default_assignee_hint"),
+                  test_id: "organization-default-assignee",
+                  error: @errors&.dig(:default_assignee)&.first) %>
+          </div>
+
+          <div class="md:col-span-2" data-test="organization-cto">
+            <%= render Ui::SelectComponent.new(name: "cto_id", label: t("member.organization.cto_label"),
+                  options: @accounts.select(&:human?).map { |account| [ account.name, account.id ] },
+                  selected: @organization.cto_id, include_blank: true, placeholder: t("member.organization.cto_none"),
+                  hint: t("member.organization.cto_hint"),
+                  error: @errors&.dig(:cto)&.first) %>
+          </div>
+
+          <div class="md:col-span-2" data-test="org-default-view">
+            <span class="block text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.organization.default_view_label") %></span>
+            <div class="flex gap-2">
+              <% Projects::Constants::VIEWS.each do |view| %>
+                <label class="inline-flex items-center gap-2 h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[12.5px] text-zinc-900 dark:text-zinc-100 cursor-pointer has-[:checked]:border-indigo-600 dark:has-[:checked]:border-indigo-400 has-[:checked]:bg-indigo-50 dark:has-[:checked]:bg-indigo-500/15">
+                  <%= radio_button_tag "default_projects_view", view, (@organization.default_projects_view.presence || "cards") == view, class: "accent-indigo-600", data: { test: "org-default-view-#{view}" } %>
+                  <%= t("member.projects.view_#{view}") %>
+                </label>
+              <% end %>
+            </div>
+            <p class="mt-1.5 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.organization.default_view_hint") %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

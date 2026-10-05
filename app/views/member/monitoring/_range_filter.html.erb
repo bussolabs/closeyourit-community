@@ -1,0 +1,9 @@
+<%# The default is the blank FIRST option: a removed chip leaves nothing selected, so that one must
+    mean "default". A preset computes its own start: only a custom range shows its dates. %>
+<%= render Ui::RangeFilterComponent.new(name: "range", label: t("shared.time_range.label"),
+      options: [ [ t("shared.time_range.presets.#{Monitoring::TimeRange::DEFAULT}"), "" ] ] +
+               (Monitoring::TimeRange::PRESETS.keys - [ Monitoring::TimeRange::DEFAULT ]).map { |key| [ t("shared.time_range.presets.#{key}"), key ] } +
+               [ [ t("shared.time_range.custom"), Monitoring::TimeRange::CUSTOM ] ],
+      selected: (range.key if range_set), custom: Monitoring::TimeRange::CUSTOM,
+      from: (range.from if range.custom?), to: (range.to if range.custom?),
+      test_id: "filter-range", bounds_test_prefix: "#{test_prefix}-range") %>

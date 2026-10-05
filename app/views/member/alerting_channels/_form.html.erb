@@ -1,0 +1,64 @@
+<%# locals: channel, url, method, submit_label %>
+<div class="p-7">
+  <%= form_with url: url, method: method, id: "alerting-channel-form", data: { test: "alerting-channel-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(
+          title: channel.new_record? ? t("member.alerting.channels.new_title") : t("member.alerting.channels.edit_title"),
+          subtitle: t("member.alerting.channels.form.note"),
+          test_id: "alerting-channel-header",
+          breadcrumb: (channel.persisted? ?
+            [ { label: t("member.alerting.channels.title"), href: member_alerting_channels_path },
+              { label: channel.name },
+              { label: t("member.breadcrumb.edit") } ] :
+            [ { label: t("member.alerting.channels.title"), href: member_alerting_channels_path },
+              { label: t("member.breadcrumb.new") } ])) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.alerting.channels.form.cancel"), href: member_alerting_channels_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: submit_label, type: "submit", icon: "check", size: :sm, test_id: "alerting-channel-form-submit") %>
+      <% end %>
+    <% end %>
+
+    <% if @errors.present? %>
+      <div class="mt-4 rounded-md border border-rose-200 dark:border-rose-500/40 bg-rose-50 dark:bg-rose-500/15 px-3.5 py-2.5" data-test="alerting-channel-errors">
+        <ul class="space-y-1">
+          <% @errors.each_value do |messages| %>
+            <% Array(messages).each do |message| %><li class="text-[11.5px] text-rose-700 dark:text-rose-300"><%= message %></li><% end %>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="mt-6 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <%= render Ui::InputComponent.new(name: "name", label: t("member.alerting.channels.form.name"), required: true,
+              value: channel.name, test_id: "alerting-channel-name", error: @errors&.dig(:name)&.first) %>
+
+        <%# Unico kind di canale esterno rimasto: webhook (Telegram è per-utente). Kind implicito. %>
+        <input type="hidden" name="kind" value="webhook">
+
+        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <%= render Ui::InputComponent.new(name: "webhook_url", label: t("member.alerting.channels.form.webhook_url"),
+                value: channel.webhook_url, hint: t("member.alerting.channels.form.webhook_url_hint"),
+                test_id: "alerting-channel-webhook-url", error: @errors&.dig(:config)&.first) %>
+          <%# Secret cifrato: mai ripopolato nel form (value vuoto). Se già impostato, il placeholder
+              dice che lasciandolo vuoto si mantiene quello attuale (blank = invariato lato controller). %>
+          <%= render Ui::InputComponent.new(name: "webhook_secret", label: t("member.alerting.channels.form.webhook_secret"),
+                type: "password", value: "", autocomplete: "new-password",
+                placeholder: (channel.webhook_secret? ? t("member.alerting.channels.form.webhook_secret_placeholder") : nil),
+                hint: t("member.alerting.channels.form.webhook_secret_hint"),
+                test_id: "alerting-channel-webhook-secret") %>
+        </div>
+
+        <div>
+          <%# "Status" è un'intestazione per il toggle sotto, non il label di un singolo controllo:
+              <p>, non <label> orfano (un <label> senza for/wrapping è markup invalido). %>
+          <p class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.alerting.channels.form.status") %></p>
+          <label class="inline-flex items-center gap-2.5 h-[38px] cursor-pointer">
+            <input type="hidden" name="enabled" value="0">
+            <input type="checkbox" name="enabled" value="1" <%= "checked" if channel.enabled? %> data-test="alerting-channel-enabled" class="w-4 h-4 rounded accent-indigo-600">
+            <span class="text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= t("member.alerting.channels.form.enabled") %></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

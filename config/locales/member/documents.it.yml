@@ -1,0 +1,65 @@
+it:
+  member:
+    projects:
+      show:
+        tab_documents: "Documenti"
+    documents:
+      title: "Documenti"
+      count:
+        one: "%{count} documento"
+        other: "%{count} documenti"
+      search_placeholder: "Cerca documenti…"
+      apply: "Applica"
+      filter_tag: "Tag"
+      upload:
+        add: "Carica documenti"
+        add_hint: "PDF, Office, testo, immagini, video, zip — max 25 MB ciascuno"
+        selected: "Selezionati:"
+        uploading: "Caricamento…"
+        drop: "Trascina qui i file o clicca per sceglierli"
+      uploaded:
+        one: "%{count} documento caricato"
+        other: "%{count} documenti caricati"
+      updated: "Documento aggiornato"
+      deleted: "Documento eliminato"
+      delete_dialog:
+        title: "Eliminare il documento %{title}?"
+        body: "Con il documento sparisce anche il suo file. Non si può annullare."
+      empty: "Nessun documento"
+      empty_body: "Carica spec, contratti o export per tenerli insieme al progetto."
+      empty_example: "Per esempio: il contratto firmato, la specifica in PDF, l'export dei dati di settembre."
+      col_title: "Documento"
+      col_type: "Tipo"
+      col_size: "Dimensione"
+      col_tags: "Tag"
+      col_uploaded: "Caricato"
+      download: "Scarica"
+      open: "Apri"
+      open_title: "Apri in una nuova scheda"
+      types:
+        image: "Immagine"
+        text: "Testo"
+      edit: "Modifica"
+      delete: "Elimina"
+      form:
+        title_edit: "Modifica documento"
+        name: "Nome"
+        tags: "Tag"
+        tags_hint: "Separati da virgola, es. legal, q3"
+        description: "Descrizione"
+        cancel: "Annulla"
+        save: "Salva"
+      errors:
+        no_files: "Seleziona almeno un file da caricare"
+        invalid_file: "Uno o più file non sono ammessi (tipo o dimensione)"
+  activerecord:
+    errors:
+      models:
+        projects/document:
+          attributes:
+            title:
+              blank: "Il nome è obbligatorio"
+            file:
+              blank: "Il file è obbligatorio"
+              too_large: "Il file supera il limite di 25 MB"
+              invalid_type: "Tipo di file non ammesso"

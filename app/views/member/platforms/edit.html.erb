@@ -1,0 +1,6 @@
+<%= render "form",
+      platform: @platform,
+      url: member_platform_path(@platform),
+      method: :patch,
+      title: t("member.platforms.form.edit_title"),
+      submit_label: t("member.platforms.form.save_edit") %>

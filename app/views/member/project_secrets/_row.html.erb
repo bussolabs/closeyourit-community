@@ -1,0 +1,58 @@
+<%# locals: name, by_env ({env_id => variable}), environments, secrets_enabled ({env_id => bool}),
+    can_manage, can_read, open (bool), errors (Hash | nil), highlighted (bool, opzionale) %>
+<% highlighted = local_assigns.fetch(:highlighted, false) %>
+<% delegated_by_env = local_assigns.fetch(:delegated_by_env, {}) %>
+<% editable = can_manage && environments.any? { |env| !delegated_by_env.key?(env.id) && (by_env.key?(env.id) || secrets_enabled[env.id]) } %>
+<% row_slug = name.parameterize %>
+<% description = by_env.values.filter_map { |variable| variable.description.presence }.first %>
+<%# CYRA-424 — id-ancora + evidenziazione quando si arriva dalla ricerca variabili (?highlight=NOME):
+    la riga cercata è subito riconoscibile e il fragment #secret-<slug> ci salta sopra.
+    CYRA-924 — C64: the row shows values as text; editing happens in the row's dialog. %>
+<%= render Ui::TableComponent::RowComponent.new(id: "secret-#{row_slug}", highlighted: highlighted, class: "scroll-mt-24",
+      test_id: (highlighted ? "secret-row-highlighted" : "secret-row"),
+      data: { controller: "secret-row", "secret-row-open-value": open,
+              "secret-row-reveal-error-value": t("member.secrets.reveal_failed") }) do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <span class="block font-mono text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= name %></span>
+    <% if description %>
+      <span class="block text-[12px] font-normal text-gray-500 dark:text-zinc-400" data-test="secret-description-<%= row_slug %>"><%= description %></span>
+    <% end %>
+  <% end %>
+
+  <% environments.each do |environment| %>
+    <%= render "cell",
+               environment: environment,
+               variable: by_env[environment.id],
+               delegation: delegated_by_env[environment.id],
+               can_manage: can_manage,
+               can_read: can_read,
+               hole: @drift.hole?(name, environment.id),
+               pending_change: @pending_changes.include?([ environment.id, name ]),
+               consolidation: @consolidated_cells&.dig([ environment.id, name ]) %>
+  <% end %>
+
+  <%# CYRA-721 — show (secrets.read) and edit (secrets.manage) are two commands because they are two
+      permissions: showing a value does not change it, and who changes it may not see it. %>
+  <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+    <% revealable = can_read && by_env.any? %>
+    <% if revealable || editable %>
+      <%= render Ui::ButtonGroupComponent.new(class: "border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 [&>:not([hidden])~:not([hidden])]:border-l [&>:not([hidden])~:not([hidden])]:border-stone-200 dark:]:border-zinc-800",
+            test_id: "secret-actions-#{row_slug}") do |group| %>
+        <% if revealable %>
+          <% group.with_button(label: t("member.secrets.reveal_row"), icon: "eye", icon_only: true, variant: :ghost, size: :sm,
+                test_id: "secret-reveal-#{row_slug}", data: { action: "secret-row#reveal", "secret-row-target": "revealButton" }) %>
+          <% group.with_button(label: t("member.secrets.hide_row"), icon: "eye-off", icon_only: true, variant: :ghost, size: :sm,
+                test_id: "secret-hide-#{row_slug}", hidden: true, data: { action: "secret-row#mask", "secret-row-target": "hideButton" }) %>
+        <% end %>
+        <% if editable %>
+          <% group.with_button(label: t("member.secrets.edit"), icon: "pen", icon_only: true, variant: :ghost, size: :sm,
+                test_id: "secret-edit-#{row_slug}", data: { action: "secret-row#edit" }) %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <% if editable %>
+      <%= render "member/project_secrets/row_dialog", name: name, description: description, by_env: by_env, delegated_by_env: delegated_by_env,
+            environments: environments, secrets_enabled: secrets_enabled, can_read: can_read, errors: errors %>
+    <% end %>
+  <% end %>
+<% end %>

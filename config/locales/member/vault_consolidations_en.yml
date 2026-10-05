@@ -1,0 +1,27 @@
+en:
+  member:
+    vault_consolidations:
+      title: Shared value
+      help_title: "The same value in several projects: move it once into the organization."
+      stat_projects: Projects involved
+      stat_environment: Environment
+      promote: Move to the organization
+      dismiss: Stop suggesting
+      dismiss_confirm: Stop receiving this suggestion? It will not come back.
+      promoted: Value moved into the organization secrets. The projects involved already receive it.
+      dismissed: Suggestion archived. It will not be shown again.
+      stale: "Something changed in the meantime. Here is the situation now: check it and confirm again."
+      gone: The value is no longer repeated across projects. There is nothing to move.
+      rotation_lost:
+        one: One of the copies has a rotation rule, and it goes away with it. Set the rule again on the organization secret.
+        other: "%{count} copies have a rotation rule, and it goes away with them. Set the rule again on the organization secret."
+      destination_title: Where the value goes
+      existing_body: The organization already keeps this value. Projects will receive it from there instead of creating a second copy.
+      name_label: Name in the organization secrets
+      name_hint: This is the name the value lives under in the organization. Each project can read it under its own name.
+      projects_title: What changes in the projects
+      projects_subtitle: The local copy goes away and the value comes from the organization. The name stays the one in use, unless you change it here.
+      col_project: Project
+      col_current: Name now
+      col_after: Name after
+      col_repository: GitHub repository

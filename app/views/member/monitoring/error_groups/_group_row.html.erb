@@ -1,0 +1,120 @@
+<%# locals: group — Errors::Group. Riga della lista gruppi d'errore (index). id=dom_id(group) è il
+    target del broadcast Turbo replace: Errors::Ingest::Record (ingest) e il controller Member (triage)
+    sostituiscono questa riga sullo stream errors dell'org. CYRA-45: la td checkbox (ids[]) è SEMPRE resa,
+    così il replace non disallinea le colonne rispetto all'header; è attiva solo dentro il form bulk della
+    index (ui--bulk-select), inerte altrove. %>
+<% muted = group.status_resolved? || group.status_ignored? %>
+<%= render Ui::TableComponent::RowComponent.new(id: dom_id(group), href: member_monitoring_error_group_path(group, **(local_assigns[:time_range_params] || {})), link_label: group.title, frame: "_top",
+      select: { value: group.id, name: "ids[]", test_id: "error-select-#{group.id}" }, test_id: "error-group-row") do %>
+  <%# CYRA-377: la colonna messaggio si prendeva oltre un terzo della riga (titolo su 3-4 righe +
+      culprit in mono non spezzabile), spingendo i numeri fuori vista su un portatile. Tetto di
+      larghezza + titolo a 2 righe (line-clamp) e culprit a 1 (truncate), col testo completo nel
+      tooltip nativo: la colonna non impone più un floor di larghezza, i numeri restano leggibili. %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <%# CYRA-340: il dettaglio si apre sullo STESSO periodo dell'elenco. La riga è resa anche dal
+        broadcast in tempo reale, fuori da una pagina: lì il periodo non c'è e il collegamento resta
+        quello di sempre (local_assigns, mai una chiamata al controller). %>
+    <%# CYRA-821 — la riga vive dentro il frame dei risultati: senza `_top` la scheda dell'errore
+        si aprirebbe DENTRO l'elenco, al posto delle righe. Vale per ogni collegamento della riga. %>
+    <%= link_to member_monitoring_error_group_path(group, **(local_assigns[:time_range_params] || {})), class: "block max-w-[26rem]", data: { test: "error-group-link-#{group.id}", turbo_frame: "_top" } do %>
+      <span class="line-clamp-2 text-[13px] font-semibold <%= muted ? 'text-gray-500 dark:text-zinc-400' : 'text-zinc-900 dark:text-zinc-100' %> hover:text-indigo-600 dark:hover:text-indigo-400"
+            title="<%= group.title %>" data-test="error-group-title-<%= group.id %>"><%= group.title %></span>
+      <%# CYRA-381 — lo stesso messaggio spezzato su più righe dal punto di origine: qui si dice
+          quante sono, così si contano i problemi e non le righe. %>
+      <% same_message = local_assigns[:same_message_count].to_i %>
+      <%# Senza punto d'origine né segni, niente seconda riga: un «—» sotto il titolo era rumore. %>
+      <% culprit = error_culprit(group.culprit) %>
+      <% if culprit || same_message > 1 || group.has_unhandled? %>
+      <%# CYRA-883 — the code location first, then the badges: the paths line up down the list. %>
+      <span class="mt-0.5 flex items-center gap-1.5">
+        <% if culprit %>
+          <span class="min-w-0 truncate font-mono text-[11px] text-gray-500 dark:text-zinc-400"
+                title="<%= error_culprit_text(group.culprit) %>" data-test="error-group-culprit-<%= group.id %>"><%= culprit %></span>
+        <% end %>
+        <% if same_message > 1 %>
+          <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 shrink-0"
+                data-test="error-group-same-message-<%= group.id %>"
+                title="<%= t('member.monitoring.same_message_tip') %>"><%= t("member.monitoring.same_message_badge", count: same_message) %></span>
+        <% end %>
+        <% if group.has_unhandled? %>
+          <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap bg-rose-50 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400 shrink-0"
+                data-test="error-group-unhandled-<%= group.id %>" title="<%= t('member.monitoring.unhandled_badge_tip') %>"><%= t("member.monitoring.unhandled_badge") %></span>
+        <% end %>
+      </span>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_project"), class: "group-data-[single-project]:hidden") do %>
+    <span class="inline-flex items-center gap-1.5 text-[12.5px] text-gray-500 dark:text-zinc-400">
+      <span class="w-2 h-2 rounded-[2px] <%= Ui::Colors.swatch(group.project.color) %>"></span>
+      <%= group.project.name %>
+      <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= group.project.key %></span>
+    </span>
+  <% end %>
+  <%# CYRA-375 — l'ambiente dell'ULTIMA occorrenza: la riga risponde a "questo riguarda gli utenti
+      veri adesso?". Il gruppo può aver colpito più ambienti; il dettaglio li elenca tutti. %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_environment")) do %>
+    <% environment = local_assigns[:last_environment] %>
+    <% if environment.present? %>
+      <%= render Ui::BadgeComponent.new(label: environment, color: (environment == "production" ? :rose : :gray),
+            size: :sm, test_id: "error-group-environment") %>
+    <% else %>
+      <span class="text-[11px] text-gray-400 dark:text-zinc-500">—</span>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_level")) do %>
+    <%= render Ui::BadgeComponent.new(label: error_level_label(group.level), color: error_level_color(group.level), dot: true) %>
+  <% end %>
+  <%# CYRA-192 — accanto allo stato: se la chiusura è stata spiegata, lo si vede scorrendo l'elenco
+      senza aprire ogni riga. Il testo completo sta nel tooltip nativo, il dettaglio nella pagina. %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_status"), test_id: "error-group-status-#{group.id}") do %>
+    <span class="inline-flex flex-wrap items-center gap-1.5">
+      <%= render Ui::BadgeComponent.new(label: t("member.monitoring.status.#{group.status}"), color: error_status_color(group.status), dot: true) %>
+      <% if group.status_resolved? && (group.resolution_cause.present? || group.resolution_fix.present?) %>
+        <%= render Ui::IconComponent.new(name: "clipboard-check", class: "text-[11px] text-emerald-600 dark:text-emerald-400",
+                                         test_id: "error-resolution-noted",
+                                         label: [ group.resolution_cause, group.resolution_fix ].compact_blank.join(" · ")) %>
+        <span class="sr-only"><%= t("member.monitoring.resolution.noted") %></span>
+      <% end %>
+      <%# CYRA-883 — the ticket (was its own column, mostly empty) sits next to the status it explains.
+          CYRA-382: its status says whether someone is already on it. %>
+      <% if group.promoted? %>
+        <%= link_to member_ticket_path(group.ticket),
+              class: "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-medium whitespace-nowrap bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/25",
+              data: { test: "error-group-ticket-#{group.id}", turbo_frame: "_top" } do %>
+          <%= render Ui::IconComponent.new(name: "ticket", class: "text-[9px]") %><%= group.ticket.code %>
+        <% end %>
+        <% if group.ticket.status %>
+          <%= render Ui::BadgeComponent.new(label: group.ticket.status.display_label, color: group.ticket.status.color,
+                size: :sm, test_id: "error-group-ticket-status-#{group.id}") %>
+        <% end %>
+      <% end %>
+    </span>
+  <% end %>
+  <%# CYRA-883 — events over the list's range. A row replaced in real time has no trend (no page
+      context): the cell stays, empty, until the next refresh of the page. %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.list.trend"), test_id: "error-group-trend-#{group.id}") do %>
+    <% if (trend = local_assigns[:trend]) %>
+      <% peak = [ trend.max.to_i, 1 ].max %>
+      <span class="inline-flex items-end gap-px h-4" aria-hidden="true">
+        <% trend.each do |count| %>
+          <span class="w-[2px] rounded-sm <%= count.positive? ? "bg-rose-300" : "bg-stone-200 dark:bg-zinc-700" %>" data-trend-bar data-count="<%= count %>"
+                style="height: <%= count.positive? ? [ (count.to_f / peak * 16).round, 2 ].max : 1 %>px"></span>
+        <% end %>
+      </span>
+      <span class="sr-only"><%= t("member.monitoring.list.trend") %>: <%= trend.sum %></span>
+    <% end %>
+  <% end %>
+  <%# CYRA-568 — lo stesso conteggio scritto come lo scrive il resto del prodotto: l'elenco diceva
+      «2841» e la finestra che apre il ticket, dallo stesso gruppo, «2.841». %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_events"), align: :right, mono: true, test_id: "error-group-events-#{group.id}", class: "whitespace-nowrap #{muted ? 'text-gray-500 dark:text-zinc-400' : 'text-zinc-900 dark:text-zinc-100'}") do %>
+    <%= number_with_delimiter(group.events_count) %>
+  <% end %>
+  <%# CYRA-380: users_count 0 = «contesto utente mai inviato», non «zero colpiti». «non tracciato» +
+      link alla guida invece di un trattino fuorviante; col conteggio reale appena il gruppo traccia. %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_users"), align: :right, mono: true, test_id: "error-group-users-#{group.id}", class: "whitespace-nowrap text-gray-600 dark:text-zinc-400") do %>
+    <% if group.user_context_tracked? %><%= number_with_delimiter(group.users_count) %><% else %><span class="group-data-[users-untracked]:hidden"><%= error_users_untracked_link(test_id: "error-group-users-untracked-#{group.id}") %></span><span class="hidden group-data-[users-untracked]:inline text-gray-300 dark:text-zinc-600">—</span><% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_last_seen"), align: :right, mono: true, class: "whitespace-nowrap text-gray-500 dark:text-zinc-400",
+        test_id: "error-group-last-seen-#{group.id}", title: (l(group.last_seen_at, format: :long) if group.last_seen_at))) { error_time_ago_short(group.last_seen_at) } %>
+<% end %>

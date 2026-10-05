@@ -1,0 +1,41 @@
+<% content_for :title, t("member.workload.actions.title") %>
+
+<%# Board Kanban per status (enum), team-scoped. Il drag cambia lo status via PATCH; nessun realtime %>
+<%# multi-utente in v1 (spostamento ottimistico + reload on error). Tutti i membri del team che vedono %>
+<%# la board possono cambiarne lo status → card sempre draggable (nessun permesso RBAC workload). %>
+<div class="flex flex-col h-full md:-mx-px md:-mt-px md:h-[calc(100%+1px)]" data-controller="workload-board"
+     data-workload-board-can-manage-value="true"
+     data-workload-board-grabbed-label-value="<%= t("member.workload.actions.board.a11y.grabbed_label") %>"
+     data-workload-board-grabbed-message-value="<%= t("member.workload.actions.board.a11y.grabbed") %>"
+     data-workload-board-moving-message-value="<%= t("member.workload.actions.board.a11y.moving") %>"
+     data-workload-board-dropped-message-value="<%= t("member.workload.actions.board.a11y.dropped") %>"
+     data-workload-board-cancelled-message-value="<%= t("member.workload.actions.board.a11y.cancelled") %>"
+     data-keyboard-doc="<%= board_keyboard_docs(can_manage: true).to_json %>"
+     data-test="member-workload-board">
+  <%# Live region: annuncia grab/spostamento/drop/annulla ai lettori di schermo (WP2.9). %>
+  <div class="sr-only" role="status" aria-live="polite" data-workload-board-target="live" data-test="workload-board-live"></div>
+  <div class="px-7 pt-7 pb-4 md:px-0 md:pt-0 md:pb-2">
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("member.workload.actions.title"),
+          subtitle: t("member.quick_add.action.when"),
+          breadcrumb: [ { label: t("member.workload.actions.title") } ],
+          test_id: "workload-board-header",
+          counts_test_id: "workload-board-counts") do |h| %>
+      <% h.with_counts do %>
+        <%# CYRA-359: stesse chip della vista a elenco — totale e una per stato. %>
+        <%= render Ui::StatLabelComponent.new(label: t("stats.workload_actions", count: @board_total), value: @board_total, test_id: "workload-board-stat-total") %>
+        <% @status_counts.each do |status, count| %>
+          <%= render Ui::StatLabelComponent.new(label: t("member.workload.actions.status_counts.#{status}"), value: count,
+                value_color: (status == "in_progress" ? :indigo : :neutral), test_id: "workload-board-stat-#{status}") %>
+        <% end %>
+      <% end %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.workload.actions.new"), href: new_member_workload_action_path, variant: :primary, size: :sm, icon: "plus", test_id: "workload-actions-new") %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="flex min-h-0 flex-1 flex-col px-7 pb-7 md:px-0 md:pb-0">
+    <%= render "member/workload/actions/board" %>
+  </div>
+</div>

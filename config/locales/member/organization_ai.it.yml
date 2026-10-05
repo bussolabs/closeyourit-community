@@ -1,0 +1,75 @@
+it:
+  member:
+    organization_ai:
+      title: AI dell'organizzazione
+      test: Prova collegamento
+      save: Salva
+      updated: Impostazioni AI salvate.
+      reindex:
+        title: La ricerca va ricalcolata
+        body: Con un altro modello di ricerca i dati di questa organizzazione vanno ricalcolati. Finché il ricalcolo non finisce, ricerca e suggerimenti di doppioni trovano meno risultati. Le altre organizzazioni non cambiano.
+        confirm: Salva e ricalcola
+      mode:
+        title: Come usa l'AI
+        hint: Puoi usare l'AI della piattaforma così com'è, cambiarne modelli e tetto, oppure collegare un provider tuo.
+        label: Modo
+        options:
+          platform: Usa la piattaforma
+          variation: Variazione
+          own: Provider proprio
+        descriptions:
+          platform: Modelli, chiavi e tetto sono quelli della piattaforma.
+          variation: Stesso provider e stessa chiave della piattaforma, con i modelli e il tetto che scegli qui.
+          own: Tutte le richieste vanno al tuo provider compatibile OpenAI, con la tua chiave.
+      models:
+        title: Modelli
+        hint: Un campo vuoto usa il valore della piattaforma. Con un provider proprio, un campo vuoto spegne quella funzione.
+      provider:
+        title: Provider proprio
+        hint: Servono solo con il modo «Provider proprio». Le chiavi non vengono mai mostrate di nuovo.
+      fields:
+        monthly_token_cap: Tetto mensile di token
+        monthly_token_cap_hint: Vuoto = nessun tetto oltre a quello della piattaforma.
+        chat_model: Modello di chat
+        chat_model_hint: Risposte, analisi dei ticket e revisione.
+        embedding_model: Modello di ricerca
+        embedding_model_hint: Deve avere la stessa misura della piattaforma. Cambiarlo ricalcola i dati di questa organizzazione.
+        transcription_model: Modello di dettatura
+        transcription_model_hint: Trasforma la voce in testo.
+        rerank_model: Modello di riordino
+        rerank_model_hint: Mette in ordine i risultati della ricerca.
+        base_url: Indirizzo del provider
+        base_url_hint: L'indirizzo compatibile OpenAI, per esempio https://api.openai.com/v1.
+        api_key: Chiave del provider
+        api_key_hint: Lascia vuoto per tenere la chiave salvata.
+        rerank_base_url: Indirizzo del riordino
+        rerank_base_url_hint: Solo se il riordino sta su un altro indirizzo.
+        rerank_api_key: Chiave del riordino
+        rerank_api_key_hint: Lascia vuoto per tenere la chiave salvata.
+      values:
+        title: Valori in uso
+        hint: "Ogni valore arriva dal primo posto in cui è impostato, in quest'ordine: organizzazione, Valhalla, server."
+        unset: Non impostato
+        key_set: Impostata
+        key_unset: Non impostata
+        sources:
+          organization: Organizzazione
+          valhalla: Valhalla
+          environment: Server
+        fields:
+          chat_base_url: Indirizzo
+          api_key: Chiave
+          chat_model: Modello di chat
+          embedding_model: Modello di ricerca
+          embedding_dimensions: Misura della ricerca
+          transcription_model: Modello di dettatura
+          rerank_base_url: Indirizzo del riordino
+          rerank_api_key: Chiave del riordino
+          rerank_model: Modello di riordino
+          monthly_token_cap: Tetto mensile di token
+  activerecord:
+    errors:
+      models:
+        organizations/ai_setting:
+          internal_address: deve essere un indirizzo pubblico, non uno della rete interna
+          reenter_for_new_address: "va scritta di nuovo: l'indirizzo è cambiato"

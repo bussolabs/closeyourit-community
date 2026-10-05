@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="<%= I18n.locale %>">
+  <head>
+    <meta charset="utf-8">
+    <title><%= content_for(:title) || "CloseYourIt" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%# Il badge vive dentro un iframe sul sito di qualcun altro: non è una pagina da indicizzare
+        (la pagina di stato completa, quella sì, resta indicizzabile per conto suo). %>
+    <meta name="robots" content="noindex">
+
+    <%# Layout DELIBERATAMENTE autoconsistente: niente app.css, niente Google Fonts, niente
+        FontAwesome. Sono ~40 pixel di altezza incollati in casa d'altri — tirarsi dietro il CSS
+        dell'applicazione e due CDN esterne li farebbe pesare centinaia di KB e li legherebbe alla
+        disponibilità di quelle CDN. Colori LETTERALI, gli stessi token Tailwind della status page
+        (website/status_groups/show.html.erb): emerald-500 #10b981, amber-500 #f59e0b, red-500
+        #ef4444, gray-400 #9ca3af, stone-200 #e7e5e4, zinc-900 #18181b. %>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; height: 100%; background: transparent; }
+      .cyi-badge {
+        display: flex; align-items: center; gap: 8px;
+        height: 100%; width: 100%; padding: 0 11px;
+        border: 1px solid #e7e5e4; border-radius: 6px; background: #fff;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-size: 12.5px; line-height: 1; color: #18181b; text-decoration: none;
+      }
+      .cyi-badge:hover { background: #fafaf9; }
+      .cyi-badge:focus-visible { outline: 2px solid #6366f1; outline-offset: 1px; }
+      .cyi-badge__dot { flex: none; width: 9px; height: 9px; border-radius: 9999px; background: #9ca3af; }
+      .cyi-badge__dot--operational { background: #10b981; }
+      .cyi-badge__dot--degraded    { background: #f59e0b; }
+      .cyi-badge__dot--down        { background: #ef4444; }
+      .cyi-badge__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    </style>
+  </head>
+  <body><%= yield %></body>
+</html>

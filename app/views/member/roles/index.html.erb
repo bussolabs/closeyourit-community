@@ -1,0 +1,84 @@
+<% content_for :title, t("member.roles.title") %>
+
+<div class="p-7">
+  <div>
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("member.roles.title"),
+          subtitle: t("member.roles.help_title"),
+          breadcrumb: [ { label: t("member.roles.title") } ],
+          test_id: "roles-header",
+          counts_test_id: "roles-counts") do |h| %>
+      <% h.with_counts do %>
+        <%= render Ui::StatLabelComponent.new(label: t("stats.roles", count: @total_roles), value: @total_roles, test_id: "roles-count-roles") %>
+      <% end %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.roles.new"), href: new_member_role_path, variant: :primary, size: :sm, icon: "plus", test_id: "roles-new") %>
+      <% end %>
+    <% end %>
+
+    <div class="mt-6 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <%= render(Ui::TableToolbarComponent.new(
+            url: member_roles_path, query: params[:q], framed: true,
+            search_placeholder: t("member.roles.search_placeholder"),
+            search_test_id: "roles-search", test_id: "roles-toolbar")) %>
+      <div>
+
+        <%# CYRA-555 — vale quanto detto sui team: a zero corrispondenze si dice che è la ricerca a non
+            aver trovato niente, e si offre di azzerarla. %>
+        <% if @roles.empty? && params[:q].present? %>
+          <%= render Ui::NoResultsComponent.new(query: params[:q], reset_href: member_roles_path,
+                body: t("member.roles.no_results_body", count: @total_roles),
+                icon: "shield-user", test_id: "roles-no-results", reset_test_id: "roles-reset-search") %>
+        <% elsif @roles.empty? %>
+          <%= render Ui::EmptyStateComponent.new(title: t("member.roles.empty"), body: t("member.roles.empty_body"),
+                icon: "shield-user", test_id: "roles-empty") do |empty| %>
+            <% empty.with_action do %>
+              <%= render Ui::ButtonComponent.new(label: t("member.roles.new"), href: new_member_role_path, variant: :primary, size: :sm, icon: "plus", test_id: "roles-empty-new") %>
+            <% end %>
+          <% end %>
+        <% else %>
+          <%= render(Ui::TableComponent.new(stacked: true, label: t("member.roles.title"))) do |t| %>
+            <% t.with_head do %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.roles.th_role"), sort: "role") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.roles.th_areas")) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.roles.th_permissions"), sort: "permissions", initial: :desc) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.roles.th_used_by"), sort: "used_by", initial: :desc) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.roles.edit_title"), label_hidden: true, classes: "w-10") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+            <% end %>
+            <% @roles.each do |role| %>
+              <%= render Ui::TableComponent::RowComponent.new(href: member_role_path(role), link_label: role.name, test_id: "roles-row-#{role.id}") do %>
+                <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+                  <%= link_to member_role_path(role), class: "inline-flex items-center gap-2 text-[13px] font-medium text-zinc-900 dark:text-zinc-100" do %>
+                    <span class="w-2.5 h-2.5 rounded-[3px] <%= Ui::Colors.swatch(role.color.presence || "gray") %>"></span><%= role.name %>
+                  <% end %>
+                <% end %>
+                <%# CYRA-439 — «22 chiavi» non diceva niente: le AREE dicono su cosa mette mano il
+                    ruolo, e il conteggio resta accanto per chi lo cerca. %>
+                <%= render Ui::TableComponent::CellComponent.new(label: t("member.roles.th_areas")) do %>
+                  <span class="text-[12.5px] text-zinc-700 dark:text-zinc-300" data-test="roles-areas-<%= role.id %>"><%= authorization_area_summary(@keys_by_role[role.id] || []) %></span>
+                <% end %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.roles.th_permissions"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { t("member.roles.keys_count", count: @key_counts[role.id] || 0) } %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.roles.th_used_by"), class: "text-[12px] text-gray-500 dark:text-zinc-400")) { "#{t("member.roles.used_teams", count: @team_counts[role.id] || 0)} · #{t("member.roles.used_members", count: @account_counts[role.id] || 0)}" } %>
+                <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+                  <%= render Ui::ConfirmDialogComponent.new(title: t("member.roles.delete_dialog.title", name: role.name),
+                        url: member_role_path(role), confirm_label: t("member.roles.delete"),
+                        test_id: "role-delete-dialog-#{role.id}") do |dialog| %>
+                    <% dialog.with_body { t("member.roles.delete_dialog.body", members: t("member.roles.used_members", count: @account_counts[role.id] || 0), teams: t("member.roles.used_teams", count: @team_counts[role.id] || 0)) } %>
+                    <%= render Ui::RowMenuComponent.new(test_id: "roles-menu-#{role.id}") do %>
+                      <%= link_to t("member.roles.show_link"), member_role_path(role), class: Ui::RowMenuComponent.item_class %>
+                      <%= link_to t("member.roles.edit_title"), edit_member_role_path(role), class: Ui::RowMenuComponent.item_class %>
+                      <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+                      <%= dialog.menu_trigger(label: t("member.roles.delete"), icon: "trash", test_id: "roles-delete-#{role.id}") %>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+      <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "roles-pagination") %>
+    </div>
+  </div>
+</div>

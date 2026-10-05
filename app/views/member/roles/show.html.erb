@@ -1,0 +1,65 @@
+<% content_for :title, @role.name %>
+
+<%# CYRA-439 — scheda di sola lettura: per capire cosa concedeva un ruolo bisognava aprire il modulo
+    di modifica, che ha «Elimina» e «Salva» in cima. Qui si legge e basta, con la stessa riga di
+    spiegazione per ogni permesso e l'avviso su quelli delicati. %>
+<div class="p-7 space-y-6 max-w-4xl" data-test="member-role-show">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(class: "inline-block w-2.5 h-2.5 rounded-[3px] #{Ui::Colors.swatch(@role.color.presence || 'gray')} mr-2.5 align-middle"), @role.name ]),
+        breadcrumb: [ { label: t("member.roles.title"), href: member_roles_path }, { label: @role.name } ],
+        test_id: "role-show-header", counts_test_id: "role-show-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.roles.th_permissions"), value: @entries.size, test_id: "role-show-count-keys") %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.teams", count: @teams_count), value: @teams_count, test_id: "role-show-count-teams") %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.members", count: @accounts_count), value: @accounts_count, test_id: "role-show-count-members") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.roles.edit_title"), href: edit_member_role_path(@role), variant: :secondary_muted, size: :sm, icon: "pen", test_id: "role-show-edit") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.roles.show_subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <% if @entries.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.roles.show_empty"), body: t("member.roles.show_empty_body"),
+          icon: "key", framed: true, test_id: "role-show-empty") %>
+  <% else %>
+    <% if @entries.any? { |entry| entry[:dangerous] } %>
+      <%= render Ui::AlertComponent.new(variant: :warning, title: t("member.roles.dangerous"), test_id: "role-show-dangerous") do %>
+        <%= t("member.roles.show_dangerous_note") %>
+      <% end %>
+    <% end %>
+
+    <div class="space-y-4">
+      <% @entries.group_by { |entry| entry[:area] }.each do |area, entries| %>
+        <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden" data-test="role-show-area-<%= area %>">
+          <div class="px-5 py-2.5 bg-stone-50/60 dark:bg-zinc-800/60 border-b border-stone-200 dark:border-zinc-800">
+            <span class="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("authorization.areas.#{area}") %></span>
+          </div>
+          <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+            <% entries.each do |entry| %>
+              <% key = entry[:key] %>
+              <div class="px-5 py-3" data-test="role-show-key-<%= key %>">
+                <div class="flex items-center flex-wrap gap-2">
+                  <span class="text-[13px] text-zinc-900 dark:text-zinc-100"><%= authorization_permission_label(key) %></span>
+                  <% if entry[:dangerous] %>
+                    <span class="inline-flex items-center gap-1 rounded px-1.5 py-px text-[10px] font-semibold bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-300" data-test="role-show-danger-<%= key %>">
+                      <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[9px]") %><%= t("member.roles.dangerous") %>
+                    </span>
+                  <% end %>
+                  <span class="ml-auto inline-flex items-center rounded px-1.5 py-px font-mono text-[10px] <%= entry[:scoped] ? "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400" : "bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400" %>"><%= entry[:scoped] ? t("authorization.scopes.project") : t("authorization.scopes.org") %></span>
+                </div>
+                <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400 leading-snug"><%= authorization_permission_description(key) %></p>
+                <p class="mt-0.5 font-mono text-[10.5px] text-gray-400 dark:text-zinc-500"><%= key %></p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <%# T1 — the guide link sits in a panel, not on the page ground. %>
+    <p class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3 text-[12px] text-gray-500 dark:text-zinc-400" data-test="role-show-guide"><%= link_to t("member.guides.index.permissions.title"), member_guides_permissions_path, class: "text-indigo-600 dark:text-indigo-400 hover:underline" %></p>
+  <% end %>
+</div>

@@ -1,0 +1,42 @@
+<% content_for :title, t("member.chat.title") %>
+
+<div data-test="chat-index" class="h-full flex flex-col gap-5 p-7 md:h-[calc(100%+1px)]" data-controller="ui--dialog">
+  <%= render "member/chat_conversations/header" %>
+
+  <div class="flex-1 min-h-0">
+    <div class="h-full flex rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden md:border-b-0">
+      <%# CYRA-447 — senza conversazioni la pagina rendeva DUE messaggi che si contraddicono: la lista
+          diceva che non ce n'è ancora nessuna e il pannello accanto chiedeva di sceglierne una. Con
+          l'elenco vuoto resta un solo blocco, a tutta larghezza, che dice a cosa serve questo spazio e
+          quando conviene un commento sul ticket; l'invito a scegliere torna solo quando c'è da scegliere. %>
+      <%# With the Unread chip on, an empty list means "all read", unless there are no conversations at all. %>
+      <% if @conversations.any? || (@unread_only && @conversations_total.positive?) %>
+        <%= render "member/chat_conversations/conversations_pane", active_id: nil %>
+        <section data-test="chat-thread-placeholder" class="hidden md:flex flex-1 min-w-0 items-center justify-center">
+          <div class="text-center">
+            <%= render Ui::IconComponent.new(name: "messages-square", class: "text-[22px] text-stone-300 dark:text-zinc-600") %>
+            <p class="mt-2 text-sm text-zinc-500"><%= t("member.chat.select_conversation") %></p>
+            <p class="mx-auto mt-3 max-w-sm text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="chat-advice"><%= t("member.chat.subtitle") %></p>
+          </div>
+        </section>
+      <% else %>
+        <div class="flex-1 min-w-0 flex flex-col items-center justify-center">
+          <h1 class="sr-only"><%= t("member.chat.title") %></h1>
+          <%# The action opens the same dialog as the panel's New button: the ui--dialog controller sits
+              on the page wrapper, so the button reaches it from here. %>
+          <%= render Ui::EmptyStateComponent.new(
+                title: t("member.chat.empty"), body: t("member.chat.empty_body"),
+                example: t("member.chat.empty_example"), icon: "messages-square",
+                test_id: "chat-empty") do |empty| %>
+            <% empty.with_action do %>
+              <%= render Ui::ButtonComponent.new(label: t("member.chat.new_conversation.button"), type: "button",
+                    variant: :primary, size: :sm, icon: "plus", test_id: "chat-empty-new",
+                    data: { action: "ui--dialog#open" }) %>
+            <% end %>
+          <% end %>
+          <p class="mt-3 max-w-sm text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="chat-advice"><%= t("member.chat.subtitle") %></p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

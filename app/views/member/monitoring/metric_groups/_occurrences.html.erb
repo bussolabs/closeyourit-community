@@ -1,0 +1,46 @@
+<%# T5: the title, its count and the notes about these rows are rows of the table's own panel. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="occurrences">
+  <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.metrics.occurrences") %></h2>
+    <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="occurrences-kept"><%= t("member.metrics.occurrences_kept", count: @pagination.total) %></span>
+    <% if @occurrences.any? %><span class="text-[11px] text-gray-500 dark:text-zinc-400">— <%= t("member.metrics.occurrences_hint") %></span><% end %>
+  </div>
+  <%# La spiegazione della differenza, dove la differenza si vede: il totale in cima conta ogni
+      volta che è successo, qui ci sono i campioni ancora conservati. %>
+  <% if @group.samples_count.to_i > @pagination.total %>
+    <p class="px-4 py-2.5 border-b border-stone-200 dark:border-zinc-800 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="occurrences-retention-note">
+      <%= t("member.metrics.occurrences_retention_note", total: number_with_delimiter(@group.samples_count),
+            kept: number_with_delimiter(@pagination.total), days: @samples_retention_days) %>
+    </p>
+  <% end %>
+  <% if @bucket_from %>
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <%= render "member/monitoring/bucket_filter",
+            label: chart_bucket_window(@bucket_from, (@bucket_to - @bucket_from).to_i, @range),
+            reset_path: member_monitoring_metric_group_path(@group, range: @range) %>
+    </div>
+  <% end %>
+  <%# La selezione da tastiera (frecce, j/k, Home/End) è la stessa della show di un gruppo errori:
+      l'ascolto del keydown sta sul contenitore perché l'evento bolla dalle righe, e Ui::TableComponent
+      non passa attributi alla <table>. %>
+  <div data-action="keydown->occurrence-select#nav">
+    <%# Il container del tbody esiste SEMPRE (anche a lista vuota): è il target di prepend dei
+        campioni live. Lo stato vuoto resta sotto la tabella (pattern uptime monitor_checks). %>
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("member.metrics.occurrences"), body_id: "metric_group_samples_#{@group.id}", body_test_id: "metric-group-samples")) do |t| %>
+      <% t.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.metrics.col_when"), sort: "when", initial: :desc) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.metrics.col_duration"), sort: "duration", initial: :desc, align: :right, classes: "w-28") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.metrics.col_queries"), sort: "queries", initial: :desc, align: :right, classes: "w-24") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.metrics.col_environment"), sort: "environment") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.metrics.col_cached"), sort: "cached", align: :right, classes: "w-20") %>
+      <% end %>
+      <%= render partial: "member/monitoring/metric_groups/sample", collection: @occurrences, as: :sample, locals: { selected_id: @selected&.id, thresholds: @thresholds } %>
+    <% end %>
+    <% if @occurrences.empty? %>
+      <p class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="occurrences-empty"><%= t("member.metrics.bucket.no_data") %></p>
+    <% else %>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "metric-samples-pagination")) %>
+    <% end %>
+  </div>
+  <p class="sr-only" aria-live="polite" data-occurrence-select-target="status"></p>
+</div>

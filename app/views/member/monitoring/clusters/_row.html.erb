@@ -1,0 +1,25 @@
+<% row = summary.for(cluster) %>
+<%= render Ui::TableComponent::RowComponent.new(href: member_monitoring_cluster_path(cluster), link_label: cluster.name,
+      faded: cluster.status_paused?, test_id: "cluster-#{cluster.id}") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <span class="flex items-center gap-2">
+      <span class="h-2.5 w-2.5 shrink-0 rounded-[3px] <%= Ui::Colors.swatch(cluster.color) %>"></span>
+      <span class="truncate text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= cluster.name %></span>
+    </span>
+    <span class="block truncate text-[12px] text-gray-500 dark:text-zinc-400">
+      <%= cluster.kubernetes_version.present? ? t("member.clusters.kind_line", version: cluster.kubernetes_version, provider: cluster.provider.presence || "—") : t("member.clusters.kind_line_pending") %>
+    </span>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.clusters.col_status")) do %>
+    <%= cluster_status_badge(cluster, row, test_id: "cluster-status-#{cluster.id}") %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.clusters.col_nodes"), mono: true, align: :right)) { "#{row.nodes_ready}/#{row.nodes_total}" } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.clusters.col_apps"), mono: true, align: :right)) { "#{row.apps_ok}/#{row.apps_total}" } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.clusters.col_last_snapshot"), mono: true, class: "text-gray-500 dark:text-zinc-400") do %>
+    <% if cluster.last_snapshot_at %>
+      <span title="<%= l(cluster.last_snapshot_at, format: :long) %>"><%= error_time_ago(cluster.last_snapshot_at) %></span>
+    <% else %>
+      <%= t("member.clusters.never") %>
+    <% end %>
+  <% end %>
+<% end %>

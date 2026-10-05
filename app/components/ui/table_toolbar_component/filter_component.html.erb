@@ -1,0 +1,15 @@
+<%# Visibility via the hidden ATTRIBUTE (Tailwind preflight: display:none !important), NOT via
+    the class: on nodes with a display utility (inline-flex here, inline-block on the check icons)
+    the .hidden class loses the cascade and the node would stay visible.
+    CYRA-924 — the X is joined to the field: one frame, the field gives up its right corners. %>
+<%= tag.div hidden: !active?,
+      class: "inline-flex items-stretch [&>:first-child_.relative>select]:rounded-r-none [&>:first-child_.relative>button]:rounded-r-none [&>:first-child_input]:rounded-r-none [&>:first-child>summary]:rounded-r-none",
+      data: { "ui--filter-bar-target": "chip", filter_key: key, test: chip_test_id } do %>
+  <%= content %>
+  <button type="button" data-action="ui--filter-bar#remove"
+          aria-label="<%= t("shared.tables.remove_filter", label: label) %>"
+          data-test="<%= chip_test_id %>-remove"
+          class="inline-flex items-center justify-center w-8 rounded-r-md border border-l-0 border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-stone-50 dark:hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+    <%= render Ui::IconComponent.new(name: "x", class: "text-[11px]") %>
+  </button>
+<% end %>

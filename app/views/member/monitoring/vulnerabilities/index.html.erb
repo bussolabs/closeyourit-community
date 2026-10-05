@@ -1,0 +1,75 @@
+<% content_for :title, t("member.monitoring.vulnerabilities.title") %>
+
+<div class="p-7 space-y-6" data-test="member-vulnerabilities">
+  <%= render "member/monitoring/vulnerabilities/header", active_tab: "dependencies",
+        open_count: @open_count, critical_count: @critical_count, high_count: @high_count,
+        ignored_count: @ignored_count, runtimes_eol_count: @runtimes_eol_count %>
+
+  <%# CYRA-810 — dichiara i file delle dipendenze che l'ultima scansione non è riuscita a leggere. Sta
+      FUORI dal ramo elenco/vuoto di proposito: è proprio quando l'elenco è vuoto che «nessuna
+      vulnerabilità nota» inganna, perché su quei file il controllo non ha guardato. %>
+  <% if @unverified_manifests_count.positive? %>
+    <%= render Ui::AlertComponent.new(variant: :warning, test_id: "vulnerabilities-unverified",
+          title: t("member.monitoring.vulnerabilities.unverified.title", count: @unverified_manifests_count)) do %>
+      <%= t("member.monitoring.vulnerabilities.unverified.body") %>
+      <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= unverified_manifests_summary(@unverified_manifests, @unverified_manifests_count) %></span>
+    <% end %>
+  <% end %>
+
+  <% filtering = params[:q].present? || params[:severity].present? || params[:status].present? || params[:project_id].present? %>
+  <% if @findings.empty? && !filtering %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.vulnerabilities.empty"), body: t("member.monitoring.vulnerabilities.empty_hint"), icon: "shield-half", framed: true, test_id: "vulnerabilities-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="vulnerabilities-table">
+      <%= render(Ui::TableToolbarComponent.new(framed: true,
+            url: member_monitoring_vulnerabilities_path, query: params[:q],
+            search_placeholder: t("member.monitoring.vulnerabilities.columns.package"),
+            search_test_id: "vulnerabilities-search", apply_test_id: "vulnerabilities-filter",
+            test_id: "vulnerabilities-toolbar")) do |toolbar| %>
+        <% toolbar.with_filter(key: "severity", label: t("member.monitoring.vulnerabilities.columns.severity")) do %>
+          <div class="w-36"><%= render Ui::SelectComponent.new(name: "severity", multiple: true, summary: true,
+            options: Vulnerabilities::Advisory.severities.keys.reverse.map { |s| [ t("member.monitoring.vulnerabilities.severity.#{s}"), s ] },
+            selected: params[:severity], placeholder: t("member.monitoring.vulnerabilities.columns.severity"), test_id: "filter-severity") %></div>
+        <% end %>
+        <% toolbar.with_filter(key: "status", label: t("member.monitoring.vulnerabilities.status.open")) do %>
+          <div class="w-32"><%= render Ui::SelectComponent.new(name: "status", multiple: true, summary: true,
+            options: Vulnerabilities::Finding.statuses.keys.map { |s| [ t("member.monitoring.vulnerabilities.status.#{s}"), s ] },
+            selected: params[:status], placeholder: t("member.monitoring.vulnerabilities.status.open"), test_id: "filter-status") %></div>
+        <% end %>
+        <% toolbar.with_filter(key: "project_id", label: t("member.monitoring.vulnerabilities.columns.project")) do %>
+          <div class="w-40"><%= render Ui::SelectComponent.new(name: "project_id", multiple: true, summary: true,
+            options: @projects.map { |p| [ p.name, p.id, p.color ] }, selected: params[:project_id],
+            placeholder: t("member.monitoring.vulnerabilities.columns.project"), test_id: "filter-project") %></div>
+        <% end %>
+        <% toolbar.with_views do %>
+          <%= render Ui::SavedViewsComponent.new(resource_type: "vulnerabilities", views: @saved_views,
+                index_helper: :member_monitoring_vulnerabilities_path, current_filters: params) %>
+        <% end %>
+      <% end %>
+
+        <%# CYRA-555 — qui la lista è filtrata: ripetere «nessuna vulnerabilità» (il messaggio di chi
+            non ne ha nessuna) faceva credere che il progetto fosse pulito. Dice invece quante ne
+            risultano davvero e come tornare a vederle tutte. %>
+        <% if @findings.empty? %>
+          <%= render Ui::NoResultsComponent.new(query: params[:q].presence,
+                reset_href: member_monitoring_vulnerabilities_path,
+                body: t("member.monitoring.vulnerabilities.no_results_body", count: @open_count),
+                test_id: "vulnerabilities-no-results", reset_test_id: "vulnerabilities-reset-search") %>
+        <% else %>
+          <%= render(Ui::TableComponent.new(stacked: true, label: t("member.monitoring.vulnerabilities.title"))) do |t| %>
+            <% t.with_head do %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.vulnerabilities.columns.package"), sort: "package") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.vulnerabilities.columns.severity"), sort: "severity", initial: :desc, classes: "w-32") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.vulnerabilities.columns.advisory"), classes: "w-40") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.vulnerabilities.columns.fixed_version"), classes: "w-32") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.vulnerabilities.columns.project"), sort: "project", classes: "w-24") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.vulnerabilities.columns.last_seen"), sort: "seen", classes: "w-28") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+            <% end %>
+            <%= render partial: "member/monitoring/vulnerabilities/finding", collection: @findings, as: :finding %>
+          <% end %>
+          <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "vulnerabilities-pagination")) %>
+        <% end %>
+    </div>
+  <% end %>
+</div>

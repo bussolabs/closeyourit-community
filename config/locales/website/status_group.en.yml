@@ -1,0 +1,13 @@
+en:
+  website:
+    status_group:
+      title: Service status
+      meta_description: "Real-time status of %{group} services."
+      headline:
+        operational: All systems operational
+        down: Ongoing outage
+        degraded: Degraded service
+        unknown: Status unavailable
+      services: Services
+      no_services: No services in this group.
+      service_timeline_summary: "Uptime timeline for the last %{range}: %{up} up, %{partial}, %{down} down, %{empty} no data, out of %{total} blocks."

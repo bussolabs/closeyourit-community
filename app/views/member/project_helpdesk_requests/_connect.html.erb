@@ -1,0 +1,88 @@
+<%# locals: (project:, public_key:, can_read_tokens:, collapsed:) %>
+<%# How a site sends requests here: the steps, a form that works as written and a prompt to hand to a
+    coding assistant. Closed once requests arrive (T9); the key shows only to whoever manages the keys. %>
+<% endpoint = "#{request.base_url}/api/v1/projects/#{project.id}/helpdesk_requests" %>
+<% key = public_key || t("member.monitoring.analytics.onboarding.key_placeholder") %>
+<%= render Ui::SectionComponent.new(title: t("member.helpdesk.connect.title"), collapsible: true, collapsed: collapsed,
+      test_id: "project-helpdesk-connect") do |section| %>
+  <% section.with_subtitle { t("member.helpdesk.connect.subtitle") } %>
+  <ol class="space-y-5">
+    <li class="flex gap-3">
+      <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">1</span>
+      <div class="flex-1 min-w-0">
+        <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.helpdesk.connect.step_key") %></p>
+        <% if can_read_tokens %>
+          <p class="mt-1.5 text-[12.5px]"><%= link_to t("member.helpdesk.connect.keys_link"), member_project_tokens_path(project),
+                class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "project-helpdesk-keys" } %></p>
+          <% if public_key.nil? %>
+            <p class="mt-1.5 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="project-helpdesk-no-key"><%= t("member.helpdesk.connect.no_key") %></p>
+          <% end %>
+        <% else %>
+          <p class="mt-1.5 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="project-helpdesk-key-locked"><%= t("member.helpdesk.connect.key_locked") %></p>
+        <% end %>
+      </div>
+    </li>
+    <%# The form and the prompt are two ways to do the same step: side by side, never one after the other. %>
+    <li class="grid grid-cols-1 xl:grid-cols-2 gap-x-6 gap-y-5">
+      <div class="flex gap-3 min-w-0" data-controller="clipboard" data-clipboard-copied-value="<%= t("member.helpdesk.connect.copied") %>" data-test="project-helpdesk-step-2a">
+        <span class="shrink-0 inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">2a</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-start justify-between gap-3">
+            <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.helpdesk.connect.step_code") %></p>
+            <%= render Ui::ButtonComponent.new(label: tag.span(t("member.helpdesk.connect.copy"), data: { clipboard_target: "label" }),
+                  variant: :secondary_muted, size: :sm, icon: "copy", class: "shrink-0", test_id: "project-helpdesk-copy-code", data: { action: "clipboard#copy" }) %>
+          </div>
+          <pre class="mt-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto" data-test="project-helpdesk-snippet"><code data-clipboard-target="source">&lt;form id="help-form"&gt;
+  &lt;textarea name="message" required maxlength="4000"&gt;&lt;/textarea&gt;
+  &lt;input type="email" name="email"&gt;
+  &lt;!-- Trap for robots: people never see it, it must stay empty. --&gt;
+  &lt;input type="text" name="website" tabindex="-1" autocomplete="off" hidden&gt;
+  &lt;button&gt;Send&lt;/button&gt;
+  &lt;p id="help-form-result" hidden&gt;&lt;/p&gt;
+&lt;/form&gt;
+&lt;script&gt;
+  document.getElementById('help-form').addEventListener('submit', async (event) =&gt; {
+    event.preventDefault()
+    const form = event.target
+    const result = document.getElementById('help-form-result')
+    const fields = Object.fromEntries(new FormData(form))
+    const response = await fetch('<%= endpoint %>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Sentry-Auth': 'Sentry sentry_key=<%= key %>',
+      },
+      body: JSON.stringify({ ...fields, page_url: location.href }),
+    })
+    result.hidden = false
+    if (response.status === 202) {
+      form.reset()
+      result.textContent = 'Thank you, we received your message.'
+    } else if (response.status === 429) {
+      result.textContent = 'Too many messages. Try again in a minute.'
+    } else {
+      result.textContent = 'The message was not sent. Check the fields and try again.'
+    }
+  })
+&lt;/script&gt;</code></pre>
+          <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.helpdesk.connect.code_note") %></p>
+        </div>
+      </div>
+      <div class="flex gap-3 min-w-0" data-controller="clipboard" data-clipboard-copied-value="<%= t("member.helpdesk.connect.copied") %>" data-test="project-helpdesk-step-2b">
+        <span class="shrink-0 inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">2b</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-start justify-between gap-3">
+            <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.helpdesk.connect.step_prompt") %></p>
+            <%= render Ui::ButtonComponent.new(label: tag.span(t("member.helpdesk.connect.copy"), data: { clipboard_target: "label" }),
+                  variant: :secondary_muted, size: :sm, icon: "copy", class: "shrink-0", test_id: "project-helpdesk-copy-prompt", data: { action: "clipboard#copy" }) %>
+          </div>
+          <pre class="mt-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed whitespace-pre-wrap" data-test="project-helpdesk-prompt"><code data-clipboard-target="source"><%= t("member.helpdesk.connect.prompt", endpoint: endpoint, key: key) %></code></pre>
+        </div>
+      </div>
+    </li>
+    <li class="flex gap-3">
+      <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">3</span>
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.helpdesk.connect.step_try") %></p>
+    </li>
+  </ol>
+<% end %>

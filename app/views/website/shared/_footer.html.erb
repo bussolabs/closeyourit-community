@@ -1,0 +1,17 @@
+<footer class="w-full bg-white border-t border-stone-200" data-test="website-footer">
+  <div class="max-w-5xl mx-auto px-4 py-8 flex flex-col sm:flex-row gap-6 sm:items-start">
+    <div class="flex items-center gap-2.5"><%= render "shared/brand_mark", size: "w-6 h-6" %><div><p class="font-display text-[13px] font-semibold text-zinc-900">CloseYourIt</p><p class="font-mono text-[11px] text-gray-500"><%= t("website.footer.tagline") %></p></div></div>
+    <nav class="sm:ml-auto grid grid-cols-2 gap-x-10 gap-y-1.5" aria-label="<%= t("website.footer.product") %>">
+      <%= link_to t("website.nav.workflow"), "#{website_page_path(:home)}#workflow", class: "text-[12.5px] text-gray-500 hover:text-zinc-900" %>
+      <%= link_to t("website.nav.features"), "#{website_page_path(:home)}#capabilities", class: "text-[12.5px] text-gray-500 hover:text-zinc-900" %>
+      <%= link_to t("website.nav.integrations"), website_page_path(:integrations), class: "text-[12.5px] text-gray-500 hover:text-zinc-900" %>
+      <%= link_to t("website.footer.project"), "#{website_page_path(:home)}#project", class: "text-[12.5px] text-gray-500 hover:text-zinc-900" %>
+      <%= link_to t("website.nav.request_access"), website_page_path(:access_request), class: "text-[12.5px] text-indigo-600 hover:text-indigo-700" %>
+      <%= link_to t("website.footer.sign_in"), login_path, class: "text-[12.5px] text-gray-500 hover:text-zinc-900" %>
+      <%# CYRA-698 — il modulo di richiesta accesso raccoglie gia' dati personali: l'informativa deve
+          essere raggiungibile da ogni pagina, non solo da quella del modulo. %>
+      <%= link_to t("website.footer.privacy"), website_page_path(:privacy), class: "text-[12.5px] text-gray-500 hover:text-zinc-900", data: { test: "website-footer-privacy" } %>
+    </nav>
+  </div>
+  <p class="px-4 py-4 text-center text-xs"><%= render "shared/publisher_credit" %></p>
+</footer>

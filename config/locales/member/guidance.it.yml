@@ -1,0 +1,105 @@
+it:
+  member:
+    nav:
+      guidance: Guidance
+    guidance:
+      title: Guidance
+      # CYRA-576: una spiegazione per livello. Ognuna dice cosa vale, cosa riceve dall'alto e a chi
+      # passa: la stessa frase ai tre livelli diceva il falso su due (sull'organizzazione, che
+      # eredita da sé stessa; sul gruppo, che si stesse scrivendo per un progetto).
+      help:
+        organization: "La base per tutti i gruppi e i progetti dell'organizzazione."
+        group: "Vale per ogni progetto del gruppo ed eredita dall'organizzazione."
+      # Riga del modulo: dice a quale livello si sta scrivendo, con il nome, e per chi varrà.
+      applies_to:
+        organization: "Stai scrivendo per l'organizzazione %{name}: varrà per tutti i suoi gruppi e progetti."
+        group: "Stai scrivendo per il gruppo %{name}: varrà per i progetti del gruppo."
+        project: "Stai scrivendo per il progetto %{name}: varrà solo qui."
+      # Briciola di ritorno all'hub del livello, qualificata (era «Guidance» ai tre livelli).
+      home:
+        organization: Guidance dell'organizzazione
+        group: Guidance del gruppo %{name}
+        project: Guidance del progetto %{name}
+      manage: Gestisci la guidance
+      counts:
+        references: Riferimenti
+        procedures: Procedure
+      reference:
+        section_title: Riferimenti
+        section_help: Dove l'assistente trova il contesto — repository, pagine di Conoscenza, indirizzi web o cartelle.
+        add: Nuovo riferimento
+        empty: Nessun riferimento a questo livello.
+        new_title: Nuovo riferimento
+        edit_title: Modifica riferimento
+        created: Riferimento creato.
+        updated: Riferimento aggiornato.
+        deleted: Riferimento rimosso.
+        edit: Modifica
+        delete: Rimuovi
+        delete_confirm: Rimuovere questo riferimento?
+        key: Chiave
+        key_hint: Identità stabile dello slot tra i livelli - stessa chiave, stesso elemento ereditato o sostituito.
+        kind: Tipo
+        location: Posizione
+        location_hint: Dove punta il riferimento - URL, path o coordinate del repository.
+        instructions: Istruzioni
+        instructions_hint: Nota facoltativa su come usarlo.
+        required: Obbligatorio
+        enabled: Attivo
+        enabled_hint: Disattivalo per sopprimere a questo livello la chiave ereditata.
+        save_new: Crea
+        save_edit: Salva
+        cancel: Annulla
+        kinds:
+          repository: Repository
+          knowledge_base: Knowledge base
+          url: URL
+          path: Path
+      procedure:
+        section_title: Procedure
+        section_help: Istruzioni scritte da seguire nel lavoro. Si sommano a quelle di organizzazione, gruppo e progetto.
+        add: Nuova procedura
+        empty: Nessuna procedura a questo livello.
+        new_title: Nuova procedura
+        edit_title: Modifica procedura
+        created: Procedura creata.
+        updated: Procedura aggiornata.
+        deleted: Procedura rimossa.
+        edit: Modifica
+        delete: Rimuovi
+        delete_confirm: Rimuovere questa procedura?
+        key: Chiave
+        content: Contenuto
+        content_hint: Testo libero in markdown.
+        application_mode: Applicazione
+        application_mode_hint: Come si comporta rispetto ai livelli superiori.
+        merge_strategy: Combinazione
+        merge_strategy_hint: Con «eredita» - sovrascrive o accoda il contenuto ereditato.
+        enabled: Attiva
+        save_new: Crea
+        save_edit: Salva
+        cancel: Annulla
+        modes:
+          inherit: Eredita
+          replace: Sostituisci
+          disable: Disabilita
+        strategies:
+          override: Sovrascrivi
+          append: Accoda
+      preview:
+        title: Contesto effettivo
+        help: Ciò che riceve la riga di comando per questo progetto, con origine e sostituzioni esplicite.
+        references_title: Riferimenti risolti
+        procedures_title: Procedure risolte
+        empty: Nessun elemento nel contesto effettivo.
+        origin_label: "Origine:"
+      status:
+        here: Definita qui
+        inherited: Ereditata
+        overridden: Sostituisce
+        appended: Accoda
+        disabled: Disabilitata
+      origin:
+        organization: Organizzazione
+        group: Gruppo
+        project: Progetto

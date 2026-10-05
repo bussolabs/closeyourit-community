@@ -1,0 +1,63 @@
+<% content_for :title, t("member.datasets.trainings.show_title") %>
+<% running = @training.status_pending? || @training.status_running? %>
+
+<div class="p-7" data-test="member-dataset-training-show">
+<%= turbo_frame_tag "dataset-progress", target: "_top" do %>
+<div class="space-y-6" data-controller="datasets-poll" data-datasets-poll-active-value="<%= running %>"
+     data-datasets-poll-url-value="<%= member_dataset_training_path(@dataset, @training) %>">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.datasets.trainings.show_title"),
+        breadcrumb: [ { label: t("member.datasets.title"), href: member_datasets_path },
+                      { label: @dataset.name, href: member_dataset_path(@dataset) },
+                      { label: t("member.datasets.trainings.show_title") } ],
+        counts_test_id: "training-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.datasets.trainings.status_label"), value: t("member.datasets.trainings.status.#{@training.status}"), value_color: (@training.status_done? ? :emerald : nil), test_id: "training-status") %>
+      <% if @training.status_done? %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.datasets.trainings.accuracy"), value: number_to_percentage(@training.metrics["overall_accuracy"].to_f * 100, precision: 0), value_color: :indigo, test_id: "training-accuracy") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if running %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 py-10 text-center" data-test="training-running">
+      <%= render Ui::IconComponent.new(name: "loader-circle", class: "animate-spin text-[20px] text-indigo-500 dark:text-indigo-400") %>
+      <p class="mt-3 text-[13px] text-gray-600 dark:text-zinc-400"><%= t("member.datasets.trainings.running_hint") %></p>
+    </div>
+  <% elsif @training.status_failed? %>
+    <div class="rounded-md border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15 px-4 py-3 text-[12.5px] text-red-700 dark:text-red-300" data-test="training-failed">
+      <%= @training.error_message.presence || t("member.datasets.trainings.failed_generic") %>
+    </div>
+    <%# CYRA-791 — l'esito è recuperabile: chi può allenare riparte da qui, senza tornare a cercare
+        il bottone sull'insieme di dati. Riprovare è anche ciò che sblocca un addestramento rimasto
+        appeso, quindi la strada del recupero e quella dell'avvio sono la stessa. %>
+    <% if can?("datasets.train", scope: @dataset.project) %>
+      <%= button_to member_dataset_trainings_path(@dataset), class: "inline-flex items-center gap-1.5 h-[30px] px-2.5 rounded-md bg-indigo-600 text-white text-[12px] font-semibold hover:bg-indigo-700", form: { class: "inline" }, data: { test: "training-retry" } do %>
+        <%= render Ui::IconComponent.new(name: "rotate-cw", class: "text-[11px]") %><%= t("member.datasets.trainings.retry") %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="training-metrics">
+      <div class="px-4 py-3 border-b border-stone-100 dark:border-zinc-800">
+        <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.datasets.trainings.metrics_title") %></h2>
+      </div>
+      <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+        <% @dataset.target_columns.each do |column| %>
+          <div class="flex items-center justify-between px-4 py-2.5">
+            <span class="text-[13px] text-zinc-900 dark:text-zinc-100"><%= column.label %> <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= column.code %></span></span>
+            <span class="font-mono text-[12.5px] text-gray-700 dark:text-zinc-300"><%= number_to_percentage((@training.metrics.dig("per_target", column.code).to_f * 100), precision: 0) %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="training-prompt">
+      <div class="px-4 py-3 border-b border-stone-100 dark:border-zinc-800">
+        <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.datasets.trainings.prompt_title") %></h2>
+      </div>
+      <pre class="px-4 py-3 text-[12.5px] text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap font-mono leading-relaxed"><%= @training.system_prompt %></pre>
+    </div>
+  <% end %>
+</div>
+<% end %>
+</div>

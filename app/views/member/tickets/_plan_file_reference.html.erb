@@ -1,0 +1,8 @@
+<%# locals: (reference:) %>
+<%# The reader has no code at hand: the explanation is the text, the path only a hover. It stays whole
+    in the plan data and in the downloaded Markdown. CYRA-998 %>
+<% coordinate = [reference["path"], reference["line"]].compact_blank.join(":") %>
+<li class="flex items-start gap-1.5 text-[11.5px] text-gray-600 dark:text-zinc-400 leading-relaxed" title="<%= coordinate %>" data-test="automation-plan-file-reference">
+  <span class="text-gray-400 dark:text-zinc-500" aria-hidden="true">↳</span>
+  <span><%= reference["reason"].presence || coordinate %></span>
+</li>

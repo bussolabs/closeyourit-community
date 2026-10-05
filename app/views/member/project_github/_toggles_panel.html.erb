@@ -1,0 +1,80 @@
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 divide-y divide-stone-100 dark:divide-zinc-800" data-test="github-toggles">
+  <%= render Ui::SwitchComponent.new(
+        name: "sync_enabled", url: member_project_github_path(@project),
+        checked: @repository.sync_enabled?, icon: "refresh-cw",
+        label: t("member.project_github.sync_enabled_label"),
+        hint: t("member.project_github.sync_enabled_hint"), test_id: "github-sync-toggle") %>
+
+  <%= render Ui::SwitchComponent.new(
+        name: "tag_binding_enabled", url: member_project_github_path(@project),
+        checked: @repository.tag_binding_enabled?, icon: "tag",
+        label: t("member.project_github.tag_binding_enabled_label"),
+        hint: t("member.project_github.tag_binding_enabled_hint"), test_id: "github-tag-binding-toggle") %>
+
+  <%= render Ui::SwitchComponent.new(
+        name: "autoclose_on_merge", url: member_project_github_path(@project),
+        checked: @repository.autoclose_on_merge?, icon: "git-merge",
+        label: t("member.project_github.autoclose_on_merge_label"),
+        hint: t("member.project_github.autoclose_on_merge_hint"), test_id: "github-autoclose-toggle") %>
+
+  <%# sync_secrets tocca i VALORI del vault: mostrato solo a chi può leggerli (CYRA-234). %>
+  <% if secrets_readable? %>
+    <%= render Ui::SwitchComponent.new(
+          name: "sync_secrets", url: member_project_github_path(@project),
+          checked: @repository.sync_secrets?, icon: "lock",
+          label: t("member.project_github.sync_secrets_label"),
+          hint: t("member.project_github.sync_secrets_hint"), test_id: "github-sync-secrets-toggle") %>
+  <% end %>
+</div>
+
+<% if secrets_readable? %>
+  <%# CYRA-106 — l'invio gira in background e non solleva: senza questo riquadro una
+      configurazione rotta resta indistinguibile da un invio riuscito. Sta dietro allo stesso
+      gate del "Sync now": racconta la sorte dei VALORI del vault (CYRA-234). %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="github-last-sync">
+    <div class="px-4 py-3 border-b border-stone-100 dark:border-zinc-800 flex items-center justify-between gap-3 flex-wrap">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.project_github.last_sync_title") %></h2>
+      <% if @repository.last_sync_ok? %>
+        <%= render Ui::BadgeComponent.new(label: t("member.project_github.last_sync_ok"), color: :green,
+              dot: true, test_id: "github-last-sync-status") %>
+      <% elsif @repository.last_sync_failed? %>
+        <%= render Ui::BadgeComponent.new(label: t("member.project_github.last_sync_error"), color: :red,
+              dot: true, test_id: "github-last-sync-status") %>
+      <% else %>
+        <%= render Ui::BadgeComponent.new(label: t("member.project_github.last_sync_never"), color: :gray,
+              test_id: "github-last-sync-status") %>
+      <% end %>
+    </div>
+    <div class="px-4 py-3 border-b border-stone-100 dark:border-zinc-800 flex items-center justify-between gap-3 flex-wrap" data-test="github-sync-secrets-action">
+      <p class="text-[12px] text-zinc-500 max-w-lg"><%= t("member.project_github.sync_now_hint") %></p>
+      <%= render Ui::ButtonComponent.new(
+            label: t("member.project_github.sync_now"),
+            href: sync_member_project_github_path(@project), method: :post,
+            variant: :secondary_muted, size: :sm, icon: "refresh-cw", test_id: "github-sync-now") %>
+    </div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="github-last-sync-when">
+        <% if @repository.last_sync_at %>
+          <%= secret_event_time(@repository.last_sync_at) %>
+        <% else %>
+          <%= t("member.project_github.last_sync_never_hint") %>
+        <% end %>
+      </p>
+
+      <% if @repository.last_sync_failed? %>
+        <div class="rounded-md border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15 px-3 py-2.5 space-y-2" data-test="github-last-sync-error">
+          <p class="text-[12.5px] text-red-700 dark:text-red-300 leading-relaxed"><%= secret_sync_failure_reason(@repository) %></p>
+          <% facts = secret_sync_failure_facts(@repository) %>
+          <% if facts.any? %>
+            <ul class="space-y-1 text-[12px] text-red-700/90 dark:text-red-300/90">
+              <% facts.each do |fact| %>
+                <li class="font-mono">— <%= fact %></li>
+              <% end %>
+            </ul>
+          <% end %>
+          <p class="font-mono text-[11px] text-red-600/80" data-test="github-last-sync-code"><%= @repository.last_sync_error_code %></p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

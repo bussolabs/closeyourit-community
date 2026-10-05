@@ -1,0 +1,32 @@
+---
+it:
+  member:
+    guides:
+      index:
+        permissions:
+          title: Chi può fare cosa
+      permissions:
+        title: Chi può fare cosa
+        subtitle: Ruoli, permessi e su cosa valgono.
+        what_title: I tre pezzi
+        what_intro: "L'accesso si costruisce con tre cose che si sommano. Nessuna sostituisce le altre: se una manca, l'azione non passa."
+        what_b1: "Il permesso: una singola cosa che si può fare, per esempio «Elimina ticket». Ce ne sono una sessantina, uno per ogni azione delicata del prodotto."
+        what_b2: "Il ruolo: un gruppo di permessi con un nome, per esempio «Sviluppatore». Si assegna a una persona o a un team, e cambiarlo aggiorna subito tutti quelli che ce l'hanno."
+        what_b3: "Il perimetro: su quali progetti vale. Un permesso di progetto conta solo dove la persona vede il progetto; un permesso di organizzazione vale ovunque."
+        scope_title: Progetto oppure organizzazione
+        scope_intro: Ogni permesso porta scritto accanto su cosa vale, e la differenza conta più di quanto sembri.
+        scope_project: "«progetto» — vale solo sui progetti che quella persona vede. Dare «Elimina ticket» a chi vede un progetto solo non gli fa toccare gli altri."
+        scope_org: "«org» — vale su tutta l'organizzazione, senza eccezioni. Non esiste un modo di restringerlo a un progetto: se lo dai, lo dai per tutto."
+        scope_read: "La lettura quasi mai è un permesso a sé: chi vede un progetto ne legge ticket, errori, registri e misure. I permessi servono a fare, non a guardare. Le eccezioni sono i valori riservati e gli audit, che hanno un permesso apposta."
+        dangerous_title: I permessi delicati
+        dangerous_intro: "Alcuni permessi non si annullano o allargano molto il raggio d'azione: nell'elenco portano l'avviso «delicato». Vale la pena guardarli uno per uno prima di concederli."
+        dangerous_b1: "Quelli che distruggono: eliminare ticket, progetti, gruppi di errori. Quello che sparisce non torna."
+        dangerous_b2: "Quelli che aprono informazioni riservate: leggere i valori dei secret e scaricare i file segreti."
+        dangerous_b3: "Quelli che agiscono fuori dal prodotto: eseguire comandi sulle macchine dell'organizzazione."
+        dangerous_b4: "Quelli che allargano i privilegi: gestire ruoli e permessi vuol dire potersi dare tutto il resto."
+        dangerous_confirm: "Le azioni che passano da uno di questi permessi chiedono sempre una conferma prima di partire: dal browser una domanda a cui rispondere, dal terminale il comando ripetuto con --yes. Ogni conferma resta scritta nella cronologia dei permessi, con chi l'ha data e quando."
+        how_title: Come si fa
+        how_step1: Apri Ruoli da Amministrazione e clicca un ruolo per vedere, in sola lettura, cosa concede.
+        how_step2: "Se devi cambiarlo, usa «Modifica ruolo»: ogni permesso ha un nome e una riga che dice cosa comporta concederlo."
+        how_step3: "Assegna il ruolo a un team o a una persona, e dai a quella persona i progetti che deve vedere: senza perimetro, i permessi di progetto non fanno niente."
+        cta: Vai ai ruoli

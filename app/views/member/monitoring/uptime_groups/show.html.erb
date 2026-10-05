@@ -1,0 +1,32 @@
+<% content_for :title, @group.name %>
+<% can_manage = can?("uptime_groups.manage") %>
+<% group_title = tag.span(class: "inline-flex items-center gap-2.5") { safe_join([ render(Ui::EntityMarkComponent.new(record: @group)), @group.name ]) } %>
+
+<div class="p-7 space-y-6" data-test="member-uptime-group">
+  <%= render Ui::PageHeaderComponent.new(
+        title: group_title,
+        breadcrumb: [ { label: t("member.uptime.title"), href: member_monitoring_monitors_path }, { label: t("member.uptime_groups.title"), href: member_monitoring_uptime_groups_path }, { label: @group.name } ],
+        counts_test_id: "uptime-group-counts", tabs_test_id: "uptime-group-tabs") do |h| %>
+    <%# CYRA-990 — the group's public status page lives in its own tab, as on a monitor. %>
+    <% h.with_tab(label: t("member.monitoring.public_tab.tab_overview"), href: member_monitoring_uptime_group_path(@group),
+                  active: @tab == "overview", icon: "activity", test_id: "uptime-group-tab-overview") %>
+    <% h.with_tab(label: t("member.monitoring.public_tab.tab_public"), href: member_monitoring_uptime_group_path(@group, tab: "public"),
+                  active: @tab == "public", icon: "globe", test_id: "uptime-group-tab-public") %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.uptime_groups.stat_monitors"), value: @monitors.size, test_id: "uptime-group-count-monitors") %>
+    <% end %>
+    <% if can_manage %>
+      <% h.with_actions do %>
+        <% if @group.public_status_enabled? %>
+          <%= render Ui::ButtonComponent.new(label: t("member.uptime_groups.unpublish"), href: unpublish_member_monitoring_uptime_group_path(@group), method: :patch, variant: :secondary_muted, size: :sm, icon: "eye-off", test_id: "uptime-group-unpublish") %>
+        <% else %>
+          <%= render Ui::ButtonComponent.new(label: t("member.uptime_groups.publish"), href: publish_member_monitoring_uptime_group_path(@group), method: :patch, variant: :secondary_muted, size: :sm, icon: "globe", test_id: "uptime-group-publish") %>
+        <% end %>
+        <%= render Ui::ButtonComponent.new(label: t("member.uptime_groups.edit"), href: edit_member_monitoring_uptime_group_path(@group), variant: :secondary_muted, size: :sm, icon: "pen", test_id: "uptime-group-edit") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.uptime_groups.delete"), href: member_monitoring_uptime_group_path(@group), method: :delete, confirm: t("member.uptime_groups.delete_confirm"), variant: :danger_outline, size: :sm, icon: "trash", test_id: "uptime-group-delete") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render "member/monitoring/uptime_groups/tabs/#{@tab}", can_manage: can_manage %>
+</div>

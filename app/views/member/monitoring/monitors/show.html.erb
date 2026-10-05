@@ -1,0 +1,68 @@
+<% content_for :title, "#{@monitor.project.name} · #{@monitor.environment.label}" %>
+<% can_manage = can?("uptime.manage", scope: @monitor.project) %>
+
+<div class="p-7 space-y-6" data-test="member-monitor">
+  <%= turbo_stream_from Realtime::Streams.monitor(@monitor) %>
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ @monitor.project.name,
+                           render(Ui::BadgeComponent.new(label: @monitor.environment.label, color: @monitor.environment.color, dot: true)),
+                           render("member/viewers/badge", resource: @monitor) ], " "),
+        breadcrumb: [ { label: t("member.uptime.title"), href: member_monitoring_monitors_path },
+                      { label: "#{@monitor.project.name} · #{@monitor.environment.label}" } ],
+        counts_test_id: "monitor-meta", tabs_test_id: "monitor-tabs") do |h| %>
+    <%# CYRA-990 — everything about the public status page lives in its own tab. %>
+    <% h.with_tab(label: t("member.monitoring.public_tab.tab_overview"), href: member_monitoring_monitor_path(@monitor),
+                  active: @tab == "overview", icon: "activity", test_id: "monitor-tab-overview") %>
+    <% h.with_tab(label: t("member.monitoring.public_tab.tab_public"), href: member_monitoring_monitor_path(@monitor, tab: "public"),
+                  active: @tab == "public", icon: "globe", test_id: "monitor-tab-public") %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.uptime.label_status"), value: uptime_status_label(@monitor), value_color: uptime_status_color(@monitor), test_id: "monitor-status") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.uptime.label_response"), value: @avg_response ? "#{@avg_response}ms" : "—", test_id: "monitor-response") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.uptime.label_last_check"), value: uptime_time_ago(@monitor.last_checked_at), test_id: "monitor-last-check") %>
+      <%# CYRA-491 — la pubblicazione è uno STATO del controllo (pubblica/privata), non un comando in fila
+          con gli altri: qui è un'etichetta; l'azione per cambiarla vive nel menu delle azioni. %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.uptime.label_publication"),
+            value: @monitor.group&.public_status_enabled? ? t("member.review_fixes.public_via_group", group: @monitor.group.name) : (@monitor.public_status_enabled? ? t("member.uptime.publication_on") : t("member.uptime.publication_off")),
+            value_color: ((@monitor.public_status_enabled? || @monitor.group&.public_status_enabled?) ? :indigo : :gray), test_id: "monitor-publication") %>
+    <% end %>
+    <% if can_manage %>
+      <% h.with_actions do %>
+        <%# CYRA-491 — quattro comandi di peso diverso non stanno più in fila. Modifica è l'unica azione
+            principale; pausa, pubblicazione ed eliminazione (che spengono il controllo, espongono dati o
+            sono irreversibili) vivono nel menu: a un clic ma non premibili per sbaglio, ciascuna con una
+            conferma che spiega la conseguenza. Lo stato della pubblicazione è il chip nell'header. %>
+        <div class="flex items-center gap-2 shrink-0" data-test="monitor-actions">
+          <%= render Ui::ButtonComponent.new(label: t("member.uptime.edit"), href: edit_member_monitoring_monitor_path(@monitor), variant: :primary, size: :sm, icon: "pen", test_id: "monitor-edit") %>
+          <div data-test="monitor-more-menu">
+            <%= render Ui::RowMenuComponent.new(width: :lg, test_id: "monitor-menu-trigger", aria_label: t("member.uptime.more_menu")) do %>
+              <% if @monitor.active? %>
+                <%= button_to t("member.uptime.pause"), pause_member_monitoring_monitor_path(@monitor), method: :patch,
+                      class: Ui::RowMenuComponent.item_class, form: { class: "block" },
+                      data: { test: "monitor-pause", turbo_confirm: t("member.uptime.pause_confirm") } %>
+              <% else %>
+                <%= button_to t("member.uptime.resume"), resume_member_monitoring_monitor_path(@monitor), method: :patch,
+                      class: Ui::RowMenuComponent.item_class, form: { class: "block" },
+                      data: { test: "monitor-resume" } %>
+              <% end %>
+              <% if @monitor.public_status_enabled? %>
+                <%= button_to t("member.uptime.unpublish"), unpublish_member_monitoring_monitor_path(@monitor), method: :patch,
+                      class: Ui::RowMenuComponent.item_class, form: { class: "block" },
+                      data: { test: "monitor-unpublish" } %>
+              <% else %>
+                <%= button_to t("member.uptime.publish"), publish_member_monitoring_monitor_path(@monitor), method: :patch,
+                      class: Ui::RowMenuComponent.item_class, form: { class: "block" },
+                      data: { test: "monitor-publish", turbo_confirm: t("member.uptime.publish_confirm") } %>
+              <% end %>
+              <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+              <%= button_to t("member.uptime.delete"), member_monitoring_monitor_path(@monitor), method: :delete,
+                    class: Ui::RowMenuComponent.item_class(:danger), form: { class: "block" },
+                    data: { test: "monitor-delete", turbo_confirm: t("member.uptime.delete_confirm") } %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render "member/monitoring/monitors/tabs/#{@tab}", can_manage: can_manage %>
+</div>

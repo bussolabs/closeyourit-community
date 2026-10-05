@@ -1,0 +1,21 @@
+<div data-native-stack-target="thread" data-native-thread="<%= thread[:index] %>" data-test="native-thread-frames">
+  <h3 class="py-2 text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.native_symbols.thread_option", index: thread[:index], id: thread[:id], count: thread[:frames].size) %></h3>
+  <% if thread[:frames].empty? %>
+    <%= render Ui::EmptyNoteComponent.new(text: t("member.native_symbols.no_frames")) %>
+  <% else %>
+    <div class="divide-y divide-stone-200 dark:divide-zinc-800">
+      <% thread[:frames].first(::Monitoring::Constants::STACKTRACE_COLLAPSED).each do |frame| %>
+        <%= render "member/monitoring/error_groups/native_frame", frame: frame, derived: derived %>
+      <% end %>
+      <% remaining = thread[:frames].drop(::Monitoring::Constants::STACKTRACE_COLLAPSED) %>
+      <% if remaining.any? %>
+        <details class="py-3" data-test="native-frames-more">
+          <summary class="cursor-pointer text-[12.5px] text-indigo-700 dark:text-indigo-300 focus-visible:outline-indigo-500"><%= t("member.native_symbols.more", count: remaining.size) %></summary>
+          <% remaining.each do |frame| %>
+            <%= render "member/monitoring/error_groups/native_frame", frame: frame, derived: derived %>
+          <% end %>
+        </details>
+      <% end %>
+    </div>
+  <% end %>
+</div>

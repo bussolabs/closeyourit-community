@@ -1,0 +1,30 @@
+<%# CYRA-449 — dati ci sono, ma non in questo periodo. Un messaggio con la data dell'ultima visita e
+    il periodo più stretto che la contiene, e gli otto riquadri ridotti a un elenco: stamparli tutti a
+    zero costringeva a scorrere una pagina intera per scoprire che non c'era niente. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="analytics-range-empty">
+  <div class="px-5 py-4 flex items-start gap-3">
+    <%= render Ui::IconComponent.new(name: "calendar-x", class: "text-gray-400 dark:text-zinc-500 text-[13px] mt-0.5") %>
+    <div class="space-y-1.5">
+      <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.analytics.range_empty.title") %></h3>
+      <p class="text-[12.5px] text-gray-600 dark:text-zinc-400" data-test="analytics-range-empty-last">
+        <%= t("member.monitoring.analytics.range_empty.last_visit", at: l(last_at.in_time_zone, format: :long)) %>
+      </p>
+      <% if suggested.present? %>
+        <p class="text-[12.5px]">
+          <%= link_to t("member.monitoring.analytics.range_empty.go_to", range: suggested),
+                      member_monitoring_analytics_path(project_id: project.id, environment: environment, range: suggested),
+                      class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline",
+                      data: { test: "analytics-range-empty-link" } %>
+        </p>
+      <% end %>
+    </div>
+  </div>
+  <div class="px-5 py-3 border-t border-stone-100 dark:border-zinc-800">
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-2"><%= t("member.monitoring.analytics.range_empty.panels_label") %></p>
+    <div class="flex items-center flex-wrap gap-1.5" data-test="analytics-range-empty-panels">
+      <% panels.each do |key| %>
+        <span class="inline-flex items-center h-6 px-2 rounded border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.#{key}_title") %></span>
+      <% end %>
+    </div>
+  </div>
+</div>

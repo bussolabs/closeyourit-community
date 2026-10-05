@@ -1,0 +1,32 @@
+<%# Riga tabella progetto. Locals: project, total, open (= ticket "Da fare", categoria open), can_manage. %>
+<%= render Ui::TableComponent::RowComponent.new(href: member_project_path(project), link_label: project.name, test_id: "project-row-#{project.id}") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <%= link_to member_project_path(project), class: "flex items-center gap-2.5", data: { test: "project-row-link-#{project.id}" } do %>
+      <%= render Ui::EntityMarkComponent.new(record: project) %>
+      <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= project.name %></span>
+    <% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.projects.col_key"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { project.key } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.projects.col_description"), class: "text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-[280px] truncate")) { project.description } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.projects.col_group"), test_id: "project-row-group-#{project.id}") do %>
+    <% if project.group %>
+      <span class="inline-flex items-center gap-1.5 text-[12px] text-gray-600 dark:text-zinc-400"><span class="w-2 h-2 rounded-[3px] <%= Ui::Colors.swatch(project.group.color) %>"></span><%= project.group.name %></span>
+    <% else %>
+      <span class="text-[12px] text-gray-300 dark:text-zinc-600">—</span>
+    <% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.projects.col_tickets"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { total.to_s } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.projects.col_todo"), align: :right, mono: true, class: "text-amber-600 dark:text-amber-400", test_id: "project-row-todo-#{project.id}")) { open.to_s } %>
+  <%= render Ui::TableComponent::CellComponent.new(actions: true, visible: can_manage) do %>
+    <%= render Ui::ConfirmDialogComponent.new(title: t("member.projects.delete_dialog.title", name: project.name),
+          url: member_project_path(project), confirm_label: t("member.projects.delete"),
+          test_id: "project-delete-dialog-#{project.id}") do |dialog| %>
+      <% dialog.with_body { t("member.projects.delete_dialog.body") } %>
+      <%= render(Ui::RowMenuComponent.new(test_id: "project-row-menu-#{project.id}", aria_label: t("member.projects.row_menu_label", name: project.name))) do %>
+        <%= link_to edit_member_project_path(project), class: Ui::RowMenuComponent.item_class, data: { test: "project-row-edit-#{project.id}" } do %><%= render Ui::IconComponent.new(name: "pen", class: "w-[1.25em] text-gray-400 dark:text-zinc-500 text-[12px]") %><%= t("member.projects.edit") %><% end %>
+        <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+        <%= dialog.menu_trigger(label: t("member.projects.delete"), icon: "trash", test_id: "project-row-delete-#{project.id}") %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

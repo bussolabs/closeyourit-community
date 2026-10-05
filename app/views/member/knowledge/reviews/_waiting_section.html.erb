@@ -1,0 +1,123 @@
+<%# locals: (current_list:) %>
+<section id="knowledge-review-waiting" class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="knowledge-review-waiting">
+  <div class="flex items-baseline flex-wrap gap-2 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <span class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.knowledge.reviews.waiting_title") %></span>
+    <span class="ml-auto font-mono text-[11px] text-gray-400 dark:text-zinc-500"><%= t("member.knowledge.reviews.pages_count", count: @waiting_total) %></span>
+  </div>
+
+  <%# Il costo dell'errore non sta in grigio a corpo minore accanto al titolo: riga sua, sempre
+      visibile, nel colore del testo che si legge. %>
+  <p class="flex items-start gap-2 px-4 py-2.5 border-b border-stone-200 dark:border-zinc-800 bg-indigo-50/60 dark:bg-indigo-500/15 text-[12.5px] leading-relaxed text-zinc-900 dark:text-zinc-100" data-test="knowledge-review-visibility-note">
+    <%= render Ui::IconComponent.new(name: "eye-off", class: "text-indigo-600 dark:text-indigo-400 text-[12px] mt-0.5") %>
+    <span><%= t("member.knowledge.reviews.waiting_note") %></span>
+  </p>
+
+  <%# Ricerca per titolo + filtro progetto: con una coda lunga si arriva alla proposta che si
+      cerca invece di scorrerla tutta. Nessun turbo-frame: il submit ricarica la pagina, e una
+      ricerca nuova DEVE ripartire dall'alto (il refresh sul posto vale per le decisioni). %>
+  <%# CYRA-817 — lo stato del riquadro delle accettate viaggia con questo form: cercare qui non deve
+      riportare quell'elenco a pagina uno né dimenticarne la ricerca (un form GET manda solo i propri
+      campi, e il marker dei filtri ricordati dichiara di mandarli tutti). `sync_params` e non
+      `hidden`: quel riquadro si aggiorna da solo, e questa barra non viene ridisegnata quando lui
+      cambia pagina — il valore va letto dall'indirizzo al momento dell'invio. %>
+  <%= render(Ui::TableToolbarComponent.new(framed: true, 
+        url: member_knowledge_reviews_path, query: params[:q],
+        sync_params: %w[to_file_page to_file_per to_file_q],
+        search_placeholder: t("member.knowledge.reviews.search_placeholder"),
+        apply_label: t("member.knowledge.apply"),
+        search_test_id: "knowledge-review-search", apply_test_id: "knowledge-review-filter",
+        test_id: "knowledge-review-toolbar")) do |toolbar| %>
+    <% toolbar.with_filter(key: "project_id", label: t("member.knowledge.filter_project")) do %>
+      <div class="w-40"><%= render Ui::SelectComponent.new(name: "project_id", multiple: true, summary: true, options: @filter_projects.map { |p| [ p.name, p.id ] }, selected: params[:project_id], placeholder: t("member.knowledge.filter_project"), test_id: "filter-project") %></div>
+    <% end %>
+  <% end %>
+
+  <% if @waiting.empty? %>
+    <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_knowledge_reviews_path,
+          body: t("member.knowledge.reviews.no_results_body", count: @waiting_total),
+          icon: "inbox", test_id: "knowledge-review-no-results", reset_test_id: "knowledge-review-reset-search") %>
+  <% else %>
+  <div class="divide-y divide-stone-200 dark:divide-zinc-800">
+    <% @waiting.each_with_index do |page, index| %>
+      <article class="px-4 py-4" data-test="knowledge-review-row">
+        <div class="min-w-0">
+          <span class="block text-[13.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= page.title %></span>
+          <span class="block font-mono text-[11px] text-gray-500 dark:text-zinc-400 mt-1">
+            <span class="inline-flex items-center rounded px-1.5 py-0.5 bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400"><%= t("member.knowledge.kind.#{page.kind}") %></span>
+            <% page.projects.each do |project| %>
+              · <span class="text-indigo-600 dark:text-indigo-400"><%= project.key %></span>
+            <% end %>
+            · <%= l(page.created_at, format: :short) %>
+          </span>
+          <%# CYRA-419 — chi decide deve sapere che sta leggendo il testo di un assistente, e con
+              l'accesso di chi è stato scritto: qui c'era il solo nome della persona, e chi
+              revisionava credeva di controllare il lavoro di un collega. Se l'origine non è
+              registrata lo si dice — mai attribuirla a una persona per difetto. %>
+          <span class="mt-1.5 inline-flex items-center flex-wrap gap-1.5 text-[11.5px]" data-test="knowledge-review-written-by">
+            <%= render "member/knowledge/written_by", page: page %>
+            <span class="text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.author.on_behalf_of", account: page.created_by&.name || t("member.knowledge.author.account_unknown")) %></span>
+          </span>
+          <% if page.review_note.present? %>
+            <p class="mt-2.5 pl-3 border-l-2 border-stone-300 dark:border-zinc-700 text-[12.5px] text-zinc-900 dark:text-zinc-100" data-test="knowledge-review-note">
+              <%= page.review_note %>
+            </p>
+          <% end %>
+          <%# CYRA-764 — perché il revisore automatico l'ha rimandata: le regole violate, una per riga. %>
+          <% if page.ai_review_rejected? %>
+            <ul class="mt-2.5 pl-3 border-l-2 border-amber-300 dark:border-amber-500/50 space-y-1 text-[12px] text-zinc-900 dark:text-zinc-100" data-test="knowledge-review-ai-violations">
+              <% page.ai_review_violations.each do |violation| %>
+                <%# CYAU-200 — il passaggio citato sta in un tag di UNA riga: qui dentro un `if` a
+                    blocco sforerebbe il tetto di annidamento della pagina. %>
+                <li>
+                  <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= violation["code"] %></span> <%= violation["message"] %>
+                  <%= tag.span("«#{violation['quote']}»", class: "font-mono text-[11px] text-gray-500 dark:text-zinc-400") if violation["quote"].present? %>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
+        </div>
+
+        <%# <details> nativo: si apre senza JS, come Ui::RowMenuComponent. Le prime della fila
+            arrivano già aperte (EXPANDED_BODIES); oltre quella soglia la pagina diventerebbe
+            lunghissima, quindi il testo resta a un clic. %>
+        <details class="mt-3 group" <%= "open" if index < @expanded_bodies %>>
+          <summary class="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer list-none">
+            <%= render Ui::IconComponent.new(name: "chevron-right", class: "text-[10px] transition-transform group-open:rotate-90") %>
+            <span class="group-open:hidden"><%= t("member.knowledge.reviews.read_page") %></span>
+            <span class="hidden group-open:inline"><%= t("member.knowledge.reviews.hide_page") %></span>
+          </summary>
+          <%= render Ui::MarkdownComponent.new(text: page.body, test_id: "knowledge-review-body",
+                class: "mt-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3.5 py-3 overflow-x-auto") %>
+          <% if page.tech_spec.present? %>
+            <%= render Ui::MarkdownComponent.new(text: page.tech_spec, test_id: "knowledge-review-tech-spec",
+                  class: "mt-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5 overflow-x-auto text-gray-600 dark:text-zinc-400") %>
+          <% end %>
+        </details>
+
+        <%# Le due decisioni, dopo il testo, ciascuna con scritto cosa provoca davvero. %>
+        <div class="mt-4 pt-3 border-t border-stone-200 dark:border-zinc-800 flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-6">
+          <div class="flex items-start gap-2.5">
+            <%= render Ui::ButtonComponent.new(label: t("member.knowledge.reviews.accept"),
+                  href: approve_member_knowledge_review_path(page, current_list), method: :post,
+                  form_id: "row-actions",
+                  variant: :success_outline, size: :sm, icon: "check",
+                  test_id: "knowledge-review-accept-#{page.id}",
+                  confirm: t("member.knowledge.reviews.accept_confirm")) %>
+            <span class="max-w-[34ch] text-[11.5px] leading-snug text-gray-600 dark:text-zinc-400" data-test="knowledge-review-accept-hint"><%= t("member.knowledge.reviews.accept_hint") %></span>
+          </div>
+          <div class="flex items-start gap-2.5">
+            <%= render Ui::ButtonComponent.new(label: t("member.knowledge.reviews.reject"),
+                  href: reject_member_knowledge_review_path(page, current_list), method: :post,
+                  form_id: "row-actions",
+                  variant: :danger_outline, size: :sm, icon: "x",
+                  test_id: "knowledge-review-reject-#{page.id}",
+                  confirm: t("member.knowledge.reviews.reject_confirm")) %>
+            <span class="max-w-[34ch] text-[11.5px] leading-snug text-gray-600 dark:text-zinc-400" data-test="knowledge-review-reject-hint"><%= t("member.knowledge.reviews.reject_hint") %></span>
+          </div>
+        </div>
+      </article>
+    <% end %>
+  </div>
+  <% end %>
+  <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "knowledge-review-pagination")) %>
+</section>

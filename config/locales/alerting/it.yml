@@ -1,0 +1,219 @@
+it:
+  alerting:
+    content:
+      error_new:
+        title: "Nuovo errore · %{error}"
+      error_regression:
+        title: "Errore riemerso · %{error}"
+        release: "riemerso in %{release}"
+      error_spike:
+        title: "Errore in impennata · %{error}"
+      uptime_down:
+        title: "Monitor down · %{project}"
+        body: "%{target} non risponde — incident aperto."
+      uptime_up:
+        title: "Monitor ripristinato · %{project}"
+        body: "%{target} è di nuovo raggiungibile — incident risolto."
+      uptime_slow:
+        title: "Risposta lenta · %{project}"
+        body: "%{target} ha risposto oltre la soglia di %{threshold} ms."
+      metric_threshold:
+        title: "Problema di performance · %{subtype} · %{project}"
+      uptime_ssl_expiring:
+        title: "Certificato in scadenza · %{project}"
+        body: "Il certificato TLS di %{url} scade tra %{days} giorni."
+      cron_missed:
+        title: "Cron mancato · %{name} · %{project}"
+        body: "Fermo da %{since} (atteso ogni %{interval} min): il job potrebbe non girare più."
+        body_never: "Nessun check-in ancora ricevuto (atteso ogni %{interval} min): il job potrebbe non essere mai partito."
+      agents_stalled:
+        title: "Automazione bloccata · %{organization}"
+        body: "Le macchine sono attive ma da un'ora nessuna lavorazione si conclude."
+      agents_host_failing:
+        title: "Macchina in errore · %{host}"
+        body: "Questa macchina sta fallendo gran parte delle lavorazioni: potrebbe essere guasta."
+      agents_host_stale:
+        title: "Automazione ferma su %{host}"
+        body: "Da questa macchina non arrivano più segnali dell'automazione. Spesso il computer è acceso e sta bene: ferma è l'automazione che ci gira sopra. Il collegamento porta alla sua scheda, dove si legge da quanto tace."
+      embedding_down:
+        title: "Servizio di ricerca per significato non raggiungibile · %{organization}"
+        body: "Ricerca per significato, collegamenti fra errori e ticket e riconoscimento dei doppioni non stanno funzionando. Nessuno se ne accorge dalle schermate: continuano a rispondere, ma senza risultati."
+      ai_unavailable:
+        title: "Intelligenza artificiale non raggiungibile · %{organization}"
+        body: "L'assistente, lo smistamento automatico dei ticket e il riconoscimento dei doppioni non stanno funzionando: il servizio non risponde o la chiave non vale più. Dalle schermate non si vede: le funzioni restano al loro posto e non fanno niente. Il collegamento porta ai servizi collegati, dove si rimette a posto la chiave."
+      ai_available:
+        title: "Intelligenza artificiale di nuovo attiva · %{organization}"
+        body: "Il servizio risponde di nuovo: assistente, smistamento automatico e riconoscimento dei doppioni sono tornati al lavoro."
+      cache_unavailable:
+        title: "Memoria temporanea non raggiungibile · %{organization}"
+        body: "La memoria temporanea condivisa non risponde. Finché dura, gli avvisi verso Slack, Discord e gli altri collegamenti esterni possono restare fermi: il freno che impedisce di mandare due volte lo stesso avviso scambia il silenzio per «già mandato». Gli avvisi dentro l'applicazione e via email continuano ad arrivare."
+      server_down:
+        title: "Server down · %{host}"
+        body: "%{hostname} ha smesso di riportare dati."
+      server_up:
+        title: "Server ripristinato · %{host}"
+        body: "%{hostname} sta di nuovo riportando dati."
+      server_cpu:
+        title: "CPU alta · %{host}"
+        body: "CPU al %{value}%."
+      server_mem:
+        title: "Memoria alta · %{host}"
+        body: "Memoria al %{value}%."
+      server_disk:
+        title: "Disco quasi pieno · %{host}"
+        body: "Disco al %{value}%."
+      server_temp:
+        title: "Temperatura alta · %{host}"
+        body: "Temperatura a %{value} °C."
+      server_service_failed:
+        title: "Servizio systemd failed · %{host}"
+        body:
+          one: "%{count} servizio in errore su %{host}: %{names}."
+          other: "%{count} servizi in errore su %{host}: %{names}."
+      server_disk_forecast:
+        title: "Spazio dati in esaurimento · %{host}"
+        body: "Al ritmo attuale %{mountpoint} (ora al %{value}%) si riempie in circa %{days} giorni."
+      server_security_updates:
+        title: "Aggiornamenti di sicurezza · %{host}"
+        body:
+          one: "%{count} aggiornamento di sicurezza in attesa su %{host}."
+          other: "%{count} aggiornamenti di sicurezza in attesa su %{host}."
+      server_ingest_rejected:
+        title: "Dati delle macchine respinti · %{organization}"
+        body: "Il sistema ha respinto per un momento i dati inviati dalle macchine: i loro numeri restano fermi finché l'invio non riprende. Le macchine non sono cadute."
+      cluster_down:
+        title: "Il cluster %{cluster} non manda più dati"
+        body: "Nessun invio da 3 minuti. L'osservatore è fermo o il cluster non risponde."
+      cluster_up:
+        title: "Il cluster %{cluster} manda di nuovo dati"
+        body: "Gli invii sono ripresi."
+      cluster_node_not_ready:
+        title: "Macchina %{node} non pronta · %{cluster}"
+        body: "Non è pronta da almeno 2 minuti."
+      cluster_node_pressure:
+        title: "Macchina %{node} sotto sforzo · %{cluster}"
+        body: "Memoria, disco o processi quasi esauriti."
+      cluster_workload_crashloop:
+        title: "%{workload} riparte di continuo · %{namespace}"
+        body: "Ultimo motivo: %{reason}."
+      cluster_workload_degraded:
+        title: "%{workload} funziona a metà · %{namespace}"
+        body: "%{ready} copie pronte su %{desired} da almeno 5 minuti."
+      server_silent:
+        title: "Dati fermi · %{host}"
+        body: "%{hostname} risponde ma l'ultimo dato risale a %{duration} fa."
+      server_smart_failing:
+        title: "SMART failing · %{host}"
+        body:
+          one: "%{count} disco in errore su %{host}."
+          other: "%{count} dischi in errore su %{host}."
+      server_container_down:
+        title: "Contenitore caduto · %{host}"
+        body:
+          one: "%{count} container caduto su %{host}."
+          other: "%{count} container caduti su %{host}."
+        body_since:
+          one: "%{count} container caduto su %{host}, da %{duration}."
+          other: "%{count} container caduti su %{host}, da %{duration}."
+        engine_down:
+          title: "Motore contenitori fermo · %{host}"
+          body: "Il motore dei contenitori su %{hostname} non risponde: nessun contenitore attivo."
+      server_container_up:
+        title: "Contenitori tornati su · %{host}"
+        body: "I contenitori di %{hostname} sono di nuovo in esecuzione."
+      server_container_restart_loop:
+        title: "Container in riavvio continuo · %{host}"
+        body:
+          one: "%{count} container continua a riavviarsi su %{host}."
+          other: "%{count} container continuano a riavviarsi su %{host}."
+        detail: "%{name} — %{restarts} riavvii in 10 minuti"
+      server_container_stable:
+        title: "Container di nuovo stabile · %{host}"
+        body: "Nessun container supera più la soglia di riavvio."
+      server_db_down:
+        title: "Database non raggiungibile · %{host}"
+        body: "Il database di %{hostname} non risponde."
+      server_db_connections:
+        title: "Connessioni database alte · %{host}"
+        body: "%{value} connessioni aperte su %{max}."
+      server_db_connection_usage:
+        title: "Slot database quasi esauriti · %{host}"
+        body: "%{value} connessioni usano il %{pct}% dei %{usable} slot disponibili."
+      server_replication_lag:
+        title: "Replica in ritardo · %{host}"
+        body: "La replica è indietro di %{value} secondi."
+      server_replication_down:
+        title: "Replica scollegata · %{host}"
+        body_standby: "Lo standby non riceve più WAL dal primary."
+        body_primary: "Solo %{streaming} replica su %{expected} è in streaming."
+      server_replication_up:
+        title: "Replica ripristinata · %{host}"
+        body: "La replica è di nuovo in streaming."
+      server_data_volume_disk:
+        title: "Volume dati quasi pieno · %{host}"
+        body: "Il mount %{mountpoint} è al %{value}%."
+      server_inode:
+        title: "Inode quasi esauriti · %{host}"
+        body: "Il mount %{mountpoint} usa il %{value}% degli inode."
+      log_alert:
+        title: "Log %{level} · %{project}"
+      analytics_traffic_drop:
+        title: "Traffico in calo · %{project}"
+        body: "Le visite al sito sono crollate rispetto al solito."
+      analytics_traffic_spike:
+        title: "Picco di traffico · %{project}"
+        body: "Le visite al sito sono molto sopra il solito."
+      idea_created:
+        title: "Nuova idea · %{project}"
+      idea_commented:
+        title: "Nuovo commento a un'idea · %{project}"
+      workload_due_soon:
+        title: "Attività in scadenza · %{title}"
+        body: "Questa attività ha la scadenza vicina o superata."
+      dataset_training_completed:
+        title: "Addestramento completato · %{dataset}"
+        body: "Il modello è pronto."
+      dataset_training_failed:
+        title: "Addestramento fallito · %{dataset}"
+        body: "L'addestramento non è andato a buon fine."
+      vulnerability_new:
+        title: "%{severity} · %{package}"
+        body: "Aggiorna alla versione %{fixed_version} per chiudere il problema (%{advisory})."
+        body_unfixable: "Non esiste ancora una versione che lo risolve (%{advisory}): valuta un'alternativa."
+      runtime_eol:
+        title: "Senza più aggiornamenti · %{runtime} %{version}"
+        body: "Questa versione non riceve correzioni di sicurezza dal %{date}: pianifica il passaggio a una più recente."
+      seo_issue_new:
+        title: "%{check} · %{url}"
+        body_fallback: "Il controllo del sito ha trovato un problema nuovo: aprilo per vedere la prova."
+      secret_read:
+        title: "Segreto letto · %{name} · %{project}"
+        body: "%{actor} ha aperto il valore su %{environment}."
+      secret_denied:
+        title: "Accesso negato a un segreto · %{name} · %{project}"
+        body: "%{actor} ha provato ad aprire il valore su %{environment} senza averne il permesso."
+      # Ripieghi per i campi opzionali della riga d'audit: un accesso di sistema, o senza nome/ambiente,
+      # deve comunque produrre una frase intera.
+      secret_access:
+        system: Sistema
+        any_name: un segreto
+        any_environment: un ambiente non indicato
+    alerts:
+      mailer:
+        triggered:
+          subject: "[CloseYourIt] %{title}"
+          greeting: "Attenzione,"
+          context: "Progetto: %{project}"
+          label_project: "progetto"
+          label_source: "origine"
+          action: "Apri in CloseYourIt"
+          footer: "Ricevi questa email perché puoi vedere questo progetto. Gestisci le preferenze di alert in CloseYourIt."
+    notifications:
+      mark_read: "Segna come letta"
+      time_ago: "%{time} fa"
+      recovered_after: "ripreso dopo %{time}"
+      show_details: "Mostra dettagli"
+      category:
+        conversation: "Conversazione"
+      severity:
+        critical: "Grave"

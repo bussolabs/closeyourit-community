@@ -1,0 +1,14 @@
+en:
+  agents:
+    # CYRA-675 — fixed-length service line, same reason as the clarification one: a comment has a
+    # character cap and the agent summary does not. The full summary is in the Automation panel.
+    already_done:
+      service_line: "Whoever was to plan this found the work already done in the code: the ticket closes without planning. What was looked at is in the Automation panel."
+    clarifications:
+      ask:
+        # Service line: it ANNOUNCES the questions, it does not contain them. See the Italian file
+        # for the reason — the length is part of the contract and `ask_spec` checks it in every
+        # locale against Ticketing::Constants::COMMENT_MAX_CHARS.
+        service_line:
+          one: "An answer is needed: the question is in the Automation panel. Reply with a comment below and the work resumes on its own."
+          other: "Answers are needed: the %{count} questions are in the Automation panel. Reply with a comment below and the work resumes on its own."

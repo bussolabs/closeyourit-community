@@ -1,0 +1,3 @@
+<%# CYRA-458: le regole di avviso che riguardano questa macchina, con l'ultimo scatto e il link alla regola. %>
+<%= render "member/monitoring/servers/alerting_coverage", host: @host, rules: @server_rules,
+      last_triggered: @rule_last_triggered, thresholds: @thresholds.for_host(@host), muted_here: @muted_rule_ids %>

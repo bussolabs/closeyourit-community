@@ -1,0 +1,121 @@
+<% content_for :title, t("member.alerting.rules.title") %>
+
+<div class="p-7 space-y-6" data-test="member-alerting-rules">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.alerting.rules.title"),
+        subtitle: t("member.alerting.rules.help_title"),
+        breadcrumb: [ { label: t("member.alerting.rules.title") } ]) do |h| %>
+    <% h.with_counts do %>
+      <%# T12 — counts are inline text, never bordered pills. %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.alerting.rules.stat_active"), value: @active_count, test_id: "alerting-stat-active") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.alerting.rules.stat_off"), value: @off_count, value_color: :gray, test_id: "alerting-stat-off") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.alerting.rules.stat_triggered"), value: @triggered_count, value_color: :indigo, test_id: "alerting-stat-triggered") %>
+    <% end %>
+
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.alerting.channels.title"), href: member_alerting_channels_path, variant: :secondary_muted, size: :sm, icon: "radio-tower", test_id: "alerting-channels-link") %>
+      <%= render Ui::ButtonComponent.new(label: t("member.alerting.rules.new"), href: new_member_alerting_rule_path, variant: :primary, size: :sm, icon: "plus", test_id: "alerting-rule-new") %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-480 — chi decide che cosa: la regola decide se l'avviso NASCE, le impostazioni personali
+      decidono se arriva A TE e su quale canale. Floats over the page, never loose in the content. %>
+  <% content_for :floating_notice do %>
+    <%= render Ui::FloatingNoticeComponent.new(key: "alerting_hierarchy", title: t("member.alerting.hierarchy.title"),
+                                               test_id: "alerting-hierarchy-notice") do %>
+      <p data-test="alerting-hierarchy">
+        <%= t("member.alerting.hierarchy.rules") %>
+        <%= link_to t("member.alerting.hierarchy.to_preferences"), member_notification_preferences_path,
+              class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "alerting-link-preferences" } %>
+      </p>
+    <% end %>
+  <% end %>
+
+  <div data-test="alerting-rules-table">
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <%= render(Ui::TableToolbarComponent.new(
+            url: member_alerting_rules_path, query: params[:q], framed: true,
+            search_placeholder: t("member.alerting.rules.search_placeholder"),
+            search_test_id: "alerting-rules-search", apply_test_id: "alerting-rules-filter",
+            test_id: "alerting-rules-toolbar")) do |toolbar| %>
+        <%# CYRA-838 — stesso nome del modulo della regola: il filtro leggeva una seconda lista di
+            traduzioni, incompleta, e tre eventi uscivano come chiavi interne inglesi. %>
+        <% toolbar.with_filter(key: "event_type", label: t("member.alerting.rules.filter_event")) do %>
+          <div class="w-44"><%= render Ui::SelectComponent.new(name: "event_type", multiple: true, summary: true,
+                options: ::Alerting::Rule.event_types.keys.map { |k| [ alerting_event_label(k), k ] },
+                selected: params[:event_type], placeholder: t("member.alerting.rules.filter_event"), test_id: "alerting-filter-event") %></div>
+        <% end %>
+      <% end %>
+
+      <%# A filter that matches nothing is not an empty list: say so and offer to clear it. %>
+      <% if @rules.empty? && [ params[:q], *Array(params[:event_type]), *Array(params[:project_id]) ].any?(&:present?) %>
+        <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_alerting_rules_path,
+              reset_test_id: "alerting-rules-reset", test_id: "alerting-rules-no-results") %>
+      <% elsif @rules.empty? %>
+        <%= render Ui::EmptyStateComponent.new(title: t("member.alerting.rules.empty"), body: t("member.alerting.rules.empty_body"),
+              icon: "bell", test_id: "alerting-rules-empty") %>
+      <% else %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.alerting.rules.title"))) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.alerting.rules.col_rule"), sort: "rule") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.alerting.rules.col_event"), sort: "event", classes: "w-40") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.alerting.rules.col_throttle"), sort: "throttle", align: :right, classes: "w-24",
+                  hint: t("member.alerting.rules.form.throttle_hint"), test_id: "alerting-col-throttle") %>
+            <%# CYRA-478: quante volte è scattata, non solo quando l'ultima. È l'unico modo per sapere
+                chi produce il rumore, e si ordina per trovarlo in un clic. %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.alerting.rules.col_fired_24h"), sort: "fired_24h", initial: :desc, align: :right, classes: "w-20") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.alerting.rules.col_fired_7d"), sort: "fired_7d", initial: :desc, align: :right, classes: "w-20") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.alerting.rules.col_last_fired"), sort: "last_fired", initial: :desc, align: :right, classes: "w-28") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.alerting.rules.col_status"), sort: "status", initial: :desc, align: :right, classes: "w-20") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+          <% end %>
+          <% @rules.each do |rule| %>
+              <% tone = alerting_event_tone(rule.event_type) %>
+              <%= render Ui::TableComponent::RowComponent.new(href: member_alerting_rule_path(rule), link_label: rule.name,
+                    faded: !rule.enabled?, test_id: "alerting-rule-row") do %>
+                <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+                  <%= link_to member_alerting_rule_path(rule), class: "block", data: { test: "alerting-rule-link-#{rule.id}" } do %>
+                    <span class="block text-[13px] font-semibold <%= rule.enabled? ? "text-zinc-900 dark:text-zinc-100" : "text-gray-500 dark:text-zinc-400" %> hover:text-indigo-600 dark:hover:text-indigo-400"><%= rule.name %></span>
+                    <span class="block font-mono text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">
+                      <% if rule.project %><span class="text-indigo-600 dark:text-indigo-400"><%= rule.project.key %></span><% else %><%= t("member.alerting.rules.all_projects") %><% end %>
+                      · <%= rule.environment ? rule.environment.label : t("member.alerting.rules.any_environment") %>
+                      <% if (rule.error_event? || rule.log_event?) && rule.min_level %> · <%= t("member.alerting.rules.form.min_level") %> ≥ <span class="text-zinc-900 dark:text-zinc-100"><%= t("member.alerting.levels.#{::Alerting::Rule::LEVELS.key(rule.min_level)}") %></span><% end %>
+                      <%# F109 — C14: the condition on the row, from the same fields as the sentence on the rule page. %>
+                      <% if (condition = ::Alerting::Rules::Sentence.condition(rule)) %> · <span class="text-zinc-900 dark:text-zinc-100" data-test="alerting-rule-condition-<%= rule.id %>"><%= condition %></span><% end %>
+                    </span>
+                  <% end %>
+                <% end %>
+                <%= render Ui::TableComponent::CellComponent.new(label: t("member.alerting.rules.col_event")) do %>
+                  <span class="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-medium whitespace-nowrap <%= tone[:bg] %> <%= tone[:fg] %>"><%= render Ui::IconComponent.new(name: tone[:icon], class: "text-[10px]") %><%= alerting_event_label(rule.event_type) %></span>
+                <% end %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.alerting.rules.col_throttle"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400")) { "#{rule.throttle_seconds / 60}m" } %>
+                <% fired_24h = @fired_24h[rule.id].to_i %>
+                <% noisy = fired_24h.positive? && fired_24h >= @noisy_threshold %>
+                <%= render Ui::TableComponent::CellComponent.new(label: t("member.alerting.rules.col_fired_24h"), align: :right, mono: true,
+                      class: (noisy ? "font-semibold text-rose-600 dark:text-rose-400" : "text-gray-500 dark:text-zinc-400"), test_id: "alerting-rule-fired-24h-#{rule.id}") do %>
+                  <%= fired_24h.positive? ? number_with_delimiter(fired_24h) : "—" %><% if noisy %><span class="ml-1 text-[10px]" title="<%= t("member.alerting.rules.noisy_tip") %>" data-test="alerting-rule-noisy-<%= rule.id %>">▲</span><% end %>
+                <% end %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.alerting.rules.col_fired_7d"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400",
+                      test_id: "alerting-rule-fired-7d-#{rule.id}")) { @fired_7d[rule.id].to_i.positive? ? number_with_delimiter(@fired_7d[rule.id]) : "—" } %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.alerting.rules.col_last_fired"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400")) { @last_fired[rule.id] ? t("alerting.notifications.time_ago", time: time_ago_in_words(@last_fired[rule.id])) : "—" } %>
+                <%= render Ui::TableComponent::CellComponent.new(label: t("member.alerting.rules.col_status"), align: :right) do %>
+                  <%# CYRA-478: silenziata ≠ spenta. Deve vedersi ovunque, altrimenti diventa un silenzio
+                      dimenticato — il rischio dichiarato nel ticket. %>
+                  <% if rule.muted? %>
+                    <span class="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-medium whitespace-nowrap bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300"
+                          title="<%= t("member.alerting.rules.muted_until", time: l(rule.muted_until, format: :short)) %>"
+                          data-test="alerting-rule-muted-<%= rule.id %>"><%= render Ui::IconComponent.new(name: "bell-off", class: "text-[10px]") %><%= t("member.alerting.rules.status_muted") %></span>
+                  <% elsif rule.enabled? %>
+                    <span class="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-medium whitespace-nowrap bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><%= t("member.alerting.rules.status_on") %></span>
+                  <% else %>
+                    <span class="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-medium whitespace-nowrap bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400"><span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span><%= t("member.alerting.rules.status_off") %></span>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+        <% end %>
+        <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "alerting-rules-pagination") %>
+      <% end %>
+    </div>
+  </div>
+</div>

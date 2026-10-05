@@ -1,0 +1,39 @@
+<%# locals: (ticket:) %>
+<%# aggiungi commento (tutti i ruoli che vedono il ticket) %>
+<%# CYRA-883 — one line until used: the field grows, attach, counter and Comment appear
+    under the field, on focus or once there is text (CSS only). The length sentence shows only near the limit (char-counter). %>
+<div class="px-4 py-3 border-t border-stone-200 dark:border-zinc-800 bg-stone-50/40 dark:bg-zinc-800/40">
+  <%= form_with url: member_ticket_comments_path(ticket), method: :post, multipart: true, class: "group/compose", data: { test: "member-ticket-comment-form" } do %>
+    <div class="flex gap-3">
+      <span class="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[11px] font-semibold"><%= avatar_initials(Current.account.name) %></span>
+      <%# Contatore caratteri: è un AVVISO, non un gate (nessun maxlength — il troncamento
+          silenzioso del browser farebbe sparire testo senza dirlo). L'autorità resta il
+          length_budget nel model. Il valore ripescato da flash[:comment_draft] è il testo di un
+          commento appena rifiutato: senza, il redirect lo butterebbe via. %>
+      <div class="flex-1 min-w-0" data-controller="char-counter"
+           data-char-counter-max-value="<%= ::Ticketing::Constants::COMMENT_MAX_CHARS %>"
+           data-char-counter-warn-ratio-value="<%= ::App::Constants::LENGTH_WARN_RATIO %>"
+           data-char-counter-unit-value="<%= t("shared.char_counter.unit") %>">
+        <%# The microphone dictates into the field: what is said is added to what is already written. %>
+        <% dictation = dictation_available? %>
+        <%= tag.div class: "relative", data: (dictation ? dictation_voice_data : {}) do %>
+          <%= text_area_tag "body", flash[:comment_draft], rows: 1, id: "ticket-comment-body", placeholder: t("member.tickets.comments.placeholder"), data: { test: "member-ticket-comment-body", char_counter_target: "field", action: "input->char-counter#update", "ui--voice-inline-target": "input" }, class: "block w-full h-[34px] focus:h-24 [&:not(:placeholder-shown)]:h-24 resize-none #{dictation ? "pl-3 pr-11" : "px-3"} py-1.5 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+          <%= render "member/shared/dictation_controls" if dictation %>
+        <% end %>
+        <%# Attach, counter and Comment show only once the field is in use: nothing empty can be sent. %>
+        <div class="hidden mt-2 group-focus-within/compose:block group-has-[#ticket-comment-body:not(:placeholder-shown)]/compose:block" data-test="member-ticket-comment-extras">
+          <%# CYRA-389 — perché il commento è breve: il testo lungo ha un posto suo. %>
+          <p class="hidden mb-2 text-[11.5px] text-amber-700 dark:text-amber-300" data-char-counter-target="hint" data-test="member-ticket-comment-hint"><%= t("member.tickets.comments.length_hint") %></p>
+          <div class="flex items-center gap-3">
+            <label class="inline-flex items-center gap-1.5 h-7 px-3 rounded-md text-[12px] font-medium text-gray-500 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
+              <%= render Ui::IconComponent.new(name: "paperclip", class: "text-[12px] text-gray-400 dark:text-zinc-500") %><%= t("member.tickets.comments.attach") %>
+              <%= file_field_tag "files[]", multiple: true, class: "hidden", data: { test: "member-ticket-comment-attach" }, accept: App::Constants::ATTACHMENT_CONTENT_TYPES.join(",") + ",.md,.mov,.mp4,.webm,.mkv,.avi" %>
+            </label>
+            <p class="ml-auto shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400 tabular-nums" data-char-counter-target="output" data-test="member-ticket-comment-counter"></p>
+            <%= render Ui::ButtonComponent.new(label: t("member.tickets.comments.submit"), type: "submit", icon: "send", size: :sm, test_id: "member-ticket-comment-submit") %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

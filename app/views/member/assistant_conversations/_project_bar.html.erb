@@ -1,0 +1,10 @@
+<%# locals: project %>
+<%# The project this conversation is fixed on. The cross starts a plain conversation, which sees
+    every project again. %>
+<div class="flex items-center gap-2 px-4 py-2 border-b border-stone-200 dark:border-zinc-800 bg-indigo-50 dark:bg-indigo-950 shrink-0" data-test="assistant-project">
+  <%= render Ui::EntityMarkComponent.new(record: project, size: :xs) %>
+  <p class="min-w-0 flex-1 truncate text-[12.5px] text-indigo-900 dark:text-indigo-200"><%= t("member.assistant.panel.project", name: project.name) %></p>
+  <%= render Ui::ButtonComponent.new(label: t("member.assistant.panel.project_clear"), href: member_assistant_conversations_path,
+        method: :post, icon: "x", icon_only: true, variant: :ghost, size: :sm, form_class: "contents",
+        test_id: "assistant-project-clear") %>
+</div>

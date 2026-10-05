@@ -1,0 +1,136 @@
+en:
+  member:
+    nav:
+      clusters: Clusters
+    clusters:
+      title: Clusters
+      subtitle: The Kubernetes clusters CloseYourIt watches, read-only.
+      new: Add cluster
+      search: Search a cluster
+      stat_total: total
+      stat_down: silent
+      stat_attention: to look at
+      col_cluster: Cluster
+      col_status: Status
+      col_nodes: Machines ready
+      col_apps: Apps working
+      col_last_snapshot: Last data
+      never: never
+      kind_line: "k8s %{version} · %{provider}"
+      kind_line_pending: Waiting for the first data
+      empty: No cluster yet
+      empty_body: Add a Kubernetes cluster and install the observer with one command. It only watches, it changes nothing.
+      empty_example: "Example: “production-eu”, 6 machines, 25 apps"
+      status:
+        ok: All good
+        attention:
+          one: One thing to look at
+          other: "%{count} things to look at"
+        down: "Silent for %{time}"
+        pending: Waiting for the first data
+        paused: Alerts paused
+      form:
+        title: Add cluster
+        name: Cluster name
+        name_hint: "What you call it, e.g. production-eu."
+        color: Color
+        cancel: Cancel
+        create: Create and show the code
+      reveal:
+        title: Cluster access code
+        once: You see it only now. It works only for this cluster.
+        copy: Copy
+        copied: Copied
+        install: Install in the cluster
+        waiting: Waiting for the first data… the page updates by itself.
+      tabs:
+        overview: Overview
+        nodes: Machines
+        workloads: Apps
+        problems: What is wrong
+      counts:
+        namespaces: namespaces
+        last_snapshot: "Last data"
+      actions:
+        pause: Pause alerts
+        resume: Resume alerts
+        rotate: New access code
+        delete: Delete
+        more: More actions
+      rotate_dialog:
+        title: "Give the cluster %{name} a new code?"
+        body: "The current code stops working at once: the installed observer must be updated with the new one, shown only once."
+      delete_dialog:
+        title: "Delete the cluster %{name}?"
+        body: "It goes away with the machines, apps and events collected. The installed observer will be refused and stop sending."
+      deleted: "Cluster %{name} deleted."
+      updated: Cluster updated.
+      problems:
+        col_severity: Severity
+        col_problem: Problem
+        col_namespace: Namespace
+        col_reason: Reason
+        col_since: Since
+        severity:
+          danger: Critical
+          warning: Warning
+        title: What is wrong now
+        none: All good
+        none_hint: Machines ready and apps with all their copies running.
+        cluster_down: "The cluster has sent no data since %{time}"
+        node_not_ready: "Machine %{name} not ready"
+        node_pressure: "Machine %{name} under pressure"
+        workload_crashloop: "%{name} keeps restarting"
+        workload_degraded: "%{name} running at half"
+        open_nodes: Open the machines
+        open_workloads: Open the apps
+      tiles:
+        nodes: Machines ready
+        apps: Apps working
+        restarts: Restarts 24 h
+        usage: CPU / memory
+        usage_caption: machines average
+        no_metrics: no metrics-server
+      namespaces:
+        title: Namespaces and projects
+        hint: Alerts about the apps of a linked namespace reach the people following that project.
+        col_namespace: Namespace
+        col_project: Project · environment
+        unlinked: Not linked
+        link: Link to a project
+        change: Change
+        dialog_title: "Link the namespace %{name}"
+        project: Project
+        environment: Environment (optional)
+        none_project: No project
+        save: Save
+        cancel: Cancel
+        linked: Namespace linked.
+        unlinked_notice: Namespace unlinked.
+        empty: No namespace yet.
+      nodes:
+        search: Search a machine
+        col_node: Machine
+        col_status: Status
+        col_cpu: CPU
+        col_memory: Memory
+        col_pods: Apps running
+        col_age: Age
+        ready: Ready
+        not_ready: "Not ready for %{time}"
+        pressure: Under pressure
+        removing: Being removed by the provider
+        empty: No machine yet.
+      workloads:
+        search: Search an app
+        filter_namespace: Namespace
+        col_workload: App · version
+        col_namespace: Namespace · project
+        col_status: Status
+        col_copies: Copies running
+        col_restarts: Restarts 24 h
+        running: Running
+        degraded: "At half for %{time}"
+        crashloop: Keeps restarting
+        waiting: "Waiting: %{reason}"
+        empty: No app yet.

@@ -1,0 +1,335 @@
+en:
+  member:
+    nav:
+      alerts: Notifications
+      alert_rules: Alert rules
+      alert_channels: Delivery channels
+      alerts_unread:
+        one: "1 unread notification"
+        other: "%{count} unread notifications"
+    alerting:
+      hierarchy:
+        title: "Two settings decide every alert"
+        rules: "A rule decides whether the alert is born; your personal settings decide whether it reaches you and on which channel. You need both."
+        preferences: "Here you decide whether and where to receive the alerts that rules create. If the rule is off, the alert is never born and this page cannot bring it back."
+        to_preferences: "Go to your settings →"
+        to_rules: "Go to the rules →"
+      levels:
+        debug: Debug
+        info: Info
+        warning: Warning
+        error: Error
+        fatal: Fatal
+      event_types:
+        error_new: New error
+        error_regression: Regression
+        error_spike: Error surge
+        metric_threshold: Performance issue
+        uptime_down: Uptime down
+        cron_missed: Cron missed
+        uptime_ssl_expiring: SSL certificate expiring
+        uptime_up: Uptime up
+        uptime_slow: Slow response
+        server_down: Server down
+        server_up: Server recovered
+        server_cpu: Server CPU above threshold
+        server_mem: Server memory above threshold
+        server_disk: Server disk above threshold
+        server_temp: Server temperature above threshold
+        server_service_failed: Systemd service failed
+        server_smart_failing: SMART failing
+        server_security_updates: Security updates pending
+        server_silent: Stale data
+        server_ingest_rejected: Machine data rejected
+        cluster_down: Cluster silent
+        cluster_up: Cluster reachable again
+        cluster_node_not_ready: Cluster machine not ready
+        cluster_node_pressure: Cluster machine under pressure
+        cluster_workload_crashloop: App restarting over and over
+        cluster_workload_degraded: App running at half
+        server_disk_forecast: Data volume filling up
+        server_container_down: Container down
+        server_container_up: Containers back up
+        server_container_restart_loop: Container restart loop
+        server_container_stable: Container stable again
+        server_db_down: Database unreachable
+        server_db_connections: Database connections above threshold
+        server_db_connection_usage: Database slots nearly exhausted
+        server_replication_lag: Replication lag above threshold
+        server_replication_down: Replication disconnected
+        server_replication_up: Replication recovered
+        server_data_volume_disk: Data volume above threshold
+        server_inode: Inodes above threshold
+        log_alert: Error/fatal log
+        agents_stalled: Automation stalled
+        agents_host_failing: Machine failing
+        agents_host_stale: Automation stopped
+        analytics_traffic_drop: Traffic drop
+        analytics_traffic_spike: Traffic spike
+        idea_created: New idea
+        idea_commented: New comment on an idea
+        workload_due_soon: Task due soon
+        dataset_training_completed: Training completed
+        dataset_training_failed: Training failed
+        embedding_down: Embedding service down
+        ai_unavailable: AI unreachable
+        ai_available: AI back online
+        cache_unavailable: Shared cache unreachable
+        secret_read: Secret read
+        secret_denied: Secret access denied
+      channels:
+        title: Delivery channels
+        help_title: "Where alerts go outside the app."
+        back_rules: Back to rules
+        back: Back to channels
+        new: New channel
+        new_title: New channel
+        edit_title: Edit channel
+        created: Channel created.
+        updated: Channel updated.
+        deleted: Channel deleted.
+        empty: No external channels. Alerts arrive in the app and via email; add a webhook to bring them elsewhere. Telegram is connected from your preferences.
+        empty_title: No external channels
+        empty_body: Alerts arrive in the app and via email. Add a webhook to bring them elsewhere.
+        empty_telegram: Connect Telegram in your preferences
+        stat_total: Channels
+        stat_enabled: Enabled
+        col_name: Name
+        col_kind: Kind
+        col_target: Target
+        col_rules: Rules
+        col_status: Status
+        enabled: Enabled
+        disabled: Disabled
+        edit: Edit
+        delete: Delete
+        delete_dialog:
+          title: "Delete the %{name} channel?"
+          body: "Linked rules stop delivering here. This cannot be undone."
+        kinds:
+          webhook: Webhook
+        form:
+          create: Create channel
+          save: Save
+          cancel: Cancel
+          name: Name
+          kind: Kind
+          webhook_url: Webhook URL
+          webhook_url_hint: Public https endpoint receiving the signed JSON POST.
+          webhook_secret: Signing secret (optional)
+          webhook_secret_hint: When set, the POST carries X-CloseYourIt-Signature (HMAC-SHA256 of the body).
+          webhook_secret_placeholder: Leave empty to keep the current secret
+          status: Status
+          enabled: Channel enabled
+          note: Channels attach to alerting rules; a rule without channels only delivers in-app and email.
+      rules:
+        templates:
+          title: "Ready-made templates"
+          subtitle: "The most common cases, already filled in. You can always change them afterwards."
+          use: "Use this template"
+          created:
+            one: "Rule created."
+            other: "%{count} rules created."
+          unknown: "Unknown template."
+          failed: "The template rules could not be created."
+          site_down:
+            title: "Tell me if a site goes down"
+            description: "The most common case: knowing at once that a site is not responding, and knowing when it is back."
+            outcome: "Creates two rules: %{events}. Without the second one you would know about the fall but never about the return."
+          cron_missed:
+            title: "Tell me if a scheduled job does not run"
+            description: "For jobs that must run on time: backups, deliveries, clean-ups."
+            outcome: "Creates one rule: %{events}."
+          new_errors:
+            title: "Tell me about new errors"
+            description: "An alert when an error never seen before shows up."
+            outcome: "Creates one rule: %{events}."
+          server_health:
+            title: "Tell me if a machine is struggling"
+            description: "Machine unreachable or disk filling up."
+            outcome: "Creates two rules: %{events}."
+        title: Alert rules
+        help_title: "The conditions that raise an alert."
+        new: New rule
+        created: Alert rule created.
+        updated: Alert rule saved.
+        deleted: Alert rule deleted.
+        search_placeholder: Search rules…
+        count: "%{count} rules"
+        filter_event: Event
+        filter_project: Project
+        stat_active: active
+        stat_off: "off"
+        stat_triggered: triggered in 24h
+        empty: No alert rules yet
+        empty_body: Create a rule to get notified when a new error appears, an error regresses, or a monitor goes down.
+        col_rule: Rule · applies to
+        col_event: Event
+        col_throttle: Grouping
+        col_last_fired: Last fired
+        col_status: Status
+        col_fired_24h: "24h"
+        col_fired_7d: "7d"
+        noisy_tip: "This rule produces most of the alerts in the period."
+        status_muted: Muted
+        muted_until: "Muted until %{time}"
+        mute_1h: "Mute 1 hour"
+        mute_1d: "Mute 1 day"
+        mute_1w: "Mute 1 week"
+        unmute: "Unmute (until %{time})"
+        muted_notice: "Rule muted until %{time}. It stays active and keeps counting."
+        unmuted_notice: "The rule notifies again."
+        mute_invalid: "Invalid duration: the rule was not muted."
+        status_on: "On"
+        status_off: "Off"
+        all_projects: All projects
+        any_environment: Any environment
+        scope_all: All projects · any environment
+        new_title: New rule
+        edit_title: Edit rule
+        back: Back to alerts
+        delete_confirm: Delete this rule? It will stop generating alerts.
+        show:
+          event: Event
+          status: Status
+          throttle: Group repeated alerts
+          edit: Edit
+          delete: Delete
+          scope_title: Scope
+          covers_title: What it covers
+          covers_summary:
+            monitors:
+              one: "1 monitored site"
+              other: "%{count} monitored sites"
+            cron_monitors:
+              one: "1 scheduled job"
+              other: "%{count} scheduled jobs"
+            projects:
+              one: "1 project"
+              other: "%{count} projects"
+            organization: Whole organization
+          covers_org_body: "This rule applies to the whole organization: it fires regardless of project or environment."
+          covers_more: "and %{count} more"
+          covers_empty: It currently covers nothing.
+          channels_title: Recipients
+          channels_via_app: In the app to whoever can see the project — and by email to those who opted in.
+          channels_none: No external channel linked.
+          # CYRA-490 — the rule condition written as a sentence, generated from its fields.
+          sentence_title: In plain words
+          sentence:
+            trigger_fallback: "Fires on the “%{event}” event."
+            min_level: "Only from %{level} severity and above."
+            unhandled_only: "Only for unhandled crashes."
+            threshold_ms: "Only when the duration exceeds %{ms} ms."
+            threshold: "Only when the value exceeds %{value}%{unit}."
+            threshold_connections: connections
+            threshold_seconds: seconds
+            scope_project_env: "Applies to project %{project}, environment %{environment}."
+            scope_project: "Applies to project %{project}, any environment."
+            scope_env: "Applies to all projects, only in environment %{environment}."
+            scope_all: "Applies to all projects and any environment."
+            scope_org: "Applies to the whole organization, regardless of project."
+            throttle: "Repeated alerts are grouped: at most one every %{minutes}."
+            minutes:
+              one: "1 minute"
+              other: "%{count} minutes"
+            state_off: "This rule is off: it currently generates no alerts."
+            state_muted: "This rule is muted until %{time}: it counts events but does not alert."
+          # CYRA-490 — trigger history: counts (same as the table) + recent list.
+          history_title: Trigger history
+          history_last: "last %{time} ago"
+          history_never: never fired
+          history_empty: It hasn't fired yet.
+          stat_24h: "24h"
+          stat_7d: "7 days"
+          stat_total: Total
+          via:
+            in_app: In app
+            email: Email
+            telegram: Telegram
+        form:
+          channels: External channels
+          channels_hint: Besides in-app and email, also deliver to these channels.
+          name: Name
+          event: Event
+          min_level: Minimum level
+          min_level_hint: Fire only at this severity or higher. Errors only.
+          min_level_any: Any level
+          projects: Project
+          projects_hint: Leave empty to match every project.
+          environments: Environment
+          environments_hint: Leave empty to match any environment.
+          throttle: Group repeated alerts
+          throttle_unit: minutes
+          throttle_hint: Repeated events within this window collapse into one notification.
+          threshold_ms: Duration threshold
+          threshold_ms_hint: "metric_threshold rules only: fire when the sample lasts at least this long. Empty = any duration."
+          threshold: Server threshold
+          threshold_unit: "% / °C / connections / s"
+          threshold_hint: "Threshold rules only (server_cpu/mem/disk/temp, database connections, replication lag): fire when the measured value reaches this threshold. Units: percent for cpu/mem/disk, °C for temperature, connection count for the database, seconds for the lag."
+          status: Status
+          enabled: Enabled
+          unhandled_only: Scope
+          unhandled_only_label: Unhandled errors only
+          unhandled_only_hint: Fire only on unhandled crashes, ignoring deliberate captures. Errors only.
+          save: Save rule
+          cancel: Cancel
+          note: When this fires, everyone who can see the matched project is notified in-app — and by email if they opted in.
+      notifications:
+        filter_event: "Kind"
+        filter_project: "Project"
+        filter_host: "Machine:"
+        filter_host_hidden: "a single machine"
+        filter_host_clear: "See all alerts"
+        filter_read_state: "Read and unread"
+        filter_unread: "Unread"
+        filter_read: "Already read"
+        filter_apply: "Apply"
+        filter_clear: "Clear filters"
+        nature_all: "All"
+        title: Notifications
+        help_title: "The alerts and ticket updates you received."
+        unread: "Unread:"
+        mark_all: Mark all read
+        all_read: All notifications marked as read.
+        preview_loading: Loading the latest notifications…
+        preview_empty: No notifications yet.
+        preview_all: See all
+        preferences: Preferences
+        empty: You're all caught up
+        empty_body: Notifications from your alert rules show up here. Create a rule to start getting notified.
+        empty_host: "No alerts on %{host}"
+        empty_host_body: Nothing has fired on this machine yet. Alerts from other machines stay in the full inbox.
+        manage_alerts: Manage alerts
+        quiet_active: "Quiet hours %{window}"
+        quiet_active_hint: "During this window non-urgent emails are held. Critical alerts always get through."
+      preferences:
+        title: Alert preferences
+        save: Save
+        saved: Preferences saved.
+        channels: Channels
+        channels_hint: Where alerts reach you.
+        in_app: In-app
+        in_app_hint: Show in the bell and notification center.
+        email: Email
+        email_hint: "Send to %{email}."
+        sources: Sources
+        sources_hint: What you want to hear about.
+        errors: Errors
+        errors_hint: New errors and regressions.
+        uptime: Uptime
+        uptime_hint: Monitors going down and recovering.
+        tickets: Tickets
+        tickets_hint: Activity on tickets you watch — assignments, status, milestones, comments, mentions.
+        servers: Servers
+        servers_hint: Servers going down/recovering, cpu/memory/disk/temperature thresholds, failed services, SMART.
+        min_level: Minimum error level
+        min_level_hint: Only notify at this severity or higher.
+        min_level_any: Any level
+        quiet_hours: Quiet hours
+        quiet_hours_hint: Hold emails overnight — in-app notifications still appear.
+        enable_quiet: Enable quiet hours
+        from: From
+        to: To
+        timezone: Timezone
+        quiet_note: "Non-urgent emails are held during quiet hours; in-app notifications are never delayed. Critical alerts always get through, even at night: site down, server down, database unreachable, missed cron."

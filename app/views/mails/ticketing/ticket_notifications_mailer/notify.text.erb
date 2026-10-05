@@ -1,0 +1,10 @@
+<%= t("ticketing.ticket_notifications.mailer.notify.greeting") %>
+
+<%= @notification.title %>
+
+<%= t("ticketing.ticket_notifications.mailer.notify.label_project") %> <%= @notification.project&.name %>
+<%= t("ticketing.ticket_notifications.mailer.notify.label_ticket") %> <%= @ticket.title %>
+
+<%= mail_absolute_url(@notification.url) %>
+
+<%= t("ticketing.ticket_notifications.mailer.notify.footer") %>

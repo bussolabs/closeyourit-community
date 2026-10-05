@@ -1,0 +1,57 @@
+<% content_for :title, t("member.todo_lists.title") %>
+
+<div class="p-7 space-y-6" data-test="member-todo-lists" data-controller="ui--dialog">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.todo_lists.title"),
+        subtitle: t("member.todo_lists.help_title"),
+        breadcrumb: [ { label: t("member.todo_lists.title") } ],
+        counts_test_id: "todo-lists-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.lists", count: @lists.size), value: @lists.size, test_id: "todo-lists-count-lists") %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.shared"), value: @shared_lists.size, value_color: :indigo, test_id: "todo-lists-count-shared") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.todo_lists.new"), href: new_member_todo_list_path,
+                                         icon: "plus", size: :sm, test_id: "todo-lists-new",
+                                         data: { action: "click->ui--dialog#open:prevent" }) %>
+    <% end %>
+  <% end %>
+
+  <% if @query.blank? && @lists.empty? && @shared_lists.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.todo_lists.empty"), body: t("member.todo_lists.empty_body"),
+          icon: "list-check", framed: true, test_id: "todo-lists-empty") do |empty| %>
+      <% empty.with_action do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.todo_lists.new"), href: new_member_todo_list_path,
+              icon: "plus", size: :sm, test_id: "todo-lists-empty-new",
+              data: { action: "click->ui--dialog#open:prevent" }) %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%# T1 — the search bar is the toolbar of the panel that holds the lists. %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="todo-lists-panel">
+      <%= render Ui::TableToolbarComponent.new(url: member_todo_lists_path, query: @query, framed: true,
+            search_placeholder: t("member.todo_lists.search_placeholder"), test_id: "todo-lists-toolbar") %>
+
+      <% if @lists.empty? && @shared_lists.empty? %>
+        <%= render Ui::NoResultsComponent.new(query: @query, reset_href: member_todo_lists_path,
+              test_id: "todo-lists-no-results") %>
+      <% else %>
+        <section class="p-4" data-test="todo-lists-mine">
+          <div class="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3"
+               data-controller="<%= 'todo-reorder' if @query.blank? %>" data-todo-reorder-url-value="<%= reorder_member_todo_lists_path %>">
+            <%= render partial: "member/todo_lists/list_card", collection: @lists, as: :list, locals: { mine: true } %>
+          </div>
+        </section>
+
+        <% if @shared_lists.any? %>
+          <section class="p-4 border-t border-stone-200 dark:border-zinc-800" data-test="todo-lists-shared">
+            <div class="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <%= render partial: "member/todo_lists/list_card", collection: @shared_lists, as: :list, locals: { mine: false } %>
+            </div>
+          </section>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+  <%= render "member/todo_lists/new_dialog" %>
+</div>

@@ -1,0 +1,21 @@
+<%# locals: incident — riga della tabella incident (tab Incidents di Monitor › Uptime). Linka al
+    monitor di riferimento, dove si gestiscono grouping e timeline. No N+1: monitor/project/environment
+    preload dal controller. %>
+<%= render Ui::TableComponent::RowComponent.new(href: member_monitoring_monitor_path(incident.monitor), link_label: incident.monitor.project.name, test_id: "uptime-incident-#{incident.id}") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <%= link_to member_monitoring_monitor_path(incident.monitor), class: "inline-flex items-center gap-2", data: { test: "uptime-incident-link-#{incident.id}" } do %>
+      <span class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400"><%= incident.monitor.project.name %></span>
+      <%= render Ui::BadgeComponent.new(label: incident.monitor.environment.label, color: incident.monitor.environment.color, dot: true) %>
+    <% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.uptime.col_started"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { l(incident.started_at, format: :short) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.uptime.col_resolved"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { incident.resolved? ? l(incident.resolved_at, format: :short) : t("member.uptime.ongoing") } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.uptime.col_duration"), mono: true, class: "text-zinc-900 dark:text-zinc-100")) { distance_of_time_in_words(incident.started_at, incident.resolved_at || Time.current) } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.uptime.col_incident_status")) do %>
+    <% if incident.ongoing? %>
+      <%= render Ui::BadgeComponent.new(label: t("member.uptime.incident_open"), color: :red, dot: true) %>
+    <% else %>
+      <%= render Ui::BadgeComponent.new(label: t("member.uptime.incident_resolved"), color: :emerald, dot: true) %>
+    <% end %>
+  <% end %>
+<% end %>

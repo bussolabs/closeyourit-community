@@ -1,0 +1,24 @@
+<% table_markup = capture do %>
+  <%= tag.table(**table_options) do %>
+    <% if head? %>
+      <thead class="<%= head_class %>"><tr class="text-gray-500 dark:text-zinc-400"><% if selectable? %><%= select_all_header %><% end %><%= head %></tr></thead>
+    <% end %>
+    <%= tag.tbody(**body_options) do %><%= content %><% if state? %><tr class="ui-table-state"><td colspan="<%= column_count %>"><%= state %></td></tr><% end %><% end %>
+    <% if foot? %>
+      <tfoot class="border-t border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800"><%= foot %></tfoot>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if scrollable? %>
+  <div class="relative" data-controller="ui--scroll-hint<%= " ui--row-group" if grouped? %>"
+       data-ui--scroll-hint-spazio-class="max-md:pb-8">
+    <%= tag.div(table_markup, **scroller_options) %>
+    <div hidden data-ui--scroll-hint-target="horizontal" data-test="<%= scroll_hint_test_id %>" aria-hidden="true"
+         class="pointer-events-none absolute bottom-1 right-2 z-20 inline-flex items-center gap-1.5 rounded-md bg-zinc-900/90 px-2 py-1 text-xs font-medium text-white md:bottom-2">
+      <%= t("shared.scroll_horizontal") %><%= render Ui::IconComponent.new(name: "arrow-right", class: "text-[9px]") %>
+    </div>
+  </div>
+<% else %>
+  <%= tag.div(table_markup, **(grouped? ? html_options.deep_merge(data: { controller: "ui--row-group" }) : html_options)) %>
+<% end %>

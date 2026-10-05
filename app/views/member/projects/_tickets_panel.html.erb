@@ -1,0 +1,37 @@
+<%# CYRA-883 — the counts live next to the list they count. By status CATEGORY (CYRA-358): the sum
+    always matches the total; to-do and in-progress open the ticket list filtered on them.
+    T1 — title and counts head the list panel: nothing sits outside a panel. %>
+<% count_link = ->(category) { list_member_tickets_path(project_id: [ @project.id ], status_id: @status_ids_by_category.fetch(category, [])) } %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="project-tickets-panel">
+  <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100" data-test="project-tickets-title"><%= t("member.projects.show.tickets") %></h2>
+    <span class="flex flex-wrap items-center gap-x-2 font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="project-counts">
+      <span data-test="project-count-total"><%= t("member.projects.show.stat_total") %> <b class="font-semibold text-zinc-900 dark:text-zinc-100"><%= @stats.total %></b></span>
+      <span class="text-gray-300 dark:text-zinc-600" aria-hidden="true">·</span>
+      <%= link_to count_link.call("open"), class: "hover:text-amber-700 dark:hover:text-amber-300 hover:underline", data: { test: "project-count-todo" } do %><%= t("member.projects.show.stat_todo") %> <b class="font-semibold text-amber-600 dark:text-amber-400"><%= @stats.todo %></b><% end %>
+      <span class="text-gray-300 dark:text-zinc-600" aria-hidden="true">·</span>
+      <%= link_to count_link.call("in_progress"), class: "hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline", data: { test: "project-count-in-progress" } do %><%= t("member.projects.show.stat_in_progress") %> <b class="font-semibold text-indigo-600 dark:text-indigo-400"><%= @stats.in_progress %></b><% end %>
+      <span class="text-gray-300 dark:text-zinc-600" aria-hidden="true">·</span>
+      <span data-test="project-count-done"><%= t("member.projects.show.stat_done") %> <b class="font-semibold text-emerald-600 dark:text-emerald-400"><%= @stats.done %></b></span>
+    </span>
+  </div>
+  <% if @stats.total.zero? %>
+    <%# CYRA-575 — lo schema in quattro parti (CYRA-363): cosa manca, a cosa serve, un esempio, il
+        pulsante. Qui c'era la frase secca «Ancora nessun ticket» e nessun modo di crearne uno,
+        proprio dove chi legge ha appena scoperto che non ce ne sono. %>
+    <%= render Ui::EmptyStateComponent.new(
+          title: t("member.projects.show.no_tickets"), body: t("member.projects.show.no_tickets_body"),
+          example: t("member.projects.show.no_tickets_example"), icon: "ticket",
+          test_id: "project-tickets-empty") do |empty| %>
+      <% empty.with_action do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.projects.show.new_ticket"),
+              href: new_member_ticket_path(project_id: @project.id), variant: :primary, size: :sm,
+              icon: "plus", test_id: "project-tickets-empty-new") %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%# CYRA-827 — il confine di caricamento della lista. Filtri, ricerca e pager si aggiornano QUI
+        DENTRO; la cornice, il titolo e il resto della panoramica restano fuori e non si ricostruiscono. %>
+    <%= render "member/projects/tickets_frame" %>
+  <% end %>
+</div>

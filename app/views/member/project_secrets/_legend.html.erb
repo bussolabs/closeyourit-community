@@ -1,0 +1,6 @@
+<%# The symbols of the matrix, said once in the footer, beside the pages (T10). The normal case carries nothing (T11). %>
+<span class="inline-flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="secrets-legend">
+  <span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span><%= t("member.secrets.legend.shared") %></span>
+  <span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-orange-500"></span><%= t("member.secrets.legend.missing") %></span>
+  <span class="inline-flex items-center gap-1.5"><span class="font-mono text-gray-400 dark:text-zinc-500">—</span><%= t("member.secrets.legend.empty") %></span>
+</span>

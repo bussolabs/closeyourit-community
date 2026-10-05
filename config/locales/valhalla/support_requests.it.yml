@@ -1,0 +1,30 @@
+it:
+  valhalla:
+    nav:
+      support_requests: Richieste di supporto
+    support_requests:
+      title: Richieste di supporto
+      help_title: Quello che le persone hanno inviato dal pulsante Supporto, con la pagina in cui erano.
+      count_new: Nuove
+      count_total: Totale
+      search_placeholder: Cerca fra le richieste…
+      empty_title: Ancora nessuna richiesta di supporto
+      empty_body: Quando qualcuno preme Supporto e invia un messaggio, compare qui.
+      col_when: Quando
+      col_from: Da
+      col_organization: Organizzazione
+      col_page: Pagina
+      col_request: Richiesta
+      col_status: Stato
+      states:
+        pending: Nuova
+        handled: Gestita
+      handle: Segna come gestita
+      reopen: Segna come nuova
+      handled: Richiesta segnata come gestita.
+      reopened: Richiesta segnata come nuova.
+      handled_by: "Gestita da %{name} il %{date}"
+      message_title: Richiesta
+      context_title: Inviato con la richiesta
+      reply: Rispondi per email
+      no_organization: Nessuna organizzazione

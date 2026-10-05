@@ -1,0 +1,33 @@
+<%# locals: () %>
+<%# A floating notice, not a band: when the automation waits for its plan, the plan card is where the
+    decision is taken, so the notice only points there and never offers a second pair of buttons. %>
+<% content_for :floating_notice do %>
+  <% if @review_evidence_tab && @automation_summary&.decision == :plan %>
+    <%= render Ui::FloatingNoticeComponent.new(key: "ticket_review:#{@ticket.id}", tone: :success,
+          title: t("member.tickets.review.banner_title"), test_id: "ticket-decision-banner") do %>
+      <p><%= t("member.tickets.review.plan_first") %></p>
+      <%= link_to t("member.tickets.review.plan_first_link"), member_ticket_path(@ticket, tab: "automation"),
+            class: "mt-1 inline-block font-medium text-emerald-800 dark:text-emerald-200 hover:underline",
+            data: { test: "ticket-decision-plan" } %>
+    <% end %>
+  <% elsif @review_evidence_tab %>
+    <%= render Ui::FloatingNoticeComponent.new(key: "ticket_review:#{@ticket.id}", tone: :success,
+          title: t("member.tickets.review.banner_title"), test_id: "ticket-decision-banner") do %>
+      <p><%= t("member.tickets.review.banner_body") %></p>
+      <div class="mt-2.5 flex flex-wrap items-center gap-2">
+        <%= render Ui::ButtonComponent.new(label: t("member.tickets.review.approve"),
+              href: member_ticket_review_approval_path(@ticket), method: :post, variant: :primary, size: :sm,
+              icon: "circle-check", test_id: "ticket-review-approve",
+              confirm: t("member.tickets.review.approve_confirm")) %>
+        <%= render "member/tickets/review_reject_modal", ticket: @ticket %>
+        <%= link_to t("member.tickets.review.banner_see"), member_ticket_path(@ticket, tab: @review_evidence_tab),
+              class: "font-medium text-emerald-800 dark:text-emerald-200 hover:underline", data: { test: "ticket-decision-see" } %>
+      </div>
+    <% end %>
+  <% else %>
+    <%= render Ui::FloatingNoticeComponent.new(key: "ticket_review:#{@ticket.id}",
+          title: t("member.tickets.review.nothing_title"), test_id: "ticket-decision-nothing") do %>
+      <%= t("member.tickets.review.nothing_body") %>
+    <% end %>
+  <% end %>
+<% end %>

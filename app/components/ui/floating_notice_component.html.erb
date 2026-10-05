@@ -1,0 +1,11 @@
+<%= tag.aside(**html_options) do %>
+  <%= render Ui::IconComponent.new(name: tone[:icon], class: "#{tone[:accent]} text-[14px] mt-0.5") %>
+  <div class="flex-1 min-w-0 text-[12.5px] text-zinc-900 dark:text-zinc-100">
+    <p class="font-semibold"><%= @title %></p>
+    <div class="mt-0.5 text-gray-700 dark:text-zinc-300"><%= content %></div>
+  </div>
+  <button type="button" class="<%= tone[:accent] %> opacity-70 hover:opacity-100" data-action="ui--floating-notice#dismiss"
+          aria-label="<%= t("ui.floating_notice.dismiss") %>" data-test="<%= dismiss_test_id %>">
+    <%= render Ui::IconComponent.new(name: "x", class: "text-[13px]") %>
+  </button>
+<% end %>

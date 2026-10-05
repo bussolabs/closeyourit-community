@@ -1,0 +1,227 @@
+en:
+  website:
+    nav:
+      workflow: How it works
+      features: Features
+      integrations: Integrations
+      sign_in: Sign in
+      request_access: Request access
+      language: Language
+      aria_label: Main navigation
+    home:
+      title: "CloseYourIt — error monitoring, ticketing, uptime & logs"
+      meta_description: "Bug tracking and observability for engineering teams: deduplicated errors, evidence-first tickets, uptime with public status pages, performance verdicts and structured logs — one workspace."
+      guide: { path: "field-guide / signal to resolution", heading: "From signal to resolution, without rebuilding context.", subheading: "CloseYourIt connects errors, performance, logs and tickets in one operational cycle. When production breaks, evidence stays beside the decision until the fix is verified.", cta_access: "Request access", cta_workflow: "Follow an incident" }
+      workflow:
+        heading: One incident, one audit trail
+        summary: "The same identifiers cross the entire workflow: no copying and pasting between monitoring, logs and the issue tracker."
+        signal: { label: "01 · signal", heading: "The regression is detected", body: "Occurrences are grouped into an actionable problem, with release and environment already visible." }
+        evidence: { label: "02 · evidence", heading: "Context assembles itself", body: "The trace_id connects the error to logs and performance problems emitted by the same request." }
+        decision: { label: "03 · decision", heading: "Evidence becomes work", body: "Promote the problem to a ticket without losing its stacktrace, history or original error link.", given: "a user completes checkout", when: "release v2.4.1 is in production", expected: "the order is created without errors" }
+        resolution: { label: "04 · resolution", heading: "The fix remains verifiable", body: "Ticket, error and new release share one audit trail; a regression reopens the signal." }
+      capabilities:
+        heading: Capabilities follow the work
+        detect: { heading: Detect, body: "See what needs attention quickly, without multiplying alerts.", items: ["Error monitoring and regressions", "Uptime, crons and servers", "Session replay and analytics"] }
+        understand: { heading: Understand, body: "Bring technical signals and project context together before deciding.", items: ["Correlated logs and performance", "Search and knowledge base", "AI triage with human confirmation"] }
+        resolve: { heading: Resolve, body: "Turn evidence into traceable work and verify that the problem does not return.", items: ["Tickets, roadmap and GitHub", "Alerting and notification center", "Audit trail and access control"] }
+      setup: { heading: "Start from the instrumentation you already have", body: "Use the Ruby, Dart and JavaScript SDKs, the cyi CLI, or keep your Sentry SDK and change the DSN for supported error events.", link: "See every integration" }
+      project: { heading: "Built and used on real work", body: "CloseYourIt monitors its own services and component projects. Features start from real incidents, triage and releases—not a commercial checklist.", evidence: "active dogfooding · evidence before promises" }
+      hero:
+        heading: "Capture, triage, resolve — with evidence."
+        subheading: "CloseYourIt is a bug tracker and observability hub for engineering teams. Errors, tickets, uptime, performance and logs share one workspace, one timeline and one audit trail."
+        cta_app: Get started
+        cta_features: Explore the features
+      pillars:
+        heading: Three tools in one
+        tracker:
+          title: Issue tracker
+          body: "Tickets with a four-clause bug body (given / when / then / expected), kanban, roadmap with milestones, watchers and mentions."
+        monitor:
+          title: Error & uptime monitor
+          body: "Deduplicated error groups with stacktraces and breadcrumbs, automatic reopen on regression, HTTP monitors with SLA and public status pages."
+        observability:
+          title: Performance & logs
+          body: "Slow queries and methods turned into aggregated verdicts (N+1, slow request), structured logs correlated to errors by trace_id."
+      features:
+        heading: What's inside
+      sentry:
+        heading: Drop-in Sentry replacement
+        body: "Already instrumented? Point your Sentry-compatible SDK at CloseYourIt by changing the DSN only. Events land in the same pipeline as the native SDKs."
+        scope: "The drop-in covers error events (capture_exception, capture_message). Tracing, sessions and crons are not imported."
+      sdk:
+        heading: SDKs, CLI and CI
+        ruby: "closeyourit-ruby — errors, metrics and logs from Rails and plain Ruby. Fire-and-forget, PII scrubbing by default."
+        dart: "closeyourit — errors, logs and metrics from Dart and Flutter, with an on-disk queue that resends once the network is back. Slow queries and site analytics stay out."
+        cli: "cyi — projects, errors, tickets, logs and todos from the terminal. OAuth device-flow login."
+        more: Full setup on the integrations page
+      cta:
+        heading: Bring a real problem into one operational cycle
+        body: "CloseYourIt is available by invitation to small engineering teams. Tell us about your stack and how you handle incidents and issues today."
+        button: Request access
+    access_request:
+      title: Request access
+      meta_description: "Request access to CloseYourIt for your engineering team."
+      path: "access / request"
+      heading: Tell us about your operational cycle
+      summary: "CloseYourIt is available by invitation. We want to understand which tools you use today and where context gets lost between signal and resolution."
+      fields: { name: Name, email: "Work email", team: "Team or organization", context: "How do you handle incidents and issues today?", context_placeholder: "Your stack, current tools and the problem you want to solve." }
+      submit: Send request
+      privacy_note_html: "By submitting you accept that we process your data as described in the %{link}."
+      errors: { heading: "Check the highlighted fields" }
+      success: { heading: "Request received", body: "Thank you. We will review the context and contact you by email." }
+    features:
+      shared:
+        cta: Request access
+        others: More features
+      error_monitoring:
+        name: Error monitoring
+        card: "Deduplicated error groups with stacktrace, breadcrumbs, tags and regressions."
+        title: Error monitoring
+        meta_description: "Deduplicated error groups with stacktrace, request context, breadcrumbs, tags and user — triage, regression reopen and promote-to-ticket."
+        heading: Error monitoring
+        summary: "Every exception lands in a deduplicated issue group with full evidence: stacktrace, request, breadcrumbs, user, tags and custom context."
+        points:
+          - "Occurrence histograms and per-occurrence drill-down"
+          - "Triage actions — resolve, ignore, reopen — with automatic reopen on regression"
+          - "Promote an error to a ticket without losing the link between the two"
+          - "Sentry-compatible ingest for error events: change the DSN, keep your SDK"
+      ticketing:
+        name: Ticketing
+        card: "Evidence-first bug reports, kanban, roadmap, unified timeline and mentions."
+        title: Ticketing
+        meta_description: "Bug tracking built on evidence: four-clause bug body, kanban board, roadmap with milestones, unified timeline, watchers, mentions and AI-assisted reports."
+        heading: Ticketing
+        summary: "Bugs written as evidence: four optional clauses — given, when, then, expected — that stay just as usable as free text."
+        points:
+          - "Kanban board with drag & drop and per-member access"
+          - "Roadmap with milestones, opt-in per project"
+          - "Unified timeline of comments and events — a real audit trail"
+          - "Watchers and @mentions, saved views across every list"
+          - "AI-assisted quick bug report: describe it, get structured clauses back"
+      uptime:
+        name: Uptime monitoring
+        card: "HTTP monitors with SLA windows, incidents and public status pages."
+        title: Uptime monitoring
+        meta_description: "HTTP monitors per project and environment: incident timeline, SLA over 24h/7d/30d/1y and opt-in public status pages."
+        heading: Uptime monitoring
+        summary: "HTTP monitors per project and environment, with an honest incident history and SLA windows over 24h, 7 days, 30 days and 1 year."
+        points:
+          - "Block timeline of checks, incident start and resolution"
+          - "Opt-in public status page per monitor — share it with your users"
+          - "Anti-SSRF guard on monitored URLs"
+      performance:
+        name: Performance
+        card: "Slow queries and methods aggregated into verdicts: N+1, slow request, jank."
+        title: Performance
+        meta_description: "Performance issues from real traffic: slow queries, slow methods and aggregated verdicts like N+1, high query count, slow external HTTP and jank."
+        heading: Performance
+        summary: "Slow queries and slow methods from real traffic become aggregated verdicts: N+1, high query count, slow request, repeated external HTTP, jank."
+        points:
+          - "Duration charts per query and per method"
+          - "Threshold alerts on the metrics you care about"
+          - "Correlated to errors and logs of the same request via trace_id"
+          - "Parameter capture is opt-in and scrubbed — off by default"
+      logs:
+        name: Structured logs
+        card: "Append-only stream with JSON attributes, correlated by trace_id."
+        title: Structured logs
+        meta_description: "Structured, append-only logs with levels and JSON attributes, batch ingest, three-level retention and trace_id correlation with errors and metrics."
+        heading: Structured logs
+        summary: "An append-only stream per app with levels and JSON attributes, correlated to errors and metrics of the same request by trace_id."
+        points:
+          - "Batch ingest from the SDKs, multi-app search"
+          - "Retention on three levels: global, organization, project"
+          - "Manual link from a log line to an error or a ticket"
+      alerting_ai:
+        name: Alerting & AI triage
+        card: "Threshold rules, notification center, quiet hours and AI verdicts."
+        title: Alerting & AI triage
+        meta_description: "Threshold alert rules, in-app notification center with per-user preferences and quiet hours, plus AI triage verdicts applied with one click."
+        heading: Alerting & AI triage
+        summary: "Threshold rules at organization level and an in-app notification center with per-user delivery preferences and quiet hours."
+        points:
+          - "Email delivery with per-user preferences"
+          - "AI triage on monitoring signals: category, severity, cause, suggested action, confidence"
+          - "Similar-errors cluster to spot repeat offenders"
+          - "AI suggests, a human applies — always one click, always audited"
+    integrations:
+      title: Integrations
+      meta_description: "Ruby gem, Dart/Flutter package, cyi CLI, CI ingest and Sentry-compatible DSN — how to plug CloseYourIt into your stack."
+      heading: Integrations
+      summary: "Instrument a project in minutes: pick an SDK, create a per-project ingest token, ship."
+      ruby:
+        heading: Ruby / Rails
+        body: "The closeyourit-ruby gem captures errors, metrics and logs. Fire-and-forget transport, PII scrubbing by default, Rails integration included."
+      dart:
+        heading: Dart / Flutter
+        body: "The closeyourit package covers errors, breadcrumbs, logs and metrics on Dart and Flutter, and keeps on disk whatever leaves while the network is down. No slow queries: there is no SQL to watch on mobile."
+      cli:
+        heading: CLI — cyi
+        body: "Projects, errors, tickets, logs and todos from the terminal. Login via OAuth 2.0 device flow, ready for scripts and CI."
+      ci:
+        heading: CI ingest
+        body: "Report releases and events straight from CI with the per-project bearer token — no SDK required."
+      sentry:
+        heading: Sentry-compatible
+        body: "CloseYourIt accepts Sentry DSN ingest: switch the DSN in your existing setup and keep the instrumentation you already trust."
+        scope: "Scope: error events only — capture_exception and capture_message. Tracing, sessions and crons are accepted but not imported."
+    footer:
+      tagline: "Fast · Transparent · Precise."
+      product: Product
+      project: The project
+      sign_in: Sign in
+      privacy: Privacy
+    # CYRA-698 — DRAFT pending legal review: the text describes what the product actually collects
+    # (verified against the code), but it has not been reviewed by a lawyer. Controller, address and
+    # contact must be confirmed before publishing.
+    privacy:
+      title: Privacy notice
+      meta_description: "What personal data CloseYourIt collects, why, for how long, and how to ask to see it or delete it."
+      heading: Privacy notice
+      updated: "Last updated: 31 August 2026"
+      summary: "This page says in plain words which personal data we touch, why we touch it and what you can ask us. It covers both the website and the product."
+      controller_title: Who processes the data
+      controller_body: "The data controller is CloseYourIt. For any question about this notice, or to exercise the rights described below, write to:"
+      controller_email: "privacy@closeyour.it"
+      sections:
+        collected:
+          title: What we collect
+          items:
+            - "Access request: if you fill in the access request form, we store your name, work email and the text you write."
+            - "Account: name, email address and password (never in clear text: we only keep an encrypted fingerprint)."
+            - "What you write in the product: tickets, comments, notes, attachments and messages. That content is yours, and it may contain personal data you decide to put there."
+            - "Product usage: which pages and features you open, with your role and organisation. It tells us what works and what does not."
+            - "Diagnostics: errors, response times and log lines from the applications you connect. Sensitive values are filtered out before we store them."
+            - "Website statistics: page views, referrer, device type and country. The IP address is only used to derive the country and is never stored."
+        purposes:
+          title: Why we process it
+          items:
+            - "To let you use the service: without an account and the content you write, the product does nothing."
+            - "To keep it running and safe: notice failures, understand what happened, stop abuse."
+            - "To improve it: know which features are actually used, in aggregate."
+            - "To answer you: if you write to us or request access, we use your contact details for that."
+        legal_basis:
+          title: On what basis
+          body: "Processing account data and content is based on the contract: without it we cannot provide the service. Diagnostics, security and aggregate statistics rest on our legitimate interest in keeping the service working and improving it. Where consent is required, we ask you first."
+        retention:
+          title: For how long
+          items:
+            - "Account data and content: as long as the account exists. On closure we delete or anonymise it."
+            - "Access requests that are not accepted: up to 12 months."
+            - "Errors, metrics and logs: kept for limited windows and then deleted automatically."
+            - "Website statistics: in aggregate form, with nothing that identifies a person."
+        sharing:
+          title: Who we share it with
+          body: "We do not sell personal data and we do not pass it to third parties for marketing. We rely on providers that process data on our behalf and only on our instructions: the infrastructure hosting the service, the storage for attachments and the service that sends system email. Data stays within the European Economic Area, except for transfers covered by the safeguards the law provides."
+        cookies:
+          title: Cookies
+          body: "We use a single technical cookie, the one that keeps your session open after sign-in. There are no profiling cookies and no advertising tracking. Website statistics are collected without cookies and without following the same person across different sites."
+        rights:
+          title: Your rights
+          body: "You can ask us to see your data, correct it, delete it, restrict its use, receive it in a format another application can read, or object to processing based on legitimate interest. We answer within one month. If you think something is wrong, you can contact your data protection authority."
+        security:
+          title: How we protect it
+          body: "Data travels encrypted, credentials and secrets are stored encrypted, access is limited by role and every sensitive action leaves a trace. No measure is perfect: should a breach affecting you occur, we will tell you."
+        changes:
+          title: If this page changes
+          body: "When we change this notice we update the date at the top. If the change is significant, we flag it inside the product."

@@ -1,0 +1,174 @@
+<%# locals: (ticket:, url:, method:, title:, submit_label:, locked_project: nil, source_ticket_id: nil) %>
+<% content_for :title, title %>
+
+<% back_path = locked_project ? member_project_path(locked_project) : member_tickets_path %>
+<% ticket_breadcrumb = ticket.persisted? ?
+     [ { label: t("member.tickets.title"), href: member_tickets_path }, { label: ticket.code, href: member_ticket_path(ticket) }, { label: t("member.breadcrumb.edit") } ] :
+     [ { label: t("member.tickets.title"), href: member_tickets_path }, { label: t("member.tickets.new") } ] %>
+<%# AI Buddy: scheda di composizione AI dell'intero ticket, mostrata sul form nuovo quando
+    l'assistente rapido bug (ticket-quick: flag + progetto locked + bug) NON è già presente →
+    un solo affordance AI per schermo. Il controller vive sul form (vede tutti i campi). %>
+<% quick_available = locked_project&.quick_bug_report_enabled? && !ticket.persisted? %>
+<% buddy_available = !ticket.persisted? && !quick_available %>
+<%# Suggerimento duplicati: il controller vive sul FORM, non sul campo titolo, perché deve leggere
+    tutti i campi (il testo che si misura dev'essere lo stesso che misura il server al salvataggio)
+    e accorgersi del cambio di progetto. Solo in creazione: su un ticket che esiste già non c'è
+    niente da deduplicare. %>
+<% duplicates_data = ticket.persisted? ? {} : {
+     ticket_duplicates_url_value: duplicates_member_tickets_path,
+     ticket_duplicates_min_chars_value: 8
+   } %>
+<% compose_data = {
+     ticket_compose_compose_url_value: compose_member_tickets_path,
+     ticket_compose_poll_url_value: member_ai_request_path(":id"),
+     ticket_compose_generating_message_value: t("member.tickets.compose.generating"),
+     ticket_compose_failed_message_value: t("member.tickets.compose.failed"),
+     ticket_compose_review_message_value: t("member.tickets.compose.review"),
+     ticket_compose_project_changed_message_value: t("member.tickets.compose.project_changed"),
+     ticket_compose_labels_value: {
+       title: t("member.tickets.form.title"),
+       kind: t("member.tickets.form.kind"),
+       description: t("member.tickets.form.description"),
+       scenarios: t("member.tickets.form.scenarios"),
+       given: t("member.tickets.form.given"),
+       when: t("member.tickets.form.step_when"),
+       then: t("member.tickets.form.step_then"),
+       expected: t("member.tickets.form.expected"),
+       conditions: t("member.tickets.form.conditions"),
+       technical_analysis: t("member.tickets.form.technical_analysis"),
+       kinds: { bug: t("member.tickets.kind.bug"), story: t("member.tickets.kind.story"), task: t("member.tickets.kind.task"), epic: t("member.tickets.kind.epic") },
+       knowledge_none: t("member.tickets.compose.knowledge_none"),
+       knowledge_none_hint: t("member.tickets.compose.knowledge_none_hint"),
+       knowledge_used_one: t("member.tickets.compose.knowledge_used.one"),
+       knowledge_used_other: t("member.tickets.compose.knowledge_used.other", count: "%{count}")
+     }.to_json } %>
+<div class="p-7">
+  <%= form_with url: url, method: method, class: "space-y-6 group/ticket", data: { test: "ticket-form", controller: "ticket-milestone ticket-parent ticket-error-group ticket-metric-group ticket-platforms ticket-compose ticket-entry#{" ticket-duplicates" unless ticket.persisted?}", action: "change->ticket-milestone#refresh change->ticket-parent#refresh change->ticket-error-group#refresh change->ticket-metric-group#refresh change->ticket-platforms#refresh change->ticket-compose#projectSynced#{" change->ticket-duplicates#projectChanged focusout->ticket-duplicates#queue" unless ticket.persisted?}", ticket_platforms_map_value: @project_platforms_map.to_json, ticket_milestone_map_value: @milestones_project_map.to_json, ticket_parent_map_value: @epics_project_map.to_json,
+        ticket_error_group_map_value: @error_groups_project_map.to_json, ticket_metric_group_map_value: @metric_groups_project_map.to_json,
+        ticket_entry_active_value: Ui::PageHeaderComponent::TabComponent::CLASSES[true], ticket_entry_inactive_value: Ui::PageHeaderComponent::TabComponent::CLASSES[false], **compose_data, **duplicates_data } do %>
+    <%= render Ui::PageHeaderComponent.new(title: title, breadcrumb: ticket_breadcrumb) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.tickets.form.cancel"), href: back_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: submit_label, type: "submit", size: :sm, icon: "check", test_id: "ticket-submit") %>
+      <% end %>
+      <%# The ways into a new ticket are tabs of the form: one panel at a time, the header stays. %>
+      <% if buddy_available %>
+        <% h.with_tab(label: t("member.tickets.form.tabs.manual"), href: "#ticket-manual", active: true, test_id: "ticket-manual-open",
+             data: { ticket_entry_target: "tab", action: "ticket-entry#select:prevent", ticket_entry_index_param: 0 }) %>
+        <% h.with_tab(label: t("member.tickets.compose.button"), href: "#ticket-compose", test_id: "ticket-compose-open",
+             data: { ticket_entry_target: "tab", action: "ticket-entry#select:prevent", ticket_entry_index_param: 1 }) %>
+      <% end %>
+    <% end %>
+
+    <div id="ticket-manual" class="space-y-6" data-ticket-entry-target="panel">
+
+    <%# CYRA-398 — sui ticket veri la valutazione automatica parte entro il minuto dal salvataggio:
+        scriverlo accanto al pulsante è l'unico modo perché non sia una sorpresa. %>
+    <% unless ticket.persisted? %>
+      <%# T1 — the notice sits in a panel, not on the page ground. %>
+      <p class="flex items-start gap-2 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3 text-[12px] text-gray-500 dark:text-zinc-400" data-test="ticket-triage-notice">
+        <%= render Ui::IconComponent.new(name: "bot", class: "text-[11px] text-gray-400 dark:text-zinc-500 mt-0.5") %>
+        <span><%= t("member.tickets.form.triage_notice") %></span>
+      </p>
+    <% end %>
+
+    <%# Il ticket da cui viene il consiglio (CYRA-264): serve al create per scrivere il collegamento,
+        che si può fare solo quando il ticket nuovo esiste. Nessun campo visibile da compilare. %>
+    <%= hidden_field_tag :source_ticket_id, source_ticket_id, id: nil if source_ticket_id.present? %>
+
+    <%# Layout a due colonne (pattern show.html.erb): contenuto a sinistra, metadati in sidebar a destra. %>
+    <%= render Ui::GridComponent.new(cols: 1, lg: 3, gap: 6) do %>
+
+      <%# ===== SINISTRA: contenuto — tipo → titolo → corpo ===== %>
+      <%= render Ui::StackComponent.new(gap: 6, class: "lg:col-span-2") do %>
+        <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+          <div class="p-6 space-y-5">
+
+            <%# Selettore kind (radio = progressive enhancement: senza JS si submitta comunque; con JS Stimulus toggla i corpi). %>
+            <div data-test="ticket-kind">
+              <label class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.tickets.form.kind") %></label>
+              <div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800">
+                <% Ticketing::Ticket.kinds.keys.each do |k| %>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="kind" value="<%= k %>" class="peer sr-only"
+                           <%= "checked" if (ticket.kind || "bug") == k %>>
+                    <span class="inline-flex items-center h-[30px] px-3.5 rounded-[5px] text-[12.5px] font-medium text-gray-500 dark:text-zinc-400 peer-checked:bg-zinc-900 dark:peer-checked:bg-zinc-100 peer-checked:text-white dark:peer-checked:text-zinc-900"
+                          data-test="ticket-kind-<%= k %>"><%= t("member.tickets.kind.#{k}") %></span>
+                  </label>
+                <% end %>
+              </div>
+            </div>
+
+            <%# Suggerimento duplicati (solo new, progressive enhancement: senza JS nessun pannello,
+                nessuna casella e il form resta identico — il confronto lato server scatta comunque).
+                Le caselle stanno DENTRO il form: viaggiano al salvataggio da sole, senza JS che le
+                raccolga. Se qualcuno sposta il pannello fuori dal form, i collegamenti smettono di
+                arrivare in silenzio — lo presidia un system spec. %>
+            <%= render "member/tickets/form_title_field", ticket: ticket %>
+
+            <%# Corpo del ticket, UGUALE per tutti i kind e in linguaggio SEMPLICE per umani:
+                descrizione (sommario) + N scenari BDD + N condizioni DoD; il tecnico va nel campo
+                "Analisi tecnica" separato. Regola model: titolo + almeno un corpo (descrizione OPPURE
+                uno scenario con contenuto). Progressive enhancement: senza JS tutto è visibile e
+                compilabile a mano (i repeater partono dalle righe esistenti); con JS si aggiungono/rimuovono
+                righe e l'assistente pre-compila, senza mai bloccare il salvataggio. %>
+            <% quick_available = locked_project&.quick_bug_report_enabled? && !ticket.persisted? %>
+            <% body_data = { test: "ticket-body" } %>
+            <% if quick_available %>
+              <% body_data.merge!(controller: "ticket-quick",
+                   ticket_quick_analyze_url_value: analyze_member_tickets_path,
+                   ticket_quick_poll_url_value: member_ai_request_path(":id"),
+                   ticket_quick_project_id_value: locked_project.id,
+                   ticket_quick_complete_message_value: t("member.tickets.analyze.complete"),
+                   ticket_quick_failed_message_value: t("member.tickets.analyze.failed")) %>
+            <% end %>
+            <%= tag.div class: "space-y-5", data: body_data do %>
+              <%# Descrizione libera — sommario human-simple, opzionale (basta uno scenario). Il
+                  contatore avvisa prima del tetto Ticketing::Constants::DESCRIPTION_MAX_CHARS. %>
+              <div data-controller="char-counter"
+                   data-char-counter-max-value="<%= ::Ticketing::Constants::DESCRIPTION_MAX_CHARS %>"
+                   data-char-counter-warn-ratio-value="<%= ::App::Constants::LENGTH_WARN_RATIO %>"
+                   data-char-counter-unit-value="<%= t("shared.char_counter.unit") %>">
+                <label for="description" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.tickets.form.description") %></label>
+                <textarea name="description" id="description" rows="4" data-test="ticket-description"
+                          data-char-counter-target="field" data-action="input->char-counter#update"
+                          placeholder="<%= t("member.tickets.form.description_placeholder", default: "") %>"
+                          class="w-full px-3 py-2 rounded-md border <%= @errors&.dig(:description)&.any? ? 'border-red-400 focus:border-red-500 focus-visible:ring-red-500' : 'border-stone-200 dark:border-zinc-800 focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400' %> bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2"><%= ticket.description %></textarea>
+                <div class="mt-1.5 flex items-start justify-between gap-4">
+                  <p class="text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.form.body_hint") %></p>
+                  <p class="shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400 tabular-nums"
+                     data-char-counter-target="output" data-test="ticket-description-counter"></p>
+                </div>
+              </div>
+
+              <%# Assistente AI rapido (flag di progetto, solo new): descrivi a voce → riempie gli scenari. %>
+              <% if quick_available %>
+                <%= render "member/tickets/form_quick_panel" %>
+              <% end %>
+
+              <%= render "member/tickets/form_scenarios", ticket: ticket %>
+
+              <%# ===== Analisi tecnica (registro tecnico separato, tutti i kind) ===== %>
+              <%= render "member/tickets/form_technical_analysis", ticket: ticket %>
+            <% end %>
+
+          </div>
+        </div>
+      <% end %>
+
+      <%# ===== DESTRA: sidebar metadati ===== %>
+      <%= render Ui::StackComponent.new(gap: 6) do %>
+        <%= render "member/tickets/form_sidebar", ticket: ticket, locked_project: locked_project %>
+      <% end %>
+
+    <% end %>
+    </div>
+
+    <%# ===== Scrivi il ticket per me: la seconda scheda ===== %>
+    <% if buddy_available %>
+      <div id="ticket-compose" data-ticket-entry-target="panel">
+        <%= render "member/tickets/compose_panel", ticket: ticket, locked_project: locked_project %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

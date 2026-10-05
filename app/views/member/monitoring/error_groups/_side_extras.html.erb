@@ -1,0 +1,28 @@
+<%# Log collegati manualmente (CYRA-163): distinto dai pannelli per-occorrenza sotto (correlazione
+    automatica via trace_id) — questo è il backlink dei link espliciti (Logs::Link). %>
+<%= render "member/shared/linked_log_entries", entries: @linked_log_entries, collapse_empty: true %>
+
+<%# Pagine Knowledge semanticamente correlate al gruppo (pannello lazy condiviso coi ticket). %>
+<%= render "member/shared/knowledge_related", url: knowledge_member_monitoring_error_group_path(@group) %>
+
+<%# CYRA-986 — the data of the selected occurrence (details, user, tags, context, replay, logs) are
+    tabs of its panel on the left. A group with no occurrence shown keeps the two static panels. %>
+<% if @visible_events.empty? %>
+  <%= render "occurrence_replay_none", event: nil %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="error-related-logs">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.logs.in_error_title") %></h2></div>
+    <p class="px-4 py-6 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="error-related-logs-none"><%= t("member.monitoring.logs.in_error_none") %></p>
+  </div>
+<% end %>
+
+<% if muted && can_manage %>
+  <div class="rounded-lg border border-emerald-200 dark:border-emerald-500/40 bg-emerald-50/40 dark:bg-emerald-500/10 px-4 py-3" data-test="reopen-card">
+    <div class="flex items-center gap-2">
+      <%= render Ui::IconComponent.new(name: "circle-check", class: "text-emerald-600 dark:text-emerald-400 text-[13px]") %>
+      <p class="text-[12.5px] text-zinc-700 dark:text-zinc-300"><%= t("member.monitoring.reopen_note_html", status: t("member.monitoring.status.#{@group.status}")) %></p>
+    </div>
+    <%= button_to reopen_member_monitoring_error_group_path(@group), method: :patch, class: "mt-2.5 inline-flex items-center gap-1.5 h-[30px] px-3 rounded-md text-[12px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "triage-reopen-card" } do %>
+      <%= render Ui::IconComponent.new(name: "rotate-ccw", class: "text-[11px]") %><%= t("member.monitoring.reopen_now") %>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,339 @@
+it:
+  member:
+    nav:
+      # CYRA-333/486: la campanella apre le Notifiche e si chiama così; la voce del menu che porta alle
+      # regole si chiama «Regole di avviso» — non più «Avvisi», che indicava anche gli avvisi ricevuti.
+      # Ogni nome è il titolo della pagina che apre.
+      alerts: Notifiche
+      alert_rules: Regole di avviso
+      # CYRA-496: stesso nome della pagina che apre, come le altre due voci degli avvisi.
+      alert_channels: Canali di consegna
+      alerts_unread:
+        one: "1 notifica non letta"
+        other: "%{count} notifiche non lette"
+    alerting:
+      hierarchy:
+        title: "Due impostazioni decidono ogni avviso"
+        rules: "Una regola decide se l'avviso nasce; le tue impostazioni personali decidono se arriva a te e su quale canale. Servono tutte e due."
+        preferences: "Qui decidi se e dove ricevere gli avvisi che le regole fanno nascere. Se la regola è spenta, l'avviso non nasce e questa pagina non può farlo comparire."
+        to_preferences: "Vai alle tue impostazioni →"
+        to_rules: "Vai alle regole →"
+      levels:
+        debug: Debug
+        info: Info
+        warning: Warning
+        error: Error
+        fatal: Fatal
+      event_types:
+        error_new: Nuovo errore
+        error_regression: Regressione
+        error_spike: Impennata errore
+        metric_threshold: Problema di performance
+        uptime_down: Uptime down
+        cron_missed: Cron mancato
+        uptime_ssl_expiring: Certificato SSL in scadenza
+        uptime_up: Uptime up
+        uptime_slow: Risposta lenta
+        server_down: Server down
+        server_up: Server ripristinato
+        server_cpu: CPU server oltre soglia
+        server_mem: Memoria server oltre soglia
+        server_disk: Disco server oltre soglia
+        server_temp: Temperatura server oltre soglia
+        server_service_failed: Servizio systemd failed
+        server_smart_failing: SMART failing
+        server_security_updates: Aggiornamenti di sicurezza in attesa
+        server_silent: Dati fermi
+        server_ingest_rejected: Dati delle macchine respinti
+        cluster_down: Cluster muto
+        cluster_up: Cluster di nuovo raggiungibile
+        cluster_node_not_ready: Macchina del cluster non pronta
+        cluster_node_pressure: Macchina del cluster sotto sforzo
+        cluster_workload_crashloop: App che riparte di continuo
+        cluster_workload_degraded: App a metà
+        server_disk_forecast: Spazio dati in esaurimento
+        server_container_down: Contenitore caduto
+        server_container_up: Contenitori tornati su
+        server_container_restart_loop: Container in riavvio continuo
+        server_container_stable: Container di nuovo stabile
+        server_db_down: Database non raggiungibile
+        server_db_connections: Connessioni database oltre soglia
+        server_db_connection_usage: Slot database quasi esauriti
+        server_replication_lag: Lag di replica oltre soglia
+        server_replication_down: Replica scollegata
+        server_replication_up: Replica ripristinata
+        server_data_volume_disk: Volume dati oltre soglia
+        server_inode: Inode oltre soglia
+        log_alert: Log error/fatal
+        agents_stalled: Automazione bloccata
+        agents_host_failing: Macchina in errore
+        agents_host_stale: Automazione ferma
+        analytics_traffic_drop: Traffico in calo
+        analytics_traffic_spike: Picco di traffico
+        idea_created: Nuova idea
+        idea_commented: Nuovo commento a un'idea
+        workload_due_soon: Attività in scadenza
+        dataset_training_completed: Addestramento completato
+        dataset_training_failed: Addestramento fallito
+        embedding_down: Servizio di ricerca per significato giù
+        ai_unavailable: Intelligenza artificiale non raggiungibile
+        ai_available: Intelligenza artificiale ripristinata
+        cache_unavailable: Memoria temporanea non raggiungibile
+        secret_read: Segreto letto
+        secret_denied: Accesso a un segreto negato
+      channels:
+        title: Canali di consegna
+        help_title: "Dove arrivano gli avvisi fuori dall'app."
+        back_rules: Torna alle regole
+        back: Torna ai canali
+        new: Nuovo canale
+        new_title: Nuovo canale
+        edit_title: Modifica canale
+        created: Canale creato.
+        updated: Canale aggiornato.
+        deleted: Canale eliminato.
+        empty: Nessun canale esterno. Gli avvisi arrivano nell'app e via email; aggiungi un webhook per portarli altrove. Telegram lo colleghi dalle tue preferenze.
+        empty_title: Nessun canale esterno
+        empty_body: Gli avvisi arrivano nell'app e via email. Aggiungi un webhook per portarli altrove.
+        empty_telegram: Collega Telegram dalle tue preferenze
+        stat_total: Canali
+        stat_enabled: Attivi
+        col_name: Nome
+        col_kind: Tipo
+        col_target: Destinazione
+        col_rules: Regole
+        col_status: Stato
+        enabled: Attivo
+        disabled: Disattivo
+        edit: Modifica
+        delete: Elimina
+        delete_dialog:
+          title: "Eliminare il canale %{name}?"
+          body: "Le regole collegate smettono di consegnare qui. Non si può annullare."
+        kinds:
+          webhook: Webhook
+        form:
+          create: Crea canale
+          save: Salva
+          cancel: Annulla
+          name: Nome
+          kind: Tipo
+          webhook_url: URL webhook
+          webhook_url_hint: Endpoint https pubblico che riceve il POST JSON firmato.
+          webhook_secret: Secret firma (opzionale)
+          webhook_secret_hint: Se impostato, il POST porta X-CloseYourIt-Signature (HMAC-SHA256 del body).
+          webhook_secret_placeholder: Lascia vuoto per mantenere il secret attuale
+          status: Stato
+          enabled: Canale attivo
+          note: I canali si agganciano alle regole di alerting; una regola senza canali consegna solo in-app ed email.
+      rules:
+        templates:
+          title: "Modelli pronti"
+          subtitle: "I casi più comuni, già compilati. Puoi sempre modificarli dopo."
+          use: "Usa questo modello"
+          created:
+            one: "Regola creata."
+            other: "%{count} regole create."
+          unknown: "Modello non riconosciuto."
+          failed: "Non è stato possibile creare le regole del modello."
+          site_down:
+            title: "Avvisami se un sito cade"
+            description: "Il caso più comune: sapere subito che un sito non risponde, e sapere quando torna."
+            outcome: "Crea due regole: %{events}. Senza la seconda sapresti della caduta ma mai del ritorno."
+          cron_missed:
+            title: "Avvisami se un lavoro programmato non parte"
+            description: "Per i lavori che devono girare a orario: backup, invii, pulizie."
+            outcome: "Crea una regola: %{events}."
+          new_errors:
+            title: "Avvisami dei nuovi errori"
+            description: "Un avviso quando compare un errore mai visto prima."
+            outcome: "Crea una regola: %{events}."
+          server_health:
+            title: "Avvisami se una macchina è in difficoltà"
+            description: "Macchina irraggiungibile o disco che si riempie."
+            outcome: "Crea due regole: %{events}."
+        title: Regole di avviso
+        help_title: "Le condizioni che fanno partire un avviso."
+        new: Nuova regola
+        created: Regola di avviso creata.
+        updated: Regola di avviso salvata.
+        deleted: Regola di avviso eliminata.
+        search_placeholder: Cerca regole…
+        count: "%{count} regole"
+        filter_event: Evento
+        filter_project: Progetto
+        stat_active: attive
+        stat_off: spente
+        stat_triggered: scattate in 24h
+        empty: Nessuna regola di avviso
+        empty_body: Crea una regola per essere avvisato quando compare un nuovo errore, un errore regredisce o un monitor cade.
+        col_rule: Regola · ambito
+        col_event: Evento
+        col_throttle: Raggruppo
+        col_last_fired: Ultimo scatto
+        col_status: Stato
+        col_fired_24h: "24h"
+        col_fired_7d: "7g"
+        noisy_tip: "Questa regola produce gran parte degli avvisi del periodo."
+        status_muted: Silenziata
+        muted_until: "Silenziata fino al %{time}"
+        mute_1h: "Silenzia 1 ora"
+        mute_1d: "Silenzia 1 giorno"
+        mute_1w: "Silenzia 1 settimana"
+        unmute: "Togli il silenzio (fino al %{time})"
+        muted_notice: "Regola silenziata fino al %{time}. Resta attiva e continua a contare."
+        unmuted_notice: "La regola torna a notificare."
+        mute_invalid: "Durata non valida: la regola non è stata silenziata."
+        status_on: Attiva
+        status_off: Spenta
+        all_projects: Tutti i progetti
+        any_environment: Qualsiasi ambiente
+        scope_all: Tutti i progetti · qualsiasi ambiente
+        new_title: Nuova regola
+        edit_title: Modifica regola
+        back: Torna agli avvisi
+        delete_confirm: Eliminare la regola? Smetterà di generare avvisi.
+        show:
+          event: Evento
+          status: Stato
+          throttle: Raggruppa avvisi ripetuti
+          edit: Modifica
+          delete: Elimina
+          scope_title: Ambito
+          covers_title: Cosa copre
+          covers_summary:
+            monitors:
+              one: "1 sito sotto controllo"
+              other: "%{count} siti sotto controllo"
+            cron_monitors:
+              one: "1 lavoro programmato"
+              other: "%{count} lavori programmati"
+            projects:
+              one: "1 progetto"
+              other: "%{count} progetti"
+            organization: Intera organizzazione
+          covers_org_body: "Questa regola vale per l'intera organizzazione: scatta a prescindere dal progetto o dall'ambiente."
+          covers_more: "e altri %{count}"
+          covers_empty: Al momento non copre nulla.
+          channels_title: Recapiti
+          channels_via_app: Nell'app a chi può vedere il progetto — e via email a chi l'ha attivata.
+          channels_none: Nessun canale esterno collegato.
+          # CYRA-490 — la condizione della regola scritta in una frase, generata dai campi.
+          sentence_title: In parole semplici
+          sentence:
+            trigger_fallback: "Scatta sull'evento «%{event}»."
+            min_level: "Solo dalla gravità %{level} in su."
+            unhandled_only: "Solo per i crash non gestiti."
+            threshold_ms: "Solo quando la durata supera %{ms} ms."
+            threshold: "Solo quando il valore supera %{value}%{unit}."
+            threshold_connections: connessioni
+            threshold_seconds: secondi
+            scope_project_env: "Vale sul progetto %{project}, ambiente %{environment}."
+            scope_project: "Vale sul progetto %{project}, in qualsiasi ambiente."
+            scope_env: "Vale su tutti i progetti, solo in ambiente %{environment}."
+            scope_all: "Vale su tutti i progetti e qualsiasi ambiente."
+            scope_org: "Vale per tutta l'organizzazione, a prescindere dal progetto."
+            throttle: "Gli avvisi ripetuti si raggruppano: al massimo uno ogni %{minutes}."
+            minutes:
+              one: "1 minuto"
+              other: "%{count} minuti"
+            state_off: "Questa regola è spenta: al momento non genera avvisi."
+            state_muted: "Questa regola è silenziata fino al %{time}: conta gli eventi ma non avvisa."
+          # CYRA-490 — storico degli scatti: conteggi (come la tabella) + elenco recente.
+          history_title: Storico degli scatti
+          history_last: "ultimo %{time} fa"
+          history_never: mai scattata
+          history_empty: Non è ancora scattata.
+          stat_24h: "24h"
+          stat_7d: "7 giorni"
+          stat_total: Totale
+          via:
+            in_app: In app
+            email: Email
+            telegram: Telegram
+        form:
+          channels: Canali esterni
+          channels_hint: Oltre a in-app ed email, consegna anche su questi canali.
+          name: Nome
+          event: Evento
+          min_level: Livello minimo
+          min_level_hint: Scatta solo a questa gravità o superiore. Solo errori.
+          min_level_any: Qualsiasi livello
+          projects: Progetto
+          projects_hint: Lascia vuoto per tutti i progetti.
+          environments: Ambiente
+          environments_hint: Lascia vuoto per qualsiasi ambiente.
+          throttle: Raggruppa avvisi ripetuti
+          throttle_unit: minuti
+          throttle_hint: Eventi ripetuti nella finestra si fondono in una sola notifica.
+          threshold_ms: Soglia di durata
+          threshold_ms_hint: "Solo regole metric_threshold: scatta quando il campione dura almeno così tanto. Vuoto = qualsiasi durata."
+          threshold: Soglia server
+          threshold_unit: "% / °C / connessioni / s"
+          threshold_hint: "Solo regole a soglia (server_cpu/mem/disk/temp, connessioni database, lag di replica): scatta quando il valore misurato raggiunge la soglia. Unità: percentuale per cpu/mem/disco, °C per la temperatura, numero di connessioni per il database, secondi per il lag."
+          status: Stato
+          enabled: Attiva
+          unhandled_only: Ambito
+          unhandled_only_label: Solo errori non gestiti
+          unhandled_only_hint: Scatta solo sui crash non gestiti, ignorando le catture volontarie. Solo errori.
+          save: Salva regola
+          cancel: Annulla
+          note: Quando scatta, chi può vedere il progetto riceve la notifica in-app — e l'email se ha attivato l'opzione.
+      notifications:
+        filter_event: "Tipo"
+        filter_project: "Progetto"
+        filter_host: "Macchina:"
+        filter_host_hidden: "una sola macchina"
+        filter_host_clear: "Vedi tutti gli avvisi"
+        filter_read_state: "Lette e non lette"
+        filter_unread: "Da leggere"
+        filter_read: "Già lette"
+        filter_apply: "Applica"
+        filter_clear: "Togli i filtri"
+        nature_all: "Tutte"
+        title: Notifiche
+        help_title: "Gli avvisi e gli aggiornamenti dei ticket che hai ricevuto."
+        unread: "Non lette:"
+        mark_all: Segna tutte come lette
+        all_read: Tutte le notifiche segnate come lette.
+        preview_loading: Carico le ultime notifiche…
+        preview_empty: Nessuna notifica per ora.
+        preview_all: Vedi tutte
+        preferences: Preferenze
+        empty: Sei in pari
+        empty_body: Le notifiche dalle tue regole di avviso compaiono qui. Crea una regola per iniziare a ricevere avvisi.
+        empty_host: "Nessun avviso su %{host}"
+        empty_host_body: Su questa macchina non è ancora scattato nulla. Gli avvisi delle altre macchine restano nella casella completa.
+        manage_alerts: Gestisci avvisi
+        quiet_active: "Ore silenziose %{window}"
+        quiet_active_hint: "In questa finestra le email non urgenti sono trattenute. I guasti gravi passano sempre."
+      preferences:
+        title: Preferenze avvisi
+        save: Salva
+        saved: Preferenze salvate.
+        channels: Canali
+        channels_hint: Dove ricevi gli avvisi.
+        in_app: In-app
+        in_app_hint: Mostra nella campanella e nel centro notifiche.
+        email: Email
+        email_hint: "Invia a %{email}."
+        sources: Sorgenti
+        sources_hint: Cosa vuoi sapere.
+        errors: Errori
+        errors_hint: Nuovi errori e regressioni.
+        uptime: Uptime
+        uptime_hint: Monitor che cadono e si ripristinano.
+        tickets: Ticket
+        tickets_hint: Attività sui ticket che segui — assegnazioni, stato, milestone, commenti, menzioni.
+        servers: Server
+        servers_hint: Server down/ripristinati, soglie cpu/memoria/disco/temperatura, servizi failed, SMART.
+        min_level: Livello minimo errori
+        min_level_hint: Avvisa solo a questa gravità o superiore.
+        min_level_any: Qualsiasi livello
+        quiet_hours: Ore silenziose
+        quiet_hours_hint: Trattieni le email di notte — le notifiche in-app restano.
+        enable_quiet: Attiva ore silenziose
+        from: Da
+        to: A
+        timezone: Fuso orario
+        quiet_note: "Le email non urgenti sono trattenute nelle ore silenziose; le notifiche in-app non sono mai ritardate. I guasti gravi passano sempre, anche di notte: sito giù, server giù, database irraggiungibile, cron mancato."

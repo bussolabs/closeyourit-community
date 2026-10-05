@@ -1,0 +1,85 @@
+<% content_for :title, t("member.secret_assets.shared_title") %>
+<div class="p-7 space-y-6" data-test="member-shared-secret-assets">
+  <%# CYRA-428 — stesso titolo e stesse schede della pagina delle variabili condivise: quale delle due
+      si sta guardando lo dice la scheda accesa. %>
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.vault.levels.organization"),
+        breadcrumb: [ { label: t("member.vault.title"), href: member_vault_path },
+                      { label: t("member.vault.levels.organization") } ],
+        test_id: "shared-secret-assets-header",
+        counts_test_id: "shared-secret-assets-counts", tabs_test_id: "organization-tabs") do |header| %>
+    <% header.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.secret_assets.files"), value: @assets.size, test_id: "shared-secret-assets-count-files") %>
+    <% end %>
+    <% header.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.secret_assets.upload_cta"), href: new_member_shared_secret_asset_path, variant: :primary, size: :sm, icon: "plus", test_id: "shared-secret-asset-new") %>
+    <% end %>
+    <%= render "member/shared_secrets/tabs", header: header, active_tab: :files %>
+  <% end %>
+
+  <%# CYRA-416: what «delegation» means is said on the page, not in a tooltip. It floats and can be closed
+      for good (T1), together with the same note on the variables page. %>
+  <% content_for :floating_notice do %>
+    <%= render Ui::FloatingNoticeComponent.new(key: "vault_delegation", title: t("member.secret_assets.delegation_help_title"),
+                                               test_id: "shared-secret-assets-delegation-help") do %>
+      <p><%= t("member.secret_assets.delegation_help") %></p>
+    <% end %>
+  <% end %>
+
+  <% if @assets.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.secret_assets.empty"), body: t("member.secret_assets.empty_body"),
+          icon: "file-lock", framed: true, test_id: "shared-secret-assets-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 divide-y divide-stone-200 dark:divide-zinc-800" data-test="shared-secret-assets-list">
+      <% @assets.each do |asset| %>
+        <% version = asset.current_version %>
+        <div class="p-4 space-y-3" data-test="shared-secret-asset-row">
+          <div class="flex items-center gap-3">
+            <%= render Ui::IconComponent.new(name: "file-lock", class: "text-indigo-500 dark:text-indigo-400 shrink-0") %>
+            <div class="min-w-0">
+              <p class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 truncate"><%= asset.name %></p>
+              <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= asset.asset_type %> · v<%= version&.number %><% if version&.byte_size %> · <%= number_to_human_size(version.byte_size) %><% end %><% if asset.environment %> · <%= asset.environment.label %><% end %></p>
+            </div>
+            <div class="ml-auto flex flex-col items-end gap-1">
+              <div class="flex items-center gap-1.5">
+                <%= render Ui::ButtonComponent.new(label: t("member.secret_assets.versions"), href: versions_member_shared_secret_asset_path(asset), variant: :secondary_muted, size: :sm, icon: "history", test_id: "shared-secret-asset-versions-#{asset.id}") %>
+                <%= render Ui::ButtonComponent.new(label: t("member.secret_assets.download"), href: download_member_shared_secret_asset_path(asset), variant: :secondary_muted, size: :sm, icon: "download", test_id: "shared-secret-asset-download-#{asset.id}") %>
+                <%# CYRA-416: «Archivia» è reversibile → stile neutro; il peso distruttivo resta solo all'eliminazione. %>
+                <%= render Ui::ButtonComponent.new(label: t("member.secret_assets.archive"), href: member_shared_secret_asset_path(asset), method: :delete, variant: :secondary, size: :sm, confirm: t("member.secret_assets.archive_confirm"), test_id: "shared-secret-asset-archive-#{asset.id}") %>
+              </div>
+              <%# CYRA-416: lo scaricamento resta tracciato — avviso scritto accanto al pulsante. %>
+              <p class="flex items-center gap-1 text-[10.5px] text-gray-400 dark:text-zinc-500" data-test="shared-secret-asset-download-note-<%= asset.id %>">
+                <%= render Ui::IconComponent.new(name: "info", class: "text-[9px]") %><%= t("member.secret_assets.download_note") %>
+              </p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5 pl-7">
+            <span class="text-[11px] font-medium text-gray-500 dark:text-zinc-400"><%= t("member.secret_assets.delegations") %>:</span>
+            <% if asset.delegations.empty? %>
+              <span class="text-[11px] text-gray-400 dark:text-zinc-500"><%= t("member.secret_assets.no_delegations") %></span>
+            <% else %>
+              <% asset.delegations.each do |delegation| %>
+                <span class="inline-flex items-center gap-1.5 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-2 pr-1 py-0.5 text-[11.5px]" data-test="shared-secret-delegation-<%= delegation.id %>">
+                  <span class="w-2 h-2 rounded-[2px] <%= Ui::Colors.swatch(delegation.project.color) %>"></span>
+                  <span class="text-zinc-900 dark:text-zinc-100"><%= delegation.project.name %></span>
+                  <%# CYRA-416: revoca reversibile → colore neutro, con conferma che nomina progetto, file ed effetto immediato (mai il valore). %>
+                  <%= button_to member_shared_secret_asset_delegation_path(asset, delegation), method: :delete, params: { confirm: 1 }, form: { class: "inline-flex", data: { turbo_confirm: t("member.secret_assets.undelegate_confirm", project: delegation.project.name, secret: asset.name, effect: t("member.secret_assets.undelegate_effect")) } }, class: "inline-flex items-center justify-center w-5 h-5 rounded text-gray-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-stone-100 dark:hover:bg-zinc-800", aria: { label: t("member.secret_assets.remove_delegation", project: delegation.project.name) }, data: { test: "shared-secret-undelegate-#{delegation.id}" } do %><%= render Ui::IconComponent.new(name: "x", class: "text-[10px]") %><% end %>
+                </span>
+              <% end %>
+            <% end %>
+            <% available = @projects.reject { |project| asset.delegations.any? { |delegation| delegation.project_id == project.id } } %>
+            <% if available.any? %>
+              <%= form_with url: member_shared_secret_asset_delegations_path(asset), class: "inline-flex items-center gap-1.5" do |form| %>
+                <div class="w-44"><%= render Ui::SelectComponent.new(name: "project_id", options: available.map { |project| [ project.name, project.id ] }, placeholder: t("member.secret_assets.delegate_placeholder"), include_blank: true, required: true, size: :sm, test_id: "shared-secret-delegate-select-#{asset.id}") %></div>
+                <%= render Ui::ButtonComponent.new(label: t("member.secret_assets.delegate"), type: "submit", variant: :secondary, size: :sm, icon: "plus", test_id: "shared-secret-delegate-submit-#{asset.id}") %>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# CYRA-422 — riga permanente: cifratura, tracciamento delle letture e retention del registro. %>
+  <%= render SecretProtectionComponent.new(kind: :shared_files) %>
+</div>

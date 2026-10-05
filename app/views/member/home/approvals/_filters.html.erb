@@ -1,0 +1,65 @@
+<%# locals: batch, phase (CYRA-899: the step filter rides along as a hidden field) %>
+<%# CYRA-651 — la barra dei filtri della coda: stato, progetto e agente in tre menu a tendina, la
+    stessa barra della board dei ticket (Ui::TableToolbarComponent). Prima erano tre FILE di chip:
+    con diciassette progetti e più macchine occupavano tre righe intere e la tabella — che è ciò per
+    cui si apre questa pagina — cominciava a metà schermo.
+
+    I conteggi non si perdono: stanno dentro le voci del menu («Piano da approvare · 12»), che è
+    dove servono, cioè nel momento in cui si sceglie dove guardare.
+
+    Resta un form GET: l'indirizzo è condivisibile, i menu sono <select> nativi e il bottone Applica
+    esiste nel DOM (con JS si applica da sé alla chiusura del menu). Un filtro non ancora acceso si
+    aggiunge dal menu «Filtri», come sulla board dei ticket. La toolbar è un FORM: va renderizzata
+    FUORI dal form POST dell'accettazione in blocco — l'HTML vieta i form annidati (vedi `_board`).
+
+    Gli stati a zero non compaiono: ogni voce deve portare a lavoro vero. L'ECCEZIONE è quello
+    acceso, che resta anche a zero — smaltendo l'ultima riga sparirebbe da sotto le dita e resteresti
+    filtrato senza il modo di spegnerlo. %>
+<% state_options = [ [ "#{t('member.approvals.filters.all')} · #{batch.total}", "" ] ] %>
+<% Home::Approvals::Queue::STATES.each do |state| %>
+  <% count = batch.totals.fetch(state, 0) %>
+  <% next if count.zero? && batch.filter != state %>
+  <% state_options << [ "#{t("member.approvals.filters.#{state}")} · #{count}", state ] %>
+<% end %>
+<%= render(Ui::TableToolbarComponent.new(framed: true, url: member_home_approvals_path, hidden: { phase: local_assigns[:phase] },
+      apply_test_id: "approvals-filters-apply", test_id: "approvals-filters")) do |toolbar| %>
+  <% toolbar.with_filter(key: "state", label: t("member.approvals.filters.state")) do %>
+    <div class="w-48">
+      <%= render Ui::SelectComponent.new(name: "state", options: state_options, selected: batch.filter,
+            summary: true, placeholder: t("member.approvals.filters.state"),
+            aria_label: t("member.approvals.filters.state"), test_id: "approvals-filter-state") %>
+    </div>
+  <% end %>
+  <%# I progetti presenti in coda, per guardarne uno alla volta. Sigla E nome esteso nella voce: la
+      sigla da sola non dice niente a chi quei progetti non li ha creati. Una scelta sola non filtra
+      niente — dice soltanto ciò che la tabella già mostra su ogni riga — quindi il menu non compare.
+      L'ECCEZIONE è il filtro acceso: la coda che si sta guardando è già ristretta a quel progetto,
+      quindi la scelta è per forza una sola. Senza il menu il campo non starebbe nel form, e la
+      prima scelta fatta altrove (stato, agente) lo lascerebbe fuori dall'indirizzo allargando la
+      coda in silenzio — che è come i chip, che erano link, NON si comportavano. %>
+  <% if batch.projects.size > 1 || batch.project.present? %>
+    <% toolbar.with_filter(key: "project", label: t("member.approvals.filters.project")) do %>
+      <div class="w-48">
+        <%= render Ui::SelectComponent.new(name: "project",
+              options: [ [ t("member.approvals.filters.all_projects"), "" ] ] +
+                       batch.projects.map { |project| [ "#{project.key} · #{project.name}", project.key ] },
+              selected: batch.project, summary: true,
+              placeholder: t("member.approvals.filters.project"),
+              aria_label: t("member.approvals.filters.project"), test_id: "approvals-filter-project") %>
+      </div>
+    <% end %>
+  <% end %>
+  <%# CYRA-448 — quale macchina sta producendo l'arretrato, e quali decisioni ha lasciato in sospeso. %>
+  <% if batch.agents.size > 1 || batch.agent.present? %>
+    <% toolbar.with_filter(key: "agent_id", label: t("member.approvals.filters.agent")) do %>
+      <div class="w-48">
+        <%= render Ui::SelectComponent.new(name: "agent_id",
+              options: [ [ t("member.approvals.filters.all_agents"), "" ] ] +
+                       batch.agents.map { |agent| [ agent.name, agent.id ] },
+              selected: batch.agent, summary: true,
+              placeholder: t("member.approvals.filters.agent"),
+              aria_label: t("member.approvals.filters.agent"), test_id: "approvals-filter-agent") %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

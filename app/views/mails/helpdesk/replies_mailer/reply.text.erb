@@ -1,0 +1,6 @@
+<%= t("helpdesk.mailer.intro", project: @project.name) %>
+
+<%= @message.body %>
+
+<%= t("helpdesk.mailer.you_wrote") %>: <%= @request.summary %>
+<%= t("helpdesk.mailer.no_reply") %>

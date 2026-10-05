@@ -1,0 +1,112 @@
+<% content_for :title, t("member.guides.analytics.title") %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-analytics">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "chart-column", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.analytics.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.analytics.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%# Con un progetto scelto la CTA porta alle SUE statistiche, non all'elenco nudo dei progetti:
+          è il passo dopo aver incollato il codice. %>
+      <%= render Ui::ButtonComponent.new(
+            label: @project ? t("member.guides.analytics.cta") : t("member.guides.analytics.cta_no_project"),
+            href: @project ? member_monitoring_analytics_path(project_id: @project.id) : member_projects_path,
+            variant: :primary, size: :sm, icon: "chart-column", test_id: "member-guide-analytics-cta") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.analytics.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.analytics.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.analytics.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.analytics.what_b1") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.analytics.what_b2") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.analytics.what_b3") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <%# CYRA-501 — il passo 2 diceva di inserire «il piccolo snippet» e non lo mostrava: proprio il
+      passo che conta mandava a cercare altrove. Ora il codice sta qui, già compilato per il progetto
+      scelto, con il pulsante per copiarlo. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+       data-controller="clipboard" data-clipboard-copied-value="<%= t("member.guides.analytics.copied") %>">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.analytics.setup_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ol class="space-y-4">
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">1</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.analytics.setup_step1") %></p>
+            <% if @projects.any? %>
+              <%# Il progetto si sceglie qui: il codice qui sotto cambia con lui, chiave compresa. %>
+              <%= form_with url: member_guides_analytics_path, method: :get, class: "mt-2.5 flex items-center gap-2",
+                    data: { controller: "ui--auto-submit", action: "change->ui--auto-submit#submit" } do %>
+                <div class="w-64"><%= render Ui::SelectComponent.new(name: "project_id", multiple: false,
+                      options: @projects.map { |p| [ p.name, p.id, p.color ] }, selected: @project.id,
+                      placeholder: t("member.guides.analytics.pick_project"),
+                      test_id: "guide-analytics-project-picker") %></div>
+                <%# Il bottone è il fallback senza JavaScript, come nella barra delle statistiche: il
+                    codice deve poter cambiare progetto anche a script spenti. %>
+                <button type="submit" class="h-[30px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[12px] font-medium text-zinc-900 dark:text-zinc-100 hover:bg-stone-50 dark:hover:bg-zinc-800" data-test="guide-analytics-apply"><%= t("member.guides.analytics.apply") %></button>
+              <% end %>
+            <% else %>
+              <%# Nessun progetto che raccoglie statistiche: una guida non ha empty state — il codice
+                  resta leggibile con i segnaposti e si dice cosa manca per riempirli. %>
+              <p class="mt-2 text-[12.5px] text-gray-500 dark:text-zinc-400 leading-relaxed" data-test="guide-analytics-no-project">
+                <%= t("member.guides.analytics.no_project") %>
+                <%= link_to t("member.guides.analytics.no_project_link"), member_projects_path, class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline" %>
+              </p>
+            <% end %>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">2</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-3">
+              <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.analytics.setup_step2") %></p>
+              <button type="button" data-action="clipboard#copy" data-test="guide-analytics-copy"
+                      class="shrink-0 inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[11.5px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800">
+                <%= render Ui::IconComponent.new(name: "copy", class: "text-[10px]") %><span data-clipboard-target="label"><%= t("member.guides.analytics.copy") %></span>
+              </button>
+            </div>
+            <%# La versione è nell'indirizzo di proposito (CYRA-542): senza, ogni pubblicazione dello
+                script arriva da sola su tutti i siti già installati e non si può richiamare. Con la
+                major pinnata le correzioni continuano ad arrivare, un cambiamento che rompe no.
+                La regola è presidiata da spec/config/analytics_snippet_version_spec.rb. %>
+            <pre class="mt-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto" data-test="guide-analytics-snippet"><code data-clipboard-target="source">&lt;script src="https://cdn.jsdelivr.net/npm/@bussolabs/closeyourit-js@0/dist/closeyourit.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  CloseYourIt.init({
+    endpointUrl: '<%= request.base_url %>',
+    publicKey: '<%= @public_key || t("member.monitoring.analytics.onboarding.key_placeholder") %>',
+    projectId: '<%= @project&.id || t("member.guides.analytics.project_placeholder") %>',
+    environment: 'production',
+    trackPageviews: true,
+  })
+&lt;/script&gt;</code></pre>
+            <% if @project && !@can_read_tokens %>
+              <%# La chiave pubblica è una credenziale di ingest: la sua pagina sta dietro la gestione
+                  dei codici, e la guida la legge chiunque. Chi non ce l'ha vede il segnaposto e sa
+                  a chi chiederla, invece di copiare un codice che non funziona senza saperlo. %>
+              <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="guide-analytics-token-locked"><%= t("member.guides.analytics.token_locked") %></p>
+            <% elsif @project %>
+              <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400">
+                <%= t("member.guides.analytics.token_where") %>
+                <%= link_to t("member.guides.analytics.token_link"), member_project_tokens_path(@project), class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "guide-analytics-token" } %>
+              </p>
+            <% end %>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">3</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.analytics.setup_step3") %></div>
+        </li>
+      </ol>
+    </div>
+  </div>
+</div>

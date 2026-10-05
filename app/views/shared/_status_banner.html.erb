@@ -1,0 +1,14 @@
+<%# locals: announcement: — banner della status page (manutenzioni/avvisi). Colore per livello.
+    Classi Tailwind LETTERALI (mai interpolate col livello) così lo scanner non le purga. Condiviso
+    dall'anteprima member e dalla pagina pubblica. %>
+<%
+  box, icon_color, icon_name = case announcement.level
+                        when "warning"     then [ "border-red-200 dark:border-red-500/40 bg-red-50/60 dark:bg-red-500/10",   "text-red-600 dark:text-red-400",   "triangle-alert" ]
+                        when "maintenance" then [ "border-amber-200 dark:border-amber-500/40 bg-amber-50/60 dark:bg-amber-500/10", "text-amber-600 dark:text-amber-400", "wrench" ]
+                        else                    [ "border-sky-200 dark:border-sky-500/40 bg-sky-50/60 dark:bg-sky-500/10",     "text-sky-600 dark:text-sky-400",   "info" ]
+                        end
+%>
+<div class="rounded-lg border <%= box %> px-4 py-3 flex items-start gap-2.5" data-test="status-announcement" data-level="<%= announcement.level %>">
+  <%= render Ui::IconComponent.new(name: icon_name, class: "#{icon_color} text-[13px] mt-0.5") %>
+  <%= render Ui::MarkdownComponent.new(text: announcement.message, class: "text-[13px] text-zinc-900 dark:text-zinc-100 leading-relaxed") %>
+</div>

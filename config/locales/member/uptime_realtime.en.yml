@@ -1,0 +1,9 @@
+# Keys added for realtime uptime (Task C). Separate file from the shared member locale:
+# Rails deep-merges .yml files, so these merge into member.uptime.* without touching member/en.yml.
+en:
+  member:
+    uptime:
+      recent_checks: Recent checks
+      checks_empty: No checks yet.
+      check_up: Up
+      check_down: Down

@@ -1,0 +1,7 @@
+<%# Containers and top processes side by side; services below at full width. Each list scrolls
+    inside its own panel (CYRA-564). %>
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+  <%= render "member/monitoring/servers/containers", containers: @containers, host: @host %>
+  <%= render "member/monitoring/servers/processes", processes: @processes %>
+</div>
+<%= render "member/monitoring/servers/systemd", host: @host %>

@@ -1,0 +1,25 @@
+<%# locals: monitor, range, buckets, sla — un servizio (monitor) sulla status page pubblica del gruppo:
+    stato + nome (progetto · env) + % del range corrente + timeline a blocchi. Nessun dato interno. %>
+<%# Dato vecchio (worker fermo) → unknown/grigio via display_status, come la label sr-only e l'helper (CYRA-209). %>
+<% svc_dot = monitor.paused? ? "bg-gray-400" : { "up" => "bg-emerald-500", "down" => "bg-red-500", "unknown" => "bg-gray-400" }.fetch(monitor.display_status.to_s, "bg-gray-400") %>
+<% service_buckets = Array(buckets) %>
+<% service_bucket_counts = service_buckets.group_by { |b| b[:status] }.transform_values(&:size) %>
+<div class="px-4 py-3" data-test="status-service-<%= monitor.id %>">
+  <div class="flex items-center gap-2.5 flex-wrap">
+    <%# Il dot è decorativo (colore only) — lo stato va comunque letto dagli AT via lo span sr-only. %>
+    <span class="inline-block w-2.5 h-2.5 rounded-full <%= svc_dot %>" aria-hidden="true"></span>
+    <span class="sr-only"><%= uptime_status_label(monitor) %></span>
+    <span class="text-[13px] font-medium text-zinc-900"><%= monitor.project.name %></span>
+    <%= render Ui::BadgeComponent.new(label: monitor.environment.label, color: monitor.environment.color, dot: true, size: :sm) %>
+    <span class="ml-auto font-mono text-[12px] <%= uptime_percent_color(sla) %>"><%= uptime_percent_text(sla) %></span>
+  </div>
+  <div class="mt-2 flex items-stretch gap-[2px] h-6" aria-hidden="true">
+    <% service_buckets.each do |bucket| %>
+      <span class="flex-1 rounded-[2px] <%= uptime_bucket_class(bucket[:status]) %>" title="<%= uptime_bucket_title(bucket) %>"></span>
+    <% end %>
+  </div>
+  <p class="sr-only"><%= t("website.status_group.service_timeline_summary",
+        up: service_bucket_counts[:up].to_i, partial: t("website.status.timeline_partial", count: service_bucket_counts[:partial].to_i),
+        down: service_bucket_counts[:down].to_i, empty: service_bucket_counts[:empty].to_i,
+        total: service_buckets.size, range: range) %></p>
+</div>

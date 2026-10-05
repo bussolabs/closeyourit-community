@@ -1,0 +1,22 @@
+<% groups = { github: %i[gh_app_id gh_app_slug gh_app_client_id gh_app_client_secret gh_app_private_key gh_webhook_secret],
+              telegram: %i[telegram_bot_username telegram_bot_token telegram_webhook_secret] } %>
+
+<div id="valhalla-integrations" class="p-7 space-y-6">
+  <%= form_with url: valhalla_integrations_path, method: :patch, id: "integrations-form", class: "space-y-6",
+                data: { test: "valhalla-integrations-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: t("valhalla.integrations.title"),
+          breadcrumb: [ { label: t("valhalla.integrations.title") } ], root_href: valhalla_root_path) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("valhalla.integrations.save"), type: "submit", size: :sm,
+              icon: "check", test_id: "integrations-submit") %>
+      <% end %>
+    <% end %>
+
+    <%= render "valhalla/integrations/generated", generated: @generated if @generated %>
+    <% groups.each do |group, fields| %>
+      <%= render "valhalla/integrations/group", group:, fields:, settings: @settings, errors: @errors %>
+    <% end %>
+  <% end %>
+
+  <%= render "valhalla/integrations/generate" %>
+</div>

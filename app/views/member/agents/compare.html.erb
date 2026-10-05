@@ -1,0 +1,73 @@
+<% content_for :title, t("member.agents.performance.compare.title") %>
+
+<%# CYRA-451 — due (o più) macchine affiancate sullo stesso periodo. Una riga per misura e una
+    colonna per macchina: il confronto si legge in orizzontale, che è il gesto che si faceva a
+    memoria saltando fra due schede. Sola lettura, stesso gate della lista. %>
+<div class="p-7 space-y-6" data-test="member-agents-compare">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.agents.performance.compare.title"),
+        breadcrumb: [ { label: t("member.agents.title"), href: member_agents_path },
+                      { label: t("member.agents.performance.compare.title") } ],
+        counts_test_id: "agents-compare-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.agents.performance.compare.machines"), value: @selected.size, test_id: "compare-selected-count") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.agents.performance.compare.period"), value: t("member.agents.performance.ranges.#{@range}"), test_id: "compare-range") %>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="compare-picker">
+    <%= form_with url: compare_member_agents_path, method: :get, class: "flex items-end flex-wrap gap-3 px-4 py-3" do %>
+      <div class="w-96">
+        <label class="block font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1"><%= t("member.agents.performance.compare.pick") %></label>
+        <%= render Ui::SelectComponent.new(name: "host_ids[]", multiple: true,
+              options: @hosts.map { |host| [ host.hostname, host.id ] }, selected: @selected.map(&:id),
+              placeholder: t("member.agents.performance.compare.pick"), test_id: "compare-hosts") %>
+      </div>
+      <div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800" data-test="compare-range-selector">
+        <% Agents::Hosts::StatsRange::KEYS.each do |key| %>
+          <%= link_to t("member.agents.performance.ranges.#{key}"),
+                compare_member_agents_path(host_ids: @selected.map(&:id), range: key),
+                class: "h-[26px] px-2.5 inline-flex items-center rounded-[5px] text-[12px] font-medium #{@range == key ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-stone-200 dark:border-zinc-800' : 'text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}",
+                data: { test: "compare-range-#{key}" } %>
+        <% end %>
+      </div>
+      <%= hidden_field_tag :range, @range %>
+      <button type="submit" class="h-[30px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[12px] font-medium text-zinc-900 dark:text-zinc-100 hover:bg-stone-50 dark:hover:bg-zinc-800" data-test="compare-apply"><%= t("member.agents.performance.compare.apply") %></button>
+    <% end %>
+  </div>
+
+  <% if @selected.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.agents.performance.compare.empty"), body: t("member.agents.performance.compare.empty_body"),
+          icon: "server", framed: true, test_id: "compare-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="compare-table">
+      <%= render(Ui::TableComponent.new(stacked: true, sticky: :first, label: t("member.agents.performance.compare.metric"))) do |table| %>
+        <% table.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.performance.compare.metric")) %>
+          <% @selected.each do |host| %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: host.hostname, align: :right) %>
+          <% end %>
+        <% end %>
+        <% agent_compare_rows(@reports).each do |row| %>
+          <%= render Ui::TableComponent::RowComponent.new(test_id: "compare-row", data: { metric: row[:key] }) do %>
+            <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-zinc-900 dark:text-zinc-100")) { row[:label] } %>
+            <% @selected.each do |host| %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: host.hostname, align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100",
+                    test_id: "compare-cell")) { row[:values][host.id].to_s } %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# T1 — the links back to each machine sit in a panel, not on the page ground. %>
+    <div class="flex items-center flex-wrap gap-2 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3">
+      <% @selected.each do |host| %>
+        <%= link_to t("member.agents.performance.compare.back") + " · " + host.hostname,
+              member_agent_path(host, range: @range),
+              class: "inline-flex items-center h-[26px] px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 text-[12px] font-medium text-gray-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-stone-50 dark:hover:bg-zinc-800",
+              data: { test: "compare-back" } %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

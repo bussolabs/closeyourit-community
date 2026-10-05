@@ -1,0 +1,10 @@
+<% content_for :title, t("member.secret_assets.versions") %>
+<div class="p-7 space-y-6" data-test="secret-asset-versions">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "secrets" %>
+  <%# T1 — tabs, title and versions share one panel, as on the other secrets pages. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="border-b border-stone-200 dark:border-zinc-800 px-3 py-2"><%= render "member/project_secrets/subnav", project: @project, active: "files" %></div>
+    <h2 class="border-b border-stone-200 dark:border-zinc-800 px-4 py-3 font-display text-[16px] font-semibold text-zinc-900 dark:text-zinc-100"><%= @asset.name %> — <%= t("member.secret_assets.versions") %></h2>
+    <ul class="divide-y divide-stone-100 dark:divide-zinc-800"><% @versions.each do |version| %><li class="flex items-center gap-3 p-4"><span class="font-mono text-xs">v<%= version.number %></span><span class="text-sm"><%= version.original_filename %></span><span class="ml-auto text-xs text-gray-500 dark:text-zinc-400"><%= l(version.created_at, format: :short) %></span><%= link_to t("member.secret_assets.download"), download_member_project_secret_asset_path(@project, @asset, version: version.number), class: "text-xs font-semibold text-indigo-600 dark:text-indigo-400" %><% if can?("secret_files.manage", scope: @project) && !@asset.shared? %><%= button_to t("member.secret_assets.rollback"), rollback_member_project_secret_asset_path(@project, @asset), params: { version: version.number }, method: :post, class: "text-xs font-semibold text-amber-700 dark:text-amber-300" %><% end %></li><% end %></ul>
+  </div>
+</div>

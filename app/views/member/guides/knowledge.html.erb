@@ -1,0 +1,90 @@
+<% content_for :title, t("member.guides.knowledge.title") %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-knowledge">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "book", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-teal-50 dark:bg-teal-500/15 text-teal-600 dark:text-teal-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.knowledge.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.knowledge.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.knowledge.cta"), href: member_knowledge_pages_path, variant: :primary, size: :sm, icon: "book", test_id: "member-guide-knowledge-cta") %>
+      <%= render Ui::ButtonComponent.new(label: t("member.knowledge.books.title"), href: member_knowledge_books_path, variant: :secondary_muted, size: :sm, icon: "book-open", test_id: "member-guide-knowledge-books-cta") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.knowledge.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.knowledge.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-teal-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge.what_b1") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-teal-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge.what_b2") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-teal-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge.what_b3") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.knowledge.setup_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ol class="space-y-4">
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">1</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge.setup_step1") %></div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">2</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge.setup_step2") %></div>
+        </li>
+        <li class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">3</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge.setup_step3") %></div>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-knowledge-links">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.knowledge.links_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge.links_intro") %></p>
+      <p class="font-mono text-[12px] text-zinc-900 dark:text-zinc-100 bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-800 rounded-md px-3 py-2"><%= t("member.guides.knowledge.links_example") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-teal-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge.links_b1") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-teal-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge.links_b2") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-teal-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge.links_b3") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <%# CYRA-432 — Il capitolo delle raccolte: la loro schermata non ha una guida propria e atterra qui
+      (l'ancora `books` è dichiarata in Guides::Map), quindi la sezione deve reggere da sola. %>
+  <div id="books" class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 scroll-mt-6" data-test="member-guide-knowledge-books">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.knowledge.books_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge.books_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-teal-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge.books_b1") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-teal-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge.books_b2") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-teal-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge.books_b3") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <%# CYRA-768 — Il capitolo della rilettura: senza, una decisione accettata resta citata come se
+      fosse ancora attuale anche dopo che il sistema che descrive è stato dismesso. %>
+  <div id="rilettura" class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 scroll-mt-6" data-test="member-guide-knowledge-review-after">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.knowledge.reread_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.knowledge.reread_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-teal-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge.reread_b1") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-teal-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge.reread_b2") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-teal-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.knowledge.reread_b3") %></span></li>
+      </ul>
+    </div>
+  </div>
+</div>

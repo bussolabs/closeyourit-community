@@ -1,0 +1,40 @@
+<%# locals: (can_manage:) %>
+<%# Pannello Dettagli (CYRA-65): identità + classificazione + persone + contesto del ticket, a
+    destra (modellato su member/monitoring/error_groups). I dropdown editabili di assignee/reviewer
+    (per chi gestisce) e il badge status conservano gli id realtime (_assignee/_reviewer/_status):
+    sono i target dei broadcast Turbo (Ticketing::{AssignTicket,SetReviewer,ChangeStatus}) — cambiarli
+    o duplicarli rompe gli update live. Read-only per gli altri via i partial assignee/reviewer. %>
+<%= render Ui::SectionComponent.new(title: t("member.tickets.show.details"), body_class: "divide-y divide-stone-100 dark:divide-zinc-800",
+      test_id: "ticket-details") do %>
+  <%# Tipologia. Il codice del ticket NON si ripete qui: è già nel breadcrumb dell'header. %>
+  <%= render "member/tickets/detail_row", label: t("member.tickets.show.kind"), test_id: "detail-kind" do %>
+    <%= render Ui::BadgeComponent.new(label: t("member.tickets.kind.#{@ticket.kind}"), color: ticket_kind_color(@ticket.kind), dot: true) %>
+  <% end %>
+
+  <%# Status: id="<dom_id>_status" = target broadcast ChangeStatus (StatusBroadcasts). Dropdown
+      per chi gestisce, sola lettura per gli altri (CYRA-163). %>
+  <%= render "member/tickets/detail_row", label: t("member.tickets.show.status"), test_id: "detail-status" do %>
+    <%= render "member/tickets/details_status", can_manage: can_manage %>
+  <% end %>
+  <%= render "member/tickets/detail_row", label: t("member.tickets.show.priority"), test_id: "detail-priority" do %>
+    <%= render Ui::BadgeComponent.new(label: @ticket.priority.display_label, color: @ticket.priority.color, icon: (@ticket.priority.code == "high" ? "arrow-up" : nil)) %>
+  <% end %>
+
+  <%# Assegnatario (id="<dom_id>_assignee" = target broadcast Ticketing::AssignTicket) e, accanto,
+      la presa in carico (CYRA-883: era nella riga dei pulsanti in alto). %>
+  <%= render "member/tickets/detail_row", label: t("member.tickets.show.assignee"), test_id: "detail-assignee" do %>
+    <div class="flex flex-wrap items-center gap-2">
+      <%= render "member/tickets/assignee_picker", can_manage: can_manage %>
+      <%= render "member/tickets/lease_button" %>
+    </div>
+  <% end %>
+  <%= render "member/tickets/detail_row", label: t("member.tickets.show.reviewer"), test_id: "detail-reviewer" do %>
+    <%= render "member/tickets/reviewer_picker", can_manage: can_manage %>
+  <% end %>
+  <%= render "member/tickets/detail_row", label: t("member.tickets.show.reporter"), test_id: "detail-reporter" do %>
+    <span class="inline-flex items-center gap-2 text-[12.5px] text-zinc-900 dark:text-zinc-100"><span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 text-[9px] font-semibold"><%= avatar_initials(@ticket.reporter.name) %></span><%= @ticket.reporter.name %></span>
+  <% end %>
+  <%# CYRA-883 — il progetto non si ripete qui: sta sotto il titolo, accanto al codice. %>
+
+  <%= render "member/tickets/details_extra" %>
+<% end %>

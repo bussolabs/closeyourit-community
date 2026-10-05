@@ -1,0 +1,11 @@
+<%
+  # Il link punta alla status page completa, nella STESSA lingua del badge. Si usa `I18n.locale`
+  # (già risolta e whitelistata da Website::BaseController#switch_locale) e non `params[:locale]`
+  # grezzo; sul default niente parametro, così l'URL resta pulito.
+  locale = I18n.locale == I18n.default_locale ? nil : I18n.locale
+%>
+<% content_for :title, "#{@project.name} · #{@environment.label} — #{t('website.status.title')}" %>
+<%= render "website/shared/badge",
+      state: @state,
+      label: t("website.status.headline.#{@state}"),
+      url: public_status_url(@org.slug, @project.key, @environment.code, locale:) %>

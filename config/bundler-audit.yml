@@ -1,0 +1,18 @@
+# Controllo delle dipendenze con vulnerabilità note: `bin/bundler-audit` (nella CI, job `scan_ruby`).
+# Qui sotto si elencano le vulnerabilità che NON ci riguardano, una per riga, con l'identificativo
+# vero dell'archivio (CVE-…, GHSA-…).
+#
+# CYRA-753 — ogni riga vuole sopra di sé un commento che dica perché quella vulnerabilità non ci
+# tocca: quale codice sarebbe esposto, e perché da noi non lo è. Senza, sei mesi dopo nessuno sa più
+# se la riga fu una valutazione o una fretta, e l'unico modo di scoprirlo è rifare l'analisi da capo.
+# `spec/config/security_ignores_spec.rb` lo pretende, e pretende anche che l'identificativo sia
+# reale: qui c'era `CVE-THAT-DOES-NOT-APPLY`, il segnaposto generato da Rails, che non silenziava
+# niente e faceva sembrare che una decisione fosse stata presa.
+#
+# La chiave deve restare una lista anche quando è vuota: scritta nuda (`ignore:` e basta) la gemma
+# solleva, e il controllo morirebbe nella CI per un errore di forma invece che per una dipendenza
+# vulnerabile.
+#
+# Oggi non c'è nessuna vulnerabilità messa da parte: tutto quello che l'archivio segnala viene
+# risolto aggiornando la dipendenza.
+ignore: []

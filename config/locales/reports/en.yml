@@ -1,0 +1,38 @@
+en:
+  reports:
+    periodic:
+      mailer:
+        subject:
+          daily: "How yesterday went — %{org}"
+          weekly: "How the week went — %{org}"
+          monthly: "How the month went — %{org}"
+        heading:
+          daily: "Yesterday's summary"
+          weekly: "This week's summary"
+          monthly: "This month's summary"
+        period: "From %{from} to %{to}"
+        traffic_title: "Visits"
+        visitors:
+          one: "1 visitor"
+          other: "%{count} visitors"
+        errors_title: "Errors"
+        new_errors:
+          zero: "no new issues"
+          one: "1 new issue"
+          other: "%{count} new issues"
+        uptime_title: "Uptime"
+        uptime_hint: "your sites responded"
+        uptime_missing: "no active check"
+        delta: "%{value} compared with the previous period, which had %{previous} visits."
+        delta_missing: "There were no visits in the previous period, so there is nothing to compare."
+        projects_title: "Project by project"
+        col_project: "Project"
+        col_pageviews: "Visits"
+        col_errors: "Errors"
+        col_uptime: "Uptime"
+        row_text: "%{pageviews} visits · %{errors} errors · uptime %{uptime}"
+        other_projects:
+          one: "There is one more project with data in this period."
+          other: "There are %{count} more projects with data in this period."
+        action: "Open site analytics"
+        footer: "You get this summary because you asked for it. You can change how often it arrives, or stop it, from your notification preferences."

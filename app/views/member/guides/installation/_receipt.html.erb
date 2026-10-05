@@ -1,0 +1,21 @@
+<%= render Ui::SectionComponent.new(title: t("member.installation.receipt")) do %>
+  <div class="space-y-4" data-controller="installation-receipt" data-installation-receipt-unchecked-value="<%= t('member.installation.not_checked') %>" data-installation-receipt-pending-value="<%= t('member.installation.pending') %>" data-installation-receipt-loading-value="<%= t('member.installation.checking') %>" data-installation-receipt-error-value="<%= t('member.installation.unavailable') %>" data-installation-receipt-received-value="<%= t("member.installation.received_#{@signal}") %>">
+    <p><%= t("member.installation.receipt_note") %></p>
+    <% if @observation.dig('tuple','integration').start_with?('php-laravel') %>
+      <%= render "code", language: "php", code: @recipe.fetch(:capture) %>
+      <p><%= t("member.installation.php_capture") %></p>
+    <% end %>
+    <%= form_with url: member_guides_installation_receipt_path, method: :get, data: {action: "submit->installation-receipt#check input->installation-receipt#reset", installation_receipt_target: "form"}, class: "space-y-4" do %>
+      <%= hidden_field_tag :run_id, @observation.fetch("run_id") %><%= hidden_field_tag :project_id, @project.id %>
+      <%= render Ui::GridComponent.new(cols: 1, md: 2, gap: 4) do %>
+        <%= render Ui::InputComponent.new(name: "environment", label: t("member.installation.environment"), value: params[:environment], required: true, maxlength: 255) %>
+        <%= render Ui::InputComponent.new(name: "release", label: t("member.installation.release"), required: true, maxlength: 255) %>
+        <% (@signal == "traces" ? %w[trace_id span_id] : %w[event_id]).each do |key| %>
+          <%= render Ui::InputComponent.new(name: key, label: t("member.installation.#{key}"), required: true, maxlength: key == 'span_id' ? 16 : 32, pattern: key == 'span_id' ? '[0-9a-f]{16}' : '[0-9a-f]{32}') %>
+        <% end %>
+      <% end %>
+      <%= render Ui::ButtonComponent.new(label: t("member.installation.check"), type: :submit, size: :sm, data: {installation_receipt_target: "button"}, test_id: "installation-receipt-check") %>
+    <% end %>
+    <p role="status" aria-live="polite" data-installation-receipt-target="result" data-test="installation-receipt-result"><%= t("member.installation.not_checked") %></p>
+  </div>
+<% end %>

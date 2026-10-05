@@ -1,0 +1,54 @@
+<%# locals: (matrix:, pagination:, prefix:, toolbar_url: nil) %>
+<%# CYRA-927/930 — one row per project, one column per signal: where something is wrong and what is
+    not set up, in one panel. The all-projects row first, then the projects in the area's order. %>
+<% shared = "member.overviews.matrix" %>
+<% rows = [ matrix.total_row ] + matrix.rows(pagination.records) %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="<%= prefix %>-matrix">
+  <%# F021, F061, F088 — C1, C4, C9: search, a "with problems" filter and a sort on every column. %>
+  <% if toolbar_url %>
+    <%= render(Ui::TableToolbarComponent.new(framed: true, url: toolbar_url, query: params[:q],
+          search_placeholder: t("#{shared}.search"), hidden: { sort: params[:sort] },
+          search_test_id: "#{prefix}-search", apply_test_id: "#{prefix}-filter", test_id: "#{prefix}-toolbar")) do |toolbar| %>
+      <% toolbar.with_filter(key: "health", label: t("#{shared}.filter_health")) do %>
+        <div class="w-44"><%= render Ui::SelectComponent.new(name: "health",
+          options: [ [ t("#{shared}.health_problems"), "problems" ] ], selected: params[:health], include_blank: true,
+          placeholder: t("#{shared}.filter_health"), test_id: "#{prefix}-filter-health") %></div>
+      <% end %>
+    <% end %>
+  <% end %>
+  <% if toolbar_url && pagination.records.empty? && (params[:q].present? || params[:health].present?) %>
+    <%= render Ui::NoResultsComponent.new(title: t("#{shared}.no_match"), query: params[:q].presence,
+          reset_href: toolbar_url, test_id: "#{prefix}-no-match", reset_test_id: "#{prefix}-reset-filters") %>
+  <% else %>
+  <%= render(Ui::TableComponent.new(label: t("#{matrix.i18n_scope}.matrix.label"), body_test_id: "#{prefix}-matrix-body")) do |table| %>
+    <% table.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("#{shared}.project")) %>
+      <% matrix.columns.each do |key| %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("#{matrix.i18n_scope}.#{key}.label"), classes: "w-[15%]",
+              sort: (key if toolbar_url), initial: :desc) %>
+      <% end %>
+    <% end %>
+    <% rows.each do |row| %>
+      <%= render Ui::TableComponent::RowComponent.new(test_id: "#{prefix}-row-#{row.id}", class: ("bg-stone-50 dark:bg-zinc-800" if row.project.nil?)) do %>
+        <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+          <% if row.project %>
+            <span class="flex items-center gap-2.5 min-w-0">
+              <%= render Ui::EntityMarkComponent.new(record: row.project) %>
+              <span class="truncate text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= row.project.name %></span>
+            </span>
+          <% else %>
+            <span class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("#{shared}.all_projects") %></span>
+          <% end %>
+        <% end %>
+        <% matrix.columns.each do |key| %>
+          <%# md:h-px + h-full on the link: the hover fills the whole row height, not just the cell's own content. %>
+          <%= render Ui::TableComponent::CellComponent.new(label: t("#{matrix.i18n_scope}.#{key}.label"), class: "!p-0 align-top md:h-px") do %>
+            <%= render "member/overviews/project_matrix_cell", cell: row.cells.fetch(key), matrix:, prefix: %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%= render(Ui::PaginationComponent.new(pagination:, test_id: "#{prefix}-pagination")) %>
+  <% end %>
+</div>

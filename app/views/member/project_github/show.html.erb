@@ -1,0 +1,50 @@
+<% content_for :title, @project.name %>
+<% environment_options = @project.environments.map { |e| [ e.label, e.id ] } %>
+<% release_probe_options = Github::Repository.release_probes.keys.map { |k| [ t("github.release_probe.options.#{k}"), k ] } %>
+<% registry_options = Github::Repository.registries.keys.map { |k| [ t("github.registry.options.#{k}"), k ] } %>
+
+<div class="p-7 space-y-6" data-test="member-project-github">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "github" %>
+
+  <% if @error %>
+    <div class="max-w-2xl rounded-md border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15 px-4 py-3 text-[12.5px] text-red-700 dark:text-red-300" data-test="github-error">
+      <%= @error.message %>
+    </div>
+  <% end %>
+
+  <% if @repository %>
+    <div class="grid items-start gap-6 lg:grid-cols-2 [&>*]:min-w-0" data-test="github-panels">
+      <div class="space-y-6">
+        <%= render "member/project_github/repository_panel", environment_options: environment_options,
+              release_probe_options: release_probe_options, registry_options: registry_options %>
+
+        <%= render "member/project_github/danger_zone" %>
+      </div>
+
+      <div class="space-y-6">
+        <%= render "member/project_github/toggles_panel" %>
+      </div>
+    </div>
+  <% elsif @installation.nil? %>
+    <div class="max-w-2xl rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-3" data-test="github-needs-installation">
+      <p class="text-[13px] text-zinc-700 dark:text-zinc-300"><%= t("member.project_github.needs_installation") %></p>
+      <%= link_to t("member.project_github.go_to_integrations"), member_integrations_github_path,
+            class: "inline-flex items-center gap-1.5 h-[34px] px-3 rounded-md text-[12.5px] font-medium text-white bg-indigo-600 hover:bg-indigo-700",
+            data: { test: "github-go-integrations" } %>
+    </div>
+  <% else %>
+    <div class="max-w-2xl rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-4" data-test="github-connect">
+      <% if @available_repos.blank? %>
+        <p class="text-[13px] text-zinc-700 dark:text-zinc-300"><%= t("member.project_github.no_repos_available") %></p>
+      <% else %>
+        <%= form_with url: member_project_github_path(@project), method: :patch, class: "space-y-4", data: { test: "github-connect-form" } do %>
+          <%= render Ui::SelectComponent.new(
+                name: "repo_id", options: @available_repos.map { |r| [ r["full_name"], r["id"] ] },
+                label: t("member.project_github.repo_label"), required: true,
+                placeholder: t("member.project_github.repo_placeholder"), test_id: "github-repo-select") %>
+          <%= render Ui::ButtonComponent.new(label: t("member.project_github.connect"), type: "submit", test_id: "github-connect-submit") %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

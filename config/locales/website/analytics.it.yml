@@ -1,0 +1,9 @@
+it:
+  website:
+    analytics:
+      password:
+        title: Password richiesta
+        body: Questa dashboard è protetta da password. Inseriscila per visualizzarla.
+        placeholder: Password
+        submit: Vedi la dashboard
+        error: Password errata.

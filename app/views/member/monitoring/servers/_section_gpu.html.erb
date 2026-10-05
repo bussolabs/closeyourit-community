@@ -1,0 +1,57 @@
+<%# locals: host:, last_sample:, buckets:, range: — CYRA-703. La sezione esiste SOLO se questa
+    macchina ha una scheda grafica: su una VM senza GPU sarebbe un riquadro sempre vuoto, lo stesso
+    errore già corretto per la temperatura in CYRA-465.
+    La memoria resta spesso sconosciuta (su GB10 nvidia-smi risponde N/A: memoria unificata con
+    quella di sistema) e in quel caso si dichiara a parole — uno zero si leggerebbe come "non ne usa". %>
+<% gpus = server_gpus(last_sample) %>
+<% if gpus.any? %>
+  <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-section-gpu">
+    <div class="px-5 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3 flex-wrap">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.show.section_gpu") %></h2>
+      <%= render "member/monitoring/servers/range_selector", host: host, range: range, buckets: buckets, note: false %>
+    </div>
+    <div class="grid grid-cols-1 gap-5 px-5 py-5">
+      <%= render "member/monitoring/servers/chart", host: host, metric: :gpu,
+            label: t("member.servers.show.chart_gpu"), buckets: buckets, range: range,
+            threshold: nil, total_bytes: nil, last_sample: last_sample %>
+      <%= render "member/monitoring/servers/chart", host: host, metric: :gpu_watt,
+            label: t("member.servers.show.chart_gpu_watt"), buckets: buckets, range: range,
+            threshold: nil, total_bytes: nil, last_sample: last_sample %>
+    </div>
+    <dl class="px-5 pb-5 space-y-2">
+      <% gpus.each do |gpu| %>
+        <div class="rounded-md border border-stone-200 dark:border-zinc-800 px-3 py-2.5 space-y-1.5" data-test="server-gpu-card">
+          <p class="font-mono text-[11.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= gpu[:name] %></p>
+          <%= render Ui::MeterComponent.new(label: t("member.servers.show.gpu_usage"),
+                value_text: server_pct_text(gpu[:usage_pct]), pct: gpu[:usage_pct].to_f,
+                color: server_meter_color(gpu[:usage_pct]), test_id: "server-gpu-usage") %>
+          <% if gpu[:watt] %>
+            <div class="flex items-baseline justify-between gap-3" data-test="server-gpu-power">
+              <dt class="font-mono text-[10px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.gpu_power") %></dt>
+              <dd class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100"><%= "#{format('%.4g', gpu[:watt])} W" %></dd>
+            </div>
+          <% end %>
+          <% sensor = server_temperature_sensors(last_sample).find { |s| s[:name] == gpu[:name] } %>
+          <% if sensor %>
+            <div class="flex items-baseline justify-between gap-3" data-test="server-gpu-temp">
+              <dt class="font-mono text-[10px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.gpu_temp") %></dt>
+              <dd class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100"><%= server_temp_text(sensor[:value]) %></dd>
+            </div>
+          <% end %>
+          <div class="flex items-baseline justify-between gap-3">
+            <dt class="font-mono text-[10px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.gpu_memory") %></dt>
+            <% if gpu[:memory_total_mb] %>
+              <dd class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100" data-test="server-gpu-memory">
+                <%= "#{format('%.4g', gpu[:memory_used_mb].to_f)} / #{format('%.4g', gpu[:memory_total_mb])} MB" %>
+              </dd>
+            <% else %>
+              <dd class="font-mono text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="server-gpu-memory-unavailable">
+                <%= t("member.servers.show.gpu_memory_unavailable") %>
+              </dd>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </dl>
+  </section>
+<% end %>

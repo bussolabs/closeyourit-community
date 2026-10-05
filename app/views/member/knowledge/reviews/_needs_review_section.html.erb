@@ -1,0 +1,49 @@
+<%# CYRA-768 — le pagine oltre la data di rilettura. Non aspettano il permesso di entrare (sono già
+    visibili a tutti): aspettano che qualcuno confermi che quello che dicono è ancora vero. %>
+<section id="knowledge-review-needs-review" class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="knowledge-review-needs-review">
+  <div class="flex items-baseline flex-wrap gap-2 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <span class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.knowledge.reviews.needs_review_title") %></span>
+    <span class="font-mono text-[11px] text-gray-400 dark:text-zinc-500"><%= t("member.knowledge.reviews.needs_review_note") %></span>
+    <span class="ml-auto font-mono text-[11px] text-gray-400 dark:text-zinc-500"><%= t("member.knowledge.reviews.pages_count", count: @needs_review_total) %></span>
+  </div>
+  <%= render(Ui::TableComponent.new(stacked: true, label: t("member.knowledge.reviews.needs_review_title"))) do |t| %>
+    <% t.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.reviews.col_page"), sort: "page", param: :needs_review_sort) %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.reviews.col_review_after"), sort: "review_after", param: :needs_review_sort, classes: "w-36") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.reviews.col_still_true"), classes: "w-64") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+    <% end %>
+    <% @needs_review.each do |page| %>
+      <%= render Ui::TableComponent::RowComponent.new(href: member_knowledge_page_path(page), link_label: page.title, test_id: "knowledge-review-needs-review-row") do %>
+        <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+          <%= link_to member_knowledge_page_path(page), class: "block" do %>
+            <span class="block text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400"><%= page.title %></span>
+            <span class="block font-mono text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">
+              <%= page.projects.map(&:key).join(" · ").presence || t("member.knowledge.reviews.org_wide") %>
+              · <%= t("member.knowledge.kind.#{page.kind}") %>
+            </span>
+          <% end %>
+        <% end %>
+        <%= render Ui::TableComponent::CellComponent.new(label: t("member.knowledge.reviews.col_review_after"), mono: true, class: "text-amber-700 dark:text-amber-300") do %>
+          <%= l(page.review_after, format: :short) %>
+        <% end %>
+        <%= render Ui::TableComponent::CellComponent.new(label: t("member.knowledge.reviews.col_still_true")) do %>
+          <%# Due strade, e la seconda è aprire la pagina e riscriverla: confermare senza aver letto
+              non è una conferma. Il bottone punta il modulo unico della pagina (CYRA-571). %>
+          <div class="flex items-start gap-2.5">
+            <%= render Ui::ButtonComponent.new(label: t("member.knowledge.reviews.confirm"),
+                  href: confirm_member_knowledge_review_path(page), method: :post,
+                  form_id: "row-actions",
+                  variant: :success_outline, size: :sm, icon: "check",
+                  test_id: "knowledge-review-confirm-#{page.id}",
+                  confirm: t("member.knowledge.reviews.confirm_confirm")) %>
+            <span class="max-w-[28ch] text-[11.5px] leading-snug text-gray-600 dark:text-zinc-400"><%= t("member.knowledge.reviews.confirm_hint") %></span>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <div class="px-4 py-2.5 border-t border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800">
+    <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.reviews.needs_review_hint") %></p>
+  </div>
+</section>

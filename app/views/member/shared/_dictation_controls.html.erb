@@ -1,0 +1,27 @@
+<%# locals: (mic_class: "absolute bottom-[3px] right-[3px]", overlay: false) %>
+<%# Dictation into a text field (ui--voice-inline in `dictate` mode), rendered inside the field's
+    relative wrapper, after the field: the microphone sits in the field's corner; while it listens
+    a strip with the waves opens under the field, with Done and the cross that cancels.
+    `overlay: true` lays the strip over the field instead, for one-line composers (CYRA-992). %>
+<% strip = overlay ? "absolute inset-0 z-10" : "relative mt-2 h-[38px]" %>
+<% buttons = overlay ? "z-20 top-1/2 -translate-y-1/2" : "bottom-[5px]" %>
+<%= render Ui::ButtonComponent.new(label: t("member.assistant.voice.dictate"), icon: "mic", icon_only: true,
+                                   variant: :ghost, size: :sm, test_id: "dictation-mic", hidden: true,
+                                   class: mic_class,
+                                   data: { "ui--voice-inline-target": "mic", action: "mousedown->ui--voice-inline#hold ui--voice-inline#start" }) %>
+<div hidden data-ui--voice-inline-target="waves" data-test="dictation-waves"
+     class="<%= strip %> overflow-hidden rounded-lg border border-indigo-300 dark:border-indigo-500/50 bg-white dark:bg-zinc-900">
+  <div class="absolute inset-y-0 left-2 right-[150px]">
+    <canvas data-ui--voice-inline-target="canvas" class="block h-full w-full"></canvas>
+  </div>
+  <p data-ui--voice-inline-target="status" aria-live="polite" data-test="dictation-status"
+     class="absolute right-[76px] top-1/2 -translate-y-1/2 rounded bg-white/85 dark:bg-zinc-900 px-1 text-[11.5px] tabular-nums text-gray-600 dark:text-zinc-400 data-[silent]:font-semibold data-[silent]:text-amber-700 dark:data-[silent]:text-amber-300"></p>
+</div>
+<%= render Ui::ButtonComponent.new(label: t("member.assistant.voice.dictate_done"), icon: "check", icon_only: true,
+                                   variant: :ghost, size: :sm, test_id: "dictation-done", hidden: true,
+                                   class: "absolute #{buttons} right-[40px]",
+                                   data: { "ui--voice-inline-target": "done", action: "mousedown->ui--voice-inline#hold ui--voice-inline#send" }) %>
+<%= render Ui::ButtonComponent.new(label: t("member.assistant.voice.cancel"), icon: "x", icon_only: true,
+                                   variant: :ghost, size: :sm, test_id: "dictation-cancel", hidden: true,
+                                   class: "absolute #{buttons} right-[5px]",
+                                   data: { "ui--voice-inline-target": "cancel", action: "mousedown->ui--voice-inline#hold ui--voice-inline#cancel" }) %>

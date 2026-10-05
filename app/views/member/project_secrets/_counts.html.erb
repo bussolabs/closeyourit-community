@@ -1,0 +1,14 @@
+<%# Counts in one line (T12, C63): shown of total, origins, environments. Anomalies filter the rows with holes. %>
+<div class="mt-1 flex items-center flex-wrap gap-x-1.5 gap-y-1" data-test="secrets-counts">
+  <% filtered = @matrix_shown != @matrix_total %>
+  <%= render Ui::StatLabelComponent.new(value: @matrix_shown, test_id: "secrets-count-shown",
+        label: (filtered ? t("member.secrets.counts.of_total", total: @matrix_total) : t("member.secrets.counts.variables", count: @matrix_total))) %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.secrets.counts.local", count: @local_names_count), value: @local_names_count, test_id: "secrets-count-local") %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.secrets.counts.shared", count: @shared_names_count), value: @shared_names_count, value_color: :indigo, test_id: "secrets-count-shared") %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.secrets.counts.environments", count: @environments.size), value: @environments.size, test_id: "secrets-count-environments") %>
+  <% if @drift.any? %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.secrets.counts.anomalies", count: @drift.holes_count), value: @drift.holes_count, value_color: :amber,
+          href: member_project_secrets_path(@project, drift: (@drift_only ? nil : "1")), active: @drift_only,
+          test_id: "secrets-drift-count", title: t("member.secrets.drift_tooltip")) %>
+  <% end %>
+</div>

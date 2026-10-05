@@ -1,0 +1,122 @@
+<% content_for :title, "#{@name} · #{@host.name}" %>
+<%# Dettaglio di un database: quanto occupa, come cresce, dove sta, cosa lo riempie.
+    Sola lettura sullo snapshot dell'agent — nessuna connessione al database. %>
+<% peak = @buckets.filter_map { |bucket| bucket[:size_bytes] }.max.to_i %>
+
+<div class="p-7 space-y-6" data-test="database-show">
+  <%= render Ui::PageHeaderComponent.new(
+        title: @name,
+        subtitle: t("member.databases.show.help_title"),
+        # Gerarchia unica «server padre di database» (CYRA-462): radice Server, poi la macchina, poi il
+        # database. La macchina rimanda al suo elenco database (tab), non alla flotta globale.
+        breadcrumb: [ { label: t("member.servers.title"), href: member_monitoring_servers_path },
+                      { label: @host.name, href: member_monitoring_server_path(@host, tab: "hardware") },
+                      { label: @name } ],
+        test_id: "database-show-header",
+        counts_test_id: "database-show-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.databases.col_size"), value: server_bytes_text(@detail.size_bytes), test_id: "database-stat-size") %>
+      <%# Il title nativo espone il totale su cui è calcolata la quota e su quale macchina (CYRA-466). %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.databases.col_share"),
+            value: @detail.share_pct.nil? ? "—" : number_to_percentage(@detail.share_pct, precision: 1),
+            title: (@detail.share_pct && t("member.databases.share_title", size: server_bytes_text(@detail.size_bytes), total: server_bytes_text(@detail.host_total_bytes), host: @host.name)),
+            test_id: "database-stat-share") %>
+      <%# L'etichetta dichiara il periodo e segue il selettore 24h/7d/30d: il valore è già calcolato sui
+          blocchi del range scelto, ora anche il nome lo dice (CYRA-474). %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.databases.show.stat_change", period: t("member.databases.range_label.#{@range}")),
+            value: server_size_change_text(@change_bytes), value_color: server_size_change_color(@change_bytes),
+            test_id: "database-stat-change") %>
+      <% if @detail.project %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.databases.show.stat_project"),
+              value: @detail.project.name, test_id: "database-stat-project") %>
+      <% end %>
+    <% end %>
+    <% h.with_meta do %>
+      <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400">
+        <%= @detail.engine.presence || "—" %><% if @detail.version.present? %> · <%= @detail.version %><% end %>
+      </span>
+    <% end %>
+  <% end %>
+
+  <% if @detail.project %>
+    <%# Il progetto è RICAVATO dal nome del database, non un collegamento dichiarato: va detto. %>
+    <p class="-mt-3 text-[12px] text-gray-500 dark:text-zinc-400" data-test="database-project-hint">
+      <%= link_to @detail.project.name, member_project_path(@detail.project), class: "text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" %>
+      — <%= t("member.databases.show.project_guessed") %>
+    </p>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="database-growth">
+    <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.databases.show.growth") %></h2>
+      <div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800" data-test="database-range-selector">
+        <%# Classi LETTERALI su entrambi i rami: lo scanner di Tailwind non valuta i ternari. %>
+        <% %w[24h 7d 30d].each do |r| %>
+          <% if r == @range %>
+            <%= link_to r, member_monitoring_server_database_path(@host, @name, range: r),
+                  class: "px-2 h-6 inline-flex items-center rounded font-mono text-[11px] bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-semibold",
+                  data: { test: "database-range-#{r}" } %>
+          <% else %>
+            <%= link_to r, member_monitoring_server_database_path(@host, @name, range: r),
+                  class: "px-2 h-6 inline-flex items-center rounded font-mono text-[11px] text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100",
+                  data: { test: "database-range-#{r}" } %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+    <% if peak.positive? %>
+      <%= render Ui::HistogramComponent.new(
+            bars: server_size_chart_bars(@buckets, peak, @range),
+            gridlines: server_size_gridlines(peak),
+            xticks: chart_xticks(@buckets, @range),
+            buckets_test_id: "database-size-buckets",
+            summary: t("member.databases.show.growth_summary", name: @name, size: server_bytes_text(@detail.size_bytes))) %>
+    <% else %>
+      <p class="px-5 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="database-growth-empty"><%= t("member.databases.show.growth_empty") %></p>
+    <% end %>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="database-presences">
+      <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800">
+        <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.databases.show.presences") %></h2>
+      </div>
+      <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+        <% @detail.presences.each do |presence| %>
+          <div class="px-5 py-3 flex items-center justify-between gap-3" data-test="database-presence-row">
+            <div class="flex items-center gap-2 min-w-0">
+              <%= link_to presence.host_name, member_monitoring_server_path(presence.host_id),
+                    class: "text-[13px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 truncate" %>
+              <% if presence.host_role.present? %>
+                <%= render Ui::BadgeComponent.new(label: t("member.servers.db_role.#{presence.host_role}"),
+                      color: presence.host_role == "primary" ? :indigo : :sky, size: :sm) %>
+              <% end %>
+            </div>
+            <div class="flex items-baseline gap-3 shrink-0">
+              <span class="font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= server_bytes_text(presence.size_bytes) %></span>
+              <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= server_time_ago(presence.last_seen_at) %></span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="database-tables">
+      <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800">
+        <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.databases.show.tables") %></h2>
+      </div>
+      <% if @detail.tables.any? %>
+        <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+          <% @detail.tables.each do |table| %>
+            <div class="px-5 py-3 flex items-baseline justify-between gap-3" data-test="database-table-row">
+              <span class="font-mono text-[12px] text-zinc-900 dark:text-zinc-100 truncate"><%= table.name %></span>
+              <span class="font-mono text-[12px] text-gray-500 dark:text-zinc-400 shrink-0"><%= server_bytes_text(table.size_bytes) %></span>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="px-5 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="database-tables-empty"><%= t("member.databases.show.tables_empty") %></p>
+      <% end %>
+    </div>
+  </div>
+</div>

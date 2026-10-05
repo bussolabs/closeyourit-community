@@ -1,0 +1,70 @@
+it:
+  member:
+    uptime:
+      ungrouped: Senza gruppo
+      group_by_grouped: Gruppo uptime
+      group_by_table: Nessuno
+      group_by_table_hint: una lista sola
+      ranges:
+        30m: "30 min"
+        24h: "24 ore"
+        7d: "7 giorni"
+        30d: "30 giorni"
+        1y: "1 anno"
+      stat_incidents_open: Incident aperti
+      incident_feed:
+        title: Incident recenti
+        empty: Nessun incident recente.
+      form:
+        group: Gruppo
+        group_placeholder: Nessun gruppo
+        group_hint: "Facoltativo. Un gruppo pubblico mostra questo controllo nella propria pagina pubblica, anche se la pagina del singolo controllo è privata."
+    uptime_groups:
+      title: Gruppi uptime
+      help_title: "Controlli raggruppati, anche fra progetti, con la loro pagina di stato."
+      new: Nuovo gruppo
+      edit: Modifica
+      delete: Elimina
+      row_menu_label: "Azioni per il gruppo %{name}"
+      delete_confirm: Eliminare questo gruppo? I monitor restano ma diventano senza gruppo.
+      delete_dialog:
+        title: "Eliminare il gruppo %{name}?"
+        body: "I monitor del gruppo restano, ma diventano senza gruppo, e la sua pagina di stato pubblica non si apre più. Non si può annullare."
+      empty: Ancora nessun gruppo uptime.
+      empty_body: Raggruppa i monitor correlati sotto un gruppo — es. "Servizi critici" con più progetti.
+      count: "%{count} gruppi"
+      search_placeholder: Cerca gruppi…
+      no_match: Nessun gruppo corrisponde alla ricerca.
+      col_group: Gruppo
+      col_monitors: Monitor
+      stat_groups: Gruppi
+      stat_monitors: Monitor
+      monitors_count:
+        one: 1 monitor
+        other: "%{count} monitor"
+      created: Gruppo creato.
+      updated: Gruppo salvato.
+      deleted: Gruppo eliminato.
+      publish: Pubblica status page
+      unpublish: Rimuovi status page
+      published: Status page del gruppo pubblicata.
+      unpublished: Status page del gruppo rimossa.
+      form:
+        new_title: Nuovo gruppo uptime
+        edit_title: Modifica gruppo uptime
+        name: Nome
+        name_placeholder: Servizi critici
+        color: Colore
+        icon: Icona
+        icon_hint: Scegli un'icona Font Awesome, oppure carica un'immagine qui sotto — l'immagine ha la precedenza.
+        icon_image: Oppure carica un'immagine
+        icon_image_hint: "PNG, JPG o WEBP · max 1 MB"
+        description: Descrizione
+        description_placeholder: Cosa copre questo gruppo di servizi…
+        description_hint: Mostrata sulla status page pubblica del gruppo.
+        save_new: Crea gruppo
+        save_edit: Salva modifiche
+        cancel: Annulla
+      show:
+        monitors: Monitor in questo gruppo
+        no_monitors: Ancora nessun monitor in questo gruppo.

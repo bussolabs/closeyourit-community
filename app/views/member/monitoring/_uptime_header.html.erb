@@ -1,0 +1,26 @@
+<%# locals: active_tab, up_count, down_count, total, open_incidents_count %>
+<%# Header condiviso dalle tab Monitor › Uptime (Monitors + Incidents): stessi chip e azioni, cambia
+    solo la tab attiva (i pulsanti non spariscono cambiando tab). Pattern member/projects/_overview_header.
+    Wrappato in un div unico così lo space-y del contenitore vede header+tab come un blocco solo. %>
+<% can_manage = can_any?("uptime.manage") %>
+<% show_groups = uptime_groups_nav_visible? %>
+<%= render Ui::PageHeaderComponent.new(
+      title: t("member.uptime.title"),
+      breadcrumb: [ { label: t("member.uptime.title") } ],
+      counts_test_id: "monitors-stats", tabs_test_id: "uptime-tabs") do |h| %>
+  <% h.with_counts do %>
+    <%= render "member/monitoring/monitors/stats", up_count: up_count, down_count: down_count, total: total, incidents_open: open_incidents_count %>
+  <% end %>
+  <% if can_manage || show_groups %>
+    <% h.with_actions do %>
+      <% if show_groups %>
+        <%= render Ui::ButtonComponent.new(label: t("member.uptime_groups.title"), href: member_monitoring_uptime_groups_path, variant: :secondary_muted, size: :sm, icon: "layers", test_id: "monitors-groups") %>
+      <% end %>
+      <% if can_manage %>
+        <%= render Ui::ButtonComponent.new(label: t("member.uptime.new"), href: new_member_monitoring_monitor_path, variant: :primary, size: :sm, icon: "plus", test_id: "monitor-new") %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <% h.with_tab(label: t("member.uptime.tab_monitors"), href: member_monitoring_monitors_path, active: active_tab.to_s == "monitors", icon: "heart-pulse", test_id: "uptime-tab-monitors") %>
+  <% h.with_tab(label: t("member.uptime.tab_incidents"), href: member_monitoring_incidents_path, active: active_tab.to_s == "incidents", icon: "triangle-alert", test_id: "uptime-tab-incidents") %>
+<% end %>

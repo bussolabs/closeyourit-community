@@ -1,0 +1,18 @@
+<%# locals: host:, range:, buckets:, note: — the time range of the Metrics tab, in the title row of every
+    chart panel. The range lives in the URL, so changing it in one panel changes it in all of them.
+    The note is shown once (processor panel).
+    CYRA-457: when the range is wider than the host's history, the unmeasured stretch is said in words. %>
+<div class="flex items-center gap-3">
+  <% if note && (hires_at = server_hires_since(buckets)) %>
+    <span class="text-[11px] text-gray-500 dark:text-zinc-400" data-test="hires-since">
+      <%= t("member.servers.show.hires_since", time: l(hires_at, format: chart_time_format(range))) %>
+    </span>
+  <% end %>
+  <div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800" data-test="range-selector">
+    <% ::Servers::Sample::RANGES.keys.each do |r| %>
+      <%= link_to r, member_monitoring_server_path(host, tab: "metrics", range: r),
+            class: "h-[26px] px-2.5 inline-flex items-center rounded-[5px] font-mono text-[12px] font-medium #{range == r ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-stone-200 dark:border-zinc-800' : 'text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}",
+            data: { test: "range-#{r}" } %>
+    <% end %>
+  </div>
+</div>

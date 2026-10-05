@@ -1,0 +1,35 @@
+<%= render Ui::TableComponent::RowComponent.new(href: valhalla_organization_path(organization), link_label: organization.name, faded: organization.suspended?,
+      id: dom_id(organization), test_id: "valhalla-organization-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <div class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= organization.name %></div>
+    <div class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= organization.slug %></div>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.organizations.col_owner"), class: "text-[12.5px] text-gray-500 dark:text-zinc-400")) { organization.owner&.email || t("valhalla.organizations.none") } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.organizations.col_members"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { organization.memberships.size.to_s } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.organizations.col_projects"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { organization.projects.size.to_s } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("valhalla.organizations.col_status")) do %>
+    <%= render Ui::BadgeComponent.new(
+          label: organization.suspended? ? t("valhalla.organizations.status_suspended") : t("valhalla.organizations.status_active"),
+          color: organization.suspended? ? :gray : :green,
+          test_id: "valhalla-organization-status"
+        ) %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+    <%= render Ui::ConfirmDialogComponent.new(title: t("valhalla.organizations.delete_dialog.title", name: organization.name),
+          url: valhalla_organization_path(organization), confirm_label: t("valhalla.organizations.actions.delete"),
+          test_id: "valhalla-organization-delete-dialog-#{organization.id}") do |dialog| %>
+      <% dialog.with_body { t("valhalla.organizations.delete_dialog.body") } %>
+      <%= render(Ui::RowMenuComponent.new(test_id: "valhalla-organization-menu", aria_label: t("valhalla.organizations.row_menu_label", name: organization.name))) do %>
+        <% if organization.memberships.size.positive? %>
+          <%# CYRA-719 — entrare nell'organizzazione è un'impersonation: passa dalla conferma col secondo fattore. %>
+          <%= link_to t("valhalla.organizations.actions.enter"), new_impersonation_path(organization_id: organization.id), class: Ui::RowMenuComponent.item_class, data: { test: "valhalla-organization-enter" } %>
+        <% end %>
+        <%= link_to t("valhalla.organizations.actions.open"), valhalla_organization_path(organization), class: Ui::RowMenuComponent.item_class, data: { test: "valhalla-organization-open" } %>
+        <%= link_to t("valhalla.organizations.actions.edit"), edit_valhalla_organization_path(organization), class: Ui::RowMenuComponent.item_class, data: { test: "valhalla-organization-edit" } %>
+        <%= button_to suspend_valhalla_organization_path(organization), method: :patch, class: Ui::RowMenuComponent.item_class, data: { test: "valhalla-organization-suspend" } do %><%= organization.suspended? ? t("valhalla.organizations.actions.unsuspend") : t("valhalla.organizations.actions.suspend") %><% end %>
+        <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+        <%= dialog.menu_trigger(label: t("valhalla.organizations.actions.delete"), icon: "trash", test_id: "valhalla-organization-delete") %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

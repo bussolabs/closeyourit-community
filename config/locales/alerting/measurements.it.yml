@@ -1,0 +1,24 @@
+it:
+  alerting:
+    measurements:
+      statistics:
+        last: Ultimo valore
+        min: Minimo
+        max: Massimo
+        sum: Somma
+        rate: Frequenza
+        count: Conteggio
+        percentile: Percentile stimato
+    content:
+      measurement_threshold:
+        title: "Soglia metrica · %{name}"
+        body: "%{statistic}: %{value} %{unit}."
+  member:
+    alerting:
+      event_types:
+        measurement_threshold: Soglia metrica
+    notifications:
+      catalog:
+        measurement_threshold:
+          title: Soglia metrica
+          description: Un valore misurato ha superato la soglia della serie selezionata.

@@ -1,0 +1,45 @@
+<%# locals: (token:) %>
+<%= render Ui::TableComponent::RowComponent.new(faded: token.revoked?, test_id: "token-row") do %>
+  <%= render(Ui::TableComponent::CellComponent.new(header: true)) { tag.span(token.name, class: "text-[13px] font-medium #{token.revoked? ? 'text-gray-500 dark:text-zinc-400' : 'text-zinc-900 dark:text-zinc-100'}") } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.tokens.col_environment"))) { render Ui::BadgeComponent.new(label: token.environment.label, color: token.revoked? ? "gray" : token.environment.color, dot: true) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.tokens.col_prefix"))) { tag.span("#{token.token_prefix}…", class: "font-mono text-[12px] #{token.revoked? ? 'text-gray-500 dark:text-zinc-400' : 'text-gray-600 dark:text-zinc-400'} bg-stone-100 dark:bg-zinc-800 rounded px-1.5 py-0.5 whitespace-nowrap") } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.tokens.col_scopes")) do %><% token.scopes.each do |scope| %><%= render Ui::BadgeComponent.new(label: scope, color: token.revoked? ? "gray" : "indigo") %><% end %><% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.tokens.col_last_used"), mono: true, class: token.revoked? ? "text-gray-500 dark:text-zinc-400" : "text-zinc-700 dark:text-zinc-300")) { token.last_used_at ? t("member.tokens.used_ago", time: time_ago_in_words(token.last_used_at)) : t("member.tokens.never_used") } %>
+  <%# CYRA-716: no date = the credential is valid until it is revoked. %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.tokens.col_expiry"), test_id: "token-expiry") do %>
+    <% if token.expires_at.nil? %>
+      <span class="font-mono text-[12px] text-gray-400 dark:text-zinc-500"><%= t("member.tokens.expiry.never") %></span>
+    <% else %>
+      <% expiry_status = token.revoked? ? :ok : token.expiry_status %>
+      <% expiry_days = token.days_until_expiry %>
+      <% expiry_color = { expired: "text-rose-600 dark:text-rose-400", due_soon: "text-amber-700 dark:text-amber-300" }.fetch(expiry_status, "text-zinc-700 dark:text-zinc-300") %>
+      <span class="font-mono text-[12px] <%= token.revoked? ? 'text-gray-500 dark:text-zinc-400' : expiry_color %>"><%= l(token.expires_at.to_date, format: :long) %></span>
+      <% if expiry_status == :expired %>
+        <span class="block text-[11px] <%= expiry_color %>"><%= t("member.tokens.expiry.expired_days", count: expiry_days.abs) %></span>
+      <% elsif expiry_status == :due_soon %>
+        <span class="block text-[11px] <%= expiry_color %>"><%= t("member.tokens.expiry.due_in_days", count: expiry_days) %></span>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.tokens.col_status")) do %>
+    <% if token.revoked? %>
+      <%= render Ui::BadgeComponent.new(label: t("member.tokens.status_revoked"), color: "gray", dot: true) %>
+    <% elsif token.expired? %>
+      <%= render Ui::BadgeComponent.new(label: t("member.tokens.status_expired"), color: "red", dot: true) %>
+    <% else %>
+      <%= render Ui::BadgeComponent.new(label: t("member.tokens.status_active"), color: "emerald", dot: true) %>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+    <% if token.revoked? %>
+      <span class="text-[12px] text-gray-300 dark:text-zinc-600">—</span>
+    <% else %>
+      <%= render Ui::ConfirmDialogComponent.new(title: t("member.tokens.revoke_dialog.title", name: token.name),
+            url: member_project_token_path(@project, token), confirm_label: t("member.tokens.revoke"),
+            test_id: "token-revoke-dialog-#{token.id}") do |dialog| %>
+        <% dialog.with_body { t("member.tokens.revoke_dialog.body") } %>
+        <%= dialog.button_trigger(label: t("member.tokens.revoke"), icon: "ban", test_id: "token-revoke-#{token.id}") %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

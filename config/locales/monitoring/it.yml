@@ -1,0 +1,23 @@
+it:
+  monitoring:
+    tools:
+      closeyourit-ruby:
+        label: closeyourit-ruby
+        language: Ruby
+        framework: Rails
+      closeyourit-js:
+        label: closeyourit-js
+        language: JavaScript
+        framework: Browser + Node
+      closeyourit-dart:
+        label: closeyourit-dart
+        language: Dart
+        framework: Flutter
+      closeyourit-agent:
+        label: closeyourit-agent
+        language: Go
+        framework: Agent server
+      closeyourit-cli:
+        label: closeyourit-cli
+        language: TypeScript
+        framework: CI / CD

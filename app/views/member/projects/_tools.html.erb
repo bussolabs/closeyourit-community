@@ -1,0 +1,55 @@
+<%# Card "Monitoring tools": fonti di telemetria del progetto assunte AUTOMATICAMENTE dalle chiamate
+    ricevute (SDK/agent), sempre all'ultima versione vista, con stato (verde attivo · ambra silente ·
+    rosso dismesso). Il pulsante "Cronologia" apre lo storico versioni della fonte. Vedi
+    Projects::ToolsOverview. %>
+<div data-test="project-tools">
+  <p class="px-4 pt-3 pb-1 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.show.monitoring_tools") %></p>
+  <% if @tools_overview.any? %>
+    <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% @tools_overview.rows.each do |row| %>
+        <div class="flex items-center gap-2.5 px-4 py-2.5" data-test="project-tool-<%= row.tool_code %>">
+          <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md <%= Ui::Colors.chip(row.tool.color) %>">
+            <%= render Ui::IconComponent.new(name: row.tool.icon, class: "text-[11px]") %>
+          </span>
+
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 truncate"><%= row.tool.label %></span>
+              <% if row.tool.language.present? %>
+                <span class="text-[11px] text-gray-500 dark:text-zinc-400"><%= row.tool.language %></span>
+              <% end %>
+            </div>
+            <% if row.last_seen_at %>
+              <div class="font-mono text-[11px] text-gray-500 dark:text-zinc-400">
+                <%= t("member.projects.show.tool_last_seen") %> <%= l(row.last_seen_at, format: :short) %>
+              </div>
+            <% end %>
+          </div>
+
+          <span class="ml-auto font-mono text-[12px] <%= row.version ? "font-semibold text-zinc-900 dark:text-zinc-100" : "text-gray-500 dark:text-zinc-400" %>">
+            <%= row.version || t("member.projects.show.tool_no_signal") %>
+          </span>
+
+          <span data-test="tool-status-<%= row.status %>">
+            <%= render Ui::BadgeComponent.new(label: monitoring_tool_status_label(row.status),
+                                              color: monitoring_tool_status_color(row.status), dot: true) %>
+          </span>
+
+          <% if row.history? %>
+            <%= link_to member_project_source_versions_path(@project, row.source_id),
+                        class: "shrink-0 inline-flex items-center gap-1 h-5 px-1.5 rounded text-[11px] font-medium text-gray-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/15",
+                        data: { test: "project-tool-history-#{row.tool_code}" },
+                        title: t("member.projects.show.tool_history") do %>
+              <%= render Ui::IconComponent.new(name: "history", class: "text-[11px]") %>
+              <span class="hidden sm:inline"><%= t("member.projects.show.tool_history") %></span>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="px-4 py-3 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="project-tools-empty">
+      <%= t("member.projects.show.tools_none") %>
+    </div>
+  <% end %>
+</div>

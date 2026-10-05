@@ -1,0 +1,127 @@
+<% content_for :title, t("member.servers.title") %>
+<% can_manage = can?("servers.manage") %>
+
+<div class="p-7 space-y-6" data-test="member-servers">
+  <%# Live: ogni push agent (Servers::Ingest::Record) e la staleness (CheckStaleJob) fanno replace
+      della riga host e delle pill. Stream org-prefissato (Realtime::Streams.servers) → niente leak
+      cross-tenant. Host nuovi (auto-registrati) compaiono al reload, come negli altri index Monitor. %>
+  <%= turbo_stream_from Realtime::Streams.servers(current_organization) %>
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.servers.title"),
+        subtitle: t("member.servers.subtitle"),
+        breadcrumb: [ { label: t("member.servers.title") } ],
+        counts_test_id: "servers-stats") do |h| %>
+    <% h.with_counts do %>
+      <%= render "member/monitoring/servers/stats",
+            up_count: @up_count, down_count: @down_count, total: @pagination.total,
+            over_threshold: @over_threshold %>
+    <% end %>
+    <% if can_manage %>
+      <% h.with_actions do %>
+        <%# CYRA-459 — il pulsante nominava un oggetto («Token») invece dell'intenzione: chi vuole
+            collegare una macchina non sa di cercare un token. Ora il primo comando dice cosa fa. %>
+        <%= render Ui::ButtonComponent.new(label: t("member.servers.connect_cta"), href: member_monitoring_server_tokens_path, variant: :primary, size: :sm, icon: "plus", test_id: "servers-connect") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.servers.tokens_link"), href: member_monitoring_server_tokens_path, variant: :secondary_muted, size: :sm, icon: "key", test_id: "servers-tokens-link") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-475 — «cosa devo fare adesso?»: riavvii, aggiornamenti, servizi caduti, coi numeri, e ogni
+      voce è il filtro che porta a quelle macchine. Floats over the frame and closes for good; its key
+      names what it lists, so a new kind of problem brings it back. Only when there is something to do. %>
+  <% if @todo.present? %>
+    <% content_for :floating_notice do %>
+      <%= render Ui::FloatingNoticeComponent.new(key: "servers_todo:#{@todo.keys.map(&:to_s).sort.join(',')}",
+                                                 title: t("member.servers.todo.title"), tone: :warning,
+                                                 test_id: "servers-todo") do %>
+        <ul class="mt-1 divide-y divide-amber-200 dark:divide-amber-500/30">
+          <% @todo.each do |key, count| %>
+            <li class="py-1.5" data-test="servers-todo-<%= key %>">
+              <%= link_to member_monitoring_servers_path(needs: key),
+                    class: "flex items-center justify-between gap-3 text-zinc-900 dark:text-zinc-100 hover:text-amber-800 dark:hover:text-amber-200",
+                    data: { test: "servers-todo-link-#{key}" } do %>
+                <span><%= t("member.servers.todo.#{key}", count: count) %></span>
+                <%= render Ui::IconComponent.new(name: "chevron-right", class: "shrink-0 text-[11px] text-amber-700 dark:text-amber-300") %>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-469 — arrivo qui dal conteggio «Server collegati» della pagina dei codici: dico su quale
+      codice sto filtrando e offro l'uscita in un clic. %>
+  <% if @filtered_token %>
+    <div class="flex items-center justify-between gap-3 rounded-lg border border-indigo-200 dark:border-indigo-500/40 bg-indigo-50/50 dark:bg-indigo-500/10 px-4 py-2.5" data-test="servers-token-filter">
+      <p class="text-[12.5px] text-indigo-900 dark:text-indigo-200"><%= t("member.servers.filtered_by_token", name: @filtered_token.name) %></p>
+      <%= link_to t("member.servers.filtered_clear"), member_monitoring_servers_path,
+            class: "shrink-0 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "servers-token-filter-clear" } %>
+    </div>
+  <% end %>
+
+  <% filtering = params[:q].present? || params[:status].present? || @filtered_token.present? || @group_filter.present? || params[:needs].present? %>
+  <% if @hosts.empty? && !filtering %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.servers.empty"), body: t("member.servers.empty_body"),
+          icon: "server", framed: true, test_id: "servers-empty") do |empty| %>
+      <% if can_manage %>
+        <% empty.with_action do %>
+          <%= render Ui::ButtonComponent.new(label: t("member.servers.empty_cta"), href: member_monitoring_server_tokens_path,
+                variant: :primary, size: :sm, test_id: "servers-empty-cta") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="servers-table">
+      <%= render(Ui::TableToolbarComponent.new(framed: true,
+            url: member_monitoring_servers_path, query: params[:q],
+            search_placeholder: t("member.servers.search_placeholder"),
+            search_test_id: "servers-search", apply_test_id: "servers-filter",
+            test_id: "servers-toolbar")) do |toolbar| %>
+        <% toolbar.with_filter(key: "status", label: t("member.servers.filter_status")) do %>
+          <div class="w-32"><%= render Ui::SelectComponent.new(name: "status", multiple: true, summary: true,
+            options: ::Servers::Host.statuses.keys.map { |s| [ t("member.servers.status.#{s}"), s ] },
+            selected: params[:status], placeholder: t("member.servers.filter_status"), test_id: "filter-status") %></div>
+        <% end %>
+        <%# CYRA-470 — the fleet groups filter the list: each option says how many machines it holds. %>
+        <% if @group_counts.any? %>
+          <% toolbar.with_filter(key: "group", label: t("member.servers.filter_group")) do %>
+            <div class="w-40"><%= render Ui::SelectComponent.new(name: "group", summary: true,
+              options: @group_counts.map { |name, count| [ "#{name} (#{count})", name ] },
+              selected: @group_filter, placeholder: t("member.servers.filter_group"), test_id: "filter-group") %></div>
+          <% end %>
+        <% end %>
+        <% toolbar.with_views do %>
+          <%= render Ui::SavedViewsComponent.new(resource_type: "servers", views: @saved_views,
+                index_helper: :member_monitoring_servers_path, current_filters: params) %>
+        <% end %>
+      <% end %>
+
+        <% if @hosts.empty? %>
+          <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_monitoring_servers_path,
+                icon: "server", test_id: "servers-no-match", reset_test_id: "servers-reset-filters") %>
+        <% else %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.servers.title"))) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.col_host"), sort: "host") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.col_status"), sort: "status", classes: "w-24") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.col_cpu"), sort: "cpu", initial: :desc, classes: "w-32") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.col_mem"), sort: "mem", initial: :desc, classes: "w-32") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.col_disk"), sort: "disk", initial: :desc, classes: "w-32") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.col_load"), sort: "load", initial: :desc, align: :right, classes: "w-28",
+                  hint: t("member.servers.col_load_hint"), test_id: "servers-col-load") %>
+            <%# CYRA-465 — la temperatura compare solo se almeno una macchina della flotta la riporta. %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.col_temp"), sort: "temp", initial: :desc, align: :right, classes: "w-16", visible: @temp_reported) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.col_os"), sort: "os", classes: "w-44") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.col_last_seen"), sort: "last_seen", initial: :desc, align: :right, classes: "w-28") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+          <% end %>
+          <% @hosts.each do |host| %>
+            <%= render "member/monitoring/servers/host_row", host: host, thresholds: @thresholds.for_host(host), temp_column: @temp_reported %>
+          <% end %>
+        <% end %>
+        <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "servers-pagination")) %>
+        <% end %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,28 @@
+<%# Pannello-evidenza illustrativo: corpo bug a 4 clausole + testata ticket. %>
+<div class="rounded-lg border border-stone-200 bg-white overflow-hidden" aria-hidden="true">
+  <div class="flex items-center gap-2.5 px-4 h-9 border-b border-stone-200">
+    <span class="font-mono text-[11px] text-gray-500">tickets / DRRA-321</span>
+    <span class="inline-flex items-center gap-1.5 rounded-md bg-indigo-50 px-2 py-0.5 font-mono text-[10.5px] font-medium text-indigo-600"><span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>in progress</span>
+    <span class="ml-auto inline-flex items-center rounded-md bg-orange-50 px-2 py-0.5 font-mono text-[10.5px] font-medium text-orange-600">high</span>
+  </div>
+  <div class="px-4 py-3.5 space-y-2.5">
+    <% {
+      "given"    => "a cart with 3 items and an expired discount code",
+      "when"     => "the customer submits the checkout form",
+      "then"     => "a 500 is raised and the order is not created",
+      "expected" => "the code is rejected inline and checkout continues"
+    }.each do |clause, text| %>
+      <div class="flex items-baseline gap-3">
+        <span class="font-mono text-[9.5px] uppercase tracking-[1.2px] text-gray-500 w-16 shrink-0"><%= clause %></span>
+        <span class="text-[12.5px] leading-relaxed text-zinc-900"><%= text %></span>
+      </div>
+    <% end %>
+    <div class="pt-2 border-t border-stone-100 flex items-center gap-2 font-mono text-[11px] text-gray-500">
+      <%= render Ui::IconComponent.new(name: "user", class: "text-[10px]") %> assigned @elena
+      <span>·</span>
+      <%= render Ui::IconComponent.new(name: "eye", class: "text-[10px]") %> 3 watchers
+      <span>·</span>
+      milestone <span class="text-zinc-900">v2.5</span>
+    </div>
+  </div>
+</div>

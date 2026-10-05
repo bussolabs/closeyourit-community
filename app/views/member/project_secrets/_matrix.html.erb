@@ -1,0 +1,41 @@
+<%# locals: (can_manage:, can_read:) %>
+<%# MATRICE variabile × ambiente (C59, C64–C70): the name column stays put, each row becomes a card
+    below 768px, the state row says when nothing is there or nothing matches. %>
+<div data-test="secrets-table">
+  <%= render(Ui::TableComponent.new(stacked: true, sticky: :first, label: t("member.secrets.matrix_label"),
+        body_test_id: "secrets-matrix")) do |table| %>
+    <% table.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.secrets.col_variable")) %>
+      <% @environments.each do |environment| %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: "", test_id: "secret-column-#{environment.code}") do %>
+          <span class="inline-flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full <%= Ui::Colors.swatch(environment.color) %>"></span><%= environment.label %>
+            <span class="text-gray-400 dark:text-zinc-500" data-test="secret-column-count-<%= environment.code %>"><%= @environment_counts[environment.id] %>/<%= @matrix_total %></span>
+          </span>
+        <% end %>
+      <% end %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.secrets.col_actions"), label_hidden: true) %>
+    <% end %>
+    <% if @matrix_rows.empty? %>
+      <% filtered = @matrix_total.positive? %>
+      <% table.with_state(kind: (filtered ? :no_results : :empty), icon: (filtered ? nil : "lock"), test_id: "secrets-empty",
+            title: (filtered ? t("member.secrets.origins.no_match") : t("member.secrets.empty")),
+            body: (filtered ? t("member.secrets.origins.no_match_body") : t("member.secrets.empty_body")),
+            reset_href: (member_project_secrets_path(@project) if filtered), reset_label: t("member.secrets.origins.reset")) %>
+    <% end %>
+
+    <% @matrix_rows.each do |name, by_env| %>
+      <%= render "member/project_secrets/row",
+                 name: name,
+                 by_env: by_env,
+                 delegated_by_env: @delegations_by_name.fetch(name, {}),
+                 environments: @environments,
+                 secrets_enabled: @secrets_enabled,
+                 can_manage: can_manage,
+                 can_read: can_read,
+                 open: (@open_row == name),
+                 highlighted: (@highlight.present? && name.casecmp?(@highlight)),
+                 errors: (@row_errors if @open_row == name) %>
+    <% end %>
+  <% end %>
+</div>

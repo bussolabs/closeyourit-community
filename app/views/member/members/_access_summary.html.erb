@@ -1,0 +1,71 @@
+<%# locals: (groups:, projects:, roles:, overrides:, secret_environments: nil) %>
+<%# CYRA-580 — da dove arriva l'accesso di questa persona, in SOLA LETTURA: gruppi, progetti e ruoli
+    che glielo concedono, più le eccezioni decise a mano su di lei. Nessun comando: i selettori vivono
+    nelle altre due schede, così da qui non si cambia niente scorrendo.
+    `secret_environments` è nil quando l'organizzazione non ha ambienti: la riga sparisce invece di
+    dichiarare un confine che non esiste (stessa regola della card nel modulo). %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 divide-y divide-stone-100 dark:divide-zinc-800" data-test="member-access-summary">
+  <div class="px-5 py-3">
+    <p class="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.members.access.summary_title") %></p>
+    <p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5"><%= t("member.members.access.summary_hint") %></p>
+  </div>
+
+  <% [ [ "groups", groups ], [ "projects", projects ], [ "roles", roles ] ].each do |slug, records| %>
+    <div class="px-5 py-3 flex items-start gap-3" data-test="member-access-summary-<%= slug %>">
+      <p class="w-40 shrink-0 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("stats.#{slug}", count: records.size) %></p>
+      <div class="flex flex-wrap gap-1.5 min-w-0">
+        <% if records.any? %>
+          <% records.each do |record| %>
+            <%# Un gruppo/progetto/ruolo può non avere colore (campo facoltativo): il badge cade sul neutro. %>
+            <%= render Ui::BadgeComponent.new(label: record.name, color: record.color.presence || :gray) %>
+          <% end %>
+        <% else %>
+          <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.members.access.summary_none") %></p>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Eccezioni personali: concesse e bloccate su righe distinte, perché il colore da solo non è una
+      differenza leggibile (WCAG AA). A zero eccezioni una riga sola lo dice. %>
+  <% if overrides.any? %>
+    <% [ [ "allow", t("member.members.access.origin_personal_allow"), "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" ],
+         [ "deny", t("member.members.access.origin_personal_deny"), "bg-rose-50 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300" ] ].each do |effect, label, chip| %>
+      <% keys = overrides.select { |_key, value| value == effect }.keys.sort %>
+      <% next if keys.empty? %>
+      <div class="px-5 py-3 flex items-start gap-3" data-test="member-access-summary-<%= effect %>">
+        <p class="w-40 shrink-0 text-[12px] text-gray-500 dark:text-zinc-400"><%= label %></p>
+        <div class="flex flex-wrap gap-1.5 min-w-0">
+          <% keys.each do |key| %>
+            <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10.5px] font-medium <%= chip %>"><%= authorization_permission_label(key) %></span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="px-5 py-3 flex items-start gap-3" data-test="member-access-summary-overrides">
+      <p class="w-40 shrink-0 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.members.access.tabs.overrides") %></p>
+      <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.members.access.summary_none") %></p>
+    </div>
+  <% end %>
+
+  <% if secret_environments %>
+    <div class="px-5 py-3 flex items-start gap-3" data-test="member-access-summary-environments">
+      <p class="w-40 shrink-0 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.members.access.secret_environments_title") %></p>
+      <div class="min-w-0">
+        <div class="flex flex-wrap gap-1.5">
+          <% if secret_environments[:org_wide].any? %>
+            <% secret_environments[:org_wide].each do |code| %>
+              <%= render Ui::BadgeComponent.new(label: code, color: :gray) %>
+            <% end %>
+          <% else %>
+            <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.members.access.secret_environments_all") %></p>
+          <% end %>
+        </div>
+        <% secret_environments[:per_project].each do |project, codes| %>
+          <p class="mt-1.5 text-[11.5px] text-gray-500 dark:text-zinc-400"><span class="text-zinc-900 dark:text-zinc-100"><%= project.name %></span>: <%= codes.join(" · ") %></p>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

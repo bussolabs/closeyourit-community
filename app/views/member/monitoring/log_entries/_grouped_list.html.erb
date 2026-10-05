@@ -1,0 +1,29 @@
+<% if @groups.empty? %>
+  <p class="px-4 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="logs-groups-empty"><%= t("member.monitoring.logs.group_empty") %></p>
+<% else %>
+  <ul class="divide-y divide-stone-100 dark:divide-zinc-800" data-test="logs-groups">
+    <% @groups.each do |group| %>
+      <li class="px-4 py-3" data-test="logs-group">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <%= render Ui::BadgeComponent.new(label: error_level_label(group.level), color: log_level_color(group.level), size: :sm, dot: true) %>
+              <%# CYRA-821 — restringere a un'impronta è un filtro nuovo: cambia l'insieme, quindi
+                  anche il grafico e le chip fuori dal frame. Esce dal frame. %>
+              <%= link_to group.message.truncate(140),
+                    member_monitoring_log_entries_path(request.query_parameters.merge(fingerprint: group.fingerprint).except("grouped", "page")),
+                    class: "text-[12.5px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 truncate", data: { test: "logs-group-link", turbo_frame: "_top" } %>
+            </div>
+            <p class="mt-1 font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="logs-group-seen">
+              <%= t("member.monitoring.logs.group_seen", first: l(group.first_seen_at, format: :short), last: l(group.last_seen_at, format: :short)) %>
+            </p>
+          </div>
+          <span class="shrink-0 font-mono text-[13px] font-semibold text-zinc-900 dark:text-zinc-100" data-test="logs-group-count"><%= number_with_delimiter(group.count) %></span>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+  <%# CYRA-578 — lo stesso piede della lista: quanti messaggi diversi ci sono, quanti se ne
+      vedono e come si arriva agli altri. Prima ci si fermava ai primi cinquanta in silenzio. %>
+  <%= render(Ui::PaginationComponent.new(pagination: @group_pagination, test_id: "logs-groups-pagination")) %>
+<% end %>

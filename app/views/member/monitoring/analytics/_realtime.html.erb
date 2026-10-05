@@ -1,0 +1,14 @@
+<%# Contenuto del frame realtime: visitatori correnti (5 min) + sparkline pageview degli ultimi 30 min. %>
+<div class="flex items-center gap-5 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3">
+  <div class="shrink-0">
+    <p class="font-mono text-[10.5px] uppercase tracking-wide text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.realtime.title") %></p>
+    <p class="text-[22px] font-display font-semibold text-emerald-600 dark:text-emerald-400 leading-tight" data-test="analytics-realtime-count"><%= count %></p>
+  </div>
+  <div class="flex-1 flex items-end gap-0.5 h-9">
+    <% max = series.max %>
+    <% series.each do |value| %>
+      <div class="flex-1 rounded-sm <%= value.to_i.zero? ? 'bg-stone-100 dark:bg-zinc-800' : 'bg-emerald-300' %>" style="height: <%= [ analytics_bucket_height(value, max), 6 ].max %>%"></div>
+    <% end %>
+  </div>
+  <p class="shrink-0 self-end text-[10.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.realtime.window") %></p>
+</div>

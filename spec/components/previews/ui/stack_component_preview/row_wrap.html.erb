@@ -1,0 +1,5 @@
+<%= render(Ui::StackComponent.new(direction: :row, gap: 1.5, align: :center, wrap: true)) do %>
+  <% 8.times do |i| %>
+    <%= render(Ui::StatLabelComponent.new(label: "Metrica #{i + 1}", value: (i + 1) * 37)) %>
+  <% end %>
+<% end %>

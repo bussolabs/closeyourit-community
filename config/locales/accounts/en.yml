@@ -1,0 +1,12 @@
+en:
+  activerecord:
+    errors:
+      models:
+        accounts/account:
+          attributes:
+            password:
+              too_weak: "must be at least 8 characters and include an uppercase letter, a lowercase letter, a number and a special character"
+        accounts/api_token:
+          attributes:
+            expires_at:
+              must_be_in_future: "The expiry date must be in the future"

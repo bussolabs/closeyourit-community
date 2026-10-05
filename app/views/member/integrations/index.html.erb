@@ -1,0 +1,140 @@
+<% content_for :title, t("member.integrations.title") %>
+
+<%# CYRA-545 — l'elenco dei servizi esterni collegabili con la chiave di questa organizzazione.
+    Ogni scheda risponde a tre domande nell'ordine in cui se le pone chi arriva: a cosa serve, se è
+    collegato, e cosa smette di funzionare se lo tolgo. La chiave si incolla e non si rilegge mai:
+    il campo resta vuoto anche quando c'è, e il segnaposto dice cosa vuol dire lasciarlo così. %>
+<div class="p-7 space-y-6 max-w-4xl" data-test="member-integrations">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.integrations.title"),
+        subtitle: t("member.integrations.help_title"),
+        breadcrumb: [ { label: t("member.integrations.title") } ],
+        counts_test_id: "integrations-counts",
+        test_id: "integrations-header") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.integrations.services_label"),
+            value: @services_count, test_id: "integrations-stat-services") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.integrations.connected_label"),
+            value: @connected_count, value_color: (:emerald if @connected_count.positive?),
+            test_id: "integrations-stat-connected") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.integrations.broken_label"),
+            value: @broken_count, value_color: (:red if @broken_count.positive?),
+            test_id: "integrations-stat-broken") %>
+    <% end %>
+  <% end %>
+
+  <div class="space-y-4">
+    <% @providers.each do |provider| %>
+      <% credential = @credentials[provider.key] %>
+      <% state = integration_state(credential) %>
+      <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="integration-card-<%= provider.key %>">
+        <div class="px-5 py-4 border-b border-stone-200 dark:border-zinc-800 flex items-start gap-3">
+          <span class="inline-flex items-center justify-center w-10 h-10 rounded-md shrink-0 <%= integration_tone(provider.color) %>">
+            <%= render Ui::IconComponent.new(name: provider.icon, class: "text-[16px]") %>
+          </span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= provider.label %></h2>
+              <%= render Ui::BadgeComponent.new(label: t("member.integrations.status_#{state}"),
+                    color: integration_state_color(state), dot: true,
+                    test_id: "integration-status-#{provider.key}") %>
+            </div>
+            <p class="mt-1 text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= provider.summary %></p>
+          </div>
+        </div>
+
+        <div class="px-5 py-4 space-y-4">
+          <%# Le funzioni che quel servizio accende: sono anche quelle che si spengono scollegandolo,
+              e la conferma le ripete. Stanno in chiaro nella scheda, non solo nella conferma: chi
+              legge deve poter decidere prima di premere, non dopo. %>
+          <div data-test="integration-features-<%= provider.key %>">
+            <p class="text-[11.5px] font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wide"><%= t("member.integrations.features_title") %></p>
+            <div class="mt-1.5 flex items-center flex-wrap gap-1.5">
+              <% integration_features(provider).each do |feature| %>
+                <span class="inline-flex items-center rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2 py-0.5 text-[11.5px] text-zinc-900 dark:text-zinc-100"><%= feature %></span>
+              <% end %>
+            </div>
+          </div>
+
+          <% if state == :broken %>
+            <p class="rounded-md border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15 px-3 py-2 text-[12px] text-red-700 dark:text-red-300" data-test="integration-error-<%= provider.key %>">
+              <%= t("integrations.errors.#{credential.verification_error}", default: t("integrations.errors.upstream_error")) %>
+            </p>
+          <% elsif state == :connected %>
+            <p class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="integration-verified-<%= provider.key %>">
+              <%= t("member.integrations.verified_ago", ago: time_ago_in_words(credential.verified_at)) %>
+            </p>
+          <% elsif state == :unverified %>
+            <p class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="integration-unverified-<%= provider.key %>">
+              <%= t("member.integrations.never_verified") %>
+            </p>
+          <% end %>
+
+          <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
+            <p class="text-[12px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= provider.where %></p>
+            <a href="<%= provider.console_url %>" target="_blank" rel="noopener"
+               class="mt-1 inline-flex items-center gap-1.5 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+               data-test="integration-console-<%= provider.key %>">
+              <%= render Ui::IconComponent.new(name: "arrow-up-right-from-square", class: "text-[10px]") %><%= t("member.integrations.console_link") %>
+            </a>
+          </div>
+
+          <%# Il modulo che collega e quello che scollega sono FRATELLI, mai annidati: `button_to`
+              genera un form suo, e un form dentro un form non è markup valido. %>
+          <div class="flex items-end gap-2 flex-wrap">
+            <%= form_with url: member_integration_path(provider.key), method: :patch,
+                          class: "flex items-end gap-2 flex-wrap",
+                          data: { test: "integration-form-#{provider.key}" } do %>
+              <%= render Ui::InputComponent.new(name: "api_key_#{provider.key}", type: "password", value: "",
+                    label: t("member.integrations.key_label"), autocomplete: "new-password",
+                    wrapper_class: "w-full sm:w-96",
+                    placeholder: t("member.integrations.key_placeholder_#{credential ? 'connected' : 'missing'}"),
+                    hint: t("member.integrations.key_hint"),
+                    test_id: "integration-key-#{provider.key}") %>
+              <%= render Ui::ButtonComponent.new(
+                    label: t("member.integrations.#{credential ? 'replace' : 'connect'}"),
+                    type: "submit", icon: (credential ? "rotate-cw" : "plug"), size: :sm,
+                    test_id: "integration-connect-#{provider.key}") %>
+            <% end %>
+
+            <% if credential %>
+              <%= render Ui::ButtonComponent.new(label: t("member.integrations.disconnect"),
+                    href: member_integration_path(provider.key), method: :delete,
+                    variant: :danger_outline, size: :sm, icon: "unlink",
+                    confirm: t("member.integrations.disconnect_confirm", service: provider.label,
+                               features: integration_features(provider).to_sentence),
+                    test_id: "integration-disconnect-#{provider.key}") %>
+            <% end %>
+          </div>
+        </div>
+      </section>
+    <% end %>
+
+    <%# GitHub è un servizio collegato come gli altri, ma non con una chiave da incollare:
+        l'installazione si fa su GitHub e la sua pagina esiste già. Sta in elenco perché chi cerca
+        «cosa ho collegato» lo cerca QUI, e sparirebbe dal ragionamento se fosse solo altrove. %>
+    <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="integration-card-github">
+      <div class="px-5 py-4 border-b border-stone-200 dark:border-zinc-800 flex items-start gap-3">
+        <span class="inline-flex items-center justify-center w-10 h-10 rounded-md shrink-0 bg-stone-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">
+          <%= render Ui::IconComponent.new(name: "github", class: "text-[17px]") %>
+        </span>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.integrations.github.title") %></h2>
+            <%= render Ui::BadgeComponent.new(
+                  label: t("member.integrations.status_#{@github_installation ? 'connected' : 'missing'}"),
+                  color: (@github_installation ? :emerald : :gray), dot: true,
+                  test_id: "integration-status-github") %>
+          </div>
+          <p class="mt-1 text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.integrations.github.description") %></p>
+        </div>
+      </div>
+
+      <div class="px-5 py-4">
+        <%= render Ui::ButtonComponent.new(label: t("member.integrations.open_github"),
+              href: member_integrations_github_path, variant: :secondary, size: :sm, icon: "arrow-right",
+              test_id: "integration-open-github") %>
+      </div>
+    </section>
+  </div>
+</div>

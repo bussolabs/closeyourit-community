@@ -1,0 +1,63 @@
+<%# CYRA-839 — sul telefono riepilogo, scelta righe e pulsanti su una riga sola spingevano il
+    pulsante «Successivo» fuori dallo schermo. Sotto `sm` il piede si impila (riepilogo sopra,
+    pulsanti sotto) e ogni gruppo va a capo da sé; da `sm` torna la riga unica, pulsanti a destra. %>
+<%= tag.div(class: "flex flex-col gap-3 px-4 py-3 border-t border-stone-200 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between", data: (@test_id ? { test: @test_id } : {})) do %>
+  <div class="flex flex-wrap items-center gap-x-3 gap-y-1" data-test="pagination-summary">
+    <%= legend %>
+    <%# CYRA-568 — le migliaia scritte come le scrive la lingua: «1–100 di 4.031», lo stesso numero
+        che il conteggio in cima alla lista mostra sopra la tabella. %>
+    <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("pagination.info", from: number_with_delimiter(pagination.from), to: number_with_delimiter(pagination.to), total: number_with_delimiter(pagination.total)) %></span>
+    <%# CYRA-408 — quante righe per pagina: con dieci righe una lista di mille ticket sono cento
+        pagine da sfogliare. Compare solo quando c'è più di una pagina da girare. %>
+    <% if pagination.multiple_pages? %>
+      <span class="flex items-center gap-1 text-[11px] text-gray-500 dark:text-zinc-400" data-test="pagination-per">
+        <span><%= t("pagination.per_page") %></span>
+        <% per_options.each do |value| %>
+          <% if value == pagination.per %>
+            <span class="font-mono font-semibold text-zinc-900 dark:text-zinc-100" aria-current="true" data-test="pagination-per-<%= value %>"><%= value %></span>
+          <% else %>
+            <%= link_to value, per_url(value), class: "font-mono text-gray-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "pagination-per-#{value}" } %>
+          <% end %>
+        <% end %>
+      </span>
+    <% end %>
+  </div>
+  <%# Il gruppo dei pulsanti esiste solo con più pagine: vuoto lascerebbe uno spazio (`gap-3`)
+      sotto il riepilogo. %>
+  <% if pagination.multiple_pages? %>
+    <%# Sotto `sm` i puntini di sospensione non si vedono: con undici pezzi (frecce, prima, ultima,
+        finestra di cinque e due «…») la riga sfora i ~300 px disponibili e la freccia «Successivo»
+        andava a capo da sola. Prima e ultima pagina restano. %>
+    <div class="flex flex-wrap items-center gap-1" data-test="pagination-controls">
+      <% if pagination.prev? %>
+        <%= link_to page_url(pagination.page - 1), class: arrow_class, "aria-label": t("pagination.previous"), data: { test: "pagination-prev" } do %><%= render Ui::IconComponent.new(name: "chevron-left", class: "text-[12px]") %><% end %>
+      <% else %>
+        <span class="<%= disabled_class %>" aria-disabled="true"><%= render Ui::IconComponent.new(name: "chevron-left", class: "text-[12px]") %></span>
+      <% end %>
+
+      <% if show_first? %>
+        <%= link_to 1, page_url(1), class: number_class %>
+        <% if show_leading_gap? %><span class="hidden px-1 text-gray-500 dark:text-zinc-400 text-[12px] sm:inline">…</span><% end %>
+      <% end %>
+
+      <% pagination.window.each do |num| %>
+        <% if num == pagination.page %>
+          <span aria-current="page" class="inline-flex items-center justify-center h-7 w-7 rounded-md text-[12px] font-medium text-white bg-indigo-600"><%= num %></span>
+        <% else %>
+          <%= link_to num, page_url(num), class: number_class %>
+        <% end %>
+      <% end %>
+
+      <% if show_last? %>
+        <% if show_trailing_gap? %><span class="hidden px-1 text-gray-500 dark:text-zinc-400 text-[12px] sm:inline">…</span><% end %>
+        <%= link_to pagination.total_pages, page_url(pagination.total_pages), class: number_class %>
+      <% end %>
+
+      <% if pagination.next? %>
+        <%= link_to page_url(pagination.page + 1), class: arrow_class, "aria-label": t("pagination.next"), data: { test: "pagination-next" } do %><%= render Ui::IconComponent.new(name: "chevron-right", class: "text-[12px]") %><% end %>
+      <% else %>
+        <span class="<%= disabled_class %>" aria-disabled="true"><%= render Ui::IconComponent.new(name: "chevron-right", class: "text-[12px]") %></span>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

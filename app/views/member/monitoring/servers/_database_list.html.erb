@@ -1,0 +1,14 @@
+<%# locals: host:, rows:, pagination: — every database on this machine, searchable and sortable, on the
+    Disks & hardware tab (it used to be a tab of its own). CYRA-474: with the 7-day change column. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-databases">
+  <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800 flex items-baseline gap-2" data-test="databases-heading">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.databases.title") %></h2>
+    <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= count_label("member.databases.count", pagination.total) %></span>
+  </div>
+  <%= render(Ui::TableToolbarComponent.new(framed: true,
+        url: member_monitoring_server_path(host), hidden: { tab: "hardware" }, query: params[:q],
+        search_placeholder: t("member.databases.search_placeholder"),
+        search_test_id: "databases-search", test_id: "databases-toolbar")) %>
+  <%= render "member/monitoring/databases/table", rows: rows, pagination: pagination,
+        show_server: false, no_match: t("member.databases.no_match") %>
+</div>

@@ -1,0 +1,43 @@
+# Omakase Ruby styling for Rails
+inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+
+# Overwrite or add rules to create your own house style
+#
+# # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
+# Layout/SpaceInsideArrayLiteralBrackets:
+#   Enabled: false
+
+# CYRA-805 — quanti rami può avere una funzione. L'elenco qui sotto tiene i file che erano già
+# sopra soglia il giorno dell'accensione e PUÒ SOLO ACCORCIARSI: chi ne semplifica uno lo toglie.
+# Le due misure condividono l'elenco (`&`/`*`), così un file si toglie da un posto solo.
+# Presidiato da spec/config/complexity_ratchet_spec.rb.
+Metrics/CyclomaticComplexity:
+  Enabled: true
+  Max: 15
+  Exclude: &complessita_gia_sopra_soglia
+    - app/controllers/concerns/member/tickets/detail.rb
+    - app/jobs/knowledge/review_page_job.rb
+    - app/models/agents/workflow.rb
+    - app/models/servers/sample.rb
+    - app/services/agents/hosts/register.rb
+    - app/services/agents/leases/acquire.rb
+    - app/services/agents/limits/reserve.rb
+    - app/services/agents/ticket_queues/claim.rb
+    - app/services/agents/workflows/in_flight.rb
+    - app/services/agents/workflows/phase_resolver.rb
+    - app/services/authorization/visible_scope.rb
+    - app/services/knowledge/create_page.rb
+    - app/services/secrets/github/secrets_json.rb
+    - app/services/servers/database_inventory.rb
+    - app/services/servers/ingest/normalize.rb
+    - app/services/ticketing/update_ticket.rb
+
+Metrics/PerceivedComplexity:
+  Enabled: true
+  Max: 15
+  Exclude: *complessita_gia_sopra_soglia
+
+# Nessun file lo violava all'accensione: qui non servono eccezioni.
+Metrics/BlockNesting:
+  Enabled: true
+  Max: 3

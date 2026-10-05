@@ -1,0 +1,115 @@
+<% content_for :title, t("member.platforms.title") %>
+<% can_manage = can?("platforms.manage") %>
+
+<div class="p-7 space-y-6" data-test="member-platforms">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.platforms.title"),
+        subtitle: t("member.platforms.help_title"),
+        breadcrumb: [ { label: t("member.platforms.title") } ],
+        counts_test_id: "platforms-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.platforms", count: @pagination.total), value: @pagination.total, test_id: "platforms-stat-total") %>
+    <% end %>
+    <% if can_manage %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.platforms.new"), href: new_member_platform_path, variant: :primary, size: :sm, icon: "plus", test_id: "platforms-new") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-441 — what a platform is and where it is used, for whoever lands here the first time, also
+      on the empty list. It floats over the content and can be closed for good (DESIGN.md T1). %>
+  <% content_for :floating_notice do %>
+    <%= render Ui::FloatingNoticeComponent.new(key: "platforms_intro", title: t("member.platforms.intro.title"),
+                                               test_id: "platforms-intro") do %>
+      <p><%= t("member.platforms.intro.what") %></p>
+      <p class="mt-1"><%= t("member.platforms.intro.where") %></p>
+      <%= link_to member_guides_structure_path, class: "mt-2 inline-flex items-center gap-1.5 font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "platforms-intro-guide" } do %>
+        <%= render Ui::IconComponent.new(name: "circle-question-mark", class: "text-[11px]") %><%= t("member.guides.structure.title") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% filtering = params[:q].present? || params[:status].present? %>
+  <% if @platforms.empty? && !filtering %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.platforms.empty"), body: t("member.platforms.empty_body"),
+          icon: "shapes", framed: true, test_id: "platforms-empty") do |empty| %>
+      <% if can_manage %>
+        <% empty.with_action do %>
+          <%= render Ui::ButtonComponent.new(label: t("member.platforms.new"), href: new_member_platform_path, variant: :primary, size: :sm, icon: "plus", test_id: "platforms-empty-new") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="platforms-table">
+      <%= render(Ui::TableToolbarComponent.new(
+            url: member_platforms_path, query: params[:q], framed: true,
+            search_placeholder: t("member.platforms.search_placeholder"),
+            search_test_id: "platforms-search", apply_test_id: "platforms-filter",
+            test_id: "platforms-toolbar")) do |toolbar| %>
+        <% toolbar.with_filter(key: "status", label: t("member.platforms.filter_status")) do %>
+          <div class="w-36"><%= render Ui::SelectComponent.new(name: "status", multiple: true, summary: true,
+            options: [ [ t("member.platforms.status_active"), "true" ], [ t("member.platforms.status_inactive"), "false" ] ],
+            selected: params[:status], placeholder: t("member.platforms.filter_status"),
+            test_id: "filter-status") %></div>
+        <% end %>
+        <% toolbar.with_views do %>
+          <%= render Ui::SavedViewsComponent.new(resource_type: "platforms", views: @saved_views,
+                index_helper: :member_platforms_path, current_filters: params) %>
+        <% end %>
+      <% end %>
+      <div>
+        <% if @platforms.empty? %>
+          <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_platforms_path,
+                icon: "boxes", test_id: "platforms-no-match", reset_test_id: "platforms-reset-filters") %>
+        <% else %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.platforms.title"))) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.platforms.col_platform"), sort: "platform") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.platforms.col_code"), sort: "code", classes: "w-28") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.platforms.col_status"), sort: "status", initial: :desc, classes: "w-24") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.platforms.col_uptime"), sort: "uptime", initial: :desc, classes: "w-24",
+                  hint: t("member.platforms.form.supports_uptime_hint"), test_id: "platforms-col-uptime") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.platforms.col_projects"), sort: "projects", initial: :desc, align: :right, classes: "w-24") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: tag.span(t("member.platforms.edit"), class: "sr-only"), classes: "w-10", visible: can_manage) %>
+          <% end %>
+          <% @platforms.each do |platform| %>
+            <%= render Ui::TableComponent::RowComponent.new(faded: !platform.active?, test_id: "member-platform") do %>
+              <%= render(Ui::TableComponent::CellComponent.new(header: true)) { render Ui::BadgeComponent.new(label: platform.label, color: platform.color, dot: true) } %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("member.platforms.col_code"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { platform.code } %>
+              <%= render Ui::TableComponent::CellComponent.new(label: t("member.platforms.col_status")) do %>
+                <% if platform.active? %>
+                  <span class="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-emerald-600 dark:text-emerald-400 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><%= t("member.platforms.status_active") %></span>
+                <% else %>
+                  <span class="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-gray-500 dark:text-zinc-400 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-zinc-600"></span><%= t("member.platforms.status_inactive") %></span>
+                <% end %>
+              <% end %>
+              <%= render Ui::TableComponent::CellComponent.new(label: t("member.platforms.col_uptime")) do %>
+                <% if platform.supports_uptime? %>
+                  <span class="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-indigo-600 dark:text-indigo-400 whitespace-nowrap" data-test="platform-uptime-yes"><%= render Ui::IconComponent.new(name: "heart-pulse", class: "text-[11px]") %><%= t("member.platforms.uptime_yes") %></span>
+                <% else %>
+                  <span class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="platform-uptime-no"><%= t("member.platforms.uptime_no") %></span>
+                <% end %>
+              <% end %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("member.platforms.col_projects"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { @project_counts[platform.id].to_i.to_s } %>
+              <%= render Ui::TableComponent::CellComponent.new(actions: true, visible: can_manage) do %>
+                <%= render Ui::ConfirmDialogComponent.new(title: t("member.platforms.delete_dialog.title", label: platform.label),
+                      url: member_platform_path(platform), confirm_label: t("member.platforms.delete"),
+                      test_id: "platform-delete-dialog-#{platform.id}") do |dialog| %>
+                  <% dialog.with_body { t("member.platforms.delete_dialog.body") } %>
+                  <%= render Ui::RowMenuComponent.new(test_id: "platform-menu-#{platform.id}") do %>
+                    <%= link_to edit_member_platform_path(platform), class: Ui::RowMenuComponent.item_class, data: { test: "platform-edit-#{platform.id}" } do %><%= render Ui::IconComponent.new(name: "pen", class: "w-[1.25em] text-gray-400 dark:text-zinc-500 text-[12px]") %><%= t("member.platforms.edit") %><% end %>
+                    <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+                    <%= dialog.menu_trigger(label: t("member.platforms.delete"), icon: "trash", test_id: "platform-delete-#{platform.id}") %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+        <% end %>
+        <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "platforms-pagination")) %>
+      </div>
+    </div>
+  <% end %>
+</div>

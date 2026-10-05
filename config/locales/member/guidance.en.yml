@@ -1,0 +1,100 @@
+en:
+  member:
+    nav:
+      guidance: Guidance
+    guidance:
+      title: Guidance
+      help:
+        organization: "The base for every group and project of the organization."
+        group: "Applies to every project of the group and inherits from the organization."
+      applies_to:
+        organization: "You are writing for the organization %{name}: it will apply to all its groups and projects."
+        group: "You are writing for the group %{name}: it will apply to the projects of the group."
+        project: "You are writing for the project %{name}: it will apply here only."
+      home:
+        organization: Organization guidance
+        group: Guidance of the group %{name}
+        project: Guidance of the project %{name}
+      manage: Manage guidance
+      counts:
+        references: References
+        procedures: Procedures
+      reference:
+        section_title: References
+        section_help: Pointers to context sources (repository, knowledge base, URL or path).
+        add: New reference
+        empty: No reference at this level.
+        new_title: New reference
+        edit_title: Edit reference
+        created: Reference created.
+        updated: Reference updated.
+        deleted: Reference removed.
+        edit: Edit
+        delete: Remove
+        delete_confirm: Remove this reference?
+        key: Key
+        key_hint: Stable slot identity across levels - same key, same inherited or overridden element.
+        kind: Kind
+        location: Location
+        location_hint: Where the reference points - URL, path or repository coordinates.
+        instructions: Instructions
+        instructions_hint: Optional note on how to use it.
+        required: Required
+        enabled: Enabled
+        enabled_hint: Turn it off to suppress the inherited key at this level.
+        save_new: Create
+        save_edit: Save
+        cancel: Cancel
+        kinds:
+          repository: Repository
+          knowledge_base: Knowledge base
+          url: URL
+          path: Path
+      procedure:
+        section_title: Procedures
+        section_help: Text instructions applicable to the work, composable across levels.
+        add: New procedure
+        empty: No procedure at this level.
+        new_title: New procedure
+        edit_title: Edit procedure
+        created: Procedure created.
+        updated: Procedure updated.
+        deleted: Procedure removed.
+        edit: Edit
+        delete: Remove
+        delete_confirm: Remove this procedure?
+        key: Key
+        content: Content
+        content_hint: Free text in markdown.
+        application_mode: Application
+        application_mode_hint: How it behaves relative to upper levels.
+        merge_strategy: Merge
+        merge_strategy_hint: With «inherit» - overrides or appends the inherited content.
+        enabled: Enabled
+        save_new: Create
+        save_edit: Save
+        cancel: Cancel
+        modes:
+          inherit: Inherit
+          replace: Replace
+          disable: Disable
+        strategies:
+          override: Override
+          append: Append
+      preview:
+        title: Effective context
+        help: What the command line receives for this project, with explicit origin and overrides.
+        references_title: Resolved references
+        procedures_title: Resolved procedures
+        empty: No item in the effective context.
+        origin_label: "Origin:"
+      status:
+        here: Defined here
+        inherited: Inherited
+        overridden: Overrides
+        appended: Appends
+        disabled: Disabled
+      origin:
+        organization: Organization
+        group: Group
+        project: Project

@@ -1,0 +1,31 @@
+<%# Invito — corpo della mail (frame: layouts/mailer.html.erb). Accento indigo (default). %>
+<% content_for :preheader, t("connections.invitations.mailer.intro") %>
+
+<p style="<%= mail_overline_style %>"><%= t("connections.invitations.mailer.overline") %></p>
+<h1 style="<%= mail_h1_style %>"><%= t("connections.invitations.mailer.subject", organization: @organization.name) %></h1>
+
+<p style="<%= mail_p_style %>"><%= t("connections.invitations.mailer.greeting") %></p>
+<p style="<%= mail_p_style %>"><%= t("connections.invitations.mailer.intro") %></p>
+
+<!-- meta box: organizzazione + ruolo -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 0 0;border:1px solid <%= MailerHelper::MAIL_BORDER %>;border-radius:10px;background-color:<%= MailerHelper::MAIL_SUBTLE %>;">
+  <tr>
+    <td style="padding:14px 16px;border-right:1px solid <%= MailerHelper::MAIL_BORDER %>;">
+      <p style="margin:0 0 3px 0;font-family:<%= MailerHelper::FONT_MONO %>;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:<%= MailerHelper::MAIL_MUTED %>;"><%= t("auth.invitations.organization") %></p>
+      <p style="margin:0;font-family:<%= MailerHelper::FONT_SANS %>;font-size:14px;font-weight:600;color:<%= MailerHelper::MAIL_INK %>;"><%= @organization.name %></p>
+    </td>
+    <td style="padding:14px 16px;">
+      <p style="margin:0 0 3px 0;font-family:<%= MailerHelper::FONT_MONO %>;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:<%= MailerHelper::MAIL_MUTED %>;"><%= t("auth.invitations.role") %></p>
+      <p style="margin:0;"><span style="display:inline-block;padding:2px 9px;border-radius:6px;background-color:<%= MailerHelper::ACCENTS_SOFT[:indigo] %>;font-family:<%= MailerHelper::FONT_SANS %>;font-size:12px;font-weight:600;color:<%= MailerHelper::MAIL_ACCENT %>;"><%= t("member.roles.#{@invitation.role}", default: @invitation.role.to_s.humanize) %></span></p>
+    </td>
+  </tr>
+</table>
+
+<div style="margin:22px 0 0 0;">
+  <%= render "mails/shared/button", label: t("connections.invitations.mailer.action"), url: edit_invitation_url(@token) %>
+</div>
+
+<p style="<%= mail_note_style %>"><%= t("connections.invitations.mailer.expiry") %></p>
+<p style="<%= mail_footnote_style %>"><%= t("mailer.shared.button_fallback") %><br>
+  <span style="<%= mail_mono_style(color: MailerHelper::MAIL_ACCENT) %>word-break:break-all;"><%= edit_invitation_url(@token) %></span>
+</p>

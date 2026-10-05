@@ -1,0 +1,21 @@
+it:
+  ai:
+    # CYRA-916: shown wherever an AI feature runs without a connected service.
+    not_configured: "Disponibile con CloseYourIt AI: chi amministra il sistema collega un servizio AI in Impostazioni AI."
+    token_cap_reached: "L'organizzazione ha usato tutti i token AI di questo mese. Il conteggio riparte il primo del mese, oppure chi gestisce l'AI può alzare il tetto."
+    # CYRA-920: the CloseYourIt AI gateway answered 402.
+    limit_reached: "La chiave CloseYourIt AI ha raggiunto il tetto del mese: le funzioni AI ripartono il mese prossimo. Il resto dell'app funziona."
+    feature:
+      disabled: "Funzione AI non disponibile: %{service} è spento dalla configurazione di sistema."
+      services:
+        agent_gate: "il gate di eleggibilità agenti"
+        assistant_chat: "l'assistente in chat"
+        assistant_tools: "l'assistente che legge i tuoi dati"
+        assistant_voice: "l'assistente a voce"
+        triage: "il triage di errori e metriche"
+        embeddings: "la ricerca semantica"
+        ticket_composition: "la scrittura assistita dei ticket"
+        dataset_predictions: "training e predizioni sui dataset"
+        comment_compaction: "il riassunto dei commenti storici"
+        analysis_relabel: "la riscrittura delle analisi tecniche"
+        knowledge_review: "il revisore delle pagine di conoscenza"

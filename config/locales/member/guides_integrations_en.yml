@@ -1,0 +1,39 @@
+---
+# CYRA-545 — the guide of the Integrations page: what a key is, who pays for the usage, why it is
+# never shown again, what each status means and what stops working when a service is disconnected.
+en:
+  member:
+    guides:
+      index:
+        integrations:
+          title: Integrations
+      integrations:
+        title: Integrations
+        subtitle: The services from other companies the product uses for you, connected with your own keys.
+        what_title: What it is for
+        what_intro: "Some features do not run inside CloseYourIt: they lean on services from other companies. Using them takes a key, which works like a personal pass: it tells the service that you are the one asking, and which account the usage goes on."
+        what_b1: "The bill and the daily limit are yours: you do not share them with any other organization, and running out does not stop anybody else's work."
+        what_b2: "Where the key is missing the feature does not start at all, and it says so: better than a button that takes your request and then goes quiet."
+        what_b3: Every service is connected and removed on its own. Removing one does not touch the others.
+        services_title: Which services can be connected
+        github_note: "It is connected differently: not with a key you paste but by installing the application on GitHub, from its own page."
+        how_title: How to connect one
+        how_step1: "Open the provider console from the link in the card: it is the one thing you cannot guess from here."
+        how_step2: Create the key on your account and copy it.
+        how_step3: "Paste it into the field on the card and save: the key is tested right away, with a real request to the provider."
+        how_step4: "If the key is good the service is connected instantly; if the provider rejects it you are told on the spot and the key is not saved — so you are never left with a connection that looks fine and does not work."
+        key_title: The key is never shown again
+        key_intro: "Once pasted, the key cannot be read from any screen again: it can only be replaced with another one. That is a choice, not an oversight — a key you can read back is a key somebody can take off a screen."
+        key_b1: "The field stays empty even when the service is connected: empty means «I did not touch it», never «delete it»."
+        key_b2: Saving without typing anything leaves the current key in place and working.
+        key_b3: "If you lost the key there is no way to get it back from here: create a new one in the provider console and replace it."
+        status_title: What the statuses mean
+        status_connected: The key is there and was tested successfully. Next to it you can read how long ago.
+        status_broken: "The last test did not go through: the card says why, usually a key that was revoked, expired or restricted, or a service still to be switched on in the provider console."
+        status_unverified: The key is there but has not been tested yet. The daily check tests it by the next day.
+        status_missing: No key connected. The features that depend on this service do not start.
+        off_title: What happens when you disconnect
+        off_intro: "Before you confirm, the page lists by name the features that stop: it is the only thing you really need in order to decide, and it is written nowhere else."
+        off_b1: "The key is deleted from here: connecting the service again means pasting it once more."
+        off_b2: "The service is not touched on the provider side: the key still exists on your account, and you can reuse it or revoke it there."
+        cta: Go to Integrations

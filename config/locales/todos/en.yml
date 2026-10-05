@@ -1,0 +1,11 @@
+en:
+  todos:
+    lists:
+      errors:
+        invalid: "Could not save the list"
+    items:
+      errors:
+        invalid: "Could not save the item"
+    shares:
+      errors:
+        invalid: "Could not share the list: the recipient must be a member of this organization"

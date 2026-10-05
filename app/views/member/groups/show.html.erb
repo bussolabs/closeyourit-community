@@ -1,0 +1,110 @@
+<% content_for :title, @group.name %>
+<% can_manage = can?("project_groups.manage") %>
+<% group_title = tag.span(class: "inline-flex items-center gap-2.5") { safe_join([ render(Ui::EntityMarkComponent.new(record: @group)), @group.name ]) } %>
+<%# CYRA-362 — i link delle card filtrano sui progetti del gruppo: senza progetti non c'è insieme da
+    filtrare, e una lista non filtrata sarebbe una bugia → la card resta, ma non è un link. %>
+<% project_ids = @projects.map(&:id) %>
+<% card_class = "rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3" %>
+<% card_tag = @projects.any? ? :a : :div %>
+<% label_class = "font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400" %>
+<% value_class = "mt-1 font-mono text-[20px] font-semibold" %>
+
+<div class="p-7 space-y-6" data-test="member-group">
+  <%= render Ui::PageHeaderComponent.new(
+        title: group_title,
+        breadcrumb: [ { label: t("member.projects.title"), href: member_projects_path }, { label: t("member.groups.title"), href: member_groups_path }, { label: @group.name } ],
+        test_id: "group-header",
+        counts_test_id: "group-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.projects", count: @projects.size), value: @projects.size, test_id: "group-count-projects") %>
+    <% end %>
+    <% if can_manage %>
+      <% h.with_actions do %>
+        <%# CYRA-879 — only the owner of this organization and of another one can move the group. %>
+        <% if project_move_available? %>
+          <%= render Ui::ButtonComponent.new(label: t("member.project_moves.open"), href: new_member_group_move_path(@group), variant: :secondary_muted, size: :sm, icon: "arrow-left-right", test_id: "group-move") %>
+        <% end %>
+        <%= render Ui::ButtonComponent.new(label: t("member.guidance.title"), href: member_group_guidance_path(@group), variant: :secondary_muted, size: :sm, icon: "compass", test_id: "group-guidance") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.groups.edit"), href: edit_member_group_path(@group), variant: :secondary_muted, size: :sm, icon: "pen", test_id: "group-edit") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.groups.delete"), href: member_group_path(@group), method: :delete, confirm: t("member.groups.delete_confirm"), variant: :danger_outline, size: :sm, icon: "trash", test_id: "group-delete") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Come sta il prodotto nel suo insieme, senza aprire i progetti uno per uno. Il periodo di ogni
+      numero è dichiarato sotto la fascia: è la condizione per non aggiungere un numero ambiguo. %>
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3" data-test="group-rollup">
+    <%= content_tag(card_tag, class: "#{card_class} hover:border-stone-300 dark:hover:border-zinc-700",
+                    href: (member_monitoring_error_groups_path(project_id: project_ids) if @projects.any?),
+                    data: { test: "group-rollup-errors" }) do %>
+      <p class="<%= label_class %>"><%= t("member.projects.health.errors") %></p>
+      <p class="<%= value_class %> <%= @rollup.errors_unresolved.positive? ? "text-rose-600 dark:text-rose-400" : "text-zinc-900 dark:text-zinc-100" %>"><%= @rollup.errors_unresolved %></p>
+    <% end %>
+
+    <%= content_tag(card_tag, class: "#{card_class} hover:border-stone-300 dark:hover:border-zinc-700",
+                    href: (member_monitoring_monitors_path(project_id: project_ids) if @projects.any?),
+                    data: { test: "group-rollup-uptime" }) do %>
+      <p class="<%= label_class %>"><%= t("member.projects.health.uptime") %></p>
+      <p class="<%= value_class %> <%= uptime_percent_color(@rollup.uptime_percent) %>"><%= uptime_percent_text(@rollup.uptime_percent) %></p>
+      <p class="mt-1 text-[10.5px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.health.uptime_24h") %></p>
+    <% end %>
+
+    <%= content_tag(card_tag, class: "#{card_class} hover:border-stone-300 dark:hover:border-zinc-700",
+                    href: (list_member_tickets_path(project_id: project_ids, status_id: @unresolved_status_ids) if @projects.any?),
+                    data: { test: "group-rollup-tickets" }) do %>
+      <p class="<%= label_class %>"><%= t("member.projects.health.tickets_unresolved") %></p>
+      <p class="<%= value_class %> text-zinc-900 dark:text-zinc-100"><%= @rollup.tickets_unresolved %></p>
+      <p class="mt-1 text-[10.5px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.health.tickets_total", n: @rollup.tickets_total) %></p>
+    <% end %>
+
+    <% release = @rollup.last_release %>
+    <%= content_tag(release ? :a : :div, class: "#{card_class} hover:border-stone-300 dark:hover:border-zinc-700",
+                    href: (member_project_path(release.project) if release),
+                    data: { test: "group-rollup-release" }) do %>
+      <p class="<%= label_class %>"><%= t("member.groups.rollup.release") %></p>
+      <% if release %>
+        <p class="<%= value_class %> text-zinc-900 dark:text-zinc-100 truncate"><%= release.display_version %></p>
+        <p class="mt-1 text-[10.5px] text-gray-500 dark:text-zinc-400 truncate"><%= t("member.groups.rollup.release_project", project: release.project.name) %> · <%= t("member.groups.rollup.release_when", time: time_ago_in_words(release.created_at)) %></p>
+      <% else %>
+        <p class="<%= value_class %> text-gray-400 dark:text-zinc-500">—</p>
+        <p class="mt-1 text-[10.5px] text-gray-500 dark:text-zinc-400"><%= t("member.groups.rollup.release_none") %></p>
+      <% end %>
+    <% end %>
+  </div>
+  <%# T1 — the period note of the tiles sits in a panel, not on the page ground. %>
+  <p class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-2.5 text-[11px] text-gray-500 dark:text-zinc-400" data-test="group-rollup-scope"><%= t("member.groups.rollup.scope_hint") %></p>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="group-projects">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.groups.show.projects") %></h2>
+      <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.groups.projects_count", count: @projects.size) %></span>
+    </div>
+    <% if @projects.empty? %>
+      <p class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.groups.show.no_projects") %></p>
+    <% else %>
+      <ul class="divide-y divide-stone-200 dark:divide-zinc-800">
+        <% @projects.each do |project| %>
+          <li>
+            <%= link_to member_project_path(project), class: "flex items-center gap-3 px-4 py-3 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "group-project-#{project.id}" } do %>
+              <%= render Ui::EntityMarkComponent.new(record: project) %>
+              <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= project.name %></span>
+              <%# Gli stessi due numeri della fascia, riga per riga: il roll-up li ha già in memoria
+                  (conteggi per progetto in una query sola), quindi la lista non costa nulla in più. %>
+              <span class="ml-auto inline-flex items-center gap-4 font-mono text-[11px] text-gray-500 dark:text-zinc-400">
+                <span class="inline-flex items-center gap-1.5" data-test="group-project-errors-<%= project.id %>">
+                  <span class="w-1.5 h-1.5 rounded-full <%= @rollup.errors_for(project).positive? ? "bg-rose-500" : "bg-stone-300 dark:bg-zinc-600" %>"></span>
+                  <span class="text-zinc-900 dark:text-zinc-100 font-medium"><%= @rollup.errors_for(project) %></span> <%= t("member.projects.health.errors").downcase %>
+                </span>
+                <span class="inline-flex items-center gap-1.5" data-test="group-project-tickets-<%= project.id %>">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  <span class="text-zinc-900 dark:text-zinc-100 font-medium"><%= @rollup.tally_for(project).unresolved %></span> <%= t("member.projects.health.tickets_unresolved").downcase %>
+                </span>
+                <span class="text-gray-500 dark:text-zinc-400"><%= project.key %></span>
+              </span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+</div>

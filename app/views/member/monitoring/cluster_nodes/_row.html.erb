@@ -1,0 +1,17 @@
+<%= render Ui::TableComponent::RowComponent.new(faded: node.being_removed, test_id: "cluster-node-#{node.id}") do %>
+  <%= render(Ui::TableComponent::CellComponent.new(header: true, mono: true)) { node.name } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.clusters.nodes.col_status"))) { cluster_node_badge(node) } %>
+  <% [ [ "col_cpu", node.cpu_usage_millicores, node.cpu_capacity_millicores ], [ "col_memory", node.memory_usage_bytes, node.memory_capacity_bytes ] ].each do |key, used, capacity| %>
+    <%= render Ui::TableComponent::CellComponent.new(label: t("member.clusters.nodes.#{key}")) do %>
+      <%= render "member/monitoring/cluster_nodes/usage", percent: cluster_usage_percent(used, capacity) %>
+    <% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.clusters.nodes.col_pods"), mono: true, align: :right)) { node.pods.to_s } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.clusters.nodes.col_age"), mono: true, class: "text-gray-500 dark:text-zinc-400") do %>
+    <% if node.node_created_at %>
+      <span title="<%= l(node.node_created_at, format: :long) %>"><%= time_ago_in_words(node.node_created_at) %></span>
+    <% else %>
+      <span class="text-gray-500 dark:text-zinc-400">—</span>
+    <% end %>
+  <% end %>
+<% end %>

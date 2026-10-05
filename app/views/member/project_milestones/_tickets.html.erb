@@ -1,0 +1,34 @@
+<%# locals: (tickets:, pagination:, closed_count:) %>
+<%# Tickets of the milestone: sortable columns, closed ones in a closed group at the bottom. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="milestone-tickets">
+  <div class="flex items-center gap-2 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100 mr-1"><%= t("member.milestones.show.tickets_title") %></h3>
+    <span class="ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.milestones.show.tickets_count", count: pagination.total) %></span>
+  </div>
+  <% if tickets.empty? %>
+    <div class="px-4 py-12 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="milestone-tickets-empty"><%= t("member.milestones.show.no_tickets") %></div>
+  <% else %>
+    <%= render(Ui::TableComponent.new(stacked: true, grouped: true, label: t("member.milestones.show.tickets_title"))) do |t| %>
+      <% t.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.milestones.show.col_code"), sort: "code", classes: "w-24") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.milestones.show.col_title"), sort: "title") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.milestones.show.col_kind"), sort: "kind", classes: "w-32") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.milestones.show.col_status"), sort: "status", classes: "w-32") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.milestones.show.col_weight"), sort: "weight", initial: :desc, align: :right, classes: "w-20") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.milestones.show.col_assignee"), sort: "assignee", align: :right, classes: "w-28") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+      <% end %>
+      <% group_shown = false %>
+      <% tickets.each do |ticket| %>
+        <% closed = ticket.status&.category_done? %>
+        <% if closed && !group_shown %>
+          <% group_shown = true %>
+          <%= render Ui::TableComponent::GroupRowComponent.new(key: "closed", colspan: t.column_count, collapsed: true,
+                label: t("member.milestones.show.closed_group", count: closed_count), test_id: "milestone-tickets-closed-group") %>
+        <% end %>
+        <%= render "member/project_milestones/ticket_row", ticket: ticket, hidden: closed %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%= render(Ui::PaginationComponent.new(pagination: pagination, test_id: "milestone-tickets-pagination")) %>
+</div>

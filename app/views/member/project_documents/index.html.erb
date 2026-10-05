@@ -1,0 +1,60 @@
+<% content_for :title, t("member.documents.title") %>
+<% can_manage = can?("documents.manage", scope: @project) %>
+
+<div class="p-7 space-y-6" data-test="project-documents">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "documents" %>
+
+  <%# CYRA-924 — one upload controller around the panel: the button sits beside the title (T5), files
+      drop on the list. The bar inside the panel holds only search, filters and View (C63). %>
+  <%= tag.div data: { test: "documents-table" }.merge(can_manage ? {
+        controller: "attachment-upload",
+        attachment_upload_selected_value: t("member.documents.upload.selected"),
+        attachment_upload_uploading_value: t("member.documents.upload.uploading") } : {}) do %>
+    <% drop_target = can_manage && @documents.any? %>
+    <%= tag.div class: "rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900", data: { test: "documents-list" }.merge(drop_target ? {
+          attachment_upload_target: "zone",
+          action: "dragover->attachment-upload#dragover dragleave->attachment-upload#dragleave drop->attachment-upload#drop" } : {}) do %>
+      <%# T1 — title, count and upload head the panel: nothing sits outside a panel. %>
+      <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-stone-200 dark:border-zinc-800" data-test="documents-heading">
+        <div class="flex items-baseline gap-2 min-w-0">
+          <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.documents.title") %></h2>
+          <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 whitespace-nowrap" data-test="documents-count"><%= count_label("member.documents.count", @pagination.total) %></span>
+        </div>
+        <% if can_manage %><%= render "upload_button", project: @project %><% end %>
+      </div>
+      <%= render(Ui::TableToolbarComponent.new(framed: true,
+            url: member_project_documents_path(@project), query: params[:q],
+            search_placeholder: t("member.documents.search_placeholder"),
+            apply_label: t("member.documents.apply"),
+            search_test_id: "documents-search", apply_test_id: "documents-filter", test_id: "documents-toolbar")) do |toolbar| %>
+        <% toolbar.with_filter(key: "tag", label: t("member.documents.filter_tag")) do %>
+          <div class="w-40"><%= render Ui::SelectComponent.new(name: "tag", multiple: true, summary: true, options: @tag_options.map { |tag| [ tag, tag ] }, selected: params[:tag], placeholder: t("member.documents.filter_tag"), test_id: "filter-tag") %></div>
+        <% end %>
+        <% toolbar.with_views do %>
+          <%# String keys, as in FILTER_KEYS: project_id comes from the nested path and is saved as the parent key. %>
+          <%= render Ui::SavedViewsComponent.new(resource_type: "documents", views: @saved_views,
+                index_helper: :member_project_documents_path,
+                current_filters: params.permit(:q, :project_id, tag: []).to_h) %>
+        <% end %>
+      <% end %>
+      <% if @documents.empty? %>
+        <%= render "empty_state", can_manage: can_manage %>
+      <% else %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.documents.title"))) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.documents.col_title"), sort: "title") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.documents.col_type"), sort: "type", classes: "w-24") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.documents.col_size"), sort: "size", initial: :desc, classes: "w-28") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.documents.col_tags")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.documents.col_uploaded"), sort: "uploaded", initial: :desc, classes: "w-44") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.documents.download"), label_hidden: true, classes: "w-28") %>
+          <% end %>
+          <% @documents.each do |document| %>
+            <%= render "document_row", project: @project, document: document, can_manage: can_manage %>
+          <% end %>
+        <% end %>
+        <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "documents-pagination")) %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

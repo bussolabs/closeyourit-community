@@ -1,0 +1,186 @@
+<% content_for :title, t("member.knowledge.title") %>
+
+<div class="p-7 space-y-6" data-test="member-knowledge">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.knowledge.title"),
+        subtitle: t("member.knowledge.help_title"),
+        breadcrumb: [ { label: t("member.knowledge.title") } ],
+        counts_test_id: "knowledge-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.stats.pages"), value: @total_pages, test_id: "knowledge-count-pages") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.stats.decisions"), value: @decisions_count, value_color: :violet, test_id: "knowledge-count-decisions") %>
+      <%# Chip presente solo quando c'è qualcosa da sistemare: "0 senza versione semplice" sarebbe rumore. %>
+      <% if @without_simple_count.positive? %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.stats.without_simple"), value: @without_simple_count, value_color: :amber, test_id: "knowledge-count-without-simple") %>
+      <% end %>
+      <%# CYRA-768 — quante pagine hanno passato la data di rilettura. Come i due chip qui sopra,
+          compare solo se ce n'è almeno una: «0 da rivedere» sarebbe rumore. %>
+      <% if @needs_review_count.positive? %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.stats.needs_review"), value: @needs_review_count, value_color: :amber, test_id: "knowledge-count-needs-review") %>
+      <% end %>
+      <%# CYRA-419: quante pagine le ha scritte un assistente. Chip solo se ce ne sono: «0 scritte da
+          un assistente» sarebbe rumore, come quello sopra. %>
+      <% if @written_by_agent_count.positive? %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.stats.written_by_agent"), value: @written_by_agent_count, value_color: :indigo, test_id: "knowledge-count-agent") %>
+      <% end %>
+    <% end %>
+    <%# Creare = baseline di chi vede lo scope (come i ticket): nessun gate qui. %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.knowledge.books.title"), href: member_knowledge_books_path, variant: :secondary_muted, size: :sm, icon: "book", test_id: "knowledge-books-link") %>
+      <%= render Ui::ButtonComponent.new(label: t("member.knowledge.ask.title"), href: ask_member_knowledge_pages_path, variant: :secondary_muted, size: :sm, icon: "wand-sparkles", test_id: "knowledge-ask-link") %>
+      <%= render Ui::ButtonComponent.new(label: t("member.knowledge.new"), href: new_member_knowledge_page_path, variant: :primary, size: :sm, icon: "plus", test_id: "knowledge-new") %>
+    <% end %>
+  <% end %>
+
+  <div data-test="knowledge-table">
+    <%# count = totale complessivo (@total_pages), non i risultati filtrati: la toolbar sta fuori dal
+        turbo-frame e non si aggiorna via Turbo — un numero filtrato qui resterebbe fermo e mentirebbe.
+        Il conteggio dei risultati vive nella paginazione, dentro il frame. %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <%= render(Ui::TableToolbarComponent.new(framed: true,
+            url: member_knowledge_pages_path, query: params[:q],
+            search_placeholder: t("member.knowledge.search_placeholder"),
+            apply_label: t("member.knowledge.apply"),
+            search_test_id: "knowledge-search", apply_test_id: "knowledge-filter", test_id: "knowledge-toolbar",
+            results_frame: "knowledge-results", semantic_search: true, semantic_selectable: true, search_submit_test_id: "knowledge-search-submit")) do |toolbar| %>
+        <% toolbar.with_filter(key: "kind", label: t("member.knowledge.filter_kind")) do %>
+          <div class="w-36"><%= render Ui::SelectComponent.new(name: "kind", multiple: true, summary: true, options: ::Knowledge::Page.kinds.keys.map { |k| [ t("member.knowledge.kind.#{k}"), k ] }, selected: params[:kind], placeholder: t("member.knowledge.filter_kind"), test_id: "filter-kind") %></div>
+        <% end %>
+        <% toolbar.with_filter(key: "project_id", label: t("member.knowledge.filter_project")) do %>
+          <div class="w-40"><%= render Ui::SelectComponent.new(name: "project_id", multiple: true, summary: true, options: @filter_projects.map { |p| [ p.name, p.id ] }, selected: params[:project_id], placeholder: t("member.knowledge.filter_project"), test_id: "filter-project") %></div>
+        <% end %>
+        <% toolbar.with_filter(key: "tag", label: t("member.knowledge.filter_tag")) do %>
+          <div class="w-40"><%= render Ui::SelectComponent.new(name: "tag", multiple: true, summary: true, options: @tag_options.map { |tag| [ tag, tag ] }, selected: params[:tag], placeholder: t("member.knowledge.filter_tag"), test_id: "filter-tag") %></div>
+        <% end %>
+        <%# CYRA-419 — «Scritta da»: chi vuole rivedere quello che ha scritto la macchina lo isola da
+            qui, senza aprire le pagine una a una. «Non registrata» è l'assenza del dato sulle pagine
+            nate prima, non un terzo tipo di autore. %>
+        <% toolbar.with_filter(key: "author", label: t("member.knowledge.filter_author")) do %>
+          <div class="w-40"><%= render Ui::SelectComponent.new(name: "author", multiple: true, summary: true, options: (::Knowledge::Page.author_kinds.keys + [ ::Knowledge::Page::UNREGISTERED_AUTHOR ]).map { |value| [ t("member.knowledge.author.filter_#{value}"), value ] }, selected: params[:author], placeholder: t("member.knowledge.filter_author"), test_id: "filter-author") %></div>
+        <% end %>
+      <% end %>
+
+      <%# Risultati in place: ricerca/filtri/paginazione/sort aggiornano SOLO questo frame (advance = URL). %>
+      <%= turbo_frame_tag "knowledge-results", data: { turbo_action: "advance" } do %>
+      <% if @semantic_degraded %>
+        <p class="px-4 py-2 text-[11.5px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/15 border-b border-amber-100 dark:border-amber-500/30" data-test="knowledge-semantic-degraded"><%= t("member.knowledge.semantic.degraded_hint") %></p>
+      <% elsif @query.present? %>
+        <%# Modalità in uso dichiarata SOPRA i risultati (CYRA-417 Scenario 2), con il passaggio all'altra
+            modalità in un clic. Esce dal frame (_top) così anche il selettore nella barra si riallinea. %>
+        <div class="px-4 py-2 text-[11.5px] text-gray-600 dark:text-zinc-400 bg-stone-50 dark:bg-zinc-800 border-b border-stone-200 dark:border-zinc-800 flex items-center flex-wrap gap-x-2 gap-y-1" data-test="knowledge-search-mode-banner">
+          <span><%= @semantic_mode ? t("member.knowledge.semantic.using_semantic") : t("member.knowledge.semantic.using_exact") %></span>
+          <%= link_to (@semantic_mode ? t("member.knowledge.semantic.switch_to_exact") : t("member.knowledge.semantic.switch_to_semantic")),
+                member_knowledge_pages_path(request.query_parameters.except("page").merge(semantic: @semantic_mode ? "0" : "1")),
+                class: "font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 underline underline-offset-2",
+                data: { turbo_frame: "_top", test: "knowledge-search-mode-switch" } %>
+        </div>
+      <% end %>
+
+      <% if @pages.empty? %>
+        <% if @filtering %>
+          <%# Stato "nessun risultato" (CYRA-412): la KB NON è vuota, la ricerca/i filtri non hanno
+              prodotto match. Distinto dall'empty di primo accesso — mai dire "vuota" — con il totale
+              complessivo e le vie d'uscita (azzera, chiedi alla KB, crea con quel titolo).
+              turbo_frame: _top su tutte le azioni: escono dal frame knowledge-results (azzera deve
+              ricaricare anche la barra di ricerca; chiedi/crea navigano a un'altra pagina). %>
+          <%= render Ui::NoResultsComponent.new(query: @query.presence, reset_href: member_knowledge_pages_path,
+                title: @query.present? ? t("member.knowledge.no_results.title", query: @query) : t("member.knowledge.no_results.title_filtered"),
+                body: t("member.knowledge.no_results.body", count: @total_pages),
+                reset_label: t("member.knowledge.no_results.clear"), reset_test_id: "knowledge-no-results-clear",
+                reset_data: { turbo_frame: "_top" }, test_id: "knowledge-no-results") do |no| %>
+            <% if @query.present? %>
+              <% no.with_action do %>
+                <%= render Ui::ButtonComponent.new(label: t("member.knowledge.no_results.ask"), href: ask_member_knowledge_pages_path(q: @query), variant: :secondary_muted, size: :sm, icon: "wand-sparkles", test_id: "knowledge-no-results-ask", data: { turbo_frame: "_top" }) %>
+              <% end %>
+              <% no.with_action do %>
+                <%= render Ui::ButtonComponent.new(label: t("member.knowledge.no_results.create", query: @query), href: new_member_knowledge_page_path(title: @query), variant: :secondary_muted, size: :sm, icon: "plus", test_id: "knowledge-no-results-create", data: { turbo_frame: "_top" }) %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% else %>
+          <%= render Ui::EmptyStateComponent.new(title: t("member.knowledge.empty"), body: t("member.knowledge.empty_body"),
+                icon: "book-open", test_id: "knowledge-empty") %>
+        <% end %>
+      <% else %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.knowledge.title"))) do |table| %>
+          <% table.with_head do %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.col_title"), sort: "title") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.col_kind"), sort: "kind") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.col_projects")) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.col_tags")) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.col_author"), sort: "author") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.knowledge.col_updated"), sort: "updated", initial: :desc, align: :right) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+          <% end %>
+              <% @pages.each do |page| %>
+                <%= render Ui::TableComponent::RowComponent.new(href: member_knowledge_page_path(page), link_label: page.title, frame: "_top", test_id: "knowledge-row") do %>
+                  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+                    <%= link_to page.title, member_knowledge_page_path(page), class: "text-[13px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 min-w-[240px] max-w-[420px] line-clamp-2", title: page.title, data: { turbo_frame: "_top" } %>
+                  <% end %>
+                  <%= render Ui::TableComponent::CellComponent.new(label: t("member.knowledge.col_kind"), test_id: "knowledge-kind-cell") do %>
+                    <span class="inline-flex items-center flex-wrap gap-1">
+                      <%= render Ui::BadgeComponent.new(label: t("member.knowledge.kind.#{page.kind}"), color: knowledge_kind_color(page.kind), dot: true) %>
+                      <%# CYRA-419 — il segno resta accanto al tipo anche dopo l'accettazione: chi
+                          scorre l'elenco vede subito quali testi non li ha scritti una persona. %>
+                      <% if page.written_by_agent? %>
+                        <%= render Ui::BadgeComponent.new(label: t("member.knowledge.author.agent_short"), color: :indigo, icon: "bot", test_id: "knowledge-agent-badge", title: t("member.knowledge.author.agent_hint")) %>
+                      <% end %>
+                      <%# CYRA-768 Scenario 2 — la pagina oltre la data di rilettura resta in elenco e
+                          in ricerca, marcata: nasconderla farebbe sparire l'unica traccia di come
+                          funzionava una cosa, e chi la cerca non saprebbe nemmeno che esisteva. %>
+                      <% if page.needs_review? %>
+                        <%= render Ui::BadgeComponent.new(label: t("member.knowledge.needs_review.short"), color: :amber, icon: "history", test_id: "knowledge-needs-review-badge", title: t("member.knowledge.needs_review.hint")) %>
+                      <% end %>
+                    </span>
+                  <% end %>
+                  <%= render Ui::TableComponent::CellComponent.new(label: t("member.knowledge.col_projects")) do %>
+                    <%# Anti-leak: solo i progetti/gruppi visibili all'utente (Set precaricati nel controller). %>
+                    <% visible_projects = page.projects.select { |project| @visible_project_ids.include?(project.id) } %>
+                    <% visible_groups = page.groups.select { |group| @visible_group_ids.include?(group.id) } %>
+                    <% if visible_projects.any? || visible_groups.any? %>
+                      <span class="inline-flex items-center flex-wrap gap-x-2 gap-y-1">
+                        <% visible_projects.each do |project| %>
+                          <span class="inline-flex items-center gap-1.5 text-[12.5px] text-gray-500 dark:text-zinc-400"><span class="w-2 h-2 rounded-[2px] <%= Ui::Colors.swatch(project.color) %>"></span><%= project.name %></span>
+                        <% end %>
+                        <% visible_groups.each do |group| %>
+                          <span class="inline-flex items-center gap-1.5 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= render Ui::IconComponent.new(name: "layers", class: "text-[10px]") %><%= group.name %></span>
+                        <% end %>
+                      </span>
+                    <% else %>
+                      <span class="text-[12px] text-gray-400 dark:text-zinc-500 italic"><%= t("member.knowledge.org_wide") %></span>
+                    <% end %>
+                  <% end %>
+                  <%= render Ui::TableComponent::CellComponent.new(label: t("member.knowledge.col_tags")) do %>
+                    <% if page.tags.any? %>
+                      <span class="inline-flex items-center flex-wrap gap-1">
+                        <% page.tags.each do |tag| %>
+                          <span class="inline-flex items-center px-1.5 h-5 rounded bg-stone-100 dark:bg-zinc-800 font-mono text-[10.5px] text-zinc-600 dark:text-zinc-400 whitespace-nowrap"><%= tag %></span>
+                        <% end %>
+                      </span>
+                    <% else %>
+                      <span class="text-gray-400 dark:text-zinc-500">—</span>
+                    <% end %>
+                  <% end %>
+                  <%# CYRA-419 — la colonna diceva il nome della persona anche quando il testo l'aveva
+                      scritto un assistente col suo accesso: era la firma sbagliata. Ora dice chi ha
+                      scritto, e sotto di chi era l'accesso usato. %>
+                  <%= render Ui::TableComponent::CellComponent.new(label: t("member.knowledge.col_author"), test_id: "knowledge-author-cell") do %>
+                    <% if page.written_by_agent? %>
+                      <span class="inline-flex items-center gap-1.5 text-[12.5px] text-zinc-900 dark:text-zinc-100"><span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[9px]"><%= render Ui::IconComponent.new(name: "bot") %></span><%= page.author_origin.present? ? t("member.knowledge.author.agent_short_with_origin", origin: page.author_origin) : t("member.knowledge.author.agent_short") %></span>
+                      <span class="block mt-0.5 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.author.on_behalf_of", account: page.created_by.name) %></span>
+                    <% else %>
+                      <span class="inline-flex items-center gap-1.5 text-[12.5px] text-gray-500 dark:text-zinc-400"><span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-teal-50 dark:bg-teal-500/15 text-teal-600 dark:text-teal-400 text-[9px] font-semibold"><%= avatar_initials(page.created_by.name) %></span><%= page.created_by.name %></span>
+                    <% end %>
+                  <% end %>
+                  <%= render Ui::TableComponent::CellComponent.new(label: t("member.knowledge.col_updated"), align: :right) do %>
+                    <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= l(page.updated_at.to_date) %></span>
+                  <% end %>
+                <% end %>
+              <% end %>
+        <% end %>
+      <% end %>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "knowledge-pagination")) %>
+      <% end %>
+    </div>
+  </div>
+</div>

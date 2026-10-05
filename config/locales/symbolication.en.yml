@@ -1,0 +1,52 @@
+---
+en:
+  member:
+    symbolication:
+      view: Stack view
+      source: Original source
+      reconstructed: Reconstructed stack
+      received: Received stack
+      refresh: Refresh
+      immutable: The received stack, event and grouping remain unchanged.
+      no_frames: No frames are available for reconstruction.
+      unknown_function: Original function unavailable
+      mapped_name: 'Mapped name: %{name}'
+      received_line: 'Received: %{value}'
+      ambiguous:
+        one: "%{count} possible reconstruction. No alternative has been selected."
+        other: "%{count} possible reconstructions. No alternative has been selected."
+      alternative: Alternative %{number}
+      removed: The mapping removes this synthetic frame.
+      upload_help: Upload the matching build mapping
+      build_hint: Use the CLI with the exact project, release and build identity.
+        Uploaded mappings remain private.
+      status:
+        pending: Reconstruction is pending. The received stack is available.
+        resolved: Reconstruction available
+        partial: Partial reconstruction. Unmapped and ambiguous frames are identified
+          below.
+        unresolved: Reconstruction unavailable
+      reason:
+        missing_artifact: No matching mapping has been uploaded.
+        missing_build_identity: The event is missing the required build identity.
+        identity_mismatch: The uploaded mapping belongs to a different build.
+        unsupported_stack: This stack cannot be reconstructed with the supported profile.
+        processing_rejected: The processor rejected this stack. Check the mapping
+          and the received evidence.
+        processing_unavailable: The processor is unavailable. Refresh to check the
+          next attempt.
+        artifact_deleted: The mapping has been deleted or expired.
+        symbolication_budget: This stack exceeds the reconstruction limits. The received
+          stack is still available.
+        symbolication_response_budget: Reconstructed data exceeds the page limit.
+          Select fewer occurrences.
+        unmapped: This frame has no matching source position.
+        missing_position: This frame has no usable source coordinates.
+        unsupported: This frame format is not supported.
+        artifact_budget: The mapping exceeds the reconstruction limits.
+        unavailable: No reconstruction is available for this frame.
+      more:
+        one: "%{count} more group"
+        other: "%{count} more groups"
+      inline: "%{count} frames reconstructed from one received frame"
+      unchanged: Unchanged by the mapping

@@ -1,0 +1,52 @@
+<%
+  # Frame email condiviso (engineering-paper): header ink + wordmark, riga d'accento semantica,
+  # card carta, footer. Il corpo della singola mail arriva via yield. CSS inline: i client email
+  # strippano classi e <style>. Accento: content_for(:accent) (hex) o indigo di default.
+  accent = content_for?(:accent) ? content_for(:accent).to_s.strip : MailerHelper::MAIL_ACCENT
+%><!doctype html>
+<html lang="<%= I18n.locale %>">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="color-scheme" content="light">
+</head>
+<body style="margin:0;padding:0;background-color:<%= MailerHelper::MAIL_CANVAS %>;-webkit-font-smoothing:antialiased;">
+  <% if content_for?(:preheader) %>
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;font-size:1px;line-height:1px;color:<%= MailerHelper::MAIL_CANVAS %>;"><%= content_for(:preheader) %></div>
+  <% end %>
+  <center style="width:100%;background-color:<%= MailerHelper::MAIL_CANVAS %>;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:<%= MailerHelper::MAIL_CANVAS %>;">
+      <tr><td align="center" style="padding:28px 16px;">
+
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background-color:<%= MailerHelper::MAIL_CARD %>;border:1px solid <%= MailerHelper::MAIL_BORDER %>;border-radius:12px;overflow:hidden;">
+
+          <!-- header ink + wordmark -->
+          <tr><td style="background-color:<%= MailerHelper::MAIL_INK %>;padding:18px 28px;">
+            <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+              <td style="vertical-align:middle;padding-right:10px;">
+                <table role="presentation" cellpadding="0" cellspacing="0"><tr><td align="center" valign="middle" style="width:26px;height:26px;background-color:rgba(255,255,255,0.10);border-radius:6px;font-family:<%= MailerHelper::FONT_MONO %>;font-size:12px;font-weight:600;color:#818cf8;">&gt;_</td></tr></table>
+              </td>
+              <td style="vertical-align:middle;font-family:<%= MailerHelper::FONT_DISPLAY %>;font-size:15px;font-weight:600;letter-spacing:0.2px;color:<%= MailerHelper::MAIL_CANVAS %>;">CloseYourIt</td>
+            </tr></table>
+          </td></tr>
+
+          <!-- riga d'accento semantica -->
+          <tr><td style="height:2px;background-color:<%= accent %>;line-height:2px;font-size:0;">&nbsp;</td></tr>
+
+          <!-- corpo della singola mail -->
+          <tr><td style="padding:32px 28px 8px 28px;"><%= yield %></td></tr>
+
+          <!-- footer -->
+          <tr><td style="padding:20px 28px;background-color:<%= MailerHelper::MAIL_SUBTLE %>;border-top:1px solid <%= MailerHelper::MAIL_BORDER %>;">
+            <p style="margin:0;font-family:<%= MailerHelper::FONT_MONO %>;font-size:10px;letter-spacing:0.3px;color:<%= MailerHelper::MAIL_MUTED %>;">CloseYourIt · <%= t("mailer.shared.tagline") %></p>
+            <p style="margin:6px 0 0 0;font-family:<%= MailerHelper::FONT_SANS %>;font-size:11px;line-height:1.5;color:<%= MailerHelper::MAIL_MUTED %>;"><%= t("mailer.shared.footer_note") %></p>
+          </td></tr>
+
+        </table>
+
+      </td></tr>
+    </table>
+  </center>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+  <%= render(Ui::TableComponent.new(stacked: true, grouped: true)) do |t| %>
+    <% t.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: "Monitor") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: "Uptime", align: :right) %>
+    <% end %>
+    <% { "Public APIs" => [ [ "api.example.com", "99.98%" ] ], "Closed" => [ [ "old.example.com", "—" ] ] }.each do |group, monitors| %>
+      <% collapsed = group == "Closed" %>
+      <%= render Ui::TableComponent::GroupRowComponent.new(key: group, label: group, count: monitors.size, colspan: t.column_count, collapsed: collapsed) %>
+      <% monitors.each do |name, uptime| %>
+        <%= render Ui::TableComponent::RowComponent.new(group: group, hidden: collapsed) do %>
+          <%= render(Ui::TableComponent::CellComponent.new(header: true)) { name } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: "Uptime", align: :right, mono: true)) { uptime } %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

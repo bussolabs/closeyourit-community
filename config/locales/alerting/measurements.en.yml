@@ -1,0 +1,24 @@
+en:
+  alerting:
+    measurements:
+      statistics:
+        last: Latest value
+        min: Minimum
+        max: Maximum
+        sum: Sum
+        rate: Rate
+        count: Count
+        percentile: Estimated percentile
+    content:
+      measurement_threshold:
+        title: "Measurement threshold · %{name}"
+        body: "%{statistic}: %{value} %{unit}."
+  member:
+    alerting:
+      event_types:
+        measurement_threshold: Measurement threshold
+    notifications:
+      catalog:
+        measurement_threshold:
+          title: Measurement threshold
+          description: A measured value crossed an exact series threshold.

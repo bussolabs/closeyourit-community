@@ -1,0 +1,13 @@
+<div class="rounded-lg border border-red-200 dark:border-red-500/40 bg-white dark:bg-zinc-900" data-test="github-danger-zone">
+  <div class="px-4 py-3 border-b border-red-200 dark:border-red-500/40">
+    <h2 class="font-display text-[14px] font-semibold text-red-600 dark:text-red-400"><%= t("member.project_github.disconnect_title") %></h2>
+  </div>
+  <div class="px-4 py-4 space-y-3">
+    <p class="text-[12.5px] text-gray-500 dark:text-zinc-400 leading-relaxed"><%= t("member.project_github.disconnect_desc") %></p>
+    <%= button_to member_project_github_path(@project), method: :delete,
+          class: "inline-flex items-center justify-center gap-[7px] h-[34px] px-3.5 rounded-md text-[12.5px] bg-red-600 text-white font-semibold hover:bg-red-700",
+          data: { test: "github-disconnect", turbo_confirm: t("member.project_github.disconnect_confirm") } do %>
+      <%= render Ui::IconComponent.new(name: "unlink", class: "text-[12px]") %><%= t("member.project_github.disconnect") %>
+    <% end %>
+  </div>
+</div>

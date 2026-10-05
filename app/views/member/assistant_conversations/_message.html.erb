@@ -1,0 +1,52 @@
+<%# Bolla di un messaggio della chat con l'assistente. Gli id servono al broadcast dello streaming:
+    il job appende i delta al contenitore "_body", poi rimpiazza l'intera bolla alla fine. Utente a
+    destra (grigio neutro), assistente a sinistra (carta con bordo); i link interni sono resi in indigo. %>
+<%# `reconcile`: solo la bolla assistant ancora in streaming si auto-riconcilia col server (fallback se
+    il broadcast finale si perde). data-status permette allo Stimulus di capire quando è finalizzata.
+    A spoken user bubble still transcribing reconciles the same way (CYRA-908). %>
+<% reconcile = (message.role_assistant? && message.status_streaming?) || message.status_transcribing? %>
+<div id="<%= dom_id(message) %>" data-test="assistant-message" data-role="<%= message.role %>" data-status="<%= message.status %>"
+     <% if reconcile %>data-controller="ui--assistant-reconcile" data-ui--assistant-reconcile-url-value="<%= member_assistant_conversation_message_path(message.conversation, message) %>"<% end %>
+     class="flex flex-col gap-1 max-w-[88%] <%= message.role_user? ? "items-end self-end" : "self-start" %>">
+  <% time = capture do %>
+    <time data-test="assistant-message-time" datetime="<%= message.created_at.iso8601 %>"
+          class="font-mono text-[10.5px] text-gray-400 dark:text-zinc-500"><%= l(message.created_at, format: "%H:%M") %></time>
+  <% end %>
+  <% unless message.role_user? %>
+    <span data-test="assistant-message-label" class="flex items-center gap-1.5 text-[11px] font-medium text-gray-500 dark:text-zinc-400">
+      <%= render Ui::IconComponent.new(name: "wand-sparkles", class: "text-[10px] text-indigo-500 dark:text-indigo-400") %>
+      <%= t("member.assistant.panel.title") %> <%= time %>
+    </span>
+  <% end %>
+
+  <%# Le classi `[&_…]` stilano quello che il markdown produce dentro la bolla (CYRA-261): il modello
+      risponde per elenchi, e un <ul> senza pallini né rientro si legge peggio del trattino di prima. %>
+  <div id="<%= dom_id(message) %>_body" data-test="assistant-message-body"
+       class="text-[13.5px] leading-relaxed rounded-xl px-3 py-2 [&_p]:mb-2 [&_p:last-child]:mb-0
+         [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-4 [&_ol]:pl-4 [&_li]:my-0.5 [&_ul]:mb-2 [&_ol]:mb-2
+         [&_strong]:font-semibold [&_code]:font-mono [&_code]:text-[0.92em] [&_code]:bg-stone-100 dark:[&_code]:bg-zinc-800
+         [&_code]:rounded [&_code]:px-1 [&_pre]:bg-stone-100 dark:[&_pre]:bg-zinc-800 [&_pre]:rounded-md [&_pre]:p-2 [&_pre]:overflow-x-auto
+         <%= message.role_user? ?
+         "bg-gray-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-br-sm" :
+         "bg-stone-50 dark:bg-zinc-800 text-gray-800 dark:text-zinc-200 border border-stone-200 dark:border-zinc-800 rounded-bl-sm [&_a]:font-semibold [&_a]:text-indigo-600 dark:[&_a]:text-indigo-400 [&_a]:underline [&_a]:decoration-indigo-200 dark:[&_a]:decoration-indigo-500/60 [&_a]:underline-offset-2 hover:[&_a]:decoration-indigo-500 dark:hover:[&_a]:decoration-indigo-400" %>">
+    <%= assistant_message_html(message) %>
+  </div>
+
+  <% if message.role_assistant? && message.proposals.any? %>
+    <%= render "member/assistant_conversations/proposals", message: message %>
+  <% end %>
+
+  <% if message.role_user? %><%= time %><% end %>
+
+  <% if message.role_user? && message.transcribed? && message.status_complete? %>
+    <%= render Ui::ButtonComponent.new(label: t("member.assistant.voice.correct"), variant: :ghost, size: :sm,
+                                       icon: "pen", test_id: "assistant-correct",
+                                       data: { action: "ui--assistant#correct", "ui--assistant-text-param": message.content,
+                                               "ui--assistant-message-id-param": message.id }) %>
+  <% end %>
+
+  <% if message.status_streaming? %>
+    <span class="px-2 text-[12px] tracking-[0.2em] text-gray-400 dark:text-zinc-500 motion-safe:animate-pulse"
+          data-test="assistant-typing" aria-label="<%= t("member.assistant.panel.title") %>">•••</span>
+  <% end %>
+</div>

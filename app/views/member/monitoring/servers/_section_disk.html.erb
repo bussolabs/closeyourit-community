@@ -1,0 +1,59 @@
+<%# locals: host:, last_sample:, buckets:, range:, threshold:, total_bytes: — CYRA-703.
+    Grafico dello spazio, elenco dei filesystem (spostato qui da Dettagli, dove nessuno lo cercava)
+    e le misure di LENTEZZA, che non comparivano da nessuna parte: un disco al 17% può essere
+    saturo di richieste e far sembrare ferma tutta la macchina.
+    Le attese sono millisecondi, non percentuali: la barra le rapporta a 20 ms, oltre i quali un
+    disco a stato solido è comunque in sofferenza. %>
+<% io = server_disk_io(last_sample) %>
+<% filesystems = server_filesystems(host, last_sample) %>
+<% await_scale = 20.0 %>
+<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-section-disk">
+  <div class="px-5 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3 flex-wrap">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.show.section_disk") %></h2>
+    <%= render "member/monitoring/servers/range_selector", host: host, range: range, buckets: buckets, note: false %>
+  </div>
+  <div class="grid grid-cols-1 gap-5 px-5 py-5">
+    <%= render "member/monitoring/servers/chart", host: host, metric: :disk,
+          label: t("member.servers.show.chart_disk"), buckets: buckets, range: range,
+          threshold: threshold, total_bytes: total_bytes, last_sample: last_sample %>
+    <% if io %>
+      <div data-test="server-disk-io">
+        <p class="font-mono text-[10px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.disk_io") %></p>
+        <div class="mt-2.5 space-y-1.5">
+          <%= render Ui::MeterComponent.new(label: t("member.servers.show.disk_util"),
+                value_text: server_pct_text(io[:util_pct]), pct: io[:util_pct],
+                color: server_meter_color(io[:util_pct])) %>
+          <%= render Ui::MeterComponent.new(label: t("member.servers.show.disk_read_wait"),
+                value_text: "#{format('%.3g', io[:r_await_ms])} ms",
+                pct: (io[:r_await_ms] / await_scale) * 100, color: :indigo) %>
+          <%= render Ui::MeterComponent.new(label: t("member.servers.show.disk_write_wait"),
+                value_text: "#{format('%.3g', io[:w_await_ms])} ms",
+                pct: (io[:w_await_ms] / await_scale) * 100, color: :indigo) %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <% if filesystems.any? %>
+    <div class="px-5 pb-5" data-test="server-disks">
+      <p class="font-mono text-[10px] uppercase tracking-[1px] text-gray-400 dark:text-zinc-500"><%= t("member.servers.show.disks") %></p>
+      <% filesystems.each do |fs| %>
+        <div class="mt-1.5 flex items-baseline justify-between gap-3" data-test="server-disk">
+          <dt class="font-mono text-[10px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 shrink-0 truncate">
+            <%= fs[:name] %><% if fs[:root] %> <span class="text-gray-400 dark:text-zinc-500 normal-case tracking-normal"><%= t("member.servers.show.disk_charted") %></span><% end %>
+          </dt>
+          <dd class="font-mono text-[11.5px] text-right">
+            <span class="<%= server_pct_color(fs[:pct]) %>"><%= server_filesystem_free_text(fs) %></span>
+            <%# CYRA-515 — gli inode DI QUESTO mount, accanto al suo spazio: si esauriscono a disco
+                ancora libero, e l'avviso che scatta nomina il mount. %>
+            <% if fs[:inode_pct] %>
+              <span class="block text-[10.5px] <%= server_pct_color(fs[:inode_pct]) %>" data-test="server-disk-inodes">
+                <%= t("member.servers.show.disk_inodes", pct: server_pct_text(fs[:inode_pct])) %>
+              </span>
+            <% end %>
+          </dd>
+        </div>
+      <% end %>
+      <p class="mt-1.5 text-[10px] text-gray-400 dark:text-zinc-500"><%= t("member.servers.show.disks_hint") %></p>
+    </div>
+  <% end %>
+</section>

@@ -1,0 +1,8 @@
+<% if ticket.files_attachments.any? %>
+  <span class="inline-flex shrink-0 items-center text-gray-500 dark:text-zinc-400"
+        title="<%= t('member.tickets.attachments.indicator') %>"
+        aria-label="<%= t('member.tickets.attachments.indicator') %>"
+        data-test="ticket-attachments-indicator-<%= ticket.id %>">
+    <%= render Ui::IconComponent.new(name: "paperclip", class: "text-[10px]") %>
+  </span>
+<% end %>

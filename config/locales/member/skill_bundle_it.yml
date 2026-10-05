@@ -1,0 +1,42 @@
+---
+it:
+  member:
+    skill_bundle:
+      title: Skill bundle
+      pinned: Versione fissata
+      unpinned: Nessuna versione fissata
+      version: Versione
+      current_title: Versione fissata
+      updated_at: "Aggiornato il %{when}"
+      conformance:
+        title: Che versione sta usando ogni macchina
+        hint: "Una riga per macchina: la versione fissata qui, quella che la macchina dichiara di usare e se combaciano."
+        col_host: Macchina
+        col_expected: Versione attesa
+        col_actual: Versione in uso
+        col_state: Stato
+        aligned: Allineata
+        mismatched: Non allineata
+        unknown: Non dichiarata
+        unknown_hint: "«Non dichiarata» vuol dire che la macchina non dice quale versione sta usando: non è un disallineamento."
+        empty: Nessuna macchina registrata, quindi niente da confrontare.
+        stat_aligned: Allineate
+        stat_mismatched: Non allineate
+        stat_unknown: Non dichiarate
+      empty: Nessun bundle pinnato
+      empty_body: "Senza pin gli host restano in modalità prompt (il vecchio metodo). Pinna repo, ref, versione e digest per attivare le skill versionate."
+      form_title: Override manuale
+      form_hint: "Normalmente lo aggiorna la CI di closeyourit-skills alla pubblicazione. Modifica qui solo se devi forzare una versione."
+      save: Salva versione
+      saved: Skill bundle aggiornato.
+      form:
+        repo: Repository
+        repo_hint: "owner/repo, es. bussolabs/closeyourit-skills"
+        ref: Ref
+        ref_hint: "tag o SHA da clonare, es. v0.1.0"
+        version: Versione
+        version_hint: "nome directory del plugin, es. 0.1.0"
+        digest: Digest
+        digest_hint: "SHA del commit atteso (7–64 hex), verificato dopo il clone"
+        force: Consenti il rollback a una versione più vecchia
+        force_hint: "Bypassa il controllo anti-downgrade. Spunta solo per tornare di proposito a una versione precedente."

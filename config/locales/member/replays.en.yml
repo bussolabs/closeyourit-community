@@ -1,0 +1,57 @@
+en:
+  member:
+    nav:
+      # CYRA-356 — the entry read «Replays» and opened a page titled «Session replay»: two names for
+      # the same thing. The function name wins, the one also used in project settings and on the site.
+      #
+      # CYRA-584 — the canonical name is followed by the word people actually SEARCH for. «Session
+      # replay» is the name the glossary wants, but it contains none of the words one has in mind
+      # («recordings», «visits», «how people move»): whoever looked for it read the whole menu with
+      # nothing to latch onto. The qualifier renames nothing — page title, project settings and the
+      # site still say «Session replay».
+      #
+      # The separator is the interpunct, the one «Valhalla · God mode» already uses: the entry fits in
+      # 180 px and the em dash version measures 178.5 (Inter 12.5 px), a margin the first fallback font
+      # eats — truncating exactly the word people search for. See the Italian file for the numbers.
+      replays: Session replay · recordings
+    monitoring:
+      replays:
+        title: Session replay
+        help_title: "Recorded visits: how users move around, with their errors."
+        count_label: Sessions
+        count:
+          one: 1 session
+          other: "%{count} sessions"
+        session_label: Session
+        session_named: "Session · %{day} %{time}"
+        search_placeholder: Search by entry page…
+        filter_environment: Environment
+        filter_project: Project
+        filter_errors: Errors
+        errors_all: All
+        errors_only: With errors only
+        empty: No recorded sessions
+        empty_body: Sessions appear here when a project with session replay enabled receives user traffic.
+        empty_activate_intro: "Recording is turned on project by project, from its settings: no code changes."
+        empty_activate_on: "Turn on for %{project}"
+        empty_active_on: "Already on for: %{projects}."
+        empty_no_web: "None of the projects you can see declares a web platform. Sessions are recorded only there: declare it on the project and the switch shows up in its settings."
+        empty_ask_admin: You can see these projects but not change their settings. Ask whoever manages them to turn on session recording.
+        empty_guide: How session replay works
+        no_match: No session matches the filters.
+        col_session: Session
+        col_project: Project
+        col_user: User
+        col_entry: Entry page
+        col_errors: Errors
+        user_unknown: Visitor not identified
+        entry_unknown: Entry page not recorded
+        col_duration: Duration
+        col_started: Started
+        pages_count:
+          one: "+1 page"
+          other: "+%{count} pages"
+        details: Details
+        env: Environment
+        pages: Visited pages
+        errors_in_session: Errors in session

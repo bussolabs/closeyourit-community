@@ -1,0 +1,16 @@
+it:
+  agents:
+    # CYRA-675 — riga di servizio a lunghezza FISSA, come quella dei chiarimenti e per lo stesso
+    # motivo: il riassunto dell'agente non ha un tetto e un commento sì. Il riassunto per esteso sta
+    # nella scheda Automazione, i file provati nella cronologia.
+    already_done:
+      service_line: "Chi doveva pianificare ha trovato questo lavoro già fatto nel codice: il ticket si chiude senza pianificare. Cosa ha guardato è nella scheda Automazione."
+    clarifications:
+      ask:
+        # Riga di servizio: ANNUNCIA le domande, non le contiene. Le domande sono righe loro e si
+        # leggono nella scheda Domande — un commento ha un tetto di caratteri e tre domande da
+        # 180 non ci starebbero. La lunghezza qui è parte del contratto: `ask_spec` la verifica in
+        # ogni lingua contro Ticketing::Constants::COMMENT_MAX_CHARS.
+        service_line:
+          one: "Serve una risposta: la domanda è nella scheda Automazione. Rispondi con un commento qui sotto e la lavorazione riprende da sola."
+          other: "Servono risposte: le %{count} domande sono nella scheda Automazione. Rispondi con un commento qui sotto e la lavorazione riprende da sola."

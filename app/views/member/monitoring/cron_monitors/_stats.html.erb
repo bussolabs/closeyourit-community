@@ -1,0 +1,15 @@
+<%# locals: total:, ok_count:, missed_count:, failing_count: — pill di conteggio nell'header lista (anche broadcast via
+    Turbo replace su #crons_stats). Il render iniziale (controller) usa lo scope visibile/filtrato; il
+    broadcast (Crons::Broadcast) ricalcola org-wide (lo stream è condiviso, niente contesto per-viewer:
+    filtri/visibilità) — stessa convenzione di member/monitoring/error_groups/stats. %>
+<%# Wrapper display:contents (CYRA-70): le chip partecipano direttamente al flex del counts slot
+    (mt-2.5 una sola volta dall'header via counts_options) — niente flex annidato = niente mt-5.
+    id + data-test restano per il broadcast Turbo replace su #crons_stats. %>
+<div id="crons_stats" class="contents" data-test="crons-stats">
+  <%= render Ui::StatLabelComponent.new(label: t("member.crons.stat_total"), value: total, test_id: "stat-crons") %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.crons.stat_ok"), value: ok_count, value_color: :emerald, test_id: "stat-crons-ok") %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.crons.stat_missed"), value: missed_count, value_color: :rose, test_id: "stat-crons-missed") %>
+  <%# CYRA-696 — «mancato» e «fallito» sono due guasti diversi: il primo non e' partito, il secondo e'
+      partito ed e' finito male. Contarli insieme li nasconderebbe l'uno dietro l'altro. %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.crons.stat_failing"), value: failing_count, value_color: :rose, test_id: "stat-crons-failing") %>
+</div>

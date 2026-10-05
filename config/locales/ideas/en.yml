@@ -1,0 +1,16 @@
+---
+en:
+  ideas:
+    errors:
+      project_not_found: Project not found
+      invalid: The idea could not be saved
+      comment_invalid: The comment could not be saved
+      comment_too_long: "The comment is over %{count} characters (currently %{actual}): shorten it."
+      case_invalid: The case could not be saved
+      base_not_found: Base idea not found
+      link_invalid: The ideas could not be linked
+      locked: The idea is no longer open
+      already_converted: The idea has already been converted to a ticket
+      invalid_transition: Transition not allowed for this idea
+      ai_unavailable: AI assistant not available right now
+      ai_unreadable: The AI assistant returned an unreadable draft

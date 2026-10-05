@@ -1,0 +1,50 @@
+<%# locals:
+      monitor: (required) — Uptime::Monitor
+      range:   (opt) finestra del bucket-strip (default DEFAULT_RANGE)
+      uptime:  (opt) % uptime già calcolata in batch dal controller (no N+1 in lista)
+      buckets: (opt) blocchi timeline già calcolati in batch dal controller
+      open_since: (opt) { monitor_id => started_at } del guasto in corso, batch dal controller (CYRA-492)
+      causes:  (opt) { monitor_id => text } why each down monitor is failing, batch from the controller (F093)
+      group:   (opt) key of the group row the row belongs to, in the grouped view
+    Su broadcast (RecordCheck) si passa SOLO `monitor:` → uptime/buckets/durata ricalcolati per il singolo
+    monitor sul range di default (lo stream è org-wide, non conosce il range scelto dal viewer). %>
+<% range   = local_assigns.fetch(:range, Uptime::Monitor::DEFAULT_RANGE) %>
+<% uptime  = local_assigns.key?(:uptime)  ? uptime  : Uptime::Monitor.uptime_percents([ monitor.id ], Time.current - Uptime::Monitor.range_duration(range))[monitor.id] %>
+<% buckets = local_assigns.key?(:buckets) ? buckets : (Uptime::Monitor.buckets_for([ monitor.id ], range)[monitor.id] || []) %>
+<%# Inizio del guasto in corso: dal batch del controller, o (broadcast del singolo monitor) dall'incident aperto. %>
+<% down_since = local_assigns.key?(:open_since) ? open_since&.dig(monitor.id) : monitor.open_incident&.started_at %>
+<% recent  = buckets.reverse.find { |bucket| bucket[:avg_ms] } %>
+<%# F093 — the cause of the failure in progress, from the controller's batch (absent on a broadcast row). %>
+<% cause = (local_assigns[:causes] || {})[monitor.id] if down_since %>
+<%= render Ui::TableComponent::RowComponent.new(id: dom_id(monitor), href: member_monitoring_monitor_path(monitor), link_label: monitor.project.name,
+      group: local_assigns[:group], test_id: "monitor-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <%= link_to member_monitoring_monitor_path(monitor), class: "block", data: { test: "monitor-link-#{monitor.id}" } do %>
+      <span class="inline-flex items-center gap-2">
+        <span class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400"><%= monitor.project.name %></span>
+        <%= render Ui::BadgeComponent.new(label: monitor.environment.label, color: monitor.environment.color, dot: true) %>
+      </span>
+      <span class="block font-mono text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5 truncate max-w-[280px]"><%= monitor.target %> · <%= monitor.project.key %></span>
+      <% if cause.present? %>
+        <span class="block font-mono text-[11px] text-red-600 dark:text-red-400 mt-0.5 truncate max-w-[280px]" title="<%= cause %>" data-test="monitor-down-cause"><%= cause %></span>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.uptime.col_status")) do %>
+    <%= render Ui::BadgeComponent.new(label: uptime_status_label(monitor), color: uptime_status_color(monitor), dot: true) %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.uptime.col_uptime", range: range)) do %>
+    <div class="flex items-center justify-end gap-2">
+      <span class="font-mono text-[12px] <%= uptime_percent_color(uptime) %> w-12 text-right shrink-0"><%= uptime_percent_text(uptime) %></span>
+      <span class="inline-flex items-stretch gap-px h-4 w-36" title="<%= range %>" data-test="monitor-strip">
+        <% buckets.each do |bucket| %><span class="flex-1 rounded-sm <%= uptime_bucket_class(bucket[:status]) %>"></span><% end %>
+      </span>
+    </div>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.uptime.col_response"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100") do %>
+    <%= recent ? "#{recent[:avg_ms]}ms" : "—" %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.uptime.col_last_check"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400") do %>
+    <%= uptime_last_cell(monitor, down_since) %>
+  <% end %>
+<% end %>

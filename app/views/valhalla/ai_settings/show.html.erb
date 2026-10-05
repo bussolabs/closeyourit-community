@@ -1,0 +1,28 @@
+<% content_for :title, t("valhalla.ai_settings.title") %>
+
+<div class="p-7">
+  <%= form_with url: valhalla_ai_settings_path, method: :patch, id: "ai-settings-form", class: "space-y-6",
+                data: { test: "valhalla-ai-settings-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("valhalla.ai_settings.title"),
+          breadcrumb: [ { label: t("valhalla.ai_settings.title") } ],
+          root_href: valhalla_root_path) do |h| %>
+      <% h.with_actions do %>
+        <%# The hidden _method=patch comes first in the form: this submitter's _method wins and posts.
+            The answer is a Turbo Stream that fills #ai-checks only, so typed values stay put. %>
+        <%= render Ui::ButtonComponent.new(label: t("valhalla.ai_settings.test"), type: "submit", size: :sm,
+              variant: :secondary_muted, icon: "plug", test_id: "ai-settings-test",
+              formaction: test_valhalla_ai_settings_path, name: "_method", value: "post") %>
+        <%= render Ui::ButtonComponent.new(label: t("valhalla.ai_settings.save"), type: "submit", size: :sm,
+              icon: "check", test_id: "ai-settings-submit") %>
+      <% end %>
+    <% end %>
+
+    <%= render "valhalla/ai_settings/reindex_confirmation", pending_keys: @pending_keys if @confirm_reindex %>
+    <%= render "valhalla/ai_settings/environment_summary", config: Ai::Configuration.build(nil) if @settings.ai_provider.blank? %>
+    <div id="ai-checks"><%= render "valhalla/ai_settings/checks", checks: @checks if @checks %></div>
+    <%= render "valhalla/ai_settings/provider_fields", settings: @settings, errors: @errors %>
+    <%= render "valhalla/ai_settings/rerank_fields", settings: @settings, errors: @errors %>
+    <%= render "valhalla/ai_settings/cap_fields", settings: @settings, errors: @errors %>
+  <% end %>
+</div>

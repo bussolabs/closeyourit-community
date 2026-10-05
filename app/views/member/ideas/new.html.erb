@@ -1,0 +1,8 @@
+<%= render "form",
+      idea: @idea,
+      url: member_ideas_path,
+      method: :post,
+      title: t("member.ideas.form.new_title"),
+      submit_label: t("member.ideas.form.save_new"),
+      locked_project: @locked_project,
+      base: @base %>

@@ -1,0 +1,6 @@
+en:
+  home:
+    deferrals:
+      errors:
+        invalid: "Could not defer this decision"
+        blank_key: "Missing the decision to defer"

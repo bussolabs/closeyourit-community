@@ -1,0 +1,127 @@
+<%= render Ui::SectionComponent.new(title: t("member.knowledge.show.specs_title"),
+      body_class: "divide-y divide-stone-100 dark:divide-zinc-800", test_id: "knowledge-specs") do %>
+    <div class="px-4 py-3.5 grid grid-cols-2 gap-y-3 gap-x-4">
+      <div class="col-span-2" data-test="knowledge-spec-project">
+        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.show.projects") %></p>
+        <%# Anti-leak: solo i progetti/gruppi visibili all'utente (filtrati nel controller, come i book). %>
+        <% if @visible_projects.any? || @visible_groups.any? %>
+          <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <% @visible_projects.each do |project| %>
+              <%= link_to member_project_path(project), class: "inline-flex items-center gap-1.5 text-[12.5px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" do %>
+                <span class="w-2 h-2 rounded-[2px] <%= Ui::Colors.swatch(project.color) %>"></span><%= project.name %>
+              <% end %>
+            <% end %>
+            <% @visible_groups.each do |group| %>
+              <span class="inline-flex items-center gap-1.5 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= render Ui::IconComponent.new(name: "layers", class: "text-[10px]") %><%= group.name %></span>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="mt-1 text-[12.5px] text-gray-400 dark:text-zinc-500 italic"><%= t("member.knowledge.org_wide") %></p>
+        <% end %>
+      </div>
+
+      <%# Book che raccoglie la pagina (CYRA-415): il legame pagina→book con collegamento. Reso
+          solo se la pagina è in un book visibile all'utente (anti-leak, come i progetti sopra). %>
+      <% if @page_book %>
+        <div class="col-span-2" data-test="knowledge-spec-book">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.show.book_label") %></p>
+          <%= link_to member_knowledge_book_path(@page_book), class: "mt-1 inline-flex items-center gap-1.5 text-[12.5px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "knowledge-spec-book-link" } do %>
+            <%= render Ui::IconComponent.new(name: "book", class: "text-[11px] text-gray-400 dark:text-zinc-500") %><%= @page_book.title %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if @page.tags.any? %>
+        <div class="col-span-2" data-test="knowledge-spec-tags">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.show.tags_label") %></p>
+          <div class="mt-1 flex flex-wrap gap-1">
+            <% @page.tags.each do |tag| %>
+              <span class="inline-flex items-center px-1.5 h-5 rounded bg-stone-100 dark:bg-zinc-800 font-mono text-[10.5px] text-zinc-600 dark:text-zinc-400"><%= tag %></span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <div data-test="knowledge-spec-kind">
+        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.show.kind_label") %></p>
+        <div class="mt-1"><%= render Ui::BadgeComponent.new(label: t("member.knowledge.kind.#{@page.kind}"), color: knowledge_kind_color(@page.kind), dot: true) %></div>
+      </div>
+      <%# CYRA-764 — il formato riconosciuto dal revisore automatico, quando c'è. %>
+      <% if @page.ai_review_format.present? && @page.ai_review_format != "unknown" %>
+        <div data-test="knowledge-spec-format">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.show.format_label") %></p>
+          <p class="mt-1 text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= t("member.knowledge.review.formats.#{@page.ai_review_format}") %></p>
+        </div>
+      <% end %>
+
+      <%# CYRA-768 — fino a quando la pagina si può dare per attuale. Riga presente solo quando una
+          data c'è: una nota non scade, e scriverle «nessuna scadenza» sarebbe una riga in più che
+          non dice niente. Passata la data resta tutto leggibile: cambia il colore, non l'accesso. %>
+      <% if @page.review_after.present? %>
+        <div data-test="knowledge-spec-review-after">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.show.review_after_label") %></p>
+          <p class="mt-1 text-[12.5px] <%= @page.needs_review? ? "text-amber-700 dark:text-amber-300 font-medium" : "text-zinc-900 dark:text-zinc-100" %>">
+            <%= l(@page.review_after.to_date, format: :long) %>
+          </p>
+          <% if @page.needs_review? %>
+            <p class="mt-0.5 text-[11.5px] leading-relaxed text-gray-500 dark:text-zinc-400" data-test="knowledge-spec-review-after-hint"><%= t("member.knowledge.needs_review.hint") %></p>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# CYRA-419 — chi ha scritto il testo, che non è chi possiede l'accesso usato per
+          scriverlo (quello sta in fondo, «Creata da»). Resta qui anche dopo l'accettazione,
+          perché la pagina alimenta le risposte generate e chi la legge deve sapere da dove
+          viene. Quando l'ha scritta un assistente si dice anche quando il segno decade: è
+          l'unica risposta alla domanda «e se la correggo?». %>
+      <div class="col-span-2" data-test="knowledge-spec-written-by">
+        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.show.written_by_label") %></p>
+        <p class="mt-1 inline-flex items-center flex-wrap gap-1.5 text-[12.5px]">
+          <%= render "member/knowledge/written_by", page: @page %>
+          <span class="text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.author.on_behalf_of", account: @page.created_by.name) %></span>
+        </p>
+        <% if @page.written_by_agent? %>
+          <p class="mt-0.5 text-[11.5px] leading-relaxed text-gray-500 dark:text-zinc-400" data-test="knowledge-spec-written-by-hint"><%= t("member.knowledge.author.agent_hint") %></p>
+        <% elsif @page.author_unregistered? %>
+          <p class="mt-0.5 text-[11.5px] leading-relaxed text-gray-500 dark:text-zinc-400" data-test="knowledge-spec-written-by-hint"><%= t("member.knowledge.author.unregistered_hint") %></p>
+        <% end %>
+      </div>
+
+      <% stats = knowledge_reading_stats(@page.body) %>
+      <div data-test="knowledge-spec-length">
+        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.show.length_label") %></p>
+        <%# Quanto ci vuole a leggerla, non quanta capienza resta: il tetto del corpo riguarda
+            chi scrive e si dichiara nell'editor (CYRA-434), qui era gergo da schermata di modifica. %>
+        <p class="mt-1 text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= t("member.knowledge.show.length_value", words: stats[:words], minutes: stats[:minutes]) %></p>
+      </div>
+
+      <%# Lo stato dice cosa cambia per chi legge — se l'assistente userà questa pagina per
+          rispondere — invece di «Indicizzata», che è il nome interno del meccanismo. %>
+      <div class="col-span-2 flex items-start gap-2" data-test="knowledge-spec-assistant">
+        <% if @page.embedded_at.present? %>
+          <%= render Ui::IconComponent.new(name: "circle-check", class: "text-[12px] text-emerald-600 dark:text-emerald-400 mt-0.5") %>
+          <p class="text-[12.5px] leading-relaxed text-zinc-900 dark:text-zinc-100"><%= t("member.knowledge.show.assistant_ready") %></p>
+        <% else %>
+          <%= render Ui::IconComponent.new(name: "clock", class: "text-[12px] text-gray-400 dark:text-zinc-500 mt-0.5") %>
+          <div>
+            <p class="text-[12.5px] leading-relaxed text-zinc-900 dark:text-zinc-100"><%= t("member.knowledge.show.assistant_not_yet") %></p>
+            <p class="mt-0.5 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.show.assistant_not_yet_hint") %></p>
+          </div>
+        <% end %>
+      </div>
+
+      <%# L'identificativo serve a chi lo incolla altrove, non a chi legge: sta in un bottone
+          che lo copia, non in una riga di codice larga quanto la colonna. Il valore resta nel
+          DOM per la copia, ma nascosto (hidden). %>
+      <div class="col-span-2" data-test="knowledge-spec-id" data-controller="clipboard"
+           data-clipboard-copied-value="<%= t("member.knowledge.show.id_copied") %>"
+           data-clipboard-error-value="<%= t("member.knowledge.show.id_copy_failed") %>">
+        <span hidden data-clipboard-target="source"><%= @page.id %></span>
+        <button type="button" data-action="clipboard#copy" data-test="knowledge-spec-id-copy"
+                class="inline-flex items-center gap-1.5 h-7 px-2 rounded-md border border-stone-200 dark:border-zinc-800 text-[11.5px] text-gray-600 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+          <%= render Ui::IconComponent.new(name: "copy", class: "text-[11px] text-gray-400 dark:text-zinc-500") %>
+          <span data-clipboard-target="label"><%= t("member.knowledge.show.id_copy") %></span>
+        </button>
+      </div>
+    </div>
+<% end %>

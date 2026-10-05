@@ -1,0 +1,3 @@
+<% content_for :title, t("member.alerting.channels.edit_title") %>
+<%= render "form", channel: @channel, url: member_alerting_channel_path(@channel), method: :patch,
+    submit_label: t("member.alerting.channels.form.save") %>

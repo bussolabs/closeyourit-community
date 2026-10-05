@@ -1,0 +1,20 @@
+<%# locals: (url:, framed: true) %>
+<%# Pannello "Knowledge correlata": card lazy (Stimulus knowledge-related, fetch al connect).
+    Condiviso da show ticket e show gruppo errori. Senza JS resta il messaggio di caricamento. %>
+<%# CYRA-391 — senza pagine correlate la card sparisce (target `card`) invece di lasciare un
+    titolo con sotto «nessuna pagina»: su queste schermate le righe da saltare si accumulavano. %>
+<%# `framed: false` (CYRA-883): a part of the ticket Context section, sub-heading and no card. %>
+<div class="<%= "rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" if framed %>" data-test="knowledge-related"
+     data-controller="knowledge-related" data-knowledge-related-url-value="<%= url %>"
+     data-knowledge-related-target="card">
+  <% if framed %>
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.knowledge.related.title") %></h2></div>
+  <% else %>
+    <div class="px-4 pt-3 pb-1"><h3 class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.related.title") %></h3></div>
+  <% end %>
+  <div class="<%= framed ? "px-4 py-3.5" : "px-4 pb-3" %>">
+    <p data-knowledge-related-target="loading" class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.related.loading") %></p>
+    <p data-knowledge-related-target="empty" hidden class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="knowledge-related-empty"><%= t("member.knowledge.related.empty") %></p>
+    <ul data-knowledge-related-target="list" hidden class="space-y-2" data-test="knowledge-related-list"></ul>
+  </div>
+</div>

@@ -1,0 +1,20 @@
+<div class="divide-y divide-stone-100 dark:divide-zinc-800" data-test="project-uptime">
+  <p class="px-4 pt-3 pb-1 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.projects.show.monitoring_uptime") %></p>
+    <% @project_environments.each do |environment| %>
+      <% monitor = @uptime_monitors[environment.id] %>
+      <div class="flex items-center gap-2.5 px-4 py-2.5" data-test="project-uptime-env">
+        <span class="w-24 shrink-0"><%= render Ui::BadgeComponent.new(label: environment.label, color: monitor ? environment.color : "gray", dot: true) %></span>
+        <% if monitor %>
+          <%= link_to member_monitoring_monitor_path(monitor), class: "ml-auto inline-flex items-center gap-2.5 hover:opacity-80" do %>
+            <span class="inline-flex items-stretch gap-px h-3.5 w-20" title="24h" data-test="project-uptime-strip">
+              <% (@uptime_buckets[monitor.id] || []).each do |bucket| %><span class="flex-1 rounded-sm <%= uptime_bucket_class(bucket[:status]) %>"></span><% end %>
+            </span>
+            <span class="font-mono text-[12px] <%= uptime_percent_color(@uptime_percents[monitor.id]) %>"><%= uptime_percent_text(@uptime_percents[monitor.id]) %></span>
+            <%= render Ui::BadgeComponent.new(label: uptime_status_label(monitor), color: uptime_status_color(monitor), dot: true) %>
+          <% end %>
+        <% else %>
+          <span class="ml-auto text-[11px] text-gray-500 dark:text-zinc-400" data-test="project-uptime-none-<%= environment.id %>"><%= t("member.projects.show.uptime_no") %></span>
+        <% end %>
+      </div>
+    <% end %>
+</div>

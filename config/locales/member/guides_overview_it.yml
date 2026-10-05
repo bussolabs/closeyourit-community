@@ -1,0 +1,61 @@
+---
+it:
+  member:
+    guides:
+      index:
+        overview:
+          title: Come è fatto CloseYourIt
+        ticket_lifecycle:
+          title: Il percorso di un ticket
+      overview:
+        title: Come è fatto CloseYourIt
+        subtitle: Il primo giorno serve una mappa, non una funzione per volta.
+        what_title: In due righe
+        what_intro: "CloseYourIt tiene in un posto solo il lavoro da fare e la salute di quello che hai già pubblicato: le segnalazioni e i ticket da una parte, errori, tempi di risposta, registri, macchine e visite dall'altra. Le automazioni lavorano i ticket al posto tuo e ti chiedono il via libera nei punti che contano."
+        spaces_title: Come è ordinato il menu
+        spaces_intro: "Il menu è uno solo e c'è sempre tutto. In cima le cinque cose che apri ogni giorno; sotto, i gruppi divisi in tre parti — quello che costruisci, il sistema che lo regge, il tuo account."
+        spaces_switch: "I gruppi si aprono e si chiudono premendo il loro nome, e restano come li lasci anche alla prossima apertura. Quando apri una pagina, il gruppo che la contiene si apre da solo."
+        spaces:
+          projects: I progetti che segui, con i loro ambienti, le persone e le impostazioni.
+          product: I ticket, la bacheca, le idee da valutare e il carico di lavoro.
+          knowledge: La conoscenza scritta e la mappa delle funzionalità del prodotto.
+          observability: Errori, tempi di risposta, registri e registrazioni di ciò che hai pubblicato.
+          infrastructure: Le macchine, i database, i controlli di raggiungibilità e i lavori programmati.
+          alerts: Le regole che fanno scattare un avviso, le notifiche che ti arrivano e i canali che le portano fuori.
+          automation: Le macchine che lavorano i ticket al posto tuo e le decisioni che aspettano una tua parola.
+          seo: "I siti che tieni d'occhio: se le loro pagine si fanno trovare dai motori di ricerca, cosa le tiene fuori, e quante visite arrivano davvero."
+          vault: Le informazioni riservate — chiavi, password, token — conservate e delegate ai progetti giusti.
+          settings: Persone, ruoli, permessi, ambienti e piattaforme dell'organizzazione.
+        chain_title: Come sono organizzate le cose
+        chain_intro: "Dall'insieme al dettaglio, l'ordine è sempre questo:"
+        chain_1: "Organizzazione: il perimetro di tutto. Le persone, i ruoli e le informazioni riservate stanno qui."
+        chain_2: "Gruppo: raccoglie i progetti che appartengono alla stessa iniziativa, e la sua pagina riassume come stanno tutti insieme. Non è obbligatorio."
+        chain_3: "Progetto: la cosa vera che segui — un sito, un'applicazione, un servizio. I ticket e i dati di salute stanno appesi qui."
+        chain_4: "Ambiente: il sito vero, la prova, lo sviluppo. Lo stesso progetto manda dati da più ambienti, e quasi ogni elenco si filtra per ambiente."
+        chain_5: "Piattaforma: com'è fatto quel progetto — web, mobile, backend. Decide quali funzioni ha senso accendere: le visite, per esempio, valgono solo per il web."
+        first_day_title: Le prime tre cose da fare
+        first_day_1: Crea un progetto e dichiara i suoi ambienti e le sue piattaforme.
+        first_day_2: Collega il progetto seguendo la guida della funzione che ti serve per prima — di solito gli errori, che è la più utile fin dal primo giorno.
+        first_day_3: "Apri la pagina iniziale e guarda cosa aspetta te: è il punto da cui si riparte ogni mattina."
+        cta: Vai ai progetti
+        cta_guides: Guarda tutte le guide
+      ticket_lifecycle:
+        title: Il percorso di un ticket
+        subtitle: Dalla segnalazione alla chiusura, e dove si guarda cosa.
+        what_title: Cos'è un ticket
+        what_intro: "Un ticket è una cosa da fare, scritta una volta e seguita fino in fondo. Ha un codice breve (per esempio ALEX-3) che lo identifica per sempre: puoi incollarlo nella ricerca e ci arrivi da qualsiasi pagina."
+        what_b1: Nasce da una segnalazione, da un errore trasformato in ticket o da una tua scrittura.
+        what_b2: Ha un tipo (Bug, Story, Task, Epic) e una priorità.
+        what_b3: Vive dentro un progetto ed è appeso a un ambiente e a una piattaforma.
+        states_title: Gli stati e dove si cambiano
+        states_intro: "Sono gli stati della tua organizzazione, nell'ordine della bacheca. Lo stato dice a che punto è, e si cambia in due posti: dalla pagina del ticket, oppure trascinando la scheda da una colonna all'altra."
+        where_title: Dove si guardano i ticket
+        where_1: "Elenco: tutti i ticket, con i filtri per stato, priorità, progetto e persona. I filtri restano nell'indirizzo, quindi il link si può salvare o mandare a un collega."
+        where_2: "Viste salvate: un filtro che usi spesso, salvato con un nome e ripreso con un clic."
+        where_3: "Bacheca: le stesse cose per colonne di stato, da trascinare."
+        work_title: Cosa si scrive su un ticket
+        work_1: "Presa in carico: chi ci lavora. Un ticket senza nessuno sopra resta fermo, e si vede."
+        work_2: "Commenti: la conversazione. Si può allegare un file o un'immagine."
+        work_3: "Analisi tecnica e criteri di accettazione: come si intende risolverlo e quando si può dire fatto."
+        work_4: "Resoconto: cosa è stato fatto davvero, scritto alla fine — è quello che si legge in revisione."
+        cta: Vai ai ticket

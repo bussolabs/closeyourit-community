@@ -1,0 +1,51 @@
+<%# CYRA-883 — counts by state, then the list with its search bar, as on the other list pages. %>
+<% if @token_counts[:total].zero? %>
+  <div class="px-4 py-2" data-test="tokens-empty">
+    <%= render Ui::EmptyStateComponent.new(title: t("member.tokens.empty"), body: t("member.tokens.empty_body"), icon: "key") %>
+  </div>
+<% else %>
+  <div class="flex flex-wrap items-center gap-1.5 px-4 pt-3" data-test="tokens-counts">
+    <%= render Ui::StatLabelComponent.new(label: t("member.project_settings.tokens_total"), value: @token_counts[:total], test_id: "tokens-count-total") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.project_settings.tokens_active"), value: @token_counts[:active], value_color: :emerald, test_id: "tokens-count-active") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.project_settings.tokens_due_soon"), value: @token_counts[:due_soon], value_color: :amber, test_id: "tokens-count-due-soon") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.project_settings.tokens_expired"), value: @token_counts[:expired], value_color: :red, test_id: "tokens-count-expired") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.project_settings.tokens_revoked"), value: @token_counts[:revoked], value_color: :gray, test_id: "tokens-count-revoked") %>
+  </div>
+
+  <div class="pt-3" data-test="tokens-table">
+    <%= render(Ui::TableToolbarComponent.new(
+          url: member_project_settings_path(@project, anchor: "tokens"), query: params[:q], framed: true,
+          search_placeholder: t("member.project_settings.tokens_search_placeholder"),
+          search_test_id: "tokens-search", apply_test_id: "tokens-filter", test_id: "tokens-toolbar")) do |toolbar| %>
+      <% toolbar.with_filter(key: "status", label: t("member.project_settings.tokens_filter_status")) do %>
+        <div class="w-36"><%= render Ui::SelectComponent.new(name: "status", multiple: true, summary: true,
+              options: [ [ t("member.tokens.status_active"), "active" ], [ t("member.tokens.status_expired"), "expired" ],
+                         [ t("member.tokens.status_revoked"), "revoked" ] ],
+              selected: params[:status], placeholder: t("member.project_settings.tokens_filter_status"),
+              test_id: "filter-status") %></div>
+      <% end %>
+    <% end %>
+
+    <% if @tokens.empty? %>
+      <%= render Ui::NoResultsComponent.new(query: params[:q].presence, compact: true,
+            reset_href: member_project_settings_path(@project, anchor: "tokens"), test_id: "tokens-no-results") %>
+    <% else %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.tokens.title", project: @project.name))) do |table| %>
+        <% table.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tokens.col_name"), sort: "name") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tokens.col_environment"), sort: "environment") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tokens.col_prefix"), sort: "prefix") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tokens.col_scopes"), sort: "scopes") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tokens.col_last_used"), sort: "last_used", initial: :desc) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tokens.col_expiry"), sort: "expiry") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tokens.col_status"), sort: "status") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: tag.span(t("member.tokens.col_actions"), class: "sr-only"), align: :right) %>
+        <% end %>
+        <% @tokens.each do |token| %>
+          <%= render "member/project_settings/token_row", token: token %>
+        <% end %>
+      <% end %>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "tokens-pagination")) %>
+    <% end %>
+  </div>
+<% end %>

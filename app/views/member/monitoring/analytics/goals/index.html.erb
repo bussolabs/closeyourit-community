@@ -1,0 +1,53 @@
+<% content_for :title, t("member.monitoring.analytics.goals.title") %>
+
+<div class="p-7 space-y-6" data-test="member-analytics-goals">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.monitoring.analytics.goals.title"),
+        subtitle: t("member.monitoring.analytics.goals.help_title"),
+        breadcrumb: [
+          { label: t("member.monitoring.analytics.title"), href: member_monitoring_analytics_path(project_id: @project.id) },
+          { label: t("member.monitoring.analytics.goals.title") }
+        ],
+        counts_test_id: "analytics-goals-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.goals.count"), value: @goals.size, test_id: "analytics-goals-count") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.monitoring.analytics.goals.new"), href: new_member_monitoring_analytics_goal_path(project_id: @project.id), variant: :primary, size: :sm, test_id: "analytics-goals-new") %>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="analytics-goals-list">
+    <% if @goals.empty? %>
+      <div class="px-4 py-12 text-center">
+        <p class="text-[13px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.goals.empty") %></p>
+      </div>
+    <% else %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.monitoring.analytics.goals.title"))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.goals.col_goal"), sort: "goal") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.goals.col_kind"), sort: "kind") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.goals.delete"), label_hidden: true) %>
+        <% end %>
+        <% @goals.each do |goal| %>
+          <%= render Ui::TableComponent::RowComponent.new(test_id: "analytics-goals-row") do %>
+            <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+              <span class="text-zinc-900 dark:text-zinc-100"><%= goal.display_name %></span>
+              <span class="ml-1.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= goal.custom_event? ? goal.event_name : goal.path_pattern %></span>
+            <% end %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.analytics.goals.col_kind"), class: "text-gray-500 dark:text-zinc-400")) { t("member.monitoring.analytics.goals.kinds.#{goal.kind}") } %>
+            <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+              <%= render Ui::ConfirmDialogComponent.new(title: t("member.monitoring.analytics.goals.delete_dialog.title", name: goal.display_name),
+                    url: member_monitoring_analytics_goal_path(goal, project_id: @project.id),
+                    confirm_label: t("member.monitoring.analytics.goals.delete"),
+                    test_id: "analytics-goal-delete-dialog-#{goal.id}") do |dialog| %>
+                <% dialog.with_body { t("member.monitoring.analytics.goals.delete_dialog.body") } %>
+                <%= dialog.button_trigger(label: t("member.monitoring.analytics.goals.delete"), test_id: "analytics-goals-delete") %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

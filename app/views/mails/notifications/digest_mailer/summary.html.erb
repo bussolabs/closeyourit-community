@@ -1,0 +1,19 @@
+<%# Digest notifiche — riepilogo (frame: layouts/mailer.html.erb). %>
+<% content_for :preheader, t("notifications.digest.mailer.heading", count: @notifications.size) %>
+
+<h1 style="<%= mail_h1_style(size: 20) %>"><%= t("notifications.digest.mailer.heading", count: @notifications.size) %></h1>
+<p style="<%= mail_note_style %>"><%= t("notifications.digest.mailer.intro", org: @organization.name) %></p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:14px 0 0 0;">
+  <% @notifications.each do |n| %>
+    <tr><td style="padding:12px 16px;border:1px solid <%= MailerHelper::MAIL_BORDER %>;border-radius:10px;background-color:<%= MailerHelper::MAIL_SUBTLE %>;">
+      <p style="margin:0 0 <%= n.body.present? ? "6px" : "0" %> 0;font-family:<%= MailerHelper::FONT_SANS %>;font-size:13px;font-weight:600;color:#18181b;">
+        <% if n.url.present? %><a href="<%= mail_absolute_url(n.url) %>" style="color:<%= MailerHelper::MAIL_ACCENT %>;text-decoration:none;"><%= n.title %></a><% else %><%= n.title %><% end %>
+      </p>
+      <% if n.body.present? %><p style="margin:0;<%= mail_mono_style %>"><%= n.body %></p><% end %>
+    </td></tr>
+    <tr><td style="height:8px;line-height:8px;">&nbsp;</td></tr>
+  <% end %>
+</table>
+
+<p style="<%= mail_note_style %>"><%= t("notifications.digest.mailer.footer") %></p>

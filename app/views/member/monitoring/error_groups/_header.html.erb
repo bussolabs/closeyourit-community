@@ -1,0 +1,43 @@
+<%= render Ui::PageHeaderComponent.new(
+      title: @group.title,
+      breadcrumb: [ { label: t("member.monitoring.title"), href: member_monitoring_error_groups_path },
+                    { label: @group.title } ],
+      counts_test_id: "error-group-meta") do |h| %>
+  <% h.with_counts do %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.label_level"), value: error_level_label(@group.level), value_color: error_level_color(@group.level), test_id: "error-level") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.label_status"), value: t("member.monitoring.status.#{@group.status}"), value_color: error_status_color(@group.status), test_id: "error-status") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.label_events"), value: @group.events_count, test_id: "error-events") %>
+    <%# CYRA-380: quando il contesto utente non è MAI arrivato (users_count 0) il chip mostrava «0».
+        Ora la pill dice «non tracciato» ed è un link alla guida, così non si legge «nessuno colpito». %>
+    <% if @group.user_context_tracked? %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.label_users"), value: @group.users_count, test_id: "error-users") %>
+    <% else %>
+      <%= link_to member_guides_errors_path, class: "inline-flex", title: t("member.monitoring.users_untracked_tip"), data: { test: "error-users-untracked" } do %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.label_users"), value: t("member.monitoring.users_untracked"), value_color: :gray, test_id: "error-users") %>
+      <% end %>
+    <% end %>
+    <%# CYRA-153: assegnatario corrente (chi si fa carico dell'errore, come per i ticket). %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.label_assignee"), value: @group.assignee&.name || t("member.monitoring.unassigned"), test_id: "error-assignee-meta") %>
+  <% end %>
+  <% h.with_actions do %>
+    <button type="button" data-action="keyboard#openHelp" class="inline-flex items-center justify-center h-7 w-[34px] rounded-md text-gray-500 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" title="<%= t('member.monitoring.shortcuts_title') %>" data-test="shortcuts-open"><%= render Ui::IconComponent.new(name: "keyboard", class: "text-[13px]") %></button>
+    <%# CYRA-153: assegna/disassegna l'errore. Dropdown <details> come nei ticket; id = dom_id per il
+        replace realtime della riga (Errors::Broadcast.group). Visibile solo a chi ha errors.assign. %>
+    <% if @can_assign %>
+      <%= render "member/monitoring/error_groups/assignee_menu" %>
+    <% end %>
+    <% if can_manage %>
+      <%= render "member/monitoring/error_groups/triage_actions" %>
+    <% end %>
+    <%# CYRA-192 — l'eliminazione sta dietro una chiave sua (errors.destroy): chi smista non
+        cancella. Ultimo della fila e in rosso soltanto nella conferma, che dice quante occorrenze
+        spariscono — di lì non si torna indietro. %>
+    <% if can?("errors.destroy", scope: @group.project) %>
+      <span data-controller="ui--dialog">
+        <%= render Ui::ButtonComponent.new(label: t("member.monitoring.delete.action"), variant: :danger_outline, size: :sm,
+              icon: "trash", data: { action: "ui--dialog#open" }, test_id: "error-delete") %>
+        <%= render "member/monitoring/error_groups/delete_dialog", group: @group %>
+      </span>
+    <% end %>
+  <% end %>
+<% end %>

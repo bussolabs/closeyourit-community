@@ -1,0 +1,3 @@
+<%= render "form", role: @role, url: member_roles_path, method: :post,
+      title: t("member.roles.new_title"), submit_label: t("member.roles.save"),
+      selected_keys: @selected_keys, delete_path: nil %>

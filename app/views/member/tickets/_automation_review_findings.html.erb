@@ -1,0 +1,5 @@
+<%# locals: findings: — i rilievi del revisore su un passo della lavorazione, uno per riga:
+    gravità e aspetto in monospazio, titolo in grassetto, dettaglio solo quando c'è (CYRA-802). %>
+<ul class="px-3.5 py-2.5 border-t border-stone-100 dark:border-zinc-800 space-y-1.5" data-test="automation-review-findings">
+  <% findings.each do |finding| %><li class="text-[12px] text-zinc-700 dark:text-zinc-300"><span class="font-mono text-[10px] text-gray-500 dark:text-zinc-400"><%= finding["severity"] %> · <%= finding["aspect"] %></span> <strong><%= finding["title"] %></strong><% if finding["detail"].present? %> — <%= finding["detail"] %><% end %></li><% end %>
+</ul>

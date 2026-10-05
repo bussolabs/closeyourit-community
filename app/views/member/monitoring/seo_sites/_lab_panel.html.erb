@@ -1,0 +1,48 @@
+<%# locals: strategy ("mobile"|"desktop"), run (Seo::LabRun | nil)
+    Il giro di prova per una strategia: i quattro punteggi e le misure che li spiegano.
+
+    Le misure di laboratorio stanno in una lista compatta e non in altre quattro card: sono
+    diagnostica — servono a capire PERCHÉ un punteggio è quello — non numeri da guardare ogni giorno.
+    Otto card per colonna affogherebbero i quattro che contano. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="seo-lab-<%= strategy %>">
+  <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800 flex items-baseline justify-between gap-2">
+    <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.seo_sites.performance.#{strategy}") %></h3>
+    <% if run %>
+      <span class="text-[11px] text-gray-500 dark:text-zinc-400" data-test="seo-lab-<%= strategy %>-when">
+        <%= t("member.monitoring.seo_sites.show.ago", duration: time_ago_in_words(run.started_at)) %>
+      </span>
+    <% end %>
+  </div>
+
+  <% if run.nil? %>
+    <p class="px-5 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="seo-lab-<%= strategy %>-empty">
+      <%= t("member.monitoring.seo_sites.performance.no_lab") %>
+    </p>
+  <% else %>
+    <div class="px-5 py-4 grid grid-cols-2 gap-3">
+      <% run.scores.each do |key, score| %>
+        <%= render Ui::MetricTileComponent.new(
+              label: t("seo.vitals.scores.#{key}"),
+              value: score || "—",
+              value_color: seo_vital_color(Seo::Vitals.score_rating(score)),
+              caption: seo_vital_rating_label(Seo::Vitals.score_rating(score)),
+              test_id: "seo-lab-#{strategy}-#{key}") %>
+      <% end %>
+    </div>
+
+    <dl class="px-5 pb-4 grid grid-cols-2 gap-x-4 gap-y-2">
+      <% run.lab_metrics.each do |metric, value| %>
+        <div class="flex items-baseline justify-between gap-2">
+          <dt class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.seo_sites.performance.lab_metrics.#{metric}") %></dt>
+          <dd class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100"><%= seo_vital_value(metric, value) %></dd>
+        </div>
+      <% end %>
+    </dl>
+
+    <%# L'INP non esiste in laboratorio: richiede interazioni vere. Una cella vuota etichettata dice
+        «non si può misurare qui»; uno zero direbbe «perfetto», che è il contrario. %>
+    <p class="px-5 pb-4 text-[11px] text-gray-500 dark:text-zinc-400" data-test="seo-lab-<%= strategy %>-no-inp">
+      <%= t("member.monitoring.seo_sites.performance.no_lab_inp") %>
+    </p>
+  <% end %>
+</div>

@@ -1,0 +1,101 @@
+<%# CYRA-556 — nella stessa tabella convivono le persone e le utenze che usano i programmi (CLI, mai
+    dal sito). Erano identiche: stesse iniziali nel cerchietto, stessa etichetta «Membro», e da lì si
+    poteva promuovere ad amministratore o rimuovere un'utenza credendo di agire su un collega. Il
+    segno è doppio perché le domande sono due: il cerchietto risponde a colpo d'occhio mentre si
+    scorre, l'etichetta dice cos'è quando ci si ferma su una riga. %>
+<% service = membership.account.service? %>
+<%= render Ui::TableComponent::RowComponent.new(test_id: "member-member-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <div class="flex items-center gap-2.5">
+      <% if service %>
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400" title="<%= t("member.service_accounts.badge_service") %>" data-test="member-service-avatar"><%= render Ui::IconComponent.new(name: "bot", class: "text-[11px]") %></span>
+      <% else %>
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold"><%= avatar_initials(membership.account.name) %></span>
+      <% end %>
+      <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= membership.account.name %></span>
+      <% if membership.account_id == Current.account.id %><span class="text-[10px] text-gray-500 dark:text-zinc-400"><%= t("member.members.you") %></span><% end %>
+    </div>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.members.col_email"), mono: true, class: "text-gray-500 dark:text-zinc-400") do %>
+    <%= membership.account.email %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.members.col_level")) do %>
+    <div class="flex flex-wrap items-center gap-1.5">
+      <%# L'utenza di un programma nasce col livello base: lì «Membro» non aggiunge niente e traveste
+          l'utenza da collega, quindi al suo posto si legge cos'è davvero. Se invece qualcuno l'ha
+          portata più in alto, il livello resta scritto accanto: nascondere un privilegio sarebbe
+          peggio del problema che questa riga risolve. %>
+      <% if service %>
+        <%= render Ui::BadgeComponent.new(label: t("member.service_accounts.badge_service"), color: :violet, icon: "bot", test_id: "member-role-service") %>
+      <% end %>
+      <% unless service && membership.member? %>
+        <% case membership.role %>
+        <% when "owner" %>
+          <%= render Ui::BadgeComponent.new(label: t("member.roles.owner"), color: :indigo, icon: "crown", test_id: "member-role-owner") %>
+        <% when "admin" %>
+          <%= render Ui::BadgeComponent.new(label: t("member.roles.admin"), color: :sky, test_id: "member-role-admin") %>
+        <% when "customer" %>
+          <%= render Ui::BadgeComponent.new(label: t("member.roles.customer"), color: :teal, icon: "user-pen", test_id: "member-role-customer") %>
+        <% else %>
+          <%= render Ui::BadgeComponent.new(label: t("member.roles.member"), color: :gray, test_id: "member-role-member") %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.members.col_effective_roles"), class: "align-top") do %>
+    <% teams = (member_teams[membership.account_id] || []) %>
+    <% if teams.empty? %>
+      <span class="text-[12px] text-gray-400 dark:text-zinc-500" data-test="member-team-roles-empty"><%= t("member.members.no_team_roles") %></span>
+    <% else %>
+      <div class="space-y-1.5" data-test="member-team-roles">
+        <% teams.each do |team| %>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="inline-flex items-center gap-1.5 text-[12px] font-medium text-zinc-900 dark:text-zinc-100">
+              <span class="w-2 h-2 rounded-[3px] <%= Ui::Colors.swatch(team.color.presence || "gray") %>"></span><%= team.name %>
+            </span>
+            <% team.roles.each do |role| %>
+              <%= render Ui::BadgeComponent.new(label: role.name, color: (role.color.presence || "gray").to_sym, dot: true) %>
+            <% end %>
+            <% scope_names = team.scoped_groups.map(&:name) + team.scoped_projects.map(&:name) %>
+            <% if scope_names.any? %>
+              <span class="text-[11px] text-gray-400 dark:text-zinc-500"><%= t("member.members.scope_prefix") %> <%= scope_names_summary(scope_names, separator: ", ") %></span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.members.col_joined"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400 align-top") do %>
+    <%= l(membership.created_at.to_date) %>
+  <% end %>
+  <% may_edit = can_edit && (actor_privileged? || (!membership.owner? && !membership.account.god?)) %>
+  <%= render Ui::TableComponent::CellComponent.new(actions: true, align: :right) do %>
+    <% if !can_manage && !may_edit %>
+    <% elsif membership.owner? && !may_edit %>
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md text-gray-300 dark:text-zinc-600" title="<%= t('member.members.last_owner_lock') %>"><%= render Ui::IconComponent.new(name: "lock", class: "text-[11px]") %></span>
+    <% else %>
+      <%= render Ui::ConfirmDialogComponent.new(title: t("member.members.remove_dialog.title", name: membership.account.name),
+            url: member_member_path(membership), confirm_label: t("member.members.remove"),
+            test_id: "member-remove-dialog-#{membership.id}") do |dialog| %>
+        <% dialog.with_body { t("member.members.remove_dialog.body") } %>
+        <%= render(Ui::RowMenuComponent.new(test_id: "member-member-menu", aria_label: t("member.members.row_menu_label", name: membership.account.name))) do %>
+          <% if may_edit %>
+            <%= link_to edit_member_member_path(membership), class: Ui::RowMenuComponent.item_class, data: { test: "member-member-edit" } do %><%= render Ui::IconComponent.new(name: "pen", class: "w-[1.25em] text-gray-400 dark:text-zinc-500 text-[12px]") %><%= t("member.members.edit_action") %><% end %>
+          <% end %>
+          <% if can_manage && !membership.owner? %>
+            <% if may_edit %><div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div><% end %>
+            <%= link_to access_member_member_path(membership), class: Ui::RowMenuComponent.item_class, data: { test: "member-member-access" } do %><%= render Ui::IconComponent.new(name: "folder-tree", class: "w-[1.25em] text-gray-400 dark:text-zinc-500 text-[12px]") %><%= t("member.members.manage_access") %><% end %>
+            <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+            <% if membership.admin? %>
+              <%= button_to role_member_member_path(membership, role: "member"), method: :patch, class: Ui::RowMenuComponent.item_class, data: { test: "member-member-role" } do %><%= render Ui::IconComponent.new(name: "user", class: "w-[1.25em] text-gray-400 dark:text-zinc-500 text-[12px]") %><%= t("member.members.make_member") %><% end %>
+            <% else %>
+              <%= button_to role_member_member_path(membership, role: "admin"), method: :patch, class: Ui::RowMenuComponent.item_class, data: { test: "member-member-role" } do %><%= render Ui::IconComponent.new(name: "user-cog", class: "w-[1.25em] text-gray-400 dark:text-zinc-500 text-[12px]") %><%= t("member.members.make_admin") %><% end %>
+            <% end %>
+            <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+            <%= dialog.menu_trigger(label: t("member.members.remove"), icon: "user-minus", test_id: "member-member-remove") %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

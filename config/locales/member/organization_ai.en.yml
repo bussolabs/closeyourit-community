@@ -1,0 +1,75 @@
+en:
+  member:
+    organization_ai:
+      title: Organization AI
+      test: Test connection
+      save: Save
+      updated: AI settings saved.
+      reindex:
+        title: Search needs recalculating
+        body: With another search model, this organization's data must be recalculated. Until it finishes, search and duplicate suggestions find fewer results. Other organizations do not change.
+        confirm: Save and recalculate
+      mode:
+        title: How the organization uses AI
+        hint: Use the platform AI as it is, change its models and cap, or connect your own provider.
+        label: Mode
+        options:
+          platform: Use the platform
+          variation: Variation
+          own: Own provider
+        descriptions:
+          platform: Models, keys and cap are the platform's.
+          variation: Same provider and key as the platform, with the models and cap you choose here.
+          own: Every request goes to your OpenAI-compatible provider, with your key.
+      models:
+        title: Models
+        hint: An empty field uses the platform value. With an own provider, an empty field turns that feature off.
+      provider:
+        title: Own provider
+        hint: Used only in the "Own provider" mode. Keys are never shown again.
+      fields:
+        monthly_token_cap: Monthly token cap
+        monthly_token_cap_hint: Empty = no cap beyond the platform's.
+        chat_model: Chat model
+        chat_model_hint: Answers, ticket analysis and review.
+        embedding_model: Search model
+        embedding_model_hint: Must have the platform's size. Changing it recalculates this organization's data.
+        transcription_model: Dictation model
+        transcription_model_hint: Turns voice into text.
+        rerank_model: Rerank model
+        rerank_model_hint: Orders search results.
+        base_url: Provider address
+        base_url_hint: The OpenAI-compatible address, for example https://api.openai.com/v1.
+        api_key: Provider key
+        api_key_hint: Leave empty to keep the saved key.
+        rerank_base_url: Rerank address
+        rerank_base_url_hint: Only if rerank lives at another address.
+        rerank_api_key: Rerank key
+        rerank_api_key_hint: Leave empty to keep the saved key.
+      values:
+        title: Values in use
+        hint: "Each value comes from the first place where it is set, in this order: organization, Valhalla, server."
+        unset: Not set
+        key_set: Set
+        key_unset: Not set
+        sources:
+          organization: Organization
+          valhalla: Valhalla
+          environment: Server
+        fields:
+          chat_base_url: Address
+          api_key: Key
+          chat_model: Chat model
+          embedding_model: Search model
+          embedding_dimensions: Search size
+          transcription_model: Dictation model
+          rerank_base_url: Rerank address
+          rerank_api_key: Rerank key
+          rerank_model: Rerank model
+          monthly_token_cap: Monthly token cap
+  activerecord:
+    errors:
+      models:
+        organizations/ai_setting:
+          internal_address: must be a public address, not one inside the internal network
+          reenter_for_new_address: "must be typed again: the address changed"

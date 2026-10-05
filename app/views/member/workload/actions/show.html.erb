@@ -1,0 +1,77 @@
+<% content_for :title, @action.title %>
+
+<div class="p-7 space-y-6" data-test="member-workload-action">
+  <%= render Ui::PageHeaderComponent.new(
+        title: @action.title,
+        breadcrumb: [ { label: t("member.workload.actions.title"), href: member_workload_actions_path },
+                      { label: @action.title } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.workload.actions.edit"), href: edit_member_workload_action_path(@action), icon: "pen", variant: :secondary_muted, size: :sm, test_id: "workload-action-edit") %>
+      <% if @action.ticket.nil? %>
+        <%= render Ui::ButtonComponent.new(label: t("member.workload.actions.generate_ticket"), href: new_member_workload_action_promotion_path(@action), icon: "wand-sparkles", variant: :secondary_muted, size: :sm, test_id: "workload-action-promote") %>
+      <% end %>
+      <%= render Ui::RowMenuComponent.new(test_id: "workload-action-more-menu", aria_label: t("member.workload.actions.more_menu")) do %>
+        <%= button_to t("member.workload.actions.delete"), member_workload_action_path(@action), method: :delete,
+              class: Ui::RowMenuComponent.item_class(:danger), form: { class: "block" },
+              data: { test: "workload-action-delete", turbo_confirm: t("member.workload.actions.delete_confirm") } %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render Ui::GridComponent.new(cols: 1, lg: 3, gap: 6) do %>
+    <%= render Ui::StackComponent.new(gap: 6, class: "lg:col-span-2") do %>
+      <% if @action.description.present? %>
+        <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6" data-test="workload-action-description-card">
+          <h2 class="text-[12px] font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide mb-2"><%= t("member.workload.actions.description_label") %></h2>
+          <%= render Ui::MarkdownComponent.new(text: @action.description, class: "text-[13px] text-zinc-900 dark:text-zinc-100 leading-relaxed") %>
+        </div>
+      <% end %>
+
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6" data-test="workload-action-participants-card">
+        <h2 class="text-[12px] font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide mb-3"><%= t("member.workload.actions.participants_label") %></h2>
+        <% if @action.participants.empty? %>
+          <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="workload-action-participants-empty"><%= t("member.workload.actions.no_participants") %></p>
+        <% else %>
+          <div class="flex flex-wrap gap-2">
+            <% @action.participants.each do |account| %>
+              <span class="inline-flex items-center gap-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 pl-1 pr-2.5 py-1" data-test="workload-action-participant">
+                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold"><%= avatar_initials(account.name) %></span>
+                <span class="text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= account.name %></span>
+              </span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <% if @action.ticket %>
+        <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6" data-test="workload-action-ticket-card">
+          <h2 class="text-[12px] font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide mb-2"><%= t("member.workload.actions.ticket_label") %></h2>
+          <%= link_to member_ticket_path(@action.ticket), class: "inline-flex items-center gap-2 text-[13px]", data: { test: "workload-action-ticket-link" } do %>
+            <span class="font-mono text-[12px] text-indigo-600 dark:text-indigo-400"><%= @action.ticket.code %></span>
+            <span class="text-zinc-900 dark:text-zinc-100"><%= @action.ticket.title %></span>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+    <%= render "member/workload/actions/details_panel", action: @action %>
+  <% end %>
+
+  <%# The audit strip closes the page, full width (E22). %>
+  <%= render Ui::SectionComponent.new(body_class: "px-4 py-2.5", test_id: "workload-action-audit") do %>
+    <%= render Ui::AuditMetaComponent.new(
+          created_at: @action.created_at,
+          created_by: @action.created_by&.name,
+          updated_at: (@last_activity&.created_at || @action.updated_at),
+          updated_by: activity_actor_name(@last_activity),
+          test_id: "workload-action-audit-meta",
+          data: { controller: "ui--dialog" }
+        ) do |c| %>
+      <% c.with_action do %>
+        <button type="button" data-action="ui--dialog#open" data-test="workload-action-history" class="inline-flex items-center gap-1.5 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+          <%= render Ui::IconComponent.new(name: "history", class: "text-[11px]") %><%= t("ui.audit.view_history") %>
+        </button>
+        <%= render "member/shared/activity_modal", subtitle: @action.title, events: @activity_events %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

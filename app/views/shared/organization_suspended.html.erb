@@ -1,0 +1,35 @@
+<% content_for :title, t("member.suspended.title") %>
+
+<%# CYRA-722 — la pagina che l'area utenti mostra al posto di ogni sua pagina quando
+    l'organizzazione è sospesa. Guscio semplice di proposito: il guscio member È l'area, e menu e
+    conteggi qui rimetterebbero in vista proprio quello che la sospensione toglie. Restano le due
+    sole cose che si possono ancora fare — uscire, o continuare in un'altra organizzazione. %>
+<div class="p-7" data-test="organization-suspended">
+  <div class="mx-auto max-w-lg rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 py-10 text-center">
+    <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500">
+      <%= render Ui::IconComponent.new(name: "ban", class: "text-[18px]") %>
+    </span>
+    <h1 class="mt-3 font-display text-[18px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.suspended.title") %></h1>
+    <p class="mt-1.5 text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-sm mx-auto">
+      <%= t("member.suspended.body", name: Current.organization.name) %>
+    </p>
+
+    <% if @other_active_organizations.present? %>
+      <p class="mt-5 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.suspended.switch_intro") %></p>
+      <div class="mt-2 flex flex-wrap items-center justify-center gap-2">
+        <% @other_active_organizations.each do |org| %>
+          <%= button_to t("member.suspended.switch_to", name: org.name),
+                member_organization_switches_path(organization_id: org.id),
+                class: "inline-flex items-center h-7 px-2.5 rounded-md text-[12px] font-medium text-white bg-indigo-600 hover:bg-indigo-700",
+                data: { test: "organization-suspended-switch" } %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="mt-5 flex items-center justify-center gap-2">
+      <%= button_to t("home.sign_out"), logout_path, method: :delete,
+            class: "inline-flex items-center h-7 px-2.5 rounded-md text-[12px] font-medium text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800",
+            data: { test: "organization-suspended-logout" } %>
+    </div>
+  </div>
+</div>

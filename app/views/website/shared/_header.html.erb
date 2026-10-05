@@ -1,0 +1,13 @@
+<header class="w-full bg-white border-b border-stone-200" data-test="website-header">
+  <div class="max-w-5xl mx-auto px-4 h-14 flex items-center gap-3 sm:gap-5 min-w-0">
+    <%= link_to website_page_path(:home), class: "flex items-center gap-2.5 shrink-0", data: { test: "website-brand" } do %><%= render "shared/brand_mark", size: "w-7 h-7" %><span class="hidden sm:inline font-display text-[15px] font-semibold text-zinc-900">CloseYourIt</span><% end %>
+    <nav class="ml-auto flex items-center gap-2 sm:gap-4 min-w-0" aria-label="<%= t("website.nav.aria_label") %>">
+      <%= link_to t("website.nav.workflow"), "#{website_page_path(:home)}#workflow", class: "hidden md:inline text-[13px] font-medium text-gray-500 hover:text-zinc-900", data: { test: "website-nav-workflow" } %>
+      <%= link_to t("website.nav.features"), "#{website_page_path(:home)}#capabilities", class: "hidden sm:inline text-[13px] font-medium text-gray-500 hover:text-zinc-900", data: { test: "website-nav-features" } %>
+      <%= link_to t("website.nav.integrations"), website_page_path(:integrations), class: "hidden sm:inline text-[13px] font-medium text-gray-500 hover:text-zinc-900", data: { test: "website-nav-integrations" } %>
+      <span class="hidden sm:inline-flex items-center rounded-md border border-stone-200 p-0.5 bg-stone-50" role="group" aria-label="<%= t("website.nav.language") %>"><% Website::BaseController::LOCALES.each do |locale| %><%= link_to locale.upcase, website_alternate_path(locale), class: "h-[24px] px-2 inline-flex items-center rounded-[5px] font-mono text-[11px] #{I18n.locale.to_s == locale ? 'bg-white text-zinc-900 border border-stone-200' : 'text-gray-500 hover:text-zinc-900'}", data: { test: "website-lang-#{locale}" } %><% end %></span>
+      <%= link_to t("website.nav.sign_in"), login_path, class: "hidden lg:inline text-[13px] font-medium text-gray-500 hover:text-zinc-900", data: { test: "website-nav-signin" } %>
+      <%= link_to t("website.nav.request_access"), website_page_path(:access_request), class: "h-8 px-3 sm:px-3.5 inline-flex items-center whitespace-nowrap rounded-md bg-indigo-600 text-white text-[13px] font-medium hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600", data: { test: "website-nav-request-access" } %>
+    </nav>
+  </div>
+</header>

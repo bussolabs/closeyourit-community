@@ -1,0 +1,32 @@
+---
+en:
+  member:
+    guides:
+      index:
+        permissions:
+          title: Who can do what
+      permissions:
+        title: Who can do what
+        subtitle: Roles, permissions and where they apply.
+        what_title: The three pieces
+        what_intro: "Access is built from three things that add up. None replaces the others: if one is missing, the action does not go through."
+        what_b1: "The permission: one single thing you can do, say \"Delete tickets\". There are about sixty, one for each sensitive action in the product."
+        what_b2: "The role: a group of permissions with a name, say \"Developer\". You assign it to a person or a team, and changing it updates everyone who holds it right away."
+        what_b3: "The boundary: which projects it applies to. A project permission only counts where the person sees the project; an organisation permission applies everywhere."
+        scope_title: Project or organisation
+        scope_intro: Every permission says what it applies to, and the difference matters more than it looks.
+        scope_project: "\"project\" — applies only to the projects that person sees. Giving \"Delete tickets\" to somebody who sees one project does not let them touch the others."
+        scope_org: "\"org\" — applies to the whole organisation, no exceptions. There is no way to narrow it to one project: if you grant it, you grant it for everything."
+        scope_read: "Reading is almost never a permission of its own: whoever sees a project reads its tickets, errors, logs and measures. Permissions are for doing, not for looking. The exceptions are confidential values and audits, which have a permission of their own."
+        dangerous_title: The sensitive permissions
+        dangerous_intro: "Some permissions cannot be undone or widen the blast radius a lot: in the list they carry the \"sensitive\" mark. They are worth looking at one by one before granting them."
+        dangerous_b1: "The destructive ones: deleting tickets, projects, error groups. What disappears does not come back."
+        dangerous_b2: "The ones that open confidential information: reading secret values and downloading secret files."
+        dangerous_b3: "The ones that act outside the product: running commands on the organisation's machines."
+        dangerous_b4: "The ones that widen privileges: managing roles and permissions means being able to grant yourself everything else."
+        dangerous_confirm: "Actions that go through one of these permissions always ask for confirmation before they run: a question to answer in the browser, the same command repeated with --yes from the terminal. Every confirmation is written to the permission history, with who gave it and when."
+        how_title: How to do it
+        how_step1: Open Roles from Administration and click a role to see, read-only, what it grants.
+        how_step2: "If you need to change it, use \"Edit role\": every permission has a name and a line saying what granting it entails."
+        how_step3: "Assign the role to a team or a person, and give that person the projects they need to see: without a boundary, project permissions do nothing."
+        cta: Go to roles

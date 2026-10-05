@@ -1,0 +1,48 @@
+<% native = presentation.native %>
+<div class="mt-4 min-w-0" data-controller="stack-view native-stack" data-native-stack-selected-value="<%= native.selected_thread %>" data-action="change->native-stack#select turbo:morph@document->stack-view#render turbo:render@document->stack-view#render" data-test="symbolication">
+  <%= render Ui::ButtonGroupComponent.new(test_id: "stack-view-choices", role: "group", aria: { label: t("member.symbolication.view") }, class: "border border-stone-200 dark:border-zinc-800 divide-x divide-stone-200 dark:divide-zinc-800 max-w-full") do |group| %>
+    <% %w[derived received].each do |view| %>
+      <% group.with_button(label: t("member.native_symbols.#{view}"), variant: :ghost, size: :sm, test_id: "stack-view-#{view}",
+        class: "aria-pressed:bg-indigo-50 dark:aria-pressed:bg-indigo-500/15 aria-pressed:text-indigo-700 dark:aria-pressed:text-indigo-300",
+        aria: { pressed: view == "derived", controls: "stack-#{event.id}-#{view}" },
+        data: { "stack-view-target": "choice", action: "stack-view#select", "stack-view-view-param": view }) %>
+    <% end %>
+  <% end %>
+  <div class="flex flex-wrap items-center gap-2 py-3">
+    <p class="text-[12.5px] text-gray-600 dark:text-zinc-400" data-test="symbolication-status"><%= t("member.symbolication.status.#{presentation.status}", default: t("member.symbolication.status.unresolved")) %></p>
+    <% if presentation.status == "pending" || presentation.reason == "processing_unavailable" %>
+      <%= render Ui::ButtonComponent.new(label: t("member.symbolication.refresh"), href: request.fullpath, variant: :ghost, size: :sm, icon: "refresh-cw", test_id: "symbolication-refresh") %>
+    <% end %>
+  </div>
+  <% reason = @native_report_budget ? "native_source_budget" : native.reason %>
+  <% if reason.present? %>
+    <%= render Ui::EmptyNoteComponent.new(text: t("member.native_symbols.reason.#{reason}", default: t("member.native_symbols.reason.unavailable")), test_id: "symbolication-reason", class: "pb-3") %>
+  <% end %>
+  <% if native.threads.any? %>
+    <div class="mb-3 max-w-sm" data-test="native-thread-selector">
+      <%= render Ui::SelectComponent.new(name: "native_thread_#{event.id}", label: t("member.native_symbols.thread"), selected: native.selected_thread,
+        options: native.threads.map { |thread| [t("member.native_symbols.thread_option", index: thread[:index], id: thread[:id], count: thread[:frames].size), thread[:index]] }, test_id: "native-thread") %>
+    </div>
+  <% end %>
+  <% %w[derived received].each do |view| %>
+    <div id="stack-<%= event.id %>-<%= view %>" data-stack-view-target="panel" data-stack-view="<%= view %>" data-test="<%= view %>-stack">
+      <% if native.threads.empty? %>
+        <% unless reason == "native_source_budget" %><%= render Ui::EmptyNoteComponent.new(text: t(native.available? ? "member.native_symbols.no_frames" : "member.native_symbols.report_unavailable")) %><% end %>
+        <% if view == "received" %><%= render "member/monitoring/error_groups/received_stack", event: event %><% end %>
+      <% else %>
+        <% native.threads.each do |thread| %>
+          <%= render "member/monitoring/error_groups/native_thread", thread: thread, derived: view == "derived" %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+  <%= render "member/monitoring/error_groups/native_modules", native: native %>
+  <p class="mt-3 border-t border-stone-200 dark:border-zinc-800 pt-3 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.native_symbols.immutable") %></p>
+  <% if can?("artifacts.manage", scope: @group.project) %>
+    <details class="mt-3 text-[12.5px]" data-test="symbolication-upload-help">
+      <summary class="cursor-pointer text-indigo-700 dark:text-indigo-300 focus-visible:outline-indigo-500"><%= t("member.native_symbols.upload_help") %></summary>
+      <p class="mt-2 text-gray-600 dark:text-zinc-400"><%= t("member.native_symbols.build_hint") %></p>
+      <code class="mt-2 block break-all font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= presentation.command %></code>
+    </details>
+  <% end %>
+</div>

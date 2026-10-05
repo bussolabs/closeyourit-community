@@ -1,0 +1,24 @@
+<% scope = "member.organization_ai.values" %>
+<% colors = { organization: :violet, valhalla: :indigo, environment: :gray } %>
+<% shown = %i[chat_base_url api_key chat_model embedding_model embedding_dimensions transcription_model
+              rerank_base_url rerank_api_key rerank_model monthly_token_cap] %>
+<%= render Ui::SectionComponent.new(title: t("#{scope}.title"), test_id: "org-ai-values") do |section| %>
+  <% section.with_subtitle do %><p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("#{scope}.hint") %></p><% end %>
+  <%= render Ui::DescriptionListComponent.new(columns: 2) do |list| %>
+    <% shown.each do |field| %>
+      <% value = config.public_send(field) %>
+      <% list.with_item(label: t("#{scope}.fields.#{field}"), test_id: "org-ai-value-#{field}") do %>
+        <span class="font-mono text-[12.5px] text-zinc-900 dark:text-zinc-100">
+          <% if Ai::Configuration::SECRET_FIELDS.include?(field) %>
+            <%= t("#{scope}.#{value.present? ? "key_set" : "key_unset"}") %>
+          <% else %>
+            <%= value.presence || t("#{scope}.unset") %>
+          <% end %>
+        </span>
+        <% source = config.sources.fetch(field) %>
+        <%= render Ui::BadgeComponent.new(label: t("#{scope}.sources.#{source}"), color: colors.fetch(source), size: :sm,
+              test_id: "org-ai-source-#{field}-#{source}") %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

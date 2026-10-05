@@ -1,0 +1,84 @@
+<%# locals: ticket, dependencies, candidates, visible_blocker_ids, can_manage %>
+<%# Dipendenze/prerequisiti (CYRA-82): B (blocker) va risolto prima di A (ticket). La card compare se
+    ci sono dipendenze OPPURE se l'utente può gestirle (per il form di aggiunta). Modello: _links. %>
+<% if dependencies.any? || can_manage %>
+  <%# CYRA-883 — a part of the Connections section: sub-heading, no card of its own. %>
+  <div data-test="ticket-dependencies">
+    <div class="px-4 pt-3 pb-1">
+      <h3 class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.dependencies.title") %></h3>
+      <p class="mt-0.5 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.dependencies.help") %></p>
+    </div>
+
+    <% if dependencies.any? %>
+      <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+        <% dependencies.each do |dependency| %>
+          <% blocker = dependency.blocker %>
+          <% done = blocker.status.category_done? %>
+          <%# Anti-BOLA: un blocker cross-project può stare in un progetto non visibile a chi guarda. %>
+          <% visible = visible_blocker_ids.include?(dependency.blocker_id) %>
+          <div class="px-4 py-3 flex items-center gap-2.5" data-test="ticket-dependency-<%= dependency.id %>">
+            <%# Stato del prerequisito evidenziato: risolto (verde, spunta) vs ancora aperto (ambra). %>
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-md shrink-0 <%= done ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400" %>"
+                  title="<%= t("member.tickets.dependencies.state.#{done ? 'done' : 'open'}") %>">
+              <%= render Ui::IconComponent.new(name: done ? "check" : "hourglass", class: "text-[10px]") %>
+            </span>
+            <div class="min-w-0 flex-1">
+              <% if visible %>
+                <%= link_to member_ticket_path(blocker), class: "block group", data: { test: "dependency-target-#{blocker.id}" } do %>
+                  <span class="inline-flex items-center gap-1.5 font-mono text-[10.5px] text-gray-500 dark:text-zinc-400">
+                    <%= render "member/tickets/agent_indicator", ticket: blocker %>
+                    <%= blocker.code %>
+                  </span>
+                  <span class="block text-[12.5px] text-zinc-900 dark:text-zinc-100 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400"><%= blocker.title %></span>
+                <% end %>
+              <% else %>
+                <%# Blocker fuori dallo scope visibile: si conserva il fatto (esiste un prerequisito e il
+                    suo stato, via il badge accanto), si nasconde l'identità (code/title/link). %>
+                <span class="block text-[12.5px] italic text-gray-500 dark:text-zinc-400" data-test="dependency-hidden-<%= dependency.id %>"><%= t("member.tickets.dependencies.hidden_blocker") %></span>
+              <% end %>
+            </div>
+            <%= render Ui::BadgeComponent.new(label: blocker.status.display_label, color: blocker.status.color, size: :sm, dot: true) %>
+            <% if can_manage %>
+              <%= button_to member_ticket_dependency_path(ticket, dependency), method: :delete,
+                    class: "shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 dark:text-zinc-500 hover:bg-red-50 dark:hover:bg-red-500/15 hover:text-red-600 dark:hover:text-red-400",
+                    title: t("member.tickets.dependencies.remove"),
+                    form: { class: "pointer-events-auto" },
+                    data: { test: "ticket-dependency-remove-#{dependency.id}", turbo_confirm: t("member.tickets.dependencies.remove_confirm") } do %>
+                <%= render Ui::IconComponent.new(name: "x", class: "text-[12px]") %>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% elsif !can_manage %>
+      <%= render Ui::EmptyNoteComponent.new(text: t("member.tickets.dependencies.readonly_empty"), inset: true, test_id: "ticket-dependencies-empty") %>
+    <% end %>
+
+    <% if can_manage %>
+      <div class="px-4 py-3 <%= "border-t border-stone-200 dark:border-zinc-800" if dependencies.any? %>">
+        <% if candidates.any? %>
+          <%= form_with url: member_ticket_dependencies_path(ticket), method: :post, class: "flex items-center gap-2", data: { test: "dependency-form" } do %>
+            <div class="min-w-0 flex-1">
+              <%= render Ui::SelectComponent.new(
+                    name: "blocker_id",
+                    aria_label: t("member.tickets.dependencies.select_label"),
+                    options: candidates.map { |candidate| [ "#{candidate.code} · #{candidate.title}", candidate.id ] },
+                    include_blank: true,
+                    placeholder: t("member.tickets.dependencies.select_placeholder"),
+                    required: true,
+                    size: :sm,
+                    test_id: "dependency-blocker-select") %>
+            </div>
+            <%= render Ui::ButtonComponent.new(label: t("member.tickets.dependencies.add"), type: "submit",
+                  variant: :secondary_muted, size: :sm, icon: "plus", test_id: "dependency-add") %>
+          <% end %>
+          <% if dependencies.empty? %>
+            <%= render Ui::EmptyNoteComponent.new(text: t("member.tickets.dependencies.empty"), class: "mt-2") %>
+          <% end %>
+        <% else %>
+          <p class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="dependency-no-candidates"><%= t("member.tickets.dependencies.no_candidates") %></p>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

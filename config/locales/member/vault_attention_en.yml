@@ -1,0 +1,36 @@
+en:
+  member:
+    vault_attention:
+      title: Needs fixing
+      help_title: "What needs fixing on your secrets, riskiest first."
+      stat_total: Needs fixing
+      stat_high: High risk
+      stat_decidable: To decide
+      stat_rotation_coverage: with a rotation rule
+      empty: Nothing needs fixing
+      empty_body: No missing variables, no values past their deadline and no pending requests across the projects you can see.
+      since: "Open for %{time}"
+      open_secrets: Open secrets
+      fix: Fix in secrets
+      search: Search secret or project…
+      filter_risk: Risk
+      filter_kind: Kind
+      no_match: Nothing matches the filters.
+      requested_by: "asked by %{who} to %{action}"
+      open_consolidation: Review the suggestion
+      dismiss_consolidation: Stop suggesting
+      detail_consolidation: the same value is kept by hand in several projects
+      projects_count:
+        one: "%{count} project"
+        other: "%{count} projects"
+      stat_consolidation: Shared values
+      risk:
+        high: High
+        medium: Medium
+        low: Low
+      kind:
+        anomaly: missing
+        rotation_overdue: value overdue
+        rotation_due_soon: value due soon
+        change_request: waiting for a decision
+        consolidation: shared value

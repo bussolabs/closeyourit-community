@@ -1,0 +1,11 @@
+it:
+  todos:
+    lists:
+      errors:
+        invalid: "Impossibile salvare la lista"
+    items:
+      errors:
+        invalid: "Impossibile salvare la voce"
+    shares:
+      errors:
+        invalid: "Impossibile condividere la lista: il destinatario deve essere membro di questa organizzazione"

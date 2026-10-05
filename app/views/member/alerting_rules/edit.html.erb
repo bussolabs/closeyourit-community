@@ -1,0 +1,3 @@
+<% content_for :title, t("member.alerting.rules.edit_title") %>
+<%= render "form", rule: @rule, url: member_alerting_rule_path(@rule), method: :patch,
+                   submit_label: t("member.alerting.rules.form.save") %>

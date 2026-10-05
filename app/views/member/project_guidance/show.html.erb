@@ -1,0 +1,24 @@
+<% content_for :title, "#{@project.name} · #{t("member.guidance.title")}" %>
+
+<div class="p-7 space-y-6" data-test="member-project-guidance">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "guidance" %>
+
+  <%# The three panels side by side on a wide screen; nothing sits outside a panel (T1). %>
+  <div class="grid items-start gap-6 lg:grid-cols-3 [&>*]:min-w-0" data-test="guidance-panels">
+    <%= render "member/guidance/references_section",
+          references: @references,
+          add_path: new_member_project_guidance_reference_path(@project),
+          reorder_path: reorder_member_project_guidance_references_path(@project),
+          edit_path: ->(reference) { edit_member_project_guidance_reference_path(@project, reference) },
+          delete_path: ->(reference) { member_project_guidance_reference_path(@project, reference) } %>
+
+    <%= render "member/guidance/procedures_section",
+          procedures: @procedures,
+          add_path: new_member_project_guidance_procedure_path(@project),
+          reorder_path: reorder_member_project_guidance_procedures_path(@project),
+          edit_path: ->(procedure) { edit_member_project_guidance_procedure_path(@project, procedure) },
+          delete_path: ->(procedure) { member_project_guidance_procedure_path(@project, procedure) } %>
+
+    <%= render "member/guidance/preview", preview: @preview %>
+  </div>
+</div>

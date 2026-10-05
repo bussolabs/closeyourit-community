@@ -1,0 +1,29 @@
+en:
+  member:
+    vault_rotation:
+      title: What to rotate
+      help_title: Shows how many secrets are covered by a rotation policy out of the total, and gathers the ones due soon or already overdue in one place, instead of finding them project by project.
+      stat_coverage: Coverage
+      stat_due_soon: Due soon
+      stat_overdue: Overdue
+      no_secrets: No secrets yet
+      no_secrets_body: There are no secrets among the projects you can see. Once you add some, this page will show which ones need rotating.
+      onboarding_title: Rotation is not active yet
+      onboarding_body: 'No secret has a rotation policy, so "zero due" is not an all-clear: the feature is simply off. A policy reminds you to change the value every so many days.'
+      onboarding_how: Open a project below and set a policy on its secrets, starting from the oldest values and from production.
+      all_covered_title: All good
+      all_covered_body: Every secret with a policy is within its deadline. Below, the ones still without a policy.
+      list_title: To rotate
+      list_body: Secrets with a rotation policy due soon or already overdue.
+      uncovered_title: Secrets without a policy
+      uncovered_body: The oldest value on top, so you can start there (production first). Open the project to set a policy.
+      uncovered_more: and %{count} more secrets without a policy
+      col_variable: Variable
+      col_project: Project
+      col_environment: Environment
+      col_status: Deadline
+      col_last_rotated: Last rotated
+      col_age: Value age
+      age_unknown: Unknown
+      col_action: Action
+      set_rule: Set a rule

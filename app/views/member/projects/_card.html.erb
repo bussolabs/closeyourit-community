@@ -1,0 +1,27 @@
+<%# Project card (CYRA-883, D24, D25): identity, then health (open errors, availability), then the last release.
+    Locals: project, health (Projects::CardHealth). Red appears only when something is wrong (D22). %>
+<% errors = health.errors_for(project) %>
+<% uptime = health.uptime_for(project) %>
+<% release = health.release_for(project) %>
+<%= render Ui::EntityCardComponent.new(href: member_project_path(project), title: project.name, key: project.key,
+      description: project.description, open_label: t("member.projects.card.open"), open_hint_test_id: "project-open-hint",
+      test_id: "project-card-#{project.id}") do |card| %>
+  <% card.with_mark { render Ui::EntityMarkComponent.new(record: project, size: :xs) } %>
+  <% card.with_meta { render Ui::GithubStatusComponent.new(connected: project.github_repository.present?, test_id: "project-github-status") } %>
+  <% card.with_badges do %>
+    <% if errors.positive? %>
+      <%= render Ui::BadgeComponent.new(label: t("member.projects.card.errors", count: errors), color: :red, dot: true, test_id: "project-health-errors") %>
+    <% else %>
+      <%= render Ui::BadgeComponent.new(label: t("member.projects.card.no_errors"), color: :green, dot: true, test_id: "project-health-errors") %>
+    <% end %>
+    <% if uptime %>
+      <%= render Ui::BadgeComponent.new(label: t("member.projects.card.uptime.#{uptime}"), color: { up: :green, down: :red, unknown: :gray }.fetch(uptime),
+            dot: true, test_id: "project-health-uptime") %>
+    <% end %>
+  <% end %>
+  <% if release %>
+    <% card.with_footer_end do %>
+      <span data-test="project-health-release"><%= t("member.projects.card.release", version: release.display_version, time: time_ago_in_words(release.created_at)) %></span>
+    <% end %>
+  <% end %>
+<% end %>

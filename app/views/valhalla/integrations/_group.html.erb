@@ -1,0 +1,27 @@
+<% scope = "valhalla.integrations" %>
+<% colors = { valhalla: :indigo, environment: :gray, missing: :amber } %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="integrations-<%= group %>">
+  <div class="border-b border-stone-200 dark:border-zinc-800 px-6 py-4">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("#{scope}.groups.#{group}.title") %></h2>
+    <p class="mt-1 text-[13px] text-stone-500 dark:text-zinc-400"><%= t("#{scope}.groups.#{group}.hint") %></p>
+  </div>
+  <div class="p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+      <% fields.each do |field| %>
+        <% secret = Settings::Integrations::SECRET_FIELDS.include?(field) %>
+        <% source = Settings::Integrations.source(field) || :missing %>
+        <div>
+          <%= render Ui::InputComponent.new(
+                name: field.to_s, label: t("#{scope}.fields.#{field}"), autocomplete: "off",
+                type: secret ? "password" : "text", value: (settings.public_send(field) unless secret),
+                hint: t("#{scope}.#{secret ? "secret_hint" : "value_hint"}", variable: Settings::Integrations::FIELDS.fetch(field)),
+                test_id: "integration-#{field.to_s.dasherize}", error: errors&.dig(field)&.first) %>
+          <div class="mt-1.5">
+            <%= render Ui::BadgeComponent.new(label: t("#{scope}.sources.#{source}"), color: colors.fetch(source), size: :sm,
+                  test_id: "integration-source-#{field}-#{source}") %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

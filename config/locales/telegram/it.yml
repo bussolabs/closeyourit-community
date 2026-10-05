@@ -1,0 +1,74 @@
+it:
+  telegram:
+    start:
+      welcome: |-
+        👋 Ciao! Sono il bot delle notifiche di CloseYourIt — qui ti recapito i tuoi avvisi.
+
+        Per collegare il tuo account apri CloseYourIt → Impostazioni → Telegram e premi «Collega Telegram». Quel link ti riporta qui già firmato e io ti confermo il collegamento.
+
+        Scrivere /start da solo non basta a collegarti: non so ancora chi sei, serve il pulsante nell'app. Manda /stop quando vuoi per scollegarti.
+    link:
+      connected: "Collegato come %{name}. Riceverai qui le tue notifiche CloseYourIt."
+      disconnected: "Scollegato. Non riceverai più le notifiche CloseYourIt qui."
+    commands:
+      link_required: |-
+        Devi prima collegare il tuo account: apri CloseYourIt → Impostazioni → Telegram e premi «Collega Telegram».
+      unknown: "Comando non riconosciuto. Scrivi /aiuto per la lista dei comandi."
+    menu:
+      nuovo_ticket: "Apri un ticket: /nuovo_ticket [CHIAVE] testo (+foto in didascalia)"
+      progetti: "Elenca i tuoi progetti con le chiavi"
+      progetto: "Imposta il progetto attivo: /progetto CHIAVE"
+      ticket: "Stato di un ticket: /ticket CHIAVE-12"
+      miei_ticket: "I tuoi ticket aperti"
+      commenta: "Commenta un ticket: /commenta CHIAVE-12 testo"
+      aiuto: "Guida ai comandi"
+    help:
+      body: |-
+        Comandi disponibili:
+
+        /nuovo-ticket [CHIAVE] <testo> — apre un ticket (allega la foto mettendo il comando nella didascalia)
+        /progetti — elenca i tuoi progetti con le chiavi
+        /progetto <CHIAVE> — imposta il progetto attivo (default per /nuovo-ticket)
+        /ticket <CODICE> — mostra stato di un ticket (es. /ticket DRRA-12)
+        /miei-ticket — i tuoi ticket aperti
+        /commenta <CODICE> <testo> — commenta un ticket (+foto in didascalia)
+        /aiuto — questo messaggio
+    projects:
+      list: "I tuoi progetti:\n%{list}"
+      item: "%{key} — %{name}"
+      empty: "Non vedi ancora nessun progetto. Chiedi a un amministratore di darti accesso."
+    project:
+      set_ok: "Progetto attivo: %{key} — %{name}. Ora /nuovo-ticket <testo> aprirà i ticket qui."
+      usage: "Uso: /progetto CHIAVE (es. /progetto DRRA). /progetti per la lista."
+    ticket:
+      created: "✅ Ticket %{code} creato: %{title}\n%{url}"
+      created_photo: "✅ Ticket %{code} creato con foto allegata: %{title}\n%{url}"
+      created_photo_failed: "✅ Ticket %{code} creato (foto non allegata): %{title}\n%{url}"
+      no_project: "Nessun progetto attivo. Impostalo con /progetto CHIAVE oppure usa /nuovo-ticket CHIAVE <testo>. /progetti per la lista."
+      empty: "Scrivi il testo del ticket: /nuovo-ticket descrizione del problema."
+      failed: "Non sono riuscito ad aprire il ticket: %{error}"
+      show: "🎫 %{code} — %{title}\nStato: %{status} · Priorità: %{priority}\nAssegnatario: %{assignee}\n%{url}"
+      show_usage: "Uso: /ticket CODICE (es. /ticket DRRA-12)."
+      unassigned: "nessuno"
+      mine: "I tuoi ticket aperti:\n%{list}"
+      mine_item: "%{code} %{title} (%{status})"
+      mine_empty: "Non hai ticket aperti."
+    comment:
+      added: "💬 Commento aggiunto a %{code}.\n%{url}"
+      failed: "Non sono riuscito ad aggiungere il commento: %{error}"
+      usage: "Uso: /commenta CODICE <testo> (es. /commenta DRRA-12 ci ho riprovato)."
+      empty: "Scrivi il testo del commento: /commenta CODICE il tuo messaggio."
+      photo_body: "Foto allegata da Telegram."
+    errors:
+      project_not_found: "Nessun progetto con chiave %{key} tra quelli che vedi. /progetti per la lista."
+      project_ambiguous: "La chiave %{key} esiste in più organizzazioni. Aprilo dal web per disambiguare."
+      project_none: "Nessun progetto attivo. Impostalo con /progetto CHIAVE. /progetti per la lista."
+      ticket_bad_code: "Codice ticket non valido. Usa il formato CHIAVE-NUMERO (es. DRRA-12)."
+      ticket_not_found: "Ticket %{code} non trovato tra quelli che vedi."
+    group:
+      connected: "Gruppo collegato a %{organization}. Da ora i tuoi avvisi arrivano qui, ognuno nel suo argomento. La mail per lo stesso avviso non parte più."
+      not_owner: "Solo il proprietario dell'organizzazione può collegare un gruppo Telegram. Il gruppo non è stato collegato."
+      not_forum: "Questo gruppo non ha gli argomenti attivi. Attivali nelle impostazioni del gruppo, poi torna su CloseYourIt e premi di nuovo «Collega gruppo Telegram»."
+      topics:
+        critical: "Critico"
+        other: "Altro"

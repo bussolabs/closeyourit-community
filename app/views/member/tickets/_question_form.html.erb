@@ -1,0 +1,36 @@
+<%# locals: (ticket:, can_manage:, open_count:) %>
+<%# Chiedere è di chiunque veda il ticket. Marcare la domanda BLOCCANTE ferma la coda degli agenti su
+    questo ticket, quindi la casella compare solo a chi può modificarlo: è una leva sul lavoro, non
+    una conversazione. %>
+<%# CYRA-883 — one row: the field, with Ask inside it, and the open count. The two options appear once the field is in
+    use (focus or text), with CSS only, so they are there without JavaScript too. %>
+<%= form_with url: member_ticket_questions_path(ticket), method: :post, class: "group px-4 py-3 border-b border-stone-200 dark:border-zinc-800 space-y-2" do %>
+  <div class="flex items-start gap-2">
+    <%# The microphone dictates into the field: what is said is added to what is already written. %>
+    <% dictation = dictation_available? %>
+    <%= tag.div class: "relative min-w-0 flex-1", data: (dictation ? dictation_voice_data : {}) do %>
+      <%= text_field_tag :body, nil, id: "ticket-question-body", placeholder: t("member.tickets.questions.placeholder"), maxlength: Ticketing::Constants::QUESTION_MAX_CHARS,
+            class: "block w-full h-[34px] rounded-md border border-stone-200 dark:border-zinc-800 #{dictation ? "pl-3 pr-[70px]" : "pl-3 pr-10"} text-[12.5px] placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-400",
+            data: { test: "ticket-question-body", "ui--voice-inline-target": "input" } %>
+      <%# Ask sits inside the field, at its right end; the microphone stands beside it. %>
+      <%= render Ui::ButtonComponent.new(label: t("member.tickets.questions.submit"), type: "submit", icon_only: true,
+            variant: :primary, size: :sm, icon: "send", class: "absolute top-[3px] right-[3px]", test_id: "ticket-question-submit") %>
+      <%= render "member/shared/dictation_controls", mic_class: "absolute top-[3px] right-[34px]" if dictation %>
+    <% end %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.tickets.questions.open_count"), value: open_count,
+          value_color: open_count.positive? ? "text-amber-700 dark:text-amber-300" : Ui::StatLabelComponent::DEFAULT_VALUE_COLOR, class: "mt-[9px]", test_id: "ticket-questions-open-count") %>
+  </div>
+  <div class="hidden group-focus-within:flex group-has-[#ticket-question-body:not(:placeholder-shown)]:flex items-center gap-4 flex-wrap"
+       data-test="ticket-question-options">
+    <% if can_manage %>
+      <label class="inline-flex items-center gap-2 text-[12px] text-zinc-700 dark:text-zinc-300">
+        <%= check_box_tag :blocking, "1", false, class: "rounded border-stone-300 dark:border-zinc-700 text-indigo-600 dark:text-indigo-400", data: { test: "ticket-question-blocking" } %>
+        <%= t("member.tickets.questions.blocking_label") %>
+      </label>
+    <% end %>
+    <label class="inline-flex items-center gap-2 text-[12px] text-zinc-700 dark:text-zinc-300">
+      <%= check_box_tag :audience, "shared", false, class: "rounded border-stone-300 dark:border-zinc-700 text-indigo-600 dark:text-indigo-400", data: { test: "ticket-question-shared" } %>
+      <%= t("member.tickets.questions.shared_label") %>
+    </label>
+  </div>
+<% end %>

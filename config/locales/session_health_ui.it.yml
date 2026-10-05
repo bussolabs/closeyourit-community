@@ -1,0 +1,35 @@
+it:
+  member:
+    nav:
+      session_health: Sessioni
+    monitoring:
+      session_health:
+        title: Sessioni
+        subtitle: "Sessioni senza crash per versione e ambiente, con gli esiti mancanti sempre visibili."
+        groups: gruppi
+        index:
+          empty: Nessuna sessione ricevuta
+          empty_body: "La salute delle sessioni indica se una versione termina senza crash. Non registra lo schermo né le interazioni delle persone."
+          empty_example: "Configura il DSN Sentry del progetto e abilita il tracciamento delle sessioni nell'SDK. I gruppi per versione compaiono dopo la prima sessione ricevuta."
+          search: Cerca versioni…
+          project: Progetto
+          environment: Ambiente
+          source: Fonte
+          all_sources: Tutte le fonti
+          individual: Sessioni singole
+          aggregate: Richieste aggregate
+          release_environment: Versione / ambiente
+          known: Esiti noti
+          crashed: Crash
+          unknown: Sconosciuti
+          rate: Senza crash
+          unknown_environment: Ambiente sconosciuto
+          unavailable: Nessun esito noto
+          definition_title: Come leggere questi numeri
+          definition: "Senza crash = (concluse + con errori + non gestite) / (concluse + con errori + non gestite + crash). Le sessioni aperte o anomale sono sconosciute ed escluse dal denominatore. Senza esiti noti, la percentuale non è disponibile."
+          sources_note: "Sessioni singole e richieste aggregate restano separate. Gli aggregati non hanno un identificatore di invio: i reinvii identici non sono deduplicabili. I filtri usano l'inizio della sessione; i selettori di progetto e ambiente mostrano fino a 200 valori."
+          recordings_note: "Questi sono esiti delle sessioni, non registrazioni. Le registrazioni dello schermo sono in Session replay."
+          deduplication:
+            sid: Deduplicate per ID sessione
+            partial: Alcune sessioni non hanno un ID
+            unavailable: Reinvii non deduplicabili

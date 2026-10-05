@@ -1,0 +1,84 @@
+<% content_for :title, t("member.monitoring.merge.title") %>
+<%# CYRA-192 — La conferma della fusione. È una PAGINA e non una finestrella con «sei sicuro?»:
+    l'operazione non si annulla, quindi chi conferma deve poter leggere davvero cosa sta per sparire —
+    messaggio, punto del codice, quante occorrenze, da quando — e scegliere quale gruppo resta. Il
+    primario proposto è quello con più occorrenze, ma la scelta è sua. %>
+<div class="p-7 space-y-6" data-test="error-merge-preview">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.monitoring.merge.title"),
+        breadcrumb: [ { label: t("member.monitoring.title"), href: member_monitoring_error_groups_path },
+                      { label: t("member.monitoring.merge.title") } ],
+        counts_test_id: "error-merge-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.merge.count_selected"),
+            value: @groups.size, test_id: "merge-count-selected") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.merge.count_absorbed"),
+            value: @groups.size - 1, value_color: :rose, test_id: "merge-count-absorbed") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.merge.count_events"),
+            value: number_with_delimiter(@groups.sum(&:events_count)), test_id: "merge-count-events") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.merge.count_project"),
+            value: @groups.first.project.name, test_id: "merge-count-project") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.monitoring.merge.back"),
+            href: member_monitoring_error_groups_path, variant: :secondary_muted, size: :sm,
+            icon: "arrow-left", test_id: "merge-back") %>
+    <% end %>
+  <% end %>
+
+  <%# L'avviso è in cima e dice la cosa sola che conta: non si torna indietro. %>
+  <div class="flex items-start gap-2.5 rounded-lg border border-amber-200 dark:border-amber-500/40 bg-amber-50/60 dark:bg-amber-500/10 px-4 py-3" data-test="merge-warning">
+    <%= render Ui::IconComponent.new(name: "triangle-alert", class: "mt-0.5 text-[13px] text-amber-600 dark:text-amber-400") %>
+    <div class="min-w-0">
+      <p class="text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.merge.warning_title") %></p>
+      <p class="mt-0.5 text-[12.5px] text-gray-600 dark:text-zinc-400"><%= t("member.monitoring.merge.warning_body") %></p>
+    </div>
+  </div>
+
+  <%= form_with url: merge_member_monitoring_error_groups_path, method: :post, data: { test: "merge-form" } do %>
+    <% @groups.each do |group| %>
+      <%= hidden_field_tag "ids[]", group.id, id: nil %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="merge-candidates">
+      <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+        <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.merge.choose_primary") %></h2>
+        <p class="mt-0.5 text-[12px] text-gray-600 dark:text-zinc-400"><%= t("member.monitoring.merge.choose_primary_hint") %></p>
+      </div>
+      <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+        <% @groups.each do |group| %>
+          <li class="px-4 py-3" data-test="merge-candidate-<%= group.id %>">
+            <label class="flex items-start gap-3 cursor-pointer">
+              <input type="radio" name="primary_id" value="<%= group.id %>" required
+                     <%= "checked" if group == @primary %>
+                     data-test="merge-primary-<%= group.id %>"
+                     class="mt-1 h-3.5 w-3.5 border-stone-300 dark:border-zinc-700 text-indigo-600 dark:text-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400">
+              <span class="min-w-0 flex-1">
+                <span class="block text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= group.title %></span>
+                <span class="mt-0.5 block truncate font-mono text-[11px] text-gray-500 dark:text-zinc-400"
+                      title="<%= error_culprit_text(group.culprit) %>"><%= error_culprit(group.culprit) || "—" %></span>
+                <span class="mt-1.5 flex items-center flex-wrap gap-2">
+                  <%= render Ui::BadgeComponent.new(label: t("member.monitoring.status.#{group.status}"),
+                        color: error_status_color(group.status), size: :sm, dot: true) %>
+                  <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"
+                        data-test="merge-candidate-events-<%= group.id %>"><%= t("member.monitoring.merge.events", count: number_with_delimiter(group.events_count)) %></span>
+                  <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.merge.first_seen", when: error_time_ago(group.first_seen_at)) %></span>
+                  <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.merge.last_seen", when: error_time_ago(group.last_seen_at)) %></span>
+                </span>
+              </span>
+            </label>
+          </li>
+        <% end %>
+      </ul>
+      <div class="flex items-center justify-end gap-2 px-4 py-3 border-t border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800">
+        <%= render Ui::ButtonComponent.new(label: t("shared.actions_cancel"),
+              href: member_monitoring_error_groups_path, variant: :secondary_muted, size: :sm,
+              test_id: "merge-cancel") %>
+        <button type="submit" data-test="merge-confirm"
+                class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] font-semibold bg-red-600 text-white hover:bg-red-700">
+          <%= render Ui::IconComponent.new(name: "git-merge", class: "text-[10px]") %><%= t("member.monitoring.merge.confirm") %>
+        </button>
+      </div>
+    </div>
+  <% end %>
+</div>

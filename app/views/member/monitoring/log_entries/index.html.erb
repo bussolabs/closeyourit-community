@@ -1,0 +1,90 @@
+<% content_for :title, t("member.monitoring.logs.title") %>
+
+<div class="p-7 space-y-6" data-test="member-log-entries">
+  <%# Live via page-refresh Turbo 8 (CYRA-57): al nuovo batch di log Logs::Broadcast fa un solo
+      broadcast_refresh_to (throttlato) sullo stream dell'org → ogni viewer ri-fetcha QUESTA index (coi
+      PROPRI filtri level/environment/project/range + paginazione) e morpha il DOM. Sostituisce il vecchio
+      prepend per-riga, che sotto burst renderizzava fino a 1000 partial nel worker :ingest e ignorava i
+      filtri attivi. Il morph preserva lo scroll; ognuno ricarica la propria vista filtrata. %>
+  <%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+  <%# CYRA-822 — con un filtro di progetto attivo il segnale arriva dai soli progetti osservati, non
+      più da tutta l'organizzazione: un batch di log di un progetto che non si sta guardando non fa
+      più ri-chiedere questa pagina. %>
+  <% if @live_projects.any? %>
+    <% @live_projects.each do |stream_project| %>
+      <%= turbo_stream_from Realtime::Streams.project_logs_list(stream_project) %>
+    <% end %>
+  <% else %>
+    <%= turbo_stream_from Realtime::Streams.logs(current_organization) %>
+  <% end %>
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.monitoring.logs.title"),
+        subtitle: t("member.monitoring.logs.help_title"),
+        breadcrumb: [ { label: t("member.monitoring.logs.title") } ],
+        counts_test_id: "logs-counts") do |h| %>
+    <% h.with_counts do %>
+      <%# CYRA-354 — i conteggi seguono il filtro: prima restavano identici anche con una ricerca che
+          riduceva il risultato a trentasei righe, e sembrava che il filtro non avesse avuto effetto.
+          Il totale non filtrato resta accanto, perché è il contesto di quel numero. %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.logs", count: @logs_total), value: log_count_label(@filtered_total, @logs_total), title: log_count_title(@filtered_total, @logs_total), test_id: "logs-stat-total") %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.errors", count: @logs_error_count), value: log_count_label(@filtered_error_count, @logs_error_count), title: log_count_title(@filtered_error_count, @logs_error_count), value_color: :rose, test_id: "logs-stat-errors") %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.warnings", count: @logs_warning_count), value: log_count_label(@filtered_warning_count, @logs_warning_count), title: log_count_title(@filtered_warning_count, @logs_warning_count), value_color: :amber, test_id: "logs-stat-warnings") %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-391 — `trace_id` è un filtro come gli altri: senza contarlo, arrivare qui dal codice di
+      una richiesta senza registri mostrava lo stato «non hai ancora collegato niente», che è falso.
+      CYRA-340: e il periodo restringe SEMPRE (predefinito: ultime 24 ore), quindi «non è arrivato
+      niente» non si deduce più da un elenco vuoto — lo dice @has_records, che guarda oltre il
+      periodo. Le due condizioni servono entrambe: i filtri espliciti spiegano il vuoto anche quando
+      di log non ce n'è nemmeno uno (ci si arriva col codice di una richiesta). %>
+  <% filtering = params[:q].present? || params[:level].present? || params[:environment].present? || params[:project_id].present? || params[:from].present? || params[:to].present? || params[:trace_id].present? %>
+  <% if !@has_filtered_records && !filtering && !@has_records %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.logs.empty"), body: t("member.monitoring.logs.empty_body"),
+          icon: "list", framed: true, test_id: "logs-empty") do |empty| %>
+      <% empty.with_action do %>
+        <%= render "member/monitoring/log_entries/retention_note", classes: "text-[12px] text-gray-400 dark:text-zinc-500 max-w-sm mx-auto" %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%# CYRA-344 — la sidebar dei campi: l'area prometteva log organizzati per campi e offriva solo una
+        ricerca di testo dentro il messaggio, da indovinare. Qui si legge cosa c'è davvero nel risultato
+        e con un clic si restringe. I conteggi sono su una finestra recente, non su tutto lo stream:
+        una scansione di 55k+ righe a ogni caricamento costerebbe più di quanto vale la sidebar. %>
+    <div class="flex flex-col lg:flex-row gap-6 items-start">
+    <% if @facets.any? %>
+      <%= render "member/monitoring/log_entries/facets_sidebar" %>
+    <% end %>
+
+    <%# CYRA-814 — `w-full` sotto lg, non solo `flex-1`: impilati in colonna `flex-1` governa
+        l'ALTEZZA, e la larghezza la decide `items-start` — «grande quanto il contenuto», cioè
+        quanto la tabella dei log, 1326 px dentro uno schermo da 390. Periodo, Filtri e Viste
+        finivano fuori e si raggiungevano solo trascinando tutta la pagina. Su lg il contenitore
+        torna una riga e `flex-1` è di nuovo la cosa giusta: lì `w-auto` gli restituisce il posto.
+        Grafico e tabella continuano a scorrere per conto proprio (i loro `overflow-x-auto`). %>
+    <div class="w-full min-w-0 lg:w-auto lg:flex-1 space-y-4">
+    <%# CYRA-354 — il volume nel tempo: senza, un picco notturno si trovava solo sfogliando migliaia
+        di pagine. Un blocco acceso di rosso contiene voci allarmanti; cliccarlo restringe l'elenco a
+        quella finestra, come già si fa sul grafico delle prestazioni. %>
+    <% if @volume_buckets.present? %>
+      <%= render "member/monitoring/log_entries/volume_chart" %>
+    <% end %>
+
+    <div class="min-w-0 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="log-entries-table">
+      <%= render "member/monitoring/log_entries/active_filters" %>
+      <%= render "member/monitoring/log_entries/toolbar" %>
+
+      <%# CYRA-821 — i risultati vivono in un frame proprio: sfogliare e riordinare aggiornano
+          soltanto lui, mentre grafico, campi, chip e barra dei filtri restano quelli. %>
+      <%= render "member/monitoring/log_entries/results" %>
+      <%# CYRA-61: footer with logs on screen — logs past the retention window are deleted, so a "missing"
+          log does not look like an ingest bug. Only with logs: the empty and no-match states already say it.
+          T1 — it is the footer of the table panel, not a line on the page ground. %>
+      <% if @has_filtered_records %>
+        <%= render "member/monitoring/log_entries/retention_note", classes: "px-4 py-2.5 border-t border-stone-200 dark:border-zinc-800 text-[12px] text-gray-400 dark:text-zinc-500" %>
+      <% end %>
+    </div>
+    </div>
+    </div>
+  <% end %>
+</div>

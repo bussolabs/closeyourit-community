@@ -1,0 +1,30 @@
+<%= render Ui::CardGridComponent.new(test_id: "cards") do |grid| %>
+  <% grid.with_toolbar do %>
+    <%= render Ui::TableToolbarComponent.new(framed: true, url: "#", search_placeholder: "Cerca progetti…") %>
+  <% end %>
+  <% grid.with_group(title: "Storefront Suite", href: "#", count_label: "2 progetti") do |group| %>
+    <% group.with_mark { tag.span(class: "block w-2.5 h-2.5 rounded-[3px] bg-indigo-500") } %>
+    <%= render Ui::EntityCardComponent.new(href: "#", title: "Dashboard", key: "DASH", description: "Dashboard analytics interna.", open_label: "Apri progetto") do |c| %>
+      <% c.with_mark { tag.span(class: "block w-6 h-6 rounded-md bg-indigo-500") } %>
+      <% c.with_badges { render Ui::BadgeComponent.new(label: "Nessun errore", color: :green, dot: true) } %>
+      <% c.with_footer { "2 da fare" } %>
+      <% c.with_footer_end { "v2.4.0 · 2 giorni fa" } %>
+    <% end %>
+    <%= render Ui::EntityCardComponent.new(href: "#", title: "Storefront", key: "STR", description: "Frontend pubblico: catalogo, carrello e checkout.", open_label: "Apri progetto") do |c| %>
+      <% c.with_mark { tag.span(class: "block w-6 h-6 rounded-md bg-indigo-500") } %>
+      <% c.with_badges { render Ui::BadgeComponent.new(label: "Nessun errore", color: :green, dot: true) } %>
+      <% c.with_footer { "2 da fare" } %>
+      <% c.with_footer_end { "v2.4.0 · 2 giorni fa" } %>
+    <% end %>
+  <% end %>
+  <% grid.with_group(title: "Senza gruppo", muted: true, count_label: "1 progetto") do %>
+    <%= render Ui::EntityCardComponent.new(href: "#", title: "Payments API", key: "API", description: "Backend pagamenti REST e webhook.", open_label: "Apri progetto") do |c| %>
+      <% c.with_mark { tag.span(class: "block w-6 h-6 rounded-md bg-indigo-500") } %>
+      <% c.with_badges { render Ui::BadgeComponent.new(label: "9 errori aperti", color: :red, dot: true) } %>
+      <% c.with_footer { "2 da fare" } %>
+      <% c.with_footer_end { "v2.4.0 · 2 giorni fa" } %>
+    <% end %>
+  <% end %>
+  <% grid.with_more(href: "#") %>
+  <% grid.with_setup_item(label: "Mobile", href: "#") { tag.span(class: "block w-2.5 h-2.5 rounded-[3px] bg-teal-500") } %>
+<% end %>

@@ -1,0 +1,22 @@
+<%# CYRA-376 — nessuna sessione registrata per QUESTA occorrenza: il riquadro resta e lo dice, invece
+    di sparire lasciando credere che il legame fra errore e registrazione non esista. Dove la
+    funzione è spenta ma si può accendere, porta all'interruttore del progetto. `event` nil = il
+    gruppo non ha nemmeno un'occorrenza mostrata: pannello statico col suo titolo; altrimenti è una
+    scheda dell'occorrenza (CYRA-986). %>
+<div class="<%= "rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" unless event %>" data-test="error-replay-none">
+  <% unless event %>
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.replay.title") %></h2>
+    </div>
+  <% end %>
+  <div class="px-4 py-6 space-y-3">
+    <p class="text-[12.5px] text-gray-500 dark:text-zinc-400">
+      <%= @replay_collecting ? t("member.monitoring.replay.none") : t("member.monitoring.replay.none_off") %>
+    </p>
+    <% if @can_activate_replay %>
+      <%= render Ui::ButtonComponent.new(label: t("member.monitoring.replay.none_cta"),
+            href: member_project_settings_path(@group.project), variant: :secondary_muted, size: :sm,
+            icon: "sliders", test_id: "error-replay-activate") %>
+    <% end %>
+  </div>
+</div>

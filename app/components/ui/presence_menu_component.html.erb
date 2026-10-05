@@ -1,0 +1,57 @@
+<details id="presence_list"
+         class="relative"
+         data-controller="ui--dismissable"
+         data-presence-target="list"
+         data-test="presence-list">
+  <summary class="list-none cursor-pointer flex h-11 min-w-0 items-center gap-2 rounded-md border-0 bg-white dark:bg-zinc-900 px-0 text-gray-500 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1 md:h-[34px] md:w-[34px] md:justify-center md:border md:border-stone-200 dark:md:border-zinc-800 md:px-0 md:@min-[810px]:w-auto md:@min-[810px]:justify-start md:@min-[810px]:px-2.5"
+           aria-label="<%= t('member.presence.trigger_label', count: @accounts.size) %>"
+           data-test="presence-trigger">
+    <%# CYRA-898 — connection as a dot; the controller shows the word only when something is wrong. %>
+    <span aria-hidden="true"
+          class="h-2 w-2 shrink-0 rounded-full bg-green-500"
+          data-connection-status-target="icon"></span>
+    <span class="sr-only whitespace-nowrap text-xs font-medium" data-connection-status-target="text"><%= t("member.connection.connected") %></span>
+    <% if only_viewer? %>
+      <span class="whitespace-nowrap text-xs font-medium text-gray-600 dark:text-zinc-400 md:hidden md:@min-[810px]:block"
+            data-test="presence-only-you"><%= t("member.presence.only_you") %></span>
+    <% else %>
+      <%# The count comes back only on the widest topbar: one step down it is already full (CYRA-634). %>
+      <span class="whitespace-nowrap font-mono text-xs font-semibold text-green-700 dark:text-green-300 md:order-3 md:hidden md:font-sans md:font-medium md:text-gray-600 dark:md:text-zinc-400 md:@min-[980px]:block"
+            data-test="presence-count"><%= t("member.presence.online_count", count: @accounts.size) %></span>
+      <span class="h-4 w-px shrink-0 bg-stone-200 dark:bg-zinc-700 md:hidden" aria-hidden="true"></span>
+      <span class="flex items-center -space-x-1.5 md:hidden md:@min-[810px]:flex" aria-hidden="true">
+        <% preview_accounts.each do |account| %>
+          <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold ring-2 ring-white dark:ring-zinc-900"
+                data-test="presence-avatar-<%= account.id %> presence-preview-slot"
+                title="<%= account.name %>"><%= helpers.avatar_initials(account.name) %></span>
+        <% end %>
+        <% if overflow? %>
+          <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-stone-200 dark:bg-zinc-700 text-gray-600 dark:text-zinc-400 font-mono text-[10px] font-semibold ring-2 ring-white dark:ring-zinc-900"
+                data-test="presence-overflow presence-preview-slot"
+                title="<%= t('member.presence.more_title', count: overflow_count) %>">+<%= overflow_count %></span>
+        <% end %>
+      </span>
+    <% end %>
+    <%= render Ui::IconComponent.new(name: "chevron-down", class: "ml-auto text-gray-400 dark:text-zinc-500 text-[10px] md:order-4 md:hidden md:@min-[810px]:block") %>
+  </summary>
+
+  <div class="absolute left-0 top-12 z-50 w-56 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden text-left md:left-auto md:right-0 md:top-10"
+       data-test="presence-menu">
+    <div class="flex items-center justify-between px-3 py-2 border-b border-stone-100 dark:border-zinc-800">
+      <span class="font-mono uppercase text-[9.5px] tracking-[1px] text-gray-400 dark:text-zinc-500"><%= t("member.presence.online_title") %></span>
+      <span class="font-mono text-[10px] font-semibold text-green-600 dark:text-green-400"><%= @accounts.size %></span>
+    </div>
+    <div class="max-h-48 overflow-y-auto py-1">
+      <% if @accounts.any? %>
+        <% @accounts.each do |account| %>
+          <div class="flex items-center gap-2.5 px-3 h-8 hover:bg-stone-50 dark:hover:bg-zinc-800" data-test="presence-menu-row">
+            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[9.5px] font-semibold shrink-0"><%= helpers.avatar_initials(account.name) %></span>
+            <span class="truncate text-[12px] text-zinc-900 dark:text-zinc-100"><%= account.name %></span>
+          </div>
+        <% end %>
+      <% else %>
+        <%= render Ui::EmptyNoteComponent.new(text: t("member.presence.empty"), class: "px-3 py-3", test_id: "presence-empty") %>
+      <% end %>
+    </div>
+  </div>
+</details>

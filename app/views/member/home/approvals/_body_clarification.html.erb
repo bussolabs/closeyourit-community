@@ -1,0 +1,15 @@
+<%# locals: (card:) %>
+<div class="px-4 py-3.5" data-test="approvals-detail-clarification">
+  <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-amber-600 dark:text-amber-400 mb-2"><%= t("member.approvals.questions") %></p>
+  <ol class="space-y-2.5">
+    <% options = card.can?(:reply) ? clarification_options(card.record) : [] %>
+    <% card.record.questions.each_with_index do |question, index| %>
+      <li class="text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed">
+        <div class="flex items-start gap-2">
+          <span class="font-mono text-[11px] text-gray-400 dark:text-zinc-500 mt-0.5"><%= index + 1 %>.</span><%= render Ui::MarkdownComponent.new(text: question.body, inline: true) %>
+        </div>
+        <%= render "member/home/approvals/clarification_options", position: index + 1, options: options[index] if options[index].present? %>
+      </li>
+    <% end %>
+  </ol>
+</div>

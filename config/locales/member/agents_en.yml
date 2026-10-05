@@ -1,0 +1,245 @@
+en:
+  member:
+    nav:
+      agents: Agents
+    agents:
+      title: Agents
+      help_title: "The machines that run ticket phases."
+      stat_online: Online
+      stat_offline: Offline
+      stat_stale: Stale
+      stat_stale_title: "Silent for too long. They are counted among the offline ones too."
+      heartbeat_never: "No signal received yet"
+      stat_total: Total
+      search_placeholder: Search by machine name
+      count:
+        one: "%{count} host"
+        other: "%{count} hosts"
+      no_match: No host matches the search.
+      empty: No host registered
+      empty_body: A host registers itself when the automator runs on the machine with the org token. From here you certify it and follow its activity.
+      empty_cta: Automator token
+      tokens_link: Token
+      skill_bundle_link: Skill bundle
+      time_ago: "%{time} ago"
+      col_host: Host
+      col_status: Status
+      col_activity: Activity
+      col_slots: Slots
+      col_last_heartbeat: Last heartbeat
+      status:
+        online: Online
+        offline: Offline
+        busy: Running
+        waiting: Waiting
+        recovery_required: Recovery required
+        stale: Stale
+      phases:
+        triage: triage
+        planner: plan
+        autopilot: work
+        closer_staging: staging
+        closer_production: production
+      activity:
+        title: Activity
+        idle: Waiting for work
+        none: No activity in progress.
+        active_runs: Active runs
+        started_ago: "started %{time} ago"
+        stalled: Stopped
+        last_stop: "Last stop: %{reason}"
+        unreported:
+          one: "1 job is open but the machine is not reporting it: it likely stopped without closing it."
+          other: "%{count} jobs are open but the machine is not reporting them: it likely stopped without closing them."
+        step_status:
+          done: done
+          current: in progress
+          pending: pending
+        products:
+          plan: "plan v%{version}"
+          attempts:
+            one: "%{count} attempt"
+            other: "%{count} attempts"
+          none: nothing produced yet
+        lease_health:
+          active: lease ok
+          expired: lease expired
+          unknown: lease unknown
+      duration:
+        seconds: s
+        minutes: m
+        hours: h
+        days: d
+      performance:
+        title: Performance
+        empty: No work completed in this period.
+        empty_body: Widen the period to see whether this agent worked earlier.
+        ranges:
+          7d: 7 days
+          30d: 30 days
+          90d: 90 days
+          all: All time
+        tickets: Tickets worked
+        rejected: Rejected work
+        host_time: Agent time
+        workflow_time: Ticket time
+        host_time_legend: how long this machine worked on the ticket, adding up its own steps.
+        workflow_time_legend: how long the ticket took from entering the queue to being closed;
+          only available for tickets that reached closure.
+        attempts_caption:
+          one: "%{count} step run"
+          other: "%{count} steps run"
+        rejected_caption: "%{count} of %{total} completed steps"
+        median_caption: "median %{value}"
+        workflow_median_caption:
+          one: "median %{value} · across 1 closed ticket"
+          other: "median %{value} · across %{count} closed tickets"
+        by_phase: Time per step
+        plans_sent_back: "plans sent back %{count}/%{total} · %{percent}"
+        total: Total
+        col_phase: Step
+        col_attempts: Runs
+        col_approved: Approved
+        col_rejected: Rejected
+        col_failed: Failed
+        col_interrupted: Interrupted
+        col_avg: Average
+        col_median: Median
+        cost: Estimated cost
+        cost_caption:
+          one: across 1 authorised start
+          other: "across %{count} authorised starts"
+        cost_partial:
+          one: "across 1 authorised start · %{untracked} with no tracked cost"
+          other: "across %{count} authorised starts · %{untracked} with no tracked cost"
+        cost_unavailable: No cost tracked in this range.
+        compare_cta: Compare
+        cell_title: "Open the work behind the %{phase} step"
+        trend:
+          delta: "%{value} vs previous range"
+          points: "%{value} points"
+          flat: unchanged
+        outcomes:
+          approved: approved
+          rejected: rejected
+          failed: failed
+          interrupted: interrupted
+        compare:
+          title: Machine comparison
+          subtitle: The same measures, over the same range, side by side.
+          pick: Pick the machines to compare
+          apply: Compare
+          empty: No machine to compare.
+          metric: Measure
+          back: Back to the machine
+          machines: Machines
+          period: Range
+          median: "%{label} (median)"
+      worked:
+        title: Tickets worked
+        count:
+          one: "%{count} ticket"
+          other: "%{count} tickets"
+        empty: No tickets worked in this period.
+        unknown_ticket: "—"
+        col_ticket: Ticket
+        col_phases: Steps run
+        col_outcome: Last outcome
+        col_host_time: Agent time
+        col_workflow_time: Ticket time
+        col_last: Last activity
+        filter_phase: Step
+        filter_outcome: Outcome
+      show:
+        host: Machine
+        capabilities: What it can do
+        runtime: Installed programs
+        runtime_toggle:
+          one: See the installed program
+          other: "See the %{count} installed programs"
+        runtime_col_name: Program
+        runtime_col_version: Version
+        repository: Projects it follows
+        service_account: Service account
+        status_label: Status
+        slots_label: Jobs in parallel
+        running_label: Jobs running
+        certification_label: Certification
+        heartbeat_label: Last signal
+        certified_value: "Yes"
+        not_certified_value: "No"
+        certified_on: "Certified on %{date}."
+        certified_on_by: "Certified on %{date} by %{name}."
+        fingerprint: Fingerprint
+        version: Version
+        platform: Platform
+        heartbeat: Heartbeat
+        never: Never
+      certify: Certify host
+      decertify: Revoke certification
+      certify_ok: Host certified.
+      decertify_ok: Certification revoked.
+      review:
+        title: Who reviews the work
+        hint: Every piece of work is read again before delivery. With two engines the other one is better; with one, the same one in a new session.
+        label: Review
+        save: Save
+        updated: Review updated. It applies from the next piece of work.
+        invalid: Not a valid choice.
+        modes:
+          cross: The other engine
+          same: The same engine
+        descriptions:
+          cross: Claude reviews Codex and Codex reviews Claude. Both must be on the machine.
+          same: The same engine reviews in a new session. One engine is enough.
+      engine:
+        title: Who does the work
+        hint: The engine that works the tickets on this machine. It must be installed and signed in there.
+        label: Engine
+        save: Save
+        updated: Engine updated. It applies from the next piece of work.
+        invalid: Not a valid choice.
+        engines:
+          claude: Claude
+          codex: Codex
+        descriptions:
+          claude: Claude Code works the tickets. The default.
+          codex: Codex works the tickets, with the same limits on commands, files and network as Claude.
+      decertify_confirm: Revoke certification? The host will become ineligible again.
+      destroy: Delete machine
+      destroy_confirm: "Delete %{hostname}? It leaves the list and loses its history for good: %{attempts} runs, %{plans} plans and %{clarifications} clarification rounds. The tickets stay, without this machine's history."
+      destroy_ok: "%{hostname} deleted, along with %{attempts} runs, %{plans} plans and %{clarifications} clarification rounds."
+      destroy_busy: The machine is still working on tickets. Wait for it to finish, or release it before deleting.
+      tokens:
+        title: Automator token
+        help_title: "The token that connects a machine to your organization. Shown only once."
+        breadcrumb: Automator token
+        lead: The token is only needed once, to connect the machine. After that the machine uses a key of its own, which can be revoked.
+        link: Automator token
+        reveal_created: "Token \"%{name}\" created"
+        copy_now: Copy it now — it won't be shown again
+        copied: Copied
+        secret: Secret
+        copy: Copy
+        close: Done
+        form_title: Create an automator token
+        form_name: Name
+        form_submit: Create token
+        empty: No automator token yet.
+        col_name: Name
+        col_prefix: Prefix
+        col_last_used: Last used
+        col_status: Status
+        never_used: Never
+        status_active: Active
+        status_revoked: Revoked
+        revoke: Revoke
+        revoke_dialog:
+          title: "Revoke the %{name} token?"
+          body: "The automator using it stops syncing right away. This cannot be undone."
+        revoked: Token revoked.
+        snippet_title: Configure the automator
+        snippet_lead: On the machine, paste the token into this file, then run "automator sync".
+        stat_total: Total
+        stat_active: Active
+        stat_revoked: Revoked

@@ -1,0 +1,32 @@
+<%# locals: (display_title:, is_perf_issue:) %>
+<%= render Ui::PageHeaderComponent.new(
+      title: tag.span(display_title, class: "font-mono text-[16px] font-semibold text-zinc-900 dark:text-zinc-100 break-all", data: { test: "metric-group-title" }),
+      breadcrumb: [ { label: t("member.metrics.title"), href: member_monitoring_metric_groups_path },
+                    { label: (@group.kind_performance_issue? ? perf_subtype_label(@group.subtype) : metric_kind_label(@group.kind)) } ]) do |h| %>
+  <% h.with_counts do %>
+    <% if is_perf_issue %>
+      <%= render Ui::BadgeComponent.new(label: perf_subtype_label(@group.subtype), color: perf_subtype_color(@group.subtype), dot: true) %>
+    <% end %>
+    <%# CYRA-341 — il colore di una durata segue le soglie del progetto e le DICHIARA al passaggio
+        del mouse: prima era rosa qualunque fosse il valore, e la soglia non era scritta da nessuna parte. %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.metrics.detail_avg"), value: metric_duration_label(@group.average_duration_ms), value_color: metric_duration_stat_color(@group.average_duration_ms, @thresholds), title: metric_threshold_hint(@thresholds), test_id: "stat-avg") %>
+    <%# La media del PERIODO scelto, con quanto è cambiata rispetto al periodo precedente della
+        stessa lunghezza: la media lì accanto è quella di sempre e da sola non dice se sta peggiorando. %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.metrics.stat_window_avg"), value: metric_duration_label(@trend[:current_ms]), value_color: metric_duration_stat_color(@trend[:current_ms], @thresholds), trend: metric_trend(@trend), title: metric_threshold_hint(@thresholds), test_id: "stat-window-avg") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.metrics.detail_minmax"), value: "#{metric_duration_label(@group.duration_min_ms)} / #{metric_duration_label(@group.duration_max_ms)}", test_id: "stat-minmax") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.metrics.detail_percentiles"), value: metric_percentiles_label(@percentiles, [ 95, 99 ]), value_color: :amber, test_id: "stat-percentiles") %>
+    <%# CYRA-352 — «occorrenze totali»: il contatore aggregato, che non cala mai. La tabella sotto
+        mostra i campioni ANCORA CONSERVATI, che sono meno: due nomi diversi per due cose diverse. %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.metrics.stat_occurrences_total"), value: @group.samples_count, test_id: "stat-occurrences") %>
+    <% if occurrence_query_count(@selected).present? %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.metrics.detail_query_count"), value: occurrence_query_count(@selected), value_color: :amber, test_id: "stat-query-count") %>
+    <% end %>
+  <% end %>
+  <% if can?("metrics.promote", scope: @group.project) && !@group.promoted? %>
+    <% h.with_actions do %>
+      <div class="flex items-center gap-2" data-test="metric-actions">
+        <%= render Ui::ButtonComponent.new(label: t("member.metrics.promote"), href: promote_member_monitoring_metric_group_path(@group), method: :post, variant: :primary, size: :sm, icon: "ticket", test_id: "promote-ticket") %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,40 @@
+<% content_for :title, t("member.projects.tool_versions.title", tool: @source.tool.label) %>
+
+<div class="p-7 space-y-6" data-test="member-source-versions">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.projects.tool_versions.title", tool: @source.tool.label),
+        back_href: member_project_path(@project), back_label: t("member.projects.tool_versions.back"),
+        test_id: "source-versions", counts_test_id: "source-versions-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.projects.tool_versions.count"),
+                                            value: @pagination.total, test_id: "source-versions-count") %>
+    <% end %>
+  <% end %>
+
+  <% if @versions.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.projects.tool_versions.empty"),
+          body: t("member.projects.tool_versions.empty_body"), icon: "git-branch",
+          framed: true, test_id: "source-versions-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 divide-y divide-stone-100 dark:divide-zinc-800" data-test="source-versions-list">
+      <% @versions.each do |version| %>
+        <div class="flex items-center gap-3 px-4 py-3" data-test="source-version-row">
+          <span class="font-mono text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 shrink-0" data-test="source-version-<%= version.id %>"><%= version.version %></span>
+
+          <div class="min-w-0 flex-1 font-mono text-[11px] text-gray-500 dark:text-zinc-400">
+            <span><%= t("member.projects.tool_versions.adopted") %> <%= l(version.first_seen_at, format: :short) %></span>
+            <span class="mx-1.5 text-gray-300 dark:text-zinc-600">→</span>
+            <span><%= t("member.projects.tool_versions.last_seen") %> <%= l(version.last_seen_at, format: :short) %></span>
+          </div>
+
+          <% if version.version == @source.version %>
+            <span class="shrink-0" data-test="source-version-current">
+              <%= render Ui::BadgeComponent.new(label: t("member.projects.tool_versions.current"), color: "emerald", dot: true) %>
+            </span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "source-versions-pagination")) %>
+  <% end %>
+</div>

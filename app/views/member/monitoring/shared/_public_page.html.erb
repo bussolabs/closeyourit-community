@@ -1,0 +1,36 @@
+<%# locals: published:, state_text:, toggle_path:, toggle_confirm:, public_url:, badge_url:, test_prefix:, can_manage:
+    Public page tab of a monitor or a group (CYRA-990): publication state with its toggle, address,
+    embed code and a live preview. The caller adds what only it has (the monitor's banner). %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="<%= test_prefix %>-public-state">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.public_tab.state_title") %></h2>
+  </div>
+  <div class="px-4 py-4 flex items-center justify-between gap-3 flex-wrap">
+    <p class="flex items-center gap-2 flex-wrap text-[12.5px] text-gray-500 dark:text-zinc-400">
+      <%= render Ui::BadgeComponent.new(label: published ? t("member.uptime.publication_on") : t("member.uptime.publication_off"),
+            color: published ? :indigo : :gray, dot: true) %>
+      <span><%= state_text %></span>
+    </p>
+    <% if can_manage %>
+      <%= render Ui::ButtonComponent.new(label: published ? t("member.uptime.unpublish") : t("member.uptime.publish"), href: toggle_path, method: :patch,
+            confirm: toggle_confirm, variant: :secondary_muted, size: :sm, icon: published ? "eye-off" : "globe",
+            test_id: "#{test_prefix}-public-toggle") %>
+    <% end %>
+  </div>
+</div>
+
+<% if published %>
+  <% if can_manage %>
+    <%= render "member/monitoring/shared/public_link", public_url: public_url, badge_url: badge_url, test_prefix: test_prefix %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="<%= test_prefix %>-public-preview">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.public_tab.preview") %></h2>
+    </div>
+    <div class="p-4">
+      <iframe src="<%= public_url %>" title="<%= t("member.monitoring.public_tab.preview") %>" loading="lazy"
+              class="w-full h-96 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800"></iframe>
+    </div>
+  </div>
+<% end %>

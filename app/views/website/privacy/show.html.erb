@@ -1,0 +1,45 @@
+<% content_for :title, "#{t("website.privacy.title")} · CloseYourIt" %>
+<% content_for :meta_description, t("website.privacy.meta_description") %>
+
+<%= render "website/shared/header" %>
+
+<main id="main-content" class="flex-1 w-full" data-test="website-privacy">
+  <section class="bg-white border-b border-stone-200">
+    <div class="max-w-5xl mx-auto px-4 py-14 md:py-20">
+      <p class="font-mono text-[11px] text-gray-500">privacy/</p>
+      <h1 class="mt-3 font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.12] tracking-[-0.015em] font-semibold text-zinc-900"><%= t("website.privacy.heading") %></h1>
+      <p class="mt-4 text-[14.5px] leading-relaxed text-gray-600 max-w-[52ch]"><%= t("website.privacy.summary") %></p>
+      <p class="mt-3 font-mono text-[11px] text-gray-500" data-test="website-privacy-updated"><%= t("website.privacy.updated") %></p>
+    </div>
+  </section>
+
+  <section class="max-w-5xl mx-auto px-4 py-12 space-y-5">
+    <div class="rounded-lg border border-stone-200 bg-white p-5">
+      <h2 class="font-display text-[16px] font-semibold text-zinc-900"><%= t("website.privacy.controller_title") %></h2>
+      <p class="mt-2 text-[13px] leading-relaxed text-gray-500 max-w-[62ch]"><%= t("website.privacy.controller_body") %></p>
+      <%= mail_to t("website.privacy.controller_email"), class: "mt-1.5 inline-block font-mono text-[12.5px] text-indigo-600 hover:text-indigo-700", data: { test: "website-privacy-email" } %>
+    </div>
+
+    <%# L'ordine è quello del locale: prima cosa raccogliamo, poi perché, su quale base, per quanto,
+        con chi, i cookie, i diritti, la sicurezza e le modifiche. Una sezione può avere un corpo
+        oppure un elenco, mai entrambi. %>
+    <% t("website.privacy.sections").each do |slug, section| %>
+      <div class="rounded-lg border border-stone-200 bg-white p-5" data-test="website-privacy-<%= slug %>">
+        <h2 class="font-display text-[16px] font-semibold text-zinc-900"><%= section[:title] %></h2>
+        <% if section[:items].present? %>
+          <ul class="mt-2.5 space-y-2">
+            <% section[:items].each do |item| %>
+              <li class="flex gap-2.5 text-[13px] leading-relaxed text-gray-500 max-w-[62ch]">
+                <span class="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-gray-400" aria-hidden="true"></span>
+                <span><%= item %></span>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="mt-2 text-[13px] leading-relaxed text-gray-500 max-w-[62ch]"><%= section[:body] %></p>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+</main>
+<%= render "website/shared/footer" %>

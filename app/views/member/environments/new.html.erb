@@ -1,0 +1,7 @@
+<%= render "form",
+      environment: @environment,
+      url: member_environments_path,
+      method: :post,
+      title: t("member.environments.form.new_title"),
+      lead: t("member.environments.form.lead_new"),
+      submit_label: t("member.environments.form.save_new") %>

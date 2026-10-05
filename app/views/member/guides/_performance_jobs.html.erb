@@ -1,0 +1,7 @@
+<%= render Ui::SectionComponent.new(title: t("member.guides.performance.jobs.title"), id: "jobs", test_id: "member-guide-performance-jobs") do %>
+  <%= render Ui::StackComponent.new(gap: 4) do %>
+    <% %w[body outcomes grouping limits].each do |key| %>
+      <p class="text-sm leading-relaxed text-gray-600 dark:text-zinc-400"><%= t("member.guides.performance.jobs.#{key}") %></p>
+    <% end %>
+  <% end %>
+<% end %>

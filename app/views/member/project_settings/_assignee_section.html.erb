@@ -1,0 +1,23 @@
+<% cto = @project.organization.cto %>
+<%= render Ui::SectionComponent.new(title: t("member.project_settings.tickets_section"), id: "tickets",
+      class: "scroll-mt-20", body_class: "px-4 py-4", test_id: "project-default-assignee-section") do |section| %>
+  <% section.with_actions do %><%= render "member/project_settings/save_action", anchor: "tickets" %><% end %>
+  <%= render Ui::GridComponent.new(cols: 1, md: 2, gap: 5) do %>
+    <%= render Ui::SelectComponent.new(
+          name: "default_assignee_id",
+          label: t("member.project_settings.default_assignee_label"),
+          options: @accounts.map { |a| [ a.name, a.id ] },
+          selected: @project.default_assignee_id,
+          include_blank: true,
+          placeholder: t("member.project_settings.default_assignee_placeholder"),
+          hint: t("member.project_settings.default_assignee_hint"),
+          test_id: "project-default-assignee",
+          error: @errors&.dig(:default_assignee)&.first) %>
+    <%= render Ui::SelectComponent.new(name: "cto_id", label: t("member.project_settings.cto_label"),
+          options: @accounts.select(&:human?).map { |account| [ account.name, account.id ] },
+          selected: @project.cto_id, include_blank: true,
+          placeholder: cto ? t("member.project_settings.cto_inherit", name: cto.name) : t("member.project_settings.cto_none"),
+          hint: t("member.project_settings.cto_hint"),
+          error: @errors&.dig(:cto)&.first) %>
+  <% end %>
+<% end %>

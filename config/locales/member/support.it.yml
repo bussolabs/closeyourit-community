@@ -1,0 +1,52 @@
+it:
+  support:
+    mailer:
+      subject: "Nuova richiesta di supporto da %{name}"
+      overline: Supporto
+      intro: "%{name} ha inviato una richiesta di supporto."
+      organization: Organizzazione
+      page: Pagina
+      version: Versione
+      action: Apri in Valhalla
+  member:
+    support:
+      button: Supporto
+      footer_open:
+        one: "%{count} aperta"
+        other: "%{count} aperte"
+      title: Supporto
+      subtitle: Dicci cosa non funziona. Rispondiamo per email.
+      back: Torna alla pagina
+      send: Invia richiesta
+      context_title: Inviato con la tua richiesta
+      context_note: "È tutto quello che alleghiamo: niente segreti, niente password, niente di ciò che hai scritto altrove."
+      form_title: La tua richiesta
+      body_label: Cosa è successo
+      body_placeholder: Scrivilo con parole tue, oppure premi il microfono e dillo.
+      draft_hint: Il testo resta qui se torni alla pagina.
+      sent_title: Richiesta inviata
+      sent_body: "L'abbiamo ricevuta, con la pagina in cui eri. La risposta arriva a %{email}."
+      mine: "Le mie richieste"
+      mine_title: "Le mie richieste di supporto"
+      mine_subtitle: "Quello che hai inviato dal pulsante Supporto, e se qualcuno se ne è occupato."
+      mine_count: "richieste"
+      mine_empty_title: "Ancora nessuna richiesta inviata"
+      mine_empty_body: "Premi Supporto in fondo a qualsiasi pagina per dirci cosa non funziona."
+      col_when: "Inviata"
+      col_page: "Pagina"
+      col_request: "Richiesta"
+      col_status: "Stato"
+      state_pending: "Aperta"
+      state_handled: "Gestita"
+      context:
+        page: Pagina
+        page_title: Titolo della pagina
+        organization: Organizzazione
+        account: Account
+        role: Ruolo
+        version: Versione
+        browser: Browser
+        window: Finestra
+        theme: Tema · lingua
+        time: Ora
+        request_id: Codice della richiesta

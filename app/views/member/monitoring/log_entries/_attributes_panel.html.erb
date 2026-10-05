@@ -1,0 +1,16 @@
+<%# Attributi strutturati %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="log-attributes">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.logs.show.attributes") %></h2></div>
+  <% if @entry.data.blank? %>
+    <p class="px-4 py-6 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.logs.show.no_attributes") %></p>
+  <% else %>
+    <div class="px-4 py-4 grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4">
+      <% @entry.data.each do |key, value| %>
+        <div class="min-w-0" data-test="log-attribute">
+          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 truncate"><%= key %></p>
+          <p class="mt-0.5 font-mono text-[12px] text-zinc-900 dark:text-zinc-100 break-words"><%= value.is_a?(Hash) || value.is_a?(Array) ? value.to_json : value %></p>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,21 @@
+<% content_for :title, t("member.search.title") %>
+<% full_page = !turbo_frame_request? %>
+<%= tag.div(class: ("p-7 space-y-6" if full_page), data: { test: ("search-page" if full_page) }) do %>
+  <%= render "page_header" if full_page %>
+  <%# T1 — on the full page the results sit in a panel; inside the search dialog the dialog is the frame. %>
+  <%= turbo_frame_tag "member-global-search-results", target: "_top", aria: { live: "polite" },
+        class: ("block rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" if full_page),
+        data: { test: "global-search-results" } do %>
+    <%# Which query this answer belongs to: a late answer to an older query must not count (CYRA-900). %>
+    <span hidden data-global-search-query="<%= @query %>"></span>
+    <% if @query.length < Search::Global::MIN_QUERY_LENGTH %>
+      <%= render Ui::EmptyStateComponent.new(title: t("member.search.prompt_title"), body: t("member.search.prompt_body"),
+            icon: "search", compact: true, test_id: "global-search-prompt", class: "flex-1 md:min-h-48") %>
+    <% elsif @found.groups.empty? %>
+      <%= render Ui::NoResultsComponent.new(query: @query, reset_href: member_search_path, compact: true,
+            reset_test_id: "global-search-reset", test_id: "global-search-empty", class: "flex-1 md:min-h-48") %>
+    <% else %>
+      <%= render "results", found: @found, query: @query, type: @type %>
+    <% end %>
+  <% end %>
+<% end %>

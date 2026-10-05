@@ -1,0 +1,18 @@
+<%# CYRA-419 — CHI HA SCRITTO il testo della pagina, in una riga sola. Le tre risposte possibili si
+    dicono con le stesse parole ovunque compaiano (coda di revisione, dettaglio): un assistente —
+    col nome dell'assistente, della skill o del canale, quando è stato dichiarato — una persona,
+    oppure «non registrata», che è l'assenza del dato sulle pagine nate prima e NON vuol dire
+    «scritta da una persona». L'account il cui accesso è stato usato lo aggiunge chi rende questo
+    partial (author.on_behalf_of): qui si dice solo chi ha scritto. %>
+<% if page.written_by_agent? %>
+  <%= render Ui::IconComponent.new(name: "bot", class: "text-[11px] text-indigo-600 dark:text-indigo-400") %>
+  <span class="text-zinc-900 dark:text-zinc-100" data-test="knowledge-written-by-agent">
+    <%= page.author_origin.present? ? t("member.knowledge.author.agent_with_origin", origin: page.author_origin) : t("member.knowledge.author.agent") %>
+  </span>
+<% elsif page.author_unregistered? %>
+  <%= render Ui::IconComponent.new(name: "circle-question-mark", class: "text-[11px] text-gray-400 dark:text-zinc-500") %>
+  <span class="text-zinc-900 dark:text-zinc-100" data-test="knowledge-written-by-unregistered"><%= t("member.knowledge.author.unregistered") %></span>
+<% else %>
+  <%= render Ui::IconComponent.new(name: "user", class: "text-[11px] text-teal-600 dark:text-teal-400") %>
+  <span class="text-zinc-900 dark:text-zinc-100" data-test="knowledge-written-by-human"><%= t("member.knowledge.author.human") %></span>
+<% end %>

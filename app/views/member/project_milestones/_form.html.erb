@@ -1,0 +1,51 @@
+<%# locals: project, milestone, url, method, title, submit_label %>
+<% content_for :title, title %>
+<% breadcrumb = [ { label: t("member.projects.title"), href: member_projects_path },
+                  { label: project.name, href: member_project_path(project) },
+                  { label: t("member.milestones.title"), href: member_project_milestones_path(project) } ] %>
+<% breadcrumb += milestone.persisted? ?
+     [ { label: milestone.label, href: member_project_milestone_path(project, milestone) }, { label: t("member.breadcrumb.edit") } ] :
+     [ { label: t("member.breadcrumb.new") } ] %>
+
+<div class="p-7">
+  <%= form_with url: url, method: method, class: "space-y-6", data: { test: "milestone-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: title, breadcrumb: breadcrumb) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.milestones.form.cancel"), href: member_project_milestones_path(project), variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: submit_label, type: "submit", icon: "check", test_id: "milestone-submit", size: :sm) %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%= render Ui::InputComponent.new(name: "label", label: t("member.milestones.form.label"), required: true,
+                value: milestone.label, placeholder: t("member.milestones.form.label_placeholder"), test_id: "milestone-label",
+                error: @errors&.dig(:label)&.first) %>
+
+          <%= render Ui::InputComponent.new(name: "code", label: t("member.milestones.form.code"), required: true,
+                value: milestone.code, placeholder: t("member.milestones.form.code_placeholder"), test_id: "milestone-code",
+                hint: t("member.milestones.form.code_hint"), error: @errors&.dig(:code)&.first) %>
+
+          <div data-test="milestone-due">
+            <label for="due_on" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.milestones.form.due") %></label>
+            <input type="date" name="due_on" id="due_on" value="<%= milestone.due_on&.iso8601 %>"
+                   class="w-full h-[38px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+            <p class="mt-1.5 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.milestones.form.due_hint") %></p>
+          </div>
+
+          <%= render "member/shared/color_field", record: milestone, prefix: "milestone", scope: "member.milestones.form" %>
+
+          <div class="md:col-span-2">
+            <label class="inline-flex items-center gap-2.5 cursor-pointer" data-test="milestone-active">
+              <input type="hidden" name="active" value="0">
+              <input type="checkbox" name="active" value="1" <%= "checked" if milestone.active? %> class="w-4 h-4 rounded border-stone-300 dark:border-zinc-700 accent-indigo-600">
+              <span class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.milestones.form.active") %></span>
+              <span class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.milestones.form.active_hint") %></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

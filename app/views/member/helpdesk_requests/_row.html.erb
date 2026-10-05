@@ -1,0 +1,17 @@
+<%# locals: (helpdesk_request:, project_column: true) %>
+<%= render Ui::TableComponent::RowComponent.new(href: member_helpdesk_request_path(helpdesk_request), link_label: helpdesk_request.summary,
+      faded: helpdesk_request.status_discarded?, test_id: "helpdesk-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <span class="block max-w-[420px] truncate text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= helpdesk_request.summary %></span>
+    <span class="block truncate text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="helpdesk-row-email"><%= helpdesk_request.email.presence || t("member.helpdesk.no_email") %></span>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.helpdesk.col_project"), visible: project_column) do %>
+    <span class="inline-flex items-center gap-1.5 text-gray-500 dark:text-zinc-400"><span class="w-2 h-2 rounded-[2px] <%= Ui::Colors.swatch(helpdesk_request.project.color) %>"></span><%= helpdesk_request.project.name %></span>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.helpdesk.col_status")) do %>
+    <%= render Ui::BadgeComponent.new(label: t("member.helpdesk.status.#{helpdesk_request.status}"),
+          color: helpdesk_status_color(helpdesk_request.status), dot: true) %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.helpdesk.col_received"), align: :right, mono: true,
+        class: "text-gray-500 dark:text-zinc-400", title: l(helpdesk_request.created_at, format: :long))) { l(helpdesk_request.created_at.to_date, format: :day_month) } %>
+<% end %>

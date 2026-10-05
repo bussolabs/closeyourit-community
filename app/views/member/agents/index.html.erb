@@ -1,0 +1,65 @@
+<% content_for :title, t("member.agents.title") %>
+<% can_manage = can?("agents.manage") %>
+
+<div class="p-7 space-y-6" data-test="member-agents">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.agents.title"),
+        subtitle: t("member.agents.help_title"),
+        breadcrumb: [ { label: t("member.agents.title") } ],
+        counts_test_id: "agents-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render "member/agents/stats",
+            online_count: @online_count, offline_count: @offline_count,
+            stale_count: @stale_count, total: @total_count %>
+    <% end %>
+    <% h.with_actions do %>
+      <%# CYRA-453 — tolta dal menu, la pagina delle versioni si raggiunge da qui: è amministrazione,
+          quindi il collegamento esiste solo per chi amministra le macchine. %>
+      <% if can_manage %>
+        <%= render Ui::ButtonComponent.new(label: t("member.agents.skill_bundle_link"), href: member_skill_bundle_path, variant: :secondary_muted, size: :sm, icon: "box", test_id: "agents-skill-bundle-link") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.agents.tokens_link"), href: member_agents_tokens_path, variant: :secondary_muted, size: :sm, icon: "key", test_id: "agents-tokens-link") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% filtering = params[:q].present? %>
+  <% if @hosts.empty? && !filtering %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.agents.empty"), body: t("member.agents.empty_body"),
+          icon: "bot", framed: true, test_id: "agents-empty") do |empty| %>
+      <% if can_manage %>
+        <% empty.with_action do %>
+          <%= render Ui::ButtonComponent.new(label: t("member.agents.empty_cta"), href: member_agents_tokens_path,
+                variant: :primary, size: :sm, test_id: "agents-empty-cta") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="agents-table">
+      <%= render(Ui::TableToolbarComponent.new(framed: true,
+            url: member_agents_path, query: params[:q],
+            search_placeholder: t("member.agents.search_placeholder"),
+            search_test_id: "agents-search", apply_test_id: "agents-filter",
+            test_id: "agents-toolbar")) %>
+
+        <% if @hosts.empty? %>
+          <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_agents_path,
+                icon: "bot", test_id: "agents-no-match", reset_test_id: "agents-reset-filters") %>
+        <% else %>
+          <%= render(Ui::TableComponent.new(stacked: true, label: t("member.agents.title"))) do |t| %>
+            <% t.with_head do %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.col_host"), sort: "host") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.col_status"), sort: "status", classes: "w-28") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.col_activity"), sort: "activity") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.col_slots"), sort: "slots", initial: :desc, align: :right, classes: "w-20") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.col_last_heartbeat"), sort: "heartbeat", initial: :desc, align: :right, classes: "w-36") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+            <% end %>
+            <% @hosts.each do |host| %>
+              <%= render "member/agents/host_row", host: host %>
+            <% end %>
+          <% end %>
+          <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "agents-pagination")) %>
+        <% end %>
+    </div>
+  <% end %>
+</div>

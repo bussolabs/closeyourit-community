@@ -1,0 +1,10 @@
+<%# locals: header:, active_tab — adds the tabs to the page header (DESIGN.md T2). %>
+<%# CYRA-428 — le due schede dei segreti dell'organizzazione, gemelle di member/personal_secrets/_tabs.
+    Qui i permessi sono DUE e distinti (variabili e file si gestiscono separatamente): una scheda che
+    non si può aprire non compare, altrimenti prometterebbe una pagina che risponde «non puoi». %>
+<% if can?("shared_secrets.manage") %>
+  <% header.with_tab(label: t("member.vault.tabs.variables"), href: member_shared_secrets_path, active: active_tab.to_s == "variables", icon: "code", test_id: "organization-tab-variables") %>
+<% end %>
+<% if can?("shared_secret_files.manage") %>
+  <% header.with_tab(label: t("member.vault.tabs.files"), href: member_shared_secret_assets_path, active: active_tab.to_s == "files", icon: "file-lock", test_id: "organization-tab-files") %>
+<% end %>

@@ -1,0 +1,5 @@
+<span data-controller="coworker-mascot"
+      data-coworker-mascot-key-value="coworkers:mascot:<%= puck.organization_id %>:<%= puck.account_id %>:<%= puck.id %>"
+      data-action="coworker-mascot:change@window->coworker-mascot#sync storage@window->coworker-mascot#storage">
+  <%= image_tag "/coworkers/mascots/01.webp", alt: "", width: local_assigns[:large] ? 64 : 40, height: local_assigns[:large] ? 64 : 40, class: "#{local_assigns[:large] ? 'size-16' : 'size-10'} #{'md:size-7' if local_assigns[:small]} shrink-0 object-contain", data: { coworker_mascot_target: "image", test: "coworkers-mascot" } %>
+</span>

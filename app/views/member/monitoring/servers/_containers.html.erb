@@ -1,0 +1,55 @@
+<%# locals: containers: — set corrente (ultimo recorded_at) di Servers::ContainerSample
+    host: — serve per il riavvio continuo in corso (CYRA-515). Il conteggio NON è il contatore
+    cumulativo del container (che dopo mesi è alto per tutti e non dice niente) ma il delta della
+    finestra osservata, quello su cui è scattato l'avviso: mostrare un altro numero qui vorrebbe
+    dire smentire la notifica appena ricevuta. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-containers">
+  <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.show.containers") %></h2>
+    <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= containers.size %></span>
+  </div>
+  <% if containers.empty? %>
+    <p class="px-5 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="server-containers-empty"><%= t("member.servers.show.containers_empty") %></p>
+  <% else %>
+    <% looping = server_container_restarts(host) %>
+    <%# CYRA-564 — su una macchina con decine di container la tabella era una schermata intera:
+        scorre dentro il riquadro (intestazione appiccicata), il totale è già qui sopra. %>
+    <%= render(Ui::TableComponent.new(scroll_y: true, compact: true, stacked: true, label: t("member.servers.show.containers"), test_id: "server-containers-table")) do |t| %>
+      <% t.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.show.col_container"), sort: "name", param: :containers_sort) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.show.col_health"), sort: "health", param: :containers_sort, classes: "w-24") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.col_cpu"), sort: "cpu", initial: :desc, param: :containers_sort, align: :right, classes: "w-20") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.show.col_mem_abs"), sort: "mem", initial: :desc, param: :containers_sort, align: :right, classes: "w-24") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.servers.show.col_net"), sort: "net", initial: :desc, param: :containers_sort, align: :right, classes: "w-32") %>
+      <% end %>
+      <% containers.each do |container| %>
+        <%= render Ui::TableComponent::RowComponent.new(test_id: "server-container-row") do %>
+          <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+            <%# CYRA-464 — il codice della versione accorciato (il nome intero nel tooltip) e
+                l'immagine tagliata a SINISTRA: la parte che dice cosa gira è la coda, non il
+                registro da cui viene. %>
+            <span class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100" title="<%= container.name %>"><%= server_container_name(container.name) %></span>
+            <span class="block font-mono text-[10.5px] text-gray-500 dark:text-zinc-400 max-w-[320px] truncate" dir="rtl" title="<%= container.image %>"><%= server_container_image(container.image) %></span>
+            <% if (restart = looping[container.name]) %>
+              <span class="mt-1 flex items-center flex-wrap gap-1">
+                <%= render Ui::BadgeComponent.new(
+                      label: t("member.servers.show.container_restarts", count: restart["restarts"].to_i),
+                      color: :red, size: :sm, test_id: "server-container-restarts") %>
+                <%# La memoria esaurita è un'altra causa e un altro rimedio: dirla qui evita di
+                    cercare il guasto nell'applicazione quando il limite è della macchina. %>
+                <% if restart["oom_killed"] %>
+                  <%= render Ui::BadgeComponent.new(label: t("member.servers.show.container_oom"),
+                        color: :amber, size: :sm, test_id: "server-container-oom") %>
+                <% end %>
+              </span>
+            <% end %>
+          <% end %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.show.col_health"))) { render Ui::BadgeComponent.new(label: server_container_health_label(container.health), color: server_container_health_color(container.health), dot: true) } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.col_cpu"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { server_pct_text(container.cpu_pct) } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.show.col_mem_abs"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { server_bytes_text(container.mem_bytes) } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.servers.show.col_net"), align: :right, mono: true, class: "text-[11px] text-gray-500 dark:text-zinc-400")) { "↑#{server_bytes_text(container.net_sent_bytes)} ↓#{server_bytes_text(container.net_recv_bytes)}" } %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

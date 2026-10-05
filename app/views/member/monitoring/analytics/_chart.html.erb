@@ -1,0 +1,20 @@
+<%# Serie temporale pageview resa col componente istogramma condiviso (Ui::HistogramComponent), lo
+    stesso delle occorrenze error/metric group: altezza barra ∝ pageview del bucket, tooltip coi
+    visitatori unici e finestra oraria, etichette asse X coerenti (CYRA-22). %>
+<% buckets = Array(buckets) %>
+<% max = buckets.map { |b| b[:pageviews].to_i }.max.to_i %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="analytics-chart">
+  <div class="flex items-center gap-2 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.analytics.chart_title") %></h2>
+    <%# CYRA-500 — «ultimi 1y · 52 intervalli» non dice da quando a quando: su un arco che attraversa
+        il capodanno nemmeno l'asse lo diceva. Qui ci sono le date vere del periodo. %>
+    <span class="ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="analytics-chart-window"><%= analytics_window_label(buckets, range) %><% if max.positive? %> · <%= t("member.monitoring.analytics.chart_peak", count: max) %><% end %></span>
+  </div>
+  <%= render Ui::HistogramComponent.new(
+        bars: analytics_chart_bars(buckets, max, range),
+        gridlines: chart_gridlines(max),
+        xticks: chart_xticks(buckets, range),
+        buckets_test_id: "analytics-buckets",
+        summary: t("member.monitoring.analytics.chart_summary", count: max, range: range),
+        empty_label: t("member.monitoring.analytics.chart_empty")) %>
+</div>

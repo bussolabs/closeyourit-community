@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-No public self-hosted release is available yet. A supported-version policy will accompany the first source release. Reports affecting the current hosted product are still welcome through the private channel below.
+Security fixes target the latest stable source release. Older versions have no backport guarantee; upgrade to the latest release before requesting support. Reports affecting the hosted product are also welcome through the private channel below.
 
 ## Report a vulnerability
 

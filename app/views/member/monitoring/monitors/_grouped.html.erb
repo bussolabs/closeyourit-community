@@ -1,0 +1,32 @@
+<%# locals: monitors, range, uptime, buckets — vista raggruppata per gruppo uptime (default).
+    open_since: { monitor_id => started_at } del guasto in corso (CYRA-492).
+    I monitor senza gruppo finiscono nella sezione "Senza gruppo" in coda (sentinel di ordinamento).
+    L'ordinamento salute (non sani prima) è già nell'ordine di `monitors`: group_by lo preserva → dentro
+    ogni gruppo i caduti restano in cima.
+    CYRA-924 — C72: one table with a group row per group, so the columns line up across groups. %>
+<% sections = monitors.group_by(&:group).sort_by { |group, _| group ? group.name.downcase : "￿" } %>
+<div data-test="monitors-grouped">
+  <%= render(Ui::TableComponent.new(stacked: true, grouped: true, label: t("member.uptime.title"))) do |t| %>
+    <% t.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime.col_monitor"), sort: "monitor") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime.col_status"), sort: "status", classes: "w-24",
+            hint: (local_assigns[:health_sorted] ? t("member.uptime.sort_health_hint") : nil)) %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime.col_uptime", range: range), sort: "uptime", initial: :desc, align: :right, classes: "w-52") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime.col_response"), sort: "response", initial: :desc, align: :right, classes: "w-24") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.uptime.col_last_check"), sort: "last_check", initial: :desc, align: :right, classes: "w-28") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+    <% end %>
+    <% sections.each do |group, group_monitors| %>
+      <% key = group ? group.id : "ungrouped" %>
+      <%= render Ui::TableComponent::GroupRowComponent.new(key: key, colspan: t.column_count,
+            label: (group ? group.name : t("member.uptime.ungrouped")),
+            count: count_label("member.uptime_groups.monitors_count", group_monitors.size),
+            href: (member_monitoring_uptime_group_path(group) if group && uptime_groups_nav_visible?),
+            link_label: group&.name, test_id: "uptime-group-section-#{key}") %>
+      <% group_monitors.each do |monitor| %>
+        <%= render "member/monitoring/monitors/monitor_row", monitor: monitor, range: range, group: key,
+              uptime: uptime[monitor.id], buckets: (buckets[monitor.id] || []), open_since: open_since, causes: @down_causes %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,8 @@
+<%# One preference: what it is on the left, its control on the right (stacked on phones). %>
+<li class="grid gap-3 px-5 py-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] md:items-center md:gap-8" data-test="preferences-row-<%= key %>">
+  <div class="min-w-0">
+    <h2 class="font-display text-[13.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= title %></h2>
+    <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= lead %></p>
+  </div>
+  <div class="min-w-0"><%= yield %></div>
+</li>

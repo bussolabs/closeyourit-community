@@ -1,0 +1,19 @@
+it:
+  member:
+    review_completion:
+      secret_missing: "Questo segreto non esiste più. Non è possibile aggiornarne la descrizione."
+      proposed_description: "Descrizione proposta"
+      description_cleared: "Rimuovi la descrizione"
+    todo_lists:
+      search_placeholder: "Cerca liste e voci…"
+    knowledge:
+      overview:
+        search_placeholder: "Cerca nelle pagine della conoscenza…"
+    chat:
+      messages:
+        edit: "Modifica messaggio"
+        body: "Messaggio"
+        updated: "Messaggio aggiornato."
+        edited: "Modificato"
+        invalid: "Scrivi un messaggio oppure mantieni almeno un allegato."
+        stale: "Questo messaggio è cambiato o è stato eliminato. Il tuo testo è ancora qui. Copialo prima di tornare alla conversazione."

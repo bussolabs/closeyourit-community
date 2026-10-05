@@ -1,0 +1,70 @@
+<% content_for :title, @project.name %>
+<% can_manage = can?("projects.edit", scope: @project) %>
+
+<div class="p-7 space-y-6" data-test="member-project">
+  <%= render "overview_header", project: @project, stats: @stats, active_tab: "overview" %>
+
+  <%# Fascia salute a colpo d'occhio: numeri aggregati dai domini monitoraggio (link alle rispettive liste). %>
+  <%= render "member/projects/health_band" %>
+
+  <%# CYRA-361 — Il passo successivo, non solo il numero. La panoramica diceva "12 errori aperti,
+      0 ticket" e "nessun monitor" senza offrire niente: proprio dove l'app sa già cosa converrebbe
+      fare. Le proposte compaiono SOLO a condizione vera e sono al massimo tre: un elenco che si
+      accende sempre diventa rumore e toglie alla pagina la calma che ha. %>
+  <%# CYRA-575 — I passi della prima accensione (ambiente, token, repository) valgono solo finché il
+      progetto non ha ancora ticket né telemetria: dopo, un passo di configurazione che resta acceso
+      per sempre è un rimprovero, non un aiuto. %>
+  <% next_steps = project_next_steps(project: @project, stats: @stats, top_error_group: @health_top_error_group,
+                                     supports_uptime: @supports_uptime, monitors_count: @health_monitors_count,
+                                     environments_without_monitor: @environments_without_monitor,
+                                     first_run: @first_run, environments_count: @project_environments.size,
+                                     active_tokens_count: @active_tokens_count,
+                                     repository_connectable: @repository_connectable) %>
+  <% if next_steps.any? %>
+    <%= render "member/projects/next_steps", next_steps: next_steps, project: @project %>
+  <% end %>
+
+  <%= render Ui::GridComponent.new(cols: 1, lg: 3, gap: 6) do %>
+    <%# LEFT: tickets table — titolo sopra/fuori la barra filtri (ordine DOM voluto) %>
+    <%= render Ui::StackComponent.new(gap: 3, class: "lg:col-span-2", test_id: "project-tickets") do %>
+      <%= render "member/projects/tickets_panel" %>
+    <% end %>
+
+    <%# RIGHT: what the project is, closed until asked, then what changes every day (monitoring, releases). %>
+    <%= render Ui::StackComponent.new(gap: 6) do %>
+      <%= render "member/projects/about_panel", can_manage: can_manage %>
+
+      <%= render "member/projects/monitoring_panel" %>
+
+      <%# Recent releases (from CI via POST /api/v1/projects/:id/releases or inferred from error ingest). %>
+      <% if @releases.any? %>
+        <%= render "member/projects/releases_panel" %>
+      <% end %>
+
+      <% if @project_books.any? %>
+        <%= render "member/projects/books_panel" %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-883 — created, updated and the full history close the page (E22). The history arrives
+      on request in the modal frame (CYRA-827): the overview never reads the whole activity log. %>
+  <%= render Ui::SectionComponent.new(body_class: "px-4 py-2.5", test_id: "project-page-footer") do %>
+    <%= render Ui::AuditMetaComponent.new(
+          created_at: @project.created_at,
+          created_by: @project.created_by&.name,
+          updated_at: (@last_activity&.created_at || @project.updated_at),
+          updated_by: activity_actor_name(@last_activity),
+          test_id: "project-audit",
+          data: { controller: "ui--dialog" }
+        ) do |c| %>
+      <% c.with_action do %>
+        <%= render Ui::ButtonComponent.new(label: t("ui.audit.view_history"), variant: :ghost, size: :sm,
+              icon: "history", test_id: "project-history", data: { action: "ui--dialog#open" }) %>
+        <%= render "member/shared/activity_modal", subtitle: @project.name,
+              history_url: history_member_project_path(@project),
+              history_frame: Member::ProjectsController::HISTORY_FRAME %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

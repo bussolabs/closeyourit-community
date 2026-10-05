@@ -1,0 +1,10 @@
+<%# CYRA-933 — the ticket form has two columns: in the member modal it opens wider than the others. %>
+<% content_for :modal_size, "wide" %>
+<%= render "form",
+      ticket: @ticket,
+      url: member_tickets_path,
+      method: :post,
+      title: t("member.tickets.form.new_title"),
+      submit_label: t("member.tickets.form.save_new"),
+      locked_project: @locked_project,
+      source_ticket_id: @source_ticket_id %>

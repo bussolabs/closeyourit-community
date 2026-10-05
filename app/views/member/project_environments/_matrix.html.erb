@@ -1,0 +1,38 @@
+<%# locals: (environments:)
+    The declared environments side by side: one column each (name, active tokens, Deactivate on top),
+    one row per capability, so the same switch reads across environments. Every cell carries its own
+    `environment-capability` controller: the cells of an environment no longer share a wrapper. %>
+<div class="overflow-x-auto">
+  <table class="w-full border-collapse text-left lg:table-fixed" data-test="project-environments-matrix">
+    <thead>
+      <tr class="border-b border-stone-200 dark:border-zinc-800">
+        <th scope="col" class="w-32 px-4 py-3"><span class="sr-only"><%= t("member.projects.environments.capability_column") %></span></th>
+        <% environments.each do |environment| %>
+          <th scope="col" class="min-w-56 px-4 py-3 align-top font-normal" data-test="project-environment-column-<%= environment.id %>">
+            <div class="flex items-center justify-between gap-2">
+              <%= render Ui::BadgeComponent.new(label: environment.label, color: environment.color, dot: true) %>
+              <%= render Ui::ButtonComponent.new(label: t("member.projects.environments.deactivate"), icon: "toggle-right",
+                    href: member_project_environment_path(@project, environment.id), method: :delete, variant: :ghost, size: :sm,
+                    confirm: t("member.projects.environments.deactivate_confirm", environment: environment.label),
+                    test_id: "project-environment-deactivate-#{environment.id}") %>
+            </div>
+            <p class="mt-1.5 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="project-environment-tokens-<%= environment.id %>">
+              <%= t("member.projects.environments.tokens", count: @token_counts[environment.id].to_i) %> ·
+              <%= link_to t("member.projects.show.manage_tokens"), member_project_tokens_path(@project), class: "font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300" %>
+            </p>
+          </th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% %w[servers uptime secrets approval].each do |cap| %>
+        <tr data-test="project-environment-row-<%= cap %>">
+          <th scope="row" class="px-4 py-3 align-top text-[12px] font-normal text-gray-500 dark:text-zinc-400"><%= t("member.projects.show.capability_#{cap}") %></th>
+          <% environments.each do |environment| %>
+            <%= render "member/project_environments/capability_cell", environment:, cap:, capability_link: @declared[environment.id] %>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

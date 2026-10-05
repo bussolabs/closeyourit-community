@@ -1,0 +1,31 @@
+<%# locals: () %>
+<%# What travels with the message. The server knows who and which version; the browser fills in the
+    page it was on, its window and the time (ui--support), and sends them back as hidden fields. %>
+<% rows = {
+     page: nil, page_title: nil,
+     organization: current_organization&.name,
+     account: Current.account.name.presence || Current.account.email,
+     role: current_membership&.role&.humanize,
+     version: "#{App::Version.tag} · #{App::Version.short_sha}",
+     browser: request.user_agent,
+     window: nil,
+     theme: "#{Current.account.theme.presence || "light"} · #{I18n.locale}",
+     time: nil,
+     request_id: request.request_id
+   } %>
+<%= render Ui::SectionComponent.new(title: t("member.support.context_title"), body_class: nil, test_id: "support-context") do %>
+  <dl class="divide-y divide-stone-100 dark:divide-zinc-800">
+    <% rows.each do |key, value| %>
+      <% next if value.nil? && %i[page page_title window time].exclude?(key) %>
+      <div class="grid grid-cols-[104px_minmax(0,1fr)] items-baseline gap-2.5 px-4 py-1.5">
+        <dt class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.support.context.#{key}") %></dt>
+        <dd class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 break-words" data-test="support-context-<%= key %>"
+            <%= "data-support-detail=#{key}" if value.nil? %>><%= value %></dd>
+      </div>
+    <% end %>
+  </dl>
+  <p class="px-4 py-2.5 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.support.context_note") %></p>
+  <% Support::Constants::CLIENT_CONTEXT_KEYS.each do |key| %>
+    <%= hidden_field_tag "context[#{key}]", nil, id: nil, data: { "ui--support-target": "field", key: } %>
+  <% end %>
+<% end %>

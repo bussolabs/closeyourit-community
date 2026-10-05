@@ -1,0 +1,25 @@
+<%# A task in the Tasks panel (CYRA-992): status, request and time on the card, the result one click away.
+    Same id as the chat bubble it replaced, so the live updates of a running task keep landing here. %>
+<% colors = { "queued" => :gray, "running" => :amber, "completed" => :emerald, "failed" => :red, "stopped" => :gray, "interrupted" => :orange } %>
+<% title = run.proposal_run&.proposed_task&.dig("objective").presence || run.input.lines.first.to_s.strip %>
+<article id="coworker_run_<%= run.id %>" data-test="coworkers-run" data-status="<%= run.status %>"
+         data-coworker-run-id="<%= run.id %>" data-coworker-puck-id="<%= run.puck_id %>" data-coworker-kind="<%= run.kind %>" data-coworker-created-at="<%= run.created_at.iso8601(6) %>">
+  <details class="rounded-lg border border-stone-200 bg-white hover:border-indigo-300 open:border-indigo-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-500/60 dark:open:border-indigo-500/60" data-test="coworkers-task-card">
+    <summary class="flex cursor-pointer list-none flex-col gap-1.5 px-3 py-2.5 [&::-webkit-details-marker]:hidden">
+      <span class="flex items-center gap-2">
+        <%= render Ui::BadgeComponent.new(label: t("member.coworkers.status.#{run.status}"), color: colors.fetch(run.status, :gray), dot: true, pulse: run.active?, size: :sm) %>
+        <time class="ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400" datetime="<%= run.created_at.iso8601 %>"><%= l(run.created_at, format: :short) %></time>
+      </span>
+      <span class="line-clamp-2 text-[13px] font-medium" data-test="coworkers-task-title"><%= title %></span>
+    </summary>
+    <div class="border-t border-dashed border-stone-200 px-3 py-2.5 text-[13px] leading-[21px] break-words dark:border-zinc-800">
+      <% if run.output.present? %>
+        <%= render Ui::MarkdownComponent.new(text: run.output, short_links: true, class: "text-[13px]! leading-[21px]! dark:prose-invert", test_id: "coworkers-task-output") %>
+      <% else %>
+        <p class="text-[12px] text-gray-500 dark:text-zinc-400" role="status"><%= t("member.coworkers.status.#{run.status}") %></p>
+      <% end %>
+      <% if run.error_code.present? %><p class="mt-1.5 text-[12px] text-red-600 dark:text-red-400"><%= t("member.coworkers.run_failed") %></p><% end %>
+      <%= render "member/coworkers/run_actions", run: run, puck: puck %>
+    </div>
+  </details>
+</article>

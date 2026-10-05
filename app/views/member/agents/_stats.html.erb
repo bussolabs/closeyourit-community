@@ -1,0 +1,10 @@
+<%# locals: online_count:, offline_count:, stale_count:, total: — chip conteggi della fleet host nell'header.
+    Wrapper display:contents → le chip partecipano al flex del counts slot (mt-2.5 … gap-1.5). %>
+<div class="contents">
+  <%= render Ui::StatLabelComponent.new(label: t("member.agents.stat_online"), value: online_count, value_color: :emerald, test_id: "stat-online") %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.agents.stat_offline"), value: offline_count, value_color: :gray, test_id: "stat-offline") %>
+  <%# CYRA-450: i fermi (sottoinsieme degli offline) in rosso solo quando ce ne sono — a zero resta neutro, non allarma. %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.agents.stat_stale"), value: stale_count, value_color: (stale_count.to_i.positive? ? :red : :neutral),
+        title: t("member.agents.stat_stale_title"), test_id: "stat-stale") %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.agents.stat_total"), value: total, test_id: "stat-total") %>
+</div>

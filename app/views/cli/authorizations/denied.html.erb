@@ -1,0 +1,7 @@
+<% content_for :title, t("cli.authorize.denied_title") %>
+
+<div class="rounded-lg border border-stone-200 bg-white p-6 text-center" data-test="cli-authorize-denied">
+  <div class="mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-stone-100 text-gray-500"><%= render Ui::IconComponent.new(name: "ban", class: "text-[15px]") %></div>
+  <h1 class="font-display text-[16px] font-semibold text-zinc-900"><%= t("cli.authorize.denied_title") %></h1>
+  <p class="mt-1.5 text-[13px] leading-relaxed text-zinc-600"><%= t("cli.authorize.denied_lead") %></p>
+</div>

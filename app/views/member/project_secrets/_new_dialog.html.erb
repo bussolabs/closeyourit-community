@@ -1,0 +1,39 @@
+<%# locals: (errors:) %>
+<%# CYRA-924 — C65: "Add secret" opens a dialog with the name and one field per environment; it
+    reopens with the error after a failed save (422). %>
+<% field_class = "block w-full rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2.5 py-1.5 font-mono text-[12.5px] text-zinc-900 dark:text-zinc-100 focus:border-indigo-600 dark:focus:border-indigo-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+<div class="contents" data-controller="ui--dialog" data-ui--dialog-open-value="<%= errors.present? %>">
+  <%= render Ui::ButtonComponent.new(label: t("member.secrets.add"), variant: :primary, size: :sm, icon: "plus",
+        test_id: "secret-add", data: { action: "ui--dialog#open" }) %>
+  <%# F24 — the standard shell; `form:` keeps Add in the header inside the form. %>
+  <%= render Ui::ModalComponent.new(title: t("member.secrets.new_title"), padded: false, test_id: "secret-new-dialog",
+        aria: { label: t("member.secrets.new_title") },
+        form: { url: member_project_secrets_path(@project), method: :post,
+                data: { controller: "secret-row-validation", action: "submit->secret-row-validation#validate input->secret-row-validation#clear",
+                        secret_row_validation_message_value: t("member.review_fixes.secret_value_required") } },
+        data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+    <% modal.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.secrets.cancel_edit"), variant: :secondary_muted, size: :sm,
+            test_id: "secret-cancel-new", data: { action: "ui--dialog#close" }) %>
+      <%= render Ui::ButtonComponent.new(label: t("member.secrets.add_row"), type: "submit", variant: :primary, size: :sm,
+            icon: "plus", test_id: "secret-add-row") %>
+    <% end %>
+    <div class="space-y-4 px-4 py-4">
+      <%= render "member/project_secrets/dialog_identity", name: params[:name].to_s, description: params[:description],
+            name_editable: true, dom: "new", errors: errors %>
+      <% @environments.each do |environment| %>
+        <div data-test="secret-new-field-<%= environment.code %>">
+          <label for="secret-new-value-<%= environment.id %>" class="flex items-center gap-1.5 text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+            <span class="h-1.5 w-1.5 rounded-full <%= Ui::Colors.swatch(environment.color) %>"></span><%= environment.label %>
+          </label>
+          <% if @secrets_enabled[environment.id] %>
+            <textarea id="secret-new-value-<%= environment.id %>" name="values[<%= environment.id %>]" rows="2"
+                      data-test="secret-new-value-<%= environment.code %>" class="mt-1 <%= field_class %>"><%= params.dig(:values, environment.id.to_s) %></textarea>
+          <% else %>
+            <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.secrets.capability_off") %></p>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

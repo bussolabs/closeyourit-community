@@ -1,0 +1,28 @@
+test:
+  service: Disk
+  root: <%= Rails.root.join("tmp/storage") %>
+
+local:
+  service: Disk
+  root: <%= Rails.root.join("storage") %>
+
+# S3 per produzione/staging — secret via ENV (CloseYourIt CYRA), MAI credentials.yml.enc.
+# Default nil/regione così dev/test (che usano :local/:test) non sollevano al boot quando le ENV mancano.
+amazon:
+  service: S3
+  access_key_id: <%= ENV.fetch("AWS_ACCESS_KEY_ID", nil) %>
+  secret_access_key: <%= ENV.fetch("AWS_SECRET_ACCESS_KEY", nil) %>
+  region: <%= ENV.fetch("AWS_REGION", "eu-central-1") %>
+  bucket: <%= ENV.fetch("AWS_S3_BUCKET", nil) %>
+
+# Remember not to checkin your GCS keyfile to a repository
+# google:
+#   service: GCS
+#   project: your_project
+#   credentials: <%= Rails.root.join("path/to/gcs.keyfile") %>
+#   bucket: your_own_bucket-<%= Rails.env %>
+
+# mirror:
+#   service: Mirror
+#   primary: local
+#   mirrors: [ amazon, google, microsoft ]

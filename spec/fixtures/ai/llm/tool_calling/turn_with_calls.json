@@ -1,0 +1,52 @@
+{
+  "id": "chatcmpl-afc2ad0028d85b7f",
+  "created": 1788449024,
+  "model": "vlm-fast",
+  "object": "chat.completion",
+  "system_fingerprint": "vllm-0.28.1.dev0+g2cf0a6915.d20260827-7b10158d",
+  "choices": [
+    {
+      "finish_reason": "tool_calls",
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "tool_calls": [
+          {
+            "function": {
+              "arguments": "{\"project_key\": \"CYRA\"}",
+              "name": "count_open_errors"
+            },
+            "id": "chatcmpl-tool-b3ae98ccab915097",
+            "type": "function"
+          },
+          {
+            "function": {
+              "arguments": "{\"project_key\": \"EKETO\"}",
+              "name": "count_open_errors"
+            },
+            "id": "chatcmpl-tool-a50eaee7880543a5",
+            "type": "function"
+          }
+        ],
+        "provider_specific_fields": {
+          "refusal": null,
+          "reasoning": null
+        },
+        "content": null
+      },
+      "provider_specific_fields": {
+        "token_ids": null,
+        "stop_reason": null,
+        "routed_experts": null
+      }
+    }
+  ],
+  "usage": {
+    "completion_tokens": 58,
+    "prompt_tokens": 366,
+    "total_tokens": 424,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  }
+}

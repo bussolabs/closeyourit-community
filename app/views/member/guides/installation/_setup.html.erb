@@ -1,0 +1,26 @@
+<div class="space-y-6" data-test="installation-setup">
+  <%= render Ui::SectionComponent.new(title: t("member.installation.install")) do %>
+    <div class="space-y-4">
+      <p><%= t("member.installation.artifact_note") %></p>
+      <%= render "code", code: @recipe.fetch(:install), language: "sh" %>
+      <p><%= t("member.installation.both_php") if @observation.dig('tuple','integration').start_with?('php-laravel') %></p>
+      <p><%= t("member.installation.private_note") %></p>
+      <% if @public_configuration %>
+        <details data-test="installation-public-configuration"><summary class="cursor-pointer"><%= t("member.installation.reveal") %></summary>
+          <p class="my-3"><%= t("member.installation.token_environment", environment: @public_configuration[:environment]) %></p>
+          <%= render "code", code: @public_configuration.fetch(:sentry_dsn), language: "text" %>
+        </details>
+      <% elsif @observation.dig('tuple','auth_mode') == 'public_dsn' || @observation.dig('tuple','integration').start_with?('php-laravel') %>
+        <p data-test="installation-public-placeholder"><%= t("member.installation.key_unavailable") %></p>
+      <% end %>
+    </div>
+  <% end %>
+  <%= render Ui::SectionComponent.new(title: t("member.installation.configure")) do %>
+    <div class="space-y-4"><p><%= t("member.installation.lifecycle") %></p><%= render "code", code: @recipe.fetch(:code), language: @recipe.fetch(:language) %>
+      <% if @observation.dig('tuple','integration').start_with?('php-laravel') %>
+        <p><%= t("member.installation.php_bootstrap") %></p>
+      <% end %>
+      <p><%= t("member.installation.removal") %></p>
+    </div>
+  <% end %>
+</div>

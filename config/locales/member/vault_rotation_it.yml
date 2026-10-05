@@ -1,0 +1,29 @@
+it:
+  member:
+    vault_rotation:
+      title: Cosa ruotare
+      help_title: Mostra quanti secret sono coperti da una regola di rotazione sul totale e raccoglie in un solo posto quelli in scadenza o già scaduti, invece di scoprirli progetto per progetto.
+      stat_coverage: Copertura
+      stat_due_soon: In scadenza
+      stat_overdue: Scaduti
+      no_secrets: Non ci sono ancora secret
+      no_secrets_body: Tra i progetti che vedi non c'è nessun secret. Quando ne aggiungerai, qui vedrai quali hanno bisogno di una rotazione.
+      onboarding_title: La rotazione non è ancora attiva
+      onboarding_body: "Nessun secret ha una regola di rotazione, quindi «zero in scadenza» non è un via libera: è solo la funzione mai accesa. Una regola ti ricorda di cambiare il valore ogni tot giorni."
+      onboarding_how: Apri un progetto qui sotto e imposta una regola sui suoi secret, partendo dai valori più vecchi e dalla produzione.
+      all_covered_title: Tutto in regola
+      all_covered_body: Ogni secret con una regola è entro la scadenza. Qui sotto quelli ancora senza regola.
+      list_title: Da ruotare
+      list_body: Secret con una regola di rotazione in scadenza o già scaduta.
+      uncovered_title: Secret senza regola
+      uncovered_body: Il valore più vecchio in cima, così parti da lì (soprattutto in produzione). Apri il progetto per impostare una regola.
+      uncovered_more: e altri %{count} secret senza regola
+      col_variable: Variabile
+      col_project: Progetto
+      col_environment: Ambiente
+      col_status: Scadenza
+      col_last_rotated: Ultima rotazione
+      col_age: Età del valore
+      age_unknown: Sconosciuta
+      col_action: Azione
+      set_rule: Imposta regola

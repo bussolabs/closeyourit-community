@@ -1,0 +1,11 @@
+[
+  { "id": "accepted", "status": 202, "observer_outcome": "ok", "retry": false },
+  { "id": "duplicate-snapshot-id", "status": 202, "observer_outcome": "ok", "retry": false },
+  { "id": "unknown-token", "status": 401, "code": "R401-CLUSTER-001", "observer_outcome": "unauthorized", "retry": false },
+  { "id": "revoked-token", "status": 401, "code": "R401-CLUSTER-002", "observer_outcome": "unauthorized", "retry": false },
+  { "id": "too-large", "status": 413, "code": "R413-CLUSTER-001", "observer_outcome": "drop", "retry": false },
+  { "id": "invalid-payload", "status": 422, "code": "R422-CLUSTER-001", "observer_outcome": "drop", "retry": false },
+  { "id": "throttled", "status": 429, "observer_outcome": "retry", "retry": true },
+  { "id": "server-unavailable", "status": 503, "observer_outcome": "retry", "retry": true },
+  { "id": "network-error", "status": null, "observer_outcome": "retry", "retry": true }
+]

@@ -1,0 +1,30 @@
+<% content_for :title, t("member.knowledge.overview.title") %>
+
+<div class="p-7 space-y-6" data-test="member-knowledge-overview">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.knowledge.overview.title"),
+        subtitle: t("member.knowledge.overview.help_title"),
+        breadcrumb: [ { label: t("member.knowledge.overview.title") } ],
+        counts_test_id: "knowledge-overview-counts",
+        test_id: "knowledge-overview-header") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.overview.stat_pages"), value: @pages_count, test_id: "knowledge-overview-stat-pages") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.overview.stat_decisions"), value: @decisions_count, value_color: :violet, test_id: "knowledge-overview-stat-decisions") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.overview.stat_books"), value: @books_count, test_id: "knowledge-overview-stat-books") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.knowledge.overview.stat_review"), value: @review_waiting_count,
+            value_color: @review_waiting_count.positive? ? :indigo : :neutral, test_id: "knowledge-overview-stat-review") %>
+    <% end %>
+    <%# Nessuna azione: il rimando alla guida lo rende l'header accanto al titolo (CYRA-437). %>
+  <% end %>
+
+  <%# T1 — the search leads to the pages list, so it sits in a panel of its own, not on the page ground. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 [&>*]:border-b-0">
+    <%= render Ui::TableToolbarComponent.new(url: member_knowledge_pages_path, framed: true,
+          search_placeholder: t("member.knowledge.overview.search_placeholder"),
+          semantic_search: true, semantic_selectable: true,
+          test_id: "knowledge-overview-search") %>
+  </div>
+
+  <%# CYRA-930 — a row per project: where proposals wait and how much each project has written. %>
+  <%= render "member/overviews/project_matrix", matrix: @matrix, pagination: @matrix_pagination, prefix: "knowledge" %>
+</div>

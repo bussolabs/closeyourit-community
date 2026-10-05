@@ -1,0 +1,17 @@
+<%# Reset password — corpo della mail (il frame: layouts/mailer.html.erb). Accento indigo (default). %>
+<% content_for :preheader, t("auth.passwords.mailer.body") %>
+
+<p style="<%= mail_overline_style %>"><%= t("auth.passwords.mailer.overline") %></p>
+<h1 style="<%= mail_h1_style %>"><%= t("auth.passwords.mailer.action") %></h1>
+
+<p style="<%= mail_p_style %>"><%= t("auth.passwords.mailer.greeting", name: @account.name) %></p>
+<p style="<%= mail_p_style %>"><%= t("auth.passwords.mailer.body") %></p>
+
+<div style="margin:10px 0 0 0;">
+  <%= render "mails/shared/button", label: t("auth.passwords.mailer.action"), url: edit_password_url(@token) %>
+</div>
+
+<p style="<%= mail_note_style %>"><%= t("auth.passwords.mailer.ignore") %></p>
+<p style="<%= mail_footnote_style %>"><%= t("mailer.shared.button_fallback") %><br>
+  <span style="<%= mail_mono_style(color: MailerHelper::MAIL_ACCENT) %>word-break:break-all;"><%= edit_password_url(@token) %></span>
+</p>

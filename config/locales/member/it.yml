@@ -1,0 +1,3788 @@
+---
+it:
+  member:
+    no_organization: Non appartieni ancora a nessuna organizzazione.
+    forbidden: Non hai i permessi per farlo.
+    switched: Passato a %{name}.
+    # CYRA-728 — la pagina che compare quando un'azione pericolosa arriva senza conferma.
+    confirmation_required:
+      title: Serve una conferma
+      body: "Controlla l’operazione indicata qui sotto prima di confermare. Non è stata ancora applicata alcuna modifica."
+      confirm: Confermo, procedi
+      back: Torna indietro
+      from_terminal: "Dal terminale, ripeti lo stesso comando aggiungendo --yes."
+    # CYRA-722 — la pagina che sostituisce l'area utenti quando l'organizzazione è sospesa.
+    suspended:
+      title: Organizzazione sospesa
+      body: "L'accesso a %{name} è sospeso. Finché resta così non è possibile aprire le pagine dell'organizzazione né inviare o leggere i suoi dati. Per riattivarla, scrivi a chi amministra CloseYourIt."
+      switch_intro: "Puoi continuare a lavorare in un'altra organizzazione:"
+      switch_to: Passa a %{name}
+    breadcrumb:
+      # CYRA-335: la radice del percorso si chiama come la voce di menu (member.nav.home): due nomi
+      # per la stessa pagina lasciavano credere che fossero due posti diversi.
+      new: Nuovo
+      edit: Modifica
+    roles:
+      owner: Proprietario
+      admin: Amministratore
+      member: Membro
+      customer: Cliente
+      god: god
+    keyboard:
+      decision:
+        approve: Approva
+        reject: Respingi
+        skip: Salta
+        defer: Rimanda a domani
+      approvals_board:
+        next: Riga successiva
+        prev: Riga precedente
+        open: Apri la riga
+        approve: Approva la riga
+        select: Seleziona la riga
+      title: Scorciatoie da tastiera
+      close: Chiudi
+      section_general: Generale
+      section_nav: Vai a
+      section_page: Questa pagina
+      help: Mostra questo aiuto
+      global_search: Apri la ricerca globale
+      search: Vai alla ricerca
+      new: Nuovo
+      close_hint: Chiudi / annulla
+      board:
+        select: Sposta il focus
+        grab: Prendi / rilascia la card
+        grab_keys: "Spazio · Invio"
+        move: Sposta la card
+        cancel: Annulla
+    quick_add:
+      title: "Cosa vuoi scrivere?"
+      subtitle: "Quattro posti, un criterio solo: qui sotto c'è scritto quando si usa ciascuno."
+      button: "Aggiungi"
+      nav_button: "Aggiunta rapida"
+      ticket:
+        title: "Ticket"
+        when: "Un lavoro da fare su un progetto: un problema da correggere o una funzione da costruire, con chi la revisiona."
+        not_here: "Non qui: le cose personali e le idee ancora da discutere."
+      idea:
+        title: "Idea"
+        when: "Una proposta ancora da discutere, che potrebbe diventare un ticket dopo che il team l'ha valutata."
+        not_here: "Non qui: ciò che è già deciso e va solo fatto."
+      todo:
+        title: "Promemoria"
+        when: "Una cosa tua, che riguarda solo te: appunti e liste personali, senza revisione né progetto."
+        not_here: "Non qui: il lavoro che il team deve vedere."
+      action:
+        title: "Attività del team"
+        when: "Un lavoro di squadra che non è sviluppo — organizzazione, commerciale, amministrazione — assegnato a un team."
+        not_here: "Non qui: le modifiche al software, che sono ticket."
+    search:
+      title: Ricerca
+      open: Apri ricerca
+      trigger: Cerca…
+      close: Chiudi
+      label: Cerca in CloseYourIt
+      shortcut: ⌘K
+      placeholder: Cerca pagine, ticket, persone, errori…
+      prompt_title: Cerca nello spazio di lavoro
+      prompt_body: Trova pagine dell'app, ticket, progetti, persone, errori e tutto il resto che puoi vedere.
+      empty_title: Nessun risultato
+      empty_body: "Non abbiamo trovato nulla per “%{query}”."
+      knowledge_meta: Pagina della conoscenza
+      filters: Filtra per tipo
+      all: Tutto
+      recents: Recenti
+      see_all:
+        one: Vedi tutti (%{count})
+        other: Vedi tutti (%{count})
+      legend:
+        move: scegli
+        open: apri
+        close: chiudi
+      meta:
+        page: Pagina dell'app
+        book: Raccolta della conoscenza
+        paused: in pausa
+        group: Gruppo di progetti
+        team: Team
+        person: Scrivi un messaggio
+        conversation: Conversazione
+        secret:
+          one: Segreto in %{count} progetto
+          other: Segreto in %{count} progetti
+      groups:
+        projects: Progetti
+        tickets: Ticket
+        error_groups: Errori
+        pages: Conoscenza
+        nav: Pagine dell'app
+        books: Raccolte
+        ideas: Idee
+        monitors: Uptime
+        cron_monitors: Lavori pianificati
+        servers: Server
+        groups: Gruppi
+        teams: Team
+        people: Persone
+        conversations: Conversazioni
+        secrets: Segreti
+    nav:
+      home: Home
+      valhalla: Valhalla · God mode
+      # CYRA-438: queste nove voci erano annidate per sbaglio sotto member.shared_secrets, dove il
+      # layout non le trovava — il menu mostrava «translation missing».
+      guides: Guide
+      platforms: Piattaforme
+      organization: Organizzazione
+      organization_ai: AI dell'organizzazione
+      # CYRA-338 — la voce che porta all'area personale si chiama come la pagina che apre. Si chiamava
+      # «Account», che non nomina nulla di ciò che quella pagina contiene.
+      preferences: Preferenze
+      helpdesk: Assistenza
+      environments: Ambienti
+      errors: Errori
+      uptime: Uptime
+      performance: Performance
+      status_page: Pagina di stato
+      crons: Cron
+      toggle: Apri menu
+      menu: Menu
+      lists: Liste
+      bottom_notifications: Notifiche
+      bottom_bar: Azioni
+      overview: Panoramica
+      # CYRA-583 — letto solo dai lettori di schermo, accanto al nome dell'area che contiene la pagina
+      # aperta: il segno accanto al nome dice la stessa cosa a chi guarda.
+      current_area: Area in cui ti trovi
+      group_toggle: "Apri o chiudi %{group}"
+      compact_collapse: Restringi il menu
+      compact_expand: Allarga il menu
+      approvals_pending:
+        one: "%{count} decisione ti aspetta"
+        other: "%{count} decisioni ti aspettano"
+      # Etichette di contenuto, non della sidebar: le usano alcune pagine e briciole di pane (CYRA-521).
+      section_organization: Organizzazione
+      section_project: Progetto
+      section_observability: Osservabilità
+      section_automation: Automazione
+      section_work: Lavoro
+      section_system: Sistema
+      section_account: Organizzazione
+      group_home: Home
+      group_approvals: Approvazioni
+      group_workflows: Lavorazioni
+      group_conversations: Conversazioni
+      group_todos: Da fare
+      group_guides: Guide
+      group_projects: Progetti
+      group_product: Prodotto
+      group_knowledge: Conoscenza
+      group_observability: Osservabilità
+      group_infrastructure: Infrastruttura
+      group_alerts: Avvisi
+      group_automation: Automazione
+      group_vault: Vault
+      # CYRA-338 — si chiamava «Impostazioni», lo stesso nome della pagina delle preferenze personali:
+      # chi cercava dove cambiare la propria lingua poteva finire in un'area che ha effetti su tutto
+      # il team. Il nome ora dice cosa vi si fa.
+      group_settings: Amministrazione
+      # CYRA-356 — le tre voci del Vault portano il nome della pagina che aprono: prima due dicevano
+      # solo il livello («Personale», «Organizzazione») e la pagina si presentava con un altro nome.
+      vault_personal: Secret personali
+      vault_organization: Secret dell'organizzazione
+      feature_matrix: Matrice funzionalità
+      tickets: Ticket
+      my_work: Il mio lavoro
+      projects: Progetti
+      knowledge: Conoscenza
+      knowledge_pages: Pagine di conoscenza
+      book: Raccolte
+      knowledge_review: Revisione
+      members: Membri
+      service_accounts: Service account
+      teams: Team
+      roles: Ruoli
+      vault_project_secrets: Secret di progetto
+      vault_capabilities: Cosa puoi fare qui
+      vault_audit: Storico
+      vault_attention: Da sistemare
+      personal_secret_files: File segreti personali
+      # CYRA-581 — la voce porta il nome proprio dell'App su GitHub, che è anche il titolo della
+      # pagina che apre. CYRA-545: nel menu non c'è più, perché le integrazioni sono diventate
+      # quattro e la voce è il loro elenco. Il nome resta perché è quello dell'area con cui il
+      # changelog nomina i cambiamenti di quella pagina (Changelog::Areas).
+      github_app: GitHub App
+      # CYRA-545 — l'elenco dei servizi esterni che l'organizzazione collega con le proprie chiavi:
+      # da qui si arriva anche alla pagina della GitHub App, che è il quarto della fila.
+      integrations: Integrazioni
+      # CYRA-745 — «chi ha fatto cosa e quando»: un nome che si legge senza sapere come è fatto dentro.
+      activity: Registro attività
+    overviews:
+      counts:
+        errors: Errori non risolti
+        monitors_down: Non raggiungibili
+        monitors: Controlli attivi
+        servers: Macchine
+        servers_down: Non raggiungibili
+        projects: Progetti
+        environments: Ambienti
+        tickets_open: Ticket aperti
+        ideas_open: Idee aperte
+        members: Persone
+        service_accounts: Service account
+        seo_issues_open: Rilievi aperti
+        seo_issues_critical: Critici
+        seo_sites: Siti
+      overview_empty: Nessuna pagina disponibile in questo spazio con i tuoi permessi.
+      infrastructure:
+        matrix:
+          label: Controlli per progetto
+        uptime:
+          label: Uptime
+          set_up: Aggiungi un controllo
+          caption:
+            one: "giù su %{total}"
+            other: "giù su %{total}"
+          zero: "%{total} su"
+        crons:
+          label: Cron
+          set_up: Controlla un lavoro
+          caption:
+            one: "in ritardo o saltato su %{total}"
+            other: "in ritardo o saltati su %{total}"
+          zero: "%{total} puntuali"
+        certificates:
+          label: Certificati
+          caption:
+            one: in scadenza
+            other: in scadenza
+          zero: nessuno in scadenza
+      automation:
+        matrix:
+          label: Automazione per progetto
+        decisions:
+          label: Da decidere
+          caption:
+            one: in attesa nella tua coda
+            other: in attesa nella tua coda
+          zero: niente che aspetta te
+        active:
+          label: In corso
+          caption:
+            one: automazione aperta su un ticket
+            other: automazioni aperte sui ticket
+          zero: niente in corso
+        blocked:
+          label: Bloccate
+          caption:
+            one: ferma e in attesa di aiuto
+            other: ferme e in attesa di aiuto
+          zero: niente di bloccato
+        datasets:
+          label: Dataset
+          caption:
+            one: raccolta di esempi
+            other: raccolte di esempi
+          zero: nessuna raccolta
+      matrix:
+        project: Progetto
+        all_projects: Tutti i progetti
+        set_up: Da attivare
+        search: Cerca progetti…
+        filter_health: Salute
+        health_problems: Con problemi
+        no_match: Nessun progetto corrisponde ai filtri.
+        not_available: Non previsto su questo progetto
+      product:
+        matrix:
+          label: Lavoro per progetto
+        open:
+          label: Aperti
+          caption:
+            one: ticket ancora da chiudere
+            other: ticket ancora da chiudere
+          zero: niente di aperto
+        in_progress:
+          label: In corso
+          caption:
+            one: in lavorazione
+            other: in lavorazione
+          zero: niente in lavorazione
+        overdue:
+          label: In ritardo
+          caption:
+            one: oltre la scadenza
+            other: oltre la scadenza
+          zero: niente in ritardo
+        unassigned:
+          label: Senza persona
+          caption:
+            one: aperto e senza nessuno
+            other: aperti e senza nessuno
+          zero: ogni ticket ha qualcuno
+        ideas:
+          label: Idee
+          caption:
+            one: in attesa di voto
+            other: in attesa di voto
+          zero: nessuna idea in attesa
+      observability:
+        matrix:
+          label: Segnali per progetto
+          rising: Più errori di ieri
+          trend: Errori ricevuti nelle ultime 24 ore
+        errors:
+          label: Errori
+          caption:
+            one: ancora da risolvere
+            other: ancora da risolvere
+          zero: niente da risolvere
+        vulnerabilities:
+          label: Vulnerabilità
+          caption:
+            one: aperta
+            other: aperte
+          zero: nessuna aperta
+        logs:
+          label: Log
+          caption: righe nelle ultime 24 ore
+          zero: niente nelle ultime 24 ore
+        performance:
+          label: Performance
+          caption:
+            one: operazione misurata
+            other: operazioni misurate
+          zero: nessuna misura ancora
+        replays:
+          # CYRA-584 — la scheda apre la stessa pagina della voce del menu: si legge uguale, qualifica
+          # compresa. Altrimenti la funzione tornerebbe ad avere due nomi.
+          label: Session replay · registrazioni
+          caption:
+            one: registrazione
+            other: registrazioni
+          zero: nessuna registrazione ancora
+    shared_secrets:
+      title: Secret dell'organizzazione
+      variables: Variabili
+      delegations: Deleghe
+      name: Variabile
+      value: Valore
+      save: Salva
+      col_variable: Variabile
+      table_title: Variabili dell'organizzazione
+      count:
+        one: 1 variabile
+        other: "%{count} variabili"
+      new_name: NOME_VARIABILE
+      masked: "••••••••"
+      cell_empty: "—"
+      unlock: Modifica
+      save_row: Salva riga
+      cancel_edit: Annulla
+      copy: Copia
+      copied: Copiato
+      copy_failed: Copia non riuscita
+      reveal_failed: Caricamento non riuscito
+      add: Aggiungi secret
+      create: Crea variabile
+      saved: Secret dell'organizzazione salvato.
+      deleted: Secret dell'organizzazione eliminato.
+      delegated: Delega aggiunta.
+      unlinked: Delega rimossa.
+      rolled_back: Versione ripristinata.
+      stale: I destinatari sono cambiati. Rivedi l’impatto e conferma di nuovo.
+      projects_count:
+        one: 1 progetto
+        other: "%{count} progetti"
+      choose_project: Seleziona progetto
+      delegate: Delega
+      unlink: Revoca
+      unlink_effect: Da subito il progetto non potrà più leggere questo segreto.
+      unlink_dialog:
+        title: "Revocare la delega di %{project} sul segreto %{secret}?"
+      delegation_help_title: Cosa significa delegare
+      delegation_help: "Delegare un segreto a un progetto significa autorizzare quel progetto a leggerlo: solo i progetti delegati possono usarlo. Revocare la delega toglie l'accesso all'istante."
+      confirm_title: Conferma l’impatto della rotazione
+      confirm: Conferma e applica
+      effect:
+        rotate: I valori effettivi saranno ruotati immediatamente per questi destinatari.
+        rollback: I valori effettivi saranno ripristinati per questi destinatari.
+        unlink: Il secret non sarà più incluso nei bundle dei destinatari indicati.
+        delete: Il secret sarà eliminato dai bundle dei destinatari indicati.
+      activity: Attività recente
+      activity_empty: Su questi segreti non è ancora successo niente.
+      empty: Nessuna variabile dell'organizzazione. Usa il pulsante «Aggiungi secret» per crearne una.
+      history: Versioni e azioni
+      rollback: Ripristina
+      rollback_dialog:
+        title: "Ripristinare la versione %{number} di %{name} in %{environment}?"
+        body: "Diventa una nuova versione attuale. I bundle e i repository indicati nell'impatto vengono aggiornati."
+      current: corrente
+      delete: Elimina variabile
+      delete_dialog:
+        title: "Eliminare la variabile %{name}?"
+        body: "Sparisce da ogni ambiente, e i bundle e i repository gestiti vengono aggiornati. Non si può annullare."
+      delete_impact:
+        one: L’eliminazione coinvolge 1 progetto.
+        other: "L’eliminazione coinvolge %{count} progetti."
+      delegated_title: Valori delegati in sola lettura
+      shared_badge: Condiviso
+      source_link: Gestisci sorgente
+    crons:
+      title: Cron
+      help_title: "Lavori programmati: se uno salta, ti avvisa una regola di avviso."
+      coverage:
+        uncovered_title:
+          one: "1 lavoro su %{total} senza avviso"
+          other: "%{count} lavori su %{total} senza avviso"
+        uncovered_body: "Se questi lavori programmati si fermano, non riceverai alcun avviso: manca una regola che li copra."
+        uncovered_link: "Crea la regola"
+        covered_title: "Tutti coperti"
+        covered_body: "Ogni lavoro programmato è coperto da una regola di avviso."
+      back: Torna ai cron
+      search_placeholder: Cerca per nome o slug…
+      count:
+        one: 1 monitor
+        other: "%{count} monitor"
+      stat_total: Totali
+      stat_ok: OK
+      stat_missed: Mancati
+      stat_failing: Falliti
+      empty: Nessun lavoro programmato sotto controllo
+      empty_body: Aggiungi un lavoro, poi fallo segnalare ogni volta che gira. Quando tace o fallisce, vieni avvisato.
+      no_match: Nessun cron corrisponde ai filtri.
+      filter_status: Stato
+      filter_project: Progetto
+      col_name: Nome
+      col_project: Progetto
+      col_interval: Cadenza
+      col_status: Stato
+      col_last_check_in: Ultimo check-in
+      every_minutes: "ogni %{n} min"
+      every_hours:
+        one: ogni ora
+        other: "ogni %{count} ore"
+      every_days:
+        one: ogni giorno
+        other: "ogni %{count} giorni"
+      n_minutes: "%{n} min"
+      status:
+        unknown: In attesa
+        ok: OK
+        late: In ritardo
+        missed: Mancato
+        failing: Fallito
+      check_status:
+        ok: OK
+        fail: Fallito
+      check_ins: Check-in recenti
+      no_check_ins: Nessun check-in registrato.
+      setup_cta: "Collega un lavoro"
+      setup_title: "Mettere un lavoro sotto controllo"
+      setup_lead: "Un lavoro programmato non si crea da qui: nasce da solo la prima volta che ti avvisa di essere partito. Queste sono le istruzioni per farglielo fare."
+      setup_no_project: "Non vedi nessun progetto: un lavoro programmato appartiene a un progetto, quindi serve prima quello."
+      setup_project: "Progetto"
+      setup_project_apply: "Cambia"
+      setup_steps_title: "Quattro passi"
+      setup_step1: "Serve un codice di collegamento del progetto. Se non ne hai già uno, creane uno adesso."
+      setup_token_link: "Vai ai codici di collegamento del progetto"
+      setup_step2: "Questo è l'indirizzo che il tuo lavoro deve chiamare quando finisce. La parte finale del percorso è il nome che gli dai tu: cambiala con qualcosa che riconosci."
+      setup_url_label: "Indirizzo da chiamare"
+      setup_step3: "Aggiungi questa riga in fondo al tuo lavoro. Alla prima chiamata compare in elenco, senza altre configurazioni."
+      setup_curl_label: "Comando"
+      setup_defaults: "Puoi dire anche ogni quanto dovrebbe partire e quanto ritardo accetti, aggiungendo expected_interval_minutes e grace_minutes alla chiamata. Altrimenti partono da valori di partenza che puoi correggere dopo, dalla sua pagina."
+      setup_step4: "Da quel momento, se una chiamata non arriva nei tempi, il lavoro risulta mancato e — se hai una regola di avviso — qualcuno viene avvertito."
+      setup_fail_title: "Dire perché è andato storto"
+      setup_fail_body: "Se il lavoro è partito ma è finito male, dillo: la sua pagina mostrerà il motivo accanto al tentativo, invece di un semplice «fallito»."
+      setup_fail_label: "Comando quando il lavoro fallisce"
+      setup_guide_link: "Leggi la guida sui lavori programmati"
+      check_in_url_title: "L'indirizzo di questo lavoro"
+      check_in_url_hint: "Nell'indirizzo non c'è nessun segreto: il codice di collegamento viaggia a parte, nell'intestazione della chiamata."
+      col_reason: Motivo
+      status_for: "%{status} da %{duration}."
+      status_since: "Da %{time}"
+      never_seen: "Nessun check-in è mai arrivato: finché non arriva il primo, non c'è uno stato da raccontare."
+      paused_body: "Questo lavoro è sospeso: non viene controllato e non manda avvisi. Lo storico resta."
+      legend_missed: il check-in non è mai arrivato entro il tempo previsto.
+      legend_fail: il check-in è arrivato, ma il lavoro ha segnalato un errore.
+      incidents_title: Guasti
+      incidents_empty: Nessun guasto fra i check-in conservati.
+      incident_span: "Dal %{from}, durato %{duration}"
+      incident_open: in corso
+      incident_attempts:
+        one: "1 tentativo"
+        other: "%{count} tentativi"
+      edit: Modifica
+      edit_title: "Modifica %{name}"
+      pause: Sospendi
+      resume: Riprendi
+      delete: Elimina
+      delete_confirm: Eliminare questo lavoro programmato? Lo storico va perso. Se continua a battere ricompare al prossimo check-in, con le impostazioni di partenza.
+      updated: Lavoro programmato aggiornato.
+      deleted: Lavoro programmato eliminato.
+      paused: Lavoro programmato sospeso.
+      resumed: Lavoro programmato ripreso.
+      save: Salva
+      cancel: Annulla
+      form_name: Nome
+      form_name_hint: Come si chiama qui dentro. La sigla con cui il lavoro batte non cambia.
+      form_interval: Ogni quanti minuti dovrebbe partire
+      form_interval_hint: Il tempo atteso fra un check-in e il successivo.
+      form_grace: Minuti di tolleranza
+      form_grace_hint: Quanto ritardo si accetta prima di considerarlo mancato.
+      detail_slug: Slug
+      detail_grace: Tolleranza
+      col_check_status: Esito
+      col_duration: Durata
+      col_at: Quando
+    guides:
+      back: Guide
+      index:
+        title: Guide
+        help_title: "Come collegare le tue app e usare ogni funzione."
+        intro: Collega le tue app a CloseYourIt e sfrutta al meglio il monitoraggio. Ogni guida spiega cosa fa la funzione e i passi esatti per configurarla.
+        errors:
+          title: Errori
+        uptime:
+          title: Uptime
+        performance:
+          title: Performance
+        replays:
+          title: Session replay
+      errors:
+        title: Errori
+        subtitle: Raccogli gli errori delle tue applicazioni, da qualunque linguaggio siano scritte.
+        what_title: Cos'è
+        what_intro: CloseYourIt cattura le eccezioni della tua app e le raggruppa per messaggio, così lo stesso guasto è una riga sola. Occorrenze uguali confluiscono nella stessa riga, così mille blocchi identici restano un errore solo, con i suoi contatori — non rumore.
+        what_levels: Livelli — debug, info, warning, error, fatal.
+        what_status: Stato — non risolto, risolto, messo da parte. Un errore risolto che si ripresenta viene riaperto in automatico.
+        what_promote: Promuovi a ticket — trasforma un errore in un ticket di bug con un clic.
+        connect_title: Collega la tua app
+        connect_step1: Apri il progetto, crea un token in Impostazioni, sezione «Token di ingest», e copia il segreto e il Project ID — al kit servono entrambi.
+        connect_step3: "Genera un errore. Compare sotto %{space} › %{page} in pochi secondi."
+        sdk:
+          ruby:
+            label: Ruby
+            step2: "Aggiungi la gem e configurala con il token e il Project ID:"
+            published: "Pubblicata su RubyGems come closeyourit-ruby, versione 0.8.0."
+          js:
+            label: JavaScript
+            step2: "Installa il pacchetto e inizializzalo il prima possibile all'avvio:"
+            published: "Pubblicato su npm come @bussolabs/closeyourit-js, versione 0.8.0."
+          dart:
+            label: Flutter / Dart
+            step2: "Aggiungi il pacchetto e inizializzalo prima di avviare l'app:"
+            published: "Pubblicato su pub.dev come closeyourit, versione 0.7.0."
+        sourcemaps_title: Errori del browser leggibili
+        sourcemaps_intro: "Il codice che gira nel browser è compresso: nomi di file e di funzione diventano sigle, e lo stack di un errore si legge come «locale-redirect-yIZlgYBo.mjs». L'errore è vero e il raggruppamento funziona lo stesso, ma capire da dove viene richiede qualche accorgimento."
+        sourcemaps_release: "Indica sempre la versione (release) quando inizializzi il kit: sapere da quale build arriva un errore è metà del lavoro."
+        sourcemaps_keep: "Conserva le mappe di ogni build in un archivio privato. Caricale con la CLI, indicando lo stesso progetto, release e nome del file generato presenti nell'errore."
+        sourcemaps_limit: "Usa cyi artifacts source-maps upload --help per i parametri di caricamento. Nel dettaglio dell'errore puoi confrontare stack ricevuto e ricostruito; i passaggi non ricostruibili restano indicati, senza modificare l'evento originale."
+        replays_title: Rivedere cosa è successo
+        replays_intro: Le registrazioni mostrano cosa ha fatto una persona sul sito prima di un errore. Non sono attive di default e si accendono per singolo progetto.
+        replays_step1: Apri il progetto e vai nelle sue impostazioni.
+        replays_step2: "Attiva le registrazioni: la voce compare sui progetti che hanno una piattaforma web."
+        replays_step3: "Metti nel sito il codice che chiede di registrare: l'interruttore da solo non basta, e senza il codice non arriva nessuna sessione."
+        replays_step4: Dalla pagina di un errore trovi la registrazione della sessione in cui è successo, se ce n'è una.
+        replays_note: "Le registrazioni sono pesanti da conservare: si attivano dove servono davvero, non ovunque."
+        replays_guide: Vai alla guida delle registrazioni
+        affected_title: Chi è stato colpito
+        affected_intro: "La colonna «Utenti» conta le persone distinte che hanno incontrato un errore. Finché legge «non tracciato», nessun evento porta con sé l'identità di chi lo ha subìto: non è zero, semplicemente non è mai arrivato."
+        affected_how: "Indica l'utente all'SDK prima che l'errore venga catturato. Basta l'id dell'utente — un identificativo stabile; l'email o l'IP non servono e vengono inviati solo se attivi apposta l'invio dei dati personali:"
+        affected_count: Da quel momento ogni errore sa chi ha colpito e la colonna «Utenti» mostra le persone distinte — così ordini per gravità reale, non per rumore.
+        affected_privacy: "Il conteggio usa un'impronta anonima; email, IP e username non vengono mai salvati. L'id che scegli tu resta visibile sull'occorrenza: usane uno che non riveli dati personali."
+        privacy_title: Valori nascosti (privacy)
+        privacy_intro: "Alcuni valori (password, token, email e simili) vengono oscurati prima di essere salvati e nella pagina dell'errore compaiono come «Nascosto». È una scelta di riservatezza, non un guasto: il dato sensibile non viene mai conservato."
+        privacy_hidden: Dove vedi «Nascosto», il valore è stato tolto di proposito da una regola di riservatezza.
+        privacy_paths: "I percorsi dei file (il punto del codice) non vengono oscurati da CloseYourIt: se li vedi nascosti, è lo scrubber del tuo SDK configurato in modo troppo aggressivo."
+        privacy_where: "Cosa nascondere si decide nella configurazione dell'SDK dentro il tuo progetto (il filtro dati / before_send): lì allarghi o restringi le regole."
+        triage_title: Cosa fare di un errore
+        triage_resolve: Risolvi
+        triage_resolve_desc: Segna come risolto. Si riapre se si ripresenta.
+        triage_ignore: Ignora
+        triage_ignore_desc: Metti da parte gli errori rumorosi che non ti interessano.
+        triage_reopen: Riapri
+        triage_reopen_desc: Riporta attivo un errore messo da parte.
+        triage_promote: Promuovi
+        triage_promote_desc: Crea un ticket di guasto dall'errore.
+        triage_note: "Smistare e trasformare in ticket sono due permessi del tuo ruolo: «%{triage}» e «%{promote}»."
+        cta: Vai agli Errori
+      uptime:
+        title: Uptime
+        subtitle: Controlla che i tuoi siti rispondano, e tiene il conto di quando non l'hanno fatto.
+        what_title: Cos'è
+        what_intro: Un monitor apre un indirizzo del tuo sito a intervalli regolari e annota ogni controllo. Ce n'è uno per ogni ambiente del progetto, così il sito vero e quello di prova si seguono separatamente.
+        what_checks: Controlli — a ogni giro, se il sito ha risposto e in quanto tempo.
+        what_incidents: Incident — si apre da solo quando i controlli falliscono di fila (due, se non scegli altro) e si chiude appena il sito torna a rispondere.
+        what_sla: Disponibilità — la parte di tempo in cui il sito ha risposto, sulle ultime 24 ore, 7 giorni, 30 giorni e un anno, con una striscia di blocchi colorati.
+        setup_title: Crea un monitor
+        setup_step1: Dichiara l'ambiente sul progetto (es. production) — un monitor può puntare solo a un ambiente dichiarato.
+        setup_step2: "Da %{space} › %{page}, clicca Nuovo monitor e compila i campi:"
+        setup_step3: Metti in pausa o riprendi un monitor quando vuoi — i monitor in pausa mantengono lo storico ma smettono di controllare.
+        field_type: Cosa controllare
+        field_type_desc: un sito web, una porta di un server, il nome di un dominio (DNS) o se una macchina
+          risponde (ping)
+        field_url: URL
+        field_url_desc: l'indirizzo da controllare (solo https, raggiungibile da fuori)
+        field_environment: Ambiente
+        field_environment_desc: un ambiente dichiarato del progetto
+        field_method: Metodo
+        field_method_desc: GET / HEAD
+        field_status: Stato atteso
+        field_status_desc: es. 200
+        field_interval: Intervallo
+        field_interval_desc: ogni quanto controllare (secondi)
+        field_timeout: Timeout
+        field_timeout_desc: dopo quanto tempo senza risposta il controllo conta come fallito
+        field_latency: Risposta lenta
+        field_latency_desc: sopra quanti millisecondi avvisarti che è lento, anche se risponde (vuoto = nessun
+          avviso)
+        name_note: Il nome del monitor è derivato in automatico come Progetto · Ambiente.
+        embed_title: Mostra lo stato sul tuo sito
+        embed_step1: Pubblica la pagina di stato del monitor (o del gruppo) col pulsante Pubblica. Finché non è pubblicata, non c'è niente da mostrare fuori.
+        embed_step2: "Premi Incorpora: si apre una finestra con due pezzi di codice già pronti."
+        embed_badge: Riquadro
+        embed_badge_desc: una striscia piccola con lo stato, da mettere in fondo alle pagine del sito
+        embed_page: Pagina intera
+        embed_page_desc: l'intera pagina di stato dentro una pagina del tuo sito
+        embed_step3: Copia il codice e incollalo nel tuo sito dove vuoi che compaia. Si aggiorna da solo a ogni caricamento.
+        embed_note: Se ritiri la pubblicazione, il codice già incollato smette di mostrare qualcosa. Il codice esce nella lingua che stai usando.
+        alert_title: Fatti avvisare quando cade
+        alert_intro: "Un monitor registra i guasti, ma non avvisa nessuno da solo: l'ultimo passo è dire chi va avvisato se il sito cade."
+        alert_step1: "Apri %{page} e crea una nuova regola."
+        alert_step2: Scegli l'evento «Sito non raggiungibile» — lascia il progetto vuoto per coprirli tutti, oppure scegline uno.
+        alert_step3: Collega i canali (email, Telegram, webhook) dove vuoi ricevere l'avviso.
+        alert_cta: Vai alle Regole di avviso
+        cta: Vai a Uptime
+      # CYRA-376 — la registrazione delle sessioni non era spiegata da nessuna parte: né cosa vede,
+      # né come si accende, né cosa NON finisce nella registrazione.
+      replays:
+        title: Session replay
+        subtitle: La registrazione di cosa ha fatto una persona sul sito, da rivedere come un video.
+        what_title: Cos'è
+        what_intro: "Il session replay registra la navigazione di chi usa il tuo sito e te la restituisce come un video da riguardare. Serve quando una segnalazione non si riesce a riprodurre: invece di ricostruire i passi a parole, li si guarda."
+        what_watch: Guarda la sessione — le pagine aperte una dopo l'altra, con la durata e il momento in cui è iniziata.
+        what_errors: Errori nella sessione — se durante la navigazione è successo un errore, dalla registrazione arrivi all'errore e viceversa.
+        what_filters: Trova la sessione giusta — filtra per progetto, ambiente, pagina d'ingresso o solo quelle in cui è successo qualcosa.
+        setup_title: Come si accende
+        setup_intro: "Le registrazioni non partono da sole e non basta l'interruttore: servono due cose insieme, l'interruttore sul progetto e il codice nelle pagine del sito. Con una sola delle due non arriva nessuna sessione, e nessuno te lo segnala."
+        setup_step1: Scegli il progetto di cui vuoi registrare le sessioni. Compaiono solo i progetti con la piattaforma Web, perché è lì che le sessioni si registrano.
+        setup_step2: "Nelle sue impostazioni attiva l'interruttore «Registra le sessioni»: apre la strada alle registrazioni in arrivo da quel progetto."
+        setup_step3: Copia questo codice e incollalo nelle pagine del tuo sito, dentro l'intestazione. È già compilato per il progetto che hai scelto.
+        setup_step4: Le sessioni compaiono man mano che le persone navigano. Da quel momento la pagina delle registrazioni le elenca dalla più recente.
+        setup_cta: "Impostazioni di %{project}"
+        setup_locked: Non hai il permesso di cambiare le impostazioni di questo progetto. Chiedi a chi lo gestisce di attivare l'interruttore.
+        apply: Applica
+        pick_project: Scegli un progetto
+        copy: Copia
+        copied: Copiato
+        project_placeholder: IL_TUO_PROGETTO
+        no_project: "Nessuno dei progetti che vedi ha la piattaforma Web: le sessioni si registrano solo lì. Il codice qui sotto resta valido, con i tuoi dati al posto dei segnaposto."
+        no_project_link: Vai ai progetti
+        token_where: La chiave nel codice è quella del progetto scelto.
+        token_link: Gestisci i codici del progetto
+        token_locked: "Al posto della chiave vera trovi un segnaposto: la chiave la vede chi gestisce i codici di quel progetto. Chiedigliela e sostituiscila prima di pubblicare."
+        token_missing: "Questo progetto non ha ancora nessun codice attivo, quindi nel riquadro c'è un segnaposto: creane uno e mettilo al suo posto."
+        snippet_note: "La prima riga carica la parte che registra davvero la navigazione: senza, il resto continua a funzionare e le registrazioni no, in silenzio. Tienila prima delle altre."
+        errors_title: Dall'errore alla registrazione
+        errors_intro: Nella pagina di un errore, sotto i dettagli dell'occorrenza, c'è il riquadro della sessione registrata in cui l'errore è successo. Da lì si guarda cosa stava facendo la persona nei momenti prima del guasto, senza cercare la sessione a mano.
+        errors_none: "Quando per quell'errore non c'è nessuna registrazione, il riquadro resta e lo dice. Non è un guasto: vuol dire che la registrazione non era accesa, oppure che l'errore non arriva da una navigazione sul sito."
+        errors_cta: Vai agli Errori
+        privacy_title: Cosa non finisce nella registrazione
+        privacy_intro: "Una registrazione è un dato delicato: il prodotto la tratta come tale, e le scelte sono già prese dalla parte prudente."
+        privacy_masked: I valori delicati (password, dati di pagamento, campi marcati come riservati) vengono oscurati dal kit sul sito, prima di partire. Qui dentro arrivano già nascosti e non vengono mai ispezionati.
+        privacy_user: Di chi ha navigato resta solo un'impronta anonima, non il nome né l'indirizzo email. Serve a riconoscere che due sessioni sono della stessa persona, non a sapere chi è.
+        privacy_retention: Le registrazioni si conservano 30 giorni, o quanti ne imposti sul progetto. Passato quel tempo vengono cancellate davvero, video compresi.
+        cta: Vai al Session replay
+      performance:
+        title: Performance
+        subtitle: Query e metodi lenti, dalla tua app.
+        what_title: Cos'è
+        what_intro: "Performance trova i punti lenti della tua app e li raggruppa come gli errori: la stessa lentezza ripetuta è una riga sola, con i suoi tempi."
+        what_query: Query lente — le richieste al database, raggruppate per forma e non per i valori che contengono.
+        what_method: Metodi lenti — le parti del programma che misuri tu, raggruppate per il nome che gli dai.
+        what_aggregates: Tempi — per ogni gruppo quante volte è successo e la durata più breve, più lunga, media e totale.
+        connect_title: Collega con la gem
+        connect_step1: Crea un token dal progetto, in Impostazioni, sezione «Token di ingest». Si vede una volta sola — conservalo come un segreto.
+        connect_step2: "Aggiungi la gem e configurala con il token e il Project ID:"
+        connect_step3: La gem manda le misure in sottofondo, senza far aspettare l'app, e toglie i dati personali prima di inviarle.
+        issues_title: I rallentamenti trovati da soli
+        issues_intro: "Oltre alle query e ai metodi lenti che misuri tu, il monitoraggio riconosce da solo alcune situazioni tipiche mentre l'app lavora. Sono un terzo di quello che vedi in elenco, e portano i nomi meno intuitivi: qui c'è cosa vuol dire ciascuno."
+        issues_note: "I primi quattro arrivano dalle applicazioni sul server, gli ultimi tre dalle app mobili: vedrai solo quelli che i tuoi programmi sanno mandare."
+        trend_title: Capire se una cosa sta peggiorando
+        trend_chart: "Aprendo un rallentamento, il primo grafico è «Durata nel tempo»: ogni barra è quanto ci ha messo l'operazione in quel pezzo di tempo, e l'altezza è il caso peggiore. Il grafico sotto conta invece quante volte è successa: due grafici diversi, perché una cosa può succedere sempre alla stessa frequenza e intanto metterci il doppio."
+        trend_compare: "Sopra il grafico c'è la media del periodo scelto e di quanto è cambiata rispetto al periodo precedente della stessa lunghezza: le ultime 24 ore contro le 24 prima. Quando prima non c'era niente da confrontare, viene scritto, invece di mostrare una variazione inventata."
+        trend_thresholds: "I tempi sono colorati: verde quando l'operazione è veloce, ambra nel mezzo, rosso quando è lenta. Passando sopra un tempo si leggono le due soglie che hanno deciso quel colore, e dal dettaglio si arriva alle impostazioni del progetto per cambiarle. Ogni progetto ha le sue: per un'operazione interna «lento» può voler dire una cosa diversa che per una pagina pubblica."
+        trend_note: "Senza soglie scelte da te valgono quelle predefinite: veloce sotto %{fast}ms, lento da %{slow}ms in su. Il grafico della durata mostra i casi ancora conservati, quindi vede indietro quanto la conservazione del progetto."
+        cta: Vai a Performance
+    approvals:
+      title: Approvazioni
+      help_title: "Tutto ciò che aspetta una tua decisione, uno alla volta."
+      stack_title: In attesa di te
+      settled:
+        title: Questa richiesta è già stata decisa
+        by: "Decisa da %{actor} il %{time}."
+        someone: qualcun altro
+        gone: "Non è più in coda: potrebbe essere stata decisa, annullata, oppure non riguardarti."
+        open_ticket: "Apri %{code}"
+      agent_tip: "La macchina che ha prodotto questo lavoro. Apri la sua scheda."
+      agent_unknown: "agente sconosciuto"
+      waiting_for_you: "In attesa di te"
+      waiting: In attesa di risposta
+      empty: Non c'è più niente da decidere
+      empty_body: Quando un agente consegna un'analisi, o qualcosa aspetta il tuo via libera, lo trovi qui.
+      open_source: Apri l'originale
+      # CYRA-591 — la scheda di una singola lavorazione.
+      project: Progetto
+      state: Stato
+      decided: Decisione registrata.
+      phase_state:
+        done: Fatto
+        current: In attesa di te
+        failed: Respinto
+        pending: Non ancora iniziato
+      kinds:
+        agent_plan: Lavorazione automatica
+        review: Lavoro da rivedere
+        clarification: Domanda dell'agente
+        secret_change: Modifica a un segreto
+      show:
+        back: Torna alle approvazioni
+        open_full: Apri a tutta pagina
+      description: Descrizione
+      questions: Domande dell'agente
+      no_plan: La lavorazione si è fermata prima di produrre un piano. Puoi rimetterla in coda o chiuderla.
+      no_plan_retrying: "La revisione ha respinto un tentativo prima che nascesse un piano. La lavorazione riprova da sola: se non basta, puoi chiuderla."
+      requeue: Rimetti in coda
+      # CYRA-317 — l'elenco separato delle lavorazioni che riprovano da sole: non aspettano una
+      # decisione, quindi non stanno nella coda né nel suo totale. Si guardano se si vuole, e chi ne
+      # trova una impiantata la chiude da qui.
+      # CYRA-317 — cosa è stato tentato e cosa ha detto la revisione: senza, chi apre una lavorazione
+      # respinta non ha nulla su cui decidere se chiuderla.
+      attempt:
+        title: Ultimo tentativo respinto
+        phase: Fase
+        machine: Macchina
+        review: Cosa ha detto la revisione
+        no_review: La revisione non ha lasciato una motivazione.
+        none: Di questa lavorazione non risulta nessun tentativo.
+      # CYRA-557 — il racconto di ciò che è stato consegnato: senza, la scheda mostrava solo quello
+      # che era stato scritto prima che il lavoro cominciasse e poi chiedeva di approvarlo.
+      delivered:
+        title: Cosa è stato consegnato
+        none: Nessun resoconto del lavoro. Chi ha lavorato il ticket non ne ha scritto uno.
+      # CYRA-702 — la card in coda è compatta: brief, pericoli e conteggi. Il documento per esteso
+      # resta sulla scheda a tutta pagina e nel Markdown.
+      compact:
+        in_brief: In breve
+        open_points: Attenzione
+        risks: Rischi
+        counts:
+          scenarios:
+            one: 1 scenario
+            other: "%{count} scenari"
+          criteria:
+            one: 1 criterio di fatto
+            other: "%{count} criteri di fatto"
+        full_page: documento completo a tutta pagina
+        no_brief: "Manca il riassunto semplice: questa è la sintesi tecnica."
+        open_points_count:
+          one: 1 punto da verificare
+          other: "%{count} punti da verificare"
+        risks_count:
+          one: 1 rischio
+          other: "%{count} rischi"
+        more: descrizione, analisi e criteri a tutta pagina
+      candidate:
+        title: Su cosa stai dicendo di sì
+        onto: "verso %{base}"
+        passing:
+          one: "Controllato: 1 controllo automatico, tutto verde."
+          other: "Controllato: %{count} controlli automatici, tutti verdi."
+        none_configured: "Controllato, ma su questo archivio non esiste nessun controllo automatico: se approvi, lo fai senza rete di sicurezza."
+        unexpected: "Il verbale del controllo è in uno stato che non ci si aspettava qui: guardalo prima di decidere."
+        verified_at: "registrato il %{at}"
+        none: "Di questa consegna non risulta nessun verbale del controllo: non c'è modo di sapere su quale codice stai decidendo."
+      note_label: Note per chi esegue (facoltative)
+      more_choices: Altre scelte
+      add_note: Aggiungi una nota
+      note_placeholder: Qualcosa da aggiungere prima che parta…
+      reject_placeholder: Spiega perché non va bene…
+      confirm_reject: Conferma
+      ask_placeholder: Cosa vuoi sapere prima di decidere?
+      confirm_ask: Invia la domanda
+      ask_hint: La domanda va nel ticket. La card aspetta la risposta.
+      reply_label: La tua risposta
+      reply_placeholder: Rispondi all'agente…
+      confirm_reply: Invia la risposta
+      counts:
+        total: Da approvare
+      # CYRA-592 — la plancia: una riga per lavorazione e una colonna per ciascuno dei cinque
+      # passaggi. I nomi dei passaggi stanno SOLO nelle intestazioni: ripeterli su ogni riga
+      # riempirebbe la tabella della stessa parola centodieci volte.
+      board:
+        no_report: senza resoconto
+        select_no_report:
+          one: Seleziona la riga senza resoconto
+          other: "Seleziona le %{count} senza resoconto"
+        agent_label: Agente
+        columns:
+          version: Versione
+          ticket: Ticket
+          steps: Fasi
+          state: Stato
+          wait: Attesa
+          agent: Agente
+          project: Progetto
+          action: Azione
+        wait_hint: Da quanto questa riga aspetta una decisione.
+        plan_version_hint: "Versione del piano: sale ogni volta che l'agente lo riscrive."
+        group_toggle: Apri o chiudi questo gruppo
+        group_count:
+          one: 1 riga
+          other: "%{count} righe"
+        no_project: Senza progetto
+        decide: Valuta
+        open_phase: "Apri il referto: %{phase}"
+        cell:
+          done: "%{phase}: passato"
+          current: "%{phase}: è qui che si trova"
+          failed: "%{phase}: si è fermata qui"
+          pending: "%{phase}: non ancora raggiunto"
+        no_agent: non registrato
+        approve: Approva
+        preview_toggle: Mostra o nascondi l'anteprima
+        preview_loading: Carico l'anteprima…
+        stuck: Ferma su un passaggio
+        phase_counters:
+          filter: 'Mostra solo: %{phase}'
+          clear: Mostra tutti i passaggi
+        back: Torna alla plancia
+        # CYRA-610 — approvare il piano fissa due cose: su quale archivio può nascere il lavoro e qual
+        # è la prova che dirà «fatto». Le due righe si leggono PRIMA di premere, e quando manca un
+        # pezzo l'avviso dice quale: sono due configurazioni diverse, in due posti diversi, e un
+        # avviso che non le distingue manda a cercare.
+        freeze:
+          scope: "Il lavoro potrà nascere su %{repo} (da %{base})"
+          probe_deploy_smoke: "Sarà «fatto» quando la produzione risponderà con questa versione"
+          probe_publish: "Sarà «fatto» quando il pacchetto comparirà sul registro pubblico"
+          probe_merge: "Sarà «fatto» quando il codice sarà unito"
+          missing_repository: "Questo progetto non è collegato a nessun archivio di codice: approvando, alla fine sarà una persona a dire «fatto»."
+          missing_probe: "Nessuno ha ancora detto come si prova il rilascio di questo progetto: approvando, alla fine sarà una persona a dire «fatto»."
+          missing_short: Manca come si prova «fatto»
+      filters:
+        all: Tutte
+        # CYRA-651 — le etichette dei tre menu a tendina della barra dei filtri.
+        state: Stato
+        project: Progetto
+        agent: Agente
+        all_projects: Tutti i progetti
+        all_agents: Tutti gli agenti
+        awaiting_approval: Piano da approvare
+        awaiting_autopilot_approval: Da revisionare
+        review_blocked: Bloccato
+        review: In revisione
+        clarification: Domande
+        secret_change: Segreti
+        waiting: In attesa di risposta
+        retrying: Riprova da sola
+        empty: Niente in questo stato
+        show_all: Vedi tutto
+      actions:
+        ask: Chiedi precisazioni
+        reassess: Rivaluta
+        approve:
+          awaiting_approval: Approva il piano
+          awaiting_autopilot_approval: Approva il lavoro
+          review_blocked: Sblocca e riprova
+          review: Approva
+          secret_change: Approva la modifica
+        reject:
+          awaiting_approval: Respingi
+          awaiting_autopilot_approval: Respingi
+          review_blocked: Chiudi la lavorazione
+          review: Respingi
+          secret_change: Respingi
+      reassess_hint: L'agente ricontrolla il codice. Se è già fatto, chiude il ticket.
+      reject_hint:
+        awaiting_approval: Torna all'agente col tuo motivo.
+        awaiting_autopilot_approval: Torna in lavorazione col tuo motivo.
+        review_blocked: Chiude la lavorazione. Il ticket torna alle persone.
+        review: Torna in lavorazione col tuo motivo.
+        secret_change: Non si applica. Chi l'ha chiesta legge il motivo.
+      secret:
+        variable: Variabile
+        environment: Ambiente
+        project: Progetto
+        requested_by: Richiesta da
+        reason: Motivo
+      bulk:
+        selected: selezionate
+        approve: Approva
+        done:
+          zero: Nessuna card approvata.
+          one: 1 card approvata.
+          other: "%{count} card approvate."
+        skipped:
+          one: 1 non si poteva approvare in blocco ed è rimasta in coda.
+          other: "%{count} non si potevano approvare in blocco e sono rimaste in coda."
+        failed:
+          one: "1 non è andata a buon fine: %{message}"
+          other: "%{count} non sono andate a buon fine. La prima: %{message}"
+      errors:
+        not_found: Questa richiesta non esiste più o non aspetta te.
+        forbidden: Non puoi prendere questa decisione.
+        unknown_decision: Decisione non riconosciuta.
+        missing_reason: Serve un motivo per respingere.
+        missing_text: Scrivi il testo prima di inviare.
+        no_selection: Non hai selezionato nessuna card.
+        too_many: Puoi approvarne al massimo %{max} in una volta.
+        card_failed: qualcosa è andato storto, riprova
+
+    home:
+      # Resa dell'attesa: la usa HomeHelper#card_time, viva anche senza il vecchio feed.
+      time_ago: "%{time} fa"
+      # CYRA-658 — di questo blocco sopravvivono le sole voci che leggono ALTRE pagine (le finestre
+      # di promozione a ticket di errori e metriche). Il resto se n'è andato col feed.
+      actions:
+        cancel: Annulla
+        # La legge Agents::Workflows::ConcludedTicketGate quando si decide su un ticket già chiuso.
+        ticket_concluded: "Questa richiesta riguarda un ticket già chiuso: non serve più decidere."
+        not_reassessable: "Il lavoro è andato oltre la pianificazione: qui non si rivaluta più se serve, si decide se va bene."
+      # Il nome dell'area, presidiato dal glossario di prodotto (spec/i18n/approvals_glossary_spec).
+      approvals:
+        title: Approvazioni
+      # CYRA-657 — la riga di contesto sopra la decisione e i modi per non deciderla adesso.
+      bar:
+        to_decide: "da decidere"
+        nothing_queued: "niente in coda"
+        deferred: "rimandate a domani"
+        autonomous: "vanno avanti da sole"
+        back: "La precedente"
+        see_all: "Tutte le decisioni"
+      decision:
+        no_pipeline: "Questa richiesta non appartiene a nessun ticket e non ha passaggi di lavorazione: o la approvi, o la rifiuti."
+        waiting_for: "Aspetta"
+        machine: "Macchina"
+        waiting_since: "In attesa da"
+        not_now: "Non adesso"
+        skip: "Salta"
+        defer: "Rimanda a domani"
+        open_full: "Apri la scheda per intero"
+        skip_hint: "Rimette la scheda in coda per oggi. Non decide niente."
+        defer_hint: "Toglie la scheda fino a domani mattina. Non decide niente."
+      cards:
+        deferred: "Rimandata a domani mattina."
+        nothing_back: "Non c'è niente da riprendere."
+      title: Home
+      subtitle: "La prossima decisione che aspetta te."
+      no_org_title: Nessuna organizzazione
+      no_org_body: Hai effettuato l'accesso ma non sei membro di alcuna organizzazione.
+      counts:
+        approvals: Da approvare
+        conversations: Notifiche
+        ideas: Idee
+      # CYRA-326: la frase che apre la pagina, al posto dei tre numeri ripetuti.
+      empty:
+        title: Non aspetta niente da te
+        body: Non hai niente in sospeso. Quando qualcosa aspetta una tua mossa, comparirà qui.
+        # CYRA-657 — due vuoti diversi: la coda finita, e la coda che ho nascosto io.
+        body_autonomous:
+          zero: Hai smaltito tutta la coda, e in questo momento non c'è niente che vada avanti da solo.
+          one: "Hai smaltito tutta la coda. Una lavorazione va avanti da sola: ti ricompare qui quando avrà bisogno di una tua parola."
+          other: "Hai smaltito tutta la coda. %{count} lavorazioni vanno avanti da sole: ti ricompaiono qui quando avranno bisogno di una tua parola."
+        hidden_title: Le hai messe via tutte
+        hidden_body:
+          one: C'è ancora una decisione in coda, ma l'hai saltata o rimandata. Le saltate tornano riaprendo, le rimandate domani mattina.
+          other: Ci sono ancora %{count} decisioni in coda, ma le hai saltate o rimandate. Le saltate tornano riaprendo, le rimandate domani mattina.
+        see_autonomous: Guarda cosa va avanti da solo
+        see_all: Vedile tutte lo stesso
+      clarification:
+        title: "L'agente ti chiede un chiarimento su %{code}"
+      review:
+        title: "Revisione da approvare · %{code}"
+      agent_plan:
+        awaiting_approval:
+          title: "Piano da approvare · %{code}"
+        awaiting_autopilot_approval:
+          title: "Lavoro dell'agente da approvare · %{code}"
+        # CYRA-504 — il rilascio in produzione aspetta il via libera di una persona. Il sottotitolo
+        # dice con quale versione è stata fatta la prova, che è ciò che serve sapere prima di premere.
+        review_blocked:
+          title: "Revisione dell'agente bloccata · %{code}"
+        # CYRA-317 — la lavorazione ha avuto un tentativo respinto ma sta già riprovando da sola:
+        # il titolo lo dice, invece di annunciare un blocco che non c'è.
+        retrying:
+          title: "Nuovo tentativo in corso · %{code}"
+      secret_change:
+        title: "Modifica secret da approvare · %{name}"
+    members:
+      title: Membri del team
+      help_title: "Le persone dell'organizzazione, gli inviti e cosa può fare ognuno."
+      subtitle:
+        one: 1 membro · %{invites}
+        other: "%{count} membri · %{invites}"
+      pending_count:
+        zero: nessun invito in sospeso
+        one: 1 invito in sospeso
+        other: "%{count} inviti in sospeso"
+      invite: Invita membro
+      search_placeholder: Cerca membri…
+      count:
+        one: 1 in elenco
+        other: "%{count} in elenco"
+      # CYRA-555 — a zero corrispondenze la tabella restava muta: qui c'è la frase che dice quante
+      # persone ci sono davvero, cioè il numero del chip in testata.
+      no_results_body:
+        zero: Non c'è ancora nessuna persona da cercare.
+        one: "C'è %{count} persona nell'organizzazione, ma non corrisponde a quello che hai cercato."
+        other: "Ci sono %{count} persone nell'organizzazione, ma nessuna corrisponde a quello che hai cercato."
+      filter_role: Livello
+      col_member: Membro
+      col_email: Email
+      col_level: Livello
+      col_effective_roles: Ruoli dai team
+      col_joined: Iscritto
+      roles_notice_title: "«Livello» non è l'elenco dei permessi"
+      roles_notice_body: "La colonna «Livello» dice solo come la persona appartiene all'organizzazione. Ciò che può fare davvero arriva dai team di cui fa parte: qui accanto trovi i ruoli che ne derivano e l'ambito su cui valgono."
+      no_team_roles: Nessun team
+      scope_prefix: "ambito:"
+      you: "(tu)"
+      row_menu_label: "Azioni per %{name}"
+      last_owner_lock: Ultimo owner — non modificabile
+      make_admin: Rendi admin
+      make_member: Rendi member
+      remove: Rimuovi
+      remove_dialog:
+        title: "Rimuovere %{name} dall'organizzazione?"
+        body: "Perde subito ogni accesso: progetti, ruoli, team e chiavi della riga di comando. Il suo account resta."
+      role_changed: Ruolo aggiornato.
+      removed: Membro rimosso.
+      access_updated: Accessi aggiornati.
+      updated: Dati membro aggiornati.
+      edit_action: Modifica dati
+      manage_access: Gestisci accessi
+      form:
+        title: Modifica membro
+        back: Torna ai membri
+        cancel: Annulla
+        save: Salva modifiche
+        name: Nome
+        email: Email
+        handle: Handle
+        handle_hint: Identificativo @mention globale (minuscolo, lettere, numeri, underscore). Vale in tutte le organizzazioni dell'utente.
+      access:
+        title: Accesso ai progetti
+        back: Torna ai membri
+        all_access_notice: Admin e owner vedono tutti i progetti — l'assegnazione degli accessi non si applica a loro.
+        groups: Gruppi
+        groups_hint: L'accesso a un gruppo concede tutti i suoi progetti — presenti e futuri.
+        projects: Progetti
+        projects_hint: Concedi l'accesso a singoli progetti, oltre ai gruppi sopra.
+        save: Salva accessi
+        cancel: Annulla
+      empty: Ancora nessun membro.
+      pending_title: Inviti in sospeso
+      col_invited: Invitato
+      col_actions: Azioni
+      resend: Reinvia
+      revoke: Revoca
+      revoke_dialog:
+        title: "Revocare l'invito a %{email}?"
+        body: "Il link dell'invito non funziona più. Puoi mandarne uno nuovo quando vuoi."
+      invitation_link: Link
+      invitation_link_hint: Manda questo link alla persona invitata. Serve quando la mail non arriva.
+      invitation_link_copy: Copia
+      invitation_link_copied: Copiato
+    invitations:
+      new_title: Invita un membro
+      back: Torna ai membri
+      org_label: Organizzazione
+      email: Email
+      role: Ruolo
+      role_hint_html: "<b>member</b> lavora sui ticket · <b>admin</b> gestisce anche i membri."
+      submit: Invia invito
+      cancel: Annulla
+      sent: Invito inviato.
+      resent: Invito reinviato.
+      revoked: Invito revocato.
+    organization:
+      edit_title: Impostazioni organizzazione
+      name: Nome
+      slug: Slug
+      slug_hint: Usato negli URL. Minuscolo, solo trattini. Cambiarlo cambia l'indirizzo delle pagine di stato pubbliche, e i vecchi collegamenti smettono di funzionare.
+      sections:
+        identity: Identità
+        retention: Per quanto si conservano i dati
+        people: Persone e scelte predefinite
+      save: Salva modifiche
+      updated: Organizzazione aggiornata.
+      meta: Creata il %{created} · %{count} membri
+      default_view_label: Vista progetti predefinita
+      default_view_hint: Applicata ai membri che non hanno scelto la propria.
+      cto_label: CTO dell'organizzazione
+      cto_none: Nessun CTO configurato
+      cto_hint: Approva i piani quando il progetto non indica un suo CTO.
+    platforms:
+      title: Piattaforme
+      help_title: "Com'è fatto un progetto: sito, app, servizio, riga di comando."
+      # CYRA-441 — la pagina apriva sulla tabella senza dire cosa fosse una piattaforma: due righe in
+      # cima, cos'è e dove finisce, prima di chiedere di aggiungerne una.
+      intro:
+        title: "Cos'è una piattaforma"
+        what: "Una piattaforma dice com'è fatto un progetto: un sito, un'app per telefono, un servizio senza interfaccia, un programma da riga di comando."
+        where: "Ogni progetto dichiara le sue, un ticket segnala quelle colpite, e certe funzioni si accendono solo dove la piattaforma le sostiene — per esempio il controllo che il sito risponda."
+      new: Nuova piattaforma
+      count: "%{count} piattaforme"
+      search_placeholder: Cerca piattaforme…
+      filter_status: Stato
+      no_match: Nessuna piattaforma corrisponde ai filtri.
+      col_platform: Piattaforma
+      col_code: Codice
+      col_status: Stato
+      col_uptime: Uptime
+      uptime_yes: "Sì"
+      uptime_no: "No"
+      col_projects: Progetti
+      status_active: Attiva
+      status_inactive: Inattiva
+      active_hint: Le piattaforme inattive restano sui ticket esistenti ma non sono selezionabili sui nuovi.
+      edit: Modifica
+      delete: Elimina
+      delete_dialog:
+        title: "Eliminare la piattaforma %{label}?"
+        body: "Si elimina solo se nessun progetto, ticket o funzionalità la usa, e allora sparisce solo la piattaforma. Non si può annullare."
+      empty: Ancora nessuna piattaforma.
+      empty_body: Aggiungi le piattaforme su cui girano i progetti — iOS, Android, Web…
+      created: Piattaforma creata.
+      updated: Piattaforma salvata.
+      deleted: Piattaforma eliminata.
+      delete_blocked: Questa piattaforma è in uso — disattivala invece di eliminarla.
+      form:
+        new_title: Nuova piattaforma
+        edit_title: Modifica piattaforma
+        back: Torna alle piattaforme
+        label: Etichetta
+        code: Codice
+        code_hint: Minuscolo, unico per organizzazione. Combacia coi profili utente tra le organizzazioni.
+        color: Colore
+        active: Attiva
+        supports_uptime: Monitoraggio uptime
+        supports_uptime_hint: Solo piattaforme web/server — mostra la sezione uptime sui progetti che la usano.
+        save_new: Crea piattaforma
+        save_edit: Salva modifiche
+        cancel: Annulla
+    preferences:
+      title: Preferenze
+      platforms_title: Le mie piattaforme
+      platforms_lead: Le piattaforme su cui lavori. I nuovi ticket le pre-selezionano quando il progetto le supporta.
+      platforms_label: Piattaforme che uso
+      platforms_hint: Valgono in tutte le tue organizzazioni.
+      platforms_empty: Ancora nessuna piattaforma disponibile in questa organizzazione.
+      display_title: Visualizzazione
+      display_lead: "Come vedi l'elenco dei progetti: schede o tabella."
+      projects_view: Vista progetti
+      theme_title: Tema
+      theme_lead: Chiaro, scuro o come il tuo sistema.
+      theme_options:
+        light: Chiaro
+        dark: Scuro
+        system: Sistema
+      language_title: Lingua
+      language_lead: Scegli la lingua della tua interfaccia.
+      language_options:
+        en: English
+        it: Italiano
+      save: Salva
+      saved: Preferenze salvate.
+    projects:
+      next_steps:
+        title: "Il passo successivo"
+        error_to_ticket: "Ci sono errori aperti e nessun ticket. Il più frequente è: %{title}"
+        error_to_ticket_cta: "Aprine un ticket"
+        first_monitor: "Nessun controllo di disponibilità attivo su questo progetto."
+        first_monitor_cta: "Attivane uno"
+        environment_monitor: "L'ambiente %{environment} non ha nessun controllo di disponibilità."
+        setup_environment: "Nessun ambiente dichiarato: è a un ambiente che si legano token, controlli di disponibilità e release."
+        setup_environment_cta: "Dichiara un ambiente"
+        setup_token: "Nessun token attivo: finché non ce n'è uno, questo progetto non può ricevere errori e segnali dalle tue applicazioni."
+        setup_token_cta: "Crea il primo token"
+        setup_repository: "Repository non collegato: collegandolo, rami, proposte di modifica e rilasci si legano ai ticket."
+        setup_repository_cta: "Collega il repository"
+      title: Progetti
+      help_title: "I progetti dell'organizzazione e le loro impostazioni."
+      subtitle:
+        one: 1 progetto · %{tickets} ticket · %{open} aperti
+        other: "%{count} progetti · %{tickets} ticket · %{open} aperti"
+      new: Nuovo progetto
+      count: "%{count} progetti"
+      search_placeholder: Cerca progetti…
+      filter_platform: Piattaforma
+      filter_health: Salute
+      health_problems: Con problemi
+      no_match: Nessun progetto corrisponde ai filtri.
+      view_cards: Card
+      view_table: Tabella
+      card:
+        errors:
+          one: 1 errore aperto
+          other: "%{count} errori aperti"
+        no_errors: Nessun errore
+        uptime:
+          up: Online
+          down: Offline
+          unknown: Stato sconosciuto
+        release: "%{version} · rilasciata %{time} fa"
+        open: "Apri progetto →"
+      filter_group: Gruppo
+      group_by_group: Per gruppo
+      group_by_none: Nessuno
+      sort:
+        label: Ordina
+        name: Nome
+        errors: Più errori
+        open: Più da fare
+        release: Ultimo rilascio
+        tickets: Più ticket
+        from_table: Dalla tabella
+      col_project: Progetto
+      col_key: Chiave
+      col_description: Descrizione
+      col_tickets: Ticket
+      col_todo: Da fare
+      col_group: Gruppo
+      tickets_summary: "%{tickets} ticket"
+      open_summary: "%{open} aperti"
+      edit: Modifica
+      delete: Elimina
+      row_menu_label: "Azioni per il progetto %{name}"
+      delete_confirm: Eliminare il progetto e tutti i suoi ticket? L'azione è irreversibile.
+      delete_dialog:
+        title: "Eliminare il progetto %{name}?"
+        body: "Con il progetto spariscono tutti i suoi ticket, i commenti e le impostazioni. Non si può annullare."
+      empty: Ancora nessun progetto.
+      empty_body: Crea il primo progetto per raggruppare i ticket.
+      created: Progetto creato.
+      updated: Progetto salvato.
+      deleted: Progetto eliminato.
+      form:
+        new_title: Nuovo progetto
+        edit_title: Modifica progetto
+        back: Torna ai progetti
+        name: Nome
+        key: Chiave
+        key_hint: "Usata nei codici ticket, es. STOR-1. Fino a 4 lettere o numeri; inizia con una lettera. Unica per organizzazione."
+        color: Colore
+        icon: Icona
+        icon_hint: Scegli un'icona Font Awesome, oppure carica un'immagine qui sotto — l'immagine ha la precedenza.
+        icon_image: Oppure carica un'immagine
+        icon_image_hint: "PNG, JPG o WEBP · max 1 MB"
+        description: Descrizione
+        quick_bug_report_enabled: Segnalazione rapida di un problema
+        quick_bug_report_enabled_hint: Mostra l'assistente AI che trasforma testo libero in una segnalazione strutturata.
+        secret_approval_enabled: Richiedi approvazione in due per i secret
+        secret_approval_enabled_hint: Le modifiche o cancellazioni di secret negli ambienti protetti restano in attesa finché un secondo responsabile non le conferma.
+        group: Gruppo
+        group_none: Nessun gruppo
+        group_hint: >-
+          Facoltativo: raggruppa il progetto sotto un gruppo, così i membri del gruppo lo vedono. Usa + per creare un nuovo
+          gruppo. Un gruppo con un colore lo dà ai suoi progetti.
+        platforms: Piattaforme
+        platforms_hint: Le piattaforme su cui gira il progetto. I ticket possono segnalare solo quelle selezionate qui.
+        save_new: Crea progetto
+        save_edit: Salva modifiche
+        cancel: Annulla
+        environments: Ambienti
+        environments_hint: Gli ambienti di deploy da cui questo progetto riceve errori. I token di ingest si legano a uno
+          di questi.
+      health:
+        errors: Errori aperti
+        uptime: Uptime
+        uptime_24h: ultime 24h
+        logs: Log
+        logs_7d: ultimi 7g
+        tickets_unresolved: Non chiusi
+        tickets_total: "su %{n} totali"
+        slow_queries: Query più lente
+        none: Nessun dato
+        last_release: Ultimo rilascio
+        release_when: "%{time} fa · %{environment}"
+      show:
+        back: Torna ai progetti
+        about: Informazioni sul progetto
+        books: Raccolte
+        color: Colore
+        group: Gruppo
+        repository: Repository
+        created_by: Creato da
+        created_on: Creato il
+        platforms: Piattaforme
+        stat_total: Totale
+        stat_todo: Da fare
+        stat_in_progress: In corso
+        stat_done: Conclusi
+        tickets: Ticket
+        ticket_key: Sigla dei ticket
+        tickets_count: "%{count} ticket"
+        new_ticket: Nuovo ticket
+        new_idea: Nuova idea
+        ask_assistant: Chiedi all'assistente di questo progetto
+        col_code: Codice
+        col_title: Titolo
+        col_status: Stato
+        col_priority: Priorità
+        col_assignee: Assegnatario
+        no_tickets: Ancora nessun ticket
+        no_tickets_body: Un ticket è una cosa da fare su questo progetto — un problema da sistemare, una funzione da aggiungere — con il suo stato, la sua priorità e la persona che se ne occupa.
+        no_tickets_example: 'Per esempio: «Il salvataggio del profilo non conserva la foto» oppure «Aggiungere l''esportazione in CSV».'
+        tickets_no_match: Nessun ticket corrisponde ai filtri.
+        unassigned: Non assegnato
+        tab_overview: Panoramica
+        monitoring: Monitoraggio
+        monitoring_uptime: Disponibilità nelle ultime 24h
+        monitoring_tools: Strumenti che inviano dati
+        tab_milestones: Milestone
+        environments: Ambienti
+        manage_tokens: Gestisci token →
+        token_count: "·%{count}"
+        no_active_tokens: Nessun token attivo
+        no_environments: Nessun ambiente dichiarato.
+        capabilities_title: Capacità per ambiente
+        capability_servers: Server
+        capability_uptime: Uptime
+        capability_secrets: Secret
+        capability_approval: Approvazione
+        capability_inherit: Eredita
+        capability_reset: Ripristina eredità
+        capability_on: Attivo
+        capability_off: Disattivo
+        capability_updated: Capacità aggiornata.
+        uptime_disabled_note: Uptime disabilitato su questo ambiente.
+        servers_disabled_note: Server disabilitati su questo ambiente.
+        secrets_disabled_note: Secret disabilitati su questo ambiente.
+        releases: Release
+        releases_events: eventi
+        releases_all: Vedi tutte
+        releases_count:
+          one: "1 release"
+          other: "%{count} release"
+        uptime_view_all: Vedi tutti →
+        uptime_add: Aggiungi monitor →
+        uptime_no: Nessun monitor
+        servers: Server
+        servers_add: Collega un server…
+        servers_link: Collega
+        servers_link_add: Collega server
+        servers_link_title: Collega un server
+        servers_modal_close: Chiudi
+        servers_none: Nessun server collegato
+        servers_linked: Server collegato.
+        servers_unlinked: Server scollegato.
+        servers_unlink_label: Scollega server
+        servers_link_failed: Impossibile collegare il server.
+        tools_none: Nessuno strumento ha ancora inviato dati.
+        tool_history: Cronologia
+        tool_no_signal: Nessun segnale
+        tool_last_seen: visto
+        tool_status:
+          ok: Attivo
+          stale: Silente
+          missing: Dismesso
+        danger_title: Zona pericolosa
+        danger_desc: Eliminare questo progetto lo rimuove definitivamente insieme a tutti i suoi ticket. L'azione è irreversibile.
+        delete_project: Elimina progetto
+      history:
+        title: "Cronologia attività · %{project}"
+        back: Torna al progetto
+        count: Eventi
+      tool_versions:
+        title: "Cronologia versioni · %{tool}"
+        back: Torna al progetto
+        count: Versioni
+        empty: Nessuna versione registrata per questa fonte.
+        adopted: Adottata
+        last_seen: ultima vista
+        current: Attuale
+    groups:
+      title: Gruppi
+      help_title: "I progetti raccolti per prodotto, con l'accesso di ogni membro."
+      back: Torna ai progetti
+      subtitle:
+        one: 1 gruppo
+        other: "%{count} gruppi"
+      new: Nuovo gruppo
+      manage: Gestisci gruppo
+      ungrouped: Senza gruppo
+      count: "%{count} gruppi"
+      projects_count:
+        one: 1 progetto
+        other: "%{count} progetti"
+      search_placeholder: Cerca gruppi…
+      col_group: Gruppo
+      col_projects: Progetti
+      edit: Modifica
+      delete: Elimina
+      row_menu_label: "Azioni per il gruppo %{name}"
+      delete_confirm: Eliminare questo gruppo? I progetti restano ma diventano senza gruppo.
+      delete_dialog:
+        title: "Eliminare il gruppo %{name}?"
+        body: "I progetti del gruppo restano, ma diventano senza gruppo. Non si può annullare."
+      empty: Ancora nessun gruppo.
+      empty_body: Raggruppa progetti correlati sotto un gruppo — es. DriverOne per le sue app.
+      created: Gruppo creato.
+      updated: Gruppo salvato.
+      deleted: Gruppo eliminato.
+      form:
+        new_title: Nuovo gruppo
+        edit_title: Modifica gruppo
+        back: Torna ai gruppi
+        name: Nome
+        color: Colore
+        icon: Icona
+        icon_hint: Scegli un'icona Font Awesome, oppure carica un'immagine qui sotto — l'immagine ha la precedenza.
+        icon_image: Oppure carica un'immagine
+        icon_image_hint: "PNG, JPG o WEBP · max 1 MB"
+        save_new: Crea gruppo
+        save_edit: Salva modifiche
+        cancel: Annulla
+      show:
+        back: Torna ai gruppi
+        projects: Progetti in questo gruppo
+        no_projects: Ancora nessun progetto in questo gruppo.
+      # CYRA-362 — riassunto dei progetti del gruppo. Errori, disponibilità e rilasci vivono in aree
+      # diverse: la riga `scope_hint` dichiara a quale momento si riferisce ogni numero, altrimenti
+      # il riassunto aggiunge solo un altro numero ambiguo.
+      rollup:
+        release: Ultimo rilascio
+        release_none: Nessun rilascio
+        release_project: "in %{project}"
+        release_when: "%{time} fa"
+        scope_hint: Errori e ticket sono quelli aperti adesso; la disponibilità è delle ultime 24 ore; il rilascio è il più recente fra i progetti del gruppo.
+    milestones:
+      title: Milestone
+      new: Nuova milestone
+      col_milestone: Milestone
+      col_code: Codice
+      col_due: Scadenza
+      col_progress: Avanzamento
+      col_status: Stato
+      col_tickets: Ticket
+      status_active: Attiva
+      status_inactive: Inattiva
+      edit: Modifica
+      delete: Elimina
+      delete_confirm: Eliminare questa milestone? I suoi ticket restano ma perdono la milestone.
+      delete_dialog:
+        title: "Eliminare la milestone %{label}?"
+        body: "I suoi ticket restano, ma perdono la milestone. Non si può annullare."
+      empty: Ancora nessuna milestone
+      empty_body: Raggruppa le epic e le story di questo progetto in obiettivi di release come v2.0 per pianificarle e seguirle.
+      empty_body_viewer: Nessuna consegna programmata per ora. Quando la squadra fissa un obiettivo di rilascio, i lavori previsti compaiono qui.
+      created: Milestone creata.
+      updated: Milestone salvata.
+      deleted: Milestone eliminata.
+      search_placeholder: Cerca milestone…
+      apply: Applica
+      count:
+        one: "%{count} milestone"
+        other: "%{count} milestone"
+      no_results_body:
+        one: In questo progetto c'è %{count} milestone.
+        other: In questo progetto ci sono %{count} milestone.
+      inactive_group:
+        one: Inattive (%{count})
+        other: Inattive (%{count})
+      progress_count: "%{done} di %{total} ticket"
+      due_today: oggi
+      due_in:
+        one: tra %{count} giorno
+        other: tra %{count} giorni
+      due_ago:
+        one: "%{count} giorno fa"
+        other: "%{count} giorni fa"
+      form:
+        new_title: Nuova milestone
+        edit_title: Modifica milestone
+        lead: Un obiettivo di release legato a %{project} — raggruppa le sue epic e story.
+        label: Etichetta
+        label_placeholder: es. v2.0
+        code: Codice
+        code_placeholder: es. v2_0
+        code_hint: Minuscolo, univoco in questo progetto.
+        due: Data target
+        due_hint: Data target opzionale — lascia vuoto per una milestone senza scadenza.
+        color: Colore
+        active: Attiva
+        active_hint: "— le milestone inattive restano sui ticket esistenti ma non si possono selezionare sui nuovi."
+        save_new: Crea milestone
+        save_edit: Salva modifiche
+        cancel: Annulla
+      show:
+        back: Torna alle milestone
+        edit: Modifica milestone
+        completion: Completamento
+        points: "%{done} di %{total} punti"
+        tickets_closed: "%{done} di %{total} ticket chiusi"
+        details: Dettagli
+        more_menu: Altre azioni
+        active_hint: Una milestone inattiva resta sui suoi ticket ma non si può scegliere per quelli nuovi.
+        closed_group:
+          one: Chiusi (%{count})
+          other: Chiusi (%{count})
+        tickets_title: Ticket in questa milestone
+        tickets_count: "%{count} ticket"
+        no_tickets: Ancora nessun ticket in questa milestone.
+        col_code: Codice
+        col_title: Titolo
+        col_kind: Tipo
+        col_status: Stato
+        col_weight: Peso
+        col_assignee: Assegnatario
+        rollup_note: Completamento = punti dei ticket chiusi ÷ punti totali. I ticket senza peso contano 1 punto.
+    tickets:
+      connections:
+        title: Collegamenti
+      context:
+        title: Contesto
+      recent_comments:
+        title: Ultimi commenti
+        view_all: Vedi la discussione →
+        ago: "%{time} fa"
+      evidence:
+        title: Verbale di consegna
+        subtitle: "Quello che il sistema ha guardato con i propri occhi. Non si modifica e non fa avanzare niente."
+        code: Codice consegnato
+        onto: "si innesta su %{base}"
+        checks_passing: "Controlli automatici su quel codice: %{count} passati."
+        checks_none: "Su quel codice non esisteva nessun controllo automatico: nessuno ha guardato."
+        checks_unexpected: "I controlli su quel codice non sono passati (%{count} visti)."
+        observed_at: "visto il %{at}"
+        release: Rilascio in produzione
+        no_candidate: "Nessuna prova collegata: questo lavoro è stato accettato sulla parola, prima che il sistema imparasse a guardare."
+        no_release: "Nessun rilascio ancora visto in piedi."
+      hidden_columns: "Colonne nascoste perché vuote per questi risultati: %{columns}."
+      same_incident:
+        title:
+          one: Lo stesso titolo compare su un altro progetto
+          other: "Lo stesso titolo compare su altri %{count} progetti"
+        body: Quasi sempre è un guasto solo visto da più applicazioni. Vale la pena guardarli insieme prima di lavorarli separatamente.
+      title: Ticket
+      help_title: "Bug, story, task ed epic del team."
+      subtitle: 'N° Ticket: %{count}'
+      new: Nuovo ticket
+      # CYRA-392 — tooltip del chip "In corso": dichiara che il conteggio somma più stati.
+      in_progress_hint: "Somma degli stati: %{statuses}"
+      search_placeholder: Cerca ticket…
+      semantic:
+        toggle_label: Ricerca semantica
+        degraded_hint: Ricerca semantica non disponibile — risultati per titolo.
+        using_semantic: Stai cercando per significato.
+        using_exact: Stai cercando per parole esatte.
+        switch_to_exact: Cerca invece per parole esatte
+        switch_to_semantic: Cerca invece per significato
+      duplicates:
+        title: Ticket simili
+        hint: Spunta quelli da collegare al ticket che stai aprendo.
+        open: Apri in una nuova scheda
+        created_linked:
+          one: Ticket creato e collegato a %{codes}.
+          other: Ticket creato e collegato a %{codes}.
+        created_not_linked: "Ticket creato, ma nessun collegamento è stato scritto: i ticket scelti non sono più disponibili. Puoi collegarli dalla loro scheda."
+      ask:
+        capabilities: "Risponde leggendo i ticket che puoi vedere: conta, confronta, riassume e cita quelli su cui si basa. Non cambia niente e non vede quello che non è scritto in un ticket."
+        history: "Domande recenti"
+        examples:
+          - "Quali ticket aspettano una mia decisione?"
+          - "Cosa è cambiato questa settimana?"
+          - "Abbiamo già avuto questo errore?"
+        title: Chiedi ai ticket
+        label: La tua domanda
+        placeholder: "Es. abbiamo già avuto problemi col checkout su Safari?"
+        hint: La risposta si basa solo sui ticket che puoi vedere.
+        submit: Chiedi
+        pending: La ricerca è in corso, un attimo…
+        citations: Ticket citati
+        insufficient: Nessun ticket pertinente trovato per questa domanda.
+        # CYRA-831 — la nota compare solo se l'accesso è cambiato mentre la domanda era in coda.
+        scope_reduced: "Il tuo accesso è cambiato dopo che hai fatto la domanda: la risposta usa solo i progetti che puoi vedere adesso, quindi può essere incompleta."
+        failed: Assistente non disponibile in questo momento. Riprova più tardi.
+        errors:
+          blank: Scrivi una domanda.
+          unavailable: Assistente AI non disponibile.
+          unreadable: Risposta dell'assistente non leggibile.
+      count: "%{count} ticket"
+      list_view: Vista lista
+      view_switch:
+        label: Vista
+        board: Bacheca
+        list: Lista
+      board:
+        title: Bacheca
+        empty_column: Niente qui
+        # CYRA-390 — la colonna carica un primo blocco di card; «mostra altre» chiede il resto.
+        show_more: Mostra altre
+        # CYRA-390 — le colonne di lavoro concluso mostrano solo un periodo recente, dichiarato qui.
+        recent_window: "Qui solo gli ultimi %{days} giorni"
+        empty_recent: "Nessuno negli ultimi %{days} giorni"
+        # CYRA-390 — le colonne si possono ridurre per liberare spazio; la scelta è ricordata.
+        # CYRA-390 — dalle colonne concluse, per lo storico oltre il periodo recente.
+        view_all_in_list: Vedi tutti in elenco
+        a11y:
+          grabbed: "Preso {title}. Usa le frecce sinistra e destra per spostare, Spazio per rilasciare, Esc per annullare."
+          grabbed_label: "{title} — in spostamento. Frecce per spostare, Spazio per rilasciare, Esc per annullare."
+          moving: "{title} → {status}"
+          dropped: "Spostato in {status}"
+          cancelled: "{title} torna in {status}"
+      filter_kind: Tipo
+      filter_project: Progetto
+      filter_status: Stato
+      filter_priority: Priorità
+      filter_assignee: Assegnatario
+      filter_reviewer: Revisore
+      filter_group: Gruppo
+      # CYRA-374 — il contatore in testa a board e lista e il badge che marca la riga: i ticket in
+      # revisione di cui sei tu il revisore. Elenco corto e vero — se c'è, aspetta davvero te.
+      awaiting:
+        badge: Aspetta te
+        chip_title: "I ticket in revisione di cui sei il revisore: sono le decisioni che aspettano te. Cliccando vedi solo quelli, ed è lo stesso numero della pagina Approvazioni."
+      # CYRA-844 — il contatore in testa a board e lista e l'etichetta sulla riga: i ticket con
+      # domande a cui nessuno ha ancora risposto. Una domanda risposta o ritirata non conta.
+      open_questions:
+        badge:
+          one: "1 domanda aperta"
+          other: "%{count} domande aperte"
+        badge_title:
+          one: "Una domanda senza risposta: apri la scheda Domande"
+          other: "%{count} domande senza risposta: apri la scheda Domande"
+        chip_title: "I ticket con domande a cui nessuno ha ancora risposto. Cliccando vedi solo quelli."
+      apply: Filtra
+      any: Tutti
+      col_code: Codice
+      col_title: Titolo
+      col_kind: Tipo
+      col_project: Progetto
+      col_priority: Priorità
+      col_status: Stato
+      col_created: Inserito
+      col_due: Scadenza
+      col_assignee: Assegnatario
+      unassigned: Non assegnato
+      empty: Ancora nessun ticket.
+      empty_body: Crea il primo ticket per iniziare a tracciare bug e attività.
+      # CYRA-387 — empty state «nessun risultato»: distinto da «nessun ticket», cita i criteri e
+      # offre di azzerarli invece di far credere che l'organizzazione non abbia ticket.
+      no_results:
+        title: Nessun risultato
+        body_query: Nessun ticket corrisponde a «%{query}».
+        body_filters: Nessun ticket corrisponde ai filtri attivi.
+        reset: Azzera la ricerca
+        ask: Chiedi ai ticket
+      created: Ticket creato.
+      updated: Ticket salvato.
+      deleted: Ticket eliminato.
+      status_changed: Stato aggiornato.
+      assignee_changed: Assegnatario aggiornato.
+      reviewer_changed: Revisore aggiornato.
+      review_rejected: Revisione respinta, il ticket torna in lavorazione.
+      review_approved: Revisione approvata.
+      watch:
+        added: Ora segui questo ticket.
+        removed: Non segui più questo ticket.
+        watch: Segui
+        watching: Seguito
+      lease:
+        badge: "In lavorazione da %{name}, fino alle %{time}"
+        held_by: "Il ticket è già in lavorazione da %{name}, fino alle %{time}."
+        release: Rilascia
+        released: Hai rilasciato il ticket.
+        take: Prendi in carico
+        taken: Hai preso in carico il ticket.
+        unknown_holder: qualcun altro
+      review:
+        approve: Approva la revisione
+        banner_title: "Il lavoro è finito e aspetta la tua approvazione"
+        banner_body: "Guarda cosa è stato fatto, poi approva o chiedi una correzione."
+        banner_see: "Vedi cosa ha fatto"
+        plan_first: "Prima l'automazione aspetta la tua decisione sul piano: approvalo o respingilo dalla card."
+        plan_first_link: "Vai al piano"
+        # CYRA-557 — il ticket aspetta una revisione ma nessuno ha consegnato niente: dirlo, invece di
+        # offrire due pulsanti di decisione su cui si può solo tirare a indovinare.
+        nothing_title: "Non c'è ancora niente da approvare"
+        nothing_body: "Il ticket è in revisione ma nessuno ha ancora raccontato cosa è stato fatto. Quando arriva il resoconto, qui potrai decidere."
+        approve_confirm: Approvare la revisione? Il ticket passa allo stato di completamento.
+        reject: Respingi la revisione
+        reject_title: Respingi la revisione
+        reason_label: Motivo
+        reason_placeholder: Spiega cosa non va e cosa serve per completare il lavoro.
+        # CYRA-389 — dire dove finisce il testo prima di scriverlo: una motivazione lunga non sta in un
+        # messaggio breve, e senza questa riga sembrava che sparisse.
+        reason_hint: "Scrivi quanto serve. Se è più di un messaggio breve, la motivazione viene salvata nel resoconto di lavorazione del ticket."
+        cancel: Annulla
+        confirm: Respingi e riporta in lavorazione
+        confirm_rework: Rimanda all'agente
+        confirm_hold: Ferma per una persona
+      vote:
+        added: Voto aggiunto.
+        removed: Voto rimosso.
+        upvote: Vota
+        voted: Votato
+        remove_title: Rimuovi il tuo voto
+        count:
+          zero: Nessun voto
+          one: "%{count} voto"
+          other: "%{count} voti"
+      edit: Modifica
+      delete: Elimina
+      delete_confirm: Eliminare questo ticket? L'azione è irreversibile.
+      errors:
+        project_not_found: Seleziona un progetto valido.
+        invalid_status: Stato non valido.
+        workflow_owns_status: Lo stato di questo ticket lo decide la lavorazione automatica finché non è conclusa. Per spostarlo a mano prendi in carico il ticket dalla sua pagina; se una macchina ci sta lavorando, annulla prima la lavorazione.
+        invalid_milestone: Milestone non valida.
+        not_in_review: Il ticket non è in revisione.
+        approval_needs_a_person: "L'approvazione del lavoro la firma una persona. Stai usando l'identità %{account}, che è di una macchina: rifai l'approvazione col tuo accesso personale."
+        code_changed_after_check: "Il codice è cambiato dopo il controllo: avevi guardato %{approved}, adesso c'è %{current}. Non è stato approvato niente. Il sistema ricontrolla il codice nuovo e torna da te."
+        check_unreachable: "Non è stato possibile guardare il codice adesso: riprova fra poco. Niente è stato approvato e niente è andato perso."
+        pull_request_gone: "La proposta di modifica non esiste più: è stata cancellata o chiusa. Non c'è niente da approvare."
+        reason_required: Indica perché la respingi.
+        reason_too_long: "Il motivo supera i %{count} caratteri (adesso sono %{actual}). Accorcialo: qui ci sta un resoconto intero."
+        no_target_status: Nessuno status di destinazione disponibile. Configura gli stati dell'organizzazione.
+        blocked_by_dependencies:
+          one: 'Non puoi avviare o chiudere questo ticket: dipende da un altro ticket ancora aperto.'
+          other: 'Non puoi avviare o chiudere questo ticket: dipende da altri %{count} ticket ancora
+            aperti.'
+      kind:
+        bug: Bug
+        story: Story
+        task: Task
+        epic: Epic
+      analyze:
+        label: Descrivi il bug
+        hint: Scrivi cosa è successo con parole tue. All'ordine ci pensa l'assistente.
+        placeholder: Es. Su Safari, quando clicco Checkout dopo aver cambiato la quantità non succede
+          niente, e mi aspettavo di andare al pagamento.
+        button: La mia segnalazione è efficace?
+        analyzing: Analisi in corso…
+        manual: Compila manualmente i campi
+        complete: Perfetto — ho compilato i campi qui sotto. Controllali e correggi se serve.
+        questions_title: Servono un paio di dettagli in più
+        failed: Non è stato possibile analizzare ora. Riprova tra poco o compila i campi a mano.
+        errors:
+          project: Seleziona un progetto valido.
+          disabled: La modalità rapida non è attiva per questo progetto.
+          blank: Scrivi prima la tua segnalazione.
+          unreadable: L'assistente ha risposto in modo imprevisto. Riprova o compila i campi a mano.
+      compose:
+        label: "Scrivi il ticket per me — dimmi cosa ti serve"
+        hint: "Spiega con parole tue cosa ti serve: al ticket completo ci pensa l'assistente."
+        placeholder: Es. Su mobile il checkout va in timeout dopo 30s e gli utenti non riescono a pagare.
+        button: "Scrivi per me"
+        generating: Sto scrivendo il ticket…
+        complete: "Fatto — l'assistente ha compilato il ticket qui sotto. Controllalo e correggilo prima di salvare."
+        failed: Non è stato possibile scrivere il ticket ora. Riprova tra poco o compila il form a mano.
+        no_project: "Seleziona prima un progetto, poi lascia che l'assistente scriva il ticket."
+        explain: "Descrivi con parole tue cosa ti serve e l'assistente scrive l'intero ticket — titolo, tipo e corpo. Controlla la bozza qui accanto, poi riempi il modulo: puoi modificare tutto prima di salvare."
+        ask: "Scrivi la bozza"
+        rewrite: Riscrivi da capo
+        fill_now: Riempi il modulo
+        review: Bozza pronta — controllala, poi riempi il modulo.
+        assistant: Assistente
+        preview: Anteprima della bozza
+        preview_empty: "Qui comparirà la bozza: titolo, tipo, descrizione, scenari e definizione di fatto. Potrai controllarla prima che tocchi il modulo."
+        project_label: Progetto
+        project_hint: Dice dove va il ticket e quale conoscenza leggere.
+        project_required: "Scegli prima il progetto: senza, l'assistente non sa dove va il ticket né quale conoscenza leggere."
+        project_changed: "Hai cambiato progetto: la bozza di prima non vale più qui. Riscrivila per questo progetto."
+        keep_editing: Puoi ancora modificare tutto nel modulo.
+        correction_divider: Non va bene?
+        correction_label: Dimmi cosa cambiare
+        correction_hint: "L'assistente riscrive la bozza tenendo conto di questa correzione."
+        correction_placeholder: "Es. è una story, non un bug: quel pagamento non è mai stato pensato per la rete lenta."
+        rerun: Riscrivi con la correzione
+        rewritten: Riscritta con la tua correzione
+        knowledge_used:
+          one: "Conoscenza usata · 1 pagina"
+          other: "Conoscenza usata · %{count} pagine"
+        knowledge_none: "Conoscenza usata · nessuna"
+        knowledge_none_hint: Nessuna pagina del progetto è risultata pertinente a quello che hai scritto. Ho mandato solo il tuo testo.
+        errors:
+          project: Seleziona un progetto valido.
+          blank: Descrivi prima cosa ti serve.
+          previous_missing: La bozza da correggere non c'è più. Scrivine una nuova, poi correggila.
+          unreadable: L'assistente ha risposto in modo imprevisto. Riprova o compila il modulo a mano.
+          too_long: La bozza è venuta troppo lunga e si è interrotta. Prova a descrivere quello che ti serve in modo più corto, o dividilo in due ticket.
+      form:
+        tabs:
+          manual: "Lo scrivo io"
+        new_title: Nuovo ticket
+        edit_title: Modifica ticket
+        back: Torna ai ticket
+        kind: Tipo
+        description: Descrizione
+        description_placeholder: Descrivi il problema o la richiesta con parole tue…
+        bug_body_hint: Basta una descrizione per salvare. Se vuoi, struttura meglio la segnalazione con
+          i campi opzionali qui sotto.
+        bug_report: Bug report
+        bug_report_optional: Bug report (opzionale)
+        project: Progetto
+        select_project: Seleziona un progetto…
+        title: Titolo
+        title_placeholder: Riassunto breve del bug
+        given: Given — contesto
+        given_placeholder: Safari 17 con articoli nel carrello…
+        step_when: When — azione
+        when_placeholder: Clicco Checkout dopo aver cambiato la quantità…
+        step_then: Then — cosa è successo
+        then_placeholder: Non succede nulla, il bottone è inattivo…
+        expected: Expected — ma mi aspettavo che
+        expected_placeholder: Il checkout dovrebbe procedere al pagamento…
+        steps:
+          given: Given
+          when: When
+          then: Then
+          expected: Expected
+        body_hint: Basta una descrizione per salvare — oppure aggiungi almeno uno scenario. I dettagli
+          tecnici vanno nel campo Analisi tecnica qui sotto.
+        scenarios: Scenari
+        scenarios_hint: Descrivi uno o più scenari (caso normale, caso limite, errore). Semplice e umano.
+        scenario_add: Aggiungi scenario
+        scenario_remove: Rimuovi scenario
+        scenario_title: Scenario
+        scenario_title_placeholder: Etichetta breve, es. "Compro e non arriva la mail"
+        conditions: Criteri di accettazione
+        conditions_hint: Righe semplici e verificabili che dicono quando il lavoro è fatto. Opzionale.
+        condition: Condizione
+        condition_add: Aggiungi condizione
+        condition_remove: Rimuovi condizione
+        condition_placeholder: es. La mail di conferma viene consegnata
+        technical_analysis: Analisi tecnica
+        technical_analysis_hint: Dettaglio tecnico — stack, componenti, ipotesi di causa. Tienilo fuori
+          da descrizione e scenari.
+        # Le etichette sono la parte che si dimentica (CYRA-263): il placeholder le mostra nel punto
+        # esatto in cui si scrive, invece di lasciarle a memoria. Restano allineate a
+        # knowledge-base/global/closeyourit-writing.md — sono lo stesso vocabolario.
+        technical_analysis_placeholder: |-
+          Approccio: i file da toccare, con percorso e riga.
+          Perché: la scelta e l'alternativa scartata.
+          Rischi: cosa può rompersi.
+          Aperto: cosa resta da decidere.
+        priority: Priorità
+        status: Stato
+        status_initial_hint: "Ogni ticket nuovo parte da qui: lo stato si cambia dopo, dal ticket o dalla bacheca."
+        triage_notice: "I ticket salvati aspettano la decisione sulla lavorazione automatica. Dopo l’approvazione, un agente disponibile può prenderli in carico. Puoi assegnarli a una persona in qualsiasi momento."
+        assignee: Assegnatario
+        unassigned: Non assegnato
+        platforms: Piattaforme colpite
+        platforms_hint: Pre-compilate dal tuo profilo. Solo le piattaforme del progetto sono selezionabili — lascia vuoto
+          se platform-agnostico.
+        milestone: Milestone
+        milestone_none: Senza milestone
+        error_group: Errore
+        error_group_none: Nessun errore
+        metric_group: Operazione lenta
+        metric_group_none: Nessuna operazione lenta
+        signals_hint: "Solo per i bug: quelli aperti del progetto scelto, ancora senza ticket."
+        milestone_hint: Le milestone sono del progetto — seleziona prima un progetto.
+        parent: Epic
+        parent_none: Nessun epic
+        parent_hint: Raccogli questo ticket sotto un epic dello stesso progetto — seleziona prima
+          un progetto. Un epic non sta sotto un altro epic.
+        weight: Peso
+        weight_placeholder: "—"
+        weight_hint: Punti per il rollup della milestone (opzionale).
+        due_at: Scadenza
+        due_at_hint: Scadenza opzionale (giorno e ora).
+        save_new: Crea ticket
+        save_edit: Salva modifiche
+        cancel: Annulla
+      show:
+        back: Torna ai ticket
+        scenarios: Scenari
+        scenario_n: "Scenario %{n}"
+        conditions: Criteri di accettazione
+        advice: Consigli
+        advice_create: Apri un ticket
+        report: Resoconto
+        # CYRA-389 — la stesura scritta respingendo un lavoro sta nel resoconto come le altre, ma non
+        # racconta un lavoro fatto: senza un titolo suo si leggerebbe come tale.
+        report_rejection: Motivo del respingimento
+        report_version: "Versione %{version}"
+        report_versions: Versioni precedenti
+        report_changes: "Cosa è cambiato dalla versione %{version}"
+        report_change_added: "Aggiunto:"
+        report_change_removed: "Tolto:"
+        report_read: Leggi
+        report_back: Torna al resoconto
+        report_unknown_author: Autore non più disponibile
+        report_outdated: Stai leggendo la versione %{version}; quella corrente è la %{current}.
+        technical_analysis: Analisi tecnica
+        show_all: Mostra tutto
+        show_less: Mostra meno
+        written_by: "scritta da %{name} il %{date}"
+        written_by_system: il sistema
+        technical_analysis_empty: Nessuna analisi tecnica su questo ticket.
+        technical_analysis_empty_hint: Aggiungi i dettagli tecnici modificando il ticket.
+        analysis_edit: "Modifica"
+        analysis_copy: "Copia Markdown"
+        analysis_copied: "Copiato"
+        analysis_sections: "Sezioni dell'analisi"
+        steps:
+          given: Given
+          when: When
+          then: Then
+          expected: Expected
+        details: Dettagli
+        people: Persone
+        classification: Classificazione
+        context: Contesto
+        created_on: "creato il %{date}"
+        # CYRA-393: la sigla del ticket non dice a quale progetto appartiene, e due progetti hanno
+        # sigle che differiscono per una lettera sola.
+        code_title: "I ticket che iniziano con %{key} sono del progetto %{project}"
+        in_status_since: "in questo stato da %{time}"
+        kind: Tipologia
+        idea: Idea
+        status: Stato
+        priority: Priorità
+        assignee: Assegnatario
+        reviewer: Revisore
+        milestone: Milestone
+        parent: Epic
+        weight: Peso
+        weight_points:
+          one: 1 pt
+          other: "%{count} pt"
+        due_at: Scadenza
+        platforms: Piattaforme colpite
+        reporter: Segnalatore
+        created: Creato
+        dev_menu: "Sviluppo"
+        more_menu: "Altre azioni"
+        edit: Modifica
+        delete: Elimina
+        unassigned: Non assegnato
+        no_reviewer: Nessun revisore
+        origin_error: Errore di origine
+        origin_performance: Operazione lenta collegata
+      filter_agent_eligibility: Agenti
+      agent_eligibility:
+        title: Agenti
+        pending: Da valutare
+        allowed: Lavorabile dagli agenti
+        blocked: Solo per una persona
+        not_evaluated_yet: Nessuno ha ancora deciso se un agente può lavorare questo ticket. Finché non lo decide una persona, nessun agente lo prende in carico.
+        advice:
+          summary: "Parere dell'AI: %{verdict}. Decide comunque una persona."
+          allowed: lo lascerei fare a un agente
+          blocked: lo terrei a una persona
+          evaluated_at: "Parere dato il %{when}"
+        decided_by: "Deciso da %{name} il %{when}"
+        unknown_actor: Qualcuno
+        manual_reason: "Decisione presa a mano da %{name}."
+        actions:
+          allow: Consenti agli agenti
+          allow_confirm: Vuoi permettere a un agente di lavorare questo ticket da solo?
+          block: Tieni per una persona
+          reset: Torna alla valutazione automatica
+        updated:
+          allowed: Ora gli agenti possono lavorare questo ticket.
+          blocked: Il ticket resta a una persona.
+          auto: Il ticket verrà riesaminato automaticamente.
+        errors:
+          invalid: Scelta non valida.
+      tabs:
+        detail: Dettaglio
+        analysis: Analisi tecnica
+        report: Resoconto
+        automation: Automazione
+        questions: Domande
+        discussion: Discussione
+        automation_attention: "Aspetta te"
+      automation:
+        none: Nessuna lavorazione automatica su questo ticket.
+        # CYRA-392 — fase corrente della lavorazione (Agents::Workflow#phase). Senza queste chiavi il
+        # badge cadeva sul default humanize e mostrava l'inglese ("Triage queued") in pagina italiana.
+        # CYRA-602 — le OTTO parole del percorso, le uniche che chi legge incontra. Sedici fasi
+        # interne, otto parole: il dettaglio non sparisce, vive nella frase sotto (`phase_hint`).
+        # Prima lo stesso momento si chiamava in tre modi a un clic di distanza.
+        stage:
+          to_plan: Da pianificare
+          plan_to_approve: Piano da approvare
+          in_progress: In lavorazione
+          to_review: Da revisionare
+          closing: In chiusura
+          done: Fatto
+          blocked: Bloccato
+          cancelled: Annullato
+        phase:
+          inactive: Inattiva
+          triage_queued: In coda per la valutazione
+          triaging: In valutazione
+          planning: In pianificazione
+          awaiting_approval: Piano da approvare
+          autopilot_queued: In coda per la lavorazione
+          autopilot: In lavorazione
+          verifying_candidate: Controllo della proposta
+          verifying_staging: Controllo della prova di rilascio
+          awaiting_production_proof: Controllo del rilascio in produzione
+          awaiting_autopilot_approval: Lavoro consegnato
+          closer_staging_queued: In coda per il rilascio in staging
+          closer_staging: Rilascio in staging
+          closer_production_queued: In coda per il rilascio in produzione
+          closer_production: Rilascio in produzione
+          review_blocked: Lavorazione ferma
+          completed: Completata
+          cancelled: Annullata
+        # CYRA-384 — la sigla dice come si chiama lo stato, non cosa comporta né chi si deve muovere.
+        # Una frase per fase, accanto alla sigla: senza, «Lavorazione ferma» resta una parola che non
+        # dice se toccherà a te fare qualcosa.
+        phase_hint:
+          inactive: La lavorazione automatica non è mai stata richiesta su questo ticket.
+          triage_queued: Aspetta una macchina libera che legga il ticket. Di solito comincia entro pochi minuti.
+          triaging: Una macchina sta leggendo il ticket per capire se si può lavorare così com'è.
+          planning: Una macchina sta scrivendo il piano di lavoro.
+          awaiting_approval: Il piano è pronto e aspetta che una persona lo approvi o chieda modifiche.
+          autopilot_queued: "Il piano è approvato: aspetta una macchina libera che lo esegua."
+          autopilot: Una macchina sta facendo il lavoro previsto dal piano.
+          verifying_candidate: "Il sistema sta aprendo la proposta e leggendo i controlli automatici su quel codice. Va avanti da sé: non serve niente da te."
+          verifying_staging: "Il sistema sta guardando se il codice che hai approvato è davvero atterrato sulla linea principale. Va avanti da sé: non serve niente da te."
+          awaiting_production_proof: "Il sistema sta guardando se il rilascio in produzione è davvero in piedi. Va avanti da sé: non serve niente da te."
+          awaiting_autopilot_approval: Il lavoro è consegnato e aspetta che una persona lo rilegga.
+          closer_staging_queued: "Il lavoro è approvato: aspetta una macchina che lo porti sull'ambiente di prova."
+          closer_staging: Una macchina sta portando il lavoro sull'ambiente di prova.
+          closer_production_queued: "La prova sull'ambiente di prova è andata: aspetta una macchina che porti il lavoro sul sito vero. Non serve niente da te."
+          closer_production: Una macchina sta portando il lavoro sul sito vero.
+          review_blocked: La lavorazione ha smesso di riprovare da sola e aspetta una decisione.
+          completed: "La lavorazione è arrivata in fondo: qui non c'è altro da fare."
+          cancelled: Una persona ha fermato la lavorazione, e su questo ticket non riparte più.
+        # Fasi di ESECUZIONE (Agents::Attempt#phase, vocabolario diverso da Workflow#phase): le rendono
+        # il banner di retry e la riga «cosa ha fatto» della sintesi. Stesso lessico di CYRA-392 —
+        # «valutazione», mai «triage», in pagina italiana. Una sola resa: stavano sotto `phase`, dove
+        # tre delle cinque avrebbero avuto lo stesso nome di una fase del workflow che vuol dire un'altra cosa.
+        execution_phase:
+          triage: Valutazione
+          planner: Pianificazione
+          autopilot: Lavorazione
+          closer_staging: Rilascio sull'ambiente di prova
+          closer_production: Rilascio sul sito vero
+        # CYRA-384 — le tre righe in testa alla scheda. Nascono da campi strutturati (fase, esito dei
+        # tentativi, domande aperte): una sintesi ricavata a naso dal testo libero della macchina può
+        # dire il falso proprio dove si decide.
+        summary:
+          done:
+            label: Cosa ha fatto
+            none: Non ha ancora concluso nessun passo.
+            last: "%{phase}: %{outcome}, %{ago} fa."
+          stopped:
+            label: Perché si è fermata
+            blocked: "Si è fermata su %{phase} %{count} volte di fila: non riprova più da sola."
+            agent_blocked: "Si è fermata da sola su %{phase} e ha scritto perché: «%{reason}» Non riprova più da sola."
+            agent_blocked_no_reason: "non ha scritto il motivo"
+            candidate_check: "Si è fermata sul controllo della proposta: «%{reason}» Non riprova più da sola."
+            release_probe: "Si è fermata sul controllo del rilascio: «%{reason}» Non riprova più da sola."
+            held_by_person: "Ferma prima della produzione: l'ha fermata %{name}. Nessun rilascio di questo repository va in produzione finché non riparte."
+            retrying: "Non è ferma: l'ultimo passo è stato respinto ed è già in un nuovo tentativo."
+            verifying_candidate: "Non è ferma: il sistema sta aprendo la proposta e leggendo i controlli su quel codice."
+            verifying_staging: "Non è ferma: il sistema sta guardando se il codice approvato è atterrato sulla linea principale."
+            awaiting_production_proof: "Non è ferma: il sistema sta guardando se il rilascio in produzione è davvero in piedi."
+            retry_hint: "Non è ferma: il sistema non riesce a leggere una cosa su GitHub (%{code}). Riprova alle %{at}. Da te non serve niente."
+            awaiting_approval: "È ferma sul piano: aspetta che una persona lo approvi."
+            awaiting_autopilot_approval: "È ferma sul lavoro consegnato: aspetta che una persona lo rilegga."
+            cancelled: "Una persona l'ha fermata: %{reason}"
+            dependencies: "È trattenuta da %{codes}: quel lavoro deve venire prima. La coda non la prende finché non è a posto."
+            dependencies_anonymous: "È trattenuta da un prerequisito su un progetto che non puoi vedere. La coda non la prende finché non è a posto."
+            missing_release_probe: "Non può partire: il progetto non dichiara come si capisce che un suo rilascio è riuscito, e senza quel dato la macchina non sa dove aprire la proposta né quando dirsi finita. Si imposta dalla scheda GitHub del progetto, poi riparte da sola."
+            cancelled_no_reason: Una persona l'ha fermata, senza indicare il motivo.
+            completed: "Non è ferma: è arrivata in fondo."
+            inactive: "Non è mai partita: su questo ticket non l'ha chiesta nessuno."
+            queued: "Non è ferma: aspetta una macchina libera."
+            production_busy: "Non è ferma: aspetta che finisca il rilascio di %{code}. Sullo stesso repository ne esce uno alla volta, così la produzione non torna indietro."
+            production_busy_anonymous: "Non è ferma: aspetta che finisca un altro rilascio su questo repository. Ne esce uno alla volta, così la produzione non torna indietro."
+            production_soak: "Non è ferma: il codice è in prova in staging. Se non compaiono errori nuovi, va in produzione dalle %{at}."
+            production_staging_error: "Ferma prima della produzione: in staging è comparso un errore nuovo, «%{title}». Risolvilo o ignoralo e il rilascio riparte da solo."
+            production_staging_error_anonymous: "Ferma prima della produzione: in staging è comparso un errore nuovo. Il rilascio riparte quando viene risolto o ignorato."
+            working: "Non è ferma: ci sta lavorando adesso."
+          needs:
+            label: Cosa serve da te
+            answer_questions:
+              one: Rispondi alla domanda qui sotto.
+              other: "Rispondi alle %{count} domande qui sotto."
+            approve_plan: Approva il piano, oppure chiedi delle modifiche.
+            decided_by: "Deve decidere %{name}."
+            no_decider: "Nessuno può decidere: sul progetto non è indicato chi decide."
+            review_delivery: Rileggi il lavoro consegnato e decidi in cima al ticket.
+            unblock: Fai ripartire la lavorazione, oppure fermala.
+            nothing: "Niente: la lavorazione va avanti da sola."
+            finished: "Niente: la lavorazione è finita."
+          retrying_hint: "Un passo è stato respinto e la macchina lo sta rifacendo da sola: non serve niente da te."
+        effective_cto: Chi decide
+        no_cto: Non configurato
+        running_on: In lavorazione su
+        cancel: Chiudi la lavorazione
+        proof:
+          title: "Controllo del rilascio"
+          body: "Il sistema sta guardando se il rilascio in produzione è davvero in piedi. Va avanti da sé: non serve niente da te."
+          checks: "Ha guardato %{count} volte. Ultimo esito: %{code}."
+          mark: "Segna come rilasciato"
+          marked: "Segnato come rilasciato."
+        cancel_reason: Motivo dell'annullamento
+        # CYRA-410 — annullare è definitivo: nessun gesto rimette in moto una lavorazione annullata.
+        # Chi lo legge deve saperlo PRIMA di premere, non scoprirlo quando il ticket resta fermo.
+        cancel_effect: "La lavorazione si ferma qui e non riparte più su questo ticket: da lì in poi lo porta avanti una persona."
+        cancel_open: "Chiudi la lavorazione…"
+        cancelled: "Automazione annullata: %{reason}"
+        cancelled_notice: Automazione annullata.
+        production_hold:
+          held: Rilascio fermato prima della produzione.
+        reassess:
+          requested: "Rivalutazione chiesta: la pianificazione riparte dal codice di oggi."
+        blocked:
+          title: Ferma — serve una decisione
+          body: "Si è fermata su %{phase} %{count} volte di fila. La lavorazione non riprova da sola."
+          body_agent: "La macchina si è fermata da sola su %{phase}: «%{reason}» La lavorazione non riprova da sola."
+          body_held: "%{name} ha fermato il rilascio prima della produzione. Il codice è già su main: finché resta ferma, nessun rilascio di questo repository va in produzione."
+          retry: Sblocca e riprova
+          retried: Lavorazione rimessa in coda.
+          waiting_on_cto: "Può decidere solo %{name}."
+          retrying_title: In revisione — riprova da sola
+          retrying_body: "La fase %{phase} è stata respinta ed è già in un nuovo tentativo. Nessuna azione necessaria."
+        steps:
+          title: Passi della lavorazione
+          # CYRA-410 — «mai partita» sotto un badge che diceva «In coda» leggeva come un guasto. Questo
+          # testo resta solo dove è vero: nessuna coda in corso, quindi nessun avvio da aspettare.
+          empty: Ancora nessun passo. La lavorazione non è partita.
+          # In coda NON è un guasto. Il testo riusa la STESSA etichetta del badge (automation.phase.*),
+          # così le due righe non possono più contraddirsi: sono la stessa parola.
+          queued: "Di solito comincia entro pochi minuti: finché non parte non c'è nessun passo da leggere, e non c'è niente da sistemare."
+          queued_since: "In attesa da %{ago} (%{time})."
+          count:
+            one: 1 tentativo
+            other: "%{count} tentativi"
+          unknown_host: macchina sconosciuta
+          review: revisione
+          failure_no_reason: La macchina ha segnalato un guasto senza indicarne il motivo.
+          # CYRA-384 — i tentativi consecutivi con lo stesso esito raccolti in una riga sola: in fila
+          # coprivano tutto il resto della scheda, e per arrivare al piano bisognava scorrerli uno per uno.
+          group: "%{attempts} %{outcome} fra %{from} e %{to}"
+          group_open: apri il dettaglio
+          scenarios: scenari
+          definition_of_done: definizione di fatto
+          notes: note
+          already_done_sources: riferimenti al codice
+          capabilities: Competenze
+          cycles: giri
+          human_approval: richiede approvazione umana
+          gate_passed: controlli superati
+          outcome:
+            approved: approvato
+            rejected: respinto
+            failed: fallito
+            interrupted: interrotto
+            running: in corso
+            awaiting_review: in revisione
+            blocked: bloccato
+          # CYRA-384 — la riga che raccoglie più tentativi parla di più tentativi: «4 tentativi
+          # interrotto» si legge come un errore di stampa proprio dove si sta semplificando.
+          outcome_plural:
+            approved: approvati
+            rejected: respinti
+            failed: falliti
+            interrupted: interrotti
+            running: in corso
+            awaiting_review: in revisione
+            blocked: bloccati
+          # CYRA-384 — una frase per esito. «Interrotto» e «fallito» sono due cose diverse, e la
+          # differenza decide se c'è qualcosa da sistemare o solo da riprovare.
+          outcome_hint:
+            approved: "La revisione ha accettato il lavoro consegnato: il passo è chiuso."
+            rejected: "La revisione non ha accettato il lavoro: il passo va rifatto."
+            failed: Il tentativo si è rotto per un guasto della macchina, senza consegnare niente.
+            interrupted: "Il tentativo è finito senza consegnare: la macchina si è spenta o ha perso il collegamento."
+            running: Una macchina ci sta lavorando adesso.
+            awaiting_review: Il lavoro è consegnato e un'altra macchina lo sta rileggendo.
+            blocked: "La macchina ha consegnato un blocco invece del lavoro: il motivo è nel dettaglio del passo."
+          # CYRA-392 — lo `state`/`verdict` del payload agente (contratto agent-result) mostrato come
+          # chip: valori inglesi che stonavano accanto agli esiti già tradotti. default = humanize per
+          # un valore fuori vocabolario (payload esterno, mai far crashare la pagina).
+          state:
+            workable: lavorabile
+            needs_clarification: serve un chiarimento
+            waiting: in attesa
+            escalated: passato a una persona
+            submitted_for_approval: in attesa di approvazione
+            delivered: consegnato
+            blocked: bloccato
+            already_delivered: già consegnato
+            already_done: già fatto
+            staging_released: rilasciato in staging
+            production_released: rilasciato in produzione
+            approved: approvato
+            changes_requested: modifiche richieste
+            unavailable: non disponibile
+          # CYRA-384 — tradotte lo erano già (CYRA-392), ma «bloccato» da solo non dice né cosa è
+          # successo né se riparte da sé. Una frase per sigla, mostrata accanto alla sigla.
+          state_hint:
+            workable: Il ticket si può lavorare così com'è.
+            needs_clarification: Serve una risposta prima di andare avanti.
+            waiting: Il tentativo si è fermato in attesa di qualcosa.
+            escalated: Il tentativo ha passato la mano a una persona.
+            submitted_for_approval: Il piano è stato consegnato e aspetta un'approvazione.
+            delivered: Il lavoro è stato consegnato.
+            blocked: "Il tentativo si è fermato e non riprende da solo: serve una persona."
+            already_delivered: Il lavoro era già stato consegnato da un tentativo precedente.
+            already_done: "Il lavoro era già scritto nel codice: non c'era niente da pianificare."
+            staging_released: Il lavoro è arrivato sull'ambiente di prova.
+            production_released: Il lavoro è arrivato sul sito vero.
+            approved: Chi ha riletto il lavoro l'ha accettato.
+            changes_requested: Chi ha riletto il lavoro ha chiesto delle modifiche.
+            unavailable: Non è stato possibile rileggere il lavoro.
+        # CYRA-384 — la segnalazione di sicurezza stava dentro il testo lungo di una scheda
+        # secondaria, e non la vedeva nessuno. La scrive la macchina in un campo apposta del risultato
+        # consegnato: cercarla nel testo vuol dire indovinare, e qui indovinare male costa da tutte e due le parti.
+        security:
+          clear: La lavorazione automatica ha controllato e non ha trovato anomalie di sicurezza.
+          title:
+            one: Segnalazione di sicurezza dalla lavorazione automatica
+            other: "%{count} segnalazioni di sicurezza dalla lavorazione automatica"
+          severity:
+            low: gravità bassa
+            medium: gravità media
+            high: gravità alta
+            critical: gravità critica
+        work_report:
+          title: Resoconto della lavorazione
+          moved: "Il resoconto dell'agente è nella scheda Resoconto."
+          moved_link: "Apri il resoconto"
+          reported: dichiarato dall’agente
+          attested: verificato dal sistema
+          files: File modificati
+          tests: Controlli eseguiti
+          criteria: Prove per criterio
+          exceptions: Scostamenti e rischi residui
+        failure:
+          human_action: "Cosa deve fare una persona:"
+          category: Categoria
+          retryable: il sistema può riprovare
+          not_retryable: serve un intervento
+        plan:
+          title: Piano corrente
+          download: Scarica Markdown
+          approved: approvato
+          awaiting: in attesa di approvazione
+          written: "versione %{version}, scritto il %{date}"
+          technical_analysis: Analisi tecnica
+          summary: Sintesi
+          work_items: Interventi
+          dependencies: Dipendenze
+          rationale: Perché
+          risks: Rischi
+          mitigation: Mitigazione
+          open_points: Punti aperti
+          sources: Fonti verificate
+          scenarios: Scenari
+          sentence:
+            given: Dato
+            when: quando
+            then: allora
+            expected: mi aspetto
+          definition_of_done: Definizione di fatto
+          notes: Note
+          change_request: "Modifiche richieste:"
+          # CYRA-630 — le stesse parole della scheda della lavorazione: era lo stesso service
+          # chiamato in due modi a un clic di distanza. Presidiate da spec/i18n/decision_wording_spec.rb.
+          approve: Approva il piano
+          request_changes: Respingi
+          change_reason: Motivazione delle modifiche
+          approved_notice: Piano approvato.
+          changes_notice: Modifiche richieste.
+          # CYRA-384 — i pulsanti sono saliti in cima, nella sintesi. Qui resta la riga che dice dove
+          # sono andati: senza, chi ha appena finito di leggere il piano cerca la decisione in fondo e
+          # non la trova.
+          decide_above: Quando hai finito di leggere, la decisione è in cima alla scheda.
+        questions:
+          title: Domande in attesa di risposta
+          answered_title: Domande già risposte
+          cycle: "chiarimento %{number}"
+          placeholder: Scrivi qui la risposta
+          submit: Invia risposte
+          hint: Le risposte diventano un solo commento sul ticket e rimettono la lavorazione in coda.
+          answered: "Chiarimento %{number} · risposto"
+          sent: Risposte inviate. La lavorazione riparte.
+          pending:
+            one: 1 domanda in attesa di risposta
+            other: "%{count} domande in attesa di risposta"
+          errors:
+            blank: Scrivi almeno una risposta.
+            gone: Non ci sono domande in attesa di risposta.
+      comments:
+        title: Discussione
+        empty: Ancora nessun commento. Inizia la discussione.
+        placeholder: Scrivi un commento…
+        filter_label: "Mostra"
+        filter:
+          all: "Tutto"
+          only_comments: "Solo commenti"
+        event_group:
+          one: "1 modifica di sistema"
+          other: "%{count} modifiche di sistema"
+        # CYRA-389 — il contatore diceva quanto si può scrivere, non perché è così poco: il commento è
+        # un messaggio breve per scelta, e il testo lungo di un ticket ha un posto suo. Dirlo sotto la
+        # casella evita di scoprirlo dall'errore, a testo già scritto.
+        length_hint: "Il commento è un messaggio breve. Per un testo lungo usa il resoconto di lavorazione del ticket."
+        attach: Allega
+        submit: Commenta
+        delete: Elimina commento
+        delete_confirm: Eliminare questo commento?
+        created: Commento aggiunto.
+        deleted: Commento eliminato.
+        automation: Automazione
+        role:
+          reporter: segnalatore
+          assignee: assegnatario
+        errors:
+          invalid: Commento non valido. Controlla il testo e gli allegati.
+          too_long: "Il commento supera i %{count} caratteri (adesso sono %{actual}). Per un testo lungo usa il resoconto di lavorazione."
+      questions:
+        title: Domande
+        open_count: Aperte
+        placeholder: "Fai una domanda breve: chi risponde lo fa qui, non nella discussione…"
+        submit: Chiedi
+        blocking_label: Senza risposta il lavoro non prosegue
+        settled:
+          one: "1 risolta o ritirata"
+          other: "%{count} risolte o ritirate"
+        shared_label: Visibile anche al cliente
+        blocking: Blocca il lavoro
+        shared: Condivisa
+        withdrawn: Ritirata
+        covers_round: risposta all'intero giro
+        answer_placeholder: Scrivi la risposta…
+        answer_submit: Rispondi
+        close: Ritira
+        close_confirm: Ritirare questa domanda senza risposta?
+        delete_confirm: Eliminare questa domanda?
+        asked: Domanda inviata.
+        answered: Risposta inviata.
+        closed: Domanda ritirata.
+        deleted: Domanda eliminata.
+        empty_title: Nessuna domanda
+        empty_body: Quando qualcosa non è chiaro, chiedilo qui invece che nella discussione.
+        blocked:
+          one: Questo ticket aspetta la risposta a una domanda.
+          other: Questo ticket aspetta la risposta a %{count} domande.
+        blocked_link: Vai alle domande
+        from_automation: Le domande dell'automazione vivono nella scheda Domande, con le loro risposte.
+        errors:
+          invalid: Domanda non valida. Deve essere una domanda scritta in parole, non un comando o un indirizzo.
+          answer_invalid: Risposta non valida. Controlla il testo.
+          closed: "Questa domanda è stata ritirata: non si può più rispondere."
+          already_answered: "Questa domanda ha già una risposta: non si può ritirare."
+      attachments:
+        indicator: Contiene allegati
+        title: Allegati
+        empty: Nessun allegato.
+        add: Aggiungi file
+        add_hint: Trascina i file o sfoglia · PNG, JPG, GIF, WEBP, PDF, TXT, MD — max 10 MB · video MOV, MP4, WEBM — max 20 MB
+        selected: "Selezionati:"
+        uploading: "Caricamento…"
+        download: Scarica
+        remove: Rimuovi
+        remove_confirm: Rimuovere questo allegato?
+        added: Allegato aggiunto.
+        removed: Allegato rimosso.
+        errors:
+          no_files: Seleziona almeno un file.
+          invalid_attachment: 'File non valido: tipo non ammesso o troppo grande (max 10 MB).'
+      activity:
+        impersonated: in impersonation
+        unknown_actor: Autore non registrato
+        system:
+          analysis: Automazione (analisi tecnica)
+          github: GitHub
+          autopilot: Sistema
+        automated:
+          status_changed: "L'automazione ha portato il ticket in %{to}"
+          review_approved: "L'automazione ha approvato la revisione e portato il ticket in %{to}"
+          review_rejected: "L'automazione ha respinto la revisione e riportato il ticket in %{to}"
+        created: "%{actor} ha creato il ticket"
+        updated: "%{actor} ha modificato: %{fields}"
+        updated_generic: "%{actor} ha modificato il ticket"
+        status_changed: "%{actor} ha cambiato lo stato da %{from} a %{to}"
+        assigned: "%{actor} ha assegnato il ticket a %{to}"
+        unassigned: "%{actor} ha rimosso l'assegnatario"
+        reviewer_changed: "%{actor} ha impostato il revisore su %{to}"
+        reviewer_removed: "%{actor} ha rimosso il revisore"
+        milestone_changed: "%{actor} ha cambiato la milestone"
+        comment_deleted: "%{actor} ha eliminato un commento di %{author}"
+        attached: "%{actor} ha allegato %{filenames}"
+        attachment_removed: "%{actor} ha rimosso l'allegato %{filename}"
+        review_rejected: "%{actor} ha respinto la revisione e riportato lo stato da %{from} a %{to}"
+        review_approved: "%{actor} ha approvato la revisione: stato da %{from} a %{to}"
+        linked: "%{actor} ha collegato il ticket %{ticket} (%{kind})"
+        linked_hidden: "%{actor} ha collegato un altro ticket (%{kind})"
+        branch_created: "%{actor} ha creato il branch %{branch}"
+        pull_request_opened: "%{actor} ha aperto la PR #%{number}"
+        pull_request_merged: "PR #%{number} mergiata"
+        pull_request_autoclose_declined: "PR #%{number} mergiata: la chiusura del ticket la decide la lavorazione"
+        pull_request_closed: "PR #%{number} chiusa"
+        agent_eligibility_evaluated: "L'AI ha dato un parere: %{to} per gli agenti. La decisione resta a una persona"
+        agent_eligibility_overridden: "%{actor} ha impostato il ticket su %{to} per gli agenti"
+        clarification_requested: "%{actor} ha chiesto precisazioni prima di decidere"
+        question_asked: "%{actor} ha fatto una domanda"
+        question_answered: "%{actor} ha risposto a una domanda"
+        question_closed: "%{actor} ha ritirato una domanda"
+        work_context_captured: "Contesto di lavoro fotografato alla presa in carico"
+        dependency_blocked: "La lavorazione automatica si è fermata: %{count} prerequisiti non ancora conclusi (%{dependencies})"
+        already_done: "Il lavoro era già scritto nel codice: il ticket si chiude senza pianificare (%{files})"
+        autopilot_auto_approved: "Il lavoro consegnato è andato avanti da solo: %{count} controlli superati (%{checks}) e la rilettura del codice è positiva"
+        more_files: "e altri %{count}"
+        dependency_added: "%{actor} ha aggiunto la dipendenza dal ticket %{ticket}"
+        dependency_removed: "%{actor} ha rimosso la dipendenza dal ticket %{ticket}"
+        agent_eligibility_value:
+          pending: da valutare
+          allowed: lavorabile
+          blocked: non lavorabile
+        field:
+          title: titolo
+          kind: tipo
+          description: descrizione
+          weight: peso
+          scenarios: scenari
+          conditions: criteri di accettazione
+          technical_analysis: analisi tecnica
+          step_given: contesto
+          step_when: azione
+          step_then: risultato
+          step_expected: atteso
+          status: stato
+          priority: priorità
+          assignee: assegnatario
+          milestone: milestone
+          parent: epic
+          platforms: piattaforme
+      children:
+        title: Ticket sotto questo epic
+        progress: "%{closed}/%{total} chiusi"
+        empty: Nessun ticket sotto questo epic. Aprine uno e scegli questo epic nel campo Epic.
+      links:
+        title: Ticket collegati
+        kind:
+          duplicate: duplicato
+          related: correlato
+        remove: Rimuovi collegamento
+        remove_confirm: Rimuovere il collegamento?
+        removed: Collegamento rimosso.
+        not_found: Collegamento non trovato.
+        hidden_ticket: Ticket in un altro progetto
+      dependencies:
+        title: Dipendenze
+        help: Ticket che vanno risolti prima di questo.
+        empty: Nessuna dipendenza. Scegli un ticket che va risolto prima di questo.
+        readonly_empty: Nessuna dipendenza.
+        hidden_blocker: Prerequisito in un altro progetto
+        add: Aggiungi
+        select_label: Ticket da cui dipende
+        select_placeholder: Scegli un ticket
+        no_candidates: Nessun altro ticket disponibile in questo progetto.
+        remove: Rimuovi dipendenza
+        remove_confirm: Rimuovere questa dipendenza?
+        added: Dipendenza aggiunta.
+        removed: Dipendenza rimossa.
+        blocked_badge: bloccato
+        state:
+          open: aperto
+          done: risolto
+        errors:
+          blocker_not_found: Ticket non trovato.
+          not_found: Dipendenza non trovata.
+          cycle: 'Non puoi aggiungere questo ticket: creerebbe una dipendenza circolare.'
+          invalid: Impossibile aggiungere questa dipendenza.
+          human_only: "I prerequisiti li decide una persona: si mettono e si tolgono dalla pagina del ticket, o dalla riga di comando con il tuo accesso. Un programma non può cambiarli."
+      comparison:
+        title: Possibile duplicato
+        match_count:
+          one: "%{count} ticket simile"
+          other: "%{count} ticket simili"
+        existing: Ticket esistente
+        draft: Nuovo ticket (non ancora creato)
+        no_value: —
+        others: Altri ticket simili
+        similarity: Somiglianza
+        back: Torna al form
+        create_anyway: Crea comunque
+        create_anyway_title: Crea nonostante il possibile duplicato
+        reason_label: Motivazione
+        reason_placeholder: Perché questo ticket non è un duplicato…
+        reason_prefix: Creato nonostante possibile duplicato — motivazione
+        link_action: Crea e collega
+        link_title: Crea e collega al ticket esistente
+        link_kind_label: Tipo di collegamento
+        link_target_label: Ticket da collegare
+        comment_label: Commento sul ticket esistente
+        comment_placeholder: Aggiungi contesto dal nuovo report (opzionale)…
+        confirm: Conferma
+        cancel: Annulla
+        errors:
+          reason_required: La motivazione è obbligatoria per creare comunque.
+          invalid_kind: Tipo di collegamento non valido.
+          no_target_selected: Scegli almeno un ticket da collegare.
+          target_not_found: Ticket da collegare non trovato.
+          invalid_ack: Azione non valida.
+    knowledge:
+      title: Conoscenza
+      # CYRA-429: l'avviso sul linguaggio tecnico va a chi ha appena salvato, non a chi legge.
+      plain_warning_author: "Salvata. Il testo è piuttosto tecnico: chi non è del mestiere farà fatica. Sposta i dettagli nella parte tecnica e lascia qui le parole semplici."
+      help_title: "Note, decisioni e guide di ogni progetto, con ricerca e domande."
+      overview:
+        title: Base di conoscenza
+        help_title: "Approvi le proposte, consulti le pagine, le riunisci in raccolte."
+        stat_pages: Pagine
+        stat_decisions: Decisioni
+        stat_books: Raccolte
+        stat_review: In revisione
+        review_title: Revisione
+        review_desc: "Le pagine proposte da un assistente mentre lavori: restano fuori da ricerca e risposte finché non le accetti. Si comincia da qui."
+        review_action: Vai alla revisione
+        review_stat_waiting: da approvare
+        review_stat_to_file: da mettere nei documenti
+        pages_title: Conoscenza
+        pages_desc: "Le note, le decisioni e le guide dei tuoi progetti, con ricerca per significato e risposte in linguaggio naturale."
+        pages_action: Apri le pagine
+        pages_stat_pages: pagine
+        pages_stat_decisions: decisioni
+        books_title: Raccolte
+        books_desc: "Più pagine unite in un indice, da leggere in ordine come un manuale."
+        books_action: Apri le raccolte
+        books_stat_books: raccolte
+      new: Nuova pagina
+      created: Pagina creata.
+      updated: Pagina aggiornata.
+      deleted: Pagina eliminata.
+      delete_confirm: Eliminare questa pagina?
+      count:
+        one: "%{count} pagina"
+        other: "%{count} pagine"
+      search_placeholder: Cerca tra le pagine…
+      apply: Applica
+      filter_kind: Tipo
+      filter_project: Progetto
+      filter_tag: Tag
+      empty: Nessuna pagina
+      empty_body: La base di conoscenza dei tuoi progetti è vuota. Crea la prima pagina per note, decisioni o guide.
+      no_results:
+        title: "Nessun risultato per «%{query}»"
+        title_filtered: Nessun risultato con questi filtri
+        body:
+          one: "C'è %{count} pagina nella base di conoscenza, ma non corrisponde alla ricerca."
+          other: "Ci sono %{count} pagine nella base di conoscenza, ma nessuna corrisponde alla ricerca."
+        clear: Azzera ricerca
+        ask: Fai una domanda
+        create: "Crea «%{query}»"
+      col_title: Titolo
+      col_kind: Tipo
+      col_projects: Progetti
+      col_tags: Tag
+      col_author: Autore
+      col_updated: Aggiornata
+      org_wide: Generale (tutta l'organizzazione)
+      filter_author: Scritta da
+      author:
+        agent: Scritta da un assistente
+        agent_with_origin: "Scritta da un assistente (%{origin})"
+        agent_short: Assistente
+        agent_short_with_origin: "Assistente (%{origin})"
+        human: Scritta da una persona
+        unregistered: Non sappiamo chi l'ha scritta
+        unregistered_hint: Questa pagina è di prima che il prodotto tenesse traccia di chi scrive.
+        agent_hint: "Il segno resta finché una persona non riscrive il testo: cambiare una virgola, un tag o il progetto non basta."
+        on_behalf_of: "con l'accesso di %{account}"
+        account_unknown: un account tolto
+        filter_agent: Un assistente
+        filter_human: Una persona
+        filter_unregistered: Non lo sappiamo
+      stats:
+        pages: Pagine
+        decisions: Decisioni
+        without_simple: Senza versione semplice
+        written_by_agent: Scritte da un assistente
+        needs_review: Da rivedere
+      needs_review:
+        short: Da rivedere
+        hint: È passato il tempo dopo cui va riletta. La trovi ancora, ma qualcuno deve dire se è ancora vera.
+      kind:
+        note: Nota
+        decision: Decisione
+        guide: Guida
+      ask:
+        title: Fai una domanda
+        label: La tua domanda
+        placeholder: "Es: che decisione abbiamo preso sul database?"
+        hint: Risponde usando solo le pagine dei tuoi progetti, con citazioni.
+        submit: Chiedi
+        pending: La ricerca è in corso, un attimo…
+        citations: Pagine citate
+        pages_heading: Pagine pertinenti
+        answer_heading: Risposta generata
+        insufficient: La knowledge base non contiene abbastanza informazioni per rispondere.
+        # CYRA-831 — la nota compare solo se l'accesso è cambiato mentre la domanda era in coda.
+        scope_reduced: "Il tuo accesso è cambiato dopo che hai fatto la domanda: la risposta usa solo le pagine che puoi vedere adesso, quindi può essere incompleta."
+        failed: Richiesta non riuscita. Riprova tra poco.
+        errors:
+          blank: Scrivi una domanda.
+          unavailable: Assistente non disponibile ora.
+          unreadable: Risposta dell'assistente non leggibile.
+        samples:
+          note: "Cosa sappiamo su «%{title}»?"
+          decision: "Che decisione abbiamo preso su «%{title}»?"
+          guide: "Come funziona «%{title}»?"
+        samples_heading: Prova a chiedere
+        scope_heading: Su cosa risponde
+        scope_projects:
+          zero: Nessun progetto
+          one: 1 progetto
+          other: "%{count} progetti"
+        scope_pages:
+          zero: nessuna pagina consultabile
+          one: 1 pagina consultabile
+          other: "%{count} pagine consultabili"
+        scope_more: "e altri %{count}"
+        history_heading: Domande recenti del team
+        history_reuse: Rimetti nel campo
+        history_insufficient: Nessuna risposta dalla knowledge base
+      related:
+        title: Conoscenza correlata
+        loading: Cerco pagine correlate…
+        empty: Nessuna pagina correlata.
+        reason_terms: "In comune: %{terms}"
+        reason_section: "Ne parla la sezione «%{section}»"
+      semantic:
+        toggle_label: Ricerca semantica
+        degraded_hint: Ricerca per significato non disponibile ora — risultati per parole esatte.
+        using_semantic: Stai cercando per significato.
+        using_exact: Stai cercando le parole esatte, in tutto il testo della pagina.
+        switch_to_exact: Cerca invece per parole esatte
+        switch_to_semantic: Cerca invece per significato
+      show:
+        back: Conoscenza
+        edit: Modifica
+        delete: Elimina
+        specs_title: Specifiche
+        projects: Progetti
+        book_label: Raccolta
+        tags_label: Tag
+        kind_label: Tipo
+        format_label: Formato
+        written_by_label: Chi l'ha scritta
+        review_after_label: Da rileggere entro
+        assistant_ready: L'assistente può usare questa pagina per rispondere
+        assistant_not_yet: L'assistente non usa ancora questa pagina per rispondere
+        assistant_not_yet_hint: Succede da solo poco dopo il salvataggio.
+        length_label: Lunghezza
+        length_value: "%{words} parole · ~%{minutes} min"
+        id_copy: Copia identificativo
+        id_copied: Identificativo copiato
+        id_copy_failed: Non sono riuscito a copiarlo
+        more_menu: Altre azioni
+        tabs:
+          simple: Semplice
+          tech: Tecnico
+        tech_empty: Nessuna sezione tecnica per questa pagina.
+        tech_empty_hint: Aggiungi i dettagli tecnici modificando la pagina.
+        links_title: Collegamenti
+        links_outgoing: Collegate
+        links_incoming: Citata da
+        links_empty: Questa pagina non è collegata a nessun'altra.
+        links_syntax: "Scrivi il titolo di un'altra pagina tra doppie parentesi quadre nel contenuto: qui compaiono le pagine che collega e quelle che la citano."
+      versions:
+        title: Versioni
+        help_title: "Ogni modifica è una versione: rileggila o ripristinala."
+        link: Cronologia versioni
+        stats_label: Versioni
+        count:
+          one: "%{count} versione"
+          other: "%{count} versioni"
+        col_number: Versione
+        col_author: Autore
+        col_date: Data
+        col_status: Stato
+        live: Live
+        historical: Versione storica
+        status_label: Stato
+        kind_label: Tipo
+        author_label: Autore
+        created_label: Creata
+        version_label: "Versione %{number}"
+        number_short: "v%{number}"
+        restore: Ripristina
+        restore_confirm: Ripristinare questa versione come attuale?
+        restore_dialog:
+          title: "Ripristinare la versione %{number}?"
+          body: "Il suo testo diventa una nuova versione attuale. Quella di adesso resta nella cronologia."
+        restored: Versione ripristinata.
+        back_to_page: Torna alla pagina
+        empty: Nessuna versione
+        empty_body: Questa pagina non ha ancora una cronologia versioni.
+      form:
+        new_title: Nuova pagina
+        edit_title: Modifica pagina
+        title: Titolo
+        projects: Progetti
+        projects_placeholder: Scegli i progetti…
+        groups: Gruppi
+        groups_placeholder: Scegli i gruppi…
+        kind: Tipo
+        body: Contenuto
+        body_placeholder: Scrivi in markdown…
+        body_hint: "Scrivi in modo semplice, per chiunque: i dettagli tecnici vanno nella sezione Tecnico. Markdown supportato."
+        body_limit: "Al massimo %{max} caratteri."
+        links_hint: "Per rimandare a un'altra pagina scrivine il titolo tra doppie parentesi quadre — i titoli esistenti ti vengono suggeriti mentre scrivi:"
+        links_hint_example: Titolo pagina
+        tech_spec: Sezione tecnica
+        tech_spec_placeholder: Valori e spiegazioni tecniche (markdown)…
+        tech_spec_hint: "Opzionale: qui il gergo è ammesso. Entra nella ricerca come il contenuto semplice."
+        tags: Tag
+        tags_hint: "Separati da virgola, es. flutter, flutter-flavor"
+        cancel: Annulla
+        save: Salva
+        decision_template: |
+          ## Contesto
+
+          ## Decisione
+
+          ## Conseguenze
+      books:
+        title: Raccolte
+        help_title: "Pagine di più progetti riunite in un'unica lettura."
+        new: Nuova raccolta
+        created: Raccolta creata.
+        updated: Raccolta aggiornata.
+        deleted: Raccolta eliminata.
+        delete_confirm: Eliminare questa raccolta? Le pagine restano, tornano libere.
+        count:
+          one: "%{count} raccolta"
+          other: "%{count} raccolte"
+        search_placeholder: Cerca tra le raccolte…
+        empty: Nessuna raccolta
+        empty_body: Non hai ancora riunito pagine in una raccolta. Crea la prima per leggere più pagine come un unico percorso.
+        # CYRA-555 — con ricerca o filtro attivi le raccolte esistono, non le sta mostrando il filtro.
+        no_results_body:
+          zero: Non c'è ancora nessuna raccolta da cercare.
+          one: "C'è %{count} raccolta, ma non corrisponde a quello che hai chiesto."
+          other: "Ci sono %{count} raccolte, ma nessuna corrisponde a quello che hai chiesto."
+        pages_link: Pagine
+        stats:
+          books: Raccolte
+        col_title: Titolo
+        col_projects: Progetti
+        col_pages: Pagine
+        open_page: Apri pagina
+        add_pages: Aggiungi pagine
+        empty_content_title: Raccolta vuota
+        empty_content_body: Questa raccolta non contiene ancora pagine. Aggiungile dalla base di conoscenza.
+        show:
+          edit: Modifica
+          delete: Elimina
+        form:
+          new_title: Nuova raccolta
+          edit_title: Modifica raccolta
+          title: Titolo
+          projects: Progetti
+          projects_placeholder: Scegli i progetti…
+          groups: Gruppi
+          groups_placeholder: Scegli i gruppi…
+          description: Descrizione
+          description_placeholder: A cosa serve questa raccolta?
+          pages: Pagine della raccolta
+          pages_placeholder: Scegli le pagine…
+          pages_hint: L'ordine di selezione definisce l'ordine nell'indice.
+          pages_none: I progetti selezionati non hanno ancora pagine da aggiungere.
+          cancel: Annulla
+          save: Salva
+      reviews:
+        title: Revisione
+        help_title: "Pagine proposte da un assistente: entrano nella ricerca solo se le accetti."
+        stat_waiting: In attesa
+        stat_demoted: Rimandate dal revisore
+        stat_needs_review: Da rivedere
+        stat_to_file: Da mettere nei documenti
+        stat_rejected: Scartate
+        all_pages: Tutte le pagine
+        waiting_title: In attesa di una tua decisione
+        waiting_note: "Finché aspettano qui, queste pagine restano fuori dalla ricerca e dalle risposte: nessuno le trova cercando."
+        pages_count:
+          one: "%{count} pagina"
+          other: "%{count} pagine"
+        search_placeholder: Cerca fra le proposte in attesa…
+        no_results_body:
+          one: "In attesa c'è %{count} proposta, e non è questa."
+          other: "In attesa ce ne sono %{count}: nessuna corrisponde alla ricerca."
+        read_page: Leggi il testo della proposta
+        hide_page: Nascondi il testo
+        accept: Accetta
+        reject: Scarta
+        accept_hint: "La rende visibile a tutti: entra nella ricerca e nelle risposte."
+        reject_hint: "Non cancella niente: resta da parte e non te la riproponiamo."
+        accept_confirm: Accettare questa pagina? Entrerà nella ricerca e nelle risposte.
+        reject_confirm: Scartare questa pagina? Resterà da parte e non ti verrà riproposta.
+        approved: Pagina accettata.
+        rejected: Pagina scartata.
+        empty: Non c'è niente in attesa
+        empty_body: Le pagine proposte mentre lavori compaiono qui. Finché non ne accetti una, resta fuori dalla ricerca e dalle risposte.
+        empty_example: "Per esempio: risolto un errore, l'assistente propone una pagina con il sintomo e la soluzione."
+        needs_review_title: Da rileggere
+        needs_review_note: già visibili a tutti · nessuno ha più detto che sono vere
+        needs_review_hint: "Confermi solo quello che hai riletto. Se qualcosa è cambiato, apri la pagina e correggila: la data riparte da sola."
+        confirm: È ancora vera
+        confirm_hint: "Il conto riparte. Il testo non cambia."
+        confirm_confirm: Confermi che questa pagina è ancora vera?
+        confirmed: Pagina confermata.
+        col_review_after: Andava riletta
+        col_still_true: Ancora vera?
+        to_file_title: Accettate, non ancora scritte nei documenti
+        to_file_note: già visibili a tutti · mancano nei documenti
+        to_file_search_placeholder: Cerca fra le accettate da scrivere…
+        to_file_no_results_body:
+          one: "Ne aspetta %{count}, e non è questa."
+          other: "Ne aspettano %{count}: nessuna corrisponde alla ricerca."
+        to_file_hint: "Quando la pagina è stata scritta nei documenti, qui compare il nome del documento."
+        not_filed: Manca nei documenti
+        rejected_title: Scartate di recente
+        rejected_note: tenute così non te le riproponiamo
+        org_wide: Generale
+        col_page: Pagina
+        col_accepted: Accettata
+        col_document: Documento
+        col_rejected: Scartata
+        col_by: Da
+      errors:
+        project_not_found: Progetto non trovato.
+        project_required: Indica il progetto di cui vuoi il contesto.
+        page_not_in_book: La pagina non appartiene ai progetti di questa raccolta.
+        page_in_another_book: La pagina è già in un'altra raccolta.
+        scope_required: "Serve almeno un progetto o gruppo: solo chi ha accesso completo può creare pagine generali."
+        two_levels_required: "La proposta arriva con un solo livello: il corpo è scritto in linguaggio tecnico. Manda un corpo in parole semplici e i dettagli tecnici nella parte tecnica."
+        scope_forbidden: "Non hai i permessi per collegare la pagina a uno dei progetti o gruppi scelti."
+        publication_ambiguous: "Pubblicazione bloccata: più pagine legacy hanno il titolo “%{title}”."
+        publication_key_invalid: La chiave di pubblicazione non è valida.
+        publication_kind_invalid: Il tipo della pubblicazione non è valido.
+        publication_forbidden: "Questa chiave di pubblicazione appartiene a una pagina che non puoi gestire."
+        review_forbidden: Non hai i permessi per decidere di questa pagina.
+        review_machine: "Solo una persona può accettare o scartare una proposta: un accesso automatico non decide al posto tuo."
+        not_in_review: Questa pagina non è in attesa di revisione.
+        ai_review_rejected: "Il revisore automatico ha bocciato questa pagina: correggila e salvala, poi accettala."
+        not_published: Questa pagina non è ancora stata accettata.
+        nothing_to_confirm: Questa pagina non è ancora da rileggere.
+        source_path_required: Indica il percorso del documento.
+        status_invalid: Stato non valido.
+        review_unavailable: "Il revisore automatico non è disponibile: la pagina non è stata salvata. Riprova fra poco; chi amministra può spegnere il revisore dalle impostazioni di sistema."
+        review_unreadable: "Il revisore automatico ha risposto in un modo che non sappiamo leggere: la pagina non è stata salvata. Riprova."
+        quality_rejected: "La pagina non rispetta le regole della knowledge base: %{violations}"
+      review:
+        rejected_title: "Il revisore automatico ha rifiutato la pagina: correggi questi punti e salva di nuovo."
+        demoted_note: "Rimandata dal revisore automatico: %{violations}"
+        format: "Formato riconosciuto: %{name}"
+        suggested_title: "Titolo suggerito:"
+        duplicate_of: "Sembra un doppione di:"
+        split_suggestion: "Da spezzare in:"
+        formats:
+          troubleshooting: Troubleshooting
+          procedure: Procedura
+          test_access: Accessi di test
+          decision: Decisione
+          reference: Riferimento
+          overview: Panoramica
+      review_rules:
+        K00: "Il revisore non ha riconosciuto nessuno dei formati ammessi."
+        K01: "Manca la prima riga «Formato: …». I formati ammessi sono: %{formats}."
+        K02: "Il titolo deve avere la forma «Area — oggetto», con il trattino lungo (—) fra spazi."
+        K02_dash: "Nel titolo serve il trattino lungo (—, U+2014) fra spazi, non «-» o «–»."
+        K02_bundle: "Un titolo «N trappole/cose/muri» raggruppa più argomenti: una pagina per ciascuno."
+        K07: "Indirizzi e mail vanno scritti per esteso fra backtick, non «punto» e «chiocciola» a parole."
+        K08_url: "C'è un indirizzo con utente e password dentro: toglili, mai credenziali in un URL."
+        K08_key: "C'è una chiave, un token o una password con il valore: fuori dal formato «accessi di test» non sono ammessi."
+        A01: "Gli accessi di produzione non entrano nella knowledge base: dichiara un ambiente di prova o togli la pagina."
+        A01_missing: "Manca la riga «Ambiente: staging» o «Ambiente: development»."
+        K10: "Il formato «%{format_name}» richiede kind «%{expected}»."
+        K11: "Servono almeno %{min} tag; il primo è l'area (rails, flutter, ci, …)."
+        K12_body: "Il corpo supera i %{max} caratteri: spezza in più pagine."
+        K12_tech: "La parte tecnica supera i %{max} caratteri: spezza in più pagine."
+        K12_squeezed: "La parte tecnica è al limite: se hai compresso per rientrare, spezza la pagina in parti invece di comprimere."
+        K14: "Il collegamento [[%{title}]] non punta a nessuna pagina del progetto."
+        P05_numbers: "Il suffisso «(parte N/M)» ha numeri impossibili: N da 1 a M, M almeno 2."
+        P05_total: "Le altre parti di questa guida dichiarano un totale diverso: allinea «(parte N/M)» in tutte."
+        P05_missing: "Della serie mancano ancora le parti %{missing}: la pagina entra, ricordati di scriverle."
+    errors:
+      invalid_role: Ruolo non valido.
+      last_owner: Non puoi rimuovere o declassare l'ultimo owner.
+      already_member: Questa persona è già un membro.
+      pending_invitation: C'è già un invito in attesa per questa email.
+    environments:
+      title: Ambienti
+      help_title: "Dove girano i progetti: produzione, staging, sviluppo."
+      new: Nuovo ambiente
+      count: "%{count} ambienti"
+      search_placeholder: Cerca ambienti…
+      filter_status: Stato
+      no_match: Nessun ambiente corrisponde ai filtri.
+      col_environment: Ambiente
+      col_code: Codice
+      col_status: Stato
+      col_projects: Progetti
+      status_active: Attivo
+      status_inactive: Inattivo
+      active_hint: Gli ambienti inattivi restano sui token esistenti ma non sono selezionabili sui nuovi.
+      edit: Modifica
+      delete: Elimina
+      delete_dialog:
+        title: "Eliminare l'ambiente %{label}?"
+        body: "Si elimina solo se nessun progetto, token, segreto o controllo lo usa, e allora sparisce solo l'ambiente. Non si può annullare."
+      empty: Ancora nessun ambiente.
+      empty_body: Aggiungi gli ambienti di deploy in cui girano i progetti — production, staging, development…
+      created: Ambiente creato.
+      updated: Ambiente salvato.
+      deleted: Ambiente eliminato.
+      delete_blocked: Questo ambiente è in uso — disattivalo invece di eliminarlo.
+      form:
+        new_title: Nuovo ambiente
+        edit_title: Modifica ambiente
+        back: Torna agli ambienti
+        lead_new: Il codice è l'identificatore stabile; l'etichetta è ciò che vedono le persone.
+        lead_edit: Il codice è l'identificatore stabile; l'etichetta è ciò che vedono le persone.
+        label: Etichetta
+        code: Codice
+        code_hint: Minuscolo, unico per organizzazione. Combacia con gli environment degli SDK.
+        color: Colore
+        active: Attivo
+        capabilities: Capacità di default
+        capabilities_hint: Cosa i progetti possono attivare su questo ambiente. Ogni progetto può fare override.
+        servers_enabled: Server
+        servers_hint: Collegare il monitoring server.
+        uptime_enabled: Uptime
+        uptime_hint: Attivare monitor uptime (HTTP-ping).
+        secrets_enabled: Secret
+        secrets_hint: Gestire variabili d'ambiente cifrate.
+        save_new: Crea ambiente
+        save_edit: Salva modifiche
+        cancel: Annulla
+    tokens:
+      title: "%{project} · Token di ingest"
+      breadcrumb: Token
+      section_title: Token di ingest
+      help_ingest: Il bearer secret autentica CI e API (mostrato una sola volta); la DSN public key serve all'ingest degli SDK e non è segreta.
+      section_lead_html: >-
+        Credenziali per inviare errori e segnali a questo progetto, per ambiente. Punta la gem <span class="font-mono text-[12px]
+        text-zinc-800">closeyourit-ruby</span> al bearer token e al Project ID qui sotto. Il segreto è mostrato
+        <span class="font-medium text-zinc-800">una sola volta</span> alla creazione.
+      no_environments: Questo progetto non ha ancora ambienti dichiarati — un token deve legarsi a uno.
+      declare_environments: Dichiara ambienti →
+      empty: Ancora nessun token
+      empty_body: Crea il primo token per iniziare a ricevere errori da questo progetto.
+      count: "%{count} token"
+      col_name: Nome
+      col_environment: Ambiente
+      col_prefix: Prefisso
+      col_scopes: Scope
+      col_last_used: Ultimo uso
+      col_expiry: Scadenza
+      col_status: Stato
+      col_actions: Azioni
+      used_ago: "%{time} fa"
+      never_used: Mai usato
+      status_active: Attivo
+      status_revoked: Revocato
+      status_expired: Scaduto
+      expiry:
+        never: Nessuna
+        due_in_days:
+          zero: Scade oggi
+          one: Scade domani
+          other: "Scade tra %{count} giorni"
+        expired_days:
+          one: Scaduto ieri
+          other: "Scaduto da %{count} giorni"
+      revoke: Revoca
+      revoke_dialog:
+        title: "Revocare il token %{name}?"
+        body: "Le app che lo usano smettono subito di inviare errori, log e metriche. Non si può annullare."
+      revoked: Token revocato.
+      form:
+        title: Nuovo token
+        name: Nome
+        name_placeholder: Production SDK
+        environment: Ambiente
+        expires_at: Scadenza
+        expires_at_hint: Vuoto = nessuna scadenza
+        create: Crea token
+      reveal:
+        expires_at: "Scade il %{date}"
+        created: Token “%{name}” creato
+        copy_now: Copia ora — non sarà più mostrato
+        project_id: Project ID (per la gem)
+        bearer: Bearer token (per CI / API)
+        copy: Copia
+        copied: Copiato
+        close: L'ho copiato, chiudi
+    monitoring:
+      status_pages:
+        title: "Pagina di stato"
+        subtitle: "Cosa vedono i tuoi clienti e come metterlo sul tuo sito."
+        stat_monitors: "Siti pubblici"
+        stat_groups: "Gruppi pubblici"
+        empty_title: "Non c'è ancora niente di pubblico"
+        empty_body: "Puoi pubblicare lo stato di un sito controllato o di un gruppo: da lì i tuoi clienti vedono se il servizio funziona, senza doverlo chiedere."
+        empty_example: "Apri un controllo o un gruppo in Uptime e premi Pubblica: qui compare il suo indirizzo pubblico."
+        go_to_monitors: "Scegli cosa pubblicare"
+        manage: "Apri la pagina pubblica"
+      public_tab:
+        tab_overview: "Panoramica"
+        tab_public: "Pagina pubblica"
+        state_title: "Stato della pubblicazione"
+        monitor_on: "Chiunque abbia l'indirizzo vede uptime e incidenti di questo controllo."
+        monitor_off: "Nessuno fuori dall'organizzazione vede questo controllo."
+        group_on: "Chiunque abbia l'indirizzo vede lo stato dei controlli del gruppo."
+        group_off: "Nessuno fuori dall'organizzazione vede questo gruppo."
+        via_group: "È già pubblico tramite il gruppo %{group}."
+        open_group: "Apri il gruppo"
+        preview: "Anteprima"
+      ticket_bar:
+        unassigned: "senza assegnatario"
+      promote_preview:
+        title: "Cosa verrà creato"
+        project: "Progetto"
+        kind: "Tipo"
+        ticket_title: "Titolo"
+        attached: "Con allegato"
+        attach_culprit: "Il punto del codice: %{culprit}"
+        attach_counts: "Quante volte è successo: %{events}, su %{users} persone"
+        # CYRA-567: senza contesto utente «su 0 persone» non è un conteggio, è un dato mai arrivato —
+        # e qui finisce dentro un ticket che si legge lontano dalla pagina d'errore. Stessa dicitura
+        # del chip in cima (CYRA-380: users_untracked).
+        attach_counts_untracked: "Quante volte è successo: %{events} · Persone colpite: non tracciato"
+        attach_link: "Il collegamento a questo errore, per tornarci"
+        confirm: "Crea il ticket"
+      col_environment: Ambiente
+      same_message_badge: "%{count} con questo messaggio"
+      same_message_tip: "Lo stesso messaggio compare in più errori, separati dal punto del codice da cui partono."
+      similar_same_message:
+        title: "Un problema solo, in %{count} punti"
+        basis: "Stesso messaggio d'errore, punto del codice diverso: sono lo stesso problema visto da posti differenti."
+        no_culprit: "punto del codice sconosciuto"
+      triage_ai:
+        title: Triage AI
+        hint: Chiedi all'assistente un primo triage di questo problema.
+        suggest: Suggerisci triage
+        analyzing: Analisi in corso…
+        category: Categoria
+        severity: Severità suggerita
+        confidence: Confidenza
+        action: Azione consigliata
+        fix: Fix suggerito
+        root_cause: Causa probabile
+        summary: Sintesi
+        apply_hint: Applica con un clic usando i pulsanti qui sopra.
+        actions:
+          resolve: Risolvi (suggerito)
+          ignore: Ignora (suggerito)
+          promote: Promuovi a ticket (suggerito)
+          none: Servono più dati
+        fixes:
+          add_index: Aggiungi un indice
+          use_includes: Usa includes (eager load)
+          cache: Introduci una cache
+          batch: Raggruppa in batch
+          rewrite: Riscrivi la query o il metodo
+          none: Nessun fix evidente
+        severities:
+          low: bassa
+          medium: media
+          high: alta
+        confidence_levels:
+          low: bassa
+          medium: media
+          high: alta
+        similar:
+          button: Trova errori simili
+          title: Errori con la stessa causa
+          empty: Nessun altro errore con causa simile.
+          analyzing: Ricerca in corso…
+        failed: Triage non disponibile ora. Riprova tra poco.
+        errors:
+          unreadable: L'assistente ha risposto in modo inatteso. Riprova.
+      title: Errori
+      help_title: "Gli errori delle tue app, raggruppati per causa."
+      subtitle: Errori raggruppati dai tuoi progetti. Punta la gem closeyourit-ruby a un token di progetto per iniziare a ricevere.
+      stat_unresolved: Non risolti
+      stat_resolved: Risolti
+      stat_ignored: Ignorati
+      stat_issues: Errori
+      empty: Ancora nessun errore
+      empty_body: >-
+        Punta la gem closeyourit-ruby a un token di progetto per iniziare a catturare. Gestisci i token di ingest dalla pagina
+        del progetto.
+      search_placeholder: Cerca errori…
+      count: "%{count} errori"
+      filter_status: Stato
+      filter_level: Livello
+      filter_project: Progetto
+      filter_handled: Gestione
+      handled_option:
+        unhandled: Non gestiti
+      unhandled_badge: Non gestito
+      unhandled_badge_tip: "Almeno un crash non gestito: non è stato catturato volontariamente."
+      no_match: Nessun errore corrisponde ai filtri.
+      # CYRA-883 — the reorganised list.
+      list:
+        sort:
+          label: Ordina
+          last_seen: Ultima volta
+          events: Più eventi
+          users: Più utenti
+          level: Livello
+          status: Stato
+          issue: Errore
+          from_table: Dalla tabella
+        trend: Andamento
+        trend_tip: "Eventi, periodo: %{period}"
+        users_untracked_note: non tracciato
+        back_to_project: "Progetto %{name}"
+        last_error: "Ultimo errore con questi filtri: %{time}."
+        never: Con questi filtri non è mai arrivato nessun errore.
+        widen_to: "Guarda fino al %{date}"
+        ago_short:
+          minutes: "%{count} min fa"
+          hours: "%{count} h fa"
+          days: "%{count} g fa"
+      # CYRA-400: i filtri si toglievano uno alla volta; da qui si torna all'elenco intero in un gesto.
+      clear_filters: Togli tutti i filtri
+      col_issue: Errore
+      col_project: Progetto
+      col_ticket: Ticket
+      col_level: Livello
+      col_status: Stato
+      col_events: Eventi
+      col_users: Utenti
+      col_last_seen: Ultima
+      status:
+        unresolved: Non risolto
+        resolved: Risolto
+        ignored: Ignorato
+      bulk:
+        done:
+          zero: Nessun gruppo aggiornato.
+          one: 1 gruppo aggiornato.
+          other: "%{count} gruppi aggiornati."
+        invalid: Azione di triage non valida.
+      back: Torna agli errori
+      label_level: Livello
+      label_status: Stato
+      label_events: Eventi ricevuti
+      label_users: Utenti
+      # CYRA-380: users_count 0 = contesto utente mai inviato, non «zero colpiti».
+      users_untracked: non tracciato
+      users_untracked_tip: "Nessun evento porta l'identità dell'utente: vedi la guida per contare le persone colpite."
+      label_assignee: Assegnatario
+      unassigned: Non assegnato
+      unassign: Rimuovi assegnatario
+      assigned: Assegnazione aggiornata.
+      resolve: Risolvi
+      ignore: Ignora
+      reopen: Riapri
+      reopen_now: Riapri ora
+      promote: Promuovi a ticket
+      promote_confirm: Promuovere questo errore a ticket? Verrà creato un ticket collegato.
+      shortcuts_title: Scorciatoie da tastiera
+      shortcut_select: Seleziona occorrenza
+      notice_resolve: Errore risolto.
+      notice_ignore: Errore ignorato.
+      notice_reopen: Errore riaperto.
+      # CYRA-192 — la chiusura porta con sé la spiegazione: perché c'era e cosa l'ha chiuso.
+      resolution:
+        title: Com'è stato risolto
+        dialog_title: Risolvi e spiega
+        dialog_hint: Facoltativo, ma è quello che si cerca se l'errore torna fra sei mesi.
+        cause: Causa
+        cause_placeholder: Cosa lo provocava.
+        fix: Rimedio
+        fix_placeholder: Cosa è stato fatto per chiuderlo.
+        in_release: "Risolto nella versione %{release}"
+        noted: Risoluzione spiegata
+      # CYRA-192 — «fondere» e non «unificare»: le finestre di disservizio unificate si separano di
+      # nuovo, i gruppi fusi no. Due parole per due cose diverse, come vuole il glossario.
+      merge:
+        title: Fondi gli errori
+        back: Torna agli errori
+        count_selected: Selezionati
+        count_absorbed: Spariscono
+        count_events: Occorrenze totali
+        count_project: Progetto
+        warning_title: La fusione non si annulla.
+        warning_body: >-
+          Le occorrenze passano al gruppo che resta, i conteggi si sommano e gli altri gruppi
+          spariscono dall'elenco. Non c'è modo di separarli di nuovo.
+        choose_primary: Quale gruppo resta
+        choose_primary_hint: Tiene il proprio messaggio e assorbe tutto il resto. Proposto quello con più occorrenze.
+        events: "%{count} occorrenze"
+        first_seen: "prima %{when}"
+        last_seen: "ultima %{when}"
+        confirm: Fondi definitivamente
+        done:
+          zero: Nessun gruppo fuso.
+          one: 1 gruppo fuso in questo.
+          other: "%{count} gruppi fusi in questo."
+        no_primary: Scegli quale gruppo resta prima di fondere.
+        refused_too_few: Seleziona almeno due errori da fondere.
+        refused_unknown: Alcuni errori selezionati non esistono più. Nessuna fusione eseguita.
+        refused_cross_project: Si fondono solo errori dello stesso progetto. Nessuna fusione eseguita.
+      # CYRA-192 — eliminazione definitiva del gruppo e di tutte le sue occorrenze.
+      delete:
+        action: Elimina
+        title: Eliminare questo errore?
+        body: >-
+          Spariscono il gruppo e le sue %{count} occorrenze, insieme a tutto quello che è stato
+          scritto su di lui. Non si torna indietro.
+        confirm: Elimina definitivamente
+        done: Errore eliminato.
+      promoted: Promosso a ticket %{code}.
+      promote_failed: Impossibile promuovere questo errore a ticket.
+      latest_event: Ultimo evento
+      event: evento
+      no_events: Nessun evento conservato per questo errore.
+      occurrences: Occorrenze recenti
+      occurrences_count: "%{count} conservate · mostrate %{shown}"
+      occurrences_hint: Seleziona una riga per ispezionare quell'occorrenza.
+      # CYRA-400: quello che non cambia si dice una volta sola, e si dichiara di quante occorrenze
+      # sta parlando — quelle di questa pagina, non tutte quelle dell'errore.
+      occurrences_summary: "Tutte e %{count} le occorrenze di questa pagina:"
+      occurrences_show_all: "Mostra le altre %{count}"
+      occurrences_show_less: "Mostra solo le prime %{count}"
+      help_occurrences_retention: "Le singole occorrenze vengono conservate per %{days} giorni; le più vecchie vengono rimosse. Il totale «Eventi ricevuti» in alto resta invece completo."
+      viewing_occurrence: "Occorrenza di %{when}"
+      col_when: Quando
+      col_environment: Ambiente
+      col_release: Release
+      col_event: Evento
+      frame_in: in
+      frame_line: alla riga
+      # CYRA-566: la sequenza si fermava a venti passaggi senza dichiararlo, e i tolti erano proprio
+      # quelli che dicono da dove è partita la chiamata. Il comando dice quanti ne restano e li apre.
+      frames_hidden:
+        one: "Mostra l'altro passaggio, quello da cui è partita la chiamata"
+        other: "Mostra gli altri %{count} passaggi, quelli da cui è partita la chiamata"
+      details: Dettagli
+      detail_project: Progetto
+      detail_culprit: Punto del codice
+      help_culprit: Il punto nel codice dove l'errore è stato sollevato (file + metodo).
+      help_fingerprint: Un codice fisso che raggruppa gli errori identici.
+      customer_lede_html:
+        one: "Questo errore ha colpito <span class=\"font-semibold text-zinc-900\">1 utente</span> dal %{since}. Il team ci sta lavorando — stato attuale: <span class=\"font-semibold text-zinc-900\">%{status}</span>."
+        other: "Questo errore ha colpito <span class=\"font-semibold text-zinc-900\">%{count} utenti</span> dal %{since}. Il team ci sta lavorando — stato attuale: <span class=\"font-semibold text-zinc-900\">%{status}</span>."
+      # CYRA-380: senza contesto utente non promettere «0 persone» — lede senza numero.
+      customer_lede_untracked_html: "Questo errore è comparso il %{since} e il team ci sta lavorando — stato attuale: <span class=\"font-semibold text-zinc-900\">%{status}</span>."
+      detail_ticket: Ticket
+      detail_first_seen: Prima vista
+      detail_last_seen: Ultima vista
+      detail_release: Ultima release
+      detail_first_release: Introdotto in
+      detail_release_same: Comparso e ancora presente in
+      release_copy: Copia il codice completo
+      release_copied: Copiato
+      release_commit_title: Apri la modifica su GitHub
+      detail_environment: Ambiente
+      detail_server: Server
+      detail_runtime: Runtime
+      detail_fingerprint: Impronta
+      not_promoted: Non ancora promosso
+      reopen_note_html: Segnato <span class="font-semibold text-emerald-700">%{status}</span> — un nuovo evento lo riaprirà
+        automaticamente.
+      time_ago: "%{time} fa"
+      chart_title: Occorrenze nel tempo
+      now: ora
+      timeline_sub: "%{range} · %{count} blocchi"
+      chart_peak: "picco %{count}"
+      chart_summary: "Occorrenze nel tempo — picco %{count} per blocco nelle ultime %{range}."
+      # CYRA-562: il grafico segue i filtri della tabella sotto, e quando non lasciano passare niente
+      # lo dice invece di disegnare blocchi vuoti che sembrano un errore in corso.
+      chart_no_match: Nessuna occorrenza con questi filtri
+      chart_no_match_body: "Il grafico conta solo le occorrenze che passano i filtri qui sotto: nelle ultime %{range}
+        non ne è passata nessuna."
+      chart_empty: "Nessuna occorrenza conservata nelle ultime %{range}."
+      tooltip_count:
+        zero: nessuna occorrenza
+        one: "%{count} occorrenza"
+        other: "%{count} occorrenze"
+      bucket_filter:
+        label: "Occorrenze in questa finestra"
+        clear: Rimuovi
+      filter_environment: Ambiente
+      filter_release: Release
+      apply: Filtra
+      occurrence_detail: Occorrenza
+      occurrence_tabs:
+        stack: Stack trace
+        details: Dettagli
+        user: Utente
+        tags: Tag
+        context: Contesto
+        replay: Session replay
+        logs: Log della richiesta
+      detail_request: Request
+      breadcrumbs: Passi prima del blocco
+      levels:
+        debug: diagnostica
+        info: informazione
+        warning: avviso
+        error: errore
+        fatal: bloccante
+      breadcrumbs_count: "%{count} prima del crash"
+      detail_tags: Tag
+      detail_user: Utente
+      detail_context: Contesto
+      detail_params: Parametri
+      device_breakdown: Dispositivi
+      device_os: OS
+      device_app: Versione app
+      detail_occurrence: Dettagli occorrenza
+      env_transaction: transaction
+      env_server: server
+      env_runtime: runtime
+      env_os: os
+      env_app: app
+      env_sdk: sdk
+      user_pii_note: Email/IP rimossi (PII)
+      value_scrubbed: Nascosto
+      value_scrubbed_title: Nascosto dalle regole di riservatezza del progetto — è un dato sensibile, non un guasto.
+      scrubbed_hint: Alcuni valori sono nascosti dalle regole di riservatezza del progetto.
+      scrubbed_hint_link: Come cambiarle
+      no_breadcrumbs: Nessun passo registrato
+      no_request: Nessun contesto request
+      replay:
+        title: Session replay
+        available: Session replay disponibile
+        loading: Caricamento replay…
+        error: Replay non disponibile
+        empty: Nessun replay per questa occorrenza
+        none: Nessuna sessione registrata per questa occorrenza. Quando c'è, qui la riguardi come un video.
+        none_off: "Su questo progetto le sessioni non vengono registrate: accendendole, qui trovi cosa ha fatto la persona nei momenti prima dell'errore."
+        none_cta: Attiva le registrazioni
+    metrics:
+      title: Performance
+      help_title: "Query e metodi lenti, raggruppati: qui trovi cosa rallenta."
+      empty: Ancora nessuna query o metodo lento
+      empty_body: Aggiungi la gemma closeyourit-ruby a un progetto per iniziare a raccogliere query e metodi lenti. Gestisci i token di ingest dalla pagina del progetto.
+      search_placeholder: Cerca query / metodi…
+      count: "%{count} gruppi"
+      filter_kind: Categoria
+      filter_status: Stato
+      filter_project: Progetto
+      no_match: Nessuna metrica corrisponde ai filtri.
+      status:
+        unresolved: Non risolto
+        resolved: Risolto
+        ignored: Ignorato
+      bulk:
+        done:
+          zero: Nessun gruppo aggiornato.
+          one: 1 gruppo aggiornato.
+          other: "%{count} gruppi aggiornati."
+        invalid: Azione di triage non valida.
+      stat_groups: Gruppi
+      stat_slow_queries: Query lente
+      stat_slow_methods: Metodi lenti
+      # CYRA-815 — «Tempo totale» accanto a quattro conteggi filtrati si leggeva come «il tempo
+      # speso nel periodo scelto», e non lo è: la somma è cumulativa dalla nascita dei gruppi. Il
+      # nome lo dice, la riga sotto lo spiega.
+      stat_total_duration: Tempo totale storico
+      stat_total_duration_title: "Il tempo che i gruppi selezionati hanno consumato da quando esistono. Il periodo sceglie quali gruppi contare, non ritaglia il tempo."
+      # CYRA-497: «Signature» era l'ultima parola inglese della tabella, e l'ambiente non aveva
+      # affatto la sua voce — al suo posto si leggeva il segnaposto di una traduzione mancante.
+      col_signature: Firma
+      col_environment: Ambiente
+      col_project: Progetto
+      col_kind: Tipo
+      col_status: Stato
+      col_avg: Media
+      col_max: Max
+      col_total_duration: Tempo totale
+      col_occurrences: Occorrenze
+      col_ticket: Ticket
+      col_last_seen: Ultima
+      low_sample: pochi campioni
+      low_sample_title: "Meno di %{count} casi: la media non è significativa."
+      duration_unit:
+        ms: ms
+        s: s
+        min: min
+        h: h
+        d: g
+      back: Torna a Performance
+      promote: Promuovi a ticket
+      promoted: Promosso al ticket %{code}.
+      promote_failed: Impossibile promuovere questa metrica a ticket.
+      chart_title: Occorrenze nel tempo
+      timeline_sub: "%{range} · %{count} blocchi"
+      chart_peak: "picco %{count}"
+      chart_summary: "Occorrenze nel tempo — picco %{count} per blocco nelle ultime %{range}."
+      # CYRA-570: nel periodo non è successo niente — si dice, non si disegnano barrette a zero.
+      chart_empty: "Nessuna occorrenza in questo periodo."
+      now: ora
+      # CYRA-341 — «sta peggiorando?»: l'andamento della durata e il confronto col periodo di prima.
+      duration_chart_title: Durata nel tempo
+      duration_chart_hint: "la barra è il caso peggiore (p95), il tooltip mostra anche il caso tipico (p50)"
+      duration_chart_summary: "Durata nel tempo — caso peggiore fino a %{peak} per blocco negli ultimi %{range}."
+      duration_chart_empty: "Nessuna misura in questo periodo."
+      duration_chart_peak: "picco %{value}"
+      duration_current: "%{current} in media %{window}"
+      duration_empty: "Nessun caso registrato %{window}"
+      duration_retention_note: "L'andamento mostra i casi ancora conservati, cioè gli ultimi %{days} giorni."
+      compare_missing: nessun dato nel periodo precedente da confrontare
+      delta_up: "il %{pct}% in più"
+      delta_down: "il %{pct}% in meno"
+      delta_flat: come prima
+      trend_flat: invariato
+      stat_window_avg: Media nel periodo
+      window:
+        30m: negli ultimi 30 minuti
+        24h: nelle ultime 24 ore
+        7d: negli ultimi 7 giorni
+        30d: negli ultimi 30 giorni
+      compare:
+        30m: rispetto ai 30 minuti precedenti
+        24h: rispetto alle 24 ore precedenti
+        7d: rispetto ai 7 giorni precedenti
+        30d: rispetto ai 30 giorni precedenti
+      threshold_hint: "Sotto %{fast} è verde, fino a %{slow} è ambra, oltre è rosso."
+      threshold_help_title: Da dove viene il colore
+      threshold_settings_link: Cambia le soglie nelle impostazioni del progetto
+      threshold_settings_hint: Le soglie si cambiano nelle impostazioni del progetto.
+      bucket:
+        no_data: Nessun dato
+      query: Query
+      query_hint: "offuscata · binds mostrati come ?"
+      copy: Copia
+      template_shared: Template condiviso da tutte le %{count} occorrenze — selezionane una sotto per vederne i parametri.
+      parameters: Parametri
+      capture_on: cattura attiva
+      capture_off: "I valori concreti usati da questa operazione non vengono raccolti. Per vederli, aggiungi questa riga dove colleghi la tua applicazione:"
+      capture_snippet_label: Riga da aggiungere
+      capture_privacy: "I valori raccolti possono contenere dati personali (email, nomi, identificativi): vengono salvati come sono, e restano visibili a chi vede questa pagina."
+      capture_guide: Come si collega un'applicazione
+      binds_count: "%{count} binds"
+      source: Source
+      occurred: Avvenuta
+      sample_label: ID
+      scrub_note: Le colonne nella scrub-list (password, token, *_email…) restano redacted anche con la cattura attiva.
+      occurrences: Occorrenze
+      occurrences_total: "%{total} totali"
+      stat_occurrences_total: Occorrenze totali
+      occurrences_kept:
+        one: 1 campione conservato
+        other: "%{count} campioni conservati"
+      occurrences_retention_note: "È successo %{total} volte in tutto; qui ci sono i %{kept} casi ancora conservati. I singoli casi si tengono %{days} giorni, il conteggio totale resta per sempre."
+      occurrences_hint: selezionane una per caricarne i parametri sopra
+      col_when: Quando
+      col_duration: Durata
+      col_cached: Cached
+      details: Dettagli
+      detail_project: Progetto
+      detail_ticket: Ticket
+      detail_kind: Categoria
+      detail_db_system: DB system
+      detail_avg: Durata media
+      detail_occurrences: Occorrenze
+      detail_minmax: Min / Max
+      detail_percentiles: Percentili
+      detail_last_seen: Ultima
+      detail_first_seen: Prima
+      detail_sdk: SDK
+      detail_fingerprint: Impronta
+      help_fingerprint: Un codice fisso che raggruppa le occorrenze della stessa query o metodo lento.
+      not_promoted: Non ancora promosso
+      time_ago: "%{time} fa"
+      stat_performance_issues: Problemi di performance
+      filter_subtype: Tipo di problema
+      signature: Signature
+      trace_title: Log ed errori di questa richiesta
+      trace_empty: Nessun log o errore registrato per questa richiesta.
+      col_queries: Query
+      detail_query_count: Query
+      detail_http_host: Host esterno
+      detail_classification: Tipo di problema
+      kind:
+        slow_query: Query lenta
+        slow_method: Metodo lento
+        performance_issue: Problema di performance
+      subtype:
+        n_plus_one: Query N+1
+        high_query_count: Troppe query
+        slow_request: Richiesta lenta
+        slow_external_http: HTTP esterna lenta
+        repeated_http: HTTP ripetute
+        jank: Jank (frame lento)
+        rebuild_storm: Rebuild storm
+        job_queue_latency: Attesa in coda
+        slow_job: Lavoro lento
+      kind_hint:
+        slow_query: Una richiesta al database che impiega troppo tempo.
+        slow_method: Una funzione del programma che impiega troppo tempo.
+        performance_issue: Un rallentamento rilevato in automatico durante una richiesta.
+      subtype_hint:
+        n_plus_one: Tante richieste quasi identiche in fila, invece di una sola.
+        high_query_count: Una sola richiesta interroga il database troppe volte.
+        slow_request: Una pagina o un'azione che risponde troppo lentamente.
+        slow_external_http: Una chiamata a un servizio esterno che impiega troppo.
+        repeated_http: La stessa chiamata a un servizio esterno ripetuta più volte.
+        jank: "Scatti nell'app: una schermata disegnata troppo lentamente."
+        rebuild_storm: Nell'app una schermata si ridisegna troppe volte di seguito.
+        job_queue_latency: Un lavoro in background aspetta troppo prima di partire.
+        slow_job: Un lavoro in background impiega troppo tempo.
+    uptime:
+      window_coverage: "dati su %{covered} di %{window}"
+      window_span:
+        minutes:
+          one: 1 minuto
+          other: "%{count} minuti"
+        hours:
+          one: 1 ora
+          other: "%{count} ore"
+        days:
+          one: 1 giorno
+          other: "%{count} giorni"
+      window_empty_reason:
+        before_start: "I periodi grigi sono precedenti all'inizio del controllo: prima di allora non c'era niente da registrare."
+        no_checks: "Nei periodi grigi non è stato registrato nessun controllo. Non dipende dalla conservazione dei dati: per questi periodi i controlli si tengono tutti."
+      title: Uptime
+      coverage:
+        uncovered_title:
+          one: "1 sito su %{total} senza avviso"
+          other: "%{count} siti su %{total} senza avviso"
+        uncovered_body: "Se questi siti sotto controllo vanno giù, non riceverai alcun avviso: manca una regola che li copra."
+        uncovered_link: "Crea la regola"
+        covered_title: "Tutti coperti"
+        covered_body: "Ogni sito sotto controllo è coperto da una regola di avviso."
+      alerts:
+        title: Chi viene avvisato
+        count:
+          one: "1 regola"
+          other: "%{count} regole"
+        via_app: Nell'app
+        empty_body: "Nessuna regola avvisa quando questo sito cade: se va giù, non riceverai alcun avviso."
+        empty_link: Crea la regola di avviso
+      check_types:
+        http: HTTP
+        tcp: Porta (TCP)
+        dns: DNS
+        ping: Ping
+      stat_up: Su
+      stat_down: Giù
+      stat_monitors: Monitor
+      new: Nuovo monitor
+      empty: Ancora nessun monitor
+      empty_body: Aggiungi un monitor HTTP su una URL del progetto — la pinghiamo su schedule e apriamo un incident quando
+        va giù.
+      empty_example: "Per esempio: un controllo chiamato Sito pubblico su https://www.esempio.it, verificato ogni minuto."
+      search_placeholder: Cerca monitor…
+      count: "%{count} monitor"
+      filter_status: Stato
+      filter_project: Progetto
+      no_match: Nessun monitor corrisponde ai filtri.
+      col_monitor: Progetto · Ambiente
+      col_status: Stato
+      col_uptime: Uptime %{range}
+      col_response: Risposta
+      col_last_check: Ultimo check
+      last_checks: ultimi %{count} check
+      time_ago: "%{time} fa"
+      down_since: "Giù da %{duration}"
+      duration_unit:
+        seconds: s
+        minutes: m
+        hours: h
+        days: g
+      sort_health_hint: "Di default i siti non sani sono elencati per primi."
+      back: Torna a uptime
+      label_status: Stato
+      label_response: Risposta media
+      label_last_check: Ultimo check
+      pause: Pausa
+      resume: Riprendi
+      pause_confirm: Mettere in pausa questo controllo? Smetti di controllare il sito e non riceverai avvisi finché non lo riattivi.
+      edit: Modifica
+      delete: Elimina
+      delete_confirm: Eliminare questo monitor e tutto il suo storico? L'operazione è irreversibile.
+      created: Monitor creato.
+      updated: Monitor salvato.
+      deleted: Monitor eliminato.
+      paused: Monitor in pausa.
+      resumed: Monitor ripreso.
+      publish: Pubblica
+      unpublish: Ritira
+      publish_confirm: Pubblicare la status page? I dati di questo controllo diventano visibili a chi ha il link.
+      more_menu: Altre azioni
+      label_publication: Pubblicazione
+      publication_on: Pubblica
+      publication_off: Privata
+      published: Status page pubblica pubblicata.
+      unpublished: Status page pubblica ritirata.
+      public_link_label: Status page pubblica
+      public_link_open: Apri
+      public_link_copy: Copia
+      public_link_copied: Copiato
+      embed: Incorpora
+      embed_title: Incorpora nel tuo sito
+      embed_close: Chiudi
+      embed_preview: Anteprima dello stato
+      embed_frame_title: Stato del servizio
+      embed_badge: Riquadro compatto
+      embed_badge_hint: Una striscia piccola da mettere in fondo alle pagine del sito. Mostra lo stato e, se ci clicchi, apre la pagina completa.
+      embed_page: Pagina intera
+      embed_page_hint: Porta l'intera pagina di stato dentro una pagina del tuo sito.
+      range_sla: "%{range} · SLA"
+      sla_1y: SLA 1y
+      help_sla: La percentuale di controlli uptime andati a buon fine nella finestra (24h, 7 giorni, 30 giorni, 1 anno).
+      ongoing_incident: Incident in corso
+      started_ago: iniziato %{time} fa
+      response_time: Tempo di risposta
+      no_checks: Ancora nessun check per questo range.
+      now: ora
+      timeline_sub: "%{range} · %{count} blocchi"
+      buckets_partial:
+        one: "%{count} parziale"
+        other: "%{count} parziali"
+      buckets_summary: "Timeline uptime delle ultime %{range}: %{up} su, %{partial}, %{down} giù, %{empty} senza dati, su %{total} blocchi totali."
+      bucket:
+        no_data: Nessun dato
+        up: Attivo
+        partial: Parziale
+        down: Non raggiungibile
+      incidents: Incident
+      incidents_count: "%{count} mostrati"
+      col_started: Inizio
+      col_resolved: Risolto
+      col_duration: Durata
+      col_incident_status: Stato
+      ongoing: in corso
+      incident_open: Aperto
+      incident_resolved: Risolto
+      tab_monitors: Monitor
+      tab_incidents: Incident
+      incidents_empty: Nessun incident
+      incidents_empty_body: Quando un monitor va down apriamo qui un incident, con la finestra di downtime e la risoluzione.
+      incidents_no_match: Nessun incident corrisponde ai filtri.
+      incidents_count_total: "%{count} incident"
+      filter_incident_status: Stato
+      incident:
+        phases:
+          detected: Rilevato
+          investigating: Investigazione
+          fixing: Correzione
+          monitoring: Monitoraggio
+          resolved: Rientrato
+        default_body:
+          detected: "Abbiamo rilevato un disservizio e stiamo verificando."
+          investigating: "Stiamo investigando la causa del problema."
+          fixing: "Abbiamo identificato la causa e stiamo applicando una correzione."
+          monitoring: "Correzione applicata: stiamo monitorando la stabilità."
+          resolved: "Il servizio è tornato operativo. [descrivi cosa è successo]"
+        select_all: Seleziona tutti
+        # CYRA-495 — nomi accessibili dei controlli di riga: senza, il lettore di schermo ripiega sul
+        # value della casella (un UUID) e legge tutti i comandi di gestione allo stesso modo.
+        select_row: Seleziona l'incident del %{started_at}
+        manage_row: Gestisci l'incident del %{started_at}
+        selected: selezionati
+        update_status: Aggiorna stato
+        group_hint: Le finestre selezionate vengono unificate in un unico incident.
+        phase: Step
+        message: Messaggio
+        message_placeholder: Opzionale — un messaggio standard è precompilato.
+        post: Pubblica aggiornamento
+        add_step: Aggiungi step
+        ungroup: Separa
+        ungroup_confirm: Sciogliere il raggruppamento e tornare a finestre separate?
+        ungroup_title: Sciogli il raggruppamento
+        ungroup_keep_hint: Quale finestra mantiene lo status (phase + timeline)?
+        keep_current: attuale
+        windows_count: "%{count} finestre"
+        timeline: Timeline
+        delete_step: Elimina
+        delete_step_confirm: Eliminare questo aggiornamento?
+        no_updates: Ancora nessun aggiornamento.
+        grouped_note: Incident unificato
+        grouped: Incident aggiornato.
+        step_added: Aggiornamento pubblicato.
+        step_deleted: Aggiornamento eliminato.
+        ungrouped: Incident separato.
+        manage: Gestisci incident
+        close: Chiudi
+        delete: Elimina incident
+        delete_confirm: Eliminare l'intero incident e la sua cronologia? Operazione irreversibile.
+        deleted: Incident eliminato.
+        window: "%{started} → %{resolved}"
+        window_ongoing: "%{started} → in corso"
+      announcement:
+        title: Banner di stato
+        hint: Mostrato sulla status page pubblica per manutenzioni o avvisi.
+        level: Livello
+        levels:
+          info: Info
+          maintenance: Manutenzione
+          warning: Avviso
+        message: Messaggio
+        message_placeholder: "es. Manutenzione programmata dalle 2 alle 4."
+        starts_at: Inizio
+        ends_at: Fine
+        active: Attivo
+        save: Salva banner
+        clear: Rimuovi banner
+        preview: Anteprima
+        none: Nessun banner impostato.
+        saved: Banner di stato salvato.
+        cleared: Banner di stato rimosso.
+      config: Configurazione
+      config_target: Bersaglio
+      config_type: Tipo
+      config_project_env: Progetto · Ambiente
+      config_method: Metodo
+      config_interval: Intervallo
+      config_expected: Atteso
+      config_timeout: Timeout
+      config_latency: Soglia lentezza
+      config_failure_threshold: Controlli per l'avviso
+      form:
+        back: Torna a uptime
+        new_title: Nuovo monitor
+        edit_title: Modifica monitor
+        lead_new: Pinghiamo questa URL su schedule e apriamo un incident quando va giù.
+        lead_edit: Progetto e ambiente sono fissi; regola URL e impostazioni del check.
+        project: Progetto
+        project_placeholder: Seleziona un progetto
+        project_required: Seleziona un progetto per vedere i suoi environment
+        environment: Ambiente
+        environment_hint: Un monitor per ambiente. Scegli un ambiente dichiarato dal progetto.
+        environment_invalid: Scegli un ambiente dichiarato dal progetto selezionato (o uno ancora senza monitor).
+        project_env: Progetto · Ambiente
+        project_env_locked: Fisso dopo la creazione — un monitor per ambiente.
+        check_type: Tipo di check
+        check_type_hint: "HTTP controlla una URL; porta, DNS e ping controllano servizi non-web."
+        url: URL
+        url_hint: URL http(s) pubblica. Gli indirizzi interni/privati sono bloccati.
+        host: Host
+        host_hint: Nome host o IP pubblico del servizio (per porta, DNS e ping).
+        port: Porta
+        port_hint: Porta TCP del servizio, da 1 a 65535 (solo per il tipo porta).
+        method: Metodo
+        expected: Status atteso
+        interval: Intervallo (s)
+        interval_hint: Secondi tra un check e l'altro.
+        keyword: Keyword attesa
+        keyword_hint: Se presente, il check fallisce quando il body non la contiene (non con HEAD).
+        ssl_warn: Avviso scadenza SSL (giorni)
+        ssl_warn_hint: "Avvisa quando al certificato mancano al massimo N giorni. Vuoto = disattivo."
+        latency: Soglia di lentezza (ms)
+        latency_hint: "Avvisa quando la risposta supera questi millisecondi. Vuoto = disattivo."
+        timeout: Timeout (s)
+        failure_threshold: Controlli falliti prima dell'avviso
+        failure_threshold_hint: "Quanti controlli falliti di fila prima di dichiarare il sito irraggiungibile. 1 = subito."
+        save_new: Crea monitor
+        save_edit: Salva modifiche
+        cancel: Annulla

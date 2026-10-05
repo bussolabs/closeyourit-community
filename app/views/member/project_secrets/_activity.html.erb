@@ -1,0 +1,18 @@
+<%# locals: (events:) %>
+<%# Recent activity (audit tail): identical events in a row fold into one line. The full log is the
+    Access log tab. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="secrets-activity">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.secrets.activity_title") %></h3>
+  </div>
+  <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+    <% fold_secret_events(events).each do |event, count| %>
+      <li class="flex items-center gap-2 px-4 py-2.5 text-[12.5px] min-w-0" data-test="secret-event">
+        <%= render Ui::IconComponent.new(name: secret_event_icon(event.action), class: "text-[11px] text-gray-400 dark:text-zinc-500 w-4 text-center") %>
+        <span class="text-zinc-700 dark:text-zinc-300 truncate"><%= folded_secret_event_sentence(event, count) %></span>
+        <% if event.environment %><span class="text-gray-300 dark:text-zinc-600">·</span><span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= event.environment.code %></span><% end %>
+        <span class="ml-auto shrink-0 text-[11px] text-gray-400 dark:text-zinc-500"><%= event.actor&.name || t("member.secrets.activity_system") %> · <%= secret_event_time(event.created_at) %></span>
+      </li>
+    <% end %>
+  </ul>
+</div>

@@ -1,0 +1,33 @@
+<% content_for :title, t("member.traces.title") %>
+<div class="p-7 space-y-6" data-test="member-traces">
+  <%= render Ui::PageHeaderComponent.new(title: t("member.traces.title"), subtitle: t("member.traces.subtitle"), breadcrumb: [{ label: t("member.traces.title") }]) do |header| %>
+    <% header.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.traces.title"), value: @pagination.total, test_id: "traces-count") %>
+    <% end %>
+  <% end %>
+  <% if !@has_records && request.query_parameters.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.traces.empty"), body: t("member.traces.empty_body"), icon: "git-branch", framed: true, test_id: "traces-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <%= render "toolbar" %>
+      <% if @traces.empty? %>
+        <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_monitoring_traces_path, test_id: "traces-no-results") %>
+      <% else %>
+        <%= render Ui::TableComponent.new(stacked: true, label: t("member.traces.title"), test_id: "traces-table") do |table| %>
+          <% table.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.traces.operation")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.traces.service")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.traces.duration"), sort: "duration", initial: :desc, align: :right) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.traces.spans"), sort: "spans", initial: :desc, align: :right) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.traces.received"), sort: "received", initial: :desc) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+          <% end %>
+          <%= render partial: "row", collection: @traces, as: :trace %>
+        <% end %>
+        <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "traces-pagination") do |footer| %>
+          <% footer.with_legend { t("member.traces.received_window") } %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

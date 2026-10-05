@@ -1,0 +1,23 @@
+{
+  "contract": "closeyourit-cluster-snapshot",
+  "version": 1,
+  "schema": "schema.json",
+  "fixtures": [
+    { "path": "fixtures/valid/minimal.json", "definition": "snapshot", "valid": true },
+    { "path": "fixtures/valid/complete.json", "definition": "snapshot", "valid": true },
+    { "path": "fixtures/valid/no_metrics.json", "definition": "snapshot", "valid": true },
+    { "path": "fixtures/valid/limits.json", "definition": "snapshot", "valid": true },
+    { "path": "fixtures/valid/response_accepted.json", "definition": "snapshot_response", "valid": true },
+    { "path": "fixtures/valid/response_unauthorized.json", "definition": "error_envelope", "valid": true },
+    { "path": "fixtures/invalid/missing_snapshot_id.json", "definition": "snapshot", "valid": false },
+    { "path": "fixtures/invalid/observer_version_with_v_prefix.json", "definition": "snapshot", "valid": false },
+    { "path": "fixtures/invalid/workload_kind_unknown.json", "definition": "snapshot", "valid": false },
+    { "path": "fixtures/invalid/negative_restarts.json", "definition": "snapshot", "valid": false },
+    { "path": "fixtures/invalid/event_message_over_limit.json", "definition": "snapshot", "valid": false },
+    { "path": "fixtures/invalid/extra_top_level_field.json", "definition": "snapshot", "valid": false },
+    { "path": "fixtures/invalid/nodes_over_limit.json", "definition": "snapshot", "valid": false },
+    { "path": "fixtures/invalid/workloads_over_limit.json", "definition": "snapshot", "valid": false },
+    { "path": "fixtures/invalid/events_over_limit.json", "definition": "snapshot", "valid": false }
+  ],
+  "http_cases": "fixtures/http/cases.json"
+}

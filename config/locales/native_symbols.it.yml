@@ -1,0 +1,52 @@
+{
+  "it": {
+    "member": {
+      "native_symbols": {
+        "derived": "Posizioni originali",
+        "received": "Indirizzi ricevuti",
+        "thread": "Thread",
+        "thread_option": "Thread %{index} · ID %{id} · %{count} frame",
+        "inline": "Funzione incorporata",
+        "instruction": "Istruzione: %{value}",
+        "offset": "Indirizzo relativo: %{value}",
+        "trust": "Metodo di ricostruzione: %{value}",
+        "no_source": "Posizione sorgente non disponibile",
+        "no_frames": "Il rapporto non contiene frame nativi.",
+        "report_unavailable": "Il rapporto di crash nativo conservato non è disponibile. I dati dell’evento restano sotto.",
+        "immutable": "Indirizzi ricevuti, rapporto di crash, evento e raggruppamento restano invariati. Le posizioni inline seguono l’ordine dalla funzione più interna alla chiamante.",
+        "upload_help": "Carica i simboli nativi corrispondenti",
+        "build_hint": "Usa la CLI con progetto, formato, architettura e identità di debug esatti. I file di debug restano privati; nessun testo sorgente viene scaricato.",
+        "matching": "Identità della build ricevute e corrispondenza",
+        "matching_hint": "Queste identità provengono dal rapporto di crash. La corrispondenza richiede progetto, formato, architettura e identità di debug; ELF richiede il build ID completo e PDB usa GUID e age. Il solo nome del file non identifica una build.",
+        "filename": "Modulo",
+        "debug_id": "Debug ID",
+        "code_id": "Code ID",
+        "base_addr": "Indirizzo base caricato",
+        "end_addr": "Indirizzo finale caricato",
+        "more": {
+          "one": "%{count} altro frame",
+          "other": "%{count} altri frame"
+        },
+        "reason": {
+          "missing_artifact": "Non sono stati caricati simboli nativi corrispondenti.",
+          "missing_build_identity": "Il modulo non ha un’identità di build utilizzabile.",
+          "ambiguous_artifact": "Più artefatti corrispondono; nessuno è stato selezionato.",
+          "missing_module": "Nessun modulo comprende questo indirizzo di istruzione.",
+          "ambiguous_module": "Gli intervalli dei moduli si sovrappongono qui; nessun modulo è stato selezionato.",
+          "invalid_address": "L’indirizzo ricevuto non è utilizzabile per questo modulo.",
+          "unsupported_profile": "Questo formato nativo o questa architettura non sono supportati.",
+          "unmapped": "Nessuna posizione sorgente è disponibile per questo indirizzo.",
+          "pending": "Ricostruzione nativa in attesa.",
+          "artifact_deleted": "I simboli nativi sono stati eliminati o sono scaduti. Sono mostrati solo gli indirizzi ricevuti.",
+          "crash_report_unavailable": "Il rapporto di crash corrispondente non è più disponibile o è cambiato.",
+          "native_budget": "Il crash supera i limiti di ricostruzione. Gli indirizzi ricevuti restano disponibili entro il limite della pagina.",
+          "native_source_budget": "I dati nativi ricevuti superano il limite della pagina: 500 frame per rapporto o 5 MiB complessivi nelle occorrenze mostrate.",
+          "symbolication_response_budget": "I dati ricostruiti superano il limite della pagina. Seleziona meno occorrenze.",
+          "processing_unavailable": "Il processore non è disponibile. Aggiorna per controllare il prossimo tentativo.",
+          "processing_rejected": "Il processore ha rifiutato i dati nativi. Controlla le identità della build ricevute.",
+          "unavailable": "Nessuna ricostruzione è disponibile per questo indirizzo."
+        }
+      }
+    }
+  }
+}

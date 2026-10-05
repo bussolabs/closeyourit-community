@@ -1,0 +1,217 @@
+en:
+  alerting:
+    content:
+      error_new:
+        title: "New error · %{error}"
+      error_regression:
+        title: "Error regressed · %{error}"
+        release: "reappeared in %{release}"
+      error_spike:
+        title: "Error surging · %{error}"
+      uptime_down:
+        title: "Monitor down · %{project}"
+        body: "%{target} is not responding — incident opened."
+      uptime_up:
+        title: "Monitor recovered · %{project}"
+        body: "%{target} is up again — incident resolved."
+      uptime_slow:
+        title: "Slow response · %{project}"
+        body: "%{target} responded above the %{threshold} ms threshold."
+      metric_threshold:
+        title: "Performance issue · %{subtype} · %{project}"
+      uptime_ssl_expiring:
+        title: "Certificate expiring · %{project}"
+        body: "The TLS certificate for %{url} expires in %{days} days."
+      cron_missed:
+        title: "Cron missed · %{name} · %{project}"
+        body: "Stuck for %{since} (expected every %{interval} min): the job may have stopped running."
+        body_never: "No check-in received yet (expected every %{interval} min): the job may never have started."
+      agents_stalled:
+        title: "Automation stalled · %{organization}"
+        body: "Machines are online but no work has completed in the last hour."
+      agents_host_failing:
+        title: "Machine failing · %{host}"
+        body: "This machine is failing most of its work: it may be broken."
+      agents_host_stale:
+        title: "Automation stopped on %{host}"
+        body: "No automation signals are coming from this machine. The computer is often up and healthy: what stopped is the automation running on it. The link opens its page, where you can see how long it has been silent."
+      embedding_down:
+        title: "Embedding service unreachable · %{organization}"
+        body: "Semantic search, cross-linking between errors and tickets, and duplicate detection are not working. Nothing on screen shows it: they keep answering, just with no results."
+      ai_unavailable:
+        title: "AI unreachable · %{organization}"
+        body: "The assistant, automatic ticket triage and duplicate detection are not working: the service is not answering, or the key is no longer valid. Nothing on screen shows it: the features are still there and do nothing. The link opens the connected services, where the key is fixed."
+      ai_available:
+        title: "AI back online · %{organization}"
+        body: "The service is answering again: assistant, automatic triage and duplicate detection are back at work."
+      cache_unavailable:
+        title: "Shared cache unreachable · %{organization}"
+        body: "The shared cache is not answering. While it lasts, alerts to Slack, Discord and other external links may stay silent: the brake that prevents sending the same alert twice reads the silence as «already sent». In-app and email alerts keep arriving."
+      server_down:
+        title: "Server down · %{host}"
+        body: "%{hostname} stopped reporting."
+      server_up:
+        title: "Server recovered · %{host}"
+        body: "%{hostname} is reporting again."
+      server_cpu:
+        title: "High CPU · %{host}"
+        body: "CPU at %{value}%."
+      server_mem:
+        title: "High memory · %{host}"
+        body: "Memory at %{value}%."
+      server_disk:
+        title: "Disk filling up · %{host}"
+        body: "Disk at %{value}%."
+      server_temp:
+        title: "High temperature · %{host}"
+        body: "Temperature at %{value} °C."
+      server_service_failed:
+        title: "Systemd service failed · %{host}"
+        body:
+          one: "%{count} service failing on %{host}: %{names}."
+          other: "%{count} services failing on %{host}: %{names}."
+      server_disk_forecast:
+        title: "Data volume filling up · %{host}"
+        body: "At the current rate %{mountpoint} (now at %{value}%) will be full in about %{days} days."
+      server_security_updates:
+        title: "Security updates · %{host}"
+        body:
+          one: "%{count} security update pending on %{host}."
+          other: "%{count} security updates pending on %{host}."
+      server_ingest_rejected:
+        title: "Machine data rejected · %{organization}"
+        body: "The system briefly rejected the data sent by your machines: their figures stay frozen until sending resumes. The machines are not down."
+      cluster_down:
+        title: "Cluster %{cluster} stopped sending data"
+        body: "No data for 3 minutes. The observer stopped or the cluster does not answer."
+      cluster_up:
+        title: "Cluster %{cluster} is sending data again"
+        body: "Data is flowing again."
+      cluster_node_not_ready:
+        title: "Machine %{node} not ready · %{cluster}"
+        body: "Not ready for at least 2 minutes."
+      cluster_node_pressure:
+        title: "Machine %{node} under pressure · %{cluster}"
+        body: "Memory, disk or processes almost exhausted."
+      cluster_workload_crashloop:
+        title: "%{workload} keeps restarting · %{namespace}"
+        body: "Last reason: %{reason}."
+      cluster_workload_degraded:
+        title: "%{workload} running at half · %{namespace}"
+        body: "%{ready} of %{desired} copies ready for at least 5 minutes."
+      server_silent:
+        title: "Stale data · %{host}"
+        body: "%{hostname} is reachable but its latest data is %{duration} old."
+      server_smart_failing:
+        title: "SMART failing · %{host}"
+        body:
+          one: "%{count} disk failing on %{host}."
+          other: "%{count} disks failing on %{host}."
+      server_container_down:
+        title: "Container down · %{host}"
+        body:
+          one: "%{count} container down on %{host}."
+          other: "%{count} containers down on %{host}."
+        body_since:
+          one: "%{count} container down on %{host}, for %{duration}."
+          other: "%{count} containers down on %{host}, for %{duration}."
+        engine_down:
+          title: "Container engine down · %{host}"
+          body: "The container engine on %{hostname} is not responding: no running containers."
+      server_container_up:
+        title: "Containers back up · %{host}"
+        body: "Containers on %{hostname} are running again."
+      server_container_restart_loop:
+        title: "Container restart loop · %{host}"
+        body:
+          one: "%{count} container keeps restarting on %{host}."
+          other: "%{count} containers keep restarting on %{host}."
+        detail: "%{name} — %{restarts} restarts in 10 minutes"
+      server_container_stable:
+        title: "Container stable again · %{host}"
+        body: "No container is above the restart threshold anymore."
+      server_db_down:
+        title: "Database unreachable · %{host}"
+        body: "The database on %{hostname} is not responding."
+      server_db_connections:
+        title: "High database connections · %{host}"
+        body: "%{value} open connections out of %{max}."
+      server_db_connection_usage:
+        title: "Database slots nearly exhausted · %{host}"
+        body: "%{value} connections use %{pct}% of the %{usable} available slots."
+      server_replication_lag:
+        title: "Replication lagging · %{host}"
+        body: "The replica is %{value} seconds behind."
+      server_replication_down:
+        title: "Replication disconnected · %{host}"
+        body_standby: "The standby is no longer receiving WAL from the primary."
+        body_primary: "Only %{streaming} of %{expected} replicas are streaming."
+      server_replication_up:
+        title: "Replication recovered · %{host}"
+        body: "The replica is streaming again."
+      server_data_volume_disk:
+        title: "Data volume filling up · %{host}"
+        body: "Mount %{mountpoint} is at %{value}%."
+      server_inode:
+        title: "Inodes nearly exhausted · %{host}"
+        body: "Mount %{mountpoint} uses %{value}% of its inodes."
+      log_alert:
+        title: "%{level} log · %{project}"
+      analytics_traffic_drop:
+        title: "Traffic drop · %{project}"
+        body: "Site visits have dropped sharply compared to usual."
+      analytics_traffic_spike:
+        title: "Traffic spike · %{project}"
+        body: "Site visits are well above usual."
+      idea_created:
+        title: "New idea · %{project}"
+      idea_commented:
+        title: "New comment on an idea · %{project}"
+      workload_due_soon:
+        title: "Task due soon · %{title}"
+        body: "This task is due soon or overdue."
+      dataset_training_completed:
+        title: "Training completed · %{dataset}"
+        body: "The model is ready."
+      dataset_training_failed:
+        title: "Training failed · %{dataset}"
+        body: "The training did not complete successfully."
+      vulnerability_new:
+        title: "%{severity} · %{package}"
+        body: "Update to version %{fixed_version} to close the issue (%{advisory})."
+        body_unfixable: "No fixed version exists yet (%{advisory}): consider an alternative."
+      runtime_eol:
+        title: "No longer updated · %{runtime} %{version}"
+        body: "This version has received no security fixes since %{date}: plan the move to a newer one."
+      seo_issue_new:
+        title: "%{check} · %{url}"
+        body_fallback: "The site check found a new problem: open it to see the evidence."
+      secret_read:
+        title: "Secret read · %{name} · %{project}"
+        body: "%{actor} opened the value on %{environment}."
+      secret_denied:
+        title: "Secret access denied · %{name} · %{project}"
+        body: "%{actor} tried to open the value on %{environment} without permission."
+      secret_access:
+        system: System
+        any_name: a secret
+        any_environment: an unspecified environment
+    alerts:
+      mailer:
+        triggered:
+          subject: "[CloseYourIt] %{title}"
+          greeting: "Heads up,"
+          context: "Project: %{project}"
+          label_project: "project"
+          label_source: "source"
+          action: "Open in CloseYourIt"
+          footer: "You get this because you can see this project. Manage your alert preferences in CloseYourIt."
+    notifications:
+      mark_read: "Mark as read"
+      time_ago: "%{time} ago"
+      recovered_after: "back after %{time}"
+      show_details: "Show details"
+      category:
+        conversation: "Conversation"
+      severity:
+        critical: "Critical"

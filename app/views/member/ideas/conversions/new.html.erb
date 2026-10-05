@@ -1,0 +1,75 @@
+<% content_for :title, t("member.ideas.convert.title") %>
+
+<%# Preview editabile: al connect Stimulus accoda la sintesi AI (202 → poll ai/requests) e
+    riempie titolo/descrizione; i campi partono col fallback (titolo/corpo dell'idea) e il
+    submit resta SEMPRE possibile — progressive enhancement, l'AI è un assist, non un gate. %>
+<div class="p-7"
+     data-controller="idea-convert"
+     data-idea-convert-url-value="<%= member_idea_synthesis_path(@idea) %>"
+     data-idea-convert-poll-url-value="<%= member_ai_request_path(":id") %>"
+     data-idea-convert-generating-value="<%= t("member.ideas.convert.generating") %>"
+     data-idea-convert-done-value="<%= t("member.ideas.convert.generated") %>"
+     data-idea-convert-failed-value="<%= t("member.ideas.convert.failed") %>">
+  <%= form_with url: member_idea_conversion_path(@idea), method: :post, class: "space-y-6", data: { test: "idea-convert-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: t("member.ideas.convert.title"),
+          breadcrumb: [ { label: t("member.ideas.title"), href: member_ideas_path }, { label: @idea.title, href: member_idea_path(@idea) }, { label: t("member.ideas.convert.title") } ]) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.ideas.form.cancel"), href: member_idea_path(@idea), variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: t("member.ideas.convert.regenerate"), type: "button",
+              variant: :secondary_muted, size: :sm, icon: "rotate-cw", test_id: "idea-convert-regenerate",
+              hidden: true, data: { idea_convert_target: "regenerate", action: "click->idea-convert#regenerate" }) %>
+        <%= render Ui::ButtonComponent.new(label: t("member.ideas.convert.submit"), type: "submit", size: :sm, icon: "ticket", test_id: "idea-convert-submit") %>
+      <% end %>
+    <% end %>
+
+    <%# Riga di stato AI: generazione in corso / completata / fallita (fallback editabile). %>
+    <div data-idea-convert-target="status" hidden
+         class="rounded-lg border border-indigo-200 dark:border-indigo-500/40 bg-indigo-50 dark:bg-indigo-500/15 px-4 py-2.5 text-[12.5px] text-indigo-900 dark:text-indigo-200 flex items-center gap-2"
+         data-test="idea-convert-status"></div>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="md:col-span-2">
+          <%= render Ui::InputComponent.new(name: "title", label: t("member.ideas.convert.field_title"), required: true,
+                value: @draft_title, test_id: "idea-convert-title",
+                error: @errors&.dig(:title)&.first,
+                data: { idea_convert_target: "title" }) %>
+        </div>
+
+        <div class="md:col-span-2">
+          <label for="description" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.ideas.convert.field_description") %><span class="text-red-500 dark:text-red-400 ml-0.5">*</span></label>
+          <%= text_area_tag "description", @draft_description, rows: 12,
+                data: { test: "idea-convert-description", idea_convert_target: "description" },
+                class: "w-full px-3 py-2 rounded-md border #{@errors&.dig(:description)&.first ? "border-red-300 dark:border-red-500/50" : "border-stone-200 dark:border-zinc-800"} bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 font-mono leading-relaxed placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+          <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.ideas.convert.description_hint") %></p>
+          <% if @errors&.dig(:description)&.first %>
+            <p class="mt-1 text-[11.5px] text-red-600 dark:text-red-400" data-test="idea-convert-description-error"><%= @errors.dig(:description).first %></p>
+          <% end %>
+        </div>
+
+        <div data-test="idea-convert-kind">
+          <label class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.ideas.convert.field_kind") %></label>
+          <div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800">
+            <% @kinds.each do |k| %>
+              <label class="cursor-pointer">
+                <input type="radio" name="kind" value="<%= k %>" class="peer sr-only"
+                       <%= "checked" if (params[:kind].presence || @default_kind) == k %>>
+                <span class="inline-flex items-center h-[30px] px-3.5 rounded-[5px] text-[12.5px] font-medium text-gray-500 dark:text-zinc-400 peer-checked:bg-zinc-900 dark:peer-checked:bg-zinc-100 peer-checked:text-white dark:peer-checked:text-zinc-900"
+                      data-test="idea-convert-kind-<%= k %>"><%= t("member.tickets.kind.#{k}") %></span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <%= render Ui::SelectComponent.new(name: "status_id", label: t("member.ideas.convert.field_status"), required: true,
+                options: @statuses.map { |s| [ s.display_label, s.id, s.color ] }, selected: (params[:status_id].presence || @default_status_id),
+                test_id: "idea-convert-status-select", error: @errors&.dig(:status)&.first) %>
+          <%= render Ui::SelectComponent.new(name: "priority_id", label: t("member.ideas.convert.field_priority"), required: true,
+                options: @priorities.map { |p| [ p.display_label, p.id, p.color ] }, selected: (params[:priority_id].presence || @default_priority_id),
+                test_id: "idea-convert-priority-select", error: @errors&.dig(:priority)&.first) %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

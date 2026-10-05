@@ -1,0 +1,37 @@
+<%# locals: board (Agents::Workflows::InFlight) %>
+<%# CYRA-630 — l'elenco di ciò che va avanti da solo: una tabella, non una pila di decisioni.
+    Qui non si decide niente — è per questo che sta in un elenco a parte — quindi non serve né la
+    plancia né il pannello. È la tabella che stava su «Lavorazioni», portata dove la si cerca.
+    CYRA-825 — vive in un partial suo perché la pagina che lo conteneva aveva finito lo spazio: il
+    tetto delle duecento righe è la misura oltre la quale una pagina torna a fare tutto da sola. %>
+<% if board.any? %>
+  <div data-test="approvals-in-flight-table">
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <%= render "member/home/approvals/in_flight_filters", board: board %>
+
+      <% if board.page.records.empty? %>
+        <p class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="approvals-in-flight-no-match"><%= t("member.approvals.in_flight.no_match") %></p>
+      <% else %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.approvals.in_flight.title"))) do |table| %>
+          <% table.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.approvals.in_flight.col_project")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.approvals.in_flight.col_ticket")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.approvals.in_flight.col_state")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.approvals.in_flight.col_outcome")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.approvals.in_flight.col_agent")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.approvals.in_flight.col_host_time"), align: :right,
+                  hint: t("member.agents.performance.host_time_legend"), test_id: "approvals-in-flight-host-time-head") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.approvals.in_flight.col_last"), align: :right) %>
+          <% end %>
+          <% board.page.records.each do |row| %>
+            <%= render "member/home/approvals/in_flight_row", row: row, board: board %>
+          <% end %>
+        <% end %>
+        <%= render(Ui::PaginationComponent.new(pagination: board.page, test_id: "approvals-in-flight-pagination")) %>
+      <% end %>
+    </div>
+  </div>
+<% else %>
+  <%= render Ui::EmptyStateComponent.new(title: t("member.approvals.in_flight.empty"), body: t("member.approvals.in_flight.empty_body"),
+        icon: "workflow", framed: true, test_id: "approvals-in-flight-empty") %>
+<% end %>

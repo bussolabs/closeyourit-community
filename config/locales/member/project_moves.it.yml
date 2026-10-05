@@ -1,0 +1,156 @@
+it:
+  member:
+    project_moves:
+      open: "Sposta in un'altra organizzazione"
+      new:
+        title: "Sposta %{name}"
+        destinations: "Organizzazioni di arrivo"
+        destination: "Organizzazione di arrivo"
+        destination_hint: "Solo le organizzazioni di cui sei owner. Prima di spostare vedi cosa succede."
+        none: "Non sei owner di nessun'altra organizzazione."
+        none_body: "Per spostare serve essere owner sia di questa organizzazione sia di quella di arrivo."
+        submit: "Vedi cosa succede"
+        back: "Indietro"
+      preview:
+        title: "Spostare %{name} in %{destination}"
+        change_destination: "Cambia organizzazione"
+        confirm_title: "Conferma"
+        confirm_label: "Scrivi %{name} per confermare"
+        confirm_hint: "Lo spostamento parte subito e non si annulla: per tornare indietro si sposta di nuovo."
+        confirm_mismatch: "Il testo non corrisponde."
+        submit: "Sposta"
+        blocked: "Risolvi i blocchi per poter spostare."
+      report:
+        blockers: "Blocchi"
+        creations: "Verrà creato nell'organizzazione di arrivo"
+        creations_short: "Da creare"
+        detachments: "Collegamenti che si staccano"
+        empty: "Niente"
+      blockers:
+        key_taken: "La sigla %{detail} è già usata nell'organizzazione di arrivo."
+        person_not_member: "%{detail} non è membro dell'organizzazione di arrivo."
+        provision_crosses: "Un secret passa da %{detail}: spostali insieme."
+        shared_conflict: "Il secret dell'organizzazione %{detail} esiste già nell'arrivo con un valore diverso."
+        agent_running: "Un agent sta lavorando su %{detail}."
+        move_in_progress: "C'è già uno spostamento in corso per %{detail}."
+        subject_left_source: "%{detail} non è più nell'organizzazione di partenza."
+        requester_not_owner: "%{detail} non è più owner di entrambe le organizzazioni."
+        knowledge_book_orphaned: "La raccolta della Conoscenza %{detail} resta qui senza progetti né gruppi: collegala a un progetto che resta, o collega a un progetto le sue pagine che restano."
+        knowledge_publication_conflict: "La pagina della Conoscenza pubblicata come %{detail} esiste già nell'organizzazione di arrivo."
+      creations:
+        types_environments: "Ambiente %{label} (%{code})"
+        types_ticket_statuses: "Stato dei ticket %{label}"
+        types_ticket_priorities: "Priorità dei ticket %{label}"
+        types_platforms: "Piattaforma %{label}"
+        types_feature_statuses: "Stato delle funzionalità %{label}"
+        secrets_shared:
+          variable: "Secret dell'organizzazione %{name} (%{environment}), copiato"
+          file: "File dell'organizzazione %{name} (%{environment}), copiato"
+          file_any_environment: "File dell'organizzazione %{name}, copiato"
+        knowledge_pages:
+          one: "Una pagina della Conoscenza si sposta insieme, con la sua cronologia e i suoi allegati."
+          other: "%{count} pagine della Conoscenza si spostano insieme, con la loro cronologia e i loro allegati."
+        knowledge_books:
+          moves: "La raccolta della Conoscenza %{title} si sposta insieme alle sue pagine."
+          created: "La raccolta della Conoscenza %{title} viene creata per le pagine che si spostano."
+          created_merged: "La raccolta della Conoscenza %{title} viene creata e riunisce le pagine che si spostano da %{books} raccolte con questo titolo."
+          joined: "Le pagine che si spostano dalla raccolta %{title} entrano nella raccolta con lo stesso titolo nell'organizzazione di arrivo."
+          joined_merged: "Le pagine che si spostano da %{books} raccolte %{title} entrano nella raccolta con lo stesso titolo nell'organizzazione di arrivo."
+      detachments:
+        projects_groups:
+          one: "Il progetto esce dal suo gruppo, che resta qui."
+          other: "I progetti escono dai loro gruppi, che restano qui."
+        github_repositories:
+          one: "Un repository GitHub si scollega: ricollegalo dall'organizzazione di arrivo."
+          other: "%{count} repository GitHub si scollegano: ricollegali dall'organizzazione di arrivo."
+        agents_delivery_candidates:
+          one: "Una consegna degli agent perde il suo repository."
+          other: "%{count} consegne degli agent perdono il loro repository."
+        agents_release_assignments:
+          one: "Un'assegnazione di rilascio degli agent viene tolta."
+          other: "%{count} assegnazioni di rilascio degli agent vengono tolte."
+        alerting_rules:
+          one: "Una regola di avviso viene tolta."
+          other: "%{count} regole di avviso vengono tolte."
+        alerting_notifications:
+          one: "Un avviso inviato viene tolto."
+          other: "%{count} avvisi inviati vengono tolti."
+        agents_limit_reservations:
+          one: "Una prenotazione dei limiti degli agent viene tolta."
+          other: "%{count} prenotazioni dei limiti degli agent vengono tolte."
+        agents_leases_tombstones:
+          one: "Una traccia di lavoro concluso degli agent viene tolta."
+          other: "%{count} tracce di lavori conclusi degli agent vengono tolte."
+        agents_ticket_queue_deferrals:
+          one: "Un rinvio nella coda degli agent viene tolto."
+          other: "%{count} rinvii nella coda degli agent vengono tolti."
+        chat_message_references:
+          one: "Un riferimento in una conversazione viene tolto."
+          other: "%{count} riferimenti nelle conversazioni vengono tolti."
+        connections_book_projects:
+          one: "Una raccolta della Conoscenza si scollega dal progetto."
+          other: "%{count} raccolte della Conoscenza si scollegano dai progetti."
+        connections_book_groups:
+          one: "Una raccolta della Conoscenza si scollega dal gruppo."
+          other: "%{count} raccolte della Conoscenza si scollegano dal gruppo."
+        connections_page_projects:
+          one: "Una pagina della Conoscenza collegata anche ad altro resta qui e si scollega dal progetto."
+          other: "%{count} pagine della Conoscenza collegate anche ad altro restano qui e si scollegano dai progetti."
+        connections_page_groups:
+          one: "Una pagina della Conoscenza collegata anche ad altro resta qui e si scollega dal gruppo."
+          other: "%{count} pagine della Conoscenza collegate anche ad altro restano qui e si scollegano dal gruppo."
+        knowledge_books:
+          one: "Una raccolta della Conoscenza resta qui e si collega ai progetti delle sue pagine che restano."
+          other: "%{count} raccolte della Conoscenza restano qui e si collegano ai progetti delle loro pagine che restano."
+        connections_page_links:
+          one: "Un collegamento tra una pagina che si sposta e una che resta viene tolto."
+          other: "%{count} collegamenti tra pagine che si spostano e pagine che restano vengono tolti."
+        connections_team_project_accesses:
+          one: "Un team perde l'accesso al progetto."
+          other: "%{count} accessi dei team ai progetti vengono tolti."
+        connections_team_group_accesses:
+          one: "Un team perde l'accesso al gruppo."
+          other: "%{count} accessi dei team al gruppo vengono tolti."
+        connections_environment_hosts:
+          one: "Un server si scollega da un ambiente."
+          other: "%{count} collegamenti fra server e ambienti vengono tolti."
+        clusters_namespaces:
+          one: "Una cartella di un cluster si scollega dal progetto."
+          other: "%{count} cartelle di cluster si scollegano dai progetti."
+        assistant_conversations:
+          one: "Una conversazione con l'assistente non resta più ferma sul progetto."
+          other: "%{count} conversazioni con l'assistente non restano più ferme sui progetti."
+        agents_hosts:
+          one: "Una macchina degli agent smette di segnalare sul progetto."
+          other: "%{count} macchine degli agent smettono di segnalare sui progetti."
+        uptime_monitors:
+          one: "Un controllo di disponibilità esce dal gruppo."
+          other: "%{count} controlli di disponibilità escono dal gruppo."
+        todos_items:
+          one: "Un'attività personale perde il ticket collegato."
+          other: "%{count} attività personali perdono il ticket collegato."
+        workload_actions:
+          one: "Un impegno del carico di lavoro perde il ticket collegato."
+          other: "%{count} impegni del carico di lavoro perdono il ticket collegato."
+        knowledge_sample_questions:
+          one: "Una domanda d'esempio perde la pagina collegata."
+          other: "%{count} domande d'esempio perdono la pagina collegata."
+        product_features:
+          one: "Una funzionalità perde la pagina collegata."
+          other: "%{count} funzionalità perdono la pagina collegata."
+        secrets_shared_events:
+          one: "Un evento dei secret dell'organizzazione perde il riferimento al valore."
+          other: "%{count} eventi dei secret dell'organizzazione perdono il riferimento al valore."
+      show:
+        title: "Spostamento di %{name}"
+        destination: "Arrivo"
+        status:
+          pending: "In attesa"
+          running: "In corso"
+          succeeded: "Fatto"
+          failed: "Fallito"
+        running: "Lo spostamento è in corso. La pagina si aggiorna da sola."
+        reload: "Aggiorna"
+        done: "Fatto: ora si trova in %{destination}."
+        failed_title: "Lo spostamento è fallito e non ha cambiato niente."
+        open_destination: "Apri nella nuova organizzazione"

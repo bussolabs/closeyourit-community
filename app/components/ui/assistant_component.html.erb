@@ -1,0 +1,36 @@
+<%# Permanent across Turbo visits: the column, its open state and the loaded conversation survive a
+    page change. `contents` lets the panel be a flex child of the layout row, so opening it narrows
+    the page instead of covering it; below xl there is no room for both, so it floats over the page.
+    The trigger lives in the topbar ([data-assistant-trigger]). %>
+<aside id="assistant-dock" data-turbo-permanent class="contents"
+       data-controller="ui--assistant" data-test="assistant-widget"
+       data-action="assistant:open@window->ui--assistant#openFresh"
+       data-ui--assistant-url-value="<%= helpers.member_assistant_panel_path %>">
+  <div data-ui--assistant-target="panel" hidden
+       role="complementary" aria-label="<%= t("member.assistant.panel.title") %>" data-test="assistant-panel"
+       class="flex flex-col bg-white dark:bg-zinc-900 overflow-hidden
+              max-md:fixed max-md:inset-0 max-md:z-50
+              md:w-[392px] md:shrink-0 md:rounded-xl md:border md:border-stone-200 dark:md:border-zinc-800
+              md:max-xl:fixed md:max-xl:inset-y-3.5 md:max-xl:right-3.5 md:max-xl:z-50">
+    <%# Le classi di layout stanno QUI: caricando via src, Turbo sostituisce il contenuto del frame ma
+        NON i suoi attributi, quindi le classi del _panel non verrebbero applicate (pannello tagliato). %>
+    <turbo-frame id="assistant_panel" data-ui--assistant-target="frame" class="flex flex-col h-full min-h-0">
+      <div class="p-8 text-center text-[13px] text-gray-400 dark:text-zinc-500" data-test="assistant-panel-loading">
+        <%= render Ui::IconComponent.new(name: "loader-circle", class: "animate-spin mr-1.5") %><%= t("member.assistant.panel.title") %>…
+      </div>
+    </turbo-frame>
+
+    <%# Caricamento fallito: sta FUORI dal frame perché Turbo ne sostituisce il contenuto a ogni
+        risposta. Il controller lo scopre al posto del frame quando il corpo non arriva. %>
+    <div data-ui--assistant-target="error" data-test="assistant-panel-error" hidden
+         class="flex flex-col items-center gap-3 p-8 text-center">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400"><%= t("member.assistant.panel.failed.load") %></p>
+      <button type="button" data-action="ui--assistant#retry" data-test="assistant-panel-retry"
+              class="inline-flex items-center gap-1.5 text-[12.5px] text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700
+                     rounded-md px-3 py-1.5 hover:bg-indigo-50 dark:hover:bg-indigo-500/15 hover:border-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors
+                     focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+        <%= render Ui::IconComponent.new(name: "rotate-cw", class: "text-[12px]") %><%= t("member.assistant.panel.failed.retry") %>
+      </button>
+    </div>
+  </div>
+</aside>

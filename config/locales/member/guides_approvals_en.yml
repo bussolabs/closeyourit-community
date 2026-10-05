@@ -1,0 +1,70 @@
+---
+en:
+  member:
+    guides:
+      index:
+        approvals:
+          title: Approvals
+      approvals:
+        title: Approvals
+        subtitle: How to clear everything waiting on your decision.
+        home_title: Start from the home screen
+        home_intro: "When you open the app you see one thing to decide: the one waiting longest. Decide, and the next one shows up. This page is for when you want to see the whole backlog at once, or find one specific workflow."
+        home_b1: "The project on the left, what you are deciding on in the middle, the buttons on the right."
+        home_b2: "Skip puts it back in today's queue and shows you the next one; Defer to tomorrow removes it until tomorrow morning. Neither decides anything, and whoever asked still sees it waiting."
+        home_b3: "Above the decision you find how many are left, how many you deferred, and how many run on their own."
+        what_title: What it is for
+        what_intro: "It is the list of everything stuck waiting on your word, all in one place. One row per piece of work, and on every row the steps it goes through: you see at a glance where it stopped."
+        what_b1: The analyses agents have prepared and that need your go-ahead.
+        what_b2: Tickets that reached review where you are the one who has to look at them.
+        what_b3: Questions agents asked you and are waiting an answer for.
+        what_b4: Change requests on confidential data, which by rule need a second person to approve.
+        what_b5: Production releases, which wait for your go-ahead before they start.
+        how_title: How to use it
+        how_step1: Open Approvals from the left menu, or press "g" then "a" from any page.
+        how_step2: "Look at the list: every row is a piece of work, grouped under its project, with whatever has been stuck the longest on top. Press a project name to close it and get what you do not care about out of the way."
+        how_step3: Press "Review" on the row to read it in full and decide. As soon as you decide you are back on the list, one row shorter.
+        how_step4: "When there is a lot to read, open the full-page card: the text reads in full and the decision buttons stay within reach as you scroll."
+        board_title: How to read the list
+        board_intro: "Every row has one dot per step of the path, named with the same words you read on the ticket. They are all always there, even the ones the work has not reached yet — that way the rows stay comparable at a glance."
+        board_b1: "A green dot with a tick is a finished step, the lit one is where the work is waiting for you, the red one is where it was rejected, the pale grey one has not been reached yet."
+        board_b2: Where there was an attempt the dot can be pressed and opens the report for that step. Where nothing happened it cannot be pressed, because there is nothing to open.
+        board_b3: "The \"State\" column says what that row is waiting for, and \"Waiting\" for how long: past three days the number turns amber, and the top of the page counts how many."
+        board_b4: At the bottom you choose how many rows to see per page, from ten to a hundred.
+        buttons_title: "The ways to answer"
+        buttons:
+          accept:
+            title: Accept
+            body: "Gives the go-ahead. You can add a couple of lines of notes: they land in the ticket discussion, so whoever does the work reads them too. With nothing to add it is a single click."
+          reject:
+            title: Reject
+            body: "A reason is required. On an agent analysis it means \"do it again\": it goes back with your reason and a new version is produced. On a ticket in review it puts it back in progress."
+          ask:
+            title: Ask for clarification
+            body: For when what you read is not enough but you do not want to reject. The question lands in the ticket discussion and the request stays in the queue, at the bottom, marked as waiting. It comes back to the top as soon as someone answers.
+          reassess:
+            title: Re-assess
+            body: "For old tickets: it asks the agent to re-read today's code and say whether that work is still needed. If it finds it already done it closes the ticket and writes down which files it found it in; if it is still needed, the plan is rewritten from scratch. It shows up while the work is still to plan or the plan is waiting for your yes — after that the agent has already written the code, and the question becomes a different one."
+        filters_title: Seeing one kind at a time
+        filters_intro: "Above the queue there is a bar with three drop-down menus: kind of request, project and agent. The kind menu holds plans to approve, delivered work, releases to authorize, stalled work, tickets in review, questions, sensitive data and the ones awaiting a reply, each with how many are waiting. Pick one and only those stay in the queue."
+        filters_b1: One kind at a time. Pick «All» to see the whole queue back. The project and agent menus only show up when the queue holds more than one of them.
+        filters_b2: Only the kinds that actually have something to do show up in the menu, so every entry leads to real work. The one you picked stays in place even once you empty it.
+        filters_b3: "The chosen kind stays on while you decide: as soon as you are done with a request the next one of the same kind opens, and the page address carries it along if you reload or share it."
+        bulk_title: Accepting several at once
+        bulk_intro: "When the queue is long and every request is a green light, there is no need to open them one by one: each row you can accept as it is has a checkbox on the left. Tick the ones you want — or all of them from the checkbox at the top — and press \"Accept selected\"."
+        bulk_b1: The checkbox is there on analyses awaiting approval, on delivered work, on tickets in review you can manage and on change requests for confidential data.
+        bulk_b2: It is not there on agent questions, which want a written answer, nor on stalled work, where that button does not accept but puts the work back in the queue, nor on production releases, which are authorized one at a time.
+        bulk_b3: "In bulk you cannot add notes and you cannot reject: for those, open the request and decide one at a time."
+        bulk_b4: At the end a message tells you how many were accepted and whether any stayed in the queue.
+        production_title: The go-ahead to production
+        production_intro: "When an assistant is done and the staging run went well, the move to production does not start on its own: it stops and asks you. The request says which version was tried out, so you know what you are about to ship."
+        production_b1: "Press «Ship to production» and the work resumes from there and the release is made. Until you press, nothing goes out."
+        production_b2: "There is no reject button. If you do not want to release, do not press: the run stays where it is and you can come back to it whenever you want."
+        production_b3: It is the only request you cannot accept together with the others in bulk. You give it one at a time, looking at it.
+        retrying_title: The ones retrying on their own
+        retrying_intro: "When the review rejects an attempt, the run sometimes starts over by itself: it is not waiting on you. Those stay out of the queue and out of the number at the top, in a separate list you open from the «Running, nothing for you to do» button, with how many there are."
+        retrying_b1: They are already moving. There is nothing for you to do, and indeed they are not counted among the things to decide.
+        retrying_b2: Open one and you read the last rejected attempt and what the review said, so you can see whether it is spinning in circles.
+        retrying_b3: "If one got stuck you close it from there, with «Close the run»: no need to look for it elsewhere."
+        note: You only see the requests that are yours to decide. The others do not show up, and they do not open with a direct link either.
+        cta: Go to Approvals

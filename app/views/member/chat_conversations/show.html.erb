@@ -1,0 +1,87 @@
+<% kind_label = t("member.chat.kinds.#{@conversation.kind}") %>
+<% conversation_title = @conversation.title_for(Current.account).presence || kind_label %>
+<% content_for :title, conversation_title %>
+
+<%= turbo_stream_from Realtime::Streams.chat_conversation(@conversation) %>
+
+<div data-test="chat-show" class="h-full flex flex-col gap-5 p-7 md:h-[calc(100%+1px)]" data-controller="ui--dialog">
+  <%= render "member/chat_conversations/header" %>
+
+  <div class="flex-1 min-h-0">
+    <div class="h-full flex rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden md:border-b-0">
+      <%= render "member/chat_conversations/conversations_pane", active_id: @conversation.id %>
+
+      <section class="flex-1 min-w-0 flex flex-col"
+               data-controller="chat-conversation"
+               data-chat-conversation-id-value="<%= @conversation.id %>"
+               data-chat-conversation-account-id-value="<%= Current.account.id %>"
+               data-chat-conversation-today-label-value="<%= t("member.chat.days.today") %>"
+               data-chat-conversation-yesterday-label-value="<%= t("member.chat.days.yesterday") %>">
+        <header class="border-b border-stone-200 dark:border-zinc-800 px-4 py-3">
+          <%# Back solo su mobile: su desktop la sidebar rende il link ridondante. %>
+          <%= link_to t("member.chat.title"), member_chat_conversations_path,
+                      class: "md:hidden text-xs text-zinc-500 hover:underline" %>
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <h2 class="truncate text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= conversation_title %></h2>
+              <%# The kind is left out when it is already the title (untitled conversations). %>
+              <p data-test="chat-thread-meta" class="truncate text-[12px] text-gray-500 dark:text-zinc-400">
+                <%= [ (kind_label unless conversation_title == kind_label), t("member.chat.people", count: @people_count) ].compact.join(" · ") %>
+              </p>
+            </div>
+            <% if @participant.muted? %>
+              <%= render Ui::ButtonComponent.new(label: t("member.chat.unmute"), href: member_chat_conversation_mute_path(@conversation),
+                    method: :delete, variant: :secondary, size: :sm, icon: "bell", test_id: "chat-unmute") %>
+            <% else %>
+              <%= render Ui::ButtonComponent.new(label: t("member.chat.mute"), href: member_chat_conversation_mute_path(@conversation),
+                    method: :put, variant: :secondary, size: :sm, icon: "bell-off", test_id: "chat-mute") %>
+            <% end %>
+          </div>
+        </header>
+
+        <div data-test="chat-messages" data-chat-conversation-target="messages"
+             id="chat_messages_<%= @conversation.id %>" class="flex-1 flex flex-col gap-3 overflow-y-auto p-4">
+          <% separator_class = "flex items-center gap-3 text-[11px] font-medium text-gray-500 dark:text-zinc-400 before:h-px before:flex-1 before:bg-stone-200 dark:before:bg-zinc-700 after:h-px after:flex-1 after:bg-stone-200 dark:after:bg-zinc-700" %>
+          <%# Blank separator the browser clones when the thread has none yet (empty thread, first live message). %>
+          <template data-chat-conversation-target="dayTemplate"><p data-test="chat-day" class="<%= separator_class %>"></p></template>
+          <% if @messages.empty? %>
+            <%= render Ui::EmptyNoteComponent.new(text: t("member.chat.empty_thread"), test_id: "chat-empty-thread") %>
+          <% else %>
+            <%# A live message from a new day gets its separator in chat-conversation#messageTargetConnected. %>
+            <% @messages.group_by { |message| message.created_at.to_date }.each do |day, messages| %>
+              <p data-test="chat-day" data-date="<%= day.iso8601 %>" data-short-label="<%= l(day, format: :day_month) %>" class="<%= separator_class %>"><%= chat_day_label(day) %></p>
+              <%= render partial: "member/chat_conversations/message", collection: messages, as: :message,
+                         locals: { conversation: @conversation, current_account_id: Current.account.id,
+                                   visible_project_ids: @visible_project_ids } %>
+            <% end %>
+          <% end %>
+        </div>
+
+        <div id="chat_receipts_<%= @conversation.id %>" class="px-4">
+          <%= render "member/chat_conversations/receipts", conversation: @conversation %>
+        </div>
+        <div id="chat_typing_<%= @conversation.id %>" class="h-4 px-4 text-xs text-zinc-400"></div>
+
+        <div class="border-t border-stone-200 dark:border-zinc-800 p-4">
+          <%= form_with url: member_chat_conversation_messages_path(@conversation), method: :post,
+                        data: { test: "chat-compose", controller: "chat-compose",
+                                chat_compose_taggable_url_value: taggable_member_chat_conversation_path(@conversation) } do |form| %>
+            <%# Send sits inside the box, next to the line that says what Enter does. %>
+            <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/30">
+              <%= form.text_area :body, placeholder: t("member.chat.compose_placeholder"), rows: 2,
+                                 data: { test: "chat-compose-body", chat_compose_target: "input",
+                                         action: "input->chat-conversation#typing input->chat-compose#search keydown->chat-compose#maybeSubmit" },
+                                 class: "block w-full resize-none rounded-t-lg border-0 bg-transparent p-2.5 text-sm focus:outline-none focus:ring-0" %>
+              <div class="flex items-center justify-between gap-3 px-2.5 pb-2">
+                <span data-test="chat-compose-hint" class="min-w-0 truncate text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.chat.compose_hint") %></span>
+                <%= render Ui::ButtonComponent.new(label: t("member.chat.send"), type: "submit", variant: :primary, size: :sm,
+                      icon: "send", test_id: "chat-compose-submit") %>
+              </div>
+            </div>
+            <div data-chat-compose-target="suggestions" class="mt-1 hidden rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm"></div>
+          <% end %>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

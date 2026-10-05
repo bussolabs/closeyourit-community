@@ -1,0 +1,59 @@
+<% content_for :title, t("member.assistant.panel.title") %>
+<% title = @conversation.title.presence || t("member.assistant.panel.untitled") %>
+<%# Conversazione con l'assistente. Sottoscrive lo stream Turbo per ricevere le bolle (broadcast dal
+    service all'invio, e i chunk della risposta dal job). The composer behaves like the floating panel's:
+    same ui--assistant controller, which needs no panel target outside the widget. %>
+<%= turbo_stream_from Realtime::Streams.assistant_conversation(@conversation) %>
+
+<div class="p-7 space-y-6" data-test="assistant-conversation">
+  <%= render Ui::PageHeaderComponent.new(
+        title: title,
+        breadcrumb: [ { label: t("member.assistant.panel.title"), href: member_assistant_conversations_path }, { label: title } ]) do |h| %>
+    <% if @project %>
+      <% h.with_badges do %>
+        <span class="inline-flex items-center gap-1.5 rounded border border-indigo-200 dark:border-indigo-500/40 bg-indigo-50 dark:bg-indigo-950 px-1.5 py-0.5 text-[11.5px] text-indigo-900 dark:text-indigo-200" data-test="assistant-project">
+          <%= render Ui::EntityMarkComponent.new(record: @project, size: :xs) %><%= t("member.assistant.panel.project", name: @project.name) %>
+        </span>
+      <% end %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.assistant.panel.new"), href: member_assistant_conversations_path,
+            method: :post, variant: :secondary, size: :sm, icon: "plus", test_id: "assistant-new", data: { turbo: false }) %>
+    <% end %>
+  <% end %>
+
+  <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4" data-controller="ui--assistant">
+    <%# The example questions hide themselves as soon as a message is on the page, broadcast ones included. %>
+    <div class="max-w-3xl mx-auto space-y-4 [&:has([data-test=assistant-message])_[data-test=assistant-greeting]]:hidden">
+      <% if @messages.empty? %>
+        <%= render "member/assistant_conversations/suggestions", project: @project %>
+      <% end %>
+      <%# Tutto su una riga: senza spazi il contenitore è :empty e a conversazione vuota non lascia una riga bianca. %>
+      <div id="assistant_messages_<%= @conversation.id %>" class="flex flex-col gap-3.5 pb-4 border-b border-stone-200 dark:border-zinc-800 empty:hidden" data-test="assistant-messages"><%= render partial: "member/assistant_conversations/message", collection: @messages, as: :message %></div>
+
+      <%# L'AI la offre il sistema (CYRA-765): non c'è più un servizio da collegare per organizzazione,
+          quindi il campo per scrivere c'è sempre. %>
+      <% voice = dictation_available? %>
+      <%= form_with url: member_assistant_conversation_messages_path(@conversation), method: :post,
+                    data: { action: "turbo:submit-end->ui--assistant#reset",
+                            **(voice ? assistant_inline_voice_data(@conversation, open_panel: false) : {}) } do |f| %>
+        <div class="flex items-end gap-2">
+          <%= hidden_field_tag :correction_of, nil, id: nil, data: { "ui--assistant-target": "correction" } %>
+          <div class="relative flex-1 min-w-0">
+            <%= f.text_area :text, rows: 2, required: true, maxlength: Assistant::Constants::MAX_MESSAGE_CHARS,
+                  data: { test: "assistant-input", "ui--assistant-target": "input", "ui--voice-inline-target": "input",
+                          action: "keydown.enter->ui--assistant#submitOnEnter input->ui--assistant#grow" },
+                  placeholder: t("member.assistant.panel.placeholder"),
+                  class: "block w-full resize-none border border-stone-300 dark:border-zinc-700 rounded-lg px-3 py-2 #{'pr-10' if voice} text-[13.5px] text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-500/20" %>
+            <%= render "member/assistant_conversations/voice_controls" if voice %>
+          </div>
+          <%= render Ui::ButtonComponent.new(label: t("member.assistant.panel.send"), type: "submit", variant: :primary, size: :sm,
+                                             icon: "send", test_id: "assistant-send",
+                                             data: { action: ("ui--voice-inline#send" if voice) }) %>
+        </div>
+      <% end %>
+      <p data-test="assistant-note" class="-mt-2 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.assistant.panel.note") %></p>
+      <p data-test="assistant-compose-hint" class="-mt-3.5 text-[10.5px] text-gray-400 dark:text-zinc-500"><%= t("member.assistant.panel.compose_hint") %></p>
+    </div>
+  </section>
+</div>

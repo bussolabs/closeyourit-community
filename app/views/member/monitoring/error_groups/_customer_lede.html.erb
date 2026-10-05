@@ -1,0 +1,21 @@
+<%# Lede in linguaggio semplice per il ruolo customer (non-engineer): riassunto reassicurante sopra
+    l'evidenza tecnica. Gated in show.html.erb da current_membership&.customer?. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-4 py-3.5" data-test="customer-lede">
+  <div class="flex items-start gap-2.5">
+    <%= render Ui::IconComponent.new(name: "info", class: "text-gray-500 dark:text-zinc-400 text-[14px] mt-0.5 shrink-0") %>
+    <p class="text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed">
+      <%# CYRA-380: senza contesto utente (users_count 0) NON promettere «0 persone colpite» — è un dato
+          mai inviato, non un conteggio reale. Lede alternativo che non cita un numero. %>
+      <% if group.user_context_tracked? %>
+        <%= t("member.monitoring.customer_lede_html",
+              count: group.users_count,
+              since: (group.first_seen_at&.strftime("%d/%m %H:%M") || "—"),
+              status: t("member.monitoring.status.#{group.status}")) %>
+      <% else %>
+        <%= t("member.monitoring.customer_lede_untracked_html",
+              since: (group.first_seen_at&.strftime("%d/%m %H:%M") || "—"),
+              status: t("member.monitoring.status.#{group.status}")) %>
+      <% end %>
+    </p>
+  </div>
+</div>

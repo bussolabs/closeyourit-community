@@ -1,0 +1,77 @@
+<%# locals: host: — stato systemd corrente dal jsonb dell'host + snapshot journalctl delle unit failed.
+    CYRA-463 — di default solo i servizi in errore (o l'empty state "nessuno in errore"); l'elenco
+    completo, dove le unit a riposo sono distinte da quelle ferme in modo anomalo, sta dietro un
+    blocco richiudibile. Il dato utile ("N servizi · M failed") è già nell'intestazione. %>
+<% services = Array(host.systemd_services) %>
+<% snapshots = host.journal_snapshots.is_a?(Hash) ? host.journal_snapshots : {} %>
+<% failed = services.select { |service| service["state"] == "failed" } %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-systemd">
+  <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.show.systemd") %></h2>
+    <span class="font-mono text-[11px] <%= host.services_failed.to_i.positive? ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-zinc-400' %>">
+      <%= t("member.servers.show.systemd_counts", total: host.services_total.to_i, failed: host.services_failed.to_i) %>
+    </span>
+  </div>
+  <% if services.empty? && snapshots.empty? %>
+    <p class="px-5 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="server-systemd-empty"><%= t("member.servers.show.systemd_empty") %></p>
+  <% else %>
+    <% if failed.any? %>
+      <%# CYRA-564 — anche i soli servizi in errore possono essere decine: l'elenco scorre nel
+          riquadro, il numero esatto resta nell'intestazione. %>
+      <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-1.5 max-h-[420px] overflow-y-auto" data-test="server-systemd-failed">
+        <% failed.each do |service| %>
+          <div class="flex items-center justify-between gap-2 min-w-0" data-test="server-systemd-row">
+            <span class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 truncate"><%= service["name"] %></span>
+            <%= render Ui::BadgeComponent.new(label: service["state"], color: server_systemd_color(service["state"]), dot: true) %>
+          </div>
+        <% end %>
+      </div>
+    <% elsif services.any? %>
+      <p class="px-5 py-6 text-center text-[12.5px] text-emerald-700 dark:text-emerald-300" data-test="server-systemd-all-ok"><%= t("member.servers.show.systemd_all_ok") %></p>
+    <% end %>
+    <% if snapshots.any? %>
+      <div class="border-t border-stone-100 dark:border-zinc-800 px-5 py-3 space-y-2" data-test="server-systemd-snapshots">
+        <% snapshots.each do |unit, snapshot| %>
+          <details class="group" data-test="server-systemd-snapshot">
+            <summary class="cursor-pointer flex items-center gap-2 font-mono text-[11px] text-gray-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
+              <%= render Ui::IconComponent.new(name: "chevron-right", class: "text-[9px] transition-transform group-open:rotate-90") %>
+              <span class="text-zinc-900 dark:text-zinc-100"><%= unit %></span>
+              <span class="text-gray-500 dark:text-zinc-400">·</span>
+              <span><%= t("member.servers.show.journal_snapshot") %></span>
+            </summary>
+            <%# CYRA-564 — le righe catturate da journalctl sono a lunghezza non nota: stessa altezza
+                massima dell'output delle azioni operative, si scorre lì dentro. %>
+            <pre class="mt-2 ml-4 max-h-48 overflow-auto rounded-md bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-800 p-3 font-mono text-[10.5px] leading-relaxed text-gray-700 dark:text-zinc-300 whitespace-pre-wrap break-words"><%= Array(snapshot["lines"]).join("\n") %></pre>
+          </details>
+        <% end %>
+      </div>
+    <% end %>
+    <% if services.any? %>
+      <% ordered = services.sort_by { |service| [ service["state"] == "failed" ? 0 : 1, service["name"].to_s ] } %>
+      <details class="group border-t border-stone-100 dark:border-zinc-800" data-test="server-systemd-full">
+        <summary class="cursor-pointer px-5 py-3 flex items-center gap-2 text-[12px] font-medium text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
+          <%= render Ui::IconComponent.new(name: "chevron-right", class: "text-[9px] transition-transform group-open:rotate-90") %>
+          <%= t("member.servers.show.systemd_show_all", count: services.size) %>
+        </summary>
+        <%# CYRA-564 — quaranta unit aperte tutte insieme allungavano la pagina di un paio di
+            schermate: l'elenco completo scorre dentro il blocco che si è appena aperto. %>
+        <div class="px-5 pb-4 pt-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-1.5 max-h-[420px] overflow-y-auto"
+             data-test="server-systemd-full-list">
+          <% ordered.each do |service| %>
+            <% kind = server_systemd_kind(service) %>
+            <div class="flex items-center justify-between gap-2 min-w-0 <%= 'opacity-60' if kind == :idle %>"
+                 data-test="server-systemd-row" data-kind="<%= kind %>">
+              <span class="font-mono text-[11.5px] truncate <%= kind == :idle ? 'text-gray-400 dark:text-zinc-500' : 'text-zinc-900 dark:text-zinc-100' %>"><%= service["name"] %></span>
+              <span class="flex items-center gap-1.5 shrink-0">
+                <% if (note = server_systemd_note(service)) %>
+                  <span class="text-[10px] text-gray-400 dark:text-zinc-500" data-test="server-systemd-note"><%= note %></span>
+                <% end %>
+                <%= render Ui::BadgeComponent.new(label: service["state"], color: server_systemd_color(service["state"]), dot: true) %>
+              </span>
+            </div>
+          <% end %>
+        </div>
+      </details>
+    <% end %>
+  <% end %>
+</div>

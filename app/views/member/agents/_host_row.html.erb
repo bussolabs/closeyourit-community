@@ -1,0 +1,30 @@
+<%# locals: host: (required) — Agents::Host. Tutti i dati dalla riga host (active_runs jsonb incluso) → no N+1.
+    CYRA-924 — C78: a stale host is not a tinted row; the heartbeat cell says it in red. %>
+<% stale = agent_host_stale?(host) %>
+<%= render Ui::TableComponent::RowComponent.new(id: dom_id(host), href: member_agent_path(host), link_label: host.hostname,
+      test_id: "agent-host-row", data: { stale: stale }) do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <%= link_to member_agent_path(host), class: "block", data: { test: "agent-host-link-#{host.id}" } do %>
+      <span class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400"><%= host.hostname %></span>
+      <span class="block font-mono text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5 truncate max-w-[240px]"><%= host.platform %>/<%= host.arch %><% if host.automator_version.present? %> · v<%= host.automator_version %><% end %></span>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.agents.col_status")) do %>
+    <%= render Ui::BadgeComponent.new(label: agent_host_status_label(host), color: agent_host_status_color(host), dot: true, pulse: agent_host_status_pulse?(host)) %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.agents.col_activity")) do %>
+    <%# CYRA-450: mai vuota — il riepilogo ripiega su "In attesa di lavoro" quando non c'è lavoro dichiarato. %>
+    <span class="inline-flex items-center gap-1.5 text-zinc-900 dark:text-zinc-100">
+      <span class="font-mono"><%= agent_host_activity_summary(host) %></span>
+      <% if agent_host_stalled?(host) %><%= render Ui::IconComponent.new(name: "triangle-alert", label: t("member.agents.activity.stalled"), class: "text-[11px] text-amber-500 dark:text-amber-400") %><% end %>
+    </span>
+    <% if (stop_reason = agent_host_last_stop_reason(host)) %>
+      <span class="block text-[11.5px] text-amber-700 dark:text-amber-300 mt-0.5 truncate max-w-[320px]" title="<%= stop_reason %>" data-test="agent-host-last-stop"><%= t("member.agents.activity.last_stop", reason: stop_reason) %></span>
+    <% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.col_slots"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { "#{host.running}/#{host.slots}" } %>
+  <%# CYRA-450: da quanto è fermo, in rosso quando l'host è in allarme. %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.col_last_heartbeat"), align: :right, mono: true,
+        class: (stale ? "text-red-600 dark:text-red-400 font-semibold" : "text-gray-500 dark:text-zinc-400"), test_id: "agent-host-heartbeat",
+        title: (t("member.agents.heartbeat_never") if host.last_heartbeat_at.blank?))) { agent_host_time_ago(host.last_heartbeat_at) } %>
+<% end %>

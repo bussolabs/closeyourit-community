@@ -1,0 +1,65 @@
+<%# locals: card (Home::Approvals::Detail::Card), item (Home::Feed::Item — la riga di coda)
+
+    CYRA-657 — la decisione, una sola, con tutto quello che serve per prenderla.
+
+    NON ridisegna il contenuto: la fascia dei passaggi, il corpo e i pulsanti sono le stesse partial
+    che rendono la scheda a tutta pagina e la plancia. Due rese della stessa decisione che dicono
+    cose diverse è esattamente ciò che CYRA-630 ha appena finito di eliminare — qui si aggiungono
+    solo la colonna di sinistra e il blocco «non adesso».
+
+    Two columns while there is room, stacked below 900: the decision must not fall below the fold.
+    Project, machine and wait sit on one line above it, not in a left column. CYRA-884 %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-4 mb-5" data-test="decision-subject">
+  <div class="flex items-baseline flex-wrap gap-2.5">
+    <% if card.ticket? %>
+      <span class="font-mono text-[13px] font-semibold text-indigo-600 dark:text-indigo-400" data-test="decision-code"><%= card.ticket.code %></span>
+      <h2 class="font-display text-[18px] font-semibold text-zinc-900 dark:text-zinc-100 leading-snug text-balance"><%= card.ticket.title %></h2>
+    <% else %>
+      <h2 class="font-display text-[18px] font-semibold text-zinc-900 dark:text-zinc-100 leading-snug text-balance"><%= t("member.approvals.kinds.#{card.kind}") %></h2>
+    <% end %>
+  </div>
+
+  <%# Dove non c'è una lavorazione (una modifica ai segreti) la striscia non compare, e al suo posto
+      si dice PERCHÉ: uno spazio vuoto si legge come un dato mancante, non come un dato che non
+      esiste. `approval_pipeline` torna nil da sé, la regola sta in un posto solo. %>
+  <% if approval_pipeline(card).present? %>
+    <div class="mt-3">
+      <%= render "member/home/approvals/phase_strip", card: card %>
+    </div>
+  <% else %>
+    <p class="mt-2 text-[11.5px] text-gray-400 dark:text-zinc-500 max-w-[70ch]" data-test="decision-no-pipeline"><%= t(card.ticket? ? "member.review_fixes.ticket_no_pipeline" : "member.home.decision.no_pipeline") %></p>
+  <% end %>
+
+  <p class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-gray-500 dark:text-zinc-400" data-test="decision-strip">
+    <% if card.project %>
+      <%= link_to card.project.name, member_project_path(card.project),
+                  class: "font-semibold text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "decision-project" } %>
+    <% end %>
+    <% if item&.agent %>
+      <span class="font-mono [overflow-wrap:anywhere]" data-test="decision-machine"><%= item.agent.name %></span>
+    <% end %>
+    <% if item&.sort_at %>
+      <span class="inline-flex items-center gap-1 font-mono font-semibold text-amber-600 dark:text-amber-400" data-test="decision-waited"><%= render Ui::IconComponent.new(name: "clock", class: "text-[10px]") %><%= card_time(item.sort_at) %></span>
+    <% end %>
+  </p>
+</div>
+
+<%# Tasti a, r, s, d sulla scheda (CYRA-862). %>
+<div data-controller="decision-keys" data-keyboard-doc="<%= decision_keyboard_docs.to_json %>">
+<div class="grid gap-6 items-start grid-cols-1 min-[900px]:grid-cols-[minmax(0,1fr)_262px] min-[1140px]:grid-cols-[minmax(0,1fr)_284px] min-[1400px]:grid-cols-[minmax(0,1fr)_300px]"
+     data-test="decision-columns">
+  <%# Centro: ciò su cui si decide, per esteso. %>
+  <div class="min-w-0">
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <%= render "member/home/approvals/body", card: card, density: :compact %>
+    </div>
+  </div>
+
+  <%# Destra: la decisione, e sotto — staccati — i modi per non prenderla adesso. `return_to: "home"`
+      riporta qui dopo aver deciso, invece di scaricare sulla plancia chi non ci era mai andato. %>
+  <div class="flex flex-col gap-3 min-[900px]:sticky min-[900px]:top-6">
+    <%= render "member/home/approvals/decision_panel", card: card, state: nil, view: nil, return_to: "home", collapse_secondary: true %>
+    <%= render "home/not_now", card: card %>
+  </div>
+</div>
+</div>

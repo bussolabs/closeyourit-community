@@ -1,0 +1,164 @@
+---
+en:
+  member:
+    access_schema:
+      title: Effective permissions
+      hint: What they can actually do, per project. Unsaved changes are highlighted.
+      summary: "%{actions} actions across %{projects} projects"
+      new_tag: new
+      member_added: new member
+      member_removed: removed from team
+      no_project_access: No project access.
+      org_title: Organization-level permissions
+      org_none: No org permissions.
+      empty_projects:
+        one: 1 project with no access
+        other: "%{count} projects with no access"
+    roles:
+      title: Roles
+      help_title: "Sets of permissions to give to people and teams."
+      new: New role
+      new_title: New role
+      edit_title: Edit role
+      back: Back to roles
+      created: Role created.
+      updated: Role saved.
+      deleted: Role deleted.
+      search_placeholder: Search roles…
+      th_role: Role
+      th_permissions: Permissions
+      th_used_by: Used by
+      dangerous: sensitive
+      no_permissions: nothing beyond reading
+      show_title: What this role grants
+      show_subtitle: Read-only card. To change anything, use "Edit role".
+      show_link: Open the card
+      show_dangerous_note: Permissions marked sensitive destroy data, open confidential information, run commands on machines or widen the privileges of whoever receives them.
+      show_empty: This role grants no permission yet.
+      show_holders: Who holds it
+      th_areas: Areas
+      keys_count:
+        zero: 0 permissions
+        one: 1 permission
+        other: "%{count} permissions"
+      used_teams:
+        zero: 0 teams
+        one: 1 team
+        other: "%{count} teams"
+      used_members:
+        zero: 0 members
+        one: 1 member
+        other: "%{count} members"
+      count:
+        one: 1 role
+        other: "%{count} roles"
+      empty: No roles yet.
+      no_results_body:
+        zero: There are no roles to search yet.
+        one: "There is %{count} role, but it does not match what you searched for."
+        other: "There are %{count} roles, but none match what you searched for."
+      name: Name
+      color: Color
+      permissions: Permissions
+      selected_count: "%{selected} / %{total} selected"
+      legend: "project applies on linked projects · org applies organization-wide."
+      select_all: Select all
+      propagate_note: Saving updates every team and member that has this role, immediately.
+      delegates: delegates control
+      save: Save role
+      delete: Delete
+      cancel: Cancel
+      delete_confirm: "Delete the “%{name}” role? %{members} and %{teams} lose its permissions right away. This cannot be undone."
+      delete_dialog:
+        title: "Delete the %{name} role?"
+        body: "%{members} and %{teams} lose its permissions right away. This cannot be undone."
+    teams:
+      title: Teams
+      help_title: "Groups of people with their roles and projects."
+      new: New team
+      new_title: New team
+      edit_title: Edit team
+      back: Back to teams
+      created: Team created.
+      updated: Team saved.
+      deleted: Team deleted.
+      search_placeholder: Search teams…
+      th_team: Team
+      th_roles: Roles
+      th_scope: Scope
+      th_members: Members
+      count:
+        one: 1 team
+        other: "%{count} teams"
+      empty: No teams yet.
+      no_results_body:
+        zero: There are no teams to search yet.
+        one: "There is %{count} team, but it does not match what you searched for."
+        other: "There are %{count} teams, but none match what you searched for."
+      all_projects: All projects
+      no_roles: No roles
+      no_scope: No scope
+      name: Name
+      color: Color
+      default_assignee: Default ticket assignee
+      default_assignee_placeholder: None
+      default_assignee_hint: New tickets in the projects this team manages, with no explicit assignee, go to this person (the project takes precedence).
+      members: Members
+      roles: Roles
+      roles_note: Members get every permission in these roles, on the scope below.
+      manage_roles: Manage roles
+      scope_groups: Scope · Groups
+      scope_projects: Scope · Projects
+      group_note: A group covers all its projects — now and in the future.
+      project_note: Individual projects, on top of any groups above.
+      add_member: Add a member…
+      add_role: Add a role…
+      add_group: Add a group…
+      add_project: Add a project…
+      used_members:
+        zero: 0 members
+        one: 1 member
+        other: "%{count} members"
+      save: Save team
+      delete: Delete
+      delete_confirm: "Delete the “%{name}” team? %{members} lose the permissions that came from it right away. This cannot be undone."
+      delete_dialog:
+        title: "Delete the %{name} team?"
+        body: "%{members} lose the permissions that came from it right away. This cannot be undone."
+      cancel: Cancel
+    members:
+      access:
+        manage_title: Access & permissions
+        tabs:
+          effective: Effective permissions
+          access: Access
+          overrides: Exceptions
+        summary_title: Where the access comes from
+        summary_hint: This tab is read-only. To change anything, switch to “Access” or “Exceptions”.
+        summary_none: None
+        scope_title: Personal scope
+        scope_hint: Projects this member can see directly — added to anything their teams already grant.
+        direct_roles: Direct roles
+        direct_roles_hint: Roles assigned to this member directly, on top of any team they belong to.
+        add_role: Add a role…
+        secret_environments_title: Secret environments
+        secret_environments_hint: Which environments this person can see and change secrets on.
+        secret_environments_org_wide: Across the organization
+        secret_environments_org_wide_hint: Applies to every project. Leave empty for no limits.
+        secret_environments_all: All environments
+        secret_environments_per_project: Per-project exceptions
+        secret_environments_per_project_hint: "On a single project you can widen or narrow the list: what you pick here wins over the general one."
+        secret_environments_inherit: Same as above
+        secret_environments_no_projects: Assign a project to this person first to make an exception.
+        overrides_title: Permission exceptions
+        overrides_hint: Personal exceptions win over roles.
+        state_inherit: Inherit
+        state_allow: Allow
+        state_deny: Deny
+        origin_via_roles: via roles
+        origin_not_granted: not granted
+        origin_personal_allow: Personal · added
+        origin_personal_deny: Personal · blocked
+        team_count:
+          one: 1 team
+          other: "%{count} teams"

@@ -1,0 +1,32 @@
+it:
+  website:
+    skip_to_content: "Vai al contenuto"
+    status:
+      title: Stato
+      meta_description: "%{project} %{environment} — stato del servizio e SLA di uptime."
+      powered_by: Powered by CloseYourIt
+      headline:
+        operational: Tutti i sistemi operativi
+        down: Disservizio in corso
+        paused: Monitoraggio in pausa
+        unknown: Stato sconosciuto
+      updated: "Ultimo controllo %{time}"
+      ongoing_incident: Incidente in corso
+      started_ago: iniziato %{time} fa
+      sla: SLA di uptime
+      sla_1y: 1a
+      timeline: Uptime
+      range_sla: "%{range} · SLA"
+      timeline_summary: "Timeline uptime delle ultime %{range}: %{up} su, %{partial}, %{down} giù, %{empty} senza dati, su %{total} blocchi totali."
+      timeline_partial:
+        one: "%{count} parziale"
+        other: "%{count} parziali"
+      bucket:
+        no_data: Nessun dato
+        up: Su
+        partial: Parziale
+        down: Giù
+      incidents: Storico incidenti
+      incident_resolved: Risolto
+      incident_ongoing: In corso
+      no_incidents: Nessun incidente registrato.

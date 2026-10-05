@@ -1,0 +1,6 @@
+<%# Indicatore "sta scrivendo", transiente. data-account-id: il controller Stimulus nasconde l'eco
+    quando l'account che scrive è quello corrente, e lo pulisce dopo il timeout. %>
+<p data-test="chat-typing" data-chat-conversation-target="typing" data-account-id="<%= account.id %>"
+   class="animate-pulse text-xs text-zinc-400">
+  <%= t("member.chat.typing", name: account.name) %>
+</p>

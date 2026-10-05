@@ -1,0 +1,31 @@
+<div class="relative shrink-0" data-controller="coworker-mascot"
+     data-coworker-mascot-key-value="coworkers:mascot:<%= puck.organization_id %>:<%= puck.account_id %>:<%= puck.id %>"
+     data-coworker-mascot-saved-value="<%= t('member.coworkers.mascot.saved') %>"
+     data-coworker-mascot-unavailable-value="<%= t('member.coworkers.mascot.unavailable') %>"
+     data-action="coworker-mascot:change@window->coworker-mascot#sync storage@window->coworker-mascot#storage click@window->coworker-mascot#dismiss focusin@window->coworker-mascot#dismiss keydown.esc@window->coworker-mascot#close">
+  <details data-coworker-mascot-target="picker" data-action="toggle->coworker-mascot#toggle" data-test="coworkers-mascot-picker">
+    <summary class="flex items-center gap-3 list-none cursor-pointer rounded-md hover:bg-stone-100 dark:hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400 [&::-webkit-details-marker]:hidden"
+             aria-label="<%= t('member.coworkers.mascot.change', name: puck.name) %>" title="<%= t('member.coworkers.mascot.choose') %>" data-coworker-mascot-target="trigger" data-test="coworkers-mascot-trigger">
+      <%= image_tag "/coworkers/mascots/01.webp", alt: "", width: 64, height: 64, class: "size-16 object-contain", data: { coworker_mascot_target: "image" } %>
+      <span class="text-[13px] font-medium"><%= t("member.coworkers.mascot.choose") %></span>
+      <%= render Ui::IconComponent.new(name: "chevron-down", class: "size-4 text-gray-500 dark:text-zinc-400") %>
+    </summary>
+    <div class="mt-2" data-test="coworkers-mascot-options">
+      <div class="flex items-center justify-between gap-3 border-b border-stone-200 px-4 py-3 dark:border-zinc-700">
+        <h3 class="text-[14px] font-semibold"><%= t("member.coworkers.mascot.choose") %></h3>
+        <%= render Ui::ButtonComponent.new(label: t("member.coworkers.close"), icon: "x", icon_only: true, variant: :ghost, class: "min-h-11 min-w-11", data: { action: "coworker-mascot#close" }) %>
+      </div>
+      <div class="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[45dvh] overflow-y-auto p-3" role="group" aria-label="<%= t('member.coworkers.mascot.choose') %>">
+        <% (1..20).each do |number| %>
+          <% mascot = format("%02d", number) %>
+          <%= render Ui::ButtonComponent.new(variant: :secondary, class: "group relative h-auto! min-h-20 flex-col whitespace-normal! gap-1 px-1! py-2! aria-pressed:border-indigo-600 aria-pressed:bg-indigo-50 dark:aria-pressed:border-indigo-400 dark:aria-pressed:bg-indigo-500/15", aria: { pressed: number == 1 }, test_id: "coworkers-mascot-#{mascot}", data: { coworker_mascot_target: "option", action: "coworker-mascot#select", value: mascot }) do %>
+            <%= image_tag "/coworkers/mascots/#{mascot}.webp", alt: "", width: 56, height: 56, class: "size-14 object-contain", loading: "lazy" %>
+            <span class="text-[12px] leading-4"><%= t("member.coworkers.mascot.names.#{mascot}") %></span>
+            <span class="absolute right-1 top-1 hidden text-indigo-600 dark:text-indigo-300 group-aria-pressed:block"><%= render Ui::IconComponent.new(name: "check", class: "size-3") %></span>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </details>
+  <p class="mt-2 text-[12px] text-gray-600 dark:text-zinc-400" role="status" data-coworker-mascot-target="status"><%= t("member.coworkers.mascot.hint") %></p>
+</div>

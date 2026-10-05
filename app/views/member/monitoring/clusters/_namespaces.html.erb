@@ -1,0 +1,32 @@
+<%# locals: cluster:, namespaces: — namespaces and the project each one is linked to (choice A, CYAG-22). %>
+<% can_manage = can?("servers.manage") %>
+<%= render Ui::SectionComponent.new(title: t("member.clusters.namespaces.title"), body_class: nil, test_id: "cluster-namespaces") do |section| %>
+  <% section.with_subtitle { tag.span(t("member.clusters.namespaces.hint"), class: "text-[12px] text-gray-500 dark:text-zinc-400") } %>
+  <% if namespaces.empty? %>
+    <%= render Ui::EmptyNoteComponent.new(text: t("member.clusters.namespaces.empty"), inset: true, test_id: "cluster-namespaces-empty") %>
+  <% else %>
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("member.clusters.namespaces.title"))) do |table| %>
+      <% table.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.namespaces.col_namespace")) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.namespaces.col_project")) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.clusters.namespaces.link"), label_hidden: true, classes: "w-48", visible: can_manage) %>
+      <% end %>
+      <% namespaces.each do |namespace| %>
+        <%= render Ui::TableComponent::RowComponent.new(test_id: "cluster-namespace-#{namespace.id}") do %>
+          <%= render(Ui::TableComponent::CellComponent.new(header: true, mono: true)) { namespace.name } %>
+          <%= render Ui::TableComponent::CellComponent.new(label: t("member.clusters.namespaces.col_project")) do %>
+            <% if namespace.project %>
+              <%= link_to namespace.project.name, member_project_path(namespace.project), class: "text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" %>
+              <% if namespace.environment %><span class="text-gray-500 dark:text-zinc-400"> · <%= namespace.environment.label %></span><% end %>
+            <% else %>
+              <span class="text-gray-500 dark:text-zinc-400"><%= t("member.clusters.namespaces.unlinked") %></span>
+            <% end %>
+          <% end %>
+          <%= render Ui::TableComponent::CellComponent.new(actions: true, visible: can_manage) do %>
+            <%= render "member/monitoring/clusters/namespace_dialog", cluster: cluster, namespace: namespace %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

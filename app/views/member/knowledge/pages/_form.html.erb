@@ -1,0 +1,135 @@
+<%# locals: page, url, method %>
+<%# Form pagina KB: card unica full-width, griglia 2 col, body col-span-2 (regola form full-width).
+    Stimulus knowledge-template: kind → decision prefilla il body col template SOLO se vuoto. %>
+<%= form_with url: url, method: method, class: "space-y-6",
+      data: { test: "knowledge-form", controller: "knowledge-template",
+              knowledge_template_body_value: t("member.knowledge.form.decision_template") } do %>
+  <%= render Ui::PageHeaderComponent.new(title: (page.persisted? ? t("member.knowledge.form.edit_title") : t("member.knowledge.form.new_title")),
+        breadcrumb: (page.persisted? ?
+          [ { label: t("member.knowledge.title"), href: member_knowledge_pages_path },
+            { label: page.title, href: member_knowledge_page_path(page) },
+            { label: t("member.breadcrumb.edit") } ] :
+          [ { label: t("member.knowledge.title"), href: member_knowledge_pages_path },
+            { label: t("member.knowledge.form.new_title") } ])) do |header| %>
+    <% header.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.knowledge.form.cancel"), href: (page.persisted? ? member_knowledge_page_path(page) : member_knowledge_pages_path), variant: :secondary_muted, size: :sm) %>
+      <%= render Ui::ButtonComponent.new(label: t("member.knowledge.form.save"), type: "submit", icon: "save", test_id: "knowledge-form-submit", size: :sm) %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-764 — il revisore automatico ha rifiutato: l'elenco di cosa correggere sta sopra i
+      campi, prima di tutto, perché è l'unica cosa che chi ha appena premuto Salva deve leggere. %>
+  <%= render "member/knowledge/pages/review_violations", details: @errors if @errors&.dig(:violations).present? %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="md:col-span-2">
+        <%= render Ui::InputComponent.new(name: "title", label: t("member.knowledge.form.title"), required: true,
+              value: page.title, test_id: "knowledge-form-title",
+              error: @errors&.dig(:title)&.first) %>
+      </div>
+
+      <div>
+        <%# hidden: project_ids/group_ids viaggiano sempre, così deselezionare tutto rende la pagina
+            "generale" (org-wide, visibile solo a chi ha accesso pieno). %>
+        <input type="hidden" name="project_ids[]" value="">
+        <%= render Ui::SelectComponent.new(name: "project_ids", label: t("member.knowledge.form.projects"), multiple: true, summary: true,
+              options: @projects.map { |project| [ project.name, project.id ] },
+              selected: page.projects.map(&:id), placeholder: t("member.knowledge.form.projects_placeholder"),
+              test_id: "knowledge-form-projects",
+              error: @errors&.dig(:project)&.first) %>
+      </div>
+
+      <div>
+        <input type="hidden" name="group_ids[]" value="">
+        <%= render Ui::SelectComponent.new(name: "group_ids", label: t("member.knowledge.form.groups"), multiple: true, summary: true,
+              options: @groups.map { |group| [ group.name, group.id ] },
+              selected: page.groups.map(&:id), placeholder: t("member.knowledge.form.groups_placeholder"),
+              test_id: "knowledge-form-groups") %>
+      </div>
+
+      <div data-test="knowledge-form-kind">
+        <label class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.knowledge.form.kind") %></label>
+        <div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800">
+          <% ::Knowledge::Page.kinds.keys.each do |kind| %>
+            <label class="cursor-pointer">
+              <input type="radio" name="kind" value="<%= kind %>" class="peer sr-only"
+                     data-action="change->knowledge-template#kindChanged"
+                     <%= "checked" if page.kind == kind %>>
+              <span class="inline-flex items-center h-[30px] px-3.5 rounded-[5px] text-[12.5px] font-medium text-gray-500 dark:text-zinc-400 peer-checked:bg-zinc-900 dark:peer-checked:bg-zinc-100 peer-checked:text-white dark:peer-checked:text-zinc-900"
+                    data-test="knowledge-form-kind-<%= kind %>"><%= t("member.knowledge.kind.#{kind}") %></span>
+            </label>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Il contatore vive col campo (data-controller sul wrapper): avvisa prima che il tetto di
+          Knowledge::Constants::BODY_MAX_CHARS faccia rifiutare il salvataggio dal model.
+          Accanto, knowledge-links (CYRA-433): apre l'elenco dei titoli esistenti quando si scrive
+          `[[`, così il collegamento fra pagine si scopre scrivendo e non solo leggendo la guida. %>
+      <div class="md:col-span-2 relative" data-controller="char-counter knowledge-links"
+           data-char-counter-max-value="<%= ::Knowledge::Constants::BODY_MAX_CHARS %>"
+           data-char-counter-warn-ratio-value="<%= ::App::Constants::LENGTH_WARN_RATIO %>"
+           data-char-counter-unit-value="<%= t("shared.char_counter.unit") %>"
+           data-knowledge-links-url-value="<%= link_suggestions_member_knowledge_pages_path %>"
+           data-knowledge-links-exclude-id-value="<%= page.id %>">
+        <label for="body" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.knowledge.form.body") %><span class="text-red-500 dark:text-red-400 ml-0.5">*</span></label>
+        <%= text_area_tag "body", page.body, rows: 18,
+              data: { test: "knowledge-form-body", knowledge_template_target: "body",
+                      char_counter_target: "field", knowledge_links_target: "field",
+                      action: "input->char-counter#update input->knowledge-links#search keydown->knowledge-links#dismiss" },
+              class: "w-full px-3 py-2 rounded-md border #{@errors&.dig(:body)&.first ? "border-red-300 dark:border-red-500/50" : "border-stone-200 dark:border-zinc-800"} bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 font-mono leading-relaxed placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400",
+              placeholder: t("member.knowledge.form.body_placeholder") %>
+        <%# Elenco dei titoli suggeriti: sovrapposto al campo, popolato dal controller. %>
+        <div class="absolute z-10 right-0 left-0 hidden max-h-60 overflow-y-auto rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm"
+             data-knowledge-links-target="suggestions" data-test="knowledge-links-suggestions"></div>
+        <div class="mt-1 flex items-start justify-between gap-4">
+          <%# CYRA-434: il tetto è scritto qui, non lasciato scoprire dal contatore (che è JS) o dal
+              salvataggio rifiutato. La lettura della pagina non lo nomina più affatto. %>
+          <p class="text-[11.5px] text-gray-500 dark:text-zinc-400">
+            <%= t("member.knowledge.form.body_hint") %>
+            <span data-test="knowledge-form-body-limit"><%= t("member.knowledge.form.body_limit", max: ::Knowledge::Constants::BODY_MAX_CHARS) %></span>
+          </p>
+          <p class="shrink-0 font-mono text-[11.5px] text-gray-500 dark:text-zinc-400 tabular-nums"
+             data-char-counter-target="output" data-test="knowledge-form-body-counter"></p>
+        </div>
+        <%# La sintassi del collegamento sta dove si scrive, non solo nella guida (CYRA-433). %>
+        <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="knowledge-form-links-hint">
+          <%= t("member.knowledge.form.links_hint") %>
+          <code class="ml-0.5 rounded border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-1 py-0.5 font-mono text-[11px] text-zinc-700 dark:text-zinc-300">[[<%= t("member.knowledge.form.links_hint_example") %>]]</code>
+        </p>
+        <% if @errors&.dig(:body)&.first %>
+          <p class="mt-1 text-[11.5px] text-red-600 dark:text-red-400" data-test="knowledge-form-body-error"><%= @errors.dig(:body).first %></p>
+        <% end %>
+      </div>
+
+      <%# Sezione tecnica (tech_spec): opzionale, per valori e spiegazioni tecniche. %>
+      <div class="md:col-span-2" data-controller="char-counter"
+           data-char-counter-max-value="<%= ::Knowledge::Constants::TECH_SPEC_MAX_CHARS %>"
+           data-char-counter-warn-ratio-value="<%= ::App::Constants::LENGTH_WARN_RATIO %>"
+           data-char-counter-unit-value="<%= t("shared.char_counter.unit") %>">
+        <label for="tech_spec" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.knowledge.form.tech_spec") %></label>
+        <%= text_area_tag "tech_spec", page.tech_spec, rows: 10,
+              data: { test: "knowledge-form-tech-spec", char_counter_target: "field",
+                      action: "input->char-counter#update" },
+              class: "w-full px-3 py-2 rounded-md border #{@errors&.dig(:tech_spec)&.first ? "border-red-300 dark:border-red-500/50" : "border-stone-200 dark:border-zinc-800"} bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 font-mono leading-relaxed placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400",
+              placeholder: t("member.knowledge.form.tech_spec_placeholder") %>
+        <div class="mt-1 flex items-start justify-between gap-4">
+          <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.knowledge.form.tech_spec_hint") %></p>
+          <p class="shrink-0 font-mono text-[11.5px] text-gray-500 dark:text-zinc-400 tabular-nums"
+             data-char-counter-target="output" data-test="knowledge-form-tech-spec-counter"></p>
+        </div>
+        <% if @errors&.dig(:tech_spec)&.first %>
+          <p class="mt-1 text-[11.5px] text-red-600 dark:text-red-400" data-test="knowledge-form-tech-spec-error"><%= @errors.dig(:tech_spec).first %></p>
+        <% end %>
+      </div>
+
+      <%# Tag liberi (facet di filtro trasversali): testo separato da virgole, normalizzato dal model. %>
+      <div class="md:col-span-2">
+        <%= render Ui::InputComponent.new(name: "tags", label: t("member.knowledge.form.tags"),
+              value: page.tags.join(", "), test_id: "knowledge-form-tags",
+              hint: t("member.knowledge.form.tags_hint"), placeholder: "flutter, flutter-flavor") %>
+      </div>
+    </div>
+  </div>
+<% end %>

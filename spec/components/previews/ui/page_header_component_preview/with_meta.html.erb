@@ -1,0 +1,8 @@
+<%= render Ui::PageHeaderComponent.new(title: "Impostazioni organizzazione") do |h| %>
+  <% h.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: "Salva", type: "submit", form: "demo-form") %>
+  <% end %>
+  <% h.with_meta do %>
+    <span class="inline-flex items-center rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-gray-400 dark:text-zinc-500">Creato 12/03/2026 · 3 membri</span>
+  <% end %>
+<% end %>

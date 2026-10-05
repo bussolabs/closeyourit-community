@@ -1,0 +1,542 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "observations"
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "dirty": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "commit",
+        "dirty"
+      ]
+    },
+    "version": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ]
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      },
+      "required": [
+        "commit",
+        "version"
+      ]
+    },
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "origin": {
+          "enum": [
+            "local_candidate",
+            "registry"
+          ]
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "registry": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "url",
+            "sha256"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "origin",
+        "sha256",
+        "source"
+      ]
+    },
+    "tuple": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "integration": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$"
+        },
+        "signals": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "auth_mode": {
+          "enum": [
+            "bearer",
+            "public_dsn"
+          ]
+        },
+        "runtime": {
+          "$ref": "#/$defs/version"
+        },
+        "framework": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/version"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "platform": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "os": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "architecture": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "build_mode": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": [
+            "os",
+            "version",
+            "architecture",
+            "build_mode"
+          ]
+        },
+        "package": {
+          "$ref": "#/$defs/package"
+        },
+        "backend": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "commit": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "dirty": {
+              "type": "boolean"
+            },
+            "identity": {
+              "$ref": "#/$defs/identity"
+            },
+            "deployment": {
+              "enum": [
+                "local",
+                "staging",
+                "production"
+              ]
+            }
+          },
+          "required": [
+            "commit",
+            "dirty",
+            "identity",
+            "deployment"
+          ]
+        }
+      },
+      "required": [
+        "integration",
+        "signals",
+        "auth_mode",
+        "runtime",
+        "framework",
+        "platform",
+        "package",
+        "backend"
+      ]
+    },
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$"
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "fail",
+            "unsupported",
+            "not_run"
+          ]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      },
+      "required": [
+        "id",
+        "status",
+        "required"
+      ]
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$"
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "fail",
+            "unsupported",
+            "not_run"
+          ]
+        },
+        "capability": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      },
+      "required": [
+        "id",
+        "status",
+        "capability",
+        "evidence"
+      ]
+    },
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "minItems": 1
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "finished_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "exit_code": {
+          "type": "integer"
+        },
+        "lifecycle": {
+          "const": "managed_service"
+        },
+        "termination": {
+          "enum": [
+            "requested",
+            "unexpected"
+          ]
+        }
+      },
+      "required": [
+        "argv",
+        "started_at",
+        "finished_at",
+        "exit_code"
+      ],
+      "dependentRequired": {
+        "lifecycle": [
+          "termination"
+        ],
+        "termination": [
+          "lifecycle"
+        ]
+      }
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$"
+        },
+        "kind": {
+          "enum": [
+            "package",
+            "http",
+            "worker",
+            "persistence",
+            "readback",
+            "backend_identity",
+            "registry",
+            "diagnostic"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "sanitized": {
+          "const": true
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "path",
+        "sha256",
+        "sanitized"
+      ]
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$"
+        },
+        "kind": {
+          "enum": [
+            "package",
+            "http",
+            "worker",
+            "persistence",
+            "readback",
+            "backend_identity",
+            "registry",
+            "diagnostic"
+          ]
+        },
+        "observed": {
+          "type": "boolean"
+        },
+        "sanitized": {
+          "const": true
+        },
+        "assertions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              },
+              "passed": {
+                "type": "boolean"
+              },
+              "scenario_id": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$"
+              }
+            },
+            "required": [
+              "name",
+              "passed"
+            ]
+          },
+          "minItems": 1
+        },
+        "details": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "run_id",
+        "kind",
+        "observed",
+        "sanitized",
+        "assertions",
+        "details"
+      ]
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "observations": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "run_id",
+          "profile",
+          "finished_at",
+          "claim",
+          "tuple",
+          "capabilities",
+          "limitations",
+          "manifest_sha256",
+          "ticket"
+        ],
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$"
+          },
+          "profile": {
+            "enum": [
+              "general-v1",
+              "sentry-errors-v1"
+            ]
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "claim": {
+            "enum": [
+              "implemented",
+              "verified",
+              "released"
+            ]
+          },
+          "tuple": {
+            "$ref": "#/$defs/tuple"
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/capability"
+            },
+            "minItems": 1
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "minItems": 0
+          },
+          "manifest_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "ticket": {
+            "type": "string",
+            "pattern": "^CYRA-[1-9][0-9]*$"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+<div data-controller="clipboard" data-clipboard-copied-value="<%= t('member.installation.copied') %>" data-clipboard-error-value="<%= t('member.installation.copy_error') %>" class="space-y-2 min-w-0">
+  <div data-clipboard-target="source"><%= render Ui::MarkdownComponent.new(text: "```#{language}\n#{code}\n```", class: "min-w-0") %></div>
+  <%= render Ui::ButtonComponent.new(label: t("member.installation.copy"), variant: :secondary_muted, size: :sm, icon: "copy", data: {action: "clipboard#copy", clipboard_target: "label"}) %>
+</div>

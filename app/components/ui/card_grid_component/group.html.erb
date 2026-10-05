@@ -1,0 +1,23 @@
+<%= tag.section(data: { test: @test_id }) do %>
+  <% if @title.present? %>
+    <div class="flex items-center gap-2.5 border-b border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-4 py-2.5">
+      <%= mark %>
+      <%# Texts of different sizes share one baseline, so they read as one line (CYRA-883). %>
+      <div class="flex items-baseline gap-2.5 min-w-0">
+        <h2 class="font-display text-[14px] font-semibold <%= @muted ? "text-gray-500 dark:text-zinc-400" : "text-zinc-900 dark:text-zinc-100" %>">
+          <% if @href %>
+            <%= link_to @title, @href, class: "hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline underline-offset-2", data: { test: @title_test_id } %>
+          <% else %>
+            <%= @title %>
+          <% end %>
+        </h2>
+        <% if @count_label %>
+          <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= @count_label %></span>
+        <% end %>
+        <%= actions %>
+      </div>
+    </div>
+  <% end %>
+  <%# D25 — cells joined by hairlines: each card draws its right and bottom edge, the wrapper hides the outer ones. %>
+  <div class="overflow-hidden"><div class="<%= GRID %>"><%= content %></div></div>
+<% end %>

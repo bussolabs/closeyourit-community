@@ -1,0 +1,113 @@
+en:
+  member:
+    nav:
+      logs: Logs
+    monitoring:
+      logs:
+        facets:
+          title: "Fields in the result"
+          window: "On the most recent entries"
+          remove: "Remove"
+        search_hint: "Searches the text inside the message, or paste a request id."
+        title: Logs
+        help_title: "Logs from every app, to filter and link to errors and tickets."
+        empty: No logs yet
+        empty_body: "Logs from your apps show up here. Send them with the closeyourit-ruby gem."
+        no_match: No logs match these filters.
+        no_match_trace: "No log for this request: it may never have been sent, or it may have expired. The link stays valid: if the logs arrive, you will find them here."
+        no_match_level: "If you filtered by level: programs only send the levels they are configured for, so a level they never send stays empty forever. The minimum level is set in the SDK."
+        clear_filters: Clear all filters
+        open_guide: Open the logs guide
+        retention_note:
+          single:
+            one: "Logs are kept for 1 day; older ones are removed automatically."
+            other: "Logs are kept for %{count} days; older ones are removed automatically."
+          range: "Logs are kept from %{min} to %{max} days (varies by project); older ones are removed automatically."
+        count:
+          one: "%{count} log"
+          other: "%{count} logs"
+        search_placeholder: Search messages…
+        filter_level: Level
+        filter_environment: Environment
+        filter_project: Project
+        col_when: When
+        col_level: Level
+        col_project: Project
+        col_message: Message
+        col_logger: Logger
+        link_created: Log linked.
+        link_removed: Link removed.
+        link_failed: Could not link this log.
+        promote: Open a ticket
+        promoted: "Ticket %{code} opened from this message."
+        promote_reused: "This message had already become ticket %{code}: linked it to that one instead of opening another."
+        promote_failed: Could not open a ticket from this message.
+        not_promoted: Not promoted yet
+        count_of: "%{filtered} of %{total}"
+        count_of_title: "The first number matches the filters and the period on screen; the second is everything kept."
+        chart_title: How many messages, and when
+        chart_window: "%{from} → %{to}"
+        chart_reset: Back to the whole period
+        chart_bucket: "%{count} messages, %{alarming} of them alarming"
+        chart_bucket_aria: "%{time}: %{count} messages"
+        chart_summary: "Message volume over time. The tallest block holds %{count}."
+        # CYRA-570: not a single message in the period — say it, don't draw empty blocks.
+        chart_empty: "No messages in this period."
+        group_by_message: Similar message
+        group_by_none: None
+        group_by_none_hint: one list
+        group_seen: "First seen %{first} · last %{last}"
+        group_empty: No messages to group with these filters.
+        group_drilldown: You are looking at the single entries of one message.
+        # CYRA-579: the single-request filter comes from an error page and was nowhere to be seen.
+        trace_filter: You are looking at the logs of a single request.
+        group_ungrouped: "%{count} older entries have no grouping and stay out of this view."
+        show:
+          ticket: Ticket
+          link_errors_title: "Errors"
+          link_tickets_title: "Tickets"
+          link_placeholder_error: "Search an error by title…"
+          link_placeholder_ticket: "Search a ticket by code or title…"
+          back: Logs
+          message: Message
+          attributes: Attributes
+          no_attributes: No structured attributes.
+          context: Context
+          environment: Environment
+          release: Release
+          logger: Logger
+          project: Project
+          level: Level
+          occurred: Occurred
+          request_title: This request
+          request_body: Other logs from the same request.
+          request_none: No other logs for this request.
+          request_errors: Errors of this request
+          request_count_logs:
+            one: "%{count} log"
+            other: "%{count} logs"
+          request_count_errors:
+            one: "%{count} error"
+            other: "%{count} errors"
+          request_extracted: Identifier recognized in the message
+          no_trace: "This message carries no request identifier (trace id). Send it as the log's trace id to link it to the errors and other messages of the same request. Standard messages from Rails and background jobs are recognized automatically."
+          links_title: Linked to
+          links_empty: Not linked to anything yet.
+          link_add: Link to error/ticket
+          link_placeholder: Pick an error or ticket…
+          link_submit: Link
+          link_remove: Remove
+          linked_error: "Error"
+          linked_ticket: "Ticket"
+        in_error_title: Logs of this request
+        in_error_body: Logs emitted during the same request as this error.
+        in_error_none: "No log kept for this request: it may never have been sent, or it may have expired."
+        in_error_trace: "Trace"
+        in_error_no_trace: "This occurrence carries no request id: without it, logs cannot be linked. The SDKs add it when tracing is on."
+        in_error_count:
+          one: "%{count} related log"
+          other: "%{count} related logs"
+        in_error_view_all: View all logs of this request
+        linked:
+          title: Linked logs
+          empty: No logs linked manually.

@@ -1,0 +1,27 @@
+<%# locals: (name:, title:, subtitle:, sections:) %>
+<%# CYRA-911 — an area framed like Administration: a list of its pages on the left, the page on the right.
+    On narrow screens the list becomes a row above the page that scrolls sideways. `sections` is
+    [[key, heading, items]]; each item answers label, path, icon, active and test. %>
+<div class="lg:flex lg:h-full md:-m-px" data-test="<%= name %>-shell">
+  <aside class="shrink-0 bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 lg:w-60 lg:border-b-0 lg:border-r lg:overflow-y-auto scrollbar-none"
+         data-controller="ui--keep-scroll" data-ui--keep-scroll-key-value="<%= name %>"
+         data-action="scroll->ui--keep-scroll#save">
+    <div class="hidden lg:block px-5 pt-5 pb-3">
+      <p class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= title %></p>
+      <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= subtitle %></p>
+    </div>
+    <nav aria-label="<%= title %>" data-test="<%= name %>-nav"
+         class="flex gap-1.5 overflow-x-auto scrollbar-none px-4 py-3 lg:flex-col lg:gap-4 lg:px-3 lg:pt-0 lg:pb-5">
+      <% sections.each do |key, heading, items| %>
+        <div class="flex shrink-0 gap-1.5 lg:flex-col lg:gap-0.5" data-test="<%= name %>-nav-section-<%= key %>">
+          <p class="hidden lg:block px-3 pb-1.5 font-mono uppercase text-[10.5px] font-medium tracking-[1.2px] text-gray-600 dark:text-zinc-400"><%= heading %></p>
+          <% items.each do |item| %>
+            <%= render Ui::NavLinkComponent.new(label: item.label, path: item.path, icon: item.icon,
+                  active: item.active, test_id: item.test, class: "shrink-0 whitespace-nowrap") %>
+          <% end %>
+        </div>
+      <% end %>
+    </nav>
+  </aside>
+  <div data-panel-edge class="min-w-0 lg:flex-1 lg:overflow-y-auto lg:overflow-x-hidden md:[&>.p-7]:max-w-none md:[&>.p-7]:p-0 lg:[&>.p-7]:-ml-px"><%= yield %></div>
+</div>

@@ -1,0 +1,3 @@
+<%= render Ui::ButtonComponent.new(label: t("member.coworkers.new_puck"), variant: :secondary,
+      class: local_assigns.fetch(:button_class, "min-h-11 md:min-h-0"), test_id: "coworkers-new-puck",
+      data: { controller: "ui--dialog", action: "ui--dialog#open", ui__dialog_dialog_param: "coworker-new" }) %>

@@ -1,0 +1,151 @@
+en:
+  member:
+    assistant:
+      errors:
+        blank: "Write what you'd like to do first."
+      panel:
+        not_configured:
+          title: "Assistant not connected"
+        open: "Open the assistant"
+        title: "Assistant"
+        new: "New conversation"
+        history: "Conversations"
+        close: "Close"
+        placeholder: "Write what you'd like to do…"
+        send: "Send"
+        greeting: "Hi! Tell me what you'd like to do and I'll point you to the right tool."
+        examples_lead: "For example:"
+        capability: "I point you to the right page and explain in plain words how to use it."
+        disclaimer: "It searches, explains and prepares tickets, todos and ideas. Nothing is created until you press Confirm."
+        note: "It searches, explains and prepares tickets, todos and ideas: nothing happens until you confirm."
+        untitled: "Conversation"
+        empty_history: "No conversations yet."
+        empty_body: "The assistant points you to the right page for what you want to do and explains how to use it."
+        empty_example: "For example: “How do I give a colleague access?”"
+        not_connected: "The assistant doesn't run because your organization hasn't connected the service behind it yet (%{service}). An organization admin can connect it from Integrations."
+        failed:
+          unavailable: "The assistant isn't available right now. Please try again shortly."
+          not_connected: "The assistant won't run until your organization connects the service behind it. An organization admin can connect it from Integrations."
+          no_answer: "I couldn't answer that one. Try rephrasing your question."
+          guides: "See all the guides"
+          load: "We couldn't open the assistant."
+          retry: "Try again"
+        compose_hint: "Enter to send · Shift+Enter for a new line"
+        all_conversations: "All conversations"
+        project: "About %{name}"
+        project_clear: "Ask about all projects"
+        project_greeting: "Ask me anything about %{name}: I only look at this project here."
+        project_suggestions:
+          - "How is this project doing?"
+          - "Which errors are open?"
+          - "What is slow?"
+          - "What is the latest release?"
+        suggestions:
+          - "How do I open a ticket?"
+          - "Where do I see errors?"
+          - "How do I give a teammate access?"
+          - "Who can do what?"
+      list:
+        subtitle: "Your questions to the assistant: it points you to the right page and explains how to use it."
+        retention: "A conversation is deleted %{days} days after its last message."
+        messages:
+          one: "1 message"
+          other: "%{count} messages"
+        last_activity: "%{time} ago"
+        from_terminal: "From the terminal"
+        search_placeholder: "Search conversations…"
+        search_empty: "No conversations found."
+      catalog:
+        tickets:
+          label: "Tickets"
+          description: "Report and track bugs and tasks for your projects."
+        ideas:
+          label: "Ideas"
+          description: "Propose, vote and discuss ideas, then turn them into tickets."
+        knowledge:
+          label: "Knowledge base"
+          description: "Write and search project notes, decisions and guides."
+        workload:
+          label: "Workload"
+          description: "Track non-development activities like meetings and materials."
+        todos:
+          label: "To-dos"
+          description: "Keep private personal to-do lists, optionally shared with a teammate."
+        projects:
+          label: "Projects"
+          description: "Create and manage your projects and their settings."
+        errors:
+          label: "Errors"
+          description: "See and triage the errors your apps report."
+        performance:
+          label: "Performance"
+          description: "Find slow queries and slow methods in your apps."
+        logs:
+          label: "Logs"
+          description: "Browse the log stream from all your apps."
+        uptime:
+          label: "Uptime"
+          description: "Check whether your sites and services are up."
+        crons:
+          label: "Scheduled jobs"
+          description: "Make sure your scheduled jobs run on time."
+        analytics:
+          label: "Web analytics"
+          description: "See web traffic and visitors for your sites."
+        personal_variables:
+          label: "Personal variables"
+          description: "Store your personal environment variables, encrypted."
+        personal_files:
+          label: "Personal secret files"
+          description: "Store your personal secret files, encrypted."
+        project_secrets:
+          label: "Project secrets"
+          description: "Manage the encrypted secrets of a project."
+        guides:
+          label: "Guides"
+          description: "Read step-by-step guides on how features work."
+        changelog:
+          label: "What's new"
+          description: "See what changed recently in the product."
+        alerts:
+          label: "Alerts"
+          description: "Set up rules that notify you when something goes wrong."
+        servers:
+          label: "Servers"
+          description: "Monitor the health of your servers."
+        agents:
+          label: "Automation agents"
+          description: "Set up automation agents that work on tickets."
+        members:
+          label: "Members"
+          description: "Invite people and manage who is in the organization."
+        service_accounts:
+          label: "Service accounts"
+          description: "Create non-human accounts for AI agents to use."
+        teams:
+          label: "Teams"
+          description: "Group people into teams and give them access."
+        roles:
+          label: "Roles"
+          description: "Define roles that bundle permissions together."
+        platforms:
+          label: "Platforms"
+          description: "Manage the platforms (devices and systems) your projects target."
+        environments:
+          label: "Environments"
+          description: "Manage environments like production and staging."
+        organization:
+          label: "Organization settings"
+          description: "Change your organization's settings."
+        shared_variables:
+          label: "Organization variables"
+          description: "Manage the shared environment variables of the organization."
+        shared_files:
+          label: "Organization secret files"
+          description: "Manage the shared secret files of the organization."
+        activity:
+          label: "Activity log"
+          description: "See who did what and when: work, tickets, permissions and the vault in one list."
+        vault_audit:
+          label: "Vault activity"
+          description: "See who read or changed secrets."

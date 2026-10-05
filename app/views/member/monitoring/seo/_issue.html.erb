@@ -1,0 +1,24 @@
+<%# locals:
+      issue: (required) — Seo::Issue con :page e site→project caricati
+      show_project: (optional, default true) — falso dentro la scheda di UN sito, dove il progetto è
+        lo stesso su ogni riga: una colonna con lo stesso valore ovunque occupa spazio e non dice
+        niente (CYRA-536).
+    Riga dell'elenco rilievi. L'indirizzo è in monospace perché è un identificatore da leggere
+    carattere per carattere, non prosa. %>
+<% show_project = local_assigns.fetch(:show_project, true) %>
+<%= render Ui::TableComponent::RowComponent.new(href: member_monitoring_seo_path(issue), link_label: issue.label, id: dom_id(issue), test_id: "seo-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <%= link_to member_monitoring_seo_path(issue), class: "text-[12.5px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "seo-link-#{issue.id}" } do %><%= issue.label %><% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.seo.columns.url"), mono: true, class: "text-[11px] text-gray-500 dark:text-zinc-400")) { truncate(issue.page&.display_url || t("member.monitoring.seo.whole_site"), length: 48) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.seo.columns.severity"))) { render Ui::BadgeComponent.new(label: t("member.monitoring.seo.severity.#{issue.severity}"), color: seo_severity_color(issue.severity), dot: true) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.seo.columns.area"), class: "text-[11px] text-gray-500 dark:text-zinc-400")) { seo_area_label(issue.area) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.seo.columns.project"), mono: true, visible: show_project, class: "text-[11px] text-gray-500 dark:text-zinc-400")) { issue.site.project.key } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.seo.columns.last_seen")) do %>
+    <% if issue.status_open? %>
+      <span class="text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.seo_sites.checked_ago", duration: time_ago_in_words(issue.last_seen_at)) %></span>
+    <% else %>
+      <%= render Ui::BadgeComponent.new(label: t("member.monitoring.seo.status.#{issue.status}"), color: :gray) %>
+    <% end %>
+  <% end %>
+<% end %>

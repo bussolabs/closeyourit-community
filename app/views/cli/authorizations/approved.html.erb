@@ -1,0 +1,10 @@
+<% content_for :title, t("cli.authorize.approved_title") %>
+
+<div class="rounded-lg border border-stone-200 bg-white p-6 text-center" data-test="cli-authorize-approved">
+  <div class="mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-green-50 text-green-600"><%= render Ui::IconComponent.new(name: "circle-check", class: "text-[15px]") %></div>
+  <h1 class="font-display text-[16px] font-semibold text-zinc-900"><%= t("cli.authorize.approved_title") %></h1>
+  <p class="mt-1.5 text-[13px] leading-relaxed text-zinc-600"><%= t("cli.authorize.approved_lead", organization: @organization.name) %></p>
+  <%# CYRA-717: la durata si legge qui, non solo nel terminale — chi autorizza sta guardando questa
+      pagina, e un accesso a termine di cui non si sa la scadenza è un accesso che sembra perpetuo. %>
+  <p class="mt-2 text-[12px] text-gray-500" data-test="cli-authorize-expiry"><%= t("cli.authorize.approved_expiry", days: Accounts::Constants::API_TOKEN_DEFAULT_LIFETIME_DAYS) %></p>
+</div>

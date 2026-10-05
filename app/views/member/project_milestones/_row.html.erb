@@ -1,0 +1,41 @@
+<%# locals: (milestone:, progress:, can_manage:, hidden: false) %>
+<%= render Ui::TableComponent::RowComponent.new(href: member_project_milestone_path(milestone.project, milestone), link_label: milestone.label,
+      faded: !milestone.active?, group: ("inactive" if hidden), hidden: hidden, test_id: "milestone-row-#{milestone.id}") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <span class="inline-flex items-center gap-2">
+      <span class="w-2.5 h-2.5 rounded-full <%= Ui::Colors.swatch(milestone.color) %>"></span>
+      <%= link_to milestone.label, member_project_milestone_path(milestone.project, milestone), class: "text-[13px] font-semibold #{milestone.active? ? 'text-zinc-900 dark:text-zinc-100' : 'text-gray-500 dark:text-zinc-400'} hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "milestone-link-#{milestone.id}" } %>
+    </span>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.milestones.col_code"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { milestone.code } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.milestones.col_due"))) { render "member/project_milestones/due", milestone: milestone } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.milestones.col_progress")) do %>
+    <div class="flex items-center gap-2.5">
+      <div class="flex-1 min-w-12 h-1.5 rounded-full bg-stone-200 dark:bg-zinc-700 overflow-hidden"><div class="h-full rounded-full bg-emerald-500" style="width: <%= progress[:percent] %>%"></div></div>
+      <span class="font-mono text-[11px] <%= progress[:total_count].zero? ? 'text-gray-500 dark:text-zinc-400' : 'text-zinc-600 dark:text-zinc-400' %> w-9 text-right shrink-0"><%= progress[:percent] %>%</span>
+      <% if progress[:total_count].positive? %>
+        <span class="text-[11px] text-gray-500 dark:text-zinc-400 whitespace-nowrap shrink-0" data-test="milestone-progress-count-<%= milestone.id %>"><%= t("member.milestones.progress_count", done: progress[:done_count], total: progress[:total_count]) %></span>
+      <% end %>
+    </div>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.milestones.col_status")) do %>
+    <% if milestone.active? %>
+      <span class="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-emerald-600 dark:text-emerald-400 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><%= t("member.milestones.status_active") %></span>
+    <% else %>
+      <span class="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-gray-500 dark:text-zinc-400 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-zinc-600"></span><%= t("member.milestones.status_inactive") %></span>
+    <% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.milestones.col_tickets"), align: :right, mono: true, class: progress[:total_count].zero? ? "text-gray-500 dark:text-zinc-400" : "text-zinc-900 dark:text-zinc-100")) { progress[:total_count].to_s } %>
+  <%= render Ui::TableComponent::CellComponent.new(actions: true, visible: can_manage) do %>
+    <%= render Ui::ConfirmDialogComponent.new(title: t("member.milestones.delete_dialog.title", label: milestone.label),
+          url: member_project_milestone_path(milestone.project, milestone), confirm_label: t("member.milestones.delete"),
+          test_id: "milestone-delete-dialog-#{milestone.id}") do |dialog| %>
+      <% dialog.with_body { t("member.milestones.delete_dialog.body") } %>
+      <%= render Ui::RowMenuComponent.new(test_id: "milestone-menu-#{milestone.id}") do %>
+        <%= link_to edit_member_project_milestone_path(milestone.project, milestone), class: Ui::RowMenuComponent.item_class, data: { test: "milestone-edit-#{milestone.id}" } do %><%= render Ui::IconComponent.new(name: "pen", class: "w-[1.25em] text-gray-400 dark:text-zinc-500 text-[12px]") %><%= t("member.milestones.edit") %><% end %>
+        <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+        <%= dialog.menu_trigger(label: t("member.milestones.delete"), icon: "trash", test_id: "milestone-delete-#{milestone.id}") %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

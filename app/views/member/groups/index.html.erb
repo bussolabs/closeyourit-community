@@ -1,0 +1,82 @@
+<% content_for :title, t("member.groups.title") %>
+<% can_manage = can?("project_groups.manage") %>
+
+<div class="p-7 space-y-6" data-test="member-groups">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.groups.title"),
+        subtitle: t("member.groups.help_title"),
+        breadcrumb: [ { label: t("member.projects.title"), href: member_projects_path }, { label: t("member.groups.title") } ],
+        test_id: "groups-header",
+        counts_test_id: "groups-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.groups", count: @pagination.total), value: @pagination.total, test_id: "groups-count-groups") %>
+    <% end %>
+    <% if can_manage %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.groups.new"), href: new_member_group_path, variant: :primary, size: :sm, icon: "plus", test_id: "groups-new") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if @groups.empty? && params[:q].blank? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.groups.empty"), body: t("member.groups.empty_body"),
+          icon: "layers", framed: true, test_id: "groups-empty") do |empty| %>
+      <% if can_manage %>
+        <% empty.with_action do %>
+          <%= render Ui::ButtonComponent.new(label: t("member.groups.new"), href: new_member_group_path, variant: :primary, size: :sm, icon: "plus", test_id: "groups-empty-new") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div data-test="groups-table">
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+        <%= render(Ui::TableToolbarComponent.new(framed: true,
+              url: member_groups_path, query: params[:q],
+              search_placeholder: t("member.groups.search_placeholder"),
+              search_test_id: "groups-search", test_id: "groups-toolbar")) do |toolbar| %>
+          <% toolbar.with_views do %>
+            <%= render Ui::SavedViewsComponent.new(resource_type: "groups", views: @saved_views,
+                  index_helper: :member_groups_path, current_filters: params) %>
+          <% end %>
+        <% end %>
+        <% if @groups.empty? %>
+          <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_groups_path,
+                icon: "layers", test_id: "groups-no-results", reset_test_id: "groups-reset-search") %>
+        <% else %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.groups.title"))) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.groups.col_group"), sort: "group") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.groups.col_projects"), sort: "projects", initial: :desc, align: :right, classes: "w-32") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: tag.span(t("member.groups.edit"), class: "sr-only"), classes: "w-10", visible: can_manage) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+          <% end %>
+          <% @groups.each do |group| %>
+            <%= render Ui::TableComponent::RowComponent.new(href: member_group_path(group), link_label: group.name, test_id: "group-row-#{group.id}") do %>
+              <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+                <%= link_to member_group_path(group), class: "flex items-center gap-2.5", data: { test: "group-row-link-#{group.id}" } do %>
+                  <%= render Ui::EntityMarkComponent.new(record: group) %>
+                  <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= group.name %></span>
+                <% end %>
+              <% end %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("member.groups.col_projects"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { @project_counts[group.id].to_i.to_s } %>
+              <%= render Ui::TableComponent::CellComponent.new(actions: true, visible: can_manage) do %>
+                <%= render Ui::ConfirmDialogComponent.new(title: t("member.groups.delete_dialog.title", name: group.name),
+                      url: member_group_path(group), confirm_label: t("member.groups.delete"),
+                      test_id: "group-delete-dialog-#{group.id}") do |dialog| %>
+                  <% dialog.with_body { t("member.groups.delete_dialog.body") } %>
+                  <%= render(Ui::RowMenuComponent.new(test_id: "group-row-menu-#{group.id}", aria_label: t("member.groups.row_menu_label", name: group.name))) do %>
+                    <%= link_to edit_member_group_path(group), class: Ui::RowMenuComponent.item_class, data: { test: "group-row-edit-#{group.id}" } do %><%= render Ui::IconComponent.new(name: "pen", class: "w-[1.25em] text-gray-400 dark:text-zinc-500 text-[12px]") %><%= t("member.groups.edit") %><% end %>
+                    <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+                    <%= dialog.menu_trigger(label: t("member.groups.delete"), icon: "trash", test_id: "group-row-delete-#{group.id}") %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+        <% end %>
+        <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "groups-pagination")) %>
+      </div>
+    </div>
+  <% end %>
+</div>

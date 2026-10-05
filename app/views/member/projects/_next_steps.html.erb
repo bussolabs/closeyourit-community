@@ -1,0 +1,24 @@
+<%# locals: (next_steps:, project:) %>
+<%# Floats over the bottom of the frame, never loose in the content. Closing it hides these steps for
+    this project only: the key names them, so a new step brings the notice back. Lifted: the audit strip
+    with View history sits on the bottom of the frame. %>
+<% content_for :floating_notice do %>
+  <%= render Ui::FloatingNoticeComponent.new(key: "project_next_steps:#{project.id}:#{next_steps.pluck(:key).sort.join(',')}",
+                                             title: t("member.projects.next_steps.title"), lifted: true,
+                                             test_id: "project-next-steps") do %>
+    <ul class="mt-1 divide-y divide-indigo-100 dark:divide-indigo-500/20">
+      <% next_steps.each do |step| %>
+        <li class="py-2 flex items-center justify-between gap-3" data-test="project-next-step-<%= step[:key] %>">
+          <span class="min-w-0 text-zinc-900 dark:text-zinc-100"><%= step[:label] %></span>
+          <% if step[:method] == :post %>
+            <%= render Ui::ButtonComponent.new(label: step[:cta], href: step[:href], method: :post, variant: :primary,
+                  size: :sm, icon: step[:icon], confirm: step[:confirm], test_id: "project-next-step-cta-#{step[:key]}") %>
+          <% else %>
+            <%= render Ui::ButtonComponent.new(label: step[:cta], href: step[:href], variant: :secondary_muted,
+                  size: :sm, icon: step[:icon], test_id: "project-next-step-cta-#{step[:key]}") %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>

@@ -1,0 +1,34 @@
+<%# locals: environment, capability_link, cap
+    Singolo controllo tri-state (Eredita/On/Off) di UNA capability [servers|uptime|secrets|approval] di
+    un environment DICHIARATO (CYRA-63, estratto dal vecchio _environment_capabilities per le celle
+    della tab Environments; capability "approval" aggiunta in CYRA-138 Fase 4 pezzo C1a). "Eredita" =
+    override nil (segue il default dell'ambiente); On/Off = override esplicito. Va reso dentro un
+    elemento con data-controller="environment-capability" e data-environment-capability-url-value (lo
+    Stimulus environment-capability persiste il PATCH).
+    Colonna via CAPABILITY_COLUMNS (non "#{cap}_enabled" per interpolazione): "approval" è l'eccezione,
+    la sua colonna si chiama "approval_required" — stessa mappa usata da .capability_overrides, un solo
+    posto che sa come si chiama la colonna di ciascuna capability. %>
+<% column = Connections::ProjectEnvironment::CAPABILITY_COLUMNS.fetch(cap) %>
+<% raw = capability_link[column] %>
+<% current = raw.nil? ? "inherit" : (raw ? "on" : "off") %>
+<%# CYRA-883 — Inherit names the value it inherits; Servers and Uptime reload the page after a change,
+    since the server picker and the monitor link depend on them. %>
+<% inherited = capability_link.environment.public_send("#{column}?") %>
+<% inherit_label = "#{t('member.projects.show.capability_inherit')} · #{t(inherited ? 'member.projects.show.capability_on' : 'member.projects.show.capability_off')}" %>
+<% reload = %w[servers uptime].include?(cap) ? "true" : nil %>
+<div class="inline-flex" data-capability-group data-test="env-cap-<%= environment.id %>-<%= cap %>">
+  <div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 overflow-hidden">
+    <% [ %w[inherit capability_inherit], %w[on capability_on], %w[off capability_off] ].each do |value, key| %>
+      <button type="button"
+              data-action="environment-capability#set"
+              data-environment-capability-capability-param="<%= cap %>"
+              data-environment-capability-value-param="<%= value %>"
+              <% if reload %>data-environment-capability-reload-param="<%= reload %>"<% end %>
+              data-test="env-cap-<%= environment.id %>-<%= cap %>-<%= value %>"
+              aria-pressed="<%= current == value %>"
+              class="px-2 py-1 text-[10.5px] font-medium whitespace-nowrap <%= current == value ? "bg-indigo-600 text-white" : "text-gray-600 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800" %>">
+        <%= value == "inherit" ? inherit_label : t("member.projects.show.#{key}") %>
+      </button>
+    <% end %>
+  </div>
+</div>

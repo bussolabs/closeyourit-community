@@ -1,0 +1,14 @@
+<%# locals: (attempts:, cto:) %>
+<%# CYRA-883 — who decides and which machine runs it now, on one line like the home card. It was a
+    panel of its own for two values. %>
+<% active = attempts.find { |attempt| attempt.status_running? || attempt.status_awaiting_review? } %>
+<p class="px-4 pt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-gray-500 dark:text-zinc-400" data-test="automation-summary-strip">
+  <span><%= t("member.tickets.automation.effective_cto") %>:
+    <span class="font-semibold text-zinc-900 dark:text-zinc-100"><%= cto&.name || t("member.tickets.automation.no_cto") %></span></span>
+  <% if active %>
+    <span data-test="automation-active-host"><%= t("member.tickets.automation.running_on") %>:
+      <span class="font-mono text-zinc-900 dark:text-zinc-100 [overflow-wrap:anywhere]"><%= automation_host_label(active.host) %></span>
+      · <%= automation_execution_phase_label(active.phase) %>
+      <span class="font-mono">· <%= active.runtime %> → <%= active.reviewer_runtime || t("member.tickets.automation.steps.review") %></span></span>
+  <% end %>
+</p>

@@ -1,0 +1,47 @@
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-idea-comments">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
+      <%= t("member.ideas.comments.title") %><span class="ml-1.5 font-mono text-[12px] text-gray-500 dark:text-zinc-400" data-test="idea-comments-count"><%= @comments.size %></span>
+    </h2>
+  </div>
+
+  <div class="divide-y divide-stone-200 dark:divide-zinc-800" data-test="member-idea-timeline">
+    <% if @comments.empty? %>
+      <p class="px-4 py-6 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="idea-comments-empty"><%= t("member.ideas.comments.empty") %></p>
+    <% else %>
+      <% @comments.each do |comment| %>
+        <%= render "member/ideas/comment", comment: comment, idea: @idea, can_moderate: @can_moderate_comments %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if @idea.status_open? %>
+    <%# Same composer as on a ticket: one line until used, then the field grows and the counter and
+        Comment appear under it; the microphone dictates into the field. %>
+    <div class="px-4 py-3 border-t border-stone-200 dark:border-zinc-800 bg-stone-50/40 dark:bg-zinc-800/40">
+      <%= form_with url: member_idea_comments_path(@idea), method: :post, class: "group/compose", data: { test: "member-idea-comment-form" } do %>
+        <div class="flex gap-3">
+          <span class="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[11px] font-semibold"><%= avatar_initials(Current.account.name) %></span>
+          <%# CYRA-371 — the counter warns, it does not gate (no maxlength: the browser would cut text
+              silently). An idea argues a product decision, so the field opens taller than a ticket's. %>
+          <div class="flex-1 min-w-0" data-controller="char-counter"
+               data-char-counter-max-value="<%= ::Ideas::Constants::COMMENT_MAX_CHARS %>"
+               data-char-counter-warn-ratio-value="<%= ::App::Constants::LENGTH_WARN_RATIO %>"
+               data-char-counter-unit-value="<%= t("shared.char_counter.unit") %>">
+            <% dictation = dictation_available? %>
+            <%= tag.div class: "relative", data: (dictation ? dictation_voice_data : {}) do %>
+              <%= text_area_tag "body", @comment_draft, rows: 1, id: "idea-comment-body", placeholder: t("member.ideas.comments.placeholder"), data: { test: "member-idea-comment-body", char_counter_target: "field", action: "input->char-counter#update", "ui--voice-inline-target": "input" }, class: "block w-full h-[34px] focus:h-36 [&:not(:placeholder-shown)]:h-36 resize-none #{dictation ? "pl-3 pr-11" : "px-3"} py-1.5 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+              <%= render "member/shared/dictation_controls" if dictation %>
+            <% end %>
+            <div class="hidden mt-2 group-focus-within/compose:flex group-has-[#idea-comment-body:not(:placeholder-shown)]/compose:flex items-center justify-end gap-3" data-test="member-idea-comment-extras">
+              <p class="shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400 tabular-nums" data-char-counter-target="output" data-test="member-idea-comment-counter"></p>
+              <%= render Ui::ButtonComponent.new(label: t("member.ideas.comments.submit"), type: "submit", icon: "send", size: :sm, test_id: "member-idea-comment-submit") %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="px-4 py-3 border-t border-stone-200 dark:border-zinc-800 text-[12px] text-gray-500 dark:text-zinc-400" data-test="idea-comments-locked"><%= t("member.ideas.comments.locked") %></p>
+  <% end %>
+</div>

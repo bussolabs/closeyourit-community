@@ -1,0 +1,27 @@
+<div class="py-3 min-w-0" data-test="derived-frame">
+  <% if java %>
+    <% if row[:status] == "ambiguous" %>
+      <p class="mb-2 text-[12.5px] font-medium text-amber-800 dark:text-amber-300" data-test="ambiguous-frame"><%= t("member.symbolication.ambiguous", count: row[:alternatives].size) %></p>
+    <% elsif row[:status] == "removed" %>
+      <p class="text-[12.5px] text-gray-600 dark:text-zinc-400"><%= t("member.symbolication.removed") %></p>
+    <% elsif row[:status] == "unmapped" %>
+      <p class="mb-1 text-[12px] text-gray-600 dark:text-zinc-400"><%= t("member.symbolication.unchanged") %></p>
+    <% end %>
+    <% row[:alternatives].each_with_index do |alternative, index| %>
+      <% if row[:alternatives].size > 1 %><p class="mt-2 text-[12px] text-gray-600 dark:text-zinc-400"><%= t("member.symbolication.alternative", number: index + 1) %></p><% end %>
+      <% if row[:kind] == "frame" && alternative["lines"].size > 1 %><p class="mb-1 text-[12px] text-gray-600 dark:text-zinc-400"><%= t("member.symbolication.inline", count: alternative["lines"].size) %></p><% end %>
+      <pre class="whitespace-pre-wrap break-all font-mono text-[12px] text-zinc-900 dark:text-zinc-100" data-test="reconstructed-lines"><%= alternative["lines"].join("\n") %></pre>
+    <% end %>
+    <% if row[:received_line] %><p class="mt-1 break-all font-mono text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.symbolication.received_line", value: row[:received_line]) %></p><% end %>
+  <% else %>
+    <% if row[:exception].present? %><p class="mb-1 text-[12px] text-gray-600 dark:text-zinc-400"><%= row[:exception] %></p><% end %>
+    <% if row[:original] %>
+      <p class="break-all font-mono text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= row[:original]["function"].presence || t("member.symbolication.unknown_function") %></p>
+      <p class="break-all font-mono text-[12px] text-zinc-700 dark:text-zinc-300"><%= [row[:original]["filename"], row[:original]["lineno"], row[:original]["colno"]].compact.join(":") %></p>
+      <% if row[:mapped_name].present? %><p class="mt-1 break-all text-[12px] text-gray-600 dark:text-zinc-400"><%= t("member.symbolication.mapped_name", name: row[:mapped_name]) %></p><% end %>
+    <% else %>
+      <p class="text-[12px] text-gray-600 dark:text-zinc-400"><%= t("member.symbolication.reason.#{row[:status]}", default: t("member.symbolication.reason.unavailable")) %></p>
+    <% end %>
+    <p class="mt-1 break-all font-mono text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.symbolication.received_line", value: [row[:received]["function"], [row[:received]["filename"] || row[:received]["abs_path"], row[:received]["lineno"], row[:received]["colno"]].compact.join(":")].compact.join(" · ")) %></p>
+  <% end %>
+</div>

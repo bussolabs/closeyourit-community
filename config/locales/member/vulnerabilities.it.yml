@@ -1,0 +1,115 @@
+---
+it:
+  member:
+    nav:
+      vulnerabilities: Vulnerabilità
+    guides:
+      index:
+        vulnerabilities:
+          title: Vulnerabilità
+      vulnerabilities:
+        title: Vulnerabilità
+        subtitle: Come CloseYourIt scopre i problemi di sicurezza delle librerie che usi.
+        what_title: Cosa controlla
+        what_intro: Ogni notte CloseYourIt legge l'elenco delle librerie di ogni progetto collegato a un repository e lo confronta con l'archivio pubblico dei problemi di sicurezza noti.
+        what_libraries: Le librerie di Ruby, JavaScript, Flutter e Go, comprese quelle che arrivano di rimbalzo da altre librerie.
+        what_runtimes: Le versioni di linguaggio che non ricevono più correzioni di sicurezza, o che stanno per smettere.
+        what_alerts: Un avviso quando salta fuori qualcosa di nuovo, e un ticket automatico per i casi gravi.
+        setup_title: Come si attiva
+        step_connect_title: Collega il repository al progetto
+        step_connect_body: Il controllo funziona sui progetti che hanno un repository collegato. Non serve installare niente nel codice.
+        step_wait_title: Aspetta il primo controllo
+        step_wait_body: Il primo elenco compare dopo il controllo notturno. Se non vuoi aspettare, puoi chiederne uno subito dalla pagina.
+        step_triage_title: Decidi cosa farne
+        step_triage_body: Per ogni voce vedi la versione a cui aggiornare, quando c'è. Puoi aprire un ticket o mettere da parte quelle che hai già valutato.
+        severity_title: Gravità e ticket
+        severity_intro: "La gravità arriva dall'archivio pubblico e va da bassa a critica. Alcune voci non sono classificate: significa che nessuno ha ancora stabilito quanto pesano."
+        severity_ticket: Il ticket automatico scatta solo per le vulnerabilità alte e critiche. Le altre restano in elenco, e apri il ticket tu quando decidi di intervenire.
+        severity_ignore: "Se convivi con un rischio, mettilo tra le ignorate: non tornerà a farsi vedere al controllo successivo."
+    monitoring:
+      vulnerabilities:
+        title: Vulnerabilità
+        help_title: "Librerie con problemi di sicurezza noti e linguaggi senza più correzioni."
+        empty: Nessuna vulnerabilità nota nei progetti che vedi.
+        empty_hint: Il controllo gira ogni notte sui progetti collegati a un repository.
+        # CYRA-555 — a elenco filtrato la frase qui sopra sarebbe una rassicurazione falsa: questa
+        # dice quante ne risultano aperte davvero, cioè il numero del chip in testata.
+        no_results_body:
+          zero: Nessuna vulnerabilità aperta al momento.
+          one: "C'è %{count} vulnerabilità aperta, ma non rientra in quello che hai chiesto."
+          other: "Ci sono %{count} vulnerabilità aperte, ma nessuna rientra in quello che hai chiesto."
+        # CYRA-810 — un file delle dipendenze che la scansione non è riuscita a leggere non dice
+        # «nessun problema», dice «non lo so». Finché resta così l'elenco è incompleto, e la pagina
+        # deve dirlo: senza, chi legge crede che quel pezzo di progetto sia pulito.
+        unverified:
+          title:
+            one: "Controllo incompleto: un file delle dipendenze non è stato letto"
+            other: "Controllo incompleto: %{count} file delle dipendenze non sono stati letti"
+          body: Le vulnerabilità già note di questi file restano in elenco. Spariranno solo dopo una lettura riuscita che dimostri che non ci sono più.
+          more:
+            one: e un altro
+            other: e altri %{count}
+        ticket_title: "%{severity} · %{package} (%{advisory})"
+        tabs:
+          dependencies: Librerie
+          runtimes: Linguaggi
+        severity:
+          unknown: Non classificata
+          low: Bassa
+          moderate: Media
+          high: Alta
+          critical: Critica
+        status:
+          open: Aperta
+          resolved: Risolta
+          ignored: Ignorata
+        state:
+          supported: Supportata
+          ending_soon: In scadenza
+          eol: Fuori supporto
+        # CYRA-565 — i primi tre contano le sole aperte, l'elenco sotto mostra ogni stato: chiamare
+        # «Totale» il primo faceva convivere «Totale: 0» e «Alte: 0» con otto righe in tabella, sette
+        # marcate «Alta». Ogni chip dice adesso su cosa conta, come fa la panoramica con «nessuna aperta».
+        stats:
+          open: Aperte
+          critical: Critiche aperte
+          high: Alte aperte
+          ignored: Ignorate
+          runtimes_eol: Fuori supporto
+          last_scan: Ultima scansione
+          never_scanned: mai
+        columns:
+          package: Libreria
+          severity: Gravità
+          advisory: Riferimento
+          fixed_version: Risolta in
+          project: Progetto
+          manifest: File
+          last_seen: Vista
+          runtime: Linguaggio
+          version: In uso
+          latest: Ultima
+          eol_on: Fine supporto
+        seen_ago: "%{time} fa"
+        fixed_version_none: Nessuna versione risolutiva
+        no_fix_hint: "Nessuna versione la corregge ancora: ignorala finché non esce, oppure apri un ticket per sostituire la libreria."
+        direct: Diretta
+        transitive: Indiretta
+        actions:
+          ignore: Ignora
+          reopen: Riapri
+          promote: Apri ticket
+          rescan: Controlla adesso
+        notices:
+          ignored: Vulnerabilità ignorata.
+          reopened: Vulnerabilità riaperta.
+          promoted: Ticket creato.
+          rescan_started: "Controllo avviato: fra poco l'elenco sarà aggiornato."
+        errors:
+          promote_failed: Non è stato possibile creare il ticket.
+        show:
+          summary: Descrizione
+          details: Dettagli
+          references: Approfondisci
+          affected_package: Libreria colpita
+          no_summary: L'archivio pubblico non fornisce una descrizione per questa vulnerabilità.

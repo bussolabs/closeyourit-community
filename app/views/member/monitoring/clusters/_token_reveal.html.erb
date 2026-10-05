@@ -1,0 +1,24 @@
+<%# locals: cluster:, secret: — shown once after create or a new code: never stored, never in the flash (CYAG-22). %>
+<% command = "helm install closeyourit-kube oci://ghcr.io/bussolabs/charts/closeyourit-kube \\\n  --namespace closeyourit --create-namespace \\\n  --set endpoint=#{request.base_url} \\\n  --set token=#{secret}" %>
+<%= render Ui::SectionComponent.new(title: t("member.clusters.reveal.title"), test_id: "cluster-token-reveal") do %>
+  <div class="space-y-4">
+    <div class="space-y-1.5" data-controller="clipboard" data-clipboard-copied-value="<%= t("member.clusters.reveal.copied") %>">
+      <div class="flex items-center gap-2">
+        <code class="flex-1 truncate rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2 font-mono text-[12.5px] text-zinc-900 dark:text-zinc-100"
+              data-clipboard-target="source" data-test="cluster-token-secret"><%= secret %></code>
+        <%= render Ui::ButtonComponent.new(label: t("member.clusters.reveal.copy"), variant: :secondary_muted, size: :sm, icon: "copy",
+              test_id: "cluster-token-copy", data: { action: "clipboard#copy" }) %>
+      </div>
+      <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.clusters.reveal.once") %></p>
+    </div>
+    <div class="space-y-1.5" data-controller="clipboard" data-clipboard-copied-value="<%= t("member.clusters.reveal.copied") %>">
+      <div class="flex items-center justify-between gap-2">
+        <p class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.clusters.reveal.install") %></p>
+        <%= render Ui::ButtonComponent.new(label: t("member.clusters.reveal.copy"), variant: :secondary_muted, size: :sm, icon: "copy",
+              test_id: "cluster-command-copy", data: { action: "clipboard#copy" }) %>
+      </div>
+      <pre class="overflow-x-auto rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 p-3 font-mono text-[12px] text-zinc-800 dark:text-zinc-200"
+           data-clipboard-target="source" data-test="cluster-install-command"><%= command %></pre>
+    </div>
+  </div>
+<% end %>

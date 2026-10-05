@@ -1,0 +1,29 @@
+<%# locals: link:, project:
+    Elenco del link pubblico già creato: URL, snippet iframe e revoca. Reso solo quando il link
+    esiste — CYRA-503: crearlo si fa dalla toolbar in cima, qui in fondo resta ciò che c'è già,
+    e un riquadro vuoto in fondo alla pagina non lo leggeva nessuno. %>
+<div id="analytics-share" class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="analytics-share">
+  <div class="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.analytics.share.title") %></h2>
+    <% if can?("analytics.share.manage", scope: project) %>
+      <%= button_to t("member.monitoring.analytics.share.revoke"),
+            member_monitoring_analytics_share_path(project_id: project.id),
+            method: :delete, params: { confirm: 1 },
+            class: "text-[12px] text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300",
+            form: { data: { turbo_confirm: t("member.monitoring.analytics.share.confirm_revoke") } },
+            data: { test: "analytics-share-revoke" } %>
+    <% end %>
+  </div>
+  <div class="p-4">
+    <%# CYRA-697 — chi ha pubblicato, e quando. Nullo sui link nati prima che l'autore si registrasse:
+        li' non c'e' un nome da inventare. %>
+    <% if link.created_by %>
+      <p class="text-[11.5px] text-gray-500 dark:text-zinc-400 mb-3" data-test="analytics-share-author"><%= t("member.monitoring.analytics.share.published_by", name: link.created_by.name, at: l(link.created_at, format: :long)) %></p>
+    <% end %>
+    <% url = share_analytics_url(link.slug) %>
+    <p class="text-[11.5px] text-gray-500 dark:text-zinc-400 mb-1"><%= t("member.monitoring.analytics.share.public_url") %></p>
+    <code class="block w-full px-3 py-2 rounded-md bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-800 text-[12px] font-mono text-zinc-900 dark:text-zinc-100 break-all mb-3" data-test="analytics-share-url"><%= url %></code>
+    <p class="text-[11.5px] text-gray-500 dark:text-zinc-400 mb-1"><%= t("member.monitoring.analytics.share.embed") %></p>
+    <code class="block w-full px-3 py-2 rounded-md bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-800 text-[12px] font-mono text-zinc-900 dark:text-zinc-100 break-all"><%= "<iframe src=\"#{url}\" width=\"100%\" height=\"600\" style=\"border:0\"></iframe>" %></code>
+  </div>
+</div>

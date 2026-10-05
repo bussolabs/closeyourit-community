@@ -1,0 +1,17 @@
+<%= render Ui::TableComponent::RowComponent.new(href: member_monitoring_trace_path(trace), link_label: trace[:observed_name].presence || trace.trace_id, test_id: "trace-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.traces.operation")) do %>
+    <%= link_to trace[:observed_name].presence || trace.trace_id, member_monitoring_trace_path(trace), class: "text-indigo-700 dark:text-indigo-300 break-all" %>
+    <p class="font-mono text-[12px] text-gray-500 dark:text-zinc-400 break-all"><%= trace.trace_id %></p>
+    <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= @row_projects[trace.project_id]&.name %></p>
+    <%= trace_status(trace[:observed_status]) %>
+    <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.traces.topology.#{trace.topology[:completeness]}") %></p>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.traces.service")) do %>
+    <% Array(trace[:observed_services]).each do |service| %><p class="break-all"><%= service %></p><% end %>
+    <% if trace[:observed_service_count].to_i > 20 %><p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.traces.service_limit", count: trace[:observed_service_count]) %></p><% end %>
+    <% if trace[:observed_service_count].to_i.zero? %><%= t("member.traces.unknown") %><% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.traces.duration"), mono: true, align: :right) do %><%= trace_duration(trace[:observed_duration_ns]) %><% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.traces.spans"), mono: true, align: :right) do %><%= trace[:observed_span_count] %><% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.traces.received"), mono: true) do %><time datetime="<%= trace.last_received_at.iso8601(6) %>"><%= l(trace.last_received_at, format: :short) %></time><% end %>
+<% end %>

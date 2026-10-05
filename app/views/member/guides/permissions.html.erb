@@ -1,0 +1,78 @@
+<% content_for :title, t("member.guides.permissions.title") %>
+
+<%# CYRA-439 — la guida che dice come si decide chi tocca cosa: senza, lo scope era spiegato da una
+    riga in caratteri piccoli sotto un elenco di sessanta caselle. %>
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-permissions">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "shield-half", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.permissions.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.permissions.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.guides.permissions.cta"), href: member_roles_path, variant: :primary, size: :sm, icon: "shield-half", test_id: "member-guide-permissions-cta") %>
+    <% end %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.permissions.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.permissions.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.permissions.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% 1.upto(3) do |i| %>
+          <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.permissions.what_b#{i}") %></span></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="guide-permissions-scope">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.permissions.scope_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.permissions.scope_intro") %></p>
+      <div class="space-y-2.5 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <p class="flex items-start gap-2.5">
+          <span class="shrink-0 inline-flex items-center rounded px-1.5 py-px font-mono text-[10px] bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 mt-0.5"><%= t("authorization.scopes.project") %></span>
+          <span><%= t("member.guides.permissions.scope_project") %></span>
+        </p>
+        <p class="flex items-start gap-2.5">
+          <span class="shrink-0 inline-flex items-center rounded px-1.5 py-px font-mono text-[10px] bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 mt-0.5"><%= t("authorization.scopes.org") %></span>
+          <span><%= t("member.guides.permissions.scope_org") %></span>
+        </p>
+      </div>
+      <p class="text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed border-t border-stone-100 dark:border-zinc-800 pt-3"><%= t("member.guides.permissions.scope_read") %></p>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-red-200 dark:border-red-500/40 bg-red-50/40 dark:bg-red-500/10" data-test="guide-permissions-dangerous">
+    <div class="px-4 py-3 border-b border-red-100 dark:border-red-500/20"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.permissions.dangerous_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-700 dark:text-zinc-300 leading-relaxed"><%= t("member.guides.permissions.dangerous_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-700 dark:text-zinc-300">
+        <% 1.upto(4) do |i| %>
+          <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-red-500 dark:text-red-400 text-[11px] mt-1 w-4 text-center") %><span><%= t("member.guides.permissions.dangerous_b#{i}") %></span></li>
+        <% end %>
+      </ul>
+      <%# CYRA-728 — il segno «delicato» non descrive più soltanto: da qui in poi ferma l'azione. %>
+      <p class="text-[12.5px] text-gray-700 dark:text-zinc-300 leading-relaxed border-t border-red-100 dark:border-red-500/20 pt-3" data-test="guide-permissions-confirmation">
+        <%= t("member.guides.permissions.dangerous_confirm") %>
+      </p>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.permissions.how_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ol class="space-y-4">
+        <% 1.upto(3) do |step| %>
+          <li class="flex gap-3">
+            <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5"><%= step %></span>
+            <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.permissions.how_step#{step}") %></div>
+          </li>
+        <% end %>
+      </ol>
+    </div>
+  </div>
+</div>

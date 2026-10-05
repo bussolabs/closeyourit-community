@@ -1,0 +1,79 @@
+<% content_for :title, t("member.uptime.title") %>
+
+<div class="p-7 space-y-6" data-test="member-monitors">
+  <%# Le pill di stato arrivano da un page-refresh, non più renderizzate dal broadcaster: erano
+      conteggi org-wide e le leggeva anche chi vede solo alcuni progetti (CYRA-257). Col morph è
+      questa GET a ri-calcolarle sullo scope di chi guarda, preservando scroll e filtri. %>
+  <%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+  <%# Org-wide SOLO per il page-refresh; il replace della riga monitor (HTML) arriva su uno stream per
+      progetto visibile, così non viaggia sul wire a chi il progetto non lo vede (CYRA-271). %>
+  <%= turbo_stream_from Realtime::Streams.uptime(current_organization) %>
+  <% visible.projects.each do |stream_project| %>
+    <%= turbo_stream_from Realtime::Streams.project_uptime(stream_project) %>
+  <% end %>
+  <%= render "member/monitoring/uptime_header", active_tab: "monitors",
+        up_count: @up_count, down_count: @down_count, total: @total, open_incidents_count: @open_incidents_count %>
+
+  <%= render "member/monitoring/shared/coverage_banner", area: "uptime",
+        report: @alert_coverage, i18n_scope: "member.uptime.coverage", test_id: "monitors-coverage",
+        new_rule_href: (can?("alerts.manage") ? new_member_alerting_rule_path(event_type: :uptime_down) : nil) %>
+
+  <% filtering = params[:q].present? || params[:status].present? || params[:project_id].present? %>
+  <% if @monitors.empty? && !filtering %>
+    <%# CYRA-363 — lo schema in quattro parti: cosa manca, a cosa serve, un esempio, il pulsante. %>
+    <%= render Ui::EmptyStateComponent.new(
+          title: t("member.uptime.empty"), body: t("member.uptime.empty_body"),
+          example: t("member.uptime.empty_example"), icon: "heart-pulse",
+          framed: true, test_id: "monitors-empty") do |empty| %>
+      <% if can?("uptime.manage") %>
+        <% empty.with_action do %>
+          <%= render Ui::ButtonComponent.new(label: t("member.uptime.new"), href: new_member_monitoring_monitor_path,
+                variant: :primary, size: :sm, icon: "plus", test_id: "monitors-empty-new") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <%= render(Ui::TableToolbarComponent.new(
+            url: member_monitoring_monitors_path, query: params[:q], framed: true,
+            hidden: { view: @view },
+            search_placeholder: t("member.uptime.search_placeholder"),
+            search_test_id: "monitors-search", apply_test_id: "monitors-filter",
+            group_by: %w[grouped table].map { |v| { label: t("member.uptime.group_by_#{v}"), hint: (t("member.uptime.group_by_table_hint") if v == "table"),
+              href: member_monitoring_monitors_path(request.query_parameters.merge(view: v)), active: @view == v, test_id: "uptime-group-by-#{v}" } },
+            test_id: "monitors-toolbar")) do |toolbar| %>
+        <%# C61 — the period is a Filters chip; the default is the blank first option, so a removed
+            chip submits "" and the controller falls back to it. CYRA-924 %>
+        <% toolbar.with_filter(key: "range", label: t("shared.time_range.label"), active: @range != Uptime::Monitor::DEFAULT_RANGE) do %>
+          <div class="w-36"><%= render Ui::SelectComponent.new(name: "range", summary: true,
+            options: [ [ t("member.uptime.ranges.#{Uptime::Monitor::DEFAULT_RANGE}"), "" ] ] +
+                     (Uptime::Monitor::RANGES.keys - [ Uptime::Monitor::DEFAULT_RANGE ]).map { |key| [ t("member.uptime.ranges.#{key}"), key ] },
+            selected: (@range unless @range == Uptime::Monitor::DEFAULT_RANGE), placeholder: t("shared.time_range.label"), test_id: "filter-range") %></div>
+        <% end %>
+        <% toolbar.with_filter(key: "status", label: t("member.uptime.filter_status")) do %>
+          <div class="w-32"><%= render Ui::SelectComponent.new(name: "status", multiple: true, summary: true,
+            options: Uptime::Monitor.current_statuses.keys.map { |s| [ s.capitalize, s ] },
+            selected: params[:status], placeholder: t("member.uptime.filter_status"), test_id: "filter-status") %></div>
+        <% end %>
+        <% toolbar.with_filter(key: "project_id", label: t("member.uptime.filter_project")) do %>
+          <div class="w-40"><%= render Ui::SelectComponent.new(name: "project_id", multiple: true, summary: true,
+            options: @projects.map { |p| [ p.name, p.id, p.color ] }, selected: params[:project_id],
+            placeholder: t("member.uptime.filter_project"), test_id: "filter-project") %></div>
+        <% end %>
+        <% toolbar.with_views do %>
+          <%= render Ui::SavedViewsComponent.new(resource_type: "uptime", views: @saved_views,
+                index_helper: :member_monitoring_monitors_path, current_filters: params) %>
+        <% end %>
+      <% end %>
+
+      <% if @monitors.empty? %>
+        <p class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="monitors-no-match"><%= t("member.uptime.no_match") %></p>
+      <% elsif @view == "table" %>
+        <%= render "member/monitoring/monitors/table", monitors: @monitors, range: @range, uptime: @uptime, buckets: @buckets, pagination: @pagination, open_since: @open_since, health_sorted: @health_sorted %>
+      <% else %>
+        <%= render "member/monitoring/monitors/grouped", monitors: @monitors, range: @range, uptime: @uptime, buckets: @buckets, open_since: @open_since, health_sorted: @health_sorted %>
+      <% end %>
+      <%= render "member/monitoring/monitors/strip_legend" if @monitors.any? %>
+    </div>
+  <% end %>
+</div>

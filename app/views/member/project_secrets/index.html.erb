@@ -1,0 +1,64 @@
+<% content_for :title, t("member.secrets.title", project: @project.name) %>
+<% can_manage = can?("secrets.manage", scope: @project) %>
+<%# CYRA-721 — due permessi distinti, due comandi distinti: `secrets.read` mostra il valore in chiaro,
+    `secrets.manage` lo cambia. Chi ha solo manage apre la matrice (i NOMI non sono un valore) ma non
+    trova nessuna via verso il valore: né il comando mostra, né la copia, né l'indirizzo che li serve. %>
+<% can_read = can?("secrets.read", scope: @project) %>
+<% existing_names = @rows.map(&:first) %>
+<%# Errori attribuiti alla riga-crea: quando @open_row è un nome NON esistente — inclusi nome vuoto
+    (@open_row nil/blank), così un 422 su nome mancante mostra l'errore invece di ri-nascondere la riga. %>
+<% new_row_errors = (@row_errors if @row_errors.present? && existing_names.exclude?(@open_row)) %>
+
+<div class="min-w-0 p-4 sm:p-7 md:-m-px md:p-0 space-y-6" data-test="member-project-secrets">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "secrets" %>
+
+  <%# CYRA-924 — one panel holds the variables (DESIGN.md T1–T12): tabs, counts, actions, warnings,
+      search, table and footer. %>
+  <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="secrets-panel">
+    <div class="border-b border-stone-200 dark:border-zinc-800 px-3 py-2"><%= render "member/project_secrets/subnav", project: @project, active: "variables" %></div>
+    <%= render "member/project_secrets/panel_header", can_manage: can_manage, new_row_errors: new_row_errors %>
+    <% if @consolidations&.any? %>
+      <div class="border-b border-stone-200 dark:border-zinc-800 px-4 py-3"><%= render "member/project_secrets/consolidation_banner", suggestions: @consolidations %></div>
+    <% end %>
+    <% if @environments.empty? %>
+      <%# nessun ambiente dichiarato: niente colonne → banner %>
+      <div class="m-4 rounded-lg border border-amber-200 dark:border-amber-500/40 bg-amber-50/50 dark:bg-amber-500/10 px-4 py-3 flex items-center gap-2 flex-wrap" data-test="secret-no-environments">
+        <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-amber-600 dark:text-amber-400 text-[12px]") %>
+        <p class="text-[12.5px] text-amber-800 dark:text-amber-200"><%= t("member.secrets.no_environments") %></p>
+        <%= link_to t("member.secrets.declare_environments"), edit_member_project_path(@project), class: "text-[12px] font-semibold text-amber-800 dark:text-amber-200 underline hover:text-amber-900 dark:hover:text-amber-200", data: { test: "secret-declare-environments" } %>
+      </div>
+    <% else %>
+      <%= render(Ui::TableToolbarComponent.new(
+            url: member_project_secrets_path(@project), query: @secret_query, framed: true,
+            search_placeholder: t("member.secrets.origins.search"), apply_label: t("member.secrets.origins.apply"),
+            hidden: (@drift_only ? { drift: "1" } : {}),
+            search_test_id: "secrets-search", apply_test_id: "secrets-filter-apply", test_id: "secrets-toolbar")) do |toolbar| %>
+        <% toolbar.with_filter(key: "origin", label: t("member.secrets.origins.filter")) do %>
+          <div class="w-36"><%= render Ui::SelectComponent.new(name: "origin", summary: true,
+                options: [ [ t("member.secrets.origins.local"), "local" ], [ t("member.secrets.origins.shared"), "shared" ] ],
+                selected: @secret_origin, placeholder: t("member.secrets.origins.filter"), test_id: "secrets-origin") %></div>
+        <% end %>
+      <% end %>
+      <%= render "member/project_secrets/matrix", can_manage: can_manage, can_read: can_read %>
+      <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "secrets-pagination") do |footer| %>
+        <% footer.with_legend { render "member/project_secrets/legend" } %>
+      <% end %>
+    <% end %>
+  </section>
+
+  <% if @events.any? %>
+    <%= render "member/project_secrets/activity", events: @events %>
+  <% end %>
+
+  <%# Secondary to the table (DESIGN.md T13): side by side in columns, not one after the other. %>
+  <%= render Ui::GridComponent.new(cols: 1, lg: 3, gap: 6, class: "items-start", test_id: "secondary-panels") do %>
+    <%= render SecretReadersComponent.new(readers: @secret_readers, reveal_names: @secret_readers_reveal,
+          permissions_href: @secret_readers_permissions_href) %>
+    <%= render SecretProtectionComponent.new(kind: :project) %>
+
+    <% usage_env_codes = @environments.map(&:code) %>
+    <%= render SecretUsageComponent.new(kind: :project, project: @project,
+          environment: usage_env_codes.include?("production") ? "production" : usage_env_codes.first,
+          environment_codes: usage_env_codes, collapsible: true) %>
+  <% end %>
+</div>

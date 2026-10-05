@@ -1,0 +1,51 @@
+<%# locals: preview (Guidance::Preview::Result) — solo a livello progetto: il contesto EFFETTIVO che la
+    riga di comando riceve, con origine e stato (definita qui / ereditata / sostituisce / disabilitata). %>
+<% status_color = { here: :emerald, inherited: :gray, overridden: :indigo, appended: :sky, disabled: :gray } %>
+<% origin_color = { "organization" => :violet, "group" => :sky, "project" => :indigo } %>
+
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="guidance-preview">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guidance.preview.title") %></h2>
+    <p class="mt-0.5 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guidance.preview.help") %></p>
+  </div>
+
+  <% if preview.references.empty? && preview.procedures.empty? %>
+    <%= render Ui::EmptyNoteComponent.new(text: t("member.guidance.preview.empty"), inset: true, test_id: "guidance-preview-empty") %>
+  <% else %>
+    <% if preview.references.any? %>
+      <div class="px-4 py-3">
+        <h3 class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500 mb-2"><%= t("member.guidance.preview.references_title") %></h3>
+        <div class="space-y-1.5">
+          <% preview.references.each do |row| %>
+            <div class="flex items-center gap-2.5 <%= "opacity-60" if row.status == :disabled %>" data-test="guidance-preview-reference-<%= row.key %>">
+              <span class="font-mono text-[12px] font-semibold text-zinc-900 dark:text-zinc-100 shrink-0 <%= "line-through" if row.status == :disabled %>"><%= row.key %></span>
+              <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 truncate"><%= row.location %></span>
+              <div class="ml-auto flex items-center gap-1.5 shrink-0">
+                <%= render Ui::BadgeComponent.new(label: t("member.guidance.origin.#{row.origin}"), color: origin_color.fetch(row.origin, :gray), size: :sm, dot: true) %>
+                <%= render Ui::BadgeComponent.new(label: t("member.guidance.status.#{row.status}"), color: status_color.fetch(row.status, :gray), size: :sm) %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <% if preview.procedures.any? %>
+      <div class="px-4 py-3 border-t border-stone-100 dark:border-zinc-800">
+        <h3 class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500 mb-2"><%= t("member.guidance.preview.procedures_title") %></h3>
+        <div class="space-y-1.5">
+          <% preview.procedures.each do |row| %>
+            <div class="flex items-center gap-2.5 <%= "opacity-60" if row.status == :disabled %>" data-test="guidance-preview-procedure-<%= row.key %>">
+              <span class="font-mono text-[12px] font-semibold text-zinc-900 dark:text-zinc-100 shrink-0 <%= "line-through" if row.status == :disabled %>"><%= row.key %></span>
+              <span class="text-[11.5px] text-gray-500 dark:text-zinc-400 truncate"><%= truncate(row.content, length: 70) %></span>
+              <div class="ml-auto flex items-center gap-1.5 shrink-0">
+                <%= render Ui::BadgeComponent.new(label: t("member.guidance.origin.#{row.origin}"), color: origin_color.fetch(row.origin, :gray), size: :sm, dot: true) %>
+                <%= render Ui::BadgeComponent.new(label: t("member.guidance.status.#{row.status}"), color: status_color.fetch(row.status, :gray), size: :sm) %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

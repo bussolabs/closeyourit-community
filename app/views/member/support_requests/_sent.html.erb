@@ -1,0 +1,16 @@
+<%# locals: () %>
+<%= turbo_frame_tag "support-request", class: "block" do %>
+  <div class="p-7 md:-m-px md:p-0" data-test="support-sent">
+    <%= render Ui::EmptyStateComponent.new(icon: "circle-check", framed: true, test_id: "support-sent-state",
+          title: t("member.support.sent_title"), body: t("member.support.sent_body", email: Current.account.email)) do |state| %>
+      <% state.with_action do %>
+        <div class="flex items-center justify-center gap-1.5">
+        <%= render Ui::ButtonComponent.new(label: t("member.support.mine"), href: member_support_requests_path, icon: "list",
+              variant: :secondary, size: :sm, test_id: "support-sent-mine", data: { turbo_frame: "_top" }) %>
+        <%= render Ui::ButtonComponent.new(label: t("member.support.back"), icon: "arrow-down", variant: :secondary, size: :sm,
+            test_id: "support-sent-back", data: { action: "ui--support#close" }) %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

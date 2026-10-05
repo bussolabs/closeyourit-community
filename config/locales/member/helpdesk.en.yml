@@ -1,0 +1,145 @@
+en:
+  member:
+    projects:
+      show:
+        tab_helpdesk: Help desk
+    helpdesk:
+      title: Help desk
+      subtitle: The requests written by the visitors of your projects' sites.
+      counts:
+        received: New
+        discarded: Discarded
+      status:
+        received: New
+        discarded: Discarded
+        converted: Became a ticket
+        linked: Linked
+        answered: Answered
+      search_placeholder: Search the requests…
+      filter_status: Status
+      filter_project: Project
+      col_request: Request
+      col_project: Project
+      col_status: Status
+      col_received: Received
+      no_email: No email
+      empty: No help desk requests
+      empty_body: What visitors write from your projects' sites arrives here. It is switched on in each project's settings.
+      empty_example: "“I cannot pay by card” — from anna@example.com, page /cart"
+      inbox_clear: No new requests. Discarded ones are under the Status filter.
+      no_results_body:
+        one: There is %{count} request in all.
+        other: There are %{count} requests in all.
+      discard: Discard
+      restore: Restore
+      erase_email: Erase the email
+      more_menu: More actions
+      erase_dialog:
+        title: Erase %{email} from this request?
+        body: The message stays, the address does not. It cannot be undone and you will no longer be able to answer this person.
+      discarded: Request discarded.
+      restored: Request restored.
+      email_erased: Email erased.
+      on_ticket:
+        one: "%{count} help desk request"
+        other: "%{count} help desk requests"
+      converted: The request became a ticket.
+      linked: Request linked to the ticket.
+      unlinked: Link removed. The request is back among the new ones.
+      errors:
+        already_handled: This request is no longer among the new ones.
+        ticket_not_found: Choose a ticket of the same project.
+        no_email: This request has no email to answer to.
+        too_many_replies: You already wrote many answers to this request.
+      replied: Answer sent.
+      reply:
+        title: Answer
+        placeholder: Write the answer…
+        hint: "It leaves by email to %{email}. If the person replies, their email does not arrive here."
+        submit: Send the answer
+        nobody: "There is nobody to answer: this request has no email."
+      similar:
+        title:
+          one: "%{count} similar request"
+          other: "%{count} similar requests"
+        link_same: Link to the same ticket
+      visit_errors:
+        title: Errors in the same visit
+      convert:
+        action: Turn into a ticket
+        title: Turn into a ticket
+        cancel: Cancel
+        submit: Create the ticket
+        field_title: Title
+        field_description: Description
+        description_hint: It starts from what the visitor wrote. The email is not copied into the ticket.
+        field_kind: Kind
+        field_status: Status
+        field_priority: Priority
+      ticket:
+        title: Ticket
+        select: Search a ticket of the project…
+        link_submit: Link
+        hint: If the problem already has a ticket, link the request to it.
+        unlink: Unlink
+        gone: The ticket was deleted.
+      messages: Messages
+      from_visitor: Visitor
+      details: Details
+      email: Email
+      email_erased_value: Erased
+      page: Page
+      browser: Browser
+      project:
+        count:
+          one: "%{count} new"
+          other: "%{count} new"
+        empty_off_title: "The help desk is off on this project"
+        empty_off_body: "Turn it on from the project settings."
+        open_settings: Open the settings
+      connect:
+        title: Connect the site
+        subtitle: The steps, the ready-made code and the text to hand to a coding assistant.
+        step_key: "Create the site key in the project settings. Only the sites that have a key can write."
+        keys_link: Open the project keys
+        no_key: "This project has no key yet: the code below keeps a placeholder."
+        key_locked: "The key is shown to whoever manages the project keys. The code below keeps a placeholder: ask an administrator."
+        step_code: "Paste this form into the site's page. It works as written."
+        code_note: "The key is public: it can sit in the page's code. Change the form's texts freely."
+        step_prompt: "Hand this text to a coding assistant: it builds the form in your site's own style."
+        step_try: "Write a test request from the site: it shows up here within seconds."
+        copy: Copy
+        copied: Copied
+        prompt: |-
+          Add a "Need help?" form to this site that sends the visitors' requests to CloseYourIt.
+
+          Call
+          - POST %{endpoint}
+          - Headers: Content-Type: application/json and X-Sentry-Auth: Sentry sentry_key=%{key}
+          - It starts from the visitor's browser. The key is public: it can sit in the page's code.
+
+          JSON body
+          - message: required, plain text, 4000 characters at most.
+          - email: optional. When present it must be a valid address.
+          - page_url: the address of the page the visitor writes from.
+          - website: a trap field for robots. Hidden from people, always empty. Do not remove it.
+
+          Answers
+          - 202: request received. Show a thank-you and clear the form.
+          - 422: message missing or too long, or email not valid. Show the error next to the field.
+          - 403: the site is not allowed or the help desk is off. Show a generic error.
+          - 429: too many requests. Ask to try again in a minute.
+
+          Rules
+          - Use the components and the style the site already has. No new libraries.
+          - Label the email as optional and say it is only used to answer.
+          - Do not promise a confirmation email: none is sent.
+          - Send no personal data beyond the fields listed.
+          - The form must work from the keyboard and have a label for every field.
+          - Add a test that covers the successful send and the 422 error.
+  helpdesk:
+    mailer:
+      subject: "Answer to your request — %{project}"
+      intro: "%{project} answered your request"
+      you_wrote: You wrote
+      no_reply: "Do not reply to this email: the address receives no mail."

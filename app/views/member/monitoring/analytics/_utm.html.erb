@@ -1,0 +1,34 @@
+<%# Breakdown UTM (source/medium/campaign) per visitatori unici — solo traffico taggato. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="analytics-utm">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.analytics.utm_title") %></h2>
+  </div>
+  <%# Senza visite taggate cinque colonne ripeterebbero lo stesso «nessun dato»: lo si dice una volta. %>
+  <% if [ sources, mediums, campaigns, terms, contents ].all?(&:empty?) %>
+    <p class="p-4 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.utm_empty") %></p>
+  <% else %>
+  <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 divide-x divide-stone-100 dark:divide-zinc-800">
+    <% [ [ t("member.monitoring.analytics.utm_source"), sources, "analytics-utm-source-row", "utm_source" ],
+         [ t("member.monitoring.analytics.utm_medium"), mediums, "analytics-utm-medium-row", "utm_medium" ],
+         [ t("member.monitoring.analytics.utm_campaign"), campaigns, "analytics-utm-campaign-row", "utm_campaign" ],
+         [ t("member.monitoring.analytics.utm_term"), terms, "analytics-utm-term-row", "utm_term" ],
+         [ t("member.monitoring.analytics.utm_content"), contents, "analytics-utm-content-row", "utm_content" ] ].each do |label, rows, test_id, column| %>
+      <div class="p-4">
+        <p class="font-mono text-[10.5px] uppercase tracking-wide text-gray-500 dark:text-zinc-400 mb-2"><%= label %></p>
+        <% if rows.empty? %>
+          <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.no_data") %></p>
+        <% else %>
+          <ul class="space-y-1.5">
+            <% rows.each do |row| %>
+              <li class="flex items-center justify-between gap-2" data-test="<%= test_id %>">
+                <span class="truncate text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= link_to row[:value], analytics_filter_url(column, row[:value]), class: "hover:text-indigo-600 dark:hover:text-indigo-400" %></span>
+                <span class="shrink-0 font-mono text-[12px] text-gray-500 dark:text-zinc-400"><%= row[:visitors] %></span>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+  <% end %>
+</div>

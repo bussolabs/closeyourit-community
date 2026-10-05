@@ -1,0 +1,43 @@
+it:
+  member:
+    vault_health:
+      title: Cosa non torna
+      help_title: Le anomalie dei secret tra i progetti che vedi, una per una, con cosa manca e dove. In cima quelle che contano di più.
+      stat_active: Da guardare
+      stat_production: In produzione
+      stat_acknowledged: Segnate come volute
+      empty: Tutto in ordine
+      empty_body: Non abbiamo trovato anomalie nei secret dei progetti che vedi.
+      project_summary:
+        one: 1 cosa da guardare
+        other: "%{count} cose da guardare"
+      kind:
+        drift_hole: Manca in un ambiente
+        empty_environment: Ambiente senza segreti
+        broken_delegation: Delega interrotta
+      detail:
+        drift_hole: "manca in %{environment}"
+        empty_environment: "%{environment} non ha nessun segreto salvato"
+        broken_delegation: "delega in %{environment}, che il progetto non dichiara più o non tiene attivo"
+      badge_production: Produzione
+      col_secret: Variabile
+      col_kind: Cosa non torna
+      col_since: Vista da
+      col_actions: Azioni
+      since: "Vista da %{time}"
+      acknowledge:
+        button: Segna come voluta
+        title: Segna l'assenza come voluta
+        reason_label: Perché questa assenza è voluta?
+        reason_placeholder: Es. in questo ambiente il servizio non serve.
+        submit: Conferma
+        cancel: Annulla
+      acknowledged: Assenza segnata come voluta.
+      acknowledge_needs_reason: Scrivi una nota che spieghi perché questa assenza è voluta.
+      restore_button: Rimetti fra le cose da guardare
+      restored: L'assenza è tornata fra le cose da guardare.
+      acknowledged_section:
+        title: Assenze volute
+        body: Assenze che qualcuno ha deciso di tenere così. Restano qui, fuori dai conteggi.
+        attribution: "da %{who} · segnata %{time} fa"
+        attribution_unknown: "segnata %{time} fa"

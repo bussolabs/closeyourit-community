@@ -1,0 +1,39 @@
+it:
+  notifications:
+    digest:
+      mailer:
+        summary:
+          one: "Il tuo riepilogo CloseYourIt — 1 notifica"
+          other: "Il tuo riepilogo CloseYourIt — %{count} notifiche"
+        heading:
+          one: "1 notifica"
+          other: "%{count} notifiche"
+        intro: "Ecco cosa è successo in %{org} mentre eri via."
+        footer: Ricevi questo riepilogo in base alle tue preferenze di notifica.
+      telegram:
+        header:
+          one: "Riepilogo CloseYourIt — 1 notifica:"
+          other: "Riepilogo CloseYourIt — %{count} notifiche:"
+    telegram:
+      link:
+        ticket: "vai al ticket"
+        chat: "vai alla conversazione"
+        error: "vai all'errore"
+        log: "vai al log"
+        uptime: "vai al monitor"
+        metric: "vai alla metrica"
+        cron: "vai al cron"
+        server: "vai al server"
+        # Generico: copre rotazione/cancellazione/sync — i 3 event_type secret_* puntano a pagine
+        # diverse del vault (rotazione org-wide, tab Secrets, tab GitHub del progetto).
+        secret: "vai al vault"
+        agents: "vai agli agenti"
+        analytics: "vai alle statistiche"
+        idea: "vai all'idea"
+        workload: "vai all'attività"
+        dataset: "vai al dataset"
+        vulnerability: "vai alla vulnerabilità"
+        # CYRA-712: il servizio generativo si rimette a posto dai servizi collegati, non dagli agenti.
+        ai: "vai ai servizi collegati"
+        # CYRA-716: il token in scadenza si sostituisce dalla pagina dei token del progetto.
+        project_token: "vai ai token del progetto"

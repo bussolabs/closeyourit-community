@@ -1,0 +1,18 @@
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
+  <%= render(Ui::TableComponent.new(test_id: "preview-table")) do |t| %>
+    <% t.with_head do %>
+      <th class="font-mono text-[9px] uppercase tracking-[1px] px-4 py-2.5">Progetto</th>
+      <th class="px-2 py-2.5 w-10"></th>
+    <% end %>
+    <tr class="hover:bg-stone-50 dark:hover:bg-zinc-800">
+      <td class="px-4 py-3 text-[13px] text-zinc-900 dark:text-zinc-100">Demo project</td>
+      <td class="px-2 py-3 text-right">
+        <%= render(Ui::RowMenuComponent.new(test_id: "preview-row-menu")) do %>
+          <%= tag.a("Edit", href: "#", class: Ui::RowMenuComponent.item_class(:default)) %>
+          <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+          <%= tag.a("Delete", href: "#", class: Ui::RowMenuComponent.item_class(:danger)) %>
+        <% end %>
+      </td>
+    </tr>
+  <% end %>
+</div>

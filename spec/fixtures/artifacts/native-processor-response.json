@@ -1,0 +1,55 @@
+{
+  "processor": {
+    "app": "native-symbol-processor",
+    "tag": "unknown",
+    "sha": "unknown",
+    "short_sha": "unknown",
+    "build_time": "unknown",
+    "environment": "unknown",
+    "processor": "native-symbols",
+    "version": "13.9.0",
+    "schema_version": 1,
+    "outbound_syscalls_denied": true
+  },
+  "image": "sha256:8597f39ade2cd2895f709d17791e3db05c847722052fb48dafaa7b080aad9366",
+  "input_sha256": "8c70732d94334eab28096a40b4f8a49e63c8fc703fb1f3ae3561f2173c21833a",
+  "response": {
+    "frames": [
+      {
+        "address": "0x41e8",
+        "index": 0,
+        "locations": [
+          {
+            "file": "/build/crash.c",
+            "function": "inline_fault",
+            "function_address": null,
+            "line": 11,
+            "symbol": "inline_fault"
+          },
+          {
+            "file": "/build/crash.c",
+            "function": "crash_leaf",
+            "function_address": "0x41d4",
+            "line": 16,
+            "symbol": "crash_leaf"
+          }
+        ],
+        "status": "resolved"
+      }
+    ],
+    "objects": [
+      {
+        "architecture": "arm64",
+        "code_id": "a60db736fd5a31a114e0d9552ad905f63c095e8e",
+        "debug_id": "36b70da6-5afd-a131-14e0-d9552ad905f6",
+        "format": "elf",
+        "has_debug_info": true,
+        "has_symbols": true,
+        "preferred_load_address": "0x0",
+        "usable": true
+      }
+    ],
+    "schema_version": 1,
+    "selected": 0
+  }
+}

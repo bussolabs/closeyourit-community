@@ -1,0 +1,6 @@
+<%# locals: count — badge non-letti sul bell in topbar (anche broadcast via Turbo).
+     Il wrapper con id resta il nodo top-level: è il target di broadcast_replace_to
+     (canale in-app di Notifications::Deliver) e lo spec "id unico". Il bubble è reso in
+     flusso — accanto all'icona, non più absolute — dal partial condiviso. The wrapper is
+     inline-flex: as plain inline the bubble sat on the text baseline, below the icon. %>
+<span id="alerting_notification_badge" data-test="notification-badge" class="inline-flex items-center"><%= render "shared/notification_counter", count: count, label: t("member.nav.alerts_unread", count: count.to_i) %></span>

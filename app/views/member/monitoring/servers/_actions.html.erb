@@ -1,0 +1,72 @@
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-actions">
+  <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.action_queue.title") %></h2>
+  </div>
+  <% if can?("servers.execute") %>
+    <div class="px-5 py-4 border-b border-stone-200 dark:border-zinc-800 space-y-3">
+      <%# Cosa farà ciascun pulsante, in numeri: apply_security_updates tocca SOLO le origini di
+          sicurezza, quindi con 15 aggiornamenti di cui 0 di sicurezza esce con 0 senza installare
+          niente e il contatore non scende. Detto qui, non è più un mistero. %>
+      <% if (pending = host.non_security_updates) && host.updates_available.positive? %>
+        <p class="text-[12px] text-gray-600 dark:text-zinc-400" data-test="server-updates-breakdown">
+          <%= t("member.servers.action_queue.updates_breakdown",
+                total: host.updates_available, security: host.security_updates_available, other: pending) %>
+        </p>
+      <% end %>
+      <p class="text-[12px] text-gray-600 dark:text-zinc-400"><%= t("member.servers.action_queue.confirmation_hint", name: host.name) %></p>
+      <%= form_with url: member_monitoring_server_actions_path(host), class: "flex flex-wrap items-end gap-2" do |form| %>
+        <%# CYRA-728 — il gesto di conferma che il server pretende per le chiavi pericolose. Qui la
+            conferma vera è il nome digitato qui accanto: questo campo dice soltanto che il gesto
+            c'è stato, e il controller continua a confrontare il nome per conto suo. %>
+        <%= hidden_field_tag :confirm, 1, id: nil %>
+        <%# turbo_permanent: la pagina si ri-fetcha e morfa a ogni push dell'agent (anche più volte
+            in pochi secondi). Senza questo, il nome digitato sparisce sotto le dita e il click
+            successivo viene bloccato in silenzio dalla validazione `required`. %>
+        <%= form.text_field :confirmation, placeholder: host.name, required: true, id: "server-action-confirmation",
+              class: "h-8 rounded-md border border-stone-300 dark:border-zinc-700 px-2 text-[12px]",
+              data: { turbo_permanent: true, test: "server-action-confirmation" } %>
+        <%= form.button t("member.servers.action_queue.security_updates"), name: :kind,
+              value: "apply_security_updates", class: "h-8 rounded-md border border-stone-300 dark:border-zinc-700 px-3 text-[12px] font-medium",
+              data: { turbo_submits_with: t("member.servers.action_queue.submitting"), test: "server-action-updates" } %>
+        <% if host.supports_action?("apply_all_updates") %>
+          <%= form.button t("member.servers.action_queue.all_updates"), name: :kind, value: "apply_all_updates",
+                class: "h-8 rounded-md border border-stone-300 dark:border-zinc-700 px-3 text-[12px] font-medium",
+                data: { turbo_confirm: t("member.servers.action_queue.all_updates_confirm"),
+                        turbo_submits_with: t("member.servers.action_queue.submitting"), test: "server-action-all-updates" } %>
+        <% end %>
+        <%= form.button t("member.servers.action_queue.reboot"), name: :kind, value: "reboot",
+              class: "h-8 rounded-md border border-red-300 dark:border-red-500/50 px-3 text-[12px] font-medium text-red-700 dark:text-red-300",
+              data: { turbo_confirm: t("member.servers.action_queue.reboot_confirm"),
+                      turbo_submits_with: t("member.servers.action_queue.submitting"), test: "server-action-reboot" } %>
+      <% end %>
+    </div>
+  <% end %>
+  <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+    <% actions.each do |action| %>
+      <div class="px-5 py-3 flex items-start justify-between gap-3" data-test="server-action-row">
+        <div class="min-w-0 space-y-1">
+          <div class="flex items-center gap-2">
+            <p class="text-[12px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.servers.action_queue.kinds.#{action.kind}") %></p>
+            <%= render Ui::BadgeComponent.new(label: server_action_status_label(action),
+                                              color: server_action_status_color(action), size: :sm) %>
+          </div>
+          <%# L'esito conta più dello stato: "completata" su un'azione che non ha trovato niente da
+              installare è ciò che spiega perché il contatore è rimasto fermo. L'output integrale
+              resta a portata di clic invece di essere solo nel database. %>
+          <p class="text-[11px] text-gray-500 dark:text-zinc-400" data-test="server-action-detail"><%= server_action_detail(action) %></p>
+          <% if action.output.present? || action.error.present? %>
+            <details class="text-[11px]">
+              <summary class="cursor-pointer text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"><%= t("member.servers.action_queue.output") %></summary>
+              <pre class="mt-1 max-h-48 overflow-auto whitespace-pre-wrap rounded-md bg-stone-50 dark:bg-zinc-800 p-2 font-mono text-[10px] text-zinc-700 dark:text-zinc-300"
+                   data-test="server-action-output"><%= action.error.presence || action.output %></pre>
+            </details>
+          <% end %>
+        </div>
+        <% if action.status_queued? && can?("servers.execute") %>
+          <%= button_to t("member.servers.action_queue.cancel"), member_monitoring_server_action_path(host, action), method: :delete, class: "text-[11px] text-red-700 dark:text-red-300" %>
+        <% end %>
+      </div>
+    <% end %>
+    <% if actions.empty? %><p class="px-5 py-4 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.action_queue.empty") %></p><% end %>
+  </div>
+</div>

@@ -1,0 +1,44 @@
+# CYRA-884 — the home decision card reads in five seconds.
+en:
+  member:
+    home:
+      bar:
+        others: others
+        oldest: "oldest: %{time}"
+    approvals:
+      compact:
+        if_approved: If you approve
+        show_all_warnings:
+          one: "+1 more"
+          other: "+%{count} more"
+      secret:
+        headline:
+          set: "New value for %{name} in %{environment}"
+          remove: "Remove %{name} from %{environment}"
+        production_risk:
+          set: "High risk: if the value is wrong, whatever uses it in Production stops working."
+          remove: "High risk: if something still uses it, it stops working in Production."
+      approve_hint:
+        awaiting_approval: "Then the agent works on the approved plan and comes back to you for review."
+        awaiting_autopilot_approval: "Then the work moves on to closing, starting with staging."
+        review_blocked: "The work restarts from the step where it stopped."
+        review: "The ticket is closed as done."
+        secret_change: "The change is applied to the secret right away."
+      decision_card:
+        risk_levels:
+          none: No risk
+          low: Low risk
+          high: High risk
+      evidence:
+        criteria: "%{done}/%{total} criteria"
+        tests: "%{done}/%{total} tests passed"
+        deviations:
+          zero: "no deviations"
+          one: "1 deviation"
+          other: "%{count} deviations"
+        reported: "stated by the agent"
+        deviation: "Deviation"
+      clarification:
+        options_legend: "Proposed answers to question %{position}"
+        recommended: recommended
+        other: Other

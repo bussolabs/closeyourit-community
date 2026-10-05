@@ -1,0 +1,19 @@
+<%# locals: cell — la versione da cui la funzionalità è disponibile, col link al rilascio; oppure
+    il segnale che lo stato dice "nelle mani degli utenti" ma la versione non è stata indicata. %>
+<% if cell&.release %>
+  <span class="inline-flex items-center gap-1 font-mono text-[11px] text-gray-500 dark:text-zinc-400">
+    <%= cell.release.display_version %>
+    <% if cell.release.git_tag_url.present? %>
+      <%= link_to cell.release.git_tag_url, target: "_blank", rel: "noopener",
+                  class: "text-gray-400 dark:text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400",
+                  title: cell.release.git_tag_url,
+                  data: { test: "product-cell-tag-#{cell.id}" } do %><%= render Ui::IconComponent.new(name: "tag", class: "text-[10px]") %><% end %>
+    <% end %>
+  </span>
+<% elsif cell&.release_missing? %>
+  <span class="inline-flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400"
+        title="<%= t("member.product.matrices.missing_release_hint") %>"
+        data-test="product-cell-missing-release">
+    <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[10px]") %>
+  </span>
+<% end %>

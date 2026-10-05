@@ -1,0 +1,17 @@
+<%# Support request — mail body (frame: layouts/mailer.html.erb). %>
+<% content_for :preheader, truncate(@support_request.body, length: 120) %>
+
+<p style="<%= mail_overline_style %>"><%= t("support.mailer.overline") %></p>
+<h1 style="<%= mail_h1_style %>"><%= t("support.mailer.intro", name: @account.name.presence || @account.email) %></h1>
+
+<p style="<%= mail_p_style %>white-space:pre-line;"><%= @support_request.body %></p>
+
+<p style="<%= mail_note_style %>">
+  <%= t("support.mailer.organization") %>: <%= @support_request.organization&.name %><br>
+  <%= t("support.mailer.page") %>: <span style="<%= mail_mono_style %>"><%= @support_request.context["page"] %></span><br>
+  <%= t("support.mailer.version") %>: <span style="<%= mail_mono_style %>"><%= @support_request.context["version"] %></span>
+</p>
+
+<div style="margin:22px 0 0 0;">
+  <%= render "mails/shared/button", label: t("support.mailer.action"), url: valhalla_support_request_url(@support_request) %>
+</div>

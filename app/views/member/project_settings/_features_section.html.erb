@@ -1,0 +1,48 @@
+<%# CYRA-563 — these switches sit OUTSIDE the form and save themselves one by one, the opposite rule
+    of the fields above. The subtitle says it once, so the rows drop their own note (CYRA-883). %>
+<%= render Ui::SectionComponent.new(title: t("member.project_settings.features_section"), id: "features",
+      class: "scroll-mt-4", body_class: "divide-y divide-stone-100 dark:divide-zinc-800", test_id: "project-features") do |section| %>
+  <% section.with_subtitle do %>
+    <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400" data-test="project-features-hint"><%= t("member.project_settings.features_hint") %></p>
+  <% end %>
+
+  <%= render Ui::SwitchComponent.new(
+        name: "quick_bug_report_enabled", url: member_project_settings_path(@project),
+        checked: @project.quick_bug_report_enabled?, icon: "wand-sparkles",
+        label: t("member.project_settings.quick_bug_report_enabled_label"),
+        hint: t("member.project_settings.quick_bug_report_enabled_hint"),
+        test_id: "project-quick-bug-report-toggle", immediate_note: false) %>
+
+  <%= render Ui::SwitchComponent.new(
+        name: "analytics_enabled", url: member_project_settings_path(@project),
+        checked: @project.analytics_enabled?, icon: "chart-line",
+        label: t("member.project_settings.analytics_enabled_label"),
+        hint: t("member.project_settings.analytics_enabled_hint"),
+        test_id: "project-analytics-toggle", immediate_note: false) %>
+
+  <%# CYRA-376 — only where it has an effect: sessions are recorded in the browser, so only on
+      projects that declared a web platform. %>
+  <% if @project.supports_session_replay? %>
+    <%= render Ui::SwitchComponent.new(
+          name: "session_replay_enabled", url: member_project_settings_path(@project),
+          checked: @project.session_replay_enabled?, icon: "film",
+          label: t("member.project_settings.session_replay_enabled_label"),
+          hint: t("member.project_settings.session_replay_enabled_hint"),
+          test_id: "project-session-replay-toggle", immediate_note: false) %>
+  <% end %>
+
+  <%# CYRA-940 — off by default: the site key is public, so the project opts in before strangers can write. %>
+  <%= render Ui::SwitchComponent.new(
+        name: "helpdesk_enabled", url: member_project_settings_path(@project),
+        checked: @project.helpdesk_enabled?, icon: "inbox",
+        label: t("member.project_settings.helpdesk_enabled_label"),
+        hint: t("member.project_settings.helpdesk_enabled_hint"),
+        test_id: "project-helpdesk-toggle", immediate_note: false) %>
+
+  <%= render Ui::SwitchComponent.new(
+        name: "secret_approval_enabled", url: member_project_settings_path(@project),
+        checked: @project.secret_approval_enabled?, icon: "shield-user",
+        label: t("member.project_settings.secret_approval_enabled_label"),
+        hint: t("member.project_settings.secret_approval_enabled_hint"),
+        test_id: "project-secret-approval-toggle", immediate_note: false) %>
+<% end %>

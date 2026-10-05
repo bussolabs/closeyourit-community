@@ -1,0 +1,28 @@
+<%# locals: distribution — le tre fasce come le manda Google, o nil.
+
+    NON usa Ui::HistogramComponent: quel componente ha un vocabolario tutto temporale (il suo
+    tooltip dice «finestra oraria») e qui l'asse non è il tempo ma la qualità dell'esperienza.
+    Forzarlo direbbe la cosa sbagliata a chi ci passa sopra il mouse.
+
+    È la prova sotto il percentile: le percentuali sono scritte, non solo colorate, perché il
+    verdetto non deve dipendere dal saper distinguere verde da ambra. %>
+<% return if distribution.blank? %>
+<% bands = %i[good needs_improvement poor].zip(distribution) %>
+<div class="mt-1.5">
+  <div class="flex h-1.5 rounded-full overflow-hidden bg-stone-100 dark:bg-zinc-800" role="presentation">
+    <% bands.each do |outcome, band| %>
+      <% share = (band&.fetch("proportion", 0)).to_f %>
+      <% next if share.zero? %>
+      <div class="<%= seo_vitals_bar_color(outcome) %>" style="width: <%= (share * 100).round(1) %>%"></div>
+    <% end %>
+  </div>
+  <div class="mt-1 flex items-center gap-3">
+    <% bands.each do |outcome, band| %>
+      <span class="inline-flex items-center gap-1 text-[10.5px] text-gray-500 dark:text-zinc-400">
+        <span class="w-1.5 h-1.5 rounded-full <%= seo_vitals_bar_color(outcome) %>"></span>
+        <%= number_to_percentage((band&.fetch("proportion", 0)).to_f * 100, precision: 0) %>
+        <%= seo_vital_rating_label(outcome).downcase %>
+      </span>
+    <% end %>
+  </div>
+</div>

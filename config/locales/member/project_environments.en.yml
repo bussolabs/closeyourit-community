@@ -1,0 +1,35 @@
+en:
+  member:
+    projects:
+      show:
+        tab_environments: "Environments"
+        servers_updated: "Servers updated."
+      environments:
+        title: "Environments"
+        subtitle: "Activate the environments this project runs on, then tune capabilities and linked servers."
+        none: "No environments defined for this organization yet."
+        activate: "Activate"
+        deactivate: "Deactivate"
+        activated: "Environment activated."
+        deactivated: "Environment deactivated."
+        activate_failed: "Could not activate the environment."
+        servers_save: "Save"
+        servers_unsupported: "Servers and uptime monitors apply to web or server projects only."
+        servers_aria: "Servers for %{environment}"
+        servers_open:
+          zero: "Link a server"
+          one: "1 linked server"
+          other: "%{count} linked servers"
+        servers_dialog_title: "Servers of %{environment}"
+        uptime_view: "View monitor"
+        defaults_link: "Environment defaults →"
+        legend: "Inherit follows the environment's default, set for the whole organization. On and Off apply to this project only."
+        inactive_title: "Not active on this project:"
+        capability_column: "Capability"
+        deactivate_confirm: "Deactivate %{environment} on this project? Linked tokens, monitors and servers stay, but the environment will no longer be active here."
+        servers_none: "No servers in the organization yet."
+        servers_go: "Go to servers →"
+        tokens:
+          zero: "No active tokens"
+          one: "1 active token"
+          other: "%{count} active tokens"

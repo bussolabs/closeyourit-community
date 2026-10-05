@@ -1,0 +1,14 @@
+---
+en:
+  metrics:
+    query_label:
+      read: "Read · %{subject}"
+      write: "Write · %{subject}"
+      change: "Update · %{subject}"
+      delete: "Delete · %{subject}"
+    slow_queries:
+      suspect: suspect measure
+      suspect_hint: "A single operation over a minute is nearly never its duration, but a queue wait measured badly: check it before taking it at face value."
+      excluded:
+        one: "1 row hidden because it is about the system's internal tables"
+        other: "%{count} rows hidden because they are about the system's internal tables"

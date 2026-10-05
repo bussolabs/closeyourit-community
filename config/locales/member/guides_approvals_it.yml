@@ -1,0 +1,70 @@
+---
+it:
+  member:
+    guides:
+      index:
+        approvals:
+          title: Approvazioni
+      approvals:
+        title: Approvazioni
+        subtitle: Come smaltire tutto quello che aspetta una tua decisione.
+        home_title: Si comincia dalla schermata iniziale
+        home_intro: "Aprendo il programma trovi una cosa sola da decidere: quella ferma da più tempo. Decidi, e compare la successiva. Questa pagina serve quando vuoi vedere tutto l'arretrato insieme, o cercare una lavorazione precisa."
+        home_b1: "A sinistra il progetto, al centro quello su cui decidi, a destra i pulsanti."
+        home_b2: "«Salta» la rimette in coda per oggi e ti fa vedere la prossima; «Rimanda a domani» la toglie fino a domani mattina. Nessuna delle due decide niente, e chi ha chiesto quella cosa continua a vederla in attesa."
+        home_b3: "Sopra la decisione trovi quante ne restano, quante ne hai rimandate, e quante vanno avanti da sole."
+        what_title: A cosa serve
+        what_intro: "È l'elenco di tutto ciò che è fermo in attesa di una tua parola, in un posto solo. Una riga per lavorazione, e su ogni riga i passaggi che percorre: si vede al volo dove si è fermata."
+        what_b1: Le analisi che gli agenti hanno preparato e aspettano il tuo via libera.
+        what_b2: I ticket arrivati in revisione dove sei tu a doverli guardare.
+        what_b3: Le domande che gli agenti ti hanno fatto e aspettano risposta.
+        what_b4: Le richieste di modifica ai dati riservati, che per regola deve approvare una seconda persona.
+        what_b5: I passaggi in produzione, che aspettano il tuo via libera prima di partire.
+        how_title: Come si usa
+        how_step1: Apri Approvazioni dal menu a sinistra, oppure premi «g» e poi «a» da qualsiasi pagina.
+        how_step2: "Guarda l'elenco: ogni riga è una lavorazione, raggruppata sotto il suo progetto, con in cima quelle ferme da più tempo. Premi il nome di un progetto per chiuderlo e togliere di mezzo quello che non ti interessa."
+        how_step3: Premi «Valuta» sulla riga per leggerla per intero e decidere. Appena hai deciso torni all'elenco, con una riga in meno.
+        how_step4: "Se quello che c'è da leggere è lungo, apri la scheda a tutta pagina: il testo si legge per intero e i pulsanti per decidere restano a portata mentre scorri."
+        board_title: Come si legge l'elenco
+        board_intro: "Ogni riga ha un pallino per ogni passaggio del percorso, chiamati con le stesse parole che leggi sul ticket. Ci sono sempre tutti, anche quelli che la lavorazione non ha ancora raggiunto — così le righe restano confrontabili a colpo d'occhio."
+        board_b1: "Il pallino verde con la spunta è un passaggio finito, quello acceso è dove la lavorazione aspetta te, quello rosso è dove è stata respinta, quello grigio chiaro non è ancora arrivato."
+        board_b2: Dove c'è stato un tentativo il pallino si preme e apre il resoconto di quel passaggio. Dove non è successo niente non si preme, perché non c'è niente da aprire.
+        board_b3: "La colonna «Stato» dice cosa aspetta quella riga, e «Attesa» da quanto: oltre tre giorni il numero diventa arancione, e in cima alla pagina c'è quante ne sono."
+        board_b4: In fondo scegli quante righe vedere per pagina, da dieci a cento.
+        buttons_title: "I modi di rispondere"
+        buttons:
+          accept:
+            title: Approva
+            body: "Dà il via libera. Puoi aggiungere due righe di note: finiscono nella discussione del ticket, così le legge anche chi eseguirà il lavoro. Se non hai niente da aggiungere è un clic solo."
+          reject:
+            title: Respingi
+            body: "Il motivo è obbligatorio. Su un'analisi di un agente vuol dire «rifalla»: torna indietro col tuo motivo e ne nasce una versione nuova. Su un ticket in revisione lo rimette in lavorazione."
+          ask:
+            title: Chiedi precisazioni
+            body: Quando non ti basta quello che leggi ma non vuoi respingere. La domanda finisce nella discussione del ticket e la richiesta resta in coda, in fondo, segnata come in attesa. Torna in cima appena qualcuno risponde.
+          reassess:
+            title: Rivaluta
+            body: "Per i ticket vecchi: chiede all'agente di rileggere il codice di oggi e dire se quel lavoro serve ancora. Se lo trova già fatto chiude il ticket e lascia scritto in quali file l'ha trovato; se serve ancora, il piano si riscrive da capo. Compare finché il lavoro è da pianificare o il piano aspetta il tuo sì — dopo, il codice l'ha già scritto l'agente e la domanda diventa un'altra."
+        filters_title: Vedere un tipo per volta
+        filters_intro: "Sopra la coda c'è una barra con tre menu a tendina: tipo di richiesta, progetto e agente. Nel menu del tipo trovi piani da approvare, lavori consegnati, rilasci da autorizzare, lavorazioni ferme, ticket in revisione, domande, dati riservati e quelle in attesa di risposta, ognuno col numero di quante ne aspettano. Scegline uno e in coda restano solo quelle."
+        filters_b1: Si sceglie un tipo alla volta. Torni a vedere l'intera coda scegliendo «Tutte». Il menu del progetto e quello dell'agente compaiono solo se in coda ce n'è più di uno.
+        filters_b2: Nel menu compaiono solo i tipi che hanno davvero qualcosa da fare, così ogni voce porta a lavoro vero. Quello scelto resta al suo posto anche quando lo svuoti.
+        filters_b3: "Il tipo scelto resta acceso mentre decidi: appena hai finito una richiesta si apre la successiva dello stesso tipo, e l'indirizzo della pagina se lo porta dietro se la ricarichi o la condividi."
+        bulk_title: Approvarne più di una insieme
+        bulk_intro: "Quando la coda è lunga e le richieste sono tutte da approvare non serve aprirle una per una: ogni riga che si può approvare così com'è ha una casella a sinistra. Spunta quelle che vuoi — o tutte insieme dalla casella in cima — e premi «Approva le selezionate»."
+        bulk_b1: La casella c'è sulle analisi da approvare, sul lavoro consegnato, sui ticket in revisione che puoi gestire e sulle richieste di modifica ai dati riservati.
+        bulk_b2: Non c'è sulle domande degli agenti, che vogliono una risposta scritta, né sulle lavorazioni ferme, dove quel pulsante non approva ma rimette in coda il lavoro, né sui passaggi in produzione, che si autorizzano uno per volta.
+        bulk_b3: "In blocco non si scrivono note e non si respinge: per quelle apri la richiesta e decidi una alla volta."
+        bulk_b4: Alla fine un messaggio dice quante ne hai approvate e se qualcuna è rimasta in coda.
+        production_title: Il via libera alla produzione
+        production_intro: "Quando un assistente ha finito e la prova è andata bene, il passaggio in produzione non parte da solo: si ferma e te lo chiede. La richiesta porta scritto con quale versione è stata fatta la prova, così sai cosa stai per mandare fuori."
+        production_b1: "Premendo «Vai in produzione» il lavoro riprende da lì e il rilascio viene fatto. Finché non premi, non esce niente."
+        production_b2: "Non c'è un pulsante per respingere. Se non vuoi rilasciare, non premere: la lavorazione resta dov'è e ci torni quando vuoi."
+        production_b3: È l'unica richiesta che non si approva insieme alle altre in blocco. Si dà una per volta, guardandola.
+        retrying_title: Quelle che riprovano da sole
+        retrying_intro: "Quando la revisione respinge un tentativo, a volte la lavorazione riparte da sé: non aspetta te. Quelle stanno fuori dalla coda e fuori dal numero in alto, in un elenco a parte che apri dal pulsante «In corso, non serve te», col numero di quante sono."
+        retrying_b1: Sono già in movimento. Non devi farci niente, e infatti non ti vengono contate fra le cose da decidere.
+        retrying_b2: Aprendone una leggi l'ultimo tentativo respinto e cosa ha detto la revisione, così vedi se sta girando a vuoto.
+        retrying_b3: "Se una si è impiantata la chiudi da lì, con «Chiudi la lavorazione»: non devi cercarla altrove."
+        note: Vedi solo le richieste che tocca a te decidere. Le altre non compaiono, e non si aprono nemmeno col link diretto.
+        cta: Vai alle Approvazioni

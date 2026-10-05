@@ -1,0 +1,33 @@
+<%= tag.div(class: @wrapper_class) do %>
+  <% if @label %>
+    <label for="<%= dom_id %>" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5">
+      <%= @label %><% if @required %><span class="text-red-500 dark:text-red-400 ml-0.5">*</span><% end %>
+    </label>
+  <% end %>
+  <%# CYRA-442: le due parole che il widget scrive da solo («N selected», «Search…») vivevano dentro
+      il JS, dove nessuna scelta di lingua le raggiungeva. Ora arrivano da qui, tradotte. %>
+  <%= tag.div(class: "relative", data: wrapper_data) do %>
+    <%= tag.select(**select_html_options) do %>
+      <% if @include_blank %><option value=""><%= @placeholder %></option><% end %>
+      <% @options.each do |label, value, color| %>
+        <% desc = option_description(value) %>
+        <option value="<%= value %>" data-color="<%= color %>"<% if desc %> data-description="<%= desc %>" title="<%= desc %>"<% end %> <%= "disabled" if option_disabled?(value) %> <%= "selected" if selected?(value) %>><%= label %></option>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%# CYRA-364: il perimetro della ricerca, esplicito e reversibile. Senza name: è un comando del
+      campo, non un dato del form — non deve finire nel submit. %>
+  <% if remote_all_label %>
+    <label class="mt-1.5 flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-zinc-400">
+      <input type="checkbox" class="rounded border-stone-300 dark:border-zinc-700 text-indigo-600 dark:text-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+             data-ui--remote-options-target="all" data-action="change->ui--remote-options#reload"
+             data-test="<%= @test_id %>-all">
+      <%= remote_all_label %>
+    </label>
+  <% end %>
+  <% if @error %>
+    <p class="mt-1 text-[11px] text-red-600 dark:text-red-400"><%= @error %></p>
+  <% elsif @hint %>
+    <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400"><%= @hint %></p>
+  <% end %>
+<% end %>

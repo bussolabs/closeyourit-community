@@ -1,0 +1,12 @@
+# compiler: R8
+# compiler_version: 9.4.28
+# common_typos_disable
+# {"id":"com.android.tools.r8.mapping","version":"2.2"}
+# pg_map_id: 827322ffc3e9772100f3eb657f66dfb3f8312e9534c301329e3a2d001c96ab9c
+# pg_map_hash: SHA-256 827322ffc3e9772100f3eb657f66dfb3f8312e9534c301329e3a2d001c96ab9c
+proof.Crash -> proof.Crash:
+# {"id":"sourceFile","fileName":"Crash.java"}
+    1:1:int leaf(int):4:4 -> main
+    1:1:void boundary():7 -> main
+    1:1:void main(java.lang.String[]):9 -> main
+    2:2:void main(java.lang.String[]):10:10 -> main

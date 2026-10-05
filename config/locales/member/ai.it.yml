@@ -1,0 +1,6 @@
+it:
+  member:
+    ai:
+      errors:
+        not_found: "Richiesta AI non trovata o scaduta."
+        internal: "Analisi AI fallita per un errore interno."

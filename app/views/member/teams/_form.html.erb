@@ -1,0 +1,83 @@
+<%# locals: team, url, method, title, submit_label, selected, delete_path %>
+<% content_for :title, title %>
+
+<div class="p-7">
+  <div>
+    <%= render Ui::PageHeaderComponent.new(
+          title: title,
+          breadcrumb: [ { label: t("member.teams.title"), href: member_teams_path },
+                        *(team.persisted? ? [ { label: team.name }, { label: t("member.breadcrumb.edit") } ] : [ { label: t("member.breadcrumb.new") } ]) ]) do |h| %>
+      <% h.with_actions do %>
+        <% if delete_path %>
+          <%= render Ui::ButtonComponent.new(label: t("member.teams.delete"), href: delete_path, method: :delete, variant: :danger_outline, size: :sm, icon: "trash", test_id: "team-delete", confirm: team_delete_confirm(team)) %>
+        <% end %>
+        <%= render Ui::ButtonComponent.new(label: t("member.teams.cancel"), href: member_teams_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: submit_label, type: "submit", icon: "check", form: "team-form", test_id: "team-form-submit", size: :sm) %>
+      <% end %>
+    <% end %>
+
+    <%= form_with url: url, method: method, id: "team-form", class: "mt-6", data: { test: "team-form" } do %>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+        <div class="space-y-5">
+          <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-5">
+            <div class="flex gap-4 flex-wrap">
+              <div class="flex-1 min-w-[200px]">
+                <%= render Ui::InputComponent.new(name: "name", label: t("member.teams.name"), required: true, value: team.name, test_id: "team-name", error: @errors&.dig(:name)&.first) %>
+              </div>
+              <%= render "member/shared/color_field", record: team, prefix: "team", scope: "member.teams" %>
+            </div>
+          </div>
+
+          <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-5" data-test="team-default-assignee-section">
+            <%= render Ui::SelectComponent.new(name: "default_assignee_id", label: t("member.teams.default_assignee"),
+                  options: @accounts.map { |a| [ a.name, a.id ] }, selected: team.default_assignee_id,
+                  include_blank: true, placeholder: t("member.teams.default_assignee_placeholder"),
+                  hint: t("member.teams.default_assignee_hint"), test_id: "team-default-assignee",
+                  error: @errors&.dig(:default_assignee)&.first) %>
+          </div>
+
+          <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-5" data-test="team-members">
+            <input type="hidden" name="member_ids[]" value="">
+            <%= render Ui::SelectComponent.new(name: "member_ids", multiple: true, label: t("member.teams.members"),
+                  options: @accounts.map { |a| [ a.name, a.id ] }, selected: selected[:member_ids],
+                  placeholder: t("member.teams.add_member"), test_id: "team-members") %>
+          </div>
+
+          <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-5" data-test="team-roles">
+            <input type="hidden" name="role_ids[]" value="">
+            <%= render Ui::SelectComponent.new(name: "role_ids", multiple: true, label: t("member.teams.roles"),
+                  options: @roles.map { |r| [ r.name, r.id, r.color ] }, selected: selected[:role_ids],
+                  hint: t("member.teams.roles_note"), placeholder: t("member.teams.add_role"), test_id: "team-roles") %>
+          </div>
+        </div>
+
+        <div class="space-y-5">
+          <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+            <div class="px-5 py-5 border-b border-stone-200 dark:border-zinc-800" data-test="team-scope-groups">
+              <input type="hidden" name="group_ids[]" value="">
+              <%= render Ui::SelectComponent.new(name: "group_ids", multiple: true, label: t("member.teams.scope_groups"),
+                    options: @groups.map { |g| [ g.name, g.id, g.color ] }, selected: selected[:group_ids],
+                    hint: t("member.teams.group_note"), placeholder: t("member.teams.add_group"), test_id: "team-scope-groups") %>
+            </div>
+            <div class="px-5 py-5" data-test="team-scope-projects">
+              <input type="hidden" name="project_ids[]" value="">
+              <%= render Ui::SelectComponent.new(name: "project_ids", multiple: true, label: t("member.teams.scope_projects"),
+                    options: @projects.map { |p| [ p.name, p.id, p.color ] }, selected: selected[:project_ids],
+                    hint: t("member.teams.project_note"), placeholder: t("member.teams.add_project"), test_id: "team-scope-projects") %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @access_matrix && team.persisted? %>
+      <div class="mt-6" data-controller="rbac-preview"
+           data-rbac-preview-url-value="<%= access_preview_member_team_path(team) %>"
+           data-rbac-preview-form-value="team-form">
+        <div data-rbac-preview-target="schema">
+          <%= render "member/shared/access_matrix", subjects: @access_matrix %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

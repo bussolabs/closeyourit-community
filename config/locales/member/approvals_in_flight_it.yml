@@ -1,0 +1,34 @@
+# CYRA-630 — l'elenco di ciò che va avanti da solo, dentro la pagina delle decisioni.
+# Prima erano due posti: `?state=retrying` (le sole lavorazioni che riprovavano) e la pagina
+# «Lavorazioni». Adesso è un elenco solo, con un perimetro più largo: tutto ciò che è in volo e non
+# aspetta nessuno. Le chiavi arrivano da `member.workflows`, che non esiste più.
+it:
+  member:
+    approvals:
+      counts:
+        in_flight: Vanno avanti da sole
+      in_flight:
+        title: In corso, non serve te
+        help_title: "Cosa stanno facendo gli agenti adesso. Niente qui aspetta una tua decisione."
+        count: In corso
+        link: In corso, non serve te
+        back: Torna alle decisioni
+        retry_hint: "Il sistema non riesce a leggere una cosa su GitHub (%{code}). Riprova alle %{at}. Da te non serve niente."
+        production_soak: "In prova in staging. Se non compaiono errori nuovi, va in produzione dalle %{at}."
+        production_staging_errors: "Ferma prima della produzione: in staging è comparso un errore nuovo."
+        production_hold: Ferma
+        production_hold_confirm: "Fermare questo rilascio? Il codice è già su main: finché resta fermo, nessun rilascio di questo repository va in produzione."
+        filters:
+          all: Tutte
+          running: In lavorazione
+          idle: Non avviate
+        col_project: Progetto
+        col_ticket: Ticket
+        col_state: A che punto è
+        col_outcome: Ultimo esito
+        col_agent: Agente
+        col_host_time: Tempo dell'agente
+        col_last: Ultima attività
+        no_match: Nessuna lavorazione con questi filtri.
+        empty: Nessuna lavorazione in corso
+        empty_body: Quando un agente prende in carico un ticket, la lavorazione compare qui e resta finché non arriva in fondo.

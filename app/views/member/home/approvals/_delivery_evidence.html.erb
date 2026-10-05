@@ -1,0 +1,28 @@
+<%# locals: (attempt:) %>
+<%# What the delivery claims, before the words: counted criteria, tests and deviations, marked as stated
+    by the agent. Each deviation is read in full. CYRA-886 %>
+<% evidence = delivery_evidence(attempt) %>
+<% decision_card = delivery_decision_card(attempt) %>
+<% if evidence || decision_card %>
+  <div class="px-4 py-3.5 border-b border-stone-100 dark:border-zinc-800 space-y-3" data-test="approvals-delivery-evidence">
+    <% if decision_card %>
+      <%= render "member/home/approvals/decision_card", decision_card: %>
+    <% end %>
+    <% if evidence %>
+      <div class="flex flex-wrap items-center gap-1.5">
+        <%= render Ui::BadgeComponent.new(label: t("member.approvals.evidence.criteria", done: evidence.criteria_done, total: evidence.criteria_total),
+                                          color: evidence.criteria_done == evidence.criteria_total ? "emerald" : "amber", dot: true) %>
+        <%= render Ui::BadgeComponent.new(label: t("member.approvals.evidence.tests", done: evidence.tests_done, total: evidence.tests_total),
+                                          color: evidence.tests_done == evidence.tests_total ? "emerald" : "red", dot: true) %>
+        <%= render Ui::BadgeComponent.new(label: t("member.approvals.evidence.deviations", count: evidence.deviations.size),
+                                          color: evidence.deviations.empty? ? "emerald" : "amber", dot: true) %>
+        <span class="font-mono text-[10.5px] uppercase tracking-[0.08em] text-amber-700 dark:text-amber-300"><%= t("member.approvals.evidence.reported") %></span>
+      </div>
+      <% evidence.deviations.each do |deviation| %>
+        <p class="rounded-md border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 px-2.5 py-1.5 text-[12.5px] text-amber-900 dark:text-amber-200 leading-relaxed max-w-[70ch]" data-test="approvals-delivery-deviation">
+          <strong><%= t("member.approvals.evidence.deviation") %>:</strong> <%= deviation["title"] %> — <%= deviation["impact"] %>
+        </p>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

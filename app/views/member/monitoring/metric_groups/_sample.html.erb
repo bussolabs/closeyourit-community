@@ -1,0 +1,21 @@
+<%# locals:
+      sample:      (required) — Metrics::Sample (occorrenza)
+      selected_id: (opt) id dell'occorrenza selezionata (evidenziazione riga).
+      thresholds:  (opt) soglie di colore del progetto (CYRA-341); assenti → valori di sistema.
+    Riga di un'occorrenza nella lista campioni della show. Resa server-side (controller, @occurrences) sia
+    al load sia al page-refresh Turbo che ogni nuovo campione innesca sullo stream del gruppo (CYRA-41): il
+    morph ri-renderizza l'intera lista coi pannelli-dettaglio, quindi non c'è più il caso "campione live
+    senza pannello" del vecchio prepend. Il container #metric_group_samples_<group.id> resta come ancora
+    DOM per il morph. %>
+<% selected = local_assigns[:selected_id].present? && sample.id == local_assigns[:selected_id] %>
+<% thresholds = local_assigns[:thresholds] %>
+<%= render Ui::TableComponent::RowComponent.new(selected: selected, id: dom_id(sample), test_id: "occurrence-row", tabindex: selected ? 0 : -1,
+      class: "cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-400",
+      data: { occurrence_select_target: "row", action: "click->occurrence-select#select", occurrence_id: sample.id,
+              announce: t("member.monitoring.viewing_occurrence", when: metric_time_ago(sample.occurred_at)) }) do %>
+  <%= render(Ui::TableComponent::CellComponent.new(header: true, mono: true, class: "text-gray-600 dark:text-zinc-400")) { metric_time_ago(sample.occurred_at) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.metrics.col_duration"), align: :right, mono: true, class: "font-semibold #{metric_duration_color(sample.duration_ms, thresholds)}", title: metric_threshold_hint(thresholds))) { metric_duration_label(sample.duration_ms) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.metrics.col_queries"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { (occurrence_query_count(sample) || "—").to_s } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.metrics.col_environment")) do %><% if sample.environment.present? %><%= render Ui::BadgeComponent.new(label: sample.environment, color: :emerald, dot: true) %><% else %><span class="text-gray-300 dark:text-zinc-600">—</span><% end %><% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.metrics.col_cached"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400")) { occurrence_payload(sample)["cached"] ? "yes" : "no" } %>
+<% end %>

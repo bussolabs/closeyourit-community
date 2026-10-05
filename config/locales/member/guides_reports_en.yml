@@ -1,0 +1,27 @@
+en:
+  member:
+    guides:
+      index:
+        reports:
+          title: Data summary by email
+      reports:
+        title: Data summary by email
+        subtitle: How things are going, in one email — visits, errors and uptime across your projects.
+        what_title: What it is
+        what_intro: An email that sums up the numbers for the period, so you know how things are going without opening page after page. It arrives in the morning and only covers the projects you can see.
+        what_traffic: "Visits: how many there were, how many visitors, and how that compares with the period before."
+        what_errors: "Errors: how many happened, how many issues are new, how many are still open."
+        what_uptime: "Uptime: how much of the time your sites answered the checks."
+        setup_title: How to turn it on
+        setup_step1: Open your notification preferences. The «Data summary by email» box sits under the delivery channels.
+        setup_step2: Choose how often you want it.
+        cadence_daily: One email every morning, covering the last twenty-four hours.
+        cadence_weekly: One email on Monday morning, covering the last seven days.
+        cadence_monthly: One email on the first of the month, covering the last thirty days.
+        setup_step3: Save. The first email goes out on the next run, then it settles on the day of the frequency you chose.
+        open_preferences: Go to preferences
+        notes_title: Good to know
+        note_visibility: "The summary only covers the projects you can see: two people in the same organization can get different numbers."
+        note_empty: If nothing happened during the period, no email is sent. Better no email than a sheet of zeros.
+        note_not_alerts: It does not replace alerts. Alerts tell you what just happened, the summary tells you how things are going.
+        note_email_off: If you switch email off among the delivery channels, the summary stops until you turn it back on.

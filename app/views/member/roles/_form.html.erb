@@ -1,0 +1,81 @@
+<%# locals: role, url, method, title, submit_label, selected_keys, delete_path %>
+<% content_for :title, title %>
+
+<div class="p-7">
+  <div>
+    <%= render Ui::PageHeaderComponent.new(
+          title: title,
+          breadcrumb: [ { label: t("member.roles.title"), href: member_roles_path },
+                        *(role.persisted? ? [ { label: role.name }, { label: t("member.breadcrumb.edit") } ] : [ { label: t("member.breadcrumb.new") } ]) ]) do |h| %>
+      <% h.with_actions do %>
+        <% if delete_path %>
+          <%= render Ui::ButtonComponent.new(label: t("member.roles.delete"), href: delete_path, method: :delete, variant: :danger_outline, size: :sm, icon: "trash", test_id: "role-delete", confirm: role_delete_confirm(role)) %>
+        <% end %>
+        <%= render Ui::ButtonComponent.new(label: t("member.roles.cancel"), href: member_roles_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: submit_label, type: "submit", icon: "check", form: "role-form", test_id: "role-form-submit", size: :sm) %>
+      <% end %>
+    <% end %>
+
+    <%= form_with url: url, method: method, id: "role-form", class: "mt-6 space-y-5", data: { test: "role-form" } do %>
+      <input type="hidden" name="permission_keys[]" value="">
+
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-5">
+        <div class="flex gap-4 flex-wrap">
+          <div class="flex-1 min-w-[220px]">
+            <%= render Ui::InputComponent.new(name: "name", label: t("member.roles.name"), required: true, value: role.name, test_id: "role-name", error: @errors&.dig(:name)&.first) %>
+          </div>
+          <%= render "member/shared/color_field", record: role, prefix: "role", scope: "member.roles" %>
+        </div>
+      </div>
+
+      <%# T1 — the permissions are one panel: title, count and legend in its header, the note in its footer. %>
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="role-permissions">
+        <div class="px-5 py-3 border-b border-stone-200 dark:border-zinc-800">
+          <div class="flex items-center justify-between">
+            <p class="text-[12px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.roles.permissions") %></p>
+            <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.roles.selected_count", selected: selected_keys.size, total: Authorization::Catalog.keys.size) %></p>
+          </div>
+          <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400">
+            <span class="inline-flex items-center rounded px-1.5 py-px font-mono text-[10px] bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400"><%= t("authorization.scopes.project") %></span>
+            <%= t("member.roles.legend") %>
+          </p>
+        </div>
+
+        <div class="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 items-start">
+          <% Authorization::Catalog.by_area.each do |area, entries| %>
+            <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden" data-test="role-area-<%= area %>">
+              <div class="px-5 py-2.5 bg-stone-50/60 dark:bg-zinc-800/60 border-b border-stone-200 dark:border-zinc-800">
+                <span class="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("authorization.areas.#{area}") %></span>
+              </div>
+              <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+                <% entries.each do |entry| %>
+                  <% key = entry[:key] %>
+                  <%# CYRA-439 — accanto al nome, cosa comporta concederlo: una casella con scritto
+                      `servers.execute` non diceva a chi amministra che stava autorizzando comandi
+                      sulle macchine. I permessi delicati portano un avviso, non solo un colore. %>
+                  <label class="flex items-start gap-3 px-5 py-2.5 hover:bg-stone-50/60 dark:hover:bg-zinc-800/60 cursor-pointer">
+                    <input type="checkbox" name="permission_keys[]" value="<%= key %>" class="mt-0.5 w-4 h-4 rounded accent-indigo-600 shrink-0" data-test="role-key-<%= key %>" <%= "checked" if selected_keys.include?(key) %>>
+                    <span class="min-w-0 flex-1">
+                      <span class="flex items-center flex-wrap gap-2">
+                        <span class="text-[13px] text-zinc-900 dark:text-zinc-100"><%= authorization_permission_label(key) %></span>
+                        <% if authorization_permission_dangerous?(key) %>
+                          <span class="inline-flex items-center gap-1 rounded px-1.5 py-px text-[10px] font-semibold bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-300" data-test="role-key-danger-<%= key %>">
+                            <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[9px]") %><%= t("member.roles.dangerous") %>
+                          </span>
+                        <% end %>
+                        <span class="ml-auto inline-flex items-center rounded px-1.5 py-px font-mono text-[10px] <%= entry[:scoped] ? "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400" : "bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400" %>"><%= entry[:scoped] ? t("authorization.scopes.project") : t("authorization.scopes.org") %></span>
+                      </span>
+                      <span class="mt-0.5 block text-[11.5px] text-gray-500 dark:text-zinc-400 leading-snug"><%= authorization_permission_description(key) %></span>
+                      <span class="mt-0.5 block font-mono text-[10.5px] text-gray-400 dark:text-zinc-500"><%= key %></span>
+                    </span>
+                  </label>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+        <p class="px-5 py-3 border-t border-stone-200 dark:border-zinc-800 text-[11px] text-gray-500 dark:text-zinc-400"><%= render Ui::IconComponent.new(name: "bolt", class: "mr-1") %><%= t("member.roles.propagate_note") %></p>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,47 @@
+<%# CYRA-382 — Anteprima di ciò che verrà creato (locals: group). Il bottone «Promuovi a ticket» era
+    il primo della pagina e non diceva cosa avrebbe creato: in quale progetto, di che tipo, con quale
+    titolo, con cosa allegato. Qui si legge prima di confermare. <dialog> nativo pilotato da
+    ui--dialog, come il rifiuto della Home: nessuno stato sul server, funziona da tastiera. %>
+<%= render Ui::ModalComponent.new(title: t("member.monitoring.promote_preview.title"), test_id: "promote-preview-dialog",
+      data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+  <% modal.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: t("member.home.actions.cancel"), variant: :secondary_muted, size: :sm,
+          data: { action: "ui--dialog#close" }) %>
+    <%= render Ui::ButtonComponent.new(label: t("member.monitoring.promote_preview.confirm"),
+          href: promote_member_monitoring_error_group_path(group), method: :post, variant: :primary, size: :sm,
+          icon: "ticket", test_id: "promote-preview-confirm") %>
+  <% end %>
+  <dl class="space-y-2.5">
+    <div class="flex items-start gap-3">
+      <dt class="w-28 shrink-0 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.promote_preview.project") %></dt>
+      <dd class="min-w-0 text-[12.5px] text-zinc-900 dark:text-zinc-100" data-test="promote-preview-project"><%= group.project.name %></dd>
+    </div>
+    <div class="flex items-start gap-3">
+      <dt class="w-28 shrink-0 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.promote_preview.kind") %></dt>
+      <dd class="min-w-0 text-[12.5px] text-zinc-900 dark:text-zinc-100" data-test="promote-preview-kind"><%= t("member.tickets.kind.bug") %></dd>
+    </div>
+    <div class="flex items-start gap-3">
+      <dt class="w-28 shrink-0 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.promote_preview.ticket_title") %></dt>
+      <dd class="min-w-0 text-[12.5px] text-zinc-900 dark:text-zinc-100 break-words" data-test="promote-preview-title"><%= group.title %></dd>
+    </div>
+    <div class="flex items-start gap-3">
+      <dt class="w-28 shrink-0 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.promote_preview.attached") %></dt>
+      <dd class="min-w-0 text-[12.5px] text-gray-600 dark:text-zinc-400" data-test="promote-preview-attached">
+        <ul class="space-y-0.5">
+          <li><%= t("member.monitoring.promote_preview.attach_culprit", culprit: error_culprit_text(group.culprit).presence || t("member.monitoring.similar_same_message.no_culprit")) %></li>
+          <%# CYRA-567: il chip in cima dice già «non tracciato» (CYRA-380) e qui si scriveva ancora «su 0
+              persone». È la riga che descrive cosa finirà nel ticket, e il ticket si legge lontano da questa
+              pagina: quello zero fa archiviare come innocuo un problema che potrebbe colpire chiunque. %>
+          <li data-test="promote-preview-counts">
+            <% if group.user_context_tracked? %>
+              <%= t("member.monitoring.promote_preview.attach_counts", events: number_with_delimiter(group.events_count), users: number_with_delimiter(group.users_count)) %>
+            <% else %>
+              <%= t("member.monitoring.promote_preview.attach_counts_untracked", events: number_with_delimiter(group.events_count)) %>
+            <% end %>
+          </li>
+          <li><%= t("member.monitoring.promote_preview.attach_link") %></li>
+        </ul>
+      </dd>
+    </div>
+  </dl>
+<% end %>

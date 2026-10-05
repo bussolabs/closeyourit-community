@@ -1,0 +1,5 @@
+<%# «Show more» for one board column (CYRA-390, K14): a Turbo Stream GET appends the next block and
+    replaces this footer. Without Turbo it falls back to the list filtered by status. %>
+<%= render Ui::ButtonComponent.new(label: t("member.tickets.board.show_more"), href: board_more_path(status, next_page),
+      variant: :secondary_muted, size: :sm, icon: "chevron-down", class: "w-full justify-center",
+      test_id: "board-more-#{status.code}", data: { turbo_stream: true }) %>

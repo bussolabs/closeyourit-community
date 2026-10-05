@@ -1,0 +1,186 @@
+<% content_for :title, @rule.name %>
+<% tone = alerting_event_tone(@rule.event_type) %>
+
+<div class="p-7 space-y-6" data-test="alerting-rule-show">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: tone[:icon], class: "text-[12px]")),
+                                    class: "inline-flex items-center justify-center w-7 h-7 rounded-md #{tone[:bg]} #{tone[:fg]} shrink-0 align-middle mr-2"),
+                           @rule.name ]),
+        breadcrumb: [ { label: t("member.alerting.rules.title"), href: member_alerting_rules_path },
+                      { label: @rule.name } ],
+        counts_test_id: "alerting-rule-meta") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.alerting.rules.show.event"), value: alerting_event_label(@rule.event_type), test_id: "alerting-rule-event") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.alerting.rules.show.status"),
+            value: (@rule.muted? ? t("member.alerting.rules.status_muted") : (@rule.enabled? ? t("member.alerting.rules.status_on") : t("member.alerting.rules.status_off"))),
+            value_color: @rule.enabled? ? :emerald : :gray, test_id: "alerting-rule-status") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.alerting.rules.show.throttle"), value: t("member.alerting.rules.show.sentence.minutes", count: @rule.throttle_seconds / 60), test_id: "alerting-rule-throttle") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%# CYRA-478 — silenziare a tempo, distinto dallo spegnimento: la regola resta attiva e continua
+          a contare, ma non notifica fino alla scadenza. Finché è silenziata il comando diventa
+          "togli il silenzio", con scritto fino a quando dura. %>
+      <% if @rule.muted? %>
+        <%= render Ui::ButtonComponent.new(label: t("member.alerting.rules.unmute", time: l(@rule.muted_until, format: :short)),
+              href: member_alerting_rule_mute_path(@rule), method: :delete, variant: :secondary_muted, size: :sm,
+              icon: "bell", test_id: "alerting-rule-unmute") %>
+      <% else %>
+        <% { "1" => t("member.alerting.rules.mute_1h"), "24" => t("member.alerting.rules.mute_1d"), "168" => t("member.alerting.rules.mute_1w") }.each do |hours, label| %>
+          <%= render Ui::ButtonComponent.new(label: label, href: member_alerting_rule_mute_path(@rule, hours: hours),
+                method: :put, variant: :secondary_muted, size: :sm, icon: "bell-off",
+                test_id: "alerting-rule-mute-#{hours}") %>
+        <% end %>
+      <% end %>
+      <%= render Ui::ButtonComponent.new(label: t("member.alerting.rules.show.edit"), href: edit_member_alerting_rule_path(@rule), variant: :secondary_muted, size: :sm, icon: "pen", test_id: "alerting-rule-edit") %>
+      <%= render Ui::ButtonComponent.new(label: t("member.alerting.rules.show.delete"), href: member_alerting_rule_path(@rule), method: :delete, confirm: t("member.alerting.rules.delete_confirm"), variant: :danger_outline, size: :sm, icon: "trash", test_id: "alerting-rule-delete") %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-490 — la condizione in una frase, generata dai campi (Alerting::Rules::Sentence): si capisce
+      cosa fa la regola senza interpretare gli attributi di un modulo. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="alerting-rule-sentence">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center gap-2">
+      <%= render Ui::IconComponent.new(name: "align-left", class: "text-gray-400 dark:text-zinc-500 text-[12px]") %>
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.alerting.rules.show.sentence_title") %></h2>
+    </div>
+    <div class="px-4 py-4">
+      <p class="text-[13px] text-gray-700 dark:text-zinc-300 leading-relaxed" data-test="alerting-rule-sentence-body"><%= safe_join(@sentence, " ") %></p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <%# LEFT: storico degli scatti + cosa copre — le entità sorvegliate oggi, col conteggio %>
+    <div class="lg:col-span-2 space-y-6">
+      <%# CYRA-490 — storico degli scatti: quante volte è scattata (24h/7g/totale, come la tabella) e su
+          che cosa (le consegne recenti fuse per scatto, coi canali su cui è arrivata). %>
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="alerting-rule-history">
+        <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center gap-2">
+          <%= render Ui::IconComponent.new(name: "activity", class: "text-gray-400 dark:text-zinc-500 text-[12px]") %>
+          <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.alerting.rules.show.history_title") %></h2>
+          <span class="ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="alerting-rule-history-last">
+            <% if @trigger_stats.last_at %>
+              <%= t("member.alerting.rules.show.history_last", time: time_ago_in_words(@trigger_stats.last_at)) %>
+            <% else %>
+              <%= t("member.alerting.rules.show.history_never") %>
+            <% end %>
+          </span>
+        </div>
+        <div class="px-4 py-4 space-y-4">
+          <div class="grid grid-cols-3 gap-2" data-test="alerting-rule-history-stats">
+            <% { stat_24h: @trigger_stats.last_24h, stat_7d: @trigger_stats.last_7d, stat_total: @trigger_stats.total }.each do |key, value| %>
+              <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2">
+                <p class="font-mono text-[18px] font-semibold text-zinc-900 dark:text-zinc-100"><%= number_with_delimiter(value) %></p>
+                <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.alerting.rules.show.#{key}") %></p>
+              </div>
+            <% end %>
+          </div>
+
+          <% if @recent_triggers.any? %>
+            <ul class="divide-y divide-stone-100 dark:divide-zinc-800 -my-1" data-test="alerting-rule-history-list">
+              <% @recent_triggers.each do |trigger| %>
+                <li class="py-2 flex items-start gap-2">
+                  <%= render Ui::IconComponent.new(name: "bolt", class: "text-amber-500 dark:text-amber-400 text-[11px] mt-0.5 shrink-0") %>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[12.5px] text-zinc-900 dark:text-zinc-100 truncate"><%= trigger.title %></p>
+                    <p class="mt-0.5 flex items-center gap-1.5 flex-wrap font-mono text-[11px] text-gray-500 dark:text-zinc-400">
+                      <span><%= t("alerting.notifications.time_ago", time: time_ago_in_words(trigger.at)) %></span>
+                      <% trigger.channels.each do |via| %>
+                        <span class="rounded bg-stone-100 dark:bg-zinc-800 px-1.5 py-0.5 text-gray-600 dark:text-zinc-400"><%= t("member.alerting.rules.show.via.#{via}") %></span>
+                      <% end %>
+                    </p>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <%= render Ui::EmptyNoteComponent.new(text: t("member.alerting.rules.show.history_empty"), test_id: "alerting-rule-history-empty") %>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="alerting-rule-coverage">
+        <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center gap-2">
+          <%= render Ui::IconComponent.new(name: "crosshair", class: "text-gray-400 dark:text-zinc-500 text-[12px]") %>
+          <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.alerting.rules.show.covers_title") %></h2>
+          <span class="ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="alerting-rule-coverage-count"><%= t("member.alerting.rules.show.covers_summary.#{@coverage.kind}", count: @coverage.total) %></span>
+        </div>
+        <div class="px-4 py-4">
+          <% if @coverage.kind == :organization %>
+            <p class="text-[12.5px] text-gray-600 dark:text-zinc-400 leading-relaxed" data-test="alerting-rule-coverage-org"><%= t("member.alerting.rules.show.covers_org_body") %></p>
+          <% elsif @coverage.records.any? %>
+            <ul class="divide-y divide-stone-100 dark:divide-zinc-800 -my-2" data-test="alerting-rule-coverage-list">
+              <% @coverage.records.each do |entity| %>
+                <li class="py-2 flex items-center gap-2 flex-wrap" data-test="alerting-rule-covered-<%= entity.id %>">
+                  <% case @coverage.kind %>
+                  <% when :monitors %>
+                    <%= render Ui::IconComponent.new(name: "heart-pulse", class: "text-gray-400 dark:text-zinc-500 text-[11px]") %>
+                    <%= link_to entity.name, member_monitoring_monitor_path(entity), class: "text-[13px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" %>
+                    <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 rounded px-1.5 py-0.5"><%= entity.project.key %></span>
+                  <% when :cron_monitors %>
+                    <%= render Ui::IconComponent.new(name: "clock", class: "text-gray-400 dark:text-zinc-500 text-[11px]") %>
+                    <%= link_to entity.name, member_monitoring_cron_monitor_path(entity), class: "text-[13px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" %>
+                    <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 rounded px-1.5 py-0.5"><%= entity.project.key %></span>
+                  <% else %>
+                    <span class="w-3 h-3 rounded-[3px] <%= Ui::Colors.swatch(entity.color) %> shrink-0"></span>
+                    <%= link_to entity.name, member_project_path(entity), class: "text-[13px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" %>
+                    <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 rounded px-1.5 py-0.5"><%= entity.key %></span>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+            <% if @coverage.total > @coverage.records.size %>
+              <p class="mt-3 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.alerting.rules.show.covers_more", count: @coverage.total - @coverage.records.size) %></p>
+            <% end %>
+          <% else %>
+            <%= render Ui::EmptyNoteComponent.new(text: t("member.alerting.rules.show.covers_empty"), test_id: "alerting-rule-coverage-empty") %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <%# RIGHT: ambito + recapiti %>
+    <div class="space-y-6">
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="alerting-rule-scope">
+        <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.alerting.rules.show.scope_title") %></h2></div>
+        <div class="px-4 py-4 space-y-3">
+          <div>
+            <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.alerting.rules.form.projects") %></p>
+            <p class="mt-1 flex items-center gap-1.5 flex-wrap">
+              <% if @rule.project %>
+                <span class="w-3 h-3 rounded-[3px] <%= Ui::Colors.swatch(@rule.project.color) %> shrink-0"></span>
+                <%= link_to @rule.project.name, member_project_path(@rule.project), class: "text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" %>
+                <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 rounded px-1.5 py-0.5"><%= @rule.project.key %></span>
+              <% else %>
+                <span class="text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= t("member.alerting.rules.all_projects") %></span>
+              <% end %>
+            </p>
+          </div>
+          <div>
+            <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.alerting.rules.form.environments") %></p>
+            <p class="mt-1">
+              <% if @rule.environment %>
+                <%= render Ui::BadgeComponent.new(label: @rule.environment.label, color: @rule.environment.color, dot: true) %>
+              <% else %>
+                <span class="text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= t("member.alerting.rules.any_environment") %></span>
+              <% end %>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="alerting-rule-recipients">
+        <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.alerting.rules.show.channels_title") %></h2></div>
+        <div class="px-4 py-4 space-y-2">
+          <p class="flex items-center gap-2 text-[12.5px] text-gray-600 dark:text-zinc-400"><%= render Ui::IconComponent.new(name: "bell", class: "text-gray-400 dark:text-zinc-500 text-[11px]") %><%= t("member.alerting.rules.show.channels_via_app") %></p>
+          <% if @rule.channels.any? %>
+            <% @rule.channels.each do |channel| %>
+              <p class="flex items-center gap-2 text-[12.5px] text-gray-600 dark:text-zinc-400"><%= render Ui::IconComponent.new(name: "radio-tower", class: "text-gray-400 dark:text-zinc-500 text-[11px]") %><span class="font-medium text-zinc-900 dark:text-zinc-100"><%= channel.name %></span><span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400">(<%= t("member.alerting.channels.kinds.#{channel.kind}") %>)</span></p>
+            <% end %>
+          <% else %>
+            <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.alerting.rules.show.channels_none") %></p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

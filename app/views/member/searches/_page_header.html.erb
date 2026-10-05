@@ -1,0 +1,11 @@
+<%# Aperta come pagina (non dal pannello ⌘K) serve un campo dove scrivere: senza, restava l'invito a cercare e nient'altro. %>
+<%= render Ui::PageHeaderComponent.new(title: t("member.search.title"),
+      breadcrumb: [ { label: t("member.search.title") } ], test_id: "search-page-header") %>
+<%= form_with url: member_search_path, method: :get, role: "search",
+      class: "mt-4 flex h-9 items-center rounded-md border border-stone-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-within:ring-2 focus-within:ring-indigo-600" do |form| %>
+  <%= form.label :q, t("member.search.label"), class: "sr-only" %>
+  <%= render Ui::IconComponent.new(name: "search", class: "ml-3 text-[14px] text-gray-400 dark:text-zinc-500") %>
+  <%= form.search_field :q, value: @query, placeholder: t("member.search.placeholder"), autocomplete: "off",
+        class: "h-full min-w-0 flex-1 bg-transparent px-2 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 outline-none",
+        data: { test: "search-page-input" } %>
+<% end %>

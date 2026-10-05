@@ -1,0 +1,68 @@
+<%= tag.header(**container_options) do %>
+  <div class="<%= top_class %>">
+    <%# B25 — collapsed, the header keeps the title, the actions, the tabs and the counts. %>
+    <div class="group-data-[collapsed]/header:hidden">
+    <% if show_breadcrumb? %>
+      <%= render Ui::BreadcrumbComponent.new(crumbs: @breadcrumb, root_href: @root_href, root_label: @root_label) %>
+    <% elsif @breadcrumb.nil? && @back_href %>
+      <a href="<%= @back_href %>" data-test="<%= back_test_id %>" class="inline-flex items-center gap-1.5 text-[12px] font-medium text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"><%= render Ui::IconComponent.new(name: "chevron-left", class: "text-[11px]") %><%= @back_label %></a>
+    <% end %>
+    </div>
+    <div class="<%= "mt-2.5 group-data-[collapsed]/header:mt-0 " if top_block? %>min-w-0">
+      <%# CYRA-883 — title block and actions share one row; the actions wrap below it on narrow screens. %>
+      <div class="flex flex-wrap items-start group-data-[collapsed]/header:items-center gap-x-4 gap-y-3" data-test="<%= part_test_id("title-row") %>">
+        <div class="min-w-0 flex-1 basis-64">
+          <div class="flex flex-wrap items-center <%= mark? || badges? ? "gap-2.5" : "gap-1.5" %>">
+            <%= mark %>
+            <%= content_tag(@heading, @title, class: "font-display text-[22px] group-data-[collapsed]/header:text-[16px] font-semibold text-zinc-900 dark:text-zinc-100") %>
+            <%= badges %>
+            <% if @title_tooltip %>
+              <%= render Ui::TooltipComponent.new(text: @title_tooltip, placement: :bottom, test_id: title_help_test_id) %>
+            <% end %>
+          </div>
+          <% if @subtitle.present? %>
+            <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400 group-data-[collapsed]/header:hidden" data-test="<%= subtitle_test_id %>"><%= @subtitle %></p>
+          <% end %>
+          <%# CYRA-819 — in the title block, so on a phone it still comes before the wrapped actions. %>
+          <% if meta? %>
+            <div class="mt-2 group-data-[collapsed]/header:hidden"><%= meta %></div>
+          <% end %>
+        </div>
+        <% if actions? || collapsible? %>
+          <div class="flex items-center flex-wrap gap-1.5" data-test="<%= part_test_id("actions") %>"><%= actions %><%= collapse_toggle %></div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <% if bottom_row? %>
+    <div class="mt-1.5 flex flex-wrap items-center gap-x-4 border-t border-stone-100 dark:border-zinc-800 px-4" data-test="page-header-bottom">
+      <% if any_tabs? %>
+        <%= tag.div(class: "flex min-w-0 grow items-center gap-5", data: { test: @tabs_test_id }.compact) do %>
+          <nav class="flex min-w-0 items-center gap-5 overflow-x-auto scrollbar-none">
+            <% tabs.each do |tab| %><%= tab %><% end %>
+          </nav>
+          <% if more_tabs? %>
+            <%# Outside the scrolling nav: the panel is fixed-positioned by ui--row-menu, like the row menus. %>
+            <details class="relative shrink-0" data-controller="ui--row-menu" data-action="toggle->ui--row-menu#onToggle">
+              <summary class="<%= more_trigger_class %>" data-ui--row-menu-target="trigger" data-test="<%= part_test_id("tab-more") %>"
+                       aria-haspopup="menu" <%= "aria-current=page" if active_more_tab %>>
+                <%= more_trigger_label %>
+                <%= render Ui::IconComponent.new(name: "chevron-down", class: "text-[9px] text-gray-400 dark:text-zinc-500") %>
+              </summary>
+              <div data-ui--row-menu-target="panel" class="absolute right-0 top-11 z-30 w-52 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-1 text-left" data-test="<%= part_test_id("tab-more-menu") %>">
+                <% more_tabs.each do |tab| %>
+                  <%= link_to tab.href, "aria-current": (tab.active? ? "page" : nil), data: { test: tab.test_id }.compact, class: more_item_class(tab) do %>
+                    <%= more_item_label(tab) %>
+                  <% end %>
+                <% end %>
+              </div>
+            </details>
+          <% end %>
+        <% end %>
+      <% end %>
+      <% if counts? %>
+        <%= tag.div(counts, **counts_options) %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

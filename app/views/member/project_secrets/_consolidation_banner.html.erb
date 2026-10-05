@@ -1,0 +1,33 @@
+<%# locals: suggestions — solo per chi gestisce i secret dell'organizzazione. %>
+<%# An amber panel that opens with a click: an invitation, not an alarm. %>
+<details class="group rounded-lg border border-amber-200 dark:border-amber-500/40 bg-amber-50/50 dark:bg-amber-500/10" data-test="secrets-consolidation-banner">
+  <summary class="flex cursor-pointer list-none items-center gap-2 px-4 py-3 focus-visible:outline-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-400" data-test="secrets-consolidation-summary">
+    <%= render Ui::IconComponent.new(name: "group", class: "text-[12px] text-amber-700 dark:text-amber-300") %>
+    <span class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.secrets.origins.consolidations") %></span>
+    <span class="font-mono text-[12px] text-amber-800 dark:text-amber-200"><%= suggestions.size %></span>
+    <%= render Ui::IconComponent.new(name: "chevron-down", class: "ml-auto text-[10px] text-amber-700 dark:text-amber-300 -rotate-90 group-open:rotate-0 motion-safe:transition-transform") %>
+  </summary>
+  <div class="px-4 pb-4">
+    <p class="text-[13px] text-zinc-600 dark:text-zinc-400"><%= t("member.secrets.consolidation_body", count: suggestions.size) %></p>
+    <div class="mt-3 divide-y divide-stone-200 dark:divide-zinc-800 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <% suggestions.group_by(&:suggested_name).sort.each do |name, group| %>
+        <% conflicts = group.select { |suggestion| @consolidation_alias_conflicts&.include?([suggestion.environment_id, suggestion.value_fingerprint]) } %>
+        <details class="p-4" data-test="secrets-consolidation-group">
+          <summary class="flex cursor-pointer flex-wrap items-center justify-between gap-3 focus-visible:outline-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-400">
+            <span class="font-mono text-xs text-zinc-900 dark:text-zinc-100"><%= name %><span class="mt-1 block font-sans text-zinc-600 dark:text-zinc-400"><%= group.map { |suggestion| suggestion.environment.label }.join(" · ") %></span></span>
+            <span class="text-xs font-medium <%= conflicts.any? ? 'text-amber-800 dark:text-amber-200' : 'text-indigo-700 dark:text-indigo-300' %>"><%= conflicts.any? ? t("member.secrets.origins.alias_conflict") : t("member.secrets.origins.examine", count: group.size) %></span>
+          </summary>
+          <% if conflicts.any? %><p class="mt-3 max-w-2xl text-[13px] text-amber-800 dark:text-amber-200" data-test="secrets-consolidation-alias-conflict"><%= t("member.secrets.origins.alias_conflict_body") %></p><% end %>
+          <div class="mt-3 flex flex-wrap gap-3">
+            <% group.each do |suggestion| %>
+              <%= link_to member_vault_consolidation_path(suggestion), class: "inline-flex items-center gap-2 text-xs text-indigo-700 dark:text-indigo-300 underline underline-offset-4", data: { test: "secrets-consolidation-link-#{suggestion.id}" } do %>
+                <%= suggestion.environment.label %>
+                <%= render Ui::BadgeComponent.new(label: t("member.vault_attention.projects_count", count: suggestion.projects_count), color: "indigo") %>
+              <% end %>
+            <% end %>
+          </div>
+        </details>
+      <% end %>
+    </div>
+  </div>
+</details>

@@ -1,0 +1,53 @@
+<%# CYRA-821 — i risultati, e soltanto loro: sfogliare e riordinare chiedono questo frame e ricevono
+    questo frammento, senza layout, senza barra dei filtri e senza le pill dei conteggi. Il controller
+    risponde direttamente da qui (`render_results_frame`), quindi le query di ciò che sta fuori non
+    partono nemmeno. Le stesse regole degli errori: `turbo_action: advance` perché l'indirizzo segue
+    i risultati come in ogni altro elenco a frame, `class: block` perché un elemento personalizzato
+    nasce inline, `_top` su tutto ciò che cambia l'insieme — le pill in cima sarebbero rimaste
+    indietro. Le risposte senza questo frame le apre a schermo intero `frame_missing.js` (CYRA-827). %>
+<%= turbo_frame_tag "metrics-results", class: "block", data: { turbo_action: "advance" } do %>
+  <% if @metric_groups.empty? %>
+    <div class="px-4 py-10 text-center" data-test="metrics-no-match">
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.metrics.no_match") %></p>
+      <%# CYRA-340: quando è il periodo a svuotare l'elenco, la via d'uscita è allargarlo. %>
+      <% unless current_time_range.unbounded? %>
+        <p class="mt-1.5 text-[12px] text-gray-500 dark:text-zinc-400" data-test="metrics-no-match-range"><%= t("shared.time_range.empty_window") %></p>
+        <div class="mt-4">
+          <%= render Ui::ButtonComponent.new(label: t("shared.time_range.widen"),
+                href: member_monitoring_metric_groups_path(request.query_parameters.except("page", "from", "to").merge(range: "30d")),
+                variant: :secondary_muted, size: :sm, icon: "history",
+                test_id: "metrics-widen-range", data: { turbo_frame: "_top" }) %>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <%# CYRA-45: form del triage bulk (mirror errori). Colonna checkbox `ids[]` SEMPRE resa (anche nel
+        broadcast Turbo di _metric_group_row) → nessun disallineamento colonne; gate metrics.promote server-side. %>
+    <%= form_with url: bulk_triage_member_monitoring_metric_groups_path, method: :post,
+                  data: { controller: "ui--bulk-select", turbo_frame: "_top" } do %>
+      <%= render "member/monitoring/bulk_triage_bar", test_prefix: "metrics" %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.metrics.title"), selectable: { test_id: "metrics-select-all" })) do |t| %>
+        <% t.with_head do %>
+          <%# CYRA-351 — l'ordine: prima ciò che rende INTERPRETABILI i numeri (quante volte è
+              successo, quando, se qualcuno ci sta già lavorando), poi il picco massimo, che è la
+              colonna che si consulta di rado. La signature ha larghezza fissa e tooltip: era lei
+              a mangiarsi lo spazio delle altre. %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.metrics.col_signature"), sort: "signature", classes: "w-[20rem]") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.metrics.col_project"), sort: "project", classes: "w-24") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.metrics.col_kind"), sort: "kind", classes: "w-32") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.metrics.col_status"), classes: "w-24") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.metrics.col_total_duration"), sort: "total_duration", initial: :desc, align: :right, classes: "w-24") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.metrics.col_avg"), sort: "avg", initial: :desc, align: :right, classes: "w-20") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.metrics.col_occurrences"), sort: "occurrences", initial: :desc, align: :right, classes: "w-20") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.metrics.col_last_seen"), sort: "last_seen", initial: :desc, align: :right, classes: "w-24") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.metrics.col_ticket"), classes: "w-24") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.metrics.col_max"), sort: "max", initial: :desc, align: :right, classes: "w-20") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+        <% end %>
+        <%= render partial: "member/monitoring/metric_groups/metric_group_row", collection: @metric_groups, as: :group,
+              locals: { time_range_params: time_range_link_params } %>
+      <% end %>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "metrics-pagination")) %>
+    <% end %>
+  <% end %>
+<% end %>

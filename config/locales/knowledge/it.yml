@@ -1,0 +1,9 @@
+it:
+  activerecord:
+    # Nomi umani dei campi della pagina KB: entrano nei full_messages mostrati in flash e nelle
+    # risposte CLI (es. "Corpo supera il limite di 4.000 caratteri…").
+    attributes:
+      knowledge/page:
+        title: Titolo
+        body: Corpo
+        tech_spec: Sezione tecnica

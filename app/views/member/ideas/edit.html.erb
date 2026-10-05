@@ -1,0 +1,6 @@
+<%= render "form",
+      idea: @idea,
+      url: member_idea_path(@idea),
+      method: :patch,
+      title: t("member.ideas.form.edit_title"),
+      submit_label: t("member.ideas.form.save_edit") %>

@@ -1,0 +1,84 @@
+<% content_for :title, t("member.usage.title", project: @project.name) %>
+
+<%# CYRA-733 — che cosa di questo progetto è stato aperto davvero. Nessuna riga dice CHI: il canale
+    d'uso porta simboli e conteggi, mai una persona, un indirizzo o un parametro. %>
+<div class="p-7 space-y-6" data-test="member-project-usage">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "usage" %>
+
+  <%# T1 — title and counts head the one panel; under them the empty state or the table. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="usage-panel">
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.usage.section_title") %></h2>
+      <div class="flex items-center flex-wrap gap-1.5" data-test="usage-counts">
+        <%= render Ui::StatLabelComponent.new(label: t("member.usage.count_total"), value: @counts[:total],
+              test_id: "usage-count-total") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.usage.count_features"), value: @counts[:features],
+              value_color: :indigo, test_id: "usage-count-features") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.usage.count_routes"), value: @counts[:routes],
+              value_color: :emerald, test_id: "usage-count-routes") %>
+      </div>
+    </div>
+
+    <% filters_active = params[:kind].present? || params[:environment].present? %>
+    <% if @counts[:total].zero? && !filters_active %>
+      <%= render Ui::EmptyStateComponent.new(title: t("member.usage.empty"), body: t("member.usage.empty_body"),
+            icon: "chart-column", test_id: "usage-empty") %>
+    <% else %>
+      <div data-test="usage-table">
+        <%= render(Ui::TableToolbarComponent.new(
+              url: member_project_usage_path(@project), framed: true,
+              apply_test_id: "usage-filter", test_id: "usage-toolbar")) do |toolbar| %>
+          <% toolbar.with_filter(key: "kind", label: t("member.usage.filter_kind")) do %>
+            <div class="w-44"><%= render Ui::SelectComponent.new(name: "kind", summary: true,
+                  options: Usage::Symbol::KINDS.map { |k| [ usage_kind_label(k), k ] },
+                  selected: params[:kind], placeholder: t("member.usage.filter_kind"),
+                  test_id: "usage-filter-kind") %></div>
+          <% end %>
+          <% toolbar.with_filter(key: "environment", label: t("member.usage.filter_environment")) do %>
+            <div class="w-44"><%= render Ui::SelectComponent.new(name: "environment", summary: true,
+                  options: @environments.map { |e| [ e, e ] },
+                  selected: params[:environment], placeholder: t("member.usage.filter_environment"),
+                  test_id: "usage-filter-environment") %></div>
+          <% end %>
+        <% end %>
+        <div>
+
+          <% if @symbols.empty? %>
+            <div class="px-4 py-10 text-center" data-test="usage-no-match">
+              <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.usage.no_match") %></p>
+            </div>
+          <% else %>
+            <%= render(Ui::TableComponent.new(stacked: true, label: t("member.usage.title", project: @project.name), body_test_id: "usage-rows")) do |table| %>
+              <% table.with_head do %>
+                <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.usage.col_kind"), classes: "w-36") %>
+                <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.usage.col_symbol")) %>
+                <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.usage.col_environment"), classes: "w-32") %>
+                <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.usage.col_hits"), classes: "w-24") %>
+                <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.usage.col_first_seen"), sort: "first_seen", initial: :desc, classes: "w-40") %>
+                <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.usage.col_last_seen"), sort: "last_seen", initial: :desc, classes: "w-40") %>
+              <% end %>
+              <% @symbols.each do |symbol| %>
+                <%= render Ui::TableComponent::RowComponent.new(test_id: "usage-row") do %>
+                  <%= render Ui::TableComponent::CellComponent.new(label: t("member.usage.col_kind"), class: "text-[12.5px] text-zinc-900 dark:text-zinc-100 whitespace-nowrap") do %>
+                    <%= render Ui::IconComponent.new(name: usage_kind_icon(symbol.kind), class: "text-[10px] text-gray-400 dark:text-zinc-500 mr-1.5") %><%= usage_kind_label(symbol.kind) %>
+                  <% end %>
+                  <%= render Ui::TableComponent::CellComponent.new(header: true, class: "text-[12.5px] text-zinc-900 dark:text-zinc-100") do %>
+                    <%= usage_symbol_label(symbol) %>
+                    <% if (hint = usage_symbol_hint(symbol)) %>
+                      <span class="ml-1.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= hint %></span>
+                    <% end %>
+                  <% end %>
+                  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.usage.col_environment"), class: "text-[12.5px] text-gray-600 dark:text-zinc-400")) { symbol.environment } %>
+                  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.usage.col_hits"), mono: true, class: "text-zinc-900 dark:text-zinc-100")) { number_with_delimiter(symbol.hits_count) } %>
+                  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.usage.col_first_seen"), class: "text-[12.5px] text-gray-500 dark:text-zinc-400 whitespace-nowrap")) { l(symbol.first_seen_at, format: :long) } %>
+                  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.usage.col_last_seen"), class: "text-[12.5px] text-gray-500 dark:text-zinc-400 whitespace-nowrap")) { l(symbol.last_seen_at, format: :long) } %>
+                <% end %>
+              <% end %>
+            <% end %>
+            <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "usage-pagination")) %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

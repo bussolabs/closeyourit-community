@@ -1,0 +1,2 @@
+<% content_for :title, t("member.installation.title") %>
+<div class="p-7"><%= render Ui::EmptyStateComponent.new(title: t("member.installation.title"), body: t("member.installation.#{@problem}"), icon: "circle-alert", framed: true) %></div>

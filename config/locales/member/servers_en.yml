@@ -1,0 +1,430 @@
+en:
+  member:
+    nav:
+      servers: Servers
+    servers:
+      title: Servers
+      subtitle: The machines the agent monitors
+      todo:
+        title: "To do on the fleet"
+        reboot:
+          one: "1 machine is waiting for a reboot"
+          other: "%{count} machines are waiting for a reboot"
+        security_updates:
+          one: "1 machine has security updates pending"
+          other: "%{count} machines have security updates pending"
+        services_failed:
+          one: "1 machine has a failed service"
+          other: "%{count} machines have failed services"
+        disk:
+          one: "1 machine is over the disk threshold"
+          other: "%{count} machines are over the disk threshold"
+        cpu:
+          one: "1 machine is over the CPU threshold"
+          other: "%{count} machines are over the CPU threshold"
+        mem:
+          one: "1 machine is over the memory threshold"
+          other: "%{count} machines are over the memory threshold"
+      stat_up: Up
+      data_age: "data from %{time} ago"
+      down_reason: "no data for %{time}"
+      stat_down: Down
+      stat_over:
+        cpu: "CPU over limit"
+        mem: "Memory over limit"
+        disk: "Disk over limit"
+      stat_total: Total
+      tokens_link: Agent tokens
+      connect_cta: "Connect a machine"
+      empty: No servers yet
+      empty_body: Install the closeyourit-agent on your servers and they will register here automatically at the first push.
+      empty_cta: Create an agent token
+      search_placeholder: Search by name or hostname…
+      count: "%{count} servers"
+      no_match: No server matches the filters.
+      filter_group: Group
+      filter_status: Status
+      col_host: Server
+      col_status: Status
+      col_cpu: CPU
+      col_mem: Memory
+      col_disk: Disk
+      col_load: Load
+      col_load_hint: "How busy the machine is: average over the last 1, 5 and 15 minutes."
+      col_temp: Temp
+      col_os: OS
+      col_last_seen: Last seen
+      updates_badge: "%{count} updates"
+      reboot_badge: reboot
+      time_ago: "%{time} ago"
+      uptime_days: "%{days}d"
+      filtered_by_token: "Only machines enrolled with the “%{name}” code."
+      filtered_clear: Show all
+      status:
+        silent: "Silent"
+        pending: Pending
+        up: "Up"
+        down: Down
+        paused: Paused
+        revoked: Revoked
+      db_role:
+        primary: primary
+        standby: standby
+      updated: Server updated.
+      deleted: Server deleted.
+      paused_notice: Server paused — no staleness checks or alerts until resumed.
+      resumed_notice: Server resumed — it will be back up at the next agent push.
+      revoked_notice: Server revoked — the agent now receives 403 and stops.
+      unrevoked_notice: Server restored — the agent can push again.
+      edit_title: Edit server
+      back: Back to server
+      form:
+        name: Name
+        name_hint: Display name in the fleet (the hostname stays as reported by the agent).
+        groups_title: Groups
+        groups_hint: "The labels you organise the fleet with — «production», «staging», «CI». Separate them with a comma. They let you filter and group the list to answer «how is production doing»."
+        groups_placeholder: "production, database"
+        save: Save
+        cancel: Cancel
+        thresholds_title: Alert thresholds
+        ignored_containers_title: Containers that are not services
+        ignored_containers_hint: "One name fragment per line. Containers matching any of them raise no «container down» alert: they are meant for build and test ones, which come and go with every run. Three characters minimum, so a too-wide filter cannot hide real faults."
+        ignored_containers_placeholder: "ci-runner\ntest-postgres"
+        ignored_services_title: Services not to alert on
+        ignored_services_hint: "One name fragment per line. Systemd units matching any of them raise no «service failing» alert: meant for noisy units that fail by design. The panel keeps showing them; only the alert is silenced. Three characters minimum."
+        ignored_services_placeholder: "motd-news\nfwupd-refresh"
+        thresholds_hint: The limit above which this machine raises an alert. Leave empty to use the organization-wide rule.
+        cpu_threshold: CPU threshold
+        mem_threshold: Memory threshold
+        disk_threshold: Disk threshold
+        threshold_unit: "%"
+      limits:
+        label: "limit %{value}"
+      alerts:
+        title: Alert rules
+        count: "%{count} rules"
+        via_app: in-app
+        last_triggered: "last alert %{time} ago"
+        never_triggered: never fired on this machine
+        empty_body: No alert rule covers this machine. Without a rule, high values alert no one.
+        empty_link: Create an alert rule
+        muted_badge: muted here
+        mute_here: mute on this machine
+        unmute_here: unmute here
+        muted_here: "“%{rule}” will no longer alert on this machine. It still applies to every other one."
+        unmuted_here: "“%{rule}” alerts on this machine again."
+        col_rule: Rule
+        col_limit: Limit
+        col_last: Last alert
+        col_channels: Channels
+        col_action: Action
+        last_ago: "%{time} ago"
+        never: never
+      tabs:
+        overview: Overview
+        metrics: Metrics
+        hardware: Disks & hardware
+        workloads: Containers & services
+        log: System log
+        operations: Operations
+        alerts: Alert rules
+      overview:
+        vital_cpu: CPU
+        vital_mem: Memory
+        vital_disk: Disk
+        vital_load: Load
+        vital_temp: Temperature
+        specs_title: Specifications
+        attention_title: Needs attention
+        all_fine: "Nothing to fix on this machine."
+        reboot: "Waiting for a reboot"
+        updates:
+          one: "1 security update pending"
+          other: "%{count} security updates pending"
+        services_failed:
+          one: "1 failed service"
+          other: "%{count} failed services"
+        journal:
+          one: "1 system error in the log"
+          other: "%{count} system errors in the log"
+      show:
+        section_gpu: Graphics card
+        gpu_usage: Usage
+        gpu_power: Power draw
+        gpu_temp: Temperature
+        gpu_memory: Memory
+        gpu_memory_unavailable: not reported by this card
+        chart_gpu: Graphics card
+        chart_gpu_watt: Power draw
+        section_temperature: Temperatures
+        sensors: Sensors
+        sensors_hint: The chart follows the hottest sensor; every sensor is listed below.
+        section_cpu: Processor
+        cpu_breakdown: How it is used
+        cpu_user: Programs
+        cpu_system: System
+        cpu_iowait: Waiting for disk
+        cpu_steal: Taken by others
+        cpu_idle: Idle
+        cpu_cores: Individual cores
+        section_memory: Memory
+        swap: Swap
+        swap_hint: When memory runs out the machine falls back to disk, which is far slower.
+        section_disk: Disk
+        disk_io: Disk speed
+        disk_util: How busy it is
+        disk_read_wait: Read wait
+        disk_write_wait: Write wait
+        section_network: Network
+        chart_net: Traffic
+        nics: Interfaces
+        nic_sent: sent
+        nic_recv: received
+        uptime: "up"
+        status_label: Status
+        hostname_label: Host
+        os_label: System
+        agent_label: Agent
+        charts: System metrics
+        chart_cpu: CPU
+        chart_mem: Memory
+        chart_disk: Disk
+        chart_temp: Temperature
+        chart_summary: "%{metric} histogram, last %{range}"
+        chart_summary_scaled: "%{metric} histogram, last %{range}, scale from 0 to %{max}"
+        no_data: no data
+        hires_since: "Detailed data available from %{time}"
+        containers: Containers
+        containers_empty: No containers reported.
+        col_container: Container
+        col_health: Health
+        container_restarts:
+          one: "%{count} restart"
+          other: "%{count} restarts"
+        container_oom: out of memory
+        health:
+          none: no check
+          healthy: healthy
+          unhealthy: failing
+          starting: starting
+        col_mem_abs: Memory
+        col_net: Network
+        processes: Top processes
+        processes_hint: top by CPU and memory
+        processes_name: Process
+        processes_mem: Memory
+        systemd: Systemd services
+        systemd_counts: "%{total} services · %{failed} failed"
+        systemd_empty: No services reported.
+        systemd_all_ok: No services in error.
+        systemd_show_all:
+          one: Show the service
+          other: Show all %{count} services
+        systemd_rest:
+          idle: idle
+          stopped: stopped
+        database: Database
+        help_database: The database detected on this server — status, open connections, replication lag and disk usage. It only shows up when the agent finds a database on the machine.
+        database_status:
+          up: reachable
+          down: unreachable
+          unknown: unknown
+        database_unreachable: Database detected but not queryable — it may be down or refusing the agent's connection.
+        database_connections: Connections
+        database_reserved:
+          one: "%{count} slot out of %{max} is held back for emergencies."
+          other: "%{count} slots out of %{max} are held back for emergencies."
+        connection_states:
+          active: working
+          idle: waiting
+          idle_in_transaction: transaction open and idle
+          idle_in_transaction_aborted: transaction aborted and idle
+          fastpath_function_call: direct call
+          disabled: disabled
+        database_replication: Replication
+        database_streaming_on: streaming
+        database_streaming_off: stopped
+        database_lag_value: "%{value} s behind"
+        database_tables: Largest tables
+        database_empty: No data reported.
+        smart: SMART
+        smart_empty: No SMART data reported.
+        help_smart: S.M.A.R.T. is the disks' self-diagnostic system — it flags whether a disk is healthy (passed) or at risk of failure (failing).
+        disks: Disks
+        disk_root: system disk
+        disk_charted: "· the charted one"
+        disk_free: "%{free} free of %{total}"
+        disk_inodes: "inodes at %{pct}"
+        disks_hint: The disks the agent measures on this machine. The chart percentage covers the system disk only.
+        detail_cpu_model: CPU
+        detail_cores: Cores
+        detail_memory: Memory
+        detail_os: OS
+        detail_kernel: Kernel
+        detail_fingerprint: Fingerprint
+        detail_updates: Updates available
+        detail_security_updates: Security ones
+        detail_reboot: Reboot required
+        detail_temp: Temperature
+        temp_unavailable: not exposed by this hardware
+        updates_count:
+          one: 1 package
+          other: "%{count} packages"
+        updates_unknown: unknown
+        reboot_yes: "yes — pending"
+        reboot_no: "no"
+        projects: Linked environments
+        projects_none: No project environments linked.
+        projects_help: "A link manually ties this machine to a project's environments: you set it from the project and it binds alerts and monitors. It is not an automatic count of what runs here."
+        projects_link_cta: "Go to projects to link it"
+        projects_detected:
+          one: "Detected %{count} project not linked yet: want to link it?"
+          other: "Detected %{count} projects not linked yet: want to link them?"
+        projects_detected_hint: "Suggested from the machine's container and database names: confirm by linking them from the project."
+        next_steps: "What now?"
+        open_ticket: "Open a ticket about this machine"
+        see_alerts: "Alerts fired here"
+        ticket_title: "Problem on machine %{host}"
+        ticket_intro: "Opened from the machine page %{host}. Values at the time of opening:"
+        journal: Journal (err/crit)
+        journal_count: "%{count} entries · last 48h"
+        journal_empty: No error-level journal entries in the last 48h.
+        journal_col_level: Level
+        journal_col_time: When
+        journal_col_unit: Service
+        journal_col_message: Message
+        journal_snapshot: Latest journal lines
+        journal_priority:
+          "0": emerg
+          "1": alert
+          "2": crit
+          "3": err
+          "4": warning
+          "5": notice
+          "6": info
+          "7": debug
+      actions:
+        pause: Mute alerts
+        resume: Unmute alerts
+        revoke: Disconnect from fleet
+        unrevoke: Reconnect to fleet
+        edit: Edit
+        delete: Delete
+        # CYRA-468 — sensitive-actions menu + type-to-confirm (out of the front row).
+        more: More actions
+        menu_title: Sensitive actions
+        confirm_hint_html: "To confirm, type the machine name — %{name} — below."
+        confirm_placeholder: machine name
+        confirmation_invalid: "The name doesn't match: nothing was touched."
+        revoke_title: Disconnect from fleet
+        revoke_impact: "This machine's agent stops sending data; it affects only this machine, not the whole fleet. The history already collected stays and it is reversible with “Reconnect to fleet”."
+        revoke_submit: Disconnect this machine
+        delete_title: Delete the machine
+        delete_impact:
+          one: "Deletes the machine and all its history (up to %{count} day). This is permanent. If the agent is still running it will re-register."
+          other: "Deletes the machine and all its history (up to %{count} days). This is permanent. If the agent is still running it will re-register."
+        delete_submit: Delete permanently
+        # CYRA-245 — re-adoption: the only way a live machine's credential gets replaced.
+        reenroll_title: I reinstalled the agent here
+        reenroll_impact:
+          one: "Authorises, for %{count} minute, the first installation that shows up to take the place of the one registered on this machine. Until one shows up nothing changes, and once the time is up everything goes back as it was."
+          other: "Authorises, for %{count} minutes, the first installation that shows up to take the place of the one registered on this machine. Until one shows up nothing changes, and once the time is up everything goes back as it was."
+        reenroll_submit: Authorise the new installation
+        reenroll_notice: "Authorised until %{time}: the next installation that shows up takes the place of the previous one."
+      enrollment:
+        conflict_title: Someone tried to take this machine's place
+        conflict_body: "Last attempt: %{time}. Nothing was touched — this machine keeps sending its data as before. If it was you, because you reinstalled the agent here, authorise it from “More actions”."
+        reenrollment_open_title: Waiting for the new installation
+        reenrollment_open_body: "Until %{time} the first installation that shows up takes the place of the current one. If none shows up nothing changes."
+      action_queue:
+        title: Operational actions
+        confirmation_hint: "To confirm, type the server name: %{name}"
+        confirmation_invalid: The server name does not match.
+        agent_upgrade_required: "The agent installed on this server does not support this action: update it."
+        updates_breakdown: "Pending updates: %{total} in total, %{security} of them security and %{other} regular."
+        security_updates: Install security updates
+        all_updates: Install all updates
+        all_updates_confirm: This installs every available update, not just the security ones. Continue?
+        submitting: Sending…
+        reboot: Reboot server
+        reboot_confirm: The server will become temporarily unavailable. Continue?
+        created: Action queued.
+        cancelled: Action cancelled.
+        cancel: Cancel
+        output: See details
+        empty: No actions have run.
+        kinds:
+          apply_security_updates: Security updates
+          apply_all_updates: All updates
+          reboot: Reboot
+        statuses:
+          queued: Waiting
+          running: Running
+          succeeded: Done
+          failed: Failed
+          cancelled: Cancelled
+          expired: Expired
+          interrupted: Interrupted
+        details:
+          queued: "Requested at %{time}. The server picks it up at its next check, usually within a minute."
+          running: "Running since %{time}."
+          succeeded: "Completed at %{time}."
+          failed: "Failed at %{time} (code %{code})."
+          cancelled: "Cancelled at %{time}."
+          expired: "Expired before the server picked it up: it was unreachable."
+          interrupted: "Started at %{time}. The server never reported how it went: we do not know whether it ran. Check the machine before starting it again."
+      tokens:
+        title: Agent tokens
+        help_title: "The key your servers use to send their data."
+        breadcrumb: Agent tokens
+        stat_active: Active
+        stat_revoked: Revoked
+        reveal_created: "Token “%{name}” created"
+        copy_now: Copy it now — it won't be shown again
+        secret: Enrollment token
+        copy: Copy
+        copied: Copied!
+        close: Close
+        form_title: New token
+        form_name: Name
+        form_submit: Create token
+        empty: No tokens yet — create one to enroll your agents.
+        col_name: Name
+        col_prefix: Prefix
+        col_servers: Connected servers
+        col_last_enrollment: Last enrollment
+        last_enrollment_hint: "When a machine last enrolled with this code — not when it last sent data."
+        col_expiry: Expiry
+        never_expires: Never expires
+        servers_none: None
+        servers_view: "See the machines"
+        col_status: Status
+        status_active: Active
+        status_revoked: Revoked
+        revoke: Revoke
+        revoke_title: Revoke the code
+        revoke_impact:
+          zero: "No machine is connected to this code."
+          one: "1 machine is connected to this code: after revoking, it will no longer be able to enroll with this code."
+          other: "%{count} machines are connected to this code: after revoking, they will no longer be able to enroll with this code."
+        revoke_type_prompt_html: "To confirm, type %{name} below."
+        revoke_confirm_placeholder: "code name"
+        revoke_submit: Revoke for good
+        revoke_denied: "Confirmation did not match: the code was not revoked."
+        revoked:
+          zero: Code revoked.
+          one: "Code revoked: 1 machine was connected."
+          other: "Code revoked: %{count} machines were connected."
+        compromised_title: Lost a code, or did it end up in the wrong hands?
+        compromised_body: "Create a new code above, update the agents with the new secret, then revoke the old one. Machines already enrolled keep sending; new installs will only use the valid code."
+        snippet_title: Install the agent
+        status_waiting: "No machine has sent data yet: after running the command, reload this page."
+        status_arrived: "%{count} machines are already sending their data."
+        snippet_lead: "The secret is shown only once, when you create it: if you no longer have it, create a new one above and use that. In the command it goes in place of CYI_TOKEN."
+        snippet_docker: "With Docker Compose"
+        snippet_binary: "Machines hosting a database (no Docker)"
+        snippet_binary_lead: "On machines without Docker the program is installed directly: same address, same secret."
+        token_placeholder: "your secret"
+        copy: "Copy"
+        copied: "Copied"
+        guide_link: "Read the guide"

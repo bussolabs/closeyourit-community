@@ -1,0 +1,48 @@
+{
+  "model": "vlm-fast",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Sei l'assistente di CloseYourIt. Usa gli attrezzi per rispondere con dati veri."
+    },
+    {
+      "role": "user",
+      "content": "Quanti errori aperti hanno i progetti CYRA e EKETO?"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "list_projects",
+        "description": "Elenca i progetti dell'organizzazione.",
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "count_open_errors",
+        "description": "Conta gli errori non risolti di un progetto.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "project_key": {
+              "type": "string",
+              "description": "Sigla del progetto"
+            }
+          },
+          "required": [
+            "project_key"
+          ]
+        }
+      }
+    }
+  ],
+  "tool_choice": "auto",
+  "max_tokens": 1024,
+  "temperature": 0.0
+}

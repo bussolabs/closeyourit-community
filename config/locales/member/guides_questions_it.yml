@@ -1,0 +1,31 @@
+---
+it:
+  member:
+    guides:
+      index:
+        questions:
+          title: Domande sui ticket
+      questions:
+        title: Domande sui ticket
+        subtitle: Chiedere, rispondere e sbloccare — senza sporcare la discussione.
+        what_title: A cosa serve
+        what_intro: "Su un ticket succedono due cose diverse: si parla e si chiede. Prima passavano dallo stesso posto, e chi rispondeva doveva indovinare a quale domanda. Ora le domande hanno una scheda loro, e ogni risposta appartiene alla domanda a cui risponde."
+        what_b1: "I commenti restano per parlare: raccontare, segnalare, ringraziare."
+        what_b2: Le domande stanno nella scheda Domande, ognuna con la sua risposta accanto.
+        what_b3: Anche gli assistenti automatici chiedono da lì, quando gli manca una decisione.
+        ask_title: Fare una domanda
+        ask_intro: "Apri il ticket, vai alla scheda Domande e scrivi. Una domanda è una richiesta breve: se serve un discorso lungo, quello è un commento o un resoconto."
+        ask_b1: "Scrivila in parole: niente comandi, indirizzi o percorsi di file."
+        ask_b2: "Spunta «Visibile anche al cliente» se la domanda riguarda chi ha aperto il ticket. Senza spunta la vede solo il team."
+        ask_b3: "Spunta «Senza risposta il lavoro non prosegue» se davvero è così. Chi può modificare il ticket vede questa spunta."
+        blocking_title: Quando una domanda ferma il lavoro
+        blocking_intro: Una domanda segnata come bloccante mette il ticket in attesa. Non è un allarme, è un'informazione onesta.
+        blocking_b1: In cima al ticket compare una riga che lo dice, su qualunque scheda tu stia guardando.
+        blocking_b2: Nessun assistente automatico prende in carico quel ticket finché la domanda resta aperta.
+        blocking_b3: Appena arriva la risposta il ticket riparte da solo. Non devi togliere niente a mano.
+        blocking_b4: Se la domanda è stata superata dai fatti, ritirala — così il lavoro riprende senza inventare una risposta.
+        answer_title: Rispondere
+        answer_intro: Sotto ogni domanda aperta c'è lo spazio per la risposta. Scrivi lì, non nella discussione.
+        answer_b1: La risposta resta accanto alla sua domanda e si legge insieme.
+        answer_b2: Chi segue il ticket riceve un avviso quando arriva una domanda e quando arriva la risposta.
+        answer_b3: "Puoi rispondere anche a una domanda già risposta: la risposta nuova si aggiunge, non sostituisce quella di prima."

@@ -1,0 +1,20 @@
+<%# CYRA-458: soglia d'allarme effettiva per metrica (override per-macchina || regola org), riusata dai grafici.
+    The metric panels sit two per row; the range selector lives in the header's tab row. CYRA-703 —
+    GPU and temperature appear only on machines that send that data. %>
+<% effective = @thresholds.for_host(@host) %>
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start" data-test="server-charts">
+  <%= render "member/monitoring/servers/section_cpu", host: @host, last_sample: @last_sample,
+        buckets: @buckets, range: @range, threshold: effective[:cpu] %>
+  <%= render "member/monitoring/servers/section_memory", host: @host, last_sample: @last_sample,
+        buckets: @buckets, range: @range, threshold: effective[:mem],
+        total_bytes: server_metric_total_bytes(:mem, @host, @last_sample) %>
+  <%= render "member/monitoring/servers/section_disk", host: @host, last_sample: @last_sample,
+        buckets: @buckets, range: @range, threshold: effective[:disk],
+        total_bytes: server_metric_total_bytes(:disk, @host, @last_sample) %>
+  <%= render "member/monitoring/servers/section_network", host: @host, last_sample: @last_sample,
+        buckets: @buckets, range: @range %>
+  <%= render "member/monitoring/servers/section_gpu", host: @host, last_sample: @last_sample,
+        buckets: @buckets, range: @range %>
+  <%= render "member/monitoring/servers/section_temperature", host: @host, last_sample: @last_sample,
+        buckets: @buckets, range: @range, temp_reported: @temp_reported %>
+</div>

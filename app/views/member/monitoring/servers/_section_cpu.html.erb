@@ -1,0 +1,47 @@
+<%# locals: host:, last_sample:, buckets:, range:, threshold: — CYRA-703. Il grafico master è la
+    percentuale complessiva; sotto, le due letture che il numero unico nasconde:
+    - la RIPARTIZIONE (utente/sistema/attesa disco/tolto da altri): attesa disco e tempo rubato sono
+      i due valori che spiegano una macchina lenta con la CPU apparentemente scarica;
+    - i SINGOLI processori: una media del 14% può essere venti processori al 14% oppure tre al 100%,
+      e sono due situazioni diverse.
+    Il dettaglio arriva solo dagli agent che lo mandano: senza, resta il solo grafico master.
+    Le quote hanno un colore fisso per significato (non una soglia): il tempo rubato è rosso perché
+    è sempre una brutta notizia, l'attesa disco ambra, il resto neutro. %>
+<% shares = server_cpu_breakdown(last_sample) %>
+<% cores = server_core_usages(last_sample) %>
+<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-section-cpu">
+  <div class="px-5 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3 flex-wrap">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.show.section_cpu") %></h2>
+    <%= render "member/monitoring/servers/range_selector", host: host, range: range, buckets: buckets, note: true %>
+  </div>
+  <div class="grid grid-cols-1 gap-5 px-5 py-5">
+    <%= render "member/monitoring/servers/chart", host: host, metric: :cpu,
+          label: t("member.servers.show.chart_cpu"), buckets: buckets, range: range,
+          threshold: threshold, total_bytes: nil, last_sample: last_sample %>
+    <% if shares %>
+      <div data-test="server-cpu-breakdown">
+        <p class="font-mono text-[10px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.cpu_breakdown") %></p>
+        <div class="mt-2.5 space-y-1.5">
+          <% [ [ :user, :indigo ], [ :system, :sky ], [ :iowait, :amber ], [ :steal, :red ] ].each do |key, color| %>
+            <%= render Ui::MeterComponent.new(label: t("member.servers.show.cpu_#{key}"),
+                  value_text: server_pct_text(shares[key]), pct: shares[key], color: color) %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <% if cores.any? %>
+    <div class="px-5 pb-5" data-test="server-cores">
+      <p class="font-mono text-[10px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.show.cpu_cores") %></p>
+      <div class="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-1.5">
+        <% cores.each do |core| %>
+          <div data-test="server-core">
+            <%= render Ui::MeterComponent.new(label: "core #{core[:index]}",
+                  value_text: server_pct_text(core[:pct]), pct: core[:pct],
+                  color: server_meter_color(core[:pct])) %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</section>

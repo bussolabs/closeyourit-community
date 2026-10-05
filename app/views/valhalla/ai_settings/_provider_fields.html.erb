@@ -1,0 +1,43 @@
+<% scope = "valhalla.ai_settings" %>
+<% providers = %w[environment closeyourit custom] %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+  <div class="border-b border-stone-200 dark:border-zinc-800 px-6 py-4">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("#{scope}.provider.title") %></h2>
+    <p class="mt-1 text-[13px] text-stone-500 dark:text-zinc-400"><%= t("#{scope}.provider.hint") %></p>
+  </div>
+  <div class="p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+      <%= render Ui::SelectComponent.new(
+            name: "ai_provider", label: t("#{scope}.provider.label"), test_id: "ai-provider",
+            options: providers.map { |value| [ t("#{scope}.provider.options.#{value}"), value ] },
+            descriptions: providers.index_with { |value| t("#{scope}.provider.descriptions.#{value}") },
+            selected: settings.ai_provider || "environment") %>
+      <%= render Ui::InputComponent.new(
+            name: "ai_api_key", type: "password", label: t("#{scope}.fields.api_key"),
+            hint: t("#{scope}.fields.api_key_hint"), autocomplete: "off", test_id: "ai-api-key",
+            error: errors&.dig(:ai_api_key)&.first) %>
+      <%= render Ui::InputComponent.new(
+            name: "ai_base_url", type: "url", label: t("#{scope}.fields.base_url"), value: settings.ai_base_url,
+            hint: t("#{scope}.fields.base_url_hint"), placeholder: "https://api.openai.com/v1", inputmode: "url",
+            autocomplete: "off", test_id: "ai-base-url", error: errors&.dig(:ai_base_url)&.first) %>
+      <%= render Ui::InputComponent.new(
+            name: "ai_chat_model", label: t("#{scope}.fields.chat_model"), value: settings.ai_chat_model,
+            hint: t("#{scope}.fields.chat_model_hint"), autocomplete: "off", test_id: "ai-chat-model",
+            error: errors&.dig(:ai_chat_model)&.first) %>
+      <%= render Ui::InputComponent.new(
+            name: "ai_embedding_model", label: t("#{scope}.fields.embedding_model"),
+            value: settings.ai_embedding_model, hint: t("#{scope}.fields.embedding_model_hint"),
+            autocomplete: "off", test_id: "ai-embedding-model", error: errors&.dig(:ai_embedding_model)&.first) %>
+      <%= render Ui::InputComponent.new(
+            name: "ai_embedding_dimensions", type: "number", min: 1, max: Ai::Configuration::MAX_EMBEDDING_DIMENSIONS,
+            label: t("#{scope}.fields.embedding_dimensions"), value: settings.ai_embedding_dimensions,
+            hint: t("#{scope}.fields.embedding_dimensions_hint"), inputmode: "numeric",
+            test_id: "ai-embedding-dimensions", error: errors&.dig(:ai_embedding_dimensions)&.first) %>
+      <%= render Ui::InputComponent.new(
+            name: "ai_transcription_model", label: t("#{scope}.fields.transcription_model"),
+            value: settings.ai_transcription_model, hint: t("#{scope}.fields.transcription_model_hint"),
+            autocomplete: "off", test_id: "ai-transcription-model",
+            error: errors&.dig(:ai_transcription_model)&.first) %>
+    </div>
+  </div>
+</div>

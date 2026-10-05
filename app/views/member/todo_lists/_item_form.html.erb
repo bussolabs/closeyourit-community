@@ -1,0 +1,21 @@
+<%# locals: list — the add field on top of the items; the ticket field opens from "Link a ticket". %>
+<%= form_with url: member_todo_list_items_path(list), method: :post, class: "border-b border-stone-200 dark:border-zinc-800 p-3", data: { test: "todo-item-form" } do %>
+  <div class="flex flex-wrap items-start gap-2">
+    <div class="flex-[2_1_220px] min-w-0">
+      <%= render Ui::InputComponent.new(name: "title", required: true, placeholder: t("member.todo_lists.item.title_placeholder"),
+            "aria-label": t("member.todo_lists.item.title"), test_id: "todo-item-title-input") %>
+    </div>
+    <%= render Ui::ButtonComponent.new(label: t("member.todo_lists.item.add"), type: "submit", icon: "plus", test_id: "todo-item-submit") %>
+  </div>
+  <%# CYRA-364: si scrive il codice o una parola del titolo e le voci arrivano dal server. %>
+  <details class="mt-2" data-test="todo-item-ticket-toggle">
+    <summary class="cursor-pointer select-none text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline"><%= t("member.todo_lists.item.link_ticket") %></summary>
+    <div class="mt-2 max-w-md">
+      <%= render Ui::SelectComponent.new(name: "ticket_id", label: t("member.todo_lists.item.ticket"),
+            options: @linkable_tickets.map { |ticket| [ "#{ticket.code} · #{ticket.title}", ticket.id ] },
+            include_blank: true, placeholder: t("member.todo_lists.item.ticket_placeholder"),
+            hint: t("member.todo_lists.item.ticket_hint"), test_id: "todo-item-ticket-select",
+            remote: { url: linkable_member_tickets_path }) %>
+    </div>
+  </details>
+<% end %>

@@ -1,0 +1,49 @@
+<% content_for :title, t("member.measurements.title") %>
+<div class="p-7 space-y-6" data-test="member-measurements">
+  <%= render "header", title: measurement_label("title"), count_label: measurement_label("series"), stat_value: @pagination.total, project_id: nil, series_id: nil %>
+  <% if !@has_records && !params.values_at(:q, :project_id).any?(&:present?) && !%i[service_name environment attribute_key].any? { |key| measurement_exact_filter?(key) } %>
+    <%= render Ui::EmptyStateComponent.new(title: measurement_label("empty"), body: measurement_label("empty_body"), example: measurement_label("empty_example"), icon: "chart-no-axes-combined", framed: true, test_id: "measurements-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <%= render Ui::TableToolbarComponent.new(framed: true, url: member_monitoring_measurements_path, query: params[:q], search_placeholder: measurement_label("search"), view_sections: measurement_view_sections(%w[name type unit observed])) do |toolbar| %>
+        <% toolbar.with_filter(key: "project_id", label: measurement_label("project")) do %>
+          <%= render Ui::SelectComponent.new(name: "project_id", multiple: true, summary: true, options: @projects.map { |p| [p.name,p.id] }, selected: params[:project_id], placeholder: measurement_label("project"), hint: measurement_label("facets_note")) %>
+        <% end %>
+        <% %w[service_name environment].each do |key| %>
+          <% toolbar.with_filter(key: key, label: measurement_label(key), active: measurement_exact_filter?(key)) do %><%= render Ui::InputComponent.new(name: key, label: measurement_label(key), value: params[key], maxlength: 256, data: { filter_bar_value: "", action: "change->ui--filter-bar#submit" }) %><% end %>
+        <% end %>
+        <% toolbar.with_filter(key: "attribute_key", label: measurement_label("attribute"), active: measurement_exact_filter?(:attribute_key)) do %>
+          <div data-filter-bar-compound>
+          <%= render Ui::RowMenuComponent.new(label: measurement_label("attribute"), icon: "filter", width: :lg) do %>
+          <%= render Ui::StackComponent.new(gap: 2, class: "p-3") do %>
+          <%= render Ui::SelectComponent.new(name: "attribute_scope", label: measurement_label("attribute_scope"), options: %w[resource point].map { |v| [measurement_label(v), v] }, selected: params[:attribute_scope]) %>
+          <%= render Ui::InputComponent.new(name: "attribute_key", label: measurement_label("attribute_key"), value: params[:attribute_key], maxlength: 256) %>
+          <%= render Ui::SelectComponent.new(name: "attribute_type", label: measurement_label("attribute_type"), options: %w[stringValue intValue doubleValue boolValue].map { |v| [v,v] }, selected: params[:attribute_type]) %>
+          <%= render Ui::InputComponent.new(name: "attribute_value", label: measurement_label("attribute_value"), value: params[:attribute_value]) %>
+          <%= render Ui::ButtonComponent.new(label: t("shared.time_range.apply"), size: :sm, data: {action: "ui--filter-bar#submit"}) %>
+          <% end %><% end %></div>
+        <% end %>
+        <% toolbar.with_views do %><%= render Ui::SavedViewsComponent.new(resource_type: "measurement_series", views: @saved_views, index_helper: :member_monitoring_measurements_path, current_filters: params) %><% end %>
+      <% end %>
+      <% if @series.empty? %>
+        <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_monitoring_measurements_path(ft: 1), test_id: "measurements-no-match", reset_test_id: "measurements-reset") %>
+      <% else %>
+        <%= render Ui::TableComponent.new(stacked: true, label: measurement_label("series")) do |table| %>
+          <% table.with_head do %>
+            <% %w[name type unit observed].each do |key| %><%= render Ui::TableComponent::HeaderComponent.new(label: measurement_label(key), sort: key) %><% end %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: measurement_label("open"), label_hidden: true) %>
+          <% end %>
+          <% @series.each do |series| %>
+            <%= render Ui::TableComponent::RowComponent.new(href: member_monitoring_measurement_path(series), link_label: series.name, test_id: "measurement-row") do %>
+              <%= render Ui::TableComponent::CellComponent.new(header: true, label: measurement_label("name")) do %><div class="min-w-0"><div class="font-medium break-all"><%= series.name %></div><div class="text-xs text-gray-500 dark:text-zinc-400 break-all"><%= @row_projects.fetch(series.project_id).name %> · <%= series.resource_identity[:service_name] %> · <span class="font-mono"><%= series.identity_digest.first(12) %></span></div></div><% end %>
+              <%= render Ui::TableComponent::CellComponent.new(label: measurement_label("type")) do %><%= series.metric_type %><% end %>
+              <%= render Ui::TableComponent::CellComponent.new(label: measurement_label("unit"), mono: true) do %><%= series.unit.presence || "—" %><% end %>
+              <%= render Ui::TableComponent::CellComponent.new(label: measurement_label("observed"), mono: true) do %><div><div><%= measurement_number(measurement_latest(@latest[series.id])) %> <%= measurement_label("observations") if %w[histogram exponentialHistogram].include?(series.metric_type) %></div><div class="text-xs text-gray-500 dark:text-zinc-400"><%= @latest[series.id] ? l(measurement_time(@latest[series.id].time_unix_nano), format: :short) : measurement_label("unknown") %></div></div><% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+        <%= render Ui::PaginationComponent.new(pagination: @pagination) %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

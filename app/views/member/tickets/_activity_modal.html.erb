@@ -1,0 +1,17 @@
+<%# locals: (ticket:) %>
+<%# Full activity history (system events, audit log), opened by "View activity history", in the
+    standard modal shell (F24). %>
+<%= render Ui::ModalComponent.new(title: t("ui.audit.view_history"), subtitle: "#{ticket.code} · #{ticket.title}",
+      padded: false, test_id: "ticket-activity-modal",
+      data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+  <% modal.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: t("ui.audit.close"), variant: :secondary_muted, size: :sm,
+          data: { action: "ui--dialog#close" }, test_id: "activity-close") %>
+  <% end %>
+  <div data-test="activity-panel">
+    <%= turbo_frame_tag "ticket-history", src: member_ticket_path(ticket, section: :history), loading: :lazy do %>
+      <%= link_to t("ui.audit.view_history"), member_ticket_path(ticket, section: :history),
+            class: "block px-4 py-6 text-[12.5px] text-indigo-600 dark:text-indigo-400 underline" %>
+    <% end %>
+  </div>
+<% end %>

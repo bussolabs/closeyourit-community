@@ -1,0 +1,26 @@
+<% content_for :title, measurement_label("alerts") %>
+<div class="p-7 space-y-6">
+  <%= render "member/monitoring/measurements/header", title: measurement_label("alerts"), count_label: measurement_label("alerts"), stat_value: @pagination.total, project_id: nil, series_id: nil %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <%= render Ui::TableToolbarComponent.new(framed: true, url: member_monitoring_measurement_rules_path, query: params[:q], search_placeholder: measurement_label("search"), view_sections: measurement_view_sections(%w[name enabled updated])) do |toolbar| %>
+      <% toolbar.with_views do %><%= render Ui::SavedViewsComponent.new(resource_type: "measurement_rules", views: @saved_views, index_helper: :member_monitoring_measurement_rules_path, current_filters: params) %><% end %>
+    <% end %>
+    <% if @rules.empty? && params[:q].present? %>
+      <%= render Ui::NoResultsComponent.new(query: params[:q], reset_href: member_monitoring_measurement_rules_path(ft: 1), test_id: "measurement-rules-no-match") %>
+    <% elsif @rules.empty? %>
+      <%= render Ui::EmptyStateComponent.new(title: measurement_label("rules_empty"), body: measurement_label("rules_empty_body"), compact: true) %>
+    <% else %>
+      <%= render Ui::TableComponent.new(stacked: true, label: measurement_label("alerts")) do |table| %>
+        <% table.with_head do %><% %w[name enabled updated].each do |key| %><%= render Ui::TableComponent::HeaderComponent.new(label: measurement_label(key), sort: key) %><% end %><%= render Ui::TableComponent::HeaderComponent.new(label: measurement_label("open"), label_hidden: true) %><% end %>
+        <% @rules.each do |rule| %>
+          <%= render Ui::TableComponent::RowComponent.new(href: member_monitoring_measurement_rule_path(rule), link_label: rule.name, test_id: "measurement-rule-row") do %>
+            <%= render Ui::TableComponent::CellComponent.new(header: true, label: measurement_label("name")) do %><div><div class="font-medium break-all"><%= rule.name %></div><div class="text-xs text-gray-500 dark:text-zinc-400"><%= @row_projects.fetch(rule.project_id).name %></div></div><% end %>
+            <%= render Ui::TableComponent::CellComponent.new(label: measurement_label("enabled")) do %><%= measurement_label(rule.enabled? ? "yes" : "no") %><% end %>
+            <%= render Ui::TableComponent::CellComponent.new(label: measurement_label("updated"), mono: true) do %><%= l(rule.updated_at, format: :short) %><% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= render Ui::PaginationComponent.new(pagination: @pagination) %>
+    <% end %>
+  </div>
+</div>

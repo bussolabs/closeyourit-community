@@ -1,0 +1,19 @@
+<% scope = "valhalla.ai_settings.checks" %>
+<% colors = { ok: :green, failed: :red, off: :gray } %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ai-checks">
+  <div class="border-b border-stone-200 dark:border-zinc-800 px-6 py-4">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("#{scope}.title") %></h2>
+    <p class="mt-1 text-[13px] text-stone-500 dark:text-zinc-400"><%= t("#{scope}.hint") %></p>
+  </div>
+  <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+    <% checks.each do |check| %>
+      <li class="flex flex-wrap items-center gap-x-3 gap-y-1 px-6 py-3" data-test="ai-test-<%= check.key %>-<%= check.status %>">
+        <span class="text-[13.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("#{scope}.#{check.key}") %></span>
+        <%= render Ui::BadgeComponent.new(label: t("#{scope}.status.#{check.status}"), color: colors.fetch(check.status), dot: true) %>
+        <% if check.detail.present? %>
+          <span class="font-mono text-[12px] text-gray-500 dark:text-zinc-400"><%= check.detail %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</div>

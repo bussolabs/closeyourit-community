@@ -1,0 +1,32 @@
+<% content_for :title, t("member.guides.helpdesk.title") %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-helpdesk">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "inbox", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.helpdesk.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.helpdesk.title") } ]) do |h| %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.helpdesk.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <% [ [ "what", %w[what_b1 what_b2 what_b3] ],
+       [ "enable", %w[enable_b1 enable_b2 enable_b3] ],
+       [ "read", %w[read_b1 read_b2 read_b3 read_b4 read_b5 read_b6 read_b7 read_b8] ],
+       [ "privacy", %w[privacy_b1 privacy_b2 privacy_b3] ] ].each do |section, bullets| %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+        <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.helpdesk.#{section}_title") %></h2>
+      </div>
+      <div class="px-4 py-4 space-y-3">
+        <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.helpdesk.#{section}_intro") %></p>
+        <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+          <% bullets.each do |key| %>
+            <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.helpdesk.#{key}") %></span></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+</div>

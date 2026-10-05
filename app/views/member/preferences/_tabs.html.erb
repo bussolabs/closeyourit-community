@@ -1,0 +1,15 @@
+<%# locals: header:, active_tab — adds the tabs to the page header (DESIGN.md T2). %>
+<%# Schede delle Preferenze personali. Route distinte, header condiviso (idioma member/projects/_overview_header).
+    CYRA-338 — vivevano sotto member/settings, un nome che nel prodotto indica ora l'Amministrazione
+    dell'organizzazione: sono l'area personale, e stanno accanto alla pagina che aprono. I `data-test`
+    restano `settings-tab-*`: non sono testo che qualcuno legge, e le spec di sistema li cercano così. %>
+<% header.with_tab(label: t("member.preferences.tabs.display"), href: member_preferences_path, active: active_tab.to_s == "display", icon: "sliders", test_id: "settings-tab-display") %>
+<% header.with_tab(label: t("member.preferences.tabs.notifications"), href: member_notification_preferences_path, active: active_tab.to_s == "notifications", icon: "bell", test_id: "settings-tab-notifications") %>
+<% header.with_tab(label: t("member.preferences.tabs.telegram"), href: member_telegram_connection_path, active: active_tab.to_s == "telegram", icon: "send", test_id: "settings-tab-telegram") %>
+<%# FIX-D: accesso all'enrollment 2FA dalle impostazioni account. Vive nell'area account (layout
+    "application", raggiungibile anche dal god senza org) → non ha stato "attivo" in questa strip. %>
+<% header.with_tab(label: t("member.preferences.tabs.security"), href: account_two_factor_path, icon: "shield-half", test_id: "settings-tab-security") %>
+<%# CYRA-643: gli accessi attivi stanno accanto alla verifica in due passaggi — sono la stessa
+    domanda («chi può entrare col mio account?») e chi cerca l'una trova l'altra. Anche questa vive
+    nell'area account, quindi nella strip non ha uno stato «attivo». %>
+<% header.with_tab(label: t("member.preferences.tabs.sessions"), href: account_sessions_path, icon: "laptop", test_id: "settings-tab-sessions") %>

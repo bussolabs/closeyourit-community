@@ -1,0 +1,63 @@
+<% content_for :title, t("member.service_accounts.title") %>
+<% org_id = current_organization.id %>
+
+<div class="p-7 space-y-6" data-test="member-service-accounts">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.service_accounts.title"),
+        subtitle: t("member.service_accounts.help_title"),
+        breadcrumb: [ { label: t("member.service_accounts.title") } ],
+        counts_test_id: "service-accounts-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.service_accounts.stat_total"), value: @total_count, test_id: "service-accounts-stat-total") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.service_accounts.stat_secrets"), value: @with_secrets_count, value_color: :indigo, test_id: "service-accounts-stat-secrets") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.service_accounts.new"), href: new_member_service_account_path, icon: "plus", size: :sm, test_id: "service-accounts-new") %>
+    <% end %>
+  <% end %>
+
+  <% if @accounts.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.service_accounts.empty"),
+          body: t("member.service_accounts.empty_body"), icon: "bot",
+          framed: true, test_id: "service-accounts-empty") do |empty| %>
+      <% empty.with_action do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.service_accounts.empty_cta"), href: new_member_service_account_path,
+              variant: :primary, size: :sm, test_id: "service-accounts-empty-cta") %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="service-accounts-table">
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.service_accounts.title"))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.service_accounts.col_name"), sort: "name") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.service_accounts.col_handle"), sort: "handle") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.service_accounts.col_secrets"), sort: "secrets", initial: :desc, classes: "w-40 whitespace-nowrap") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.service_accounts.col_tokens"), sort: "tokens", initial: :desc, classes: "w-28 whitespace-nowrap") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.service_accounts.delete"), label_hidden: true, classes: "w-10") %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+        <% end %>
+        <% @accounts.each do |account| %>
+          <% has_secrets = account.account_permissions.any? { |p| p.organization_id == org_id && p.permission_key == "secrets.manage" && p.effect == "allow" } %>
+          <% active_tokens = account.api_tokens.count { |tok| !tok.revoked? } %>
+          <%= render Ui::TableComponent::RowComponent.new(href: member_service_account_path(account), link_label: account.name, test_id: "service-account-row") do %>
+            <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-[13px] font-medium text-zinc-900 dark:text-zinc-100")) { link_to account.name, member_service_account_path(account), class: "hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "service-account-link-#{account.id}" } } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.service_accounts.col_handle"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { "@#{account.handle}" } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.service_accounts.col_secrets"))) { render Ui::BadgeComponent.new(label: has_secrets ? t("member.service_accounts.secrets_rw") : t("member.service_accounts.secrets_none"), color: has_secrets ? :indigo : :gray, dot: true) } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.service_accounts.col_tokens"), class: "text-[13px] text-gray-600 dark:text-zinc-400")) { active_tokens.to_s } %>
+            <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+              <%= render Ui::ConfirmDialogComponent.new(title: t("member.service_accounts.delete_dialog.title", name: account.name),
+                    url: member_service_account_path(account), confirm_label: t("member.service_accounts.delete"),
+                    test_id: "service-account-delete-dialog-#{account.id}") do |dialog| %>
+                <% dialog.with_body { t("member.service_accounts.delete_dialog.body") } %>
+                <%= render Ui::RowMenuComponent.new(test_id: "service-account-menu-#{account.id}") do %>
+                  <%= dialog.menu_trigger(label: t("member.service_accounts.delete"), icon: "trash", test_id: "service-account-delete-#{account.id}") %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "service-accounts-pagination")) %>
+    </div>
+  <% end %>
+</div>

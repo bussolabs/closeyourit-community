@@ -1,0 +1,30 @@
+<% content_for :title, "#{@group.name} · #{t("member.guidance.title")}" %>
+<% group_title = tag.span(class: "inline-flex items-center gap-2.5") { safe_join([ render(Ui::EntityMarkComponent.new(record: @group)), @group.name ]) } %>
+
+<div class="p-7 space-y-6" data-test="member-group-guidance">
+  <%= render Ui::PageHeaderComponent.new(title: group_title,
+        subtitle: t("member.guidance.help.group"),
+        breadcrumb: [ { label: t("member.projects.title"), href: member_projects_path }, { label: t("member.groups.title"), href: member_groups_path }, { label: @group.name, href: member_group_path(@group) }, { label: t("member.guidance.title") } ],
+        counts_test_id: "guidance-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.guidance.counts.references"), value: @references.size, test_id: "guidance-references-count") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.guidance.counts.procedures"), value: @procedures.size, test_id: "guidance-procedures-count") %>
+    <% end %>
+  <% end %>
+
+  <div class="space-y-6 max-w-4xl">
+    <%= render "member/guidance/references_section",
+          references: @references,
+          add_path: new_member_group_guidance_reference_path(@group),
+          reorder_path: reorder_member_group_guidance_references_path(@group),
+          edit_path: ->(reference) { edit_member_group_guidance_reference_path(@group, reference) },
+          delete_path: ->(reference) { member_group_guidance_reference_path(@group, reference) } %>
+
+    <%= render "member/guidance/procedures_section",
+          procedures: @procedures,
+          add_path: new_member_group_guidance_procedure_path(@group),
+          reorder_path: reorder_member_group_guidance_procedures_path(@group),
+          edit_path: ->(procedure) { edit_member_group_guidance_procedure_path(@group, procedure) },
+          delete_path: ->(procedure) { member_group_guidance_procedure_path(@group, procedure) } %>
+  </div>
+</div>

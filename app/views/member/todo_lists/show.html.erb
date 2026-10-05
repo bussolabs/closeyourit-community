@@ -1,0 +1,40 @@
+<% content_for :title, @list.name %>
+
+<div class="p-7 space-y-6" data-test="member-todo-list" data-controller="ui--dialog">
+  <%= render Ui::PageHeaderComponent.new(
+        title: @list.name,
+        subtitle: (t("member.todo_lists.shared_with_readonly", names: @shared_names.join(", ")) if @can_edit && @shared_names.any?),
+        breadcrumb: [ { label: t("member.todo_lists.title"), href: member_todo_lists_path },
+                      { label: @list.name } ]) do |h| %>
+    <% h.with_counts do %>
+      <%= render "member/todo_lists/stats", list: @list, can_edit: @can_edit %>
+    <% end %>
+    <% if @can_edit %>
+      <% h.with_actions do %>
+        <%# Opens the dialog; without JS the link still reaches the sharing page. %>
+        <%= render Ui::ButtonComponent.new(label: t("member.todo_lists.share.action"), href: member_todo_list_sharing_path(@list), icon: "share-2",
+              variant: :secondary_muted, size: :sm, test_id: "todo-list-share", data: { action: "click->ui--dialog#open:prevent" }) %>
+        <div data-test="todo-list-more-menu">
+          <%= render Ui::RowMenuComponent.new(test_id: "todo-list-menu-trigger", aria_label: t("member.todo_lists.more_menu")) do %>
+            <%= link_to t("member.todo_lists.edit"), edit_member_todo_list_path(@list),
+                  class: Ui::RowMenuComponent.item_class, data: { test: "todo-list-edit" } %>
+            <%= button_to t("member.todo_lists.delete"), member_todo_list_path(@list), method: :delete,
+                  class: Ui::RowMenuComponent.item_class(:danger), form: { class: "block" },
+                  data: { test: "todo-list-delete", turbo_confirm: t("member.todo_lists.delete_confirm") } %>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="todo-items">
+    <% if @can_edit %>
+      <%= render "member/todo_lists/item_form", list: @list %>
+    <% end %>
+    <%= render "member/todo_lists/items", list: @list, items: @items, can_edit: @can_edit %>
+  </div>
+
+  <% if @can_edit %>
+    <%= render "member/todo_lists/sharings/dialog", list: @list %>
+  <% end %>
+</div>

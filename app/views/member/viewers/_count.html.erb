@@ -1,0 +1,12 @@
+<%# Conteggio viewer. id stabile = TARGET del broadcast (Turbo replace) emesso da ViewersChannel:
+    DEVE restare identico tra render iniziale (in _badge) e ri-render del canale, altrimenti i
+    broadcast successivi non trovano più il nodo. `count` = account distinti che stanno guardando;
+    0 → badge nascosto (la riga compare solo con ≥1 viewer), ma il target resta nel DOM per i replace
+    futuri. Reso da Ui::BadgeComponent + i18n member.presence.viewers_count (pluralizzato, Foundation). %>
+<span id="viewers_<%= resource.to_gid_param %>">
+  <% if count.to_i.positive? %>
+    <%= render Ui::BadgeComponent.new(
+          label: t("member.presence.viewers_count", count: count),
+          color: :indigo, icon: "eye", size: :sm, test_id: "viewers-count") %>
+  <% end %>
+</span>

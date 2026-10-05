@@ -1,0 +1,33 @@
+<%= render Ui::SectionComponent.new(title: t("valhalla.dashboard.recent_organizations"), heading_size: :md, body_class: nil,
+      test_id: "valhalla-dashboard-recent") do |section| %>
+  <% section.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: t("valhalla.dashboard.view_all"), href: valhalla_organizations_path, variant: :ghost, size: :sm) %>
+  <% end %>
+  <% if @recent_organizations.any? %>
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("valhalla.dashboard.recent_organizations"))) do |table| %>
+      <% table.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.col_org"), sort: "organization", param: :organizations_sort) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.col_slug"), sort: "slug", param: :organizations_sort) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.organizations.col_status")) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.col_owner"), sort: "owner", param: :organizations_sort) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.col_created"), sort: "created", initial: :desc, param: :organizations_sort, align: :right) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+      <% end %>
+      <% @recent_organizations.each do |organization| %>
+        <%= render Ui::TableComponent::RowComponent.new(href: valhalla_organization_path(organization), link_label: organization.name, faded: organization.suspended?) do %>
+          <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-[13px] font-medium text-zinc-900 dark:text-zinc-100")) { organization.name } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.dashboard.col_slug"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { organization.slug } %>
+          <%= render Ui::TableComponent::CellComponent.new(label: t("valhalla.organizations.col_status")) do %>
+            <%= render Ui::BadgeComponent.new(label: t(organization.suspended? ? "valhalla.organizations.status_suspended" : "valhalla.organizations.status_active"),
+                  color: (organization.suspended? ? :gray : :green), dot: true) %>
+          <% end %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.dashboard.col_owner"), class: "text-[12.5px] text-gray-500 dark:text-zinc-400")) { organization.owner&.email || t("valhalla.dashboard.none") } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.dashboard.col_created"), align: :right, mono: true, class: "text-[11px] text-gray-500 dark:text-zinc-400")) { l(organization.created_at.to_date) } %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <%= render(Ui::PaginationComponent.new(pagination: @recent_pagination, test_id: "valhalla-dashboard-recent-pagination")) %>
+  <% else %>
+    <p class="px-4 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.dashboard.empty") %></p>
+  <% end %>
+<% end %>

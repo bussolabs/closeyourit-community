@@ -1,0 +1,65 @@
+en:
+  member:
+    projects:
+      show:
+        tab_documents: "Documents"
+    documents:
+      title: "Documents"
+      count:
+        one: "%{count} document"
+        other: "%{count} documents"
+      search_placeholder: "Search documents…"
+      apply: "Apply"
+      filter_tag: "Tag"
+      upload:
+        add: "Upload documents"
+        add_hint: "PDF, Office, text, images, video, zip — max 25 MB each"
+        selected: "Selected:"
+        uploading: "Uploading…"
+        drop: "Drop files here or click to choose them"
+      uploaded:
+        one: "%{count} document uploaded"
+        other: "%{count} documents uploaded"
+      updated: "Document updated"
+      deleted: "Document deleted"
+      delete_dialog:
+        title: "Delete the %{title} document?"
+        body: "Its file disappears with it. This cannot be undone."
+      empty: "No documents"
+      empty_body: "Upload specs, contracts or exports to keep them with the project."
+      empty_example: "For example: the signed contract, the spec as a PDF, September's data export."
+      col_title: "Document"
+      col_type: "Type"
+      col_size: "Size"
+      col_tags: "Tags"
+      col_uploaded: "Uploaded"
+      download: "Download"
+      open: "Open"
+      open_title: "Open in a new tab"
+      types:
+        image: "Image"
+        text: "Text"
+      edit: "Edit"
+      delete: "Delete"
+      form:
+        title_edit: "Edit document"
+        name: "Name"
+        tags: "Tags"
+        tags_hint: "Comma-separated, e.g. legal, q3"
+        description: "Description"
+        cancel: "Cancel"
+        save: "Save"
+      errors:
+        no_files: "Select at least one file to upload"
+        invalid_file: "One or more files are not allowed (type or size)"
+  activerecord:
+    errors:
+      models:
+        projects/document:
+          attributes:
+            title:
+              blank: "Name is required"
+            file:
+              blank: "File is required"
+              too_large: "File exceeds the 25 MB limit"
+              invalid_type: "File type is not allowed"

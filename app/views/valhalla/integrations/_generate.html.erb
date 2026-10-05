@@ -1,0 +1,18 @@
+<% scope = "valhalla.integrations.generate" %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="integrations-generate">
+  <div class="border-b border-stone-200 dark:border-zinc-800 px-6 py-4">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("#{scope}.title") %></h2>
+    <p class="mt-1 text-[13px] text-stone-500 dark:text-zinc-400"><%= t("#{scope}.hint") %></p>
+  </div>
+  <div class="flex flex-wrap gap-3 p-6">
+    <% Valhalla::IntegrationsController::GENERATED.each do |field| %>
+      <%= render Ui::ConfirmDialogComponent.new(title: t("#{scope}.#{field}"), url: generate_valhalla_integrations_path,
+            method: :post, params: { field: }, confirm_label: t("#{scope}.confirm"),
+            test_id: "integrations-generate-dialog-#{field.to_s.dasherize}") do |dialog| %>
+        <% dialog.with_body { t("#{scope}.warning.#{field}") } %>
+        <%= dialog.button_trigger(label: t("#{scope}.#{field}"), icon: "key-round", variant: :secondary_muted,
+              test_id: "integrations-generate-#{field.to_s.dasherize}") %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

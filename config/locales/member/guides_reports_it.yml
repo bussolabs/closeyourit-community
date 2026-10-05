@@ -1,0 +1,27 @@
+it:
+  member:
+    guides:
+      index:
+        reports:
+          title: Riepilogo dei dati via email
+      reports:
+        title: Riepilogo dei dati via email
+        subtitle: Come sta andando, in un'email — visite, errori e uptime dei tuoi progetti.
+        what_title: Che cos'è
+        what_intro: Un'email che riassume i numeri del periodo, così sai come sta andando senza entrare a guardare pagina per pagina. Arriva la mattina e riguarda solo i progetti che vedi tu.
+        what_traffic: "Le visite: quante sono state, quanti visitatori, e com'è andata rispetto al periodo prima."
+        what_errors: "Gli errori: quanti se ne sono presentati, quanti problemi sono nuovi, quanti restano aperti."
+        what_uptime: "L'uptime: quanto tempo i tuoi siti hanno risposto ai controlli."
+        setup_title: Come si accende
+        setup_step1: Apri le tue preferenze delle notifiche. Il riquadro «Riepilogo dei dati via email» sta sotto i canali di consegna.
+        setup_step2: Scegli ogni quanto vuoi riceverlo.
+        cadence_daily: Un'email ogni mattina, sulle ultime ventiquattro ore.
+        cadence_weekly: Un'email il lunedì mattina, sugli ultimi sette giorni.
+        cadence_monthly: Un'email il primo del mese, sugli ultimi trenta giorni.
+        setup_step3: Salva. La prima email parte al primo giro utile, poi si aggancia al giorno della frequenza scelta.
+        open_preferences: Vai alle preferenze
+        notes_title: Cosa sapere
+        note_visibility: "Il riepilogo contiene solo i progetti che puoi vedere: due persone della stessa organizzazione possono ricevere numeri diversi."
+        note_empty: Se nel periodo non è successo niente, l'email non parte. Meglio nessuna email che un foglio di zeri.
+        note_not_alerts: Non sostituisce gli avvisi. Gli avvisi ti dicono cosa è appena successo, il riepilogo dice come sta andando.
+        note_email_off: Se spegni le email fra i canali di consegna, il riepilogo non parte finché non le riaccendi.

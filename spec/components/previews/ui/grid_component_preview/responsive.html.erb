@@ -1,0 +1,4 @@
+<%= render(Ui::GridComponent.new(cols: 1, lg: 3, gap: 6)) do %>
+  <%= render(Ui::SectionComponent.new(title: "Occorrenze", class: "lg:col-span-2")) { "Colonna larga." } %>
+  <%= render(Ui::SectionComponent.new(title: "Dettagli")) { "Colonna stretta." } %>
+<% end %>

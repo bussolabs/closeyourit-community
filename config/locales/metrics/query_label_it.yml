@@ -1,0 +1,14 @@
+---
+it:
+  metrics:
+    query_label:
+      read: "Lettura · %{subject}"
+      write: "Scrittura · %{subject}"
+      change: "Aggiornamento · %{subject}"
+      delete: "Eliminazione · %{subject}"
+    slow_queries:
+      suspect: misura sospetta
+      suspect_hint: "Una singola operazione oltre il minuto quasi sempre non è la sua durata, ma un'attesa in coda misurata male: da verificare prima di prenderla per buona."
+      excluded:
+        one: "1 riga esclusa perché riguarda le tabelle interne del sistema"
+        other: "%{count} righe escluse perché riguardano le tabelle interne del sistema"

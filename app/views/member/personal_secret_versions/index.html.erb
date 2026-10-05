@@ -1,0 +1,49 @@
+<% content_for :title, t("member.personal_secrets.versions_title", name: @secret.name) %>
+
+<div class="p-7 space-y-6" data-test="member-personal-secret-versions">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.personal_secrets.versions_title", name: @secret.name),
+        back_href: member_personal_secrets_path, back_label: t("member.personal_secrets.versions_back"),
+        test_id: "personal-versions") %>
+
+  <% if @versions.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.personal_secrets.versions_empty"),
+          body: t("member.personal_secrets.versions_empty_body"), icon: "history",
+          framed: true, test_id: "personal-versions-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 divide-y divide-stone-100 dark:divide-zinc-800" data-test="personal-versions-list">
+      <% @versions.each_with_index do |version, i| %>
+        <div class="flex items-start gap-3 px-4 py-3" data-test="personal-version-row">
+          <span class="font-mono text-[12px] font-medium text-zinc-900 dark:text-zinc-100 w-10 shrink-0"><%= t("member.personal_secrets.version_label", number: version.number) %></span>
+          <%# CYRA-204: il valore NON è più nel sorgente HTML (lo storico lo esporrebbe tutto, corrente
+              compresa, aggirando il reveal della lista). "Mostra"/"Copia" lo recuperano on-demand
+              dall'endpoint reveal della versione, che registra l'accesso (audit "read", source web). %>
+          <div class="flex items-start gap-2 min-w-0 flex-1" data-controller="secret-reveal clipboard"
+               data-secret-reveal-url-value="<%= reveal_member_personal_secret_version_path(@secret, version) %>"
+               data-secret-reveal-show-value="<%= t('member.personal_secrets.reveal') %>"
+               data-secret-reveal-hide-value="<%= t('member.personal_secrets.hide') %>"
+               data-secret-reveal-error-value="<%= t('member.personal_secrets.reveal_failed') %>"
+               data-clipboard-copied-value="<%= t('member.personal_secrets.copied') %>"
+               data-clipboard-error-value="<%= t('member.personal_secrets.copy_failed') %>"
+               data-clipboard-url-value="<%= reveal_member_personal_secret_version_path(@secret, version) %>">
+            <button type="button" data-action="secret-reveal#toggle" data-secret-reveal-target="toggle" data-test="personal-version-reveal-<%= version.id %>"
+                    class="cursor-pointer select-none font-mono text-[12px] text-gray-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"><%= t("member.personal_secrets.reveal") %></button>
+            <code data-secret-reveal-target="value" hidden data-test="personal-version-value-<%= version.id %>"
+                  class="min-w-0 block max-w-md break-all rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2 py-1.5 font-mono text-[12px] text-zinc-800 dark:text-zinc-200"></code>
+            <button type="button" data-action="clipboard#copy" class="shrink-0 text-[11px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+              <span data-clipboard-target="label"><%= t("member.personal_secrets.copy") %></span>
+            </button>
+          </div>
+          <span class="text-[11px] text-gray-400 dark:text-zinc-500 shrink-0 hidden sm:block"><%= t("member.personal_secrets.updated_ago", time: time_ago_in_words(version.created_at)) %></span>
+          <div class="shrink-0 w-28 text-right">
+            <% if i.zero? %>
+              <%= render Ui::BadgeComponent.new(label: t("member.personal_secrets.current"), color: "emerald", dot: true) %>
+            <% else %>
+              <%= button_to t("member.personal_secrets.rollback"), rollback_member_personal_secret_version_path(@secret, version), method: :post, form: { data: { turbo_confirm: t("member.personal_secrets.rollback_confirm") } }, class: "inline-flex items-center gap-1.5 h-[28px] px-2.5 rounded-md text-[12px] font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-indigo-50 dark:hover:bg-indigo-500/15", data: { test: "personal-version-rollback-#{version.id}" } %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

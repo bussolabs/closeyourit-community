@@ -1,0 +1,36 @@
+it:
+  member:
+    vault_attention:
+      title: Da sistemare
+      help_title: "Cosa va sistemato sui segreti, dal più rischioso."
+      stat_total: Da sistemare
+      stat_high: Rischio alto
+      stat_decidable: Da decidere
+      stat_rotation_coverage: con una regola di rotazione
+      empty: Non c'è niente da sistemare
+      empty_body: Nessuna variabile mancante, nessun valore oltre la scadenza e nessuna richiesta in attesa fra i progetti che vedi.
+      since: "Aperta da %{time}"
+      open_secrets: Apri i segreti
+      fix: Correggi nei segreti
+      search: Cerca segreto o progetto…
+      filter_risk: Rischio
+      filter_kind: Tipo
+      no_match: Niente corrisponde ai filtri.
+      requested_by: "chiesta da %{who} per %{action}"
+      open_consolidation: Guarda la proposta
+      dismiss_consolidation: Non proporre più
+      detail_consolidation: lo stesso valore è tenuto a mano in più progetti
+      projects_count:
+        one: "%{count} progetto"
+        other: "%{count} progetti"
+      stat_consolidation: Valori in comune
+      risk:
+        high: Alto
+        medium: Medio
+        low: Basso
+      kind:
+        anomaly: manca
+        rotation_overdue: valore scaduto
+        rotation_due_soon: valore in scadenza
+        change_request: aspetta una decisione
+        consolidation: valore in comune

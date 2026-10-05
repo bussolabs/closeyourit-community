@@ -1,0 +1,66 @@
+<% content_for :title, @rule.name %>
+<div class="p-7 space-y-6" data-test="measurement-rule-detail">
+  <%= render Ui::PageHeaderComponent.new(title: @rule.name, subtitle: measurement_label("subtitle"), breadcrumb: [{label: measurement_label("title"), href: member_monitoring_measurements_path}, {label: measurement_label("alerts"), href: member_monitoring_measurement_rules_path}, {label: @rule.name}]) do |header| %>
+    <% header.with_counts do %><%= render Ui::StatLabelComponent.new(label: measurement_label("history"), value: @pagination.total) %><% end %>
+    <% if can?("alerts.manage") %>
+      <% header.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: measurement_label("edit"), href: edit_member_monitoring_measurement_rule_path(@rule), size: :sm, variant: :secondary_muted, test_id: "measurement-rule-edit") %>
+        <%= render Ui::ConfirmDialogComponent.new(title: measurement_label("delete"), url: member_monitoring_measurement_rule_path(@rule), confirm_label: measurement_label("delete"), params: {confirm: "1"}) do |dialog| %>
+          <%= render Ui::RowMenuComponent.new do %><%= dialog.menu_trigger(label: measurement_label("delete"), icon: "trash") %><% end %>
+          <% dialog.with_body do %><p><%= measurement_label("delete_confirm") %> <strong><%= @rule.name %></strong></p><% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%= render Ui::GridComponent.new(cols: 1, lg: 3, gap: 6) do %>
+    <%= render Ui::StackComponent.new(gap: 6, class: "lg:col-span-2 min-w-0") do %>
+      <%= render Ui::SectionComponent.new(title: measurement_label("latest"), test_id: "measurement-latest-observation") do %>
+        <% if @latest %>
+          <p class="text-lg font-medium"><%= measurement_label(@latest.status) %> · <span class="font-mono"><%= measurement_number(@latest.result["value"]) %> <%= measurement_evaluation_unit(@latest) if @latest.result["value"] %></span></p>
+          <p class="text-sm text-gray-500 dark:text-zinc-400"><%= l(measurement_time(@latest.window_end_ns), format: :short) %> · <%= measurement_label(@latest.config_digest == @current_digest ? "current_config" : "past_config") %></p>
+          <% if @latest.result["quantile"] %><p class="text-sm"><%= measurement_label("bounds") %>: <%= measurement_bounds(@latest.result["quantile"]) %></p><% end %>
+        <% else %><p><%= measurement_label("not_evaluated") %></p><% end %>
+        <p class="text-sm text-gray-500 dark:text-zinc-400 mt-3"><%= measurement_label("unknown_note") %></p>
+      <% end %>
+      <%= render Ui::SectionComponent.new(title: measurement_label("history")) do %>
+        <% if @pagination.records.empty? %><p><%= measurement_label("no_history") %></p><% else %>
+          <%= render Ui::TableComponent.new(stacked: true, label: measurement_label("history")) do |table| %>
+            <% table.with_head do %><% %w[period status value diagnostics].each do |key| %><%= render Ui::TableComponent::HeaderComponent.new(label: measurement_label(key)) %><% end %><% end %>
+            <% @pagination.records.each do |evaluation| %>
+              <%= render Ui::TableComponent::RowComponent.new(test_id: "measurement-evaluation") do %>
+                <%= render Ui::TableComponent::CellComponent.new(label: measurement_label("period"), mono: true) do %><div><%= l(measurement_time(evaluation.window_end_ns), format: :short) %><div class="text-xs"><%= measurement_label(evaluation.config_digest == @current_digest ? "current_config" : "past_config") %></div></div><% end %>
+                <%= render Ui::TableComponent::CellComponent.new(label: measurement_label("status")) do %><%= measurement_label(evaluation.status) %><% end %>
+                <%= render Ui::TableComponent::CellComponent.new(label: measurement_label("value"), mono: true) do %><%= measurement_number(evaluation.result["value"]) %> <%= measurement_evaluation_unit(evaluation) if evaluation.result["value"] %><% end %>
+                <%= render Ui::TableComponent::CellComponent.new(label: measurement_label("diagnostics")) do %><%= Array(evaluation.result["diagnostics"]).join(", ").presence || "—" %><% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+          <%= render Ui::PaginationComponent.new(pagination: @pagination) %>
+        <% end %>
+      <% end %>
+      <%= render Ui::SectionComponent.new(title: measurement_label("condition")) do %>
+        <p class="font-mono break-all"><%= measurement_label(@rule.measurement_config["statistic"]) %> <%= {"gt"=>">","gte"=>"≥","lt"=>"<","lte"=>"≤"}[@rule.measurement_config["comparison"]] %> <%= @rule.measurement_config["threshold"] %> <%= measurement_unit(@series, @rule.measurement_config["statistic"]) if @series %></p>
+        <p class="text-sm mt-2"><%= measurement_label("window_seconds") %>: <%= @rule.measurement_config["window_seconds"] %></p>
+        <% if @rule.measurement_config["quantile"] %><p class="text-sm"><%= measurement_label("quantile") %>: <%= @rule.measurement_config["quantile"] %></p><% end %>
+        <p class="text-sm text-gray-500 dark:text-zinc-400 mt-3"><%= measurement_label("condition_note") %></p>
+        <p class="text-sm text-gray-500 dark:text-zinc-400 mt-3"><%= measurement_label("window_policy") %></p>
+      <% end %>
+    <% end %>
+    <%= render Ui::StackComponent.new(gap: 6) do %>
+      <%= render Ui::DetailsComponent.new(title: measurement_label("details")) do |details| %>
+        <% details.with_row(label: measurement_label("project"), value: @project.name) %>
+        <% details.with_row(label: measurement_label("enabled"), value: measurement_label(@rule.enabled? ? "yes" : "no")) %>
+        <% details.with_row(label: measurement_label("series")) do %><% if @series %><%= link_to @series.name, member_monitoring_measurement_path(@series), class: "text-indigo-600 dark:text-indigo-400 break-all" %><% else %><%= measurement_label("unavailable_series") %><% end %><% end %>
+        <% details.with_row(label: measurement_label("throttle_seconds"), value: @rule.throttle_seconds) %>
+        <% details.with_row(label: measurement_label("last_known"), test_id: "measurement-last-known") do %>
+          <% if @rule.measurement_state["state"] %><div><%= measurement_label(@rule.measurement_state["state"]) %><div class="text-xs"><%= l(measurement_time(@rule.measurement_state["window_end_ns"]), format: :short) %></div><div class="text-xs"><%= measurement_label(@rule.measurement_state["config_digest"] == @current_digest ? "current_config" : "past_config") %></div></div><% else %><%= measurement_label("not_evaluated") %><% end %>
+        <% end %>
+      <% end %>
+      <%= render Ui::SectionComponent.new(title: measurement_label("channels")) do %>
+        <% @channels.each do |channel| %><p class="break-all"><%= channel.name %></p><% end %>
+        <p class="text-sm text-gray-500 dark:text-zinc-400"><%= measurement_label("channels_note") %></p>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%= render Ui::AuditMetaComponent.new(created_at: @rule.created_at, updated_at: @rule.updated_at) %>
+</div>

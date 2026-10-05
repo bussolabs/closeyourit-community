@@ -1,0 +1,6 @@
+it:
+  routes:
+    # Gli SLUG delle feature (error-monitoring, ticketing, …) restano identici nei due locali:
+    # sono termini di prodotto (documentato — deroga consentita da rules/rails/i18n.md).
+    features: "funzionalita"
+    integrations: "integrazioni"

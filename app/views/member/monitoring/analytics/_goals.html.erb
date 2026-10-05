@@ -1,0 +1,36 @@
+<%# Goal/conversioni del progetto nel range: pageview-path o custom-event, con unique/total/rate. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="analytics-goals">
+  <div class="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.analytics.goals.title") %></h2>
+    <%= link_to t("member.monitoring.analytics.goals.manage"),
+          member_monitoring_analytics_goals_path(project_id: project.id),
+          class: "h-[28px] px-2.5 inline-flex items-center rounded-md border border-stone-200 dark:border-zinc-800 text-[12px] font-medium text-zinc-900 dark:text-zinc-100 hover:bg-stone-50 dark:hover:bg-zinc-800",
+          data: { test: "analytics-goals-manage" } %>
+  </div>
+  <% if goals.empty? %>
+    <div class="px-4 py-8 text-center">
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.goals.empty") %></p>
+    </div>
+  <% else %>
+    <%= render(Ui::TableComponent.new(stacked: true, compact: true, label: t("member.monitoring.analytics.goals.title"))) do |t| %>
+      <% t.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.goals.col_goal"), sort: "goal", param: :goals_sort) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.goals.col_unique"), sort: "unique", initial: :desc, param: :goals_sort) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.goals.col_total"), sort: "total", initial: :desc, param: :goals_sort) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.goals.col_rate"), sort: "rate", initial: :desc, param: :goals_sort) %>
+      <% end %>
+      <% goals.each do |goal| %>
+        <% conv = conversions[goal.id] %>
+        <%= render Ui::TableComponent::RowComponent.new(test_id: "analytics-goal-row") do %>
+          <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+            <span class="text-zinc-900 dark:text-zinc-100"><%= goal.display_name %></span>
+            <span class="ml-1.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= goal.custom_event? ? goal.event_name : goal.path_pattern %></span>
+          <% end %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.analytics.goals.col_unique"), mono: true, class: "text-gray-600 dark:text-zinc-400")) { conv[:unique_conversions].to_s } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.analytics.goals.col_total"), mono: true, class: "text-gray-600 dark:text-zinc-400")) { conv[:total_conversions].to_s } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.analytics.goals.col_rate"), mono: true, class: "text-gray-600 dark:text-zinc-400")) { conv[:conversion_rate].nil? ? "—" : "#{conv[:conversion_rate]}%" } %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

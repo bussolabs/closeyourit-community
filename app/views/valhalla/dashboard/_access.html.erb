@@ -1,0 +1,65 @@
+<%# Who is in right now and who was impersonated: two tabs of one panel. Without JS both stay readable. %>
+<% active_pairs = @signals.active_impersonation_pairs %>
+<% selected = "aria-selected:bg-stone-100 dark:aria-selected:bg-zinc-800 aria-selected:text-zinc-900 dark:aria-selected:text-zinc-100" %>
+<%= render Ui::SectionComponent.new(title: t("valhalla.dashboard.access"), heading_size: :md, body_class: nil,
+      test_id: "valhalla-dashboard-access", data: { controller: "tabs" }) do |section| %>
+  <% section.with_actions do %>
+    <div class="flex items-center gap-1" role="tablist" aria-label="<%= t("valhalla.dashboard.access") %>">
+      <%= render Ui::ButtonComponent.new(label: t("valhalla.dashboard.active_sessions"), variant: :ghost, size: :sm, role: "tab", class: selected,
+            test_id: "valhalla-access-tab-sessions", data: { tabs_target: "tab", action: "tabs#select", tabs_index_param: 0 }) %>
+      <%= render Ui::ButtonComponent.new(label: t("valhalla.dashboard.recent_impersonations"), variant: :ghost, size: :sm, role: "tab", class: selected,
+            test_id: "valhalla-access-tab-impersonations", data: { tabs_target: "tab", action: "tabs#select", tabs_index_param: 1 }) %>
+    </div>
+  <% end %>
+  <div data-tabs-target="panel" data-test="valhalla-dashboard-recent-sessions">
+    <% if @recent_sessions.any? %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("valhalla.dashboard.active_sessions"))) do |table| %>
+        <% table.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.col_account"), sort: "account", param: :sessions_sort) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.col_ip"), sort: "ip", param: :sessions_sort) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.col_when"), sort: "when", initial: :desc, param: :sessions_sort, align: :right) %>
+        <% end %>
+        <% @recent_sessions.each do |session| %>
+          <%= render Ui::TableComponent::RowComponent.new do %>
+            <%= render Ui::TableComponent::CellComponent.new(header: true, class: "text-[12.5px] text-zinc-900 dark:text-zinc-100") do %>
+              <span class="font-medium"><%= session.account.name %></span>
+              <span class="block font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= session.account.email %></span>
+              <% if session.impersonating? %>
+                <%= render Ui::BadgeComponent.new(label: t("valhalla.dashboard.session_impersonating"), color: :red, size: :sm) %>
+              <% end %>
+            <% end %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.dashboard.col_ip"), mono: true, class: "text-[11px] text-gray-500 dark:text-zinc-400")) { session.ip_address.presence || t("valhalla.dashboard.none") } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.dashboard.col_when"), align: :right, mono: true, class: "text-[11px] text-gray-500 dark:text-zinc-400")) { l(session.created_at, format: :long) } %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <p class="px-4 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.dashboard.empty_sessions") %></p>
+    <% end %>
+  </div>
+  <div data-tabs-target="panel" data-test="valhalla-dashboard-impersonations">
+    <% if @impersonations.any? %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("valhalla.dashboard.recent_impersonations"))) do |table| %>
+        <% table.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.col_god"), sort: "god", param: :impersonations_sort) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.col_target"), sort: "target", param: :impersonations_sort) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.col_started"), sort: "started", initial: :desc, param: :impersonations_sort, align: :right) %>
+        <% end %>
+        <% @impersonations.each do |event| %>
+          <%= render Ui::TableComponent::RowComponent.new do %>
+            <%= render(Ui::TableComponent::CellComponent.new(header: true, mono: true, class: "text-[11.5px] text-zinc-900 dark:text-zinc-100")) { event.god.email } %>
+            <%= render Ui::TableComponent::CellComponent.new(label: t("valhalla.dashboard.col_target"), mono: true, class: "text-[11.5px] text-gray-500 dark:text-zinc-400") do %>
+              <%= event.account.email %>
+              <% if active_pairs.include?([ event.god_id, event.account_id ]) %>
+                <%= render Ui::BadgeComponent.new(label: t("valhalla.dashboard.impersonation_active"), color: :green, size: :sm) %>
+              <% end %>
+            <% end %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.dashboard.col_started"), align: :right, mono: true, class: "text-[11px] text-gray-500 dark:text-zinc-400")) { l(event.started_at, format: :long) } %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <p class="px-4 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.dashboard.empty_impersonations") %></p>
+    <% end %>
+  </div>
+<% end %>

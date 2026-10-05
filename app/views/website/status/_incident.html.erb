@@ -1,0 +1,36 @@
+<%# locals: incident: — un incident (top-level) sulla status page pubblica: finestra + stato corrente
+    (badge phase se narrato) + timeline degli step. Read-only. window_* = unione self+figli. %>
+<div class="px-4 py-3" data-test="incident-row">
+  <div class="flex items-center gap-3 flex-wrap">
+    <span class="inline-block w-2 h-2 rounded-full <%= incident.window_ongoing? ? 'bg-red-500' : 'bg-gray-300' %>"></span>
+    <span class="font-mono text-[12px] text-zinc-900"><%= l(incident.window_started_at.to_date, format: :long) %></span>
+    <span class="font-mono text-[11px] text-gray-500"><%= distance_of_time_in_words(incident.window_started_at, incident.window_resolved_at || Time.current) %></span>
+    <span class="ml-auto">
+      <% if incident.narrated? %>
+        <%= render Ui::BadgeComponent.new(label: uptime_phase_label(incident.phase), color: uptime_phase_color(incident.phase), size: :sm) %>
+      <% else %>
+        <span class="font-mono text-[11px] <%= incident.window_ongoing? ? 'text-red-600' : 'text-gray-500' %>">
+          <%= incident.window_ongoing? ? t("website.status.incident_ongoing") : t("website.status.incident_resolved") %>
+        </span>
+      <% end %>
+    </span>
+  </div>
+
+  <%# sort in memoria sui record già preloadati (:updates): .chronological rifarebbe una query per riga (N+1) %>
+  <% updates = incident.updates.sort_by { |update| [ update.created_at, update.id ] } %>
+  <% if updates.any? %>
+    <ol class="mt-2.5 ml-1 space-y-2 border-l border-stone-200 pl-4" data-test="incident-timeline">
+      <% updates.each do |update| %>
+        <li data-test="incident-update">
+          <div class="flex items-center gap-2 flex-wrap">
+            <%= render Ui::BadgeComponent.new(label: uptime_phase_label(update.phase), color: uptime_phase_color(update.phase), size: :sm) %>
+            <span class="font-mono text-[10px] text-gray-500"><%= update.created_at.strftime("%d/%m %H:%M") %></span>
+          </div>
+          <% if update.body.present? %>
+            <%= render Ui::MarkdownComponent.new(text: update.body, class: "mt-0.5 text-[12.5px] text-zinc-700 leading-relaxed") %>
+          <% end %>
+        </li>
+      <% end %>
+    </ol>
+  <% end %>
+</div>

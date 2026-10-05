@@ -1,0 +1,60 @@
+<% content_for :title, @organization.name %>
+
+<div class="p-7 space-y-6" data-test="valhalla-organization-show">
+  <%= render Ui::PageHeaderComponent.new(
+        title: @organization.name,
+        breadcrumb: [ { label: t("valhalla.organizations.title"), href: valhalla_organizations_path }, { label: @organization.name } ],
+        root_href: valhalla_root_path) do |h| %>
+    <% h.with_actions do %>
+      <% if @organization.memberships.size.positive? %>
+        <%= render Ui::ButtonComponent.new(label: t("valhalla.organizations.actions.enter"), href: new_impersonation_path(organization_id: @organization.id), variant: :tinted, size: :sm, icon: "log-in", test_id: "valhalla-organization-enter") %>
+      <% end %>
+      <%= render Ui::ButtonComponent.new(label: t("valhalla.organizations.actions.edit"), href: edit_valhalla_organization_path(@organization), variant: :secondary_muted, icon: "pen", size: :sm) %>
+      <%= render Ui::ButtonComponent.new(label: @organization.suspended? ? t("valhalla.organizations.actions.unsuspend") : t("valhalla.organizations.actions.suspend"), href: suspend_valhalla_organization_path(@organization), method: :patch, variant: :danger_outline, size: :sm, icon: "ban", test_id: "valhalla-organization-suspend") %>
+    <% end %>
+    <% h.with_meta do %>
+      <%= render Ui::BadgeComponent.new(
+            label: @organization.suspended? ? t("valhalla.organizations.status_suspended") : t("valhalla.organizations.status_active"),
+            color: @organization.suspended? ? :gray : :green,
+            test_id: "valhalla-organization-status"
+          ) %>
+      <p class="mt-[7px] font-mono text-[12px] text-gray-500 dark:text-zinc-400"><%= @organization.slug %> · <%= @organization.owner&.email || t("valhalla.organizations.none") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="rounded-[10px] border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-[18px] py-[15px]"><div class="flex items-center justify-between"><span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.organizations.col_members") %></span><%= render Ui::IconComponent.new(name: "users", class: "text-gray-400 dark:text-zinc-500 text-[13px]") %></div><p class="mt-2 font-mono text-[28px] font-semibold text-zinc-900 dark:text-zinc-100 leading-none" data-test="org-members-count"><%= @organization.memberships.size %></p></div>
+    <div class="rounded-[10px] border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-[18px] py-[15px]"><div class="flex items-center justify-between"><span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.organizations.col_projects") %></span><%= render Ui::IconComponent.new(name: "folder", class: "text-gray-400 dark:text-zinc-500 text-[13px]") %></div><p class="mt-2 font-mono text-[28px] font-semibold text-zinc-900 dark:text-zinc-100 leading-none"><%= @organization.projects.size %></p></div>
+    <div class="rounded-[10px] border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-[18px] py-[15px]"><div class="flex items-center justify-between"><span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.dashboard.tickets") %></span><%= render Ui::IconComponent.new(name: "ticket", class: "text-gray-400 dark:text-zinc-500 text-[13px]") %></div><p class="mt-2 font-mono text-[28px] font-semibold text-zinc-900 dark:text-zinc-100 leading-none"><%= @organization.tickets.size %></p></div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-baseline gap-2">
+      <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("valhalla.organizations.members_title") %></h2>
+      <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="valhalla-org-members-count"><%= count_label("valhalla.organizations.members_count", @members_pagination.total) %></span>
+    </div>
+    <%= render(Ui::TableToolbarComponent.new(framed: true, 
+          url: valhalla_organization_path(@organization), query: params[:q],
+          search_placeholder: t("valhalla.organizations.members_search_placeholder"),
+          search_test_id: "valhalla-org-members-search", test_id: "valhalla-org-members-toolbar")) %>
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("valhalla.accounts.title"))) do |t| %>
+      <% t.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.accounts.col_account"), sort: "account") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.accounts.col_email"), sort: "email") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.accounts.col_role"), sort: "role", align: :right) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+      <% end %>
+      <% @members.each do |membership| %>
+        <%= render Ui::TableComponent::RowComponent.new(href: edit_valhalla_account_path(membership.account), link_label: membership.account.name, test_id: "valhalla-org-member-row") do %>
+          <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+            <div class="flex items-center gap-2.5"><span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold"><%= avatar_initials(membership.account.name) %></span><span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= membership.account.name %></span></div>
+          <% end %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.accounts.col_email"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { membership.account.email } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.accounts.col_role"), align: :right)) { render Ui::BadgeComponent.new(label: t("valhalla.accounts.roles.#{membership.role}"), color: :indigo, test_id: "valhalla-org-member-role") } %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= render(Ui::PaginationComponent.new(pagination: @members_pagination, test_id: "valhalla-org-members-pagination")) %>
+  </div>
+</div>

@@ -1,0 +1,27 @@
+<% content_for :title, t("account.two_factor.recovery_title") %>
+
+<div class="mx-auto max-w-2xl px-6 py-8" data-test="account-two-factor-recovery">
+  <h1 class="font-display text-[18px] font-semibold text-zinc-900 dark:text-zinc-100 mb-4"><%= t("account.two_factor.recovery_title") %></h1>
+
+  <%= render Ui::AlertComponent.new(variant: :warning, title: t("account.two_factor.recovery_warning_title"), test_id: "two-factor-recovery-warning") do %>
+    <%= t("account.two_factor.recovery_warning_body") %>
+  <% end %>
+
+  <%= render Ui::CardComponent.new(test_id: "two-factor-recovery-card", class: "mt-4") do %>
+    <p class="text-[13px] text-zinc-600 dark:text-zinc-400 mb-3"><%= t("account.two_factor.recovery_lead") %></p>
+    <ul class="grid grid-cols-2 gap-2 font-mono text-[13px] text-zinc-900 dark:text-zinc-100" data-test="two-factor-recovery-codes">
+      <% @recovery_codes.each do |code| %>
+        <li class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2 text-center select-all"><%= code %></li>
+      <% end %>
+    </ul>
+    <div class="mt-5 flex items-center gap-3">
+      <%# Built in the page, not fetched: the codes are shown once and never sent by the server again. %>
+      <% recovery_file = ([ t("account.two_factor.recovery_file_header", email: Current.account.email), "" ] + @recovery_codes).join("\n") + "\n" %>
+      <%= render Ui::ButtonComponent.new(label: t("account.two_factor.recovery_download"), variant: :secondary, icon: "download",
+            href: "data:text/plain;charset=utf-8,#{ERB::Util.url_encode(recovery_file)}",
+            download: "closeyourit-recovery-codes.txt", test_id: "two-factor-recovery-download") %>
+      <%= render Ui::ButtonComponent.new(label: t("account.two_factor.recovery_done"), href: account_two_factor_path, test_id: "two-factor-recovery-done") %>
+      <%= link_to t("account.two_factor.back_to_app"), root_path, class: "text-[13px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "two-factor-recovery-back" } %>
+    </div>
+  <% end %>
+</div>

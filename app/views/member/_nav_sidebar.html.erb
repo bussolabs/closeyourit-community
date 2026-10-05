@@ -1,0 +1,31 @@
+<%# locals: (tree:, compact: false) %>
+<%# CYRA-903 — `data-compact` narrows the desktop sidebar to its icons; the ui--sidebar-compact
+    controller toggles it and keeps the choice in a cookie, so the server renders it without a flash. %>
+<aside data-ui--mobile-nav-target="panel" id="member-sidebar" data-controller="ui--sidebar-compact"
+       <%= "data-compact" if compact %>
+       class="group/sidebar fixed top-0 bottom-0 left-0 z-50 w-64 flex flex-col bg-white dark:bg-zinc-900 border-r border-stone-200 dark:border-zinc-800 -translate-x-full max-md:invisible transition-transform duration-200 ease-out motion-reduce:transition-none md:relative md:h-full md:shrink-0 md:translate-x-0 md:z-auto md:rounded-xl md:border md:data-[compact]:w-16">
+  <div class="flex items-center gap-2.5 h-14 px-4 shrink-0 md:group-data-[compact]/sidebar:justify-center md:group-data-[compact]/sidebar:px-0">
+    <%= render "shared/brand_mark", size: "w-6 h-6" %>
+    <span class="font-display text-[15px] font-semibold tracking-[0.2px] text-zinc-900 dark:text-zinc-100 md:group-data-[compact]/sidebar:sr-only">CloseYourIt</span>
+  </div>
+  <%= render "member/nav_tree", tree: tree %>
+  <%# Mobile context: organization and account actions live in the drawer; desktop keeps them in the top bar. %>
+  <%= render "member/nav_account" %>
+  <% if (guides = guides_nav_item) %>
+    <%# Phones only: from md up Guides is a button in the page footer, which phones do not have. %>
+    <div class="md:hidden shrink-0 border-t border-stone-200 dark:border-zinc-800 px-3 py-2">
+      <%= render Ui::NavLinkComponent.new(label: guides.label, path: guides.path, icon: guides.icon,
+            active: guides.active, size: :footer, test_id: guides.test) %>
+    </div>
+  <% end %>
+  <%= render Ui::ChangelogComponent.new(placement: :sidebar) %>
+  <div class="hidden md:block shrink-0 px-3 pb-3 md:group-data-[compact]/sidebar:px-2">
+    <button type="button" data-action="ui--sidebar-compact#toggle" data-ui--sidebar-compact-target="toggle"
+            data-test="member-nav-compact-toggle"
+            data-collapse-label="<%= t("member.nav.compact_collapse") %>" data-expand-label="<%= t("member.nav.compact_expand") %>"
+            class="w-full flex items-center gap-2.5 px-3 h-8 rounded-md text-[12px] font-medium text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-stone-100 dark:hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 md:group-data-[compact]/sidebar:justify-center md:group-data-[compact]/sidebar:px-0">
+      <%= render Ui::IconComponent.new(name: "chevrons-left", class: "w-[1.25em] shrink-0 text-[13px] text-gray-400 dark:text-zinc-500 md:group-data-[compact]/sidebar:rotate-180") %>
+      <span class="truncate md:group-data-[compact]/sidebar:sr-only" data-ui--sidebar-compact-target="label"><%= t(compact ? "member.nav.compact_expand" : "member.nav.compact_collapse") %></span>
+    </button>
+  </div>
+</aside>

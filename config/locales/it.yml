@@ -1,0 +1,339 @@
+it:
+  # Formati data/ora. `default`/`short`/`long` NON sono un vezzo: Rails li fornisce d'ufficio solo
+  # per l'inglese e questo progetto non monta rails-i18n, quindi in italiano `l(time, format: :short)`
+  # — usato in una trentina di punti fra view e componenti — sollevava I18n::MissingTranslationData,
+  # cioè una 500 su ogni pagina che stampa un istante per un account con lingua italiana.
+  # Tutto numerico di proposito: `%b` chiederebbe `date.abbr_month_names` in italiano, che non c'è,
+  # e stamperebbe i mesi in inglese in mezzo a una pagina italiana.
+  # I `chart_*` restano per gli assi/tooltip dei chart di monitoring.
+  time:
+    formats:
+      default: "%d/%m/%Y %H:%M"
+      short: "%d/%m %H:%M"
+      long: "%d/%m/%Y %H:%M"
+      chart_time: "%H:%M"
+      chart_day: "%d/%m"
+      # CYRA-500: sull'arco di un anno la tacca dice anche in che anno si trova.
+      chart_year: "%d/%m/%y"
+  date:
+    formats:
+      default: "%d/%m/%Y"
+      short: "%d/%m"
+      long: "%d/%m/%Y"
+      # CYRA-324 — forma breve con il giorno della settimana per le card («lun 5 ago»): a qualche
+      # giorno di distanza dice quando è successo senza costringere a fare il conto.
+      card: "%a %-d %b"
+      # CYRA-497 — le scadenze e le date dei documenti erano scritte a mano con strftime, che non
+      # guarda la lingua: uscivano «09 Aug 15:14» e «Aug 9». Passando dai formati, i mesi restano
+      # quelli sopra, in italiano, ovunque.
+      day_month: "%-d %b"
+      day_month_year: "%-d %b %Y"
+    abbr_day_names: [dom, lun, mar, mer, gio, ven, sab]
+    day_names: [domenica, lunedì, martedì, mercoledì, giovedì, venerdì, sabato]
+    abbr_month_names: [~, gen, feb, mar, apr, mag, giu, lug, ago, set, ott, nov, dic]
+    month_names: [~, gennaio, febbraio, marzo, aprile, maggio, giugno, luglio, agosto, settembre, ottobre, novembre, dicembre]
+  # CYRA-392 — durate relative in italiano per `time_ago_in_words` / `distance_of_time_in_words`.
+  # Rails le fornisce d'ufficio solo in inglese e qui manca rails-i18n, quindi senza queste chiavi ogni
+  # "tempo fa" (ticket, monitoring, uptime, server, agenti) usciva in inglese ("about 3 hours", "10 days")
+  # in mezzo a una pagina italiana. Valori canonici rails-i18n.
+  datetime:
+    distance_in_words:
+      half_a_minute: mezzo minuto
+      less_than_x_seconds:
+        one: meno di un secondo
+        other: meno di %{count} secondi
+      x_seconds:
+        one: un secondo
+        other: "%{count} secondi"
+      less_than_x_minutes:
+        one: meno di un minuto
+        other: meno di %{count} minuti
+      x_minutes:
+        one: un minuto
+        other: "%{count} minuti"
+      about_x_hours:
+        one: circa un'ora
+        other: circa %{count} ore
+      x_days:
+        one: un giorno
+        other: "%{count} giorni"
+      about_x_months:
+        one: circa un mese
+        other: circa %{count} mesi
+      x_months:
+        one: un mese
+        other: "%{count} mesi"
+      about_x_years:
+        one: circa un anno
+        other: circa %{count} anni
+      over_x_years:
+        one: più di un anno
+        other: più di %{count} anni
+      almost_x_years:
+        one: quasi un anno
+        other: quasi %{count} anni
+      x_years:
+        one: un anno
+        other: "%{count} anni"
+  # CYRA-568 — numeri all'italiana. Stesso motivo delle date qui sopra: senza rails-i18n la locale
+  # italiana cadeva sui default inglesi di Rails, quindi «2841» usciva «2,841» — che un lettore
+  # italiano legge come due virgola otto — e «1.5 MB» invece di «1,5 MB». Vale per tutto ciò che
+  # passa da un helper numerico (`number_with_delimiter`, `number_to_percentage`,
+  # `number_to_human_size`): un posto solo per l'intero prodotto.
+  number:
+    format:
+      delimiter: "."
+      separator: ","
+      precision: 3
+      significant: false
+      strip_insignificant_zeros: false
+    # I namespace derivati vanno RIDICHIARATI: ActiveSupport fonde `number.format` sopra i default
+    # di ciascuno, quindi le regole dei conteggi (tre cifre, nessuno zero tolto) arrivano ai byte e
+    # ai soldi — «1,500 KB» dove si leggeva «1,5 KB», tre decimali su un prezzo. Valori canonici
+    # rails-i18n. Le unità italiane tolgono anche l'ultimo residuo inglese: «512 Bytes».
+    human:
+      format:
+        delimiter: ""
+        precision: 3
+        significant: true
+        strip_insignificant_zeros: true
+      storage_units:
+        format: "%n %u"
+        units:
+          byte:
+            one: Byte
+            other: Byte
+          kb: KB
+          mb: MB
+          gb: GB
+          tb: TB
+    currency:
+      format:
+        precision: 2
+        significant: false
+        strip_insignificant_zeros: false
+  # CYRA-568 — «Scadenza and Assegnatario»: `to_sentence` unisce con la congiunzione della lingua e
+  # senza queste chiavi usava quella inglese in mezzo a una frase italiana. In italiano l'ultimo
+  # elemento non vuole la virgola prima della e, quindi i due connettori finali coincidono.
+  support:
+    array:
+      words_connector: ", "
+      two_words_connector: " e "
+      last_word_connector: " e "
+  # Fallback per i simboli di validazione custom (no rails-i18n nel progetto): evita
+  # "translation missing" nei messaggi d'errore dei model. Vedi concern Attachable / Ticket / Comment.
+  errors:
+    messages:
+      not_member: "non è un membro di questa organizzazione"
+      same_idea: "è l'idea stessa"
+      other_project: "appartiene a un altro progetto"
+      already_linked: "è già collegata a questa idea"
+      is_evolution: "è già l'evoluzione di un'altra idea: le evoluzioni hanno un solo livello"
+      has_evolutions: "ha già delle evoluzioni: non può diventare a sua volta un'evoluzione"
+      already_evolves: "è già l'evoluzione di un'altra idea"
+      is_service: "è un service account: non apre le pagine, quindi non può ricevere una lista"
+      greater_than_or_equal_to_slow: "dev'essere più bassa della soglia oltre cui un'operazione è lenta"
+      not_in_project: "non sono tra le piattaforme del progetto"
+      too_large: "sono troppo grandi (max 10 MB, video 20 MB)"
+      invalid_type: "hanno un tipo non supportato"
+      monitor_exists: "ha già un monitor per questo progetto"
+      too_short: "devono avere almeno tre caratteri: un frammento più corto nasconderebbe anche i servizi veri"
+      too_long: "non possono superare i %{count} caratteri l'uno"
+      uptime_unsupported: "richiede una piattaforma web/server per il monitoraggio uptime"
+      not_epic: "dev'essere un epic"
+      self_reference: "non può essere il ticket stesso"
+      epic_cannot_be_nested: "non si applica a un epic: un epic non sta sotto un altro epic"
+      epic_has_children: "non si può cambiare finché l'epic ha ticket figli: staccali prima"
+      keyword_needs_body: "non è disponibile con il metodo HEAD (nessun body)"
+      webhook_url_invalid: "deve avere una URL http(s) pubblica valida"
+      cross_tenant: "appartiene a un'altra organizzazione"
+      host_already_linked: "è già collegato a questo environment"
+      revoked_host: "è revocato e non può essere collegato"
+      servers_disabled: "I server sono disabilitati per questo ambiente su questo progetto"
+      uptime_disabled: "L'uptime è disabilitato per questo ambiente su questo progetto"
+      secrets_disabled: "I secret sono disabilitati per questo ambiente su questo progetto"
+      shared_secret_conflict: "è già delegato a questo progetto da un secret dell'organizzazione"
+      local_secret_conflict: "il progetto ha già un secret suo con questo nome in questo ambiente"
+      delegation_conflict: "il progetto riceve già un altro secret dell'organizzazione con questo nome in questo ambiente"
+      length_budget_exceeded: "supera il limite di %{count} caratteri (adesso sono %{actual}): accorcia il testo o spezzalo in più parti"
+  pagination:
+    per_page: "righe:"
+    info: "%{from}–%{to} di %{total}"
+    previous: "Precedente"
+    next: "Successivo"
+  shared:
+    skip_to_content: "Vai al contenuto"
+    modal_label: "Modulo"
+    modal_loading: "Caricamento…"
+    scroll_horizontal: "Scorri per vedere altro"
+    # CYRA-656 — la colonna dei riferimenti del progetto, uguale su ogni pagina che ne ha uno.
+    # CYRA-442: parole d'interfaccia che vivevano dentro il markup o dentro il JS, dove nessuna
+    # scelta di lingua le raggiungeva.
+    actions_cancel: "Annulla"
+    # CYRA-431: bottone di copia sui blocchi di codice dentro il markdown.
+    code_block:
+      copy: "Copia"
+      copied: "Copiato"
+    actions:
+      close: "Chiudi"
+      row_menu: "Azioni riga"
+    # CYRA-570: la frase con cui un grafico dichiara di non avere niente da disegnare nel periodo.
+    # Generica di proposito — chi ha una parola più precisa (messaggi, visite, occorrenze) la passa.
+    histogram:
+      empty: "Nessun dato in questo periodo."
+    # Contatore caratteri vivo accanto ai campi di testo lunghi (Stimulus char-counter): il JS
+    # compone "N / MAX <unit>", così la stringa non ha interpolazioni da passare al browser.
+    char_counter:
+      unit: "caratteri"
+    # CYRA-45: barra del triage bulk (errori/metriche), etichette condivise fra i due domini.
+    bulk_triage:
+      selected: "selezionati"
+      resolve: "Risolvi"
+      ignore: "Ignora"
+      reopen: "Riapri"
+      merge: "Fondi"
+      select_all: "Seleziona tutti"
+      select_row: "Seleziona la riga"
+    tables:
+      filters_menu: "Filtri"
+      view_menu: "Vista"
+      group_by: "Raggruppa per"
+      show_as: "Mostra come"
+      sort_cards: "Ordina le schede per"
+      clear_search: "Svuota la ricerca"
+      search: "Cerca"
+      remove_filter: "Rimuovi filtro %{label}"
+      apply: "Filtra"
+      reset: "Azzera filtri"
+      sort_by: "Ordina per %{label}"
+      search_mode:
+        label: "Modalità di ricerca"
+        semantic: "Per significato"
+        exact: "Parole esatte"
+        placeholder: "%{base} · %{mode}"
+    # CYRA-340: il selettore di periodo, uguale su errori, prestazioni e log.
+    time_range:
+      label: "Periodo"
+      apply: "Applica"
+      since: "dal %{time}"
+      until: "fino al %{time}"
+      custom: "Personalizzato"
+      from: "Dalla data e ora"
+      to: "Fino a data e ora"
+      presets:
+        30m: "30 min"
+        24h: "24 ore"
+        7d: "7 giorni"
+        30d: "30 giorni"
+      # Testo dello stato vuoto quando è il periodo a non lasciare niente in elenco.
+      empty_window: "Nessun risultato nel periodo scelto."
+      widen: "Guarda gli ultimi 30 giorni"
+    changelog:
+      title: "Novità"
+      new: "Novità"
+      page_title: "Novità"
+      latest_label: "Ultima"
+      view_all: "Vedi tutto lo storico"
+      close: "Chiudi"
+      empty: "Nessuna versione disponibile."
+      unknown: "dev"
+      more: "continua"
+      # CYRA-445 — filtri, ricerca e conteggi dello storico completo.
+      search_placeholder: "Cerca nelle novità…"
+      filter_area: "Area"
+      filter_kind: "Tipo di modifica"
+      apply: "Filtra"
+      count:
+        one: "1 novità"
+        other: "%{count} novità"
+      counts:
+        releases: "Versioni"
+        entries: "Novità"
+      no_results: "Nessuna novità con questi filtri"
+      no_results_body: "Lo storico dice cosa è cambiato in ogni area del prodotto: scegli l'area, il tipo di modifica, oppure cerca le parole che ti aspetti di leggere."
+      no_results_example: "Per esempio: area «Uptime» e tipo «Aggiunto» per vedere cosa è nato sui controlli dei siti."
+      reset: "Togli i filtri"
+      sections:
+        added: "Aggiunto"
+        changed: "Modificato"
+        fixed: "Corretto"
+        removed: "Rimosso"
+        deprecated: "Deprecato"
+        security: "Sicurezza"
+    saved_views:
+      views: "Viste"
+      section_title: "Filtri salvati"
+      save: "Salva vista"
+      saved: "Vista salvata."
+      deleted: "Vista eliminata."
+      add: "Aggiungi altra"
+      title: "Salva questa vista"
+      name_placeholder: "Nome della vista…"
+      search_placeholder: "Cerca vista…"
+      empty: "Nessuna vista salvata"
+      empty_hint: "Filtra l'elenco come ti serve, poi salvalo: lo ritrovi qui con un clic, filtri e ordinamento compresi."
+      save_current: "Salva questa vista"
+      presets: "Già pronte"
+      preset_mine: "Aspettano me"
+      preset_metrics_recent: "Visti più di recente"
+      preset_metrics_costliest: "Quelli che costano di più"
+      preset_metrics_untriaged: "Da guardare, senza ticket"
+      preset_logs_recent_errors: "Solo errori, ultime 24 ore"
+      preset_logs_fatal: "Solo i più gravi"
+      preset_logs_latest_release: "Ultima versione (%{release})"
+      preset_high_open: "Aperti ad alta priorità"
+      summary_label: "Filtri di questa vista"
+      summary_none: "Nessun filtro attivo"
+      include_filters: "Salva anche i filtri"
+      include_filters_hint: "Senza, la vista ricorda solo come si vede l'elenco: raggruppamento e ordine."
+      cancel: "Annulla"
+      delete_confirm: "Eliminare questa vista salvata?"
+      filters:
+        kind: "Tipo"
+        status: "Stato"
+        status_id: "Stato"
+        priority_id: "Priorità"
+        assignee_id: "Assegnatario"
+        project_id: "Progetto"
+        level: "Livello"
+        environment: "Ambiente"
+        role: "Ruolo"
+        subtype: "Sottotipo"
+        tag: "Tag"
+        q: "Ricerca"
+        sort: "Ordinamento"
+        invitations_sort: "Ordinamento inviti"
+        view: "Raggruppamento"
+        range: "Periodo"
+      view_values:
+        grouped: "Per gruppo"
+        table: "Una lista sola"
+      errors:
+        invalid: "Dai un nome alla vista."
+  ui:
+    page_header:
+      more: "Altro"
+      collapse: "Riduci l'intestazione"
+      expand: "Espandi l'intestazione"
+    floating_notice:
+      dismiss: "Chiudi e non mostrare più"
+    colors:
+      indigo: "Indaco"
+      emerald: "Smeraldo"
+      violet: "Viola"
+      amber: "Ambra"
+      teal: "Foglia di tè"
+      sky: "Cielo"
+      rose: "Rosa"
+      gray: "Grigio"
+      blue: "Blu"
+      cyan: "Ciano"
+      green: "Verde"
+      lime: "Lime"
+      orange: "Arancione"
+      red: "Rosso"
+      fuchsia: "Fucsia"
+      pink: "Rosa acceso"
+    picker:
+      search: "Cerca icone…"
+      none: "Nessuna icona"

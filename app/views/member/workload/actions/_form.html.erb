@@ -1,0 +1,77 @@
+<%# locals: action, url, method, title, submit_label %>
+<% content_for :title, title %>
+
+<div class="p-7">
+  <%= form_with url: url, method: method, class: "space-y-6", data: { test: "workload-action-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: title,
+          subtitle: (quick_add_purpose("action") unless action.persisted?),
+          breadcrumb: (action.persisted? ?
+            [ { label: t("member.workload.actions.title"), href: member_workload_actions_path },
+              { label: action.title, href: member_workload_action_path(action) },
+              { label: t("member.breadcrumb.edit") } ] :
+            [ { label: t("member.workload.actions.title"), href: member_workload_actions_path },
+              { label: t("member.breadcrumb.new") } ])) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.workload.actions.form.cancel"), href: member_workload_actions_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: submit_label, type: "submit", icon: "check", size: :sm, test_id: "workload-action-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+        <%= render Ui::InputComponent.new(name: "title", label: t("member.workload.actions.form.title"), required: true,
+              value: action.title, placeholder: t("member.workload.actions.form.title_placeholder"),
+              test_id: "workload-action-title", error: @errors&.dig(:title)&.first) %>
+
+        <% if action.persisted? %>
+          <div>
+            <span class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.workload.actions.form.team") %></span>
+            <div class="inline-flex items-center h-[38px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-[13px] text-gray-600 dark:text-zinc-400" data-test="workload-action-team-static"><%= action.team.name %></div>
+            <%# CYRA-364: il team resta il contesto della ricerca ticket anche quando non è più
+                modificabile. Senza name non entra nel submit: è un riferimento, non un dato. %>
+            <input type="hidden" id="team_id" value="<%= action.team_id %>">
+          </div>
+        <% else %>
+          <%= render Ui::SelectComponent.new(name: "team_id", label: t("member.workload.actions.form.team"), required: true,
+                options: @teams.map { |team| [ team.name, team.id ] }, selected: action.team_id,
+                placeholder: t("member.workload.actions.form.team_placeholder"),
+                test_id: "workload-action-team", error: @errors&.dig(:team)&.first) %>
+        <% end %>
+
+        <div class="md:col-span-2">
+          <label for="description" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.workload.actions.form.description") %></label>
+          <textarea name="description" id="description" rows="4"
+                    class="block w-full rounded-md border border-stone-200 dark:border-zinc-800 px-3 py-2 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400"
+                    placeholder="<%= t("member.workload.actions.form.description_placeholder") %>"
+                    data-test="workload-action-description"><%= action.description %></textarea>
+        </div>
+
+        <%= render Ui::SelectComponent.new(name: "status", label: t("member.workload.actions.form.status"),
+              options: @statuses.map { |status| [ t("member.workload.actions.status.#{status}"), status ] }, selected: action.status,
+              test_id: "workload-action-status") %>
+
+        <%# CYRA-364: le voci arrivano dal server mentre si digita (codice o titolo), ristrette ai
+            progetti del team scelto finché non si chiede esplicitamente tutta l'organizzazione. %>
+        <%= render Ui::SelectComponent.new(name: "ticket_id", label: t("member.workload.actions.form.ticket"),
+              options: @linkable_tickets.map { |ticket| [ "#{ticket.code} · #{ticket.title}", ticket.id ] },
+              selected: action.ticket_id, include_blank: true, placeholder: t("member.workload.actions.form.ticket_placeholder"),
+              hint: t("member.workload.actions.form.ticket_hint"), test_id: "workload-action-ticket",
+              remote: { url: linkable_member_tickets_path, scope_field: "#team_id",
+                        all_label: t("member.workload.actions.form.ticket_all") }) %>
+
+        <%= render Ui::InputComponent.new(name: "scheduled_at", label: t("member.workload.actions.form.scheduled_at"), type: "datetime-local",
+              value: action.scheduled_at&.strftime("%Y-%m-%dT%H:%M"), test_id: "workload-action-scheduled") %>
+
+        <%= render Ui::InputComponent.new(name: "due_at", label: t("member.workload.actions.form.due_at"), type: "datetime-local",
+              value: action.due_at&.strftime("%Y-%m-%dT%H:%M"), test_id: "workload-action-due") %>
+
+        <div class="md:col-span-2">
+          <%= render Ui::SelectComponent.new(name: "participant_ids", label: t("member.workload.actions.form.participants"), multiple: true,
+                options: @candidate_participants.map { |account| [ account.name, account.id ] }, selected: action.participant_ids,
+                placeholder: t("member.workload.actions.form.participants_placeholder"),
+                hint: t("member.workload.actions.form.participants_hint"), test_id: "workload-action-participants") %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

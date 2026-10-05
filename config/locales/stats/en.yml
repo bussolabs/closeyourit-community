@@ -1,0 +1,84 @@
+en:
+  stats:
+    pending_agent_eligibility: To assess
+    # CYRA-374 — decisions waiting on the signed-in person, on top of the ticket board and list.
+    awaiting_me: Waiting on you
+    # CYRA-844 — tickets with unanswered questions, on top of the ticket board and list.
+    open_questions:
+      one: Open question
+      other: Open questions
+    projects:
+      one: Project
+      other: Projects
+    groups:
+      one: Group
+      other: Groups
+    tickets:
+      one: Ticket
+      other: Tickets
+    open: Open
+    todo: To do
+    in_progress: In progress
+    resolved: Resolved
+    members:
+      one: Member
+      other: Members
+    service_accounts:
+      one: Service account
+      other: Service accounts
+    pending: Pending
+    organizations:
+      one: Organization
+      other: Organizations
+    accounts:
+      one: Account
+      other: Accounts
+    platforms:
+      one: Platform
+      other: Platforms
+    environments:
+      one: Environment
+      other: Environments
+    variables:
+      one: Variable
+      other: Variables
+    files:
+      one: File
+      other: Files
+    versions:
+      one: Version
+      other: Versions
+    features: Features
+    next_milestone: Next
+    lists:
+      one: List
+      other: Lists
+    workload_actions:
+      one: Action
+      other: Actions
+    agents: Agents
+    agents_enabled: Enabled
+    agents_failing: Failing
+    conversations:
+      one: Conversation
+      other: Conversations
+    unread: Unread
+    shared: Shared
+    teams:
+      one: Team
+      other: Teams
+    roles:
+      one: Role
+      other: Roles
+    exceptions:
+      one: Exception
+      other: Exceptions
+    logs:
+      one: Log
+      other: Logs
+    errors:
+      one: Error
+      other: Errors
+    warnings:
+      one: Warning
+      other: Warnings

@@ -1,0 +1,34 @@
+<%# locals: cluster:, active_tab:, problems: — shared by the overview and the two tabs (CYAG-22). %>
+<% can_manage = can?("servers.manage") %>
+<% node_problems = problems.count { |problem| problem.kind.to_s.start_with?("node_") } %>
+<% workload_problems = problems.count { |problem| problem.kind.to_s.start_with?("workload_") } %>
+<%= render Ui::PageHeaderComponent.new(
+      title: cluster.name,
+      breadcrumb: [ { label: t("member.clusters.title"), href: member_monitoring_clusters_path }, { label: cluster.name } ],
+      counts_test_id: "cluster-counts", tabs_test_id: "cluster-tabs", test_id: "cluster") do |h| %>
+  <% h.with_mark do %>
+    <span class="h-3 w-3 shrink-0 rounded-[3px] <%= Ui::Colors.swatch(cluster.color) %>"></span>
+  <% end %>
+  <% if cluster.kubernetes_version.present? %>
+    <% h.with_badges do %>
+      <span class="font-mono text-[12px] text-gray-500 dark:text-zinc-400" data-test="cluster-version"><%= t("member.clusters.kind_line", version: cluster.kubernetes_version, provider: cluster.provider.presence || "—") %></span>
+    <% end %>
+  <% end %>
+  <% if can_manage %>
+    <% h.with_actions do %>
+      <% paused = cluster.status_paused? %>
+      <%= render Ui::ButtonComponent.new(label: t(paused ? "member.clusters.actions.resume" : "member.clusters.actions.pause"),
+            href: member_monitoring_cluster_path(cluster, pause: paused ? "0" : "1", confirm: 1), method: :patch,
+            variant: :secondary_muted, size: :sm, icon: (paused ? "bell" : "bell-off"), test_id: "cluster-pause") %>
+      <%= render "member/monitoring/clusters/manage_menu", cluster: cluster %>
+    <% end %>
+  <% end %>
+  <% h.with_tab(label: t("member.clusters.tabs.overview"), href: member_monitoring_cluster_path(cluster), active: active_tab == :overview, icon: "layout-dashboard", test_id: "cluster-tab-overview") %>
+  <% h.with_tab(label: t("member.clusters.tabs.problems"), href: member_monitoring_cluster_problems_path(cluster), active: active_tab == :problems, icon: "triangle-alert", test_id: "cluster-tab-problems", count: problems.any? ? problems.size : nil, count_test_id: "cluster-tab-problems-count") %>
+  <% h.with_tab(label: t("member.clusters.tabs.nodes"), href: member_monitoring_cluster_nodes_path(cluster), active: active_tab == :nodes, icon: "server", test_id: "cluster-tab-nodes", count: node_problems.positive? ? node_problems : nil) %>
+  <% h.with_tab(label: t("member.clusters.tabs.workloads"), href: member_monitoring_cluster_workloads_path(cluster), active: active_tab == :workloads, icon: "boxes", test_id: "cluster-tab-workloads", count: workload_problems.positive? ? workload_problems : nil) %>
+  <% h.with_counts do %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.clusters.counts.namespaces"), value: cluster.namespaces.present.count, test_id: "cluster-count-namespaces") %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.clusters.counts.last_snapshot"), value: (cluster.last_snapshot_at ? error_time_ago(cluster.last_snapshot_at) : t("member.clusters.never")), test_id: "cluster-count-last") %>
+  <% end %>
+<% end %>

@@ -1,0 +1,27 @@
+it:
+  member:
+    vault_consolidations:
+      title: Valore in comune
+      help_title: "Lo stesso valore in più progetti: spostalo una volta nell'organizzazione."
+      stat_projects: Progetti coinvolti
+      stat_environment: Ambiente
+      promote: Sposta nell'organizzazione
+      dismiss: Non proporre più
+      dismiss_confirm: Vuoi smettere di ricevere questa proposta? Non tornerà.
+      promoted: Valore spostato nei secret dell'organizzazione. I progetti coinvolti lo ricevono già.
+      dismissed: Proposta archiviata. Non verrà più mostrata.
+      stale: "Nel frattempo qualcosa è cambiato. Ecco la situazione di adesso: ricontrolla e conferma."
+      gone: Il valore non è più ripetuto in più progetti. Non c'è niente da spostare.
+      rotation_lost:
+        one: Una delle copie ha una regola di rotazione, che sparisce con lei. La regola si rimette sul secret dell'organizzazione.
+        other: "%{count} copie hanno una regola di rotazione, che sparisce con loro. La regola si rimette sul secret dell'organizzazione."
+      destination_title: Dove finisce il valore
+      existing_body: L'organizzazione tiene già questo valore. I progetti lo riceveranno da lì, invece di crearne una seconda copia.
+      name_label: Nome nei secret dell'organizzazione
+      name_hint: È il nome con cui il valore vive nell'organizzazione. Ogni progetto può leggerlo con un nome suo.
+      projects_title: Cosa cambia nei progetti
+      projects_subtitle: La copia locale sparisce e il valore arriva dall'organizzazione. Il nome resta quello di adesso, a meno che tu non lo cambi qui.
+      col_project: Progetto
+      col_current: Nome adesso
+      col_after: Nome dopo
+      col_repository: Repository GitHub

@@ -1,0 +1,63 @@
+<%= render Ui::PageHeaderComponent.new(
+      title: @idea.title,
+      breadcrumb: [ { label: t("member.ideas.title"), href: member_ideas_path }, { label: @idea.title } ]) do |h| %>
+  <%# Status and kind live in the Details panel on the right, like the ticket and team activity pages. %>
+  <% h.with_actions do %>
+    <% if @idea.status_open? %>
+      <%# CYRA-360 — il voto non sta più qui, spento fra le azioni di gestione: ha un riquadro
+          proprio sotto, dove accanto al pulsante c'è scritto a cosa serve e chi ha già votato. %>
+      <% if @can_edit %>
+        <%= render Ui::ButtonComponent.new(label: t("member.ideas.show.edit"),
+              href: edit_member_idea_path(@idea), variant: :secondary_muted, size: :sm,
+              icon: "pen", test_id: "idea-edit") %>
+      <% end %>
+      <% unless @idea.evolution? %>
+        <%# CYRA-845 — chiunque possa proporre un'idea può proporne un'evoluzione (un solo livello:
+            un'evoluzione non ha il pulsante). Anche su idea convertita/archiviata: si evolve ciò
+            che esiste — vedi sotto, fuori dal ramo «aperta». %>
+        <%= render Ui::ButtonComponent.new(label: t("member.ideas.links.propose_evolution"),
+              href: new_member_idea_path(evolves_id: @idea.id), variant: :secondary_muted, size: :sm,
+              icon: "git-branch", test_id: "idea-propose-evolution") %>
+      <% end %>
+      <% if @can_convert %>
+        <%= render Ui::ButtonComponent.new(label: t("member.ideas.show.convert"),
+              href: new_member_idea_conversion_path(@idea), variant: :primary, size: :sm,
+              icon: "wand-sparkles", test_id: "idea-convert") %>
+      <% end %>
+    <% elsif @idea.status_converted? && @idea.ticket %>
+      <% unless @idea.evolution? %>
+        <%= render Ui::ButtonComponent.new(label: t("member.ideas.links.propose_evolution"),
+              href: new_member_idea_path(evolves_id: @idea.id), variant: :secondary_muted, size: :sm,
+              icon: "git-branch", test_id: "idea-propose-evolution") %>
+      <% end %>
+      <%# CYRA-369 — su un'idea andata a buon fine l'unica cosa che l'app proponeva era distruggerla.
+          Il ticket nato dalla conversione era scritto solo nel banner sotto: qui diventa l'azione
+          principale, perché è l'unica che serve davvero su un'idea ormai congelata. %>
+      <%= render Ui::ButtonComponent.new(label: t("member.ideas.show.open_ticket", code: @idea.ticket.code),
+            href: member_ticket_path(@idea.ticket), variant: :primary, size: :sm,
+            icon: "ticket", test_id: "idea-open-ticket") %>
+    <% elsif @idea.status_archived? && @can_edit %>
+      <%= render Ui::ButtonComponent.new(label: t("member.ideas.show.reopen"),
+            href: reopen_member_idea_path(@idea), method: :patch, variant: :secondary_muted, size: :sm,
+            icon: "rotate-ccw", test_id: "idea-reopen") %>
+    <% end %>
+    <%# Rare (archive) and irreversible (delete) actions sit in the menu: one click away, never pressed
+        by mistake next to Convert. %>
+    <% can_archive = @idea.status_open? && @can_edit %>
+    <% if @can_delete || can_archive %>
+      <div data-test="idea-more-menu">
+        <%= render Ui::RowMenuComponent.new(test_id: "idea-menu-trigger", aria_label: t("member.ideas.show.more_menu")) do %>
+          <% if can_archive %>
+            <%= button_to t("member.ideas.show.archive"), archive_member_idea_path(@idea), method: :patch,
+                  class: Ui::RowMenuComponent.item_class, form: { class: "block" }, data: { test: "idea-archive" } %>
+          <% end %>
+          <% if @can_delete %>
+            <%= button_to t("member.ideas.show.delete"), member_idea_path(@idea), method: :delete, params: { confirm: 1 },
+                  class: Ui::RowMenuComponent.item_class(:danger), form: { class: "block" },
+                  data: { test: "idea-delete", turbo_confirm: idea_delete_confirm(@idea) } %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

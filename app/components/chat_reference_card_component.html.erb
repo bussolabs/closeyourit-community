@@ -1,0 +1,17 @@
+<% if visible? %>
+  <%= link_to href, class: "inline-flex items-center gap-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2 py-1 text-xs hover:border-indigo-300 dark:hover:border-indigo-500/50",
+              data: { test: @test_id } do %>
+    <%= render Ui::IconComponent.new(name: icon, class: "text-[11px] text-zinc-400") %>
+    <span class="text-zinc-400"><%= t("chat.reference.types.#{type_key}") %></span>
+    <span class="font-mono font-medium text-zinc-700 dark:text-zinc-300"><%= label %></span>
+    <% if status_badge&.first.present? %>
+      <%= render Ui::BadgeComponent.new(label: status_badge.first, color: status_badge.last, size: :sm) %>
+    <% end %>
+  <% end %>
+<% else %>
+  <span class="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 px-2 py-1 text-xs text-zinc-400"
+        data-test="chat-reference-unavailable">
+    <%= render Ui::IconComponent.new(name: "lock", class: "text-[11px]") %>
+    <span><%= t("chat.reference.unavailable") %></span>
+  </span>
+<% end %>

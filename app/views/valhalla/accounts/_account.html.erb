@@ -1,0 +1,34 @@
+<%= render Ui::TableComponent::RowComponent.new(href: edit_valhalla_account_path(account), link_label: account.name, id: dom_id(account), test_id: "valhalla-account-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <div class="flex items-center gap-2.5">
+      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold"><%= avatar_initials(account.name) %></span>
+      <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= account.name %></span>
+    </div>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.accounts.col_email"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { account.email } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.accounts.col_org"), class: "text-[12.5px] text-gray-500 dark:text-zinc-400")) { account.memberships.first&.organization&.name || t("valhalla.accounts.none") } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("valhalla.accounts.col_role")) do %>
+    <% if account.god? %>
+      <span class="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400"><%= render Ui::IconComponent.new(name: "shield-user", class: "text-[9px]") %>god</span>
+    <% else %>
+      <span class="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400"><% role = account.memberships.first&.role %><%= role ? t("valhalla.accounts.roles.#{role}") : t("valhalla.accounts.none") %></span>
+    <% end %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.accounts.col_created"), align: :right, mono: true, class: "text-[11px] text-gray-500 dark:text-zinc-400")) { l(account.created_at.to_date) } %>
+  <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+    <%= render Ui::ConfirmDialogComponent.new(title: t("valhalla.accounts.delete_dialog.title", name: account.name),
+          url: valhalla_account_path(account), confirm_label: t("valhalla.accounts.actions.delete"),
+          test_id: "valhalla-account-delete-dialog-#{account.id}") do |dialog| %>
+      <% dialog.with_body { t("valhalla.accounts.delete_dialog.body") } %>
+      <%= render(Ui::RowMenuComponent.new(width: :lg, test_id: "valhalla-account-menu", aria_label: t("valhalla.accounts.row_menu_label", name: account.name))) do %>
+        <%= link_to t("valhalla.accounts.actions.edit"), edit_valhalla_account_path(account), class: Ui::RowMenuComponent.item_class, data: { test: "valhalla-account-edit" } %>
+        <%= button_to reset_password_valhalla_account_path(account), method: :post, class: Ui::RowMenuComponent.item_class do %><%= t("valhalla.accounts.actions.reset_password") %><% end %>
+        <%= button_to toggle_god_valhalla_account_path(account), method: :patch, class: Ui::RowMenuComponent.item_class, data: { test: "valhalla-account-toggle-god" } do %><%= account.god? ? t("valhalla.accounts.actions.unset_god") : t("valhalla.accounts.actions.set_god") %><% end %>
+        <%# CYRA-719 — l'impersonation non parte più da un click solo: si passa dalla conferma col secondo fattore. %>
+        <%= link_to t("impersonations.action"), new_impersonation_path(account_id: account.id), class: Ui::RowMenuComponent.item_class, data: { test: "valhalla-account-impersonate" } %>
+        <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
+        <%= dialog.menu_trigger(label: t("valhalla.accounts.actions.delete"), icon: "trash", test_id: "valhalla-account-delete") %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

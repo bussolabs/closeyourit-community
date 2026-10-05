@@ -1,0 +1,146 @@
+<% content_for :title, t("member.skill_bundle.title") %>
+
+<div class="p-7 space-y-6">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.skill_bundle.title"),
+        breadcrumb: [ { label: t("member.nav.section_automation") }, { label: t("member.agents.title"), href: member_agents_path }, { label: t("member.skill_bundle.title") } ],
+        counts_test_id: "skill-bundle-counts",
+        test_id: "skill-bundle-header") do |h| %>
+    <% h.with_counts do %>
+      <% if @bundle %>
+        <%= render Ui::BadgeComponent.new(label: t("member.skill_bundle.pinned"), color: :emerald, dot: true, test_id: "skill-bundle-status") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.skill_bundle.version"), value: @bundle.version, value_color: :indigo) %>
+      <% else %>
+        <%= render Ui::BadgeComponent.new(label: t("member.skill_bundle.unpinned"), color: :gray, dot: true, test_id: "skill-bundle-status") %>
+      <% end %>
+      <%# CYRA-453 — i conteggi di conformità accanto al pin: la risposta a «è arrivato ovunque?» sta
+          nell'intestazione, prima ancora di leggere la tabella. %>
+      <% if @conformance.any? %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.skill_bundle.conformance.stat_aligned"), value: @conformance.aligned_count, value_color: :emerald, test_id: "skill-bundle-stat-aligned") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.skill_bundle.conformance.stat_mismatched"), value: @conformance.mismatched_count, value_color: :amber, test_id: "skill-bundle-stat-mismatched") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.skill_bundle.conformance.stat_unknown"), value: @conformance.unknown_count, value_color: :gray, test_id: "skill-bundle-stat-unknown") %>
+      <% end %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.skill_bundle.save"), type: "submit", form: "skill-bundle-form", variant: :primary, size: :sm, icon: "check", test_id: "skill-bundle-save") %>
+    <% end %>
+  <% end %>
+
+  <div class="space-y-5">
+    <%# CYRA-453 — LA TABELLA IN TESTA: il pin da solo dice cosa DOVREBBE girare, non cosa gira. Qui
+        ogni macchina porta la versione che dichiara e se combacia, così «il rilascio è arrivato
+        ovunque?» si risponde da questa pagina invece che aprendo un agente per volta. Quello che la
+        macchina non dichiara resta «non dichiarata»: mai un disallineamento inventato. %>
+    <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="skill-bundle-conformance">
+      <header class="px-5 py-3 border-b border-stone-200 dark:border-zinc-800">
+        <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.skill_bundle.conformance.title") %></h2>
+        <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.skill_bundle.conformance.hint") %></p>
+      </header>
+      <% if @conformance.any? %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.skill_bundle.conformance.title"))) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.skill_bundle.conformance.col_host"), sort: "host") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.skill_bundle.conformance.col_expected"), sort: "expected") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.skill_bundle.conformance.col_actual"), sort: "actual") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.skill_bundle.conformance.col_state"), sort: "state", align: :right) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+          <% end %>
+          <% @conformance_rows.each do |row| %>
+            <%= render Ui::TableComponent::RowComponent.new(href: member_agent_path(row.host), link_label: row.host.hostname, test_id: "skill-bundle-conformance-row", data: { state: row.state }) do %>
+              <%= render(Ui::TableComponent::CellComponent.new(header: true)) { link_to row.host.hostname, member_agent_path(row.host), class: "text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" } %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("member.skill_bundle.conformance.col_expected"), mono: true, class: "text-gray-600 dark:text-zinc-400")) { row.expected.presence || "—" } %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t("member.skill_bundle.conformance.col_actual"), mono: true, class: "text-zinc-900 dark:text-zinc-100")) { row.actual.presence || "—" } %>
+              <%= render Ui::TableComponent::CellComponent.new(label: t("member.skill_bundle.conformance.col_state"), align: :right) do %>
+                <% if row.aligned? %>
+                  <%= render Ui::BadgeComponent.new(label: t("member.skill_bundle.conformance.aligned"), color: :emerald, dot: true) %>
+                <% elsif row.mismatched? %>
+                  <%= render Ui::BadgeComponent.new(label: t("member.skill_bundle.conformance.mismatched"), color: :amber, dot: true) %>
+                <% else %>
+                  <%= render Ui::BadgeComponent.new(label: t("member.skill_bundle.conformance.unknown"), color: :gray, dot: true) %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+        <% if @conformance.unknown_count.positive? %>
+          <p class="px-5 py-3 border-t border-stone-200 dark:border-zinc-800 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="skill-bundle-conformance-note">
+            <%= t("member.skill_bundle.conformance.unknown_hint") %>
+          </p>
+        <% end %>
+      <% else %>
+        <%= render Ui::EmptyNoteComponent.new(text: t("member.skill_bundle.conformance.empty"), inset: true, test_id: "skill-bundle-conformance-empty") %>
+      <% end %>
+    </section>
+
+    <% if @bundle %>
+      <%# Pin attuale (vetrina): i 4 valori in monospace + quando è stato aggiornato l'ultima volta. %>
+      <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="skill-bundle-current">
+        <header class="flex items-center justify-between px-5 py-3 border-b border-stone-200 dark:border-zinc-800">
+          <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.skill_bundle.current_title") %></h2>
+          <%# CYRA-453 — la data passa dal formato localizzato: `to_fs` stampava «09 Aug 15:14» in
+              mezzo a una pagina italiana. %>
+          <span class="text-[11.5px] text-gray-400 dark:text-zinc-500"><%= t("member.skill_bundle.updated_at", when: l(@bundle.updated_at, format: :short)) %></span>
+        </header>
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 px-5 py-4 text-[12.5px]">
+          <div>
+            <dt class="text-gray-500 dark:text-zinc-400 uppercase tracking-wide text-[10.5px]"><%= t("member.skill_bundle.form.repo") %></dt>
+            <dd class="mt-0.5 font-mono text-zinc-900 dark:text-zinc-100 break-all"><%= @bundle.repo %></dd>
+          </div>
+          <div>
+            <dt class="text-gray-500 dark:text-zinc-400 uppercase tracking-wide text-[10.5px]"><%= t("member.skill_bundle.form.ref") %></dt>
+            <dd class="mt-0.5 font-mono text-zinc-900 dark:text-zinc-100 break-all"><%= @bundle.ref %></dd>
+          </div>
+          <div>
+            <dt class="text-gray-500 dark:text-zinc-400 uppercase tracking-wide text-[10.5px]"><%= t("member.skill_bundle.form.version") %></dt>
+            <dd class="mt-0.5 font-mono text-zinc-900 dark:text-zinc-100 break-all"><%= @bundle.version %></dd>
+          </div>
+          <div>
+            <dt class="text-gray-500 dark:text-zinc-400 uppercase tracking-wide text-[10.5px]"><%= t("member.skill_bundle.form.digest") %></dt>
+            <dd class="mt-0.5 font-mono text-zinc-900 dark:text-zinc-100 break-all"><%= @bundle.digest %></dd>
+          </div>
+        </dl>
+      </section>
+    <% else %>
+      <%# Empty-state: nessun pin → gli host restano in modalità prompt (vecchio metodo). %>
+      <%= render Ui::EmptyStateComponent.new(title: t("member.skill_bundle.empty"), body: t("member.skill_bundle.empty_body"),
+            icon: "box", framed: true, test_id: "skill-bundle-empty") %>
+    <% end %>
+
+    <%# Override manuale: normalmente lo aggiorna la CI. Full-width, griglia 2 colonne. Submit = "Salva versione" nell'header. %>
+    <%= form_with url: member_skill_bundle_path, method: :patch, id: "skill-bundle-form",
+                  class: "rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900", data: { test: "skill-bundle-form" } do %>
+      <header class="px-5 py-3 border-b border-stone-200 dark:border-zinc-800">
+        <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.skill_bundle.form_title") %></h2>
+        <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.skill_bundle.form_hint") %></p>
+      </header>
+      <% if @errors&.dig(:base).present? %>
+        <div class="mx-5 mt-4 rounded-md border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15 px-3 py-2 text-[12px] text-red-700 dark:text-red-300" data-test="skill-bundle-error">
+          <%= @errors[:base].join(", ") %>
+        </div>
+      <% end %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 px-5 py-5">
+        <%= render Ui::InputComponent.new(name: "repo", label: t("member.skill_bundle.form.repo"),
+              value: params[:repo].presence || @bundle&.repo, required: true,
+              hint: t("member.skill_bundle.form.repo_hint"), error: @errors&.dig(:repo)&.first, test_id: "skill-bundle-repo") %>
+        <%= render Ui::InputComponent.new(name: "ref", label: t("member.skill_bundle.form.ref"),
+              value: params[:ref].presence || @bundle&.ref, required: true,
+              hint: t("member.skill_bundle.form.ref_hint"), error: @errors&.dig(:ref)&.first, test_id: "skill-bundle-ref") %>
+        <%= render Ui::InputComponent.new(name: "version", label: t("member.skill_bundle.form.version"),
+              value: params[:version].presence || @bundle&.version, required: true,
+              hint: t("member.skill_bundle.form.version_hint"), error: @errors&.dig(:version)&.first, test_id: "skill-bundle-version") %>
+        <%= render Ui::InputComponent.new(name: "digest", label: t("member.skill_bundle.form.digest"),
+              value: params[:digest].presence || @bundle&.digest, required: true,
+              hint: t("member.skill_bundle.form.digest_hint"), error: @errors&.dig(:digest)&.first, test_id: "skill-bundle-digest") %>
+      </div>
+      <%# Rollback intenzionale: bypassa il guard anti-downgrade (versione più vecchia). Normalmente OFF: il pin è monotonico. %>
+      <div class="px-5 pb-5" data-test="skill-bundle-force">
+        <input type="hidden" name="force" value="0">
+        <label class="inline-flex items-center gap-2.5 cursor-pointer">
+          <input type="checkbox" name="force" value="1" <%= "checked" if ActiveModel::Type::Boolean.new.cast(params[:force]) %> class="w-4 h-4 rounded border-stone-300 dark:border-zinc-700 accent-indigo-600">
+          <span class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.skill_bundle.form.force") %></span>
+          <span class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.skill_bundle.form.force_hint") %></span>
+        </label>
+      </div>
+    <% end %>
+  </div>
+</div>

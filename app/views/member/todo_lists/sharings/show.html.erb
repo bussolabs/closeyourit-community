@@ -1,0 +1,23 @@
+<% content_for :title, t("member.todo_lists.share.title") %>
+
+<div class="p-7">
+  <%= form_with url: member_todo_list_sharing_path(@list), method: :patch, class: "space-y-6", data: { test: "todo-share-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("member.todo_lists.share.title"),
+          breadcrumb: [ { label: t("member.todo_lists.title"), href: member_todo_lists_path },
+                        { label: @list.name, href: member_todo_list_path(@list) },
+                        { label: t("member.todo_lists.share.title") } ]) do |h| %>
+      <% h.with_counts do %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.todo_lists.share.list_label"), value: @list.name, test_id: "todo-share-list") %>
+      <% end %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.todo_lists.form.cancel"), href: member_todo_list_path(@list), variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: t("member.todo_lists.share.save"), type: "submit", icon: "check", size: :sm, test_id: "todo-share-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
+      <%= render "member/todo_lists/sharings/recipients" %>
+    </div>
+  <% end %>
+</div>

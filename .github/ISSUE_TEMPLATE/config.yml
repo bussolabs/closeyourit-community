@@ -1,8 +1,0 @@
-blank_issues_enabled: false
-contact_links:
-  - name: Report a security vulnerability privately
-    url: https://github.com/bussolabs/closeyourit-community/security/advisories/new
-    about: Do not disclose vulnerabilities or sensitive data in public issues.
-  - name: Commercial enquiries and collaboration
-    url: https://www.bussolarialessio.me/contact
-    about: Contact the maintainer about services or collaboration.

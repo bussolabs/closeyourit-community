@@ -1,0 +1,6 @@
+<div class="space-y-3">
+  <%= render(Ui::AlertComponent.new(variant: :success, title: "Salvato.")) { "Ticket BUG-1247 creato." } %>
+  <%= render(Ui::AlertComponent.new(variant: :warning, title: "Attenzione.")) { "3 ticket senza riproduzione." } %>
+  <%= render(Ui::AlertComponent.new(variant: :danger, title: "Errore.")) { "Connessione al webhook fallita." } %>
+  <%= render(Ui::AlertComponent.new(variant: :info, title: "Tip.")) { "Collega l'MCP server per far aprire bug agli agent." } %>
+</div>

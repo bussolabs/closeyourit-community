@@ -1,0 +1,26 @@
+<% duration_buckets = Array(@duration_buckets) %>
+<% peak = duration_buckets.filter_map { |b| b[:p95] }.max.to_i %>
+<%= render Ui::SectionComponent.new(title: t("member.metrics.duration_chart_title"), header_layout: :row,
+      body_class: nil, test_id: "duration-trend-chart") do |section| %>
+  <% section.with_actions do %>
+    <div class="ml-auto inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800" data-test="range-selector">
+      <% Metrics::Group::RANGES.keys.each do |r| %>
+        <%= link_to r, member_monitoring_metric_group_path(@group, range: r),
+              class: "h-[26px] px-2.5 inline-flex items-center rounded-[5px] text-[12px] font-medium #{@range == r ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-stone-200 dark:border-zinc-800' : 'text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}",
+              data: { test: "range-#{r}" } %>
+      <% end %>
+    </div>
+  <% end %>
+  <p class="px-4 pt-3 text-[12.5px] text-zinc-700 dark:text-zinc-300" data-test="duration-trend-summary"><%= metric_duration_summary(@trend, @range) %></p>
+  <div class="px-4 pt-1 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.metrics.duration_chart_hint") %><% if peak.positive? %> · <%= t("member.metrics.duration_chart_peak", value: metric_duration_label(peak)) %><% end %></div>
+  <%= render Ui::HistogramComponent.new(
+        bars: metric_duration_bars(duration_buckets, peak, @range),
+        gridlines: chart_gridlines(peak).map { |g| g.merge(value: metric_total_duration_label(g[:value])) },
+        xticks: chart_xticks(duration_buckets, @range),
+        buckets_test_id: "duration-trend-buckets",
+        summary: t("member.metrics.duration_chart_summary", peak: metric_duration_label(peak), range: @range),
+        empty_label: t("member.metrics.duration_chart_empty")) %>
+  <%# Il grafico vede solo i casi ancora conservati: dirlo qui evita di leggere un buco della
+      potatura come un periodo in cui non è successo niente. %>
+  <p class="px-4 pb-3.5 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="duration-trend-retention-note"><%= t("member.metrics.duration_retention_note", days: @samples_retention_days) %></p>
+<% end %>

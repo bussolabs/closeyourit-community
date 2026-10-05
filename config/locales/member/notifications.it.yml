@@ -1,0 +1,366 @@
+it:
+  member:
+    notifications:
+      groups:
+        tickets: Ticket
+        chat: Conversazioni
+        errors: Errori
+        logs: Log
+        performance: Performance
+        uptime: Uptime
+        crons: Job schedulati
+        servers: Server
+        secrets: Secret
+        tokens: Token di ingest
+        agents: Automazione
+        analytics: Statistiche del sito
+        ideas: Idee
+        workload: Attività
+        datasets: Dataset
+        vulnerabilities: Sicurezza
+        seo: SEO
+        services: Servizi interni
+      natures:
+        tickets: Ticket
+        systems: Sistemi
+        agents: Agenti
+      cadences:
+        immediate: Ogni volta
+        daily: Riepilogo giornaliero
+        weekly: Riepilogo settimanale
+        "off": Disattivata
+      title: Notifiche
+      save: Salva
+      saved: Preferenze di notifica salvate.
+      report:
+        heading: Riepilogo dei dati via email
+        hint: "Un'email che dice come sta andando: visite, errori e uptime dei tuoi progetti, con il confronto sul periodo precedente. Non sono avvisi — è il quadro d'insieme."
+        label: Ogni quanto lo ricevi
+        label_hint: "Arriva la mattina e riassume solo i progetti che vedi."
+        guide: Come funziona
+        cadences:
+          "off": Mai
+          daily: Ogni giorno
+          weekly: Ogni lunedì
+          monthly: Il primo del mese
+        email_off: Le email sono spente qui sopra, quindi il riepilogo non parte. Riaccendile per riceverlo.
+      channels:
+        heading: Canali
+        hint: Dove ti arrivano le notifiche. L'in-app è sempre attiva e non disattivabile.
+        in_app: In-app
+        in_app_state: Sempre attiva
+        in_app_hint: "Il centro notifiche: ogni avviso arriva sempre qui e non si può spegnere."
+        email: Email
+        email_hint: "Inviate a %{email}."
+        telegram: Telegram
+        telegram_hint: Messaggi diretti dal bot CloseYourIt.
+      telegram:
+        connected: "Collegato come @%{username}"
+        connected_generic: Telegram collegato
+        connected_since: "Collegato il %{date}"
+        disconnect: Scollega
+        disconnect_confirm: "Scollegare Telegram? Smetterai di ricevere le notifiche Telegram."
+        disconnect_hint: Smetti di ricevere i messaggi del bot. Puoi ricollegarti quando vuoi.
+        connect: Collega Telegram
+        guide_title: Collega il tuo Telegram
+        guide_intro: Accendi il canale Telegram, poi collega il tuo account al bot per ricevere i DM.
+        guide_step_1: "Premi «Collega Telegram» qui sotto: apre la chat con il bot già riconosciuta come tua."
+        guide_step_2: Nella chat premi Avvia (in inglese Start).
+        guide_step_3: "Torni qui e leggi «Collegato come»: da quel momento gli avvisi ti arrivano in chat."
+        bot_label: Il bot si chiama
+        bot_note: Cercarlo a mano dentro Telegram non basta a collegarti — il riconoscimento passa dal pulsante di questa pagina.
+        not_configured: Il bot Telegram non è ancora configurato — chiedi all'amministratore.
+        disconnected: Telegram scollegato.
+        what_heading: Cosa ti arriva qui
+        what_body_1: "Il bot ti scrive in privato gli avvisi che hai acceso per Telegram: ticket assegnati a te, commenti e menzioni, errori nuovi, siti che non rispondono, server e lavori programmati."
+        what_body_2: "Decidi tu quali avvisi passano da qui e ogni quanto: ogni volta, in un riepilogo giornaliero o settimanale, oppure mai."
+        choose_alerts: Scegli cosa arriva su Telegram
+        commands_heading: Cosa puoi fare dalla chat
+        commands_hint: Non è solo un altoparlante — al bot puoi anche scrivere.
+        commands:
+          new_ticket: Apri un ticket, anche allegando una foto
+          my_tickets: Elenca i tuoi ticket aperti
+          comment: Commenta un ticket
+          help: La lista completa dei comandi
+        group:
+          heading: Gruppo Telegram con argomenti
+          hint: "Solo per il proprietario: gli avvisi arrivano in un tuo gruppo Telegram, ognuno nel suo argomento."
+          body: "Critici, server, ticket, errori: ogni tipo di avviso ha il suo argomento, creato al primo messaggio. Quando un avviso arriva nel gruppo non ti arriva né in privato né per mail."
+          step_1: "Crea un gruppo Telegram e attiva gli Argomenti nelle sue impostazioni."
+          step_2: "Premi «Collega gruppo Telegram» e scegli il gruppo: il bot entra come amministratore."
+          step_3: "Il bot conferma nel gruppo. Torna qui e ricarica la pagina."
+          connect: Collega gruppo Telegram
+          connected: "Collegato al gruppo «%{title}»"
+          connected_generic: Gruppo Telegram collegato
+          disconnect: Scollega il gruppo
+          disconnect_confirm: "Scollegare il gruppo Telegram? Gli avvisi torneranno in privato."
+          disconnected: Gruppo Telegram scollegato.
+      list:
+        heading: Per notifica
+        hint: "Scegli una cadenza per canale. Disattivata = non inviare lì; i riepiloghi sono giornalieri o settimanali."
+        col_email: Email
+        col_telegram: Telegram
+        highlight_telegram: "Arrivi da Telegram: la colonna evidenziata è quella dei messaggi del bot."
+        group_count:
+          one: 1 avviso
+          other: "%{count} avvisi"
+      search:
+        label: Cerca fra gli avvisi
+        placeholder: Cerca un avviso
+        clear: Pulisci la ricerca
+        empty: Nessun avviso con questo nome.
+      presets:
+        heading: Configurazioni pronte
+        hint: Scrivono in un gesto la cadenza di tutti gli avvisi. Sostituiscono le scelte fatte a mano; i canali e le ore silenziose restano come li hai messi.
+        confirm: Applicare questa configurazione? Sostituisce le cadenze che hai scelto a mano.
+        applied: "Configurazione «%{name}» applicata."
+        essential:
+          label: Essenziale
+          hint: Subito quello che riguarda te e i guasti gravi, un riepilogo al giorno per il resto.
+        everything:
+          label: Tutto
+          hint: Ogni avviso, ogni volta, sui canali che hai acceso.
+        urgent_only:
+          label: Solo urgenze
+          hint: Solo i guasti gravi. Il resto lo trovi comunque nel centro notifiche.
+      catalog:
+        ticket_created:
+          title: Ticket creato
+          description: Viene aperto un nuovo ticket in un progetto che puoi vedere.
+        ticket_assigned:
+          title: Ticket assegnato a te
+          description: Un ticket viene assegnato a te (o rimosso dall'assegnazione).
+        ticket_status_changed:
+          title: Stato ticket cambiato
+          description: Cambia lo stato di un ticket che segui.
+        ticket_milestone_changed:
+          title: Milestone ticket cambiata
+          description: Un ticket che segui viene aggiunto o rimosso da una milestone.
+        ticket_commented:
+          title: Nuovo commento
+          description: Qualcuno commenta un ticket che segui.
+        ticket_mentioned:
+          title: Sei stato menzionato
+          description: Qualcuno ti @menziona in un commento di un ticket.
+        ticket_review_requested:
+          title: Revisione richiesta
+          description: Un ticket entra in stato di revisione e tu sei il revisore.
+        ticket_review_rejected:
+          title: Revisione respinta
+          description: Una revisione che hai richiesto viene respinta, con il motivo.
+        ticket_review_approved:
+          title: Revisione approvata
+          description: Una revisione viene approvata e il ticket avanza.
+        ticket_question_asked:
+          title: Domanda fatta
+          description: Qualcuno fa una domanda su un ticket che segui.
+        ticket_question_answered:
+          title: Domanda risposta
+          description: Arriva la risposta a una domanda su un ticket che segui.
+        chat_message:
+          title: Nuovo messaggio in chat
+          description: Viene inviato un nuovo messaggio in una conversazione a cui partecipi.
+        chat_mentioned:
+          title: Menzionato in chat
+          description: Qualcuno ti @menziona in un messaggio di chat.
+        error_new:
+          title: Nuovo errore
+          description: Compare un nuovo gruppo di errori in uno dei tuoi progetti.
+        error_regression:
+          title: Regressione errore
+          description: Un errore risolto ricomincia a verificarsi.
+        error_spike:
+          title: Impennata errore
+          description: Un errore già aperto esplode improvvisamente di volume, ad esempio dopo un deploy.
+        log_alert:
+          title: Log error o fatal
+          description: Viene ingerito un log di livello error o fatal in uno dei tuoi progetti.
+        metric_threshold:
+          title: Problema di performance
+          description: Una query o un metodo lento supera la soglia di alert.
+        uptime_down:
+          title: Sito non raggiungibile
+          description: Un endpoint monitorato va giù.
+        uptime_up:
+          title: Sito di nuovo raggiungibile
+          description: Un endpoint monitorato torna su.
+        uptime_slow:
+          title: Risposta lenta
+          description: Un endpoint monitorato risponde oltre la soglia di lentezza.
+        uptime_ssl_expiring:
+          title: Certificato SSL in scadenza
+          description: Il certificato TLS di un endpoint monitorato sta per scadere.
+        cron_missed:
+          title: Job schedulato mancato
+          description: Un job schedulato (cron) non è partito in tempo.
+        server_down:
+          title: Macchina non raggiungibile
+          description: Un server monitorato smette di riportare.
+        server_up:
+          title: Server ripristinato
+          description: Un server monitorato ricomincia a riportare.
+        server_cpu:
+          title: CPU alta
+          description: L'uso di CPU di un server supera la soglia.
+        server_mem:
+          title: Memoria alta
+          description: L'uso di memoria di un server supera la soglia.
+        server_disk:
+          title: Disco pieno
+          description: L'uso del disco di un server supera la soglia.
+        server_temp:
+          title: Temperatura alta
+          description: La temperatura di un server supera la soglia.
+        server_service_failed:
+          title: Servizio in errore
+          description: Un servizio systemd di un server monitorato va in stato failed.
+        server_smart_failing:
+          title: Disco in errore
+          description: Un disco di un server monitorato riporta un errore SMART.
+        server_security_updates:
+          title: Aggiornamenti di sicurezza in attesa
+          description: Un server monitorato ha aggiornamenti di sicurezza da installare.
+        server_silent:
+          title: Dati fermi
+          description: Un server risponde ma i suoi dati non si aggiornano da troppo tempo.
+        server_ingest_rejected:
+          title: Dati delle macchine respinti
+          description: "Il sistema ha respinto i dati inviati dalle macchine: restano ferme sull'ultimo numero, ma non sono cadute."
+        cluster_down:
+          title: Cluster muto
+          description: "Un cluster Kubernetes non manda più dati da 3 minuti: l'osservatore è fermo o il cluster non risponde."
+        cluster_up:
+          title: Cluster di nuovo raggiungibile
+          description: "Un cluster che era muto ha ripreso a mandare dati."
+        cluster_node_not_ready:
+          title: Macchina del cluster non pronta
+          description: "Una macchina di un cluster Kubernetes non è pronta da almeno 2 minuti."
+        cluster_node_pressure:
+          title: Macchina del cluster sotto sforzo
+          description: "Una macchina di un cluster ha quasi finito memoria, disco o processi."
+        cluster_workload_crashloop:
+          title: App che riparte di continuo
+          description: "Un'app del cluster si chiude e riparte più volte in pochi minuti."
+        cluster_workload_degraded:
+          title: App a metà
+          description: "Un'app del cluster ha meno copie funzionanti di quelle previste da almeno 5 minuti."
+        server_disk_forecast:
+          title: Spazio dati in esaurimento
+          description: Al ritmo di riempimento attuale il volume dati di un server saturerà entro pochi giorni.
+        server_container_down:
+          title: Contenitore caduto
+          description: Un contenitore di un server monitorato sparisce o smette di ripartire.
+        server_container_up:
+          title: Contenitori tornati su
+          description: I contenitori caduti di un server monitorato tornano in esecuzione.
+        server_container_restart_loop:
+          title: Contenitore che si riavvia in continuazione
+          description: Un container si riavvia almeno tre volte in dieci minuti.
+        server_container_stable:
+          title: Contenitore di nuovo stabile
+          description: I container escono dalla finestra di riavvio continuo.
+        server_db_down:
+          title: Database non raggiungibile
+          description: Il database di un server monitorato smette di rispondere.
+        server_db_connections:
+          title: Connessioni database alte
+          description: Le connessioni aperte sul database di un server superano la soglia.
+        server_db_connection_usage:
+          title: Slot database quasi esauriti
+          description: Le connessioni usano oltre la soglia degli slot non riservati disponibili.
+        server_replication_lag:
+          title: Replica in ritardo
+          description: La replica del database di un server resta indietro oltre la soglia.
+        server_replication_down:
+          title: Replica scollegata
+          description: Una replica nota smette di essere in streaming.
+        server_replication_up:
+          title: Replica ripristinata
+          description: Una replica scollegata torna in streaming.
+        server_data_volume_disk:
+          title: Volume dati quasi pieno
+          description: Un mount dati supera la soglia di spazio usato.
+        server_inode:
+          title: Inode quasi esauriti
+          description: Un filesystem supera la soglia di inode usati.
+        secret_rotation_due:
+          title: Secret da ruotare
+          description: Un secret con una policy di rotazione entra in scadenza o è già scaduto.
+        secret_deleted:
+          title: Secret cancellato
+          description: Un secret viene cancellato da un progetto, in un ambiente qualsiasi.
+        secret_sync_failed:
+          title: Sincronizzazione GitHub fallita
+          description: Il push dei secret del progetto verso i GitHub Environment secrets non riesce.
+        secret_change_requested:
+          title: Richiesta di modifica ai secret
+          description: Una richiesta di modifica a un secret protetto attende la tua approvazione.
+        secret_change_approved:
+          title: Richiesta di modifica approvata
+          description: Una tua richiesta di modifica a un secret protetto viene approvata e applicata.
+        secret_change_rejected:
+          title: Richiesta di modifica respinta
+          description: Una tua richiesta di modifica a un secret protetto viene respinta, con il motivo.
+        secret_read:
+          title: Segreto letto
+          description: Qualcuno apre il valore di un segreto dal sito. Le letture automatiche dal terminale non avvisano.
+        secret_consolidation_suggested:
+          title: Valore in comune
+          description: Lo stesso valore segreto è ripetuto in più progetti e si può spostare nei secret dell'organizzazione.
+        secret_denied:
+          title: Accesso a un segreto negato
+          description: Qualcuno prova ad aprire il valore di un segreto in un ambiente che non gli spetta.
+        project_token_expiring:
+          title: Token di ingest in scadenza
+          description: Un token con una data di scadenza sta per scadere o è già scaduto — le app che lo usano smetteranno di inviare.
+        agents_stalled:
+          title: Automazione bloccata
+          description: Le macchine sono attive ma da un'ora nessuna lavorazione automatica si conclude.
+        agents_host_failing:
+          title: Macchina in errore
+          description: "Una macchina sta fallendo gran parte delle lavorazioni: potrebbe essere guasta."
+        agents_host_stale:
+          title: Automazione ferma
+          description: "L'automazione su una macchina ha smesso di dare segnali: spesso il computer sta bene ed è ferma solo l'automazione."
+        analytics_traffic_drop:
+          title: Traffico in calo
+          description: Le visite a un sito che monitori crollano all'improvviso.
+        analytics_traffic_spike:
+          title: Picco di traffico
+          description: Le visite a un sito che monitori salgono molto sopra il solito.
+        idea_created:
+          title: Nuova idea
+          description: Qualcuno propone una nuova idea in un progetto che puoi vedere.
+        idea_commented:
+          title: Nuovo commento a un'idea
+          description: Qualcuno commenta un'idea in un progetto che puoi vedere.
+        workload_due_soon:
+          title: Attività in scadenza
+          description: Un'attività a cui partecipi si avvicina alla scadenza o l'ha superata.
+        dataset_training_completed:
+          title: Addestramento completato
+          description: L'addestramento di un dataset finisce con successo.
+        dataset_training_failed:
+          title: Addestramento fallito
+          description: L'addestramento di un dataset non va a buon fine.
+        vulnerability_new:
+          title: Nuova vulnerabilità
+          description: Una libreria usata da un progetto risulta avere un problema di sicurezza noto.
+        seo_issue_new:
+          title: Nuovo rilievo SEO
+          description: Il controllo di un sito trova un problema grave che può tenerlo fuori dai risultati di ricerca.
+        runtime_eol:
+          title: Versione senza più aggiornamenti
+          description: Un progetto usa una versione di linguaggio che non riceve più correzioni di sicurezza.
+        embedding_down:
+          title: Servizio di ricerca per significato non raggiungibile
+          description: "Il servizio che capisce il testo non risponde: ricerca per significato, collegamenti e riconoscimento dei doppioni smettono di funzionare senza dirlo."
+        ai_unavailable:
+          title: Intelligenza artificiale non raggiungibile
+          description: "Il servizio che scrive e ragiona non risponde, o la chiave non vale più: assistente, smistamento automatico dei ticket e riconoscimento dei doppioni smettono di funzionare senza dirlo."
+        ai_available:
+          title: Intelligenza artificiale ripristinata
+          description: Il servizio che scrive e ragiona ha ripreso a rispondere.
+        cache_unavailable:
+          title: Memoria temporanea non raggiungibile
+          description: "La memoria temporanea condivisa non risponde: gli avvisi verso Slack, Discord e gli altri collegamenti esterni possono restare fermi senza dirlo."

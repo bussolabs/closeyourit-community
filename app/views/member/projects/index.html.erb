@@ -1,0 +1,32 @@
+<% content_for :title, t("member.projects.title") %>
+<% can_manage = can?("projects.create") %>
+
+<div class="p-7 space-y-6" data-test="member-projects">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.projects.title"),
+        subtitle: t("member.projects.help_title"),
+        breadcrumb: [ { label: t("member.projects.title") } ]) do |h| %>
+    <% h.with_actions do %>
+      <% if can_view_groups? %>
+        <%= render Ui::ButtonComponent.new(label: t("member.groups.title"), href: member_groups_path, variant: :secondary_muted, size: :sm, icon: "layers", test_id: "projects-groups") %>
+      <% end %>
+      <% if can_manage %>
+        <%= render Ui::ButtonComponent.new(label: t("member.projects.new"), href: new_member_project_path, variant: :primary, size: :sm, icon: "folder-plus", test_id: "projects-new", data: { keyboard_new: "" }) %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% filtering = params[:q].present? || params[:platform_id].present? || params[:group_id].present? || params[:health].present? %>
+  <% if @projects.empty? && !filtering %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.projects.empty"), body: t("member.projects.empty_body"),
+          icon: "folder-open", framed: true, test_id: "projects-empty") do |empty| %>
+      <% if can_manage %>
+        <% empty.with_action do %>
+          <%= render Ui::ButtonComponent.new(label: t("member.projects.new"), href: new_member_project_path, variant: :primary, size: :sm, icon: "folder-plus", test_id: "projects-empty-new") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= render(@projects_view == "table" ? "table" : "cards", can_manage: can_manage) %>
+  <% end %>
+</div>

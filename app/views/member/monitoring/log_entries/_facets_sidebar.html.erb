@@ -1,0 +1,29 @@
+<aside class="w-full lg:w-56 shrink-0 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="logs-facets">
+  <div class="px-3 py-2.5 border-b border-stone-200 dark:border-zinc-800">
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.logs.facets.title") %></p>
+    <p class="mt-0.5 text-[11px] text-gray-400 dark:text-zinc-500"><%= t("member.monitoring.logs.facets.window") %></p>
+  </div>
+  <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+    <% @facets.each do |facet| %>
+      <div class="px-3 py-2" data-test="logs-facet-<%= facet[:key] %>">
+        <p class="font-mono text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 truncate"><%= facet[:key] %></p>
+        <ul class="mt-1 space-y-0.5">
+          <% facet[:values].each do |value, count| %>
+            <% on = @field_filter && @field_filter[:key] == facet[:key] && @field_filter[:value] == value %>
+            <li>
+              <%= link_to member_monitoring_log_entries_path(request.query_parameters.except("page", "field", "value").merge(on ? {} : { field: facet[:key], value: value })),
+                    class: class_names("flex items-center justify-between gap-2 text-[11.5px] rounded px-1 py-0.5",
+                                       "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium" => on,
+                                       "text-gray-600 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800" => !on),
+                    "aria-current": (on ? "true" : nil),
+                    data: { test: "logs-facet-value-#{facet[:key]}-#{value.parameterize}" } do %>
+                <span class="min-w-0 truncate"><%= value %></span>
+                <span class="shrink-0 font-mono text-[10.5px] text-gray-400 dark:text-zinc-500"><%= number_with_delimiter(count) %></span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
+</aside>

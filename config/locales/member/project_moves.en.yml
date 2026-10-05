@@ -1,0 +1,156 @@
+en:
+  member:
+    project_moves:
+      open: "Move to another organization"
+      new:
+        title: "Move %{name}"
+        destinations: "Destination organizations"
+        destination: "Destination organization"
+        destination_hint: "Only organizations you own. You see what happens before moving."
+        none: "You own no other organization."
+        none_body: "Moving requires being the owner of both this organization and the destination."
+        submit: "See what happens"
+        back: "Back"
+      preview:
+        title: "Move %{name} to %{destination}"
+        change_destination: "Change organization"
+        confirm_title: "Confirmation"
+        confirm_label: "Type %{name} to confirm"
+        confirm_hint: "The move starts right away and cannot be undone: to go back, move it again."
+        confirm_mismatch: "The text does not match."
+        submit: "Move"
+        blocked: "Resolve the blockers to move."
+      report:
+        blockers: "Blockers"
+        creations: "Created in the destination organization"
+        creations_short: "To create"
+        detachments: "Links that detach"
+        empty: "Nothing"
+      blockers:
+        key_taken: "The key %{detail} is already used in the destination organization."
+        person_not_member: "%{detail} is not a member of the destination organization."
+        provision_crosses: "A secret flows through %{detail}: move them together."
+        shared_conflict: "The organization secret %{detail} already exists in the destination with a different value."
+        agent_running: "An agent is working on %{detail}."
+        move_in_progress: "A move is already in progress for %{detail}."
+        subject_left_source: "%{detail} is no longer in the source organization."
+        requester_not_owner: "%{detail} is no longer the owner of both organizations."
+        knowledge_book_orphaned: "The Knowledge collection %{detail} would stay here with no project or group: link it to a project that stays, or link its staying pages to a project."
+        knowledge_publication_conflict: "The Knowledge page published as %{detail} already exists in the destination organization."
+      creations:
+        types_environments: "Environment %{label} (%{code})"
+        types_ticket_statuses: "Ticket status %{label}"
+        types_ticket_priorities: "Ticket priority %{label}"
+        types_platforms: "Platform %{label}"
+        types_feature_statuses: "Feature status %{label}"
+        secrets_shared:
+          variable: "Organization secret %{name} (%{environment}), copied"
+          file: "Organization file %{name} (%{environment}), copied"
+          file_any_environment: "Organization file %{name}, copied"
+        knowledge_pages:
+          one: "A Knowledge page moves along, with its history and attachments."
+          other: "%{count} Knowledge pages move along, with their history and attachments."
+        knowledge_books:
+          moves: "The Knowledge collection %{title} moves along with its pages."
+          created: "The Knowledge collection %{title} is created for the pages that move."
+          created_merged: "The Knowledge collection %{title} is created and gathers the pages that move from %{books} collections with this title."
+          joined: "The pages that move from the collection %{title} join the collection with the same title in the destination organization."
+          joined_merged: "The pages that move from %{books} collections %{title} join the collection with the same title in the destination organization."
+      detachments:
+        projects_groups:
+          one: "The project leaves its group, which stays here."
+          other: "The projects leave their groups, which stay here."
+        github_repositories:
+          one: "A GitHub repository is unlinked: link it again from the destination organization."
+          other: "%{count} GitHub repositories are unlinked: link them again from the destination organization."
+        agents_delivery_candidates:
+          one: "An agent delivery loses its repository."
+          other: "%{count} agent deliveries lose their repository."
+        agents_release_assignments:
+          one: "An agent release assignment is removed."
+          other: "%{count} agent release assignments are removed."
+        alerting_rules:
+          one: "An alert rule is removed."
+          other: "%{count} alert rules are removed."
+        alerting_notifications:
+          one: "A sent alert is removed."
+          other: "%{count} sent alerts are removed."
+        agents_limit_reservations:
+          one: "An agent limit reservation is removed."
+          other: "%{count} agent limit reservations are removed."
+        agents_leases_tombstones:
+          one: "A trace of finished agent work is removed."
+          other: "%{count} traces of finished agent work are removed."
+        agents_ticket_queue_deferrals:
+          one: "A deferral in the agent queue is removed."
+          other: "%{count} deferrals in the agent queue are removed."
+        chat_message_references:
+          one: "A reference in a conversation is removed."
+          other: "%{count} references in conversations are removed."
+        connections_book_projects:
+          one: "A Knowledge collection is unlinked from the project."
+          other: "%{count} Knowledge collections are unlinked from the projects."
+        connections_book_groups:
+          one: "A Knowledge collection is unlinked from the group."
+          other: "%{count} Knowledge collections are unlinked from the group."
+        connections_page_projects:
+          one: "A Knowledge page also linked elsewhere stays here and is unlinked from the project."
+          other: "%{count} Knowledge pages also linked elsewhere stay here and are unlinked from the projects."
+        connections_page_groups:
+          one: "A Knowledge page also linked elsewhere stays here and is unlinked from the group."
+          other: "%{count} Knowledge pages also linked elsewhere stay here and are unlinked from the group."
+        knowledge_books:
+          one: "A Knowledge collection stays here and is linked to the projects of its staying pages."
+          other: "%{count} Knowledge collections stay here and are linked to the projects of their staying pages."
+        connections_page_links:
+          one: "A link between a page that moves and one that stays is removed."
+          other: "%{count} links between pages that move and pages that stay are removed."
+        connections_team_project_accesses:
+          one: "A team loses access to the project."
+          other: "%{count} team accesses to the projects are removed."
+        connections_team_group_accesses:
+          one: "A team loses access to the group."
+          other: "%{count} team accesses to the group are removed."
+        connections_environment_hosts:
+          one: "A server is unlinked from an environment."
+          other: "%{count} links between servers and environments are removed."
+        clusters_namespaces:
+          one: "A cluster namespace is unlinked from the project."
+          other: "%{count} cluster namespaces are unlinked from the projects."
+        assistant_conversations:
+          one: "An assistant conversation is no longer fixed on the project."
+          other: "%{count} assistant conversations are no longer fixed on the projects."
+        agents_hosts:
+          one: "An agent machine stops reporting on the project."
+          other: "%{count} agent machines stop reporting on the projects."
+        uptime_monitors:
+          one: "An uptime check leaves the group."
+          other: "%{count} uptime checks leave the group."
+        todos_items:
+          one: "A personal task loses its linked ticket."
+          other: "%{count} personal tasks lose their linked ticket."
+        workload_actions:
+          one: "A workload commitment loses its linked ticket."
+          other: "%{count} workload commitments lose their linked ticket."
+        knowledge_sample_questions:
+          one: "A sample question loses its linked page."
+          other: "%{count} sample questions lose their linked page."
+        product_features:
+          one: "A feature loses its linked page."
+          other: "%{count} features lose their linked page."
+        secrets_shared_events:
+          one: "An organization secret event loses its reference to the value."
+          other: "%{count} organization secret events lose their reference to the value."
+      show:
+        title: "Move of %{name}"
+        destination: "Destination"
+        status:
+          pending: "Waiting"
+          running: "In progress"
+          succeeded: "Done"
+          failed: "Failed"
+        running: "The move is in progress. The page refreshes by itself."
+        reload: "Refresh"
+        done: "Done: it now lives in %{destination}."
+        failed_title: "The move failed and changed nothing."
+        open_destination: "Open in the new organization"

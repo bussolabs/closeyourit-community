@@ -1,0 +1,30 @@
+<% key = "member.monitoring.session_health.index" %>
+<%= render Ui::TableComponent::RowComponent.new(test_id: "session-health-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true, label: t("#{key}.release_environment")) do %>
+    <div class="min-w-0">
+    <div class="font-medium break-all"><%= cohort.fetch("release") %></div>
+    <div class="text-xs text-gray-500 dark:text-zinc-400 break-all"><%= @row_projects.fetch(cohort.fetch("project_id")).name %> · <%= cohort["environment"].presence || t("#{key}.unknown_environment") %></div>
+    </div>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("#{key}.source")) do %>
+    <div class="min-w-0">
+    <div><%= t("#{key}.#{cohort.fetch('source')}") %></div>
+    <div class="text-xs text-gray-500 dark:text-zinc-400"><%= t("#{key}.deduplication.#{cohort.fetch('deduplication')}") %></div>
+    </div>
+  <% end %>
+  <% { "known" => "denominator", "crashed" => "crashed", "unknown" => "unknown" }.each do |column, field| %>
+    <%= render Ui::TableComponent::CellComponent.new(label: t("#{key}.#{column}"), mono: true, align: :right) do %>
+      <%= number_with_delimiter(cohort.fetch(field)) %>
+    <% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("#{key}.rate"), mono: true, align: :right) do %>
+    <div class="min-w-0">
+    <% if cohort.fetch("denominator").to_i.positive? %>
+      <div><%= number_to_percentage(BigDecimal(cohort.fetch("numerator")) * 100 / BigDecimal(cohort.fetch("denominator")), precision: 1) %></div>
+    <% else %>
+      <div class="text-gray-500 dark:text-zinc-400" aria-label="<%= t("#{key}.unavailable") %>">—</div>
+    <% end %>
+    <div class="text-xs text-gray-500 dark:text-zinc-400"><%= cohort.fetch("numerator") %> / <%= cohort.fetch("denominator") %></div>
+    </div>
+  <% end %>
+<% end %>

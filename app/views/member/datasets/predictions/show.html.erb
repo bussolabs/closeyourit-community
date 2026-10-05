@@ -1,0 +1,73 @@
+<% content_for :title, t("member.datasets.predictions.show_title") %>
+<% running = @prediction.status_pending? || @prediction.status_running? %>
+
+<div class="p-7 space-y-6" data-test="member-dataset-prediction-show">
+<%= turbo_frame_tag "dataset-progress", target: "_top" do %>
+<div class="space-y-6" data-controller="datasets-poll" data-datasets-poll-active-value="<%= running %>"
+     data-datasets-poll-url-value="<%= member_dataset_prediction_path(@dataset, @prediction) %>">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.datasets.predictions.show_title"),
+        breadcrumb: [ { label: t("member.datasets.title"), href: member_datasets_path },
+                      { label: @dataset.name, href: member_dataset_path(@dataset) },
+                      { label: t("member.datasets.predictions.show_title") } ],
+        counts_test_id: "prediction-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.datasets.predictions.status_label"), value: t("member.datasets.predictions.status.#{@prediction.status}"), value_color: (@prediction.status_done? ? :emerald : nil), test_id: "prediction-status") %>
+    <% end %>
+  <% end %>
+
+  <% if running %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 py-10 text-center" data-test="prediction-running">
+      <%= render Ui::IconComponent.new(name: "loader-circle", class: "animate-spin text-[20px] text-indigo-500 dark:text-indigo-400") %>
+      <p class="mt-3 text-[13px] text-gray-600 dark:text-zinc-400"><%= t("member.datasets.predictions.running_hint") %></p>
+    </div>
+  <% elsif @prediction.status_failed? %>
+    <div class="rounded-md border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15 px-4 py-3 text-[12.5px] text-red-700 dark:text-red-300" data-test="prediction-failed">
+      <%= @prediction.error_message.presence || t("member.datasets.predictions.failed_generic") %>
+    </div>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="prediction-values">
+      <div class="px-4 py-3 border-b border-stone-100 dark:border-zinc-800">
+        <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.datasets.predictions.predicted_title") %></h2>
+      </div>
+      <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+        <% @target_columns.each do |column| %>
+          <div class="flex items-center justify-between px-4 py-3">
+            <span class="text-[13px] text-zinc-900 dark:text-zinc-100"><%= column.label %></span>
+            <span class="font-mono text-[12.5px] text-indigo-700 dark:text-indigo-300 font-semibold" data-test="prediction-value-<%= column.code %>"><%= @prediction.predicted_values[column.code].presence || "—" %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+</div>
+<% end %>
+<% unless turbo_frame_request? %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="prediction-input">
+    <div class="px-4 py-3 border-b border-stone-100 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.datasets.predictions.input_title") %></h2>
+    </div>
+    <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% @input_columns.each do |column| %>
+        <div class="flex items-center justify-between px-4 py-3">
+          <span class="text-[13px] text-gray-700 dark:text-zinc-300"><%= column.label %></span>
+          <% if column.kind_photo? %>
+            <% cell = @input_row.cells.detect { |c| c.column_id == column.id && c.image.attached? } %>
+            <% if cell %>
+              <%= image_tag rails_blob_path(cell.image, disposition: :inline),
+                    alt: t("member.datasets.rows.photo_preview_alt", column: column.label),
+                    loading: "lazy", decoding: "async",
+                    class: "w-12 h-12 object-cover rounded border border-stone-200 dark:border-zinc-800" %>
+            <% else %>
+              <span class="text-gray-300 dark:text-zinc-600">—</span>
+            <% end %>
+          <% else %>
+            <span class="text-[12.5px] text-gray-600 dark:text-zinc-400"><%= @input_row.value_for(column.code).presence || "—" %></span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+</div>

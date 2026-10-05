@@ -1,0 +1,4 @@
+<%# CYRA-823 — la risposta al solo frame dello storico: la pagina di lista richiesta, coi filtri
+    attivi. Rendimento e confronto fra periodi restano fuori: sfogliare non li cambia. %>
+<%= render "member/agents/worked_tickets", worked: @worked, visible_ticket_ids: @visible_ticket_ids,
+      host: @host, range: @range, filters: @work_filters %>

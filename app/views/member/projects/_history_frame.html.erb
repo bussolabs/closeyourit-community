@@ -1,0 +1,23 @@
+<%# CYRA-827 — la cronologia del progetto, una pagina alla volta. È lo stesso frammento sia quando
+    arriva nel riquadro della panoramica sia quando la pagina intera lo mostra: un posto solo, così
+    il riquadro e la pagina di recupero non possono raccontare due storie diverse.
+    Il conteggio sta qui e non nel piè di pagina del riquadro: è il totale di tutta la cronologia,
+    e fuori dal frame nessuno lo conosce finché la risposta non arriva. %>
+<%= turbo_frame_tag Member::ProjectsController::HISTORY_FRAME, class: "block" do %>
+  <div class="max-h-[60vh] overflow-y-auto divide-y divide-stone-100 dark:divide-zinc-800">
+    <% if @history.records.any? %>
+      <% @history.records.each do |event| %>
+        <%= render "member/shared/activity_row", event: event %>
+      <% end %>
+    <% else %>
+      <%= render Ui::EmptyNoteComponent.new(text: t("ui.audit.empty"), inset: true, test_id: "activity-empty") %>
+    <% end %>
+  </div>
+  <%# An empty history already says so: "0 events" under it would only repeat it. %>
+  <% if @history.records.any? %>
+    <div class="flex items-center px-4 py-2.5 border-t border-stone-200 dark:border-zinc-800" data-test="activity-count">
+      <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("ui.audit.events_count", count: @history.total) %></span>
+    </div>
+  <% end %>
+  <%= render Ui::PaginationComponent.new(pagination: @history, test_id: "project-history-pagination") %>
+<% end %>

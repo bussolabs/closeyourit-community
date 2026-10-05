@@ -1,0 +1,35 @@
+<%# locals: (index:, scenario: nil) %>
+<%# One BDD scenario of the repeater (nested-fields): a single block, the title on top with its
+    number, the four clauses as rows split by hairlines. `index` is real (0,1,…) for existing rows
+    and "NEW_RECORD" inside the <template> (the JS replaces it). %>
+<div class="rounded-md border border-stone-200 dark:border-zinc-800 [counter-increment:scenario]" data-nested-fields-target="row" data-test="ticket-scenario-row">
+  <% if scenario&.persisted? %>
+    <input type="hidden" name="scenarios_attributes[<%= index %>][id]" value="<%= scenario.id %>" data-field="id">
+  <% end %>
+  <input type="hidden" name="scenarios_attributes[<%= index %>][_destroy]" value="0" data-nested-fields-target="destroy">
+
+  <div class="flex items-center gap-2.5 rounded-t-md border-b border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 pl-3 pr-1">
+    <span class="font-mono text-[11px] tabular-nums text-gray-400 dark:text-zinc-500 before:content-[counter(scenario)]" aria-hidden="true" data-test="ticket-scenario-number"></span>
+    <input type="text" name="scenarios_attributes[<%= index %>][title]" value="<%= scenario&.title %>" data-field="title"
+           placeholder="<%= t("member.tickets.form.scenario_title_placeholder") %>" data-test="ticket-scenario-title"
+           class="min-w-0 flex-1 h-9 bg-transparent text-[13px] font-medium text-zinc-900 dark:text-zinc-100 placeholder:font-normal placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400 rounded-sm">
+    <button type="button" data-action="nested-fields#remove" data-test="ticket-scenario-remove"
+            aria-label="<%= t("member.tickets.form.scenario_remove") %>"
+            class="shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 dark:text-zinc-500 hover:bg-white dark:hover:bg-zinc-900 hover:text-red-600 dark:hover:text-red-400">
+      <%= render Ui::IconComponent.new(name: "x", class: "text-[13px]") %>
+    </button>
+  </div>
+
+  <%# Expected is the wanted outcome, Then is what happens today: the tint tells them apart. %>
+  <% [ %w[step_given given], %w[step_when step_when], %w[step_then step_then], %w[step_expected expected] ].each do |field, key| %>
+    <% expected = field == "step_expected" %>
+    <div class="grid grid-cols-[92px_minmax(0,1fr)] items-start <%= expected ? "rounded-b-md bg-indigo-50 dark:bg-indigo-500/15" : "border-b border-stone-200 dark:border-zinc-800" %>" data-test="ticket-scenario-clause">
+      <label class="pl-3 pt-3 font-mono uppercase text-[9.5px] tracking-[1.2px] <%= expected ? "text-indigo-600 dark:text-indigo-400" : "text-gray-500 dark:text-zinc-400" %>"><%= t("member.tickets.form.steps.#{key.sub('step_', '')}") %></label>
+      <%# One line that grows with its text; a browser without field-sizing keeps the two rows. %>
+      <textarea name="scenarios_attributes[<%= index %>][<%= field %>]" rows="2" data-field="<%= field %>"
+                data-test="ticket-scenario-<%= field.sub('step_', '') %>"
+                placeholder="<%= t("member.tickets.form.#{key.sub('step_', '')}_placeholder", default: '') %>"
+                class="w-full min-h-9 resize-none [field-sizing:content] bg-transparent px-3 py-2 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400 rounded-sm"><%= scenario&.public_send(field) %></textarea>
+    </div>
+  <% end %>
+</div>

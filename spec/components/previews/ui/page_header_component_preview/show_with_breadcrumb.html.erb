@@ -1,0 +1,8 @@
+<%= render Ui::PageHeaderComponent.new(
+      title: "TS-142 · Login rotto",
+      breadcrumb: [ { label: "Tickets", href: "#" }, { label: "TS-142 · Login rotto" } ]
+    ) do |h| %>
+  <% h.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: "Modifica", variant: :secondary, href: "#") %>
+  <% end %>
+<% end %>

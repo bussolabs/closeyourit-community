@@ -1,0 +1,21 @@
+en:
+  impersonations:
+    action: "Impersonate"
+    cannot_self: "You can't impersonate yourself."
+    started: "You are now impersonating %{email}."
+    entered: "Entered %{name}."
+    no_member: "This organization has no members to enter as."
+    stopped: "Impersonation ended."
+    banner: "You are impersonating %{email}."
+    exit: "Exit"
+    confirm:
+      title: "Confirm with two-step verification"
+      breadcrumb: "Confirm"
+      subtitle_account: "You are about to impersonate %{email}. Enter the code from your authenticator app."
+      subtitle_organization: "You are about to enter %{name} as %{email}. Enter the code from your authenticator app."
+      code_label: "Code"
+      code_hint: "6 digits from your authenticator app."
+      submit: "Confirm"
+      cancel: "Cancel"
+      invalid_code: "Invalid or already used code. Wait for the next one and try again."
+      locked_out: "Too many attempts. Sign in again to retry."

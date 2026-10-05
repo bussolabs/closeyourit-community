@@ -1,0 +1,110 @@
+<%# CYRA-400 — i valori uguali su TUTTA la pagina di occorrenze (non solo sulle righe mostrate,
+    non sull'intero gruppo): si dicono una volta in cima e la loro colonna esce dalla tabella. %>
+<% constants = error_occurrence_constants(@events) %>
+<%# Parametri da portarsi dietro aprendo/richiudendo l'elenco: filtri, intervallo, blocco
+    dell'istogramma e pagina restano dove sono — il comando cambia solo quante righe si vedono. %>
+<% occurrences_params = { **filter_params, range: @range, chart_at: params[:chart_at],
+                          from: params[:from], to: params[:to], page: params[:page] }.compact %>
+<%# T5: the title, its count and the time-block notice are rows of the table's own panel. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" id="occurrences" data-test="occurrences">
+  <div class="flex items-baseline gap-2 flex-wrap px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <%# CYRA-378: le occorrenze sono un CONTEGGIO DIVERSO da events_count (chip di testa "Eventi
+        ricevuti"): il chip è il contatore aggregato cumulativo, questo blocco conta le righe ancora
+        conservate dopo la potatura per retention (Errors::PruneEventsJob). Il tooltip dichiara la
+        finestra in giorni risolta dalla STESSA fonte del job (Errors::Retention, gerarchia
+        progetto → org → globale, CYRA-159): da quando la finestra è configurabile una costante
+        direbbe il numero sbagliato a ogni progetto che l'ha cambiata. %>
+    <div class="flex items-center gap-1.5">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.occurrences") %></h2>
+      <%= render Ui::TooltipComponent.new(text: t("member.monitoring.help_occurrences_retention", days: Errors::Retention.for(@group.project)), test_id: "help-occurrences") %>
+      <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="occurrences-count"><%= count_label("member.monitoring.occurrences_count", @pagination.total, shown: number_with_delimiter(@visible_events.size)) %></span>
+    </div>
+    <% if @events.any? %><span class="text-[11px] text-gray-500 dark:text-zinc-400" data-test="occurrences-hint"><%= t("member.monitoring.occurrences_hint") %></span><% end %>
+  </div>
+  <% if @bucket_from %>
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <%= render "member/monitoring/bucket_filter",
+            label: chart_bucket_window(@bucket_from, (@bucket_to - @bucket_from).to_i, @range),
+            reset_path: member_monitoring_error_group_path(@group, **filter_params, range: @range) %>
+    </div>
+  <% end %>
+    <%= render(Ui::TableToolbarComponent.new(framed: true,
+          url: member_monitoring_error_group_path(@group),
+          hidden: { range: @range, chart_at: params[:chart_at], from: params[:from], to: params[:to] }.compact,
+          apply_test_id: "occurrences-filter", test_id: "occurrences-toolbar")) do |toolbar| %>
+      <% toolbar.with_filter(key: "environment", label: t("member.monitoring.filter_environment")) do %>
+        <div class="w-36"><%= render Ui::SelectComponent.new(name: "environment", multiple: true, summary: true, options: @environments.map { |e| [ e, e ] }, selected: params[:environment], placeholder: t("member.monitoring.filter_environment"), test_id: "filter-environment") %></div>
+      <% end %>
+      <% toolbar.with_filter(key: "release", label: t("member.monitoring.filter_release")) do %>
+        <div class="w-36"><%= render Ui::SelectComponent.new(name: "release", multiple: true, summary: true, options: @releases.map { |r| [ r, r ] }, selected: params[:release], placeholder: t("member.monitoring.filter_release"), test_id: "filter-release") %></div>
+      <% end %>
+      <% toolbar.with_filter(key: "level", label: t("member.monitoring.filter_level")) do %>
+        <div class="w-32"><%= render Ui::SelectComponent.new(name: "level", multiple: true, summary: true, options: Errors::Event.levels.keys.map { |l| [ l.capitalize, l ] }, selected: params[:level], placeholder: t("member.monitoring.filter_level"), test_id: "filter-level") %></div>
+      <% end %>
+    <% end %>
+      <% if @events.empty? %>
+        <p class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="occurrences-empty"><%= t("member.monitoring.no_events") %></p>
+      <% else %>
+        <% if constants.any? %>
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-2.5 border-b border-stone-200 dark:border-zinc-800 bg-stone-50/60 dark:bg-zinc-800/60" data-test="occurrences-summary">
+            <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.occurrences_summary", count: @events.size) %></span>
+            <% if constants[:environment] %>
+              <span class="inline-flex items-center gap-1.5" data-test="occurrences-summary-environment">
+                <span class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.col_environment") %></span>
+                <%= render Ui::BadgeComponent.new(label: constants[:environment], color: :sky, dot: true) %>
+              </span>
+            <% end %>
+            <% if constants[:release] %>
+              <span class="inline-flex items-center gap-1.5" data-test="occurrences-summary-release">
+                <span class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.col_release") %></span>
+                <%# Stesso rilascio della colonna Dettagli (CYRA-394): sette caratteri, copiabile, e
+                    collegato al commit quando il repository è noto. %>
+                <%= render "member/monitoring/error_groups/release", project: @group.project,
+                      release: constants[:release], test_id: "occurrences-summary-release-value" %>
+              </span>
+            <% end %>
+            <% if constants[:level] %>
+              <span class="inline-flex items-center gap-1.5" data-test="occurrences-summary-level">
+                <span class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.col_level") %></span>
+                <span class="font-mono text-[12px] font-semibold <%= "text-#{error_level_color(constants[:level])}-600" %>"><%= error_level_label(constants[:level]) %></span>
+              </span>
+            <% end %>
+          </div>
+        <% end %>
+        <%# CYRA-986 — a fixed height: with every occurrence shown the rows scroll here, not the page. %>
+        <div class="max-h-[232px] overflow-y-auto" data-test="occurrences-scroll">
+        <%# Roving-tabindex grid: the keydown listener sits on the <table> through `table_data`. %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.monitoring.occurrences"), body_id: "error_group_events_#{@group.id}",
+              table_data: { test: "occurrences-table", action: "keydown->occurrence-select#nav" })) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.col_when"), sort: "when", initial: :desc) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.col_environment"), sort: "environment", visible: !constants.key?(:environment)) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.col_release"), sort: "release", visible: !constants.key?(:release)) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.col_level"), sort: "level", initial: :desc, visible: !constants.key?(:level)) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.col_event"), sort: "event", align: :right) %>
+          <% end %>
+          <% @visible_events.each do |event| %>
+            <%= render "member/monitoring/error_groups/occurrence_row", event: event, selected: event == @selected,
+                  replay_session_ids: @replay_session_ids, constants: constants %>
+          <% end %>
+        <% end %>
+        </div>
+        <p class="sr-only" aria-live="polite" data-occurrence-select-target="status"></p>
+        <%# Le occorrenze che restano di questa pagina: si aprono qui, senza cambiare pagina né perdere
+            i filtri. Sotto le cinque righe non c'è niente da aprire e il comando non compare. %>
+        <% if @events.size > @visible_events.size %>
+          <div class="px-4 py-2.5 border-t border-stone-200 dark:border-zinc-800">
+            <%= render Ui::ButtonComponent.new(label: t("member.monitoring.occurrences_show_all", count: @events.size - @visible_events.size),
+                  href: member_monitoring_error_group_path(@group, **occurrences_params, occurrences: "all", anchor: "occurrences"),
+                  variant: :secondary_muted, size: :sm, icon: "chevron-down", test_id: "occurrences-show-all") %>
+          </div>
+        <% elsif @occurrences_expanded && @events.size > Monitoring::Constants::OCCURRENCES_COLLAPSED %>
+          <div class="px-4 py-2.5 border-t border-stone-200 dark:border-zinc-800">
+            <%= render Ui::ButtonComponent.new(label: t("member.monitoring.occurrences_show_less", count: Monitoring::Constants::OCCURRENCES_COLLAPSED),
+                  href: member_monitoring_error_group_path(@group, **occurrences_params, anchor: "occurrences"),
+                  variant: :secondary_muted, size: :sm, icon: "chevron-up", test_id: "occurrences-show-less") %>
+          </div>
+        <% end %>
+        <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "occurrences-pagination")) %>
+      <% end %>
+</div>

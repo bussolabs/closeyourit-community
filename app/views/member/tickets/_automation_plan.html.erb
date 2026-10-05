@@ -1,0 +1,30 @@
+<%# locals: (ticket:, workflow:, current_plan:, decides:) %>
+  <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="automation-plan">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3">
+      <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.automation.plan.title") %></h2>
+      <div class="flex items-center gap-1.5">
+        <%= link_to t("member.tickets.automation.plan.download"), member_ticket_automation_plan_path(ticket),
+              class: "text-[11.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline",
+              data: { test: "automation-plan-download" } %>
+        <span class="inline-flex items-center rounded-md bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-gray-600 dark:text-zinc-400">v<%= current_plan.version %></span>
+        <% if current_plan.approved_at? %>
+          <%= render Ui::BadgeComponent.new(label: t("member.tickets.automation.plan.approved"), color: :green, dot: true) %>
+        <% elsif workflow.phase == "awaiting_approval" %>
+          <%= render Ui::BadgeComponent.new(label: t("member.tickets.automation.plan.awaiting"), color: :amber, dot: true) %>
+        <% end %>
+      </div>
+    </div>
+    <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <%= render "member/tickets/plan_body", plan: current_plan %>
+
+      <%# CYRA-384 — i pulsanti sono saliti nella sintesi, in cima: la decisione si prende dove si
+          vede subito, e un solo posto in cui si decide toglie di mezzo il dubbio su quale dei due
+          gruppi identici premere. Qui resta la riga che dice dove sono andati, altrimenti chi ha
+          appena finito di leggere il piano la cerca in fondo e non la trova. %>
+      <% if decides && workflow.phase == "awaiting_approval" %>
+        <p class="px-4 py-3 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="automation-decide-above">
+          <%= t("member.tickets.automation.plan.decide_above") %>
+        </p>
+      <% end %>
+    </div>
+  </section>

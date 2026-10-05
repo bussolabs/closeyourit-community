@@ -1,0 +1,23 @@
+<%# Top pagine del range: barra orizzontale ∝ pageviews + conteggi. %>
+<% max = top_paths.map { |r| r[:pageviews].to_i }.max.to_i %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="analytics-pages">
+  <div class="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.analytics.pages_title") %></h2>
+    <span class="font-mono text-[10.5px] uppercase tracking-wide text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.col_pageviews") %> · <%= t("member.monitoring.analytics.col_visitors") %></span>
+  </div>
+  <% if top_paths.empty? %>
+    <p class="px-4 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="analytics-pages-empty"><%= t("member.monitoring.analytics.no_data") %></p>
+  <% else %>
+    <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% top_paths.each do |row| %>
+        <li class="relative px-4 py-2" data-test="analytics-page-row">
+          <span class="absolute inset-x-2 inset-y-1" aria-hidden="true"><span class="block h-full rounded-[3px] bg-indigo-50 dark:bg-indigo-500/15" style="width: <%= analytics_row_width(row[:pageviews], max) %>%"></span></span>
+          <span class="relative flex items-center justify-between gap-3">
+            <span class="truncate font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= link_to row[:path], analytics_filter_url("path", row[:path]), class: "hover:text-indigo-600 dark:hover:text-indigo-400", data: { test: "analytics-page-filter" } %></span>
+            <span class="shrink-0 font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= row[:pageviews] %> <span class="text-gray-500 dark:text-zinc-400">· <%= row[:visitors] %></span></span>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>

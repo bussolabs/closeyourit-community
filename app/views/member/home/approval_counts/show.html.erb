@@ -1,0 +1,3 @@
+<%= turbo_frame_tag "member-nav-approvals-count" do %>
+  <%= render "shared/notification_counter", count: @count, label: t("member.nav.approvals_pending", count: @count), test_id: "member-nav-approvals-badge" %>
+<% end %>

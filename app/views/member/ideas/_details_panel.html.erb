@@ -1,0 +1,59 @@
+<%# Details panel (CYRA-845), modelled on member/tickets/_details_panel: status, project, author, base
+    idea, stakeholders and, once converted, the ticket with its conversion date. %>
+<%= render Ui::SectionComponent.new(title: t("member.ideas.show.details"), body_class: nil, test_id: "idea-details") do %>
+  <%= render Ui::DescriptionListComponent.new(class: "px-4 py-4") do |list| %>
+    <% list.with_item(label: t("member.ideas.show.status_label"), span: 2, test_id: "idea-status") do %>
+      <p class="mt-1 flex flex-wrap items-center gap-1.5">
+        <%= render Ui::BadgeComponent.new(label: t("member.ideas.status.#{@idea.status}"), color: idea_status_color(@idea.status), dot: true) %>
+        <% if @idea.evolution? %>
+          <%= render Ui::BadgeComponent.new(label: t("member.ideas.links.evolution_chip"), color: :indigo, test_id: "idea-evolution-chip") %>
+        <% end %>
+      </p>
+    <% end %>
+
+    <% list.with_item(label: t("member.ideas.show.project_label"), span: 2, test_id: "idea-project") do %>
+      <p class="mt-1">
+        <%= link_to member_project_path(@idea.project), class: "inline-flex items-center gap-1.5 text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" do %>
+          <span class="w-2.5 h-2.5 rounded-[3px] <%= Ui::Colors.swatch(@idea.project.color) %> shrink-0"></span><%= @idea.project.name %>
+        <% end %>
+      </p>
+    <% end %>
+
+    <% list.with_item(label: t("member.ideas.show.author_label"), span: 2, test_id: "idea-author") do %>
+      <% author_name = @idea.author&.name || t("member.ideas.author_gone") %>
+      <p class="mt-1 inline-flex items-center gap-2 text-[12.5px] text-zinc-900 dark:text-zinc-100"><span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 text-[9px] font-semibold"><%= avatar_initials(author_name) %></span><%= author_name %><span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= @idea.created_at.strftime("%d/%m/%Y") %></span></p>
+    <% end %>
+
+    <% if @parent %>
+      <% list.with_item(label: t("member.ideas.links.evolves_from"), span: 2, test_id: "idea-parent") do %>
+        <p class="mt-1"><%= link_to member_idea_path(@parent), class: "inline-flex items-center gap-1.5 text-[12.5px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "idea-parent-link" } do %><%= render Ui::IconComponent.new(name: "git-branch", class: "text-[10px]") %><%= @parent.title %><% end %></p>
+      <% end %>
+    <% end %>
+
+    <% if @idea.stakeholders.any? %>
+      <% list.with_item(label: t("member.ideas.show.stakeholders"), span: 2, test_id: "idea-stakeholders") do %>
+        <p class="mt-1.5 flex flex-wrap gap-1.5">
+          <% @idea.stakeholders.each do |stakeholder| %>
+            <span class="inline-flex items-center h-[22px] px-2 rounded-md bg-stone-100 dark:bg-zinc-800 text-[11.5px] font-medium text-zinc-700 dark:text-zinc-300" data-test="idea-stakeholder"><%= stakeholder %></span>
+          <% end %>
+        </p>
+      <% end %>
+    <% end %>
+
+    <%# A deleted ticket leaves a dash, but the conversion date stays. %>
+    <% if @idea.ticket || @idea.converted_at %>
+      <% list.with_item(label: t("member.ideas.show.ticket_label"), span: 2, test_id: "idea-ticket") do %>
+        <p class="mt-1 flex flex-wrap items-baseline gap-x-1.5">
+          <% if @idea.ticket %>
+            <%= link_to @idea.ticket.code, member_ticket_path(@idea.ticket), class: "font-mono text-[12.5px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300" %>
+          <% else %>
+            <span class="text-[12.5px] text-gray-400 dark:text-zinc-500">—</span>
+          <% end %>
+          <% if @idea.converted_at %>
+            <span class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="idea-converted-on"><%= t("member.ideas.show.converted_date", date: l(@idea.converted_at.to_date, format: :day_month_year)) %></span>
+          <% end %>
+        </p>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

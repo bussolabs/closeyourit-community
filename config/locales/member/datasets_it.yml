@@ -1,0 +1,122 @@
+---
+it:
+  member:
+    nav:
+      datasets: Dataset
+    datasets:
+      title: Dataset
+      help_title: "Insegna a CloseYourIt le scelte che fai sempre allo stesso modo."
+      status_label: Stato
+      schema_title: Colonne
+      result: Result
+      new: Nuovo dataset
+      new_title: Nuovo dataset
+      edit_title: Modifica dataset
+      create_action: Crea dataset
+      save: Salva
+      cancel: Annulla
+      edit: Modifica
+      delete: Elimina
+      delete_confirm: Eliminare questo dataset e tutte le sue righe? L'operazione è irreversibile.
+      created: Dataset creato.
+      updated: Dataset aggiornato.
+      deleted: Dataset eliminato.
+      empty: Insegna a CloseYourIt una scelta che oggi fai a mano
+      empty_body: "Esempio: ogni segnalazione che arriva va letta e smistata — è un guasto o una richiesta nuova? Mostragli qualche decina di casi che hai già sistemato tu e da lì in poi la domanda la fai a lui: risponde, e la risposta la controlli."
+      empty_note: "Non c'entra con le macchine che lavorano i ticket: qui la risposta la chiedi tu, un caso per volta, quando ti serve."
+      empty_guide: Come funziona
+      col_name: Nome
+      col_project: Progetto
+      col_columns: Colonne
+      col_status: Stato
+      col_created: Creato
+      counts:
+        total: Totale
+        draft: Bozza
+        trained: Pronto
+        inputs: Input
+        targets: Target
+        samples: Righe
+      status:
+        draft: Bozza
+        trained: Pronto
+      kinds:
+        text: Testo
+        number: Numero
+        category: Categoria
+        boolean: Booleano
+        photo: Foto
+      rows:
+        title: Righe
+        new: Aggiungi riga
+        new_title: Nuova riga
+        edit_title: Modifica riga
+        edit: Modifica
+        delete: Elimina
+        delete_dialog:
+          title: "Eliminare la riga %{number}?"
+          body: "Spariscono tutte le sue celle, comprese le foto caricate. Non si può annullare."
+        empty: Ancora nessuna riga. Aggiungi i dati di ingresso e il risultato atteso per iniziare l’addestramento.
+        col_actions: Azioni
+        choose: Scegli…
+        created: Riga aggiunta.
+        updated: Riga aggiornata.
+        deleted: Riga eliminata.
+        photo_alt: "Foto %{column} (riga %{row})"
+        photo_preview_alt: "Foto attuale di %{column}"
+      trainings:
+        title: Training
+        run: Allena
+        empty: Ancora nessun training. Aggiungi righe etichettate, poi allena un prompt ottimizzato.
+        need_rows: Aggiungi almeno qualche riga etichettata prima di allenare.
+        already_running: "Un addestramento su questo insieme di dati è già in corso: attendi che finisca prima di avviarne un altro."
+        started: Training avviato.
+        show_title: Training
+        status_label: Stato
+        accuracy: Accuratezza
+        running_hint: Sto costruendo e valutando il prompt… ci vuole un momento.
+        retry: Avvia un nuovo addestramento
+        failed_generic: Training fallito.
+        metrics_title: Accuratezza per target
+        prompt_title: Prompt ottimizzato
+        status:
+          pending: In attesa
+          running: In corso
+          done: Completato
+          failed: Fallito
+      predictions:
+        title: Predizioni
+        run: Predici
+        new_title: Predici
+        show_title: Predizione
+        need_training: Allena prima il dataset, poi potrai predire.
+        started: Predizione avviata.
+        empty: Ancora nessuna previsione. Inserisci nuovi dati per ottenere un risultato.
+        empty_untrained: Allena prima il dataset, poi ottieni risultati per nuovi dati.
+        form_hint: Compila gli input — l'AI predice gli attributi target.
+        status_label: Stato
+        running_hint: Sto applicando il prompt al tuo input…
+        failed_generic: Predizione fallita.
+        predicted_title: Attributi predetti
+        input_title: Input
+        status:
+          pending: In attesa
+          running: In corso
+          done: Completato
+          failed: Fallito
+      form:
+        name: Nome
+        description: Descrizione
+        project: Progetto
+        project_placeholder: Scegli un progetto…
+        columns_title: Colonne
+        columns_hint: "Marca ogni colonna come Input (dato fornito — es. la foto) o Target (un attributo che l'AI predice). Un dataset richiede almeno un Input e un Target."
+        options_placeholder: Valori separati da virgola (es. positivo, negativo)
+        add_column: Aggiungi colonna
+        remove_column: Rimuovi colonna
+        no_columns: Ancora nessuna colonna. Aggiungi almeno un Input (es. una foto) e un Target.
+        column_label_placeholder: Nome colonna…
+        role_input: Input
+        role_target: Target
+        required: Obbligatoria
+        locked: Le colonne non si possono cambiare quando il dataset ha righe.

@@ -1,0 +1,6 @@
+en:
+  member:
+    ai:
+      errors:
+        not_found: "AI request not found or expired."
+        internal: "AI analysis failed due to an internal error."

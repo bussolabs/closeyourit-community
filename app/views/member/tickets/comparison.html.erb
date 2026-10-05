@@ -1,0 +1,175 @@
+<% content_for :title, t("member.tickets.comparison.title") %>
+
+<%# Gate duplicati: il submit del form new è stato intercettato — qui il confronto affiancato
+    (preesistente a sinistra, draft a destra, campi diversi evidenziati). Il draft viaggia negli
+    hidden (_draft_fields); i tre esiti ri-POSTano a create con dedup_ack=back|create|link. %>
+<div class="p-7 space-y-6" data-test="ticket-comparison">
+  <%= form_with url: member_tickets_path, method: :post, class: "space-y-6", data: { test: "ticket-comparison-form" } do %>
+    <%= render "member/tickets/draft_fields", draft_params: @draft_params %>
+
+    <%# Errore di un esito precedente (motivazione mancante, progetto non visibile, ecc.): banner in
+        pagina — il flash è solo un toast in basso a destra, facile da mancare dopo la chiusura del dialog. %>
+    <% if @dedup_error %>
+      <%= render Ui::AlertComponent.new(variant: :danger, test_id: "ticket-comparison-error") do %>
+        <%= @dedup_error.message %>
+      <% end %>
+    <% end %>
+
+    <%= render Ui::PageHeaderComponent.new(title: t("member.tickets.comparison.title"),
+          breadcrumb: [ { label: t("member.tickets.title"), href: member_tickets_path }, { label: t("member.tickets.comparison.title") } ]) do |header| %>
+      <% header.with_meta do %>
+        <%# La somiglianza è il motivo per cui questa pagina è comparsa: dirla è l'unico modo di
+            rendere discutibile la soglia invece che misteriosa. %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.tickets.comparison.similarity"),
+              value: number_to_percentage(@matches.first.similarity, precision: 0), value_color: :amber) %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.tickets.comparison.others"),
+              value: @matches.size, value_color: :amber) %>
+      <% end %>
+      <% header.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.tickets.comparison.back"),
+              type: "submit", variant: :secondary_muted, size: :sm,
+              test_id: "ticket-comparison-back", name: "dedup_ack", value: "back", formnovalidate: true) %>
+
+        <%# Crea comunque → dialog con motivazione obbligatoria (client `required` + server R422-TICKET-009).
+            Su errore di questo esito il dialog si riapre da solo (open-value) col banner errore in pagina. %>
+        <div class="contents" data-controller="ui--dialog"
+             data-ui--dialog-open-value="<%= @dedup_ack == "create" && @dedup_error.present? %>">
+          <button type="button" data-action="ui--dialog#open" data-test="ticket-comparison-create"
+                  class="inline-flex items-center gap-2 h-7 px-3 rounded-md text-[12px] font-medium text-amber-700 dark:text-amber-300 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-amber-50 dark:hover:bg-amber-500/15">
+            <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[11px]") %><%= t("member.tickets.comparison.create_anyway") %>
+          </button>
+          <%# No form of its own: the confirm submits the comparison form around it. %>
+          <%= render Ui::ModalComponent.new(title: t("member.tickets.comparison.create_anyway_title"), size: :sm,
+                test_id: "ticket-comparison-create-modal",
+                data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+            <% modal.with_actions do %>
+              <%= render Ui::ButtonComponent.new(label: t("member.tickets.comparison.cancel"), variant: :secondary_muted, size: :sm,
+                    data: { action: "ui--dialog#close" }) %>
+              <button type="submit" name="dedup_ack" value="create" data-test="ticket-comparison-create-submit"
+                      class="inline-flex items-center gap-1.5 h-7 px-3 rounded-md text-[12px] font-semibold bg-amber-600 text-white hover:bg-amber-700">
+                <%= render Ui::IconComponent.new(name: "plus", class: "text-[11px]") %><%= t("member.tickets.comparison.confirm") %>
+              </button>
+            <% end %>
+            <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.tickets.comparison.reason_label") %><span class="text-red-500 dark:text-red-400 ml-0.5">*</span></p>
+            <%= text_area_tag :dedup_reason, nil, rows: 4, required: true,
+                  placeholder: t("member.tickets.comparison.reason_placeholder"),
+                  data: { test: "ticket-comparison-reason" },
+                  class: "w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] text-zinc-900 dark:text-zinc-100 leading-relaxed focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+          <% end %>
+        </div>
+
+        <%# Crea e collega → dialog: target (default il match), tipo di collegamento, commento opzionale. %>
+        <div class="contents" data-controller="ui--dialog"
+             data-ui--dialog-open-value="<%= @dedup_ack == "link" && @dedup_error.present? %>">
+          <button type="button" data-action="ui--dialog#open" data-test="ticket-comparison-link"
+                  class="inline-flex items-center gap-2 h-7 px-3 rounded-md text-[12px] font-semibold bg-zinc-900 text-white hover:bg-zinc-800">
+            <%= render Ui::IconComponent.new(name: "link", class: "text-[11px]") %><%= t("member.tickets.comparison.link_action") %>
+          </button>
+          <%= render Ui::ModalComponent.new(title: t("member.tickets.comparison.link_title"),
+                test_id: "ticket-comparison-link-modal",
+                data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+            <% modal.with_actions do %>
+              <%= render Ui::ButtonComponent.new(label: t("member.tickets.comparison.cancel"), variant: :secondary_muted, size: :sm,
+                    data: { action: "ui--dialog#close" }) %>
+              <%# formnovalidate: il campo `dedup_reason` è `required` ma vive nel dialog "Crea comunque"
+                  chiuso (nascosto, non focusabile) → senza questo, Chrome bloccherebbe in silenzio il link. %>
+              <button type="submit" name="dedup_ack" value="link" formnovalidate data-test="ticket-comparison-link-submit"
+                      class="inline-flex items-center gap-1.5 h-7 px-3 rounded-md text-[12px] font-semibold bg-zinc-900 text-white hover:bg-zinc-800">
+                <%= render Ui::IconComponent.new(name: "link", class: "text-[11px]") %><%= t("member.tickets.comparison.confirm") %>
+              </button>
+            <% end %>
+            <div class="space-y-4">
+              <%# Più di un bersaglio si spunta insieme: il lavoro nuovo può toccarne davvero due, e
+                  costringere a sceglierne uno vorrebbe dire tornare qui una seconda volta. Il primo
+                  è già spuntato perché è il più vicino, cioè quello che la pagina sta confrontando. %>
+              <div data-test="ticket-comparison-link-target">
+                <label class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.tickets.comparison.link_target_label") %></label>
+                <div class="space-y-1.5 rounded-md border border-stone-200 dark:border-zinc-800 p-2">
+                  <% @matches.each_with_index do |match, index| %>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" name="link_ticket_ids[]" value="<%= match.ticket.id %>"
+                             <%= "checked" if index.zero? %>
+                             data-test="ticket-comparison-link-target-<%= match.ticket.code %>"
+                             class="h-3.5 w-3.5 rounded border-stone-300 dark:border-zinc-700 text-indigo-600 dark:text-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400">
+                      <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= match.ticket.code %></span>
+                      <span class="min-w-0 flex-1 truncate text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= match.ticket.title %></span>
+                      <span class="font-mono text-[10.5px] text-amber-700 dark:text-amber-300"><%= number_to_percentage(match.similarity, precision: 0) %></span>
+                    </label>
+                  <% end %>
+                </div>
+              </div>
+              <div data-test="ticket-comparison-link-kind">
+                <label class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.tickets.comparison.link_kind_label") %></label>
+                <div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800">
+                  <% %w[duplicate related].each do |kind| %>
+                    <label class="cursor-pointer">
+                      <input type="radio" name="link_kind" value="<%= kind %>" class="peer sr-only" <%= "checked" if kind == "duplicate" %>>
+                      <span class="inline-flex items-center h-[30px] px-3.5 rounded-[5px] text-[12.5px] font-medium text-gray-500 dark:text-zinc-400 peer-checked:bg-zinc-900 dark:peer-checked:bg-zinc-100 peer-checked:text-white dark:peer-checked:text-zinc-900"
+                            data-test="ticket-comparison-kind-<%= kind %>"><%= t("member.tickets.links.kind.#{kind}") %></span>
+                    </label>
+                  <% end %>
+                </div>
+              </div>
+              <div>
+                <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.tickets.comparison.comment_label") %></p>
+                <%= text_area_tag :link_comment, nil, rows: 3,
+                      placeholder: t("member.tickets.comparison.comment_placeholder"),
+                      data: { test: "ticket-comparison-link-comment" },
+                      class: "w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] text-zinc-900 dark:text-zinc-100 leading-relaxed focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+
+    <%# Tabella di confronto: colonna label + preesistente + draft (celle diverse evidenziate). %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
+      <div class="grid grid-cols-[130px_1fr_1fr] border-b border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800">
+        <div class="px-4 py-2.5"></div>
+        <div class="px-4 py-2.5 flex items-center gap-2 min-w-0">
+          <span class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.comparison.existing") %></span>
+          <%= link_to @match.code, member_ticket_path(@match), target: "_blank", rel: "noopener",
+                class: "font-mono text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300",
+                data: { test: "ticket-comparison-existing-link" } %>
+          <%= render Ui::BadgeComponent.new(label: @match.status.display_label, color: @match.status.color, size: :sm, dot: true) %>
+        </div>
+        <div class="px-4 py-2.5 border-l border-stone-200 dark:border-zinc-800">
+          <span class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.comparison.draft") %></span>
+        </div>
+      </div>
+      <% @comparison.rows.each do |row| %>
+        <div class="grid grid-cols-[130px_1fr_1fr] border-b border-stone-100 dark:border-zinc-800 last:border-b-0">
+          <div class="px-4 py-3 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.activity.field.#{row.key}", default: row.key) %></div>
+          <div class="px-4 py-3 text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line min-w-0"><%= row.old_value.presence || t("member.tickets.comparison.no_value") %></div>
+          <div class="px-4 py-3 text-[13px] leading-relaxed whitespace-pre-line min-w-0 border-l <%= row.changed ? "bg-amber-50 dark:bg-amber-500/15 border-amber-200 dark:border-amber-500/40 text-zinc-900 dark:text-zinc-100" : "border-stone-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300" %>"
+               data-test="ticket-comparison-field-<%= row.key %><%= "-changed" if row.changed %>">
+            <%= row.new_value.presence || t("member.tickets.comparison.no_value") %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Altri simili oltre al match principale: lista compatta di link. %>
+    <% if @matches.size > 1 %>
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ticket-comparison-others">
+        <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.comparison.others") %></h2></div>
+        <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+          <% @matches.drop(1).each do |match| %>
+            <% other = match.ticket %>
+            <div class="px-4 py-2.5 flex items-center gap-2.5">
+              <span class="inline-flex items-center gap-1.5 font-mono text-[10.5px] text-gray-500 dark:text-zinc-400">
+                <%= render "member/tickets/agent_indicator", ticket: other %>
+                <%= other.code %>
+              </span>
+              <%= link_to other.title, member_ticket_path(other), target: "_blank", rel: "noopener",
+                    class: "min-w-0 flex-1 truncate text-[12.5px] text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" %>
+              <span class="font-mono text-[10.5px] text-amber-700 dark:text-amber-300"><%= number_to_percentage(match.similarity, precision: 0) %></span>
+              <%= render Ui::BadgeComponent.new(label: other.status.display_label, color: other.status.color, size: :sm, dot: true) %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

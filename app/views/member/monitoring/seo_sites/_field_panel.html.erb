@@ -1,0 +1,48 @@
+<%# locals: strategy ("mobile"|"desktop"), run (Seo::LabRun | nil)
+    Le misure dei visitatori veri che Google ha già su questo sito, per una strategia. Tre metriche,
+    non cinque: LCP, INP e CLS sono quelle che Google usa per il posizionamento, le altre due
+    spiegano e stanno nel laboratorio.
+
+    Sotto ogni misura la barra a tre fasce dice QUANTI utenti stanno in ciascuna: è la prova sotto il
+    percentile, e senza di lei «3,1 secondi» non fa capire se il sito è lento per tutti o per pochi. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="seo-field-<%= strategy %>">
+  <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800 flex items-baseline justify-between gap-2">
+    <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.seo_sites.performance.#{strategy}") %></h3>
+    <% if run&.field? %>
+      <span class="font-mono text-[10.5px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400"><%= t("seo.vitals.window") %></span>
+    <% end %>
+  </div>
+
+  <% if run.nil? || !run.field? %>
+    <%# Google non ha abbastanza traffico su questo sito per dire qualcosa. È un'informazione, non un
+        guasto: dirlo evita che una fila di trattini si legga come «lo strumento è rotto». %>
+    <p class="px-5 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="seo-field-<%= strategy %>-empty">
+      <%= t("member.monitoring.seo_sites.performance.no_field") %>
+    </p>
+  <% else %>
+    <% if run.field_origin_fallback? %>
+      <%# I numeri sono dell'ORIGINE, non di questa pagina. Presentarli come «di questa pagina»
+          sarebbe una bugia, e Google ce lo dice esplicitamente. %>
+      <p class="px-5 pt-3 text-[11.5px] text-amber-700 dark:text-amber-300" data-test="seo-field-<%= strategy %>-origin">
+        <%= t("member.monitoring.seo_sites.performance.origin_fallback") %>
+      </p>
+    <% end %>
+    <div class="px-5 py-4 space-y-4">
+      <% %w[lcp inp cls].each do |metric| %>
+        <% value = run.field_metrics[metric] %>
+        <% outcome = seo_vital_rating(metric, value) %>
+        <div data-test="seo-field-<%= strategy %>-<%= metric %>">
+          <div class="flex items-baseline justify-between gap-2">
+            <span class="text-[12.5px] text-zinc-900 dark:text-zinc-100" title="<%= t("seo.vitals.metric_help.#{metric}") %>"><%= t("seo.vitals.metrics.#{metric}") %></span>
+            <span class="flex items-baseline gap-2">
+              <span class="font-mono text-[15px] <%= seo_vitals_text_color(outcome) %>"><%= seo_vital_value(metric, value) %></span>
+              <%# Il verdetto non è affidato al solo colore: chi non lo distingue legge la parola. %>
+              <span class="text-[11px] text-gray-500 dark:text-zinc-400"><%= seo_vital_rating_label(outcome) %></span>
+            </span>
+          </div>
+          <%= render "member/monitoring/seo_sites/distribution", distribution: run.field_distributions[seo_field_key(metric)] %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

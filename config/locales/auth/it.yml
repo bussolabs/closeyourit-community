@@ -1,0 +1,77 @@
+it:
+  auth:
+    fields:
+      name: "Nome"
+      email: "Email"
+      password: "Password"
+      password_confirmation: "Conferma password"
+      new_password: "Nuova password"
+    sessions:
+      title: "Accedi"
+      subtitle: "Entra nel tuo workspace."
+      submit: "Accedi"
+      forgot: "Password dimenticata?"
+      signed_in: "Bentornato."
+      signed_out: "Sei uscito."
+      invalid: "Email o password non valide."
+      required: "Accedi per continuare."
+    two_factor:
+      title: "Verifica in due passaggi"
+      subtitle: "Inserisci il codice della tua app di autenticazione."
+      code_label: "Codice"
+      code_hint: "6 cifre dall'app, oppure un codice di recupero."
+      submit: "Verifica"
+      back_to_login: "Torna al login"
+      invalid_code: "Codice non valido. Riprova."
+      expired: "Sessione di verifica scaduta. Accedi di nuovo."
+      locked_out: "Troppi tentativi. Accedi di nuovo per riprovare."
+    registrations:
+      failed: "Controlla i campi qui sotto."
+    passwords:
+      new_title: "Reimposta la password"
+      new_subtitle: "Inserisci la tua email: ti inviamo un link per scegliere una nuova password."
+      send: "Invia il link"
+      sent: "Controlla la posta. Se l'email esiste, riceverai il link a breve."
+      edit_title: "Scegli una nuova password"
+      edit_subtitle: "Imposta la nuova password per il tuo account."
+      update: "Aggiorna password"
+      updated: "Password aggiornata. Ora puoi accedere."
+      invalid_token: "Il link di reset non è valido o è scaduto."
+      back_to_login: "Torna al login"
+      mailer:
+        subject: "Reimposta la tua password CloseYourIt"
+        overline: "Sicurezza account"
+        greeting: "Ciao %{name},"
+        body: "Abbiamo ricevuto una richiesta di reset della password. Usa il bottone qui sotto per sceglierne una nuova — il link scade tra 15 minuti."
+        action: "Reimposta la password"
+        ignore: "Se non hai richiesto tu il reset, puoi ignorare questa email."
+    invitations:
+      title: "Accetta l'invito"
+      subtitle: "Imposta nome e password per entrare nel workspace."
+      organization: "Organizzazione"
+      email: "Email"
+      role: "Ruolo"
+      invited_by: "Invitato da %{name}."
+      expiry_note: "L'invito scade dopo qualche giorno. Se non sei tu, ignora questa pagina."
+      submit: "Accetta e accedi"
+      # Ramo "account già registrato su questa email": la password del modulo verrebbe scartata
+      # (AcceptInvitation collega l'account esistente), quindi non la si chiede nemmeno.
+      existing_title: "Hai già un account con questa email"
+      existing_body: "Ti uniamo a %{organization} con l'account che hai già: entra con la password che usi di solito. Se non la ricordi, usa «Password dimenticata» dalla pagina di accesso."
+      existing_submit: "Unisciti e vai all'accesso"
+      accepted: "Benvenuto a bordo."
+      linked_existing: "Sei stato aggiunto all'organizzazione. Accedi con le tue credenziali per continuare."
+      invalid_token: "Questo invito non è valido o è scaduto."
+    password_rules:
+      legend: "La password deve contenere:"
+      length: "Almeno 8 caratteri"
+      uppercase: "Una lettera maiuscola (A-Z)"
+      lowercase: "Una lettera minuscola (a-z)"
+      number: "Un numero (0-9)"
+      special: "Un carattere speciale (! @ # $ %)"
+      status:
+        met: "soddisfatta"
+        unmet: "da soddisfare"
+  home:
+    title: "Home"
+    sign_out: "Esci"

@@ -1,0 +1,112 @@
+---
+en:
+  member:
+    nav:
+      workload: Team activities
+    workload:
+      actions:
+        title: Team activities
+        new: New action
+        search_placeholder: Search actions…
+        apply: Apply
+        count:
+          one: "%{count} action"
+          other: "%{count} actions"
+        empty: No actions yet
+        empty_body: Track fairs, meetings, calls and other non-dev work for your team here.
+        empty_example: "For example: Cologne trade fair, 12-14 March, with the sales team."
+        created: Action created
+        updated: Action updated
+        deleted: Action deleted
+        promoted: Ticket generated from the action
+        status_changed: Status updated
+        view_switch:
+          label: View
+          board: Board
+          list: List
+        col_due: Due
+        due_label: Due
+        due_title:
+          late: "Overdue since %{date}"
+          soon: "Due on %{date}"
+          on_time: "Due: %{date}"
+        details: Details
+        more_menu: More actions
+        no_team: You are not part of any team yet.
+        filter_team: Team
+        filter_status: Status
+        filter_participant: Participant
+        filter_ticket: Ticket
+        ticket_linked: Linked
+        ticket_unlinked: Not linked
+        participants_count:
+          zero: No participants
+          one: "%{count} participant"
+          other: "%{count} participants"
+        col_title: Title
+        col_team: Team
+        col_status: Status
+        col_participants: Participants
+        col_scheduled: Scheduled
+        col_ticket: Ticket
+        edit_title: Edit action
+        edit: Edit
+        delete: Delete
+        delete_confirm: Delete this action?
+        generate_ticket: Generate ticket
+        team_label: Team
+        status_label: Status
+        scheduled_label: Scheduled
+        description_label: Description
+        participants_label: Participants
+        ticket_label: Linked ticket
+        no_participants: No participants assigned.
+        status:
+          planned: Planned
+          in_progress: In progress
+          done: Done
+          cancelled: Cancelled
+        status_counts:
+          planned: Planned
+          in_progress: In progress
+          done: Done
+          cancelled: Cancelled
+        board:
+          empty_column: No actions
+          a11y:
+            grabbed: "Picked up {title}. Use the left and right arrows to move it, Space to drop, Esc to cancel."
+            grabbed_label: "{title} — moving. Arrow keys to move it, Space to drop, Esc to cancel."
+            moving: "{title} → {status}"
+            dropped: "Moved to {status}"
+            cancelled: "{title} returned to {status}"
+        form:
+          cancel: Cancel
+          create: Create action
+          save: Save changes
+          title: Title
+          title_placeholder: e.g. Fair booth setup in Milan
+          team: Team
+          team_placeholder: Select a team
+          description: Description
+          description_placeholder: What is this activity about?
+          status: Status
+          ticket: Linked ticket
+          ticket_placeholder: No ticket
+          ticket_hint: Type the ticket key or a word from the title. Below, the recently touched tickets.
+          ticket_all: Search every project, not just the team's
+          scheduled_at: Scheduled at
+          due_at: Due at
+          participants: Participants
+          participants_placeholder: Select participants
+          participants_hint: Only members of the selected team can participate.
+        promote:
+          title: Generate ticket
+          breadcrumb: Generate ticket
+          submit: Generate ticket
+          hint: Turn this action into a dev ticket in one of your projects.
+          project: Target project
+          project_placeholder: Select a project
+          ticket_title: Ticket title
+          ticket_title_placeholder: Defaults to the action title
+          description: Ticket description
+          description_placeholder: Describe the work to implement

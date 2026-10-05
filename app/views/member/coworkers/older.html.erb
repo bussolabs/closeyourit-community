@@ -1,0 +1,3 @@
+<%= turbo_frame_tag "coworkers-older-#{params[:before]}", target: "_top" do %>
+  <%= render "conversation_page", chats: @chats, older: @previous_chat.present?, puck: @puck %>
+<% end %>

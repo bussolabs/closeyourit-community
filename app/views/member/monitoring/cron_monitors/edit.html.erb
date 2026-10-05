@@ -1,0 +1,36 @@
+<% content_for :title, t("member.crons.edit_title", name: @monitor.name) %>
+
+<div class="p-7 max-w-2xl" data-test="cron-monitor-edit">
+  <%= render Ui::PageHeaderComponent.new(title: t("member.crons.edit_title", name: @monitor.name),
+        breadcrumb: [ { label: t("member.crons.title"), href: member_monitoring_cron_monitors_path },
+                      { label: @monitor.name, href: member_monitoring_cron_monitor_path(@monitor) },
+                      { label: t("member.crons.edit") } ]) %>
+
+  <%# CYRA-484 — quello che si può correggere: il nome (che nasce dalla sigla del job e spesso è
+      illeggibile) e le due soglie. La sigla no: è l'identità con cui il lavoro batte, cambiarla
+      creerebbe un secondo lavoro invece di rinominare questo. %>
+  <div class="mt-6 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-5">
+    <%= form_with url: member_monitoring_cron_monitor_path(@monitor), method: :patch, class: "space-y-5" do %>
+      <%= render Ui::InputComponent.new(name: "name", label: t("member.crons.form_name"), value: @monitor.name,
+            required: true, hint: t("member.crons.form_name_hint"), test_id: "cron-name",
+            error: @errors&.dig(:name)&.first) %>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <%= render Ui::InputComponent.new(name: "expected_interval_minutes", label: t("member.crons.form_interval"),
+              type: "number", value: @monitor.expected_interval_minutes, required: true,
+              hint: t("member.crons.form_interval_hint"), test_id: "cron-interval",
+              error: @errors&.dig(:expected_interval_minutes)&.first) %>
+        <%= render Ui::InputComponent.new(name: "grace_minutes", label: t("member.crons.form_grace"),
+              type: "number", value: @monitor.grace_minutes, required: true,
+              hint: t("member.crons.form_grace_hint"), test_id: "cron-grace",
+              error: @errors&.dig(:grace_minutes)&.first) %>
+      </div>
+
+      <div class="flex items-center gap-2 pt-1">
+        <%= render Ui::ButtonComponent.new(label: t("member.crons.save"), type: "submit", variant: :primary, size: :sm, test_id: "cron-save") %>
+        <%= link_to t("member.crons.cancel"), member_monitoring_cron_monitor_path(@monitor),
+              class: "text-[12.5px] text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100", data: { test: "cron-cancel" } %>
+      </div>
+    <% end %>
+  </div>
+</div>

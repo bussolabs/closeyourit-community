@@ -1,0 +1,8 @@
+---
+it:
+  workload:
+    errors:
+      invalid: Impossibile salvare l'attività
+      participants_invalid: Impossibile aggiornare i partecipanti
+      already_linked: L'attività è già collegata a un ticket
+      project_not_found: Progetto non trovato

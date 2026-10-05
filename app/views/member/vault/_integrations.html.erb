@@ -1,0 +1,65 @@
+<%# locals: integrations (Secrets::Integrations)
+
+    CYRA-430, Scenario 2 — quali collegamenti automatici sono accesi e su quanti progetti. I due numeri
+    sono reali (repository che hanno spinto almeno un segreto, progetti letti da riga di comando di
+    recente); direnv non ne ha uno perché si abilita sul computer di chi sviluppa e il sistema non può
+    saperlo: meglio nessun dato che un dato falso. Da ogni riga si arriva a come si attiva. %>
+<% github_count = integrations.github_projects_count %>
+<% cli_count = integrations.cli_projects_count %>
+
+<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="vault-integrations">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.vault.integrations.title") %></h2>
+    <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.vault.integrations.intro") %></p>
+  </div>
+  <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+    <li class="px-4 py-3 flex items-start gap-3" data-test="vault-integration-cli">
+      <span class="shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-md bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400"><%= render Ui::IconComponent.new(name: "terminal", class: "text-[11px]") %></span>
+      <div class="min-w-0 flex-1">
+        <p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.vault.integrations.cli_title") %></p>
+        <p class="text-[12px] text-gray-500 dark:text-zinc-400 leading-relaxed"><%= t("member.vault.integrations.cli_body") %></p>
+        <%= link_to t("member.vault.integrations.how"),
+              member_vault_capabilities_path(anchor: vault_capability_anchor(:cli_read)),
+              class: "mt-1 inline-flex items-center gap-1.5 text-[12px] text-indigo-600 dark:text-indigo-400 hover:underline",
+              data: { test: "vault-integration-how-cli" } %>
+      </div>
+      <span class="shrink-0 inline-flex items-center rounded-full bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 text-[11px] font-medium text-gray-600 dark:text-zinc-400 whitespace-nowrap"
+            data-test="vault-integration-status-cli">
+        <%= cli_count.positive? ? t("member.vault.integrations.active_on", count: cli_count) : t("member.vault.integrations.not_used_yet") %>
+      </span>
+    </li>
+
+    <li class="px-4 py-3 flex items-start gap-3" data-test="vault-integration-github">
+      <span class="shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-md bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400"><%= render Ui::IconComponent.new(name: "git-branch", class: "text-[11px]") %></span>
+      <div class="min-w-0 flex-1">
+        <p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.vault.integrations.github_title") %></p>
+        <p class="text-[12px] text-gray-500 dark:text-zinc-400 leading-relaxed"><%= t("member.vault.integrations.github_body") %></p>
+        <%= link_to t("member.vault.integrations.how"),
+              member_vault_capabilities_path(anchor: vault_capability_anchor(:github_sync)),
+              class: "mt-1 inline-flex items-center gap-1.5 text-[12px] text-indigo-600 dark:text-indigo-400 hover:underline",
+              data: { test: "vault-integration-how-github" } %>
+      </div>
+      <span class="shrink-0 inline-flex items-center rounded-full bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 text-[11px] font-medium text-gray-600 dark:text-zinc-400 whitespace-nowrap"
+            data-test="vault-integration-status-github">
+        <%= github_count.positive? ? t("member.vault.integrations.active_on", count: github_count) : t("member.vault.integrations.not_active_yet") %>
+      </span>
+    </li>
+
+    <%# Nessun numero: non esiste un modo onesto di contarlo. %>
+    <li class="px-4 py-3 flex items-start gap-3" data-test="vault-integration-direnv">
+      <span class="shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-md bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400"><%= render Ui::IconComponent.new(name: "folder-open", class: "text-[11px]") %></span>
+      <div class="min-w-0 flex-1">
+        <p class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.vault.integrations.direnv_title") %></p>
+        <p class="text-[12px] text-gray-500 dark:text-zinc-400 leading-relaxed"><%= t("member.vault.integrations.direnv_body") %></p>
+        <%= link_to t("member.vault.integrations.how"),
+              member_vault_capabilities_path(anchor: vault_capability_anchor(:personal_direnv)),
+              class: "mt-1 inline-flex items-center gap-1.5 text-[12px] text-indigo-600 dark:text-indigo-400 hover:underline",
+              data: { test: "vault-integration-how-direnv" } %>
+      </div>
+      <span class="shrink-0 inline-flex items-center rounded-full bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 text-[11px] font-medium text-gray-600 dark:text-zinc-400 whitespace-nowrap"
+            data-test="vault-integration-status-direnv">
+        <%= t("member.vault.integrations.on_your_computer") %>
+      </span>
+    </li>
+  </ul>
+</section>

@@ -1,0 +1,19 @@
+en:
+  member:
+    review_completion:
+      secret_missing: "This secret no longer exists. Its description cannot be updated."
+      proposed_description: "Proposed description"
+      description_cleared: "Remove the description"
+    todo_lists:
+      search_placeholder: "Search lists and items…"
+    knowledge:
+      overview:
+        search_placeholder: "Search knowledge pages…"
+    chat:
+      messages:
+        edit: "Edit message"
+        body: "Message"
+        updated: "Message updated."
+        edited: "Edited"
+        invalid: "Enter a message or keep at least one attachment."
+        stale: "This message has changed or was deleted. Your text is still here. Copy it before returning to the conversation."

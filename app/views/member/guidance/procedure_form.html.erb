@@ -1,0 +1,51 @@
+<%# Form condiviso delle procedure (new/edit) reso da GuidanceProcedureActions ai tre livelli via
+    `render template:`. Usa @procedure, @form_url (submit), @back_url (annulla/hub), @errors e
+    @guidance_level/@guidance_scope_name (CYRA-576: livello e nome di ciò a cui la procedura si applica —
+    senza, la pagina era identica ai tre livelli e l'unico indizio era l'indirizzo). %>
+<% title = @procedure.persisted? ? t("member.guidance.procedure.edit_title") : t("member.guidance.procedure.new_title") %>
+<% content_for :title, "#{@guidance_scope_name} · #{title}" %>
+
+<div class="p-7">
+  <%= form_with url: @form_url, method: (@procedure.persisted? ? :patch : :post), class: "space-y-6 max-w-2xl", data: { test: "guidance-procedure-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: title,
+          subtitle: t("member.guidance.applies_to.#{@guidance_level}", name: @guidance_scope_name),
+          breadcrumb: [ { label: t("member.guidance.home.#{@guidance_level}", name: @guidance_scope_name), href: @back_url }, { label: title } ]) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.guidance.procedure.cancel"), href: @back_url, variant: :secondary_muted, size: :sm, test_id: "guidance-procedure-cancel") %>
+        <%= render Ui::ButtonComponent.new(label: (@procedure.persisted? ? t("member.guidance.procedure.save_edit") : t("member.guidance.procedure.save_new")), type: "submit", size: :sm, test_id: "guidance-procedure-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+        <%= render Ui::InputComponent.new(name: "key", label: t("member.guidance.procedure.key"), required: true,
+              value: @procedure.key, wrapper_class: "md:col-span-2", test_id: "guidance-procedure-key",
+              error: @errors&.dig(:key)&.first) %>
+
+        <div class="md:col-span-2">
+          <label for="content" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.guidance.procedure.content") %><span class="text-red-500 dark:text-red-400 ml-0.5">*</span></label>
+          <textarea name="content" id="content" rows="6" data-test="guidance-procedure-content" class="w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 font-mono text-[12.5px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400 <%= "border-red-500" if @errors&.dig(:content)&.first %>"><%= @procedure.content %></textarea>
+          <% if @errors&.dig(:content)&.first %>
+            <p class="mt-1 text-[11px] text-red-600 dark:text-red-400" data-test="guidance-procedure-content-error"><%= @errors.dig(:content).first %></p>
+          <% end %>
+          <p class="mt-1.5 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.guidance.procedure.content_hint") %></p>
+        </div>
+
+        <%= render Ui::SelectComponent.new(name: "application_mode", label: t("member.guidance.procedure.application_mode"),
+              options: Guidance::Procedure.application_modes.keys.map { |m| [ t("member.guidance.procedure.modes.#{m}"), m ] },
+              selected: @procedure.application_mode, hint: t("member.guidance.procedure.application_mode_hint"),
+              test_id: "guidance-procedure-application-mode") %>
+        <%= render Ui::SelectComponent.new(name: "merge_strategy", label: t("member.guidance.procedure.merge_strategy"),
+              options: Guidance::Procedure.merge_strategies.keys.map { |s| [ t("member.guidance.procedure.strategies.#{s}"), s ] },
+              selected: @procedure.merge_strategy, hint: t("member.guidance.procedure.merge_strategy_hint"),
+              test_id: "guidance-procedure-merge-strategy") %>
+
+        <label class="inline-flex items-center gap-2 h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[12.5px] text-zinc-900 dark:text-zinc-100 cursor-pointer has-[:checked]:border-indigo-600 dark:has-[:checked]:border-indigo-400 has-[:checked]:bg-indigo-50 dark:has-[:checked]:bg-indigo-500/15" data-test="guidance-procedure-enabled">
+          <%= hidden_field_tag "enabled", "0" %>
+          <%= check_box_tag "enabled", "1", @procedure.enabled?, class: "accent-indigo-600" %>
+          <%= t("member.guidance.procedure.enabled") %>
+        </label>
+      </div>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,80 @@
+<% content_for :title, t("valhalla.settings.title") %>
+
+<div class="p-7">
+  <%= form_with url: valhalla_settings_path, method: :patch, class: "space-y-6", data: { test: "valhalla-settings-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(
+          title: t("valhalla.settings.title"),
+          breadcrumb: [ { label: t("valhalla.settings.title") } ],
+          root_href: valhalla_root_path) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("valhalla.save"), type: "submit", size: :sm, test_id: "valhalla-settings-submit") %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <%= render Ui::InputComponent.new(
+                name: "logs_retention_days", type: "number", min: 1, max: 365,
+                label: t("valhalla.settings.logs_retention_label"), required: true,
+                test_id: "logs-retention-days", value: @settings.logs_retention_days,
+                hint: t("valhalla.settings.logs_retention_hint"),
+                error: @errors&.dig(:logs_retention_days)&.first) %>
+          <%= render Ui::InputComponent.new(
+                name: "analytics_retention_days", type: "number", min: 1, max: 730,
+                label: t("valhalla.settings.analytics_retention_label"), required: true,
+                test_id: "analytics-retention-days", value: @settings.analytics_retention_days,
+                hint: t("valhalla.settings.analytics_retention_hint"),
+                error: @errors&.dig(:analytics_retention_days)&.first) %>
+          <%= render Ui::InputComponent.new(
+                name: "errors_retention_days", type: "number", min: 1, max: 365,
+                label: t("valhalla.settings.errors_retention_label"), required: true,
+                test_id: "errors-retention-days", value: @settings.errors_retention_days,
+                hint: t("valhalla.settings.errors_retention_hint"),
+                error: @errors&.dig(:errors_retention_days)&.first) %>
+          <%= render Ui::InputComponent.new(
+                name: "performance_retention_days", type: "number", min: 1, max: 365,
+                label: t("valhalla.settings.performance_retention_label"), required: true,
+                test_id: "performance-retention-days", value: @settings.performance_retention_days,
+                hint: t("valhalla.settings.performance_retention_hint"),
+                error: @errors&.dig(:performance_retention_days)&.first) %>
+          <%= render Ui::InputComponent.new(
+                name: "servers_retention_days", type: "number", min: 1, max: 365,
+                label: t("valhalla.settings.servers_retention_label"), required: true,
+                test_id: "servers-retention-days", value: @settings.servers_retention_days,
+                hint: t("valhalla.settings.servers_retention_hint"),
+                error: @errors&.dig(:servers_retention_days)&.first) %>
+          <%= render Ui::InputComponent.new(
+                name: "uptime_retention_days", type: "number", min: 1, max: 730,
+                label: t("valhalla.settings.uptime_retention_label"), required: true,
+                test_id: "uptime-retention-days", value: @settings.uptime_retention_days,
+                hint: t("valhalla.settings.uptime_retention_hint"),
+                error: @errors&.dig(:uptime_retention_days)&.first) %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Interruttori AI: FUORI dal form della retention perché sono auto-save (Ui::SwitchComponent →
+      PATCH JSON allo stesso update). Sono un freno d'emergenza: devono valere al clic, senza che
+      qualcuno debba ricordarsi di premere Salva mentre un provider sta bruciando quota. %>
+  <div class="mt-6 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="valhalla-ai-switches">
+    <div class="border-b border-stone-200 dark:border-zinc-800 px-6 py-4">
+      <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("valhalla.settings.ai.title") %></h2>
+      <p class="mt-1 text-[13px] text-stone-500 dark:text-zinc-400"><%= t("valhalla.settings.ai.hint") %></p>
+    </div>
+    <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% Ai::Feature::KEYS.each do |key| %>
+        <div class="px-6 py-4">
+          <%= render Ui::SwitchComponent.new(
+                name: "ai_#{key}_enabled",
+                url: valhalla_settings_path,
+                label: t("valhalla.settings.ai.services.#{key}.label"),
+                hint: t("valhalla.settings.ai.services.#{key}.hint"),
+                checked: @settings.public_send(:"ai_#{key}_enabled"),
+                test_id: "ai-switch-#{key}") %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

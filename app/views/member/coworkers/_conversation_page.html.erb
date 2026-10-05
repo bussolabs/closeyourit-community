@@ -1,0 +1,27 @@
+<%# locals: chats:, older:, puck: — one page of the conversation, oldest first (CYRA-992). Each page opens
+    with its own day line; the conversation controller drops the repeated one when an older page lands. %>
+<% if older %>
+  <%# target _top: the buttons of the older messages (retry, stop, start) must reload the page, not the frame. %>
+  <% frame = "coworkers-older-#{chats.first.id}" %>
+  <%= turbo_frame_tag frame, target: "_top", class: "group flex flex-col gap-5", data: { test: "coworkers-older" } do %>
+    <div class="flex justify-center">
+      <%= render Ui::ButtonComponent.new(label: t("member.coworkers.load_older"), href: member_coworker_path(puck, before: chats.first.id), variant: :secondary, size: :sm,
+            class: "group-aria-busy:hidden", test_id: "coworkers-load-older", data: { turbo_frame: frame }) %>
+      <span class="hidden items-center gap-2 text-[12px] text-gray-500 group-aria-busy:inline-flex dark:text-zinc-400" role="status">
+        <%= render Ui::IconComponent.new(name: "loader-circle", class: "motion-safe:animate-spin") %><%= t("member.coworkers.loading") %>
+      </span>
+    </div>
+  <% end %>
+<% end %>
+<% previous_day = nil %>
+<% chats.each do |run| %>
+  <% day = run.created_at.to_date %>
+  <% if day != previous_day %>
+    <div class="flex items-center gap-3 font-mono text-[11px] text-gray-500 before:h-px before:flex-1 before:bg-stone-200 after:h-px after:flex-1 after:bg-stone-200 dark:text-zinc-400 dark:before:bg-zinc-800 dark:after:bg-zinc-800"
+         data-test="coworkers-day" data-coworker-conversation-target="day">
+      <%= day == Date.current ? t("member.coworkers.today") : (day == Date.yesterday ? t("member.coworkers.yesterday") : l(day, format: "%-d %B")) %>
+    </div>
+  <% end %>
+  <% previous_day = day %>
+  <%= render "member/coworkers/run", run: run, puck: puck %>
+<% end %>

@@ -1,0 +1,71 @@
+it:
+  valhalla:
+    nav:
+      ai_settings: Impostazioni AI
+      # Menu label of a hosted-only page: kept here because the public copy drops ai_gateway_keys.*.yml.
+      ai_gateway_keys: Chiavi CloseYourIt AI
+    ai_settings:
+      title: Impostazioni AI
+      updated: Impostazioni AI salvate.
+      save: Salva
+      test: Prova collegamento
+      provider:
+        title: Servizio AI
+        hint: Da dove arrivano assistente, analisi, dettatura e ricerca intelligente.
+        label: Servizio
+        options:
+          environment: Variabili d'ambiente
+          closeyourit: CloseYourIt AI
+          custom: Il mio provider
+        descriptions:
+          environment: Usa le variabili del server, come prima. Nessuna funzione AI se mancano.
+          closeyourit: Incolli solo la chiave CloseYourIt AI. Indirizzi e modelli sono già pronti.
+          custom: Qualsiasi servizio compatibile OpenAI, anche un modello in casa.
+      fields:
+        api_key: Chiave
+        api_key_hint: Resta nascosta. Lascia vuoto per tenere quella salvata.
+        base_url: Indirizzo
+        base_url_hint: Solo per «Il mio provider». Di solito finisce con /v1.
+        chat_model: Modello per testi e risposte
+        chat_model_hint: Solo per «Il mio provider». Esempio gpt-4o-mini.
+        embedding_model: Modello per la ricerca intelligente
+        embedding_model_hint: Solo per «Il mio provider». Vuoto = ricerca intelligente spenta.
+        embedding_dimensions: Misura dei vettori
+        embedding_dimensions_hint: Quanti numeri restituisce il modello per ogni testo, al massimo 2000. «Prova collegamento» te la dice.
+        transcription_model: Modello per la dettatura
+        transcription_model_hint: Solo per «Il mio provider». Vuoto = dettatura spenta.
+      cap:
+        title: Tetto per organizzazione
+        hint: Quanti token di chat può usare ogni organizzazione in un mese con l'AI della piattaforma. Un'organizzazione può solo abbassarlo; con un provider suo non vale.
+        label: Tetto mensile di token
+        field_hint: Vuoto = nessun tetto.
+      rerank:
+        title: Servizio di riordino
+        hint: Facoltativo. Dopo una ricerca, rimette i risultati in ordine dal più utile al meno utile. Senza, la ricerca funziona lo stesso ma i primi risultati sono meno precisi. Compatibile con Cohere, Jina, Voyage e LiteLLM. Con la chiave CloseYourIt è già incluso.
+        base_url: Indirizzo del riordino
+        api_key: Chiave del riordino
+        model: Modello del riordino
+      reindex:
+        title: La ricerca intelligente verrà ricalcolata
+        body: Hai scelto un modello di ricerca diverso. I risultati salvati finora non valgono con il nuovo modello, quindi vengono cancellati e ricalcolati per ticket, errori, idee e pagine. Mentre il ricalcolo è in corso, la ricerca intelligente trova meno risultati.
+        confirm: Conferma e ricalcola
+      environment:
+        title: "Già impostato sul server"
+        hint: "Cosa accendono oggi le variabili del server. Le impostazioni salvate qui sotto prendono il loro posto."
+        key: "Chiave"
+        key_present: "Presente"
+        key_missing: "Mancante"
+        on: "Accesa"
+        off: "Spenta"
+      checks:
+        title: Esito della prova
+        hint: Valori del modulo, non ancora salvati.
+        chat: Assistente, analisi e bozze
+        embeddings: Ricerca intelligente
+        transcription: Dettatura
+        rerank: Riordino dei risultati
+        review: Revisione delle pagine di conoscenza
+        status:
+          ok: Funziona
+          failed: Non funziona
+          "off": Spento

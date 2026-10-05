@@ -1,0 +1,55 @@
+<% content_for :title, @group.label %>
+<% items = group_leaf_items(@group) %>
+<% item_card = lambda do |item|
+     render "member/overviews/card", href: item.path, icon: item.icon, label: item.label,
+            description: nav_item_description(item), description_test: "#{@group.id}-overview-description",
+            test: "#{@group.id}-overview-#{item.test}"
+   end %>
+<%# T1 — a titled group of cards is a panel: the title heads it, nothing sits outside a panel. %>
+<% section_title = ->(text) { tag.p(text, class: "px-4 py-2.5 border-b border-stone-200 dark:border-zinc-800 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400") } %>
+
+<div class="p-7 space-y-6" data-test="member-<%= @group.id %>-overview">
+  <%# CYRA-334: l'area apre coi suoi numeri vivi. Prima c'erano titolo e gli stessi link del menu. %>
+  <%= render Ui::PageHeaderComponent.new(
+        title: @group.label,
+        subtitle: t("member.overviews.subtitles.#{@group.id}"),
+        breadcrumb: [ { label: @group.label } ],
+        counts_test_id: "#{@group.id}-counts",
+        test_id: "#{@group.id}-header") do |h| %>
+    <% if @counts.present? %>
+      <% visible_paths = Navigation::Group.all.flat_map { |group| group_leaf_items(group).map(&:path) } %>
+      <% h.with_counts do %>
+        <% @counts.each do |count| %>
+          <%= render Ui::StatLabelComponent.new(label: t("member.overviews.counts.#{count.key}"), value: count.value,
+                value_color: (count.value.to_i.positive? ? count.tone : :neutral),
+                href: overview_count_href(count.key, visible_paths),
+                test_id: "#{@group.id}-count-#{count.key}") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-927/930 — an area opens on one table: a row per project, a column per signal. %>
+  <% if @matrix %>
+    <%= render "member/overviews/project_matrix", matrix: @matrix, pagination: @matrix_pagination, prefix: @group.id,
+          toolbar_url: public_send("member_#{@group.id}_path") %>
+  <% elsif @group.id == "settings" && items.any? %>
+    <%# Nine pages in one flat grid did not say where to go: people, projects and organization. %>
+    <% settings_sections(items).each do |key, section_items| %>
+      <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="settings-overview-section-<%= key %>">
+        <%= section_title.call(t("member.overviews.settings_sections.#{key}")) %>
+        <div class="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <% section_items.each do |item| %><%= item_card.call(item) %><% end %>
+        </div>
+      </section>
+    <% end %>
+  <% elsif items.any? %>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-test="<%= @group.id %>-overview-group">
+      <% items.each do |item| %><%= item_card.call(item) %><% end %>
+    </div>
+  <% else %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.overviews.overview_empty"),
+          body: t("member.overviews.overview_empty_body"), icon: "lock",
+          framed: true, test_id: "#{@group.id}-overview-empty") %>
+  <% end %>
+</div>

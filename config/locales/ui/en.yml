@@ -1,0 +1,42 @@
+---
+en:
+  ui:
+    card_grid:
+      to_set_up: To set up
+      show_more: Show more
+      show_more_count:
+        one: "Show %{count} more"
+        other: "Show %{count} more"
+    kanban:
+      collapse: "Collapse the %{column} column"
+      expand: "Expand the %{column} column"
+      cards: "%{column} column"
+    confirm_dialog:
+      cancel: Cancel
+    table:
+      open_column: Open
+    select:
+      selected_count: "%{count} selected"
+      search: "Search…"
+    switch:
+      immediate: applies instantly
+      saved: saved
+      failed: not saved
+    github_status:
+      connected: GitHub connected
+      not_connected: GitHub not connected
+    no_results:
+      title_query: "No results for “%{query}”"
+      title_filtered: No results with these filters
+      reset_search: Clear the search
+      reset_filters: Clear the filters
+    audit:
+      title: Audit
+      created: Created
+      updated: Updated
+      view_history: View activity history
+      empty: No activity yet.
+      close: Close
+      events_count:
+        one: 1 event
+        other: "%{count} events"

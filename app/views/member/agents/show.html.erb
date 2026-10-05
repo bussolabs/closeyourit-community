@@ -1,0 +1,109 @@
+<% content_for :title, @host.hostname %>
+
+<%# CYRA-823 — la scheda si aggiorna a pezzi. `turbo_stream_from` porta il SEGNALE (nessun
+    contenuto: il nome-stream è dell'host, ma chi legge ha visibilità diverse sui ticket, quindi
+    l'HTML non può viaggiare qui) e il controller `agent-activity` decide quando ricaricare il frame
+    dell'attività con la sessione di chi guarda: mai a scheda nascosta, e una riconciliazione quando
+    la scheda torna davanti o la rete ritorna. Il resto della pagina — rendimento, storico, scheda
+    macchina — non si muove finché non lo si chiede.
+    Il giro al minuto non è un doppione del segnale: «online», «fermo» e «da quanto non si fa
+    sentire» scadono col TEMPO, e una macchina che muore smette di battere — quindi smette anche di
+    far partire segnali, e senza il giro la scheda la direbbe al lavoro per sempre. %>
+<div class="p-7 space-y-6" data-test="member-agent"
+     data-controller="agent-activity"
+     data-agent-activity-frame-value="host-activity"
+     data-agent-activity-url-value="<%= member_agent_path(@host) %>"
+     data-agent-activity-interval-value="60000">
+  <%= turbo_stream_from Realtime::Streams.agent_host(@host) %>
+
+  <%= render "member/agents/header", host: @host, active_runs: @active_runs,
+        waiting_decisions: @waiting_decisions, can_manage: @can_manage, history_size: @history_size,
+        unreported_attempts: @unreported_attempts, visible_ticket_ids: @visible_ticket_ids,
+        tickets_by_code: @tickets_by_code, leases_by_ticket_code: @leases_by_ticket_code %>
+
+  <%= render "member/agents/performance", host: @host, performance: @performance, previous: @previous, range: @range %>
+
+  <%= render "member/agents/worked_tickets", worked: @worked, visible_ticket_ids: @visible_ticket_ids,
+        host: @host, range: @range, filters: @work_filters %>
+
+  <%= render "member/agents/work_engine", host: @host, can_manage: @can_manage %>
+
+  <%= render "member/agents/review_mode", host: @host, can_manage: @can_manage %>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3">
+      <h2 class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.show.host") %></h2>
+      <dl class="grid grid-cols-2 gap-3 text-[12px]">
+        <div><dt class="text-gray-500 dark:text-zinc-400"><%= t("member.agents.show.fingerprint") %></dt><dd class="font-mono break-all"><%= @host.fingerprint %></dd></div>
+        <div><dt class="text-gray-500 dark:text-zinc-400"><%= t("member.agents.show.version") %></dt><dd><%= @host.automator_version.presence || "—" %></dd></div>
+        <div><dt class="text-gray-500 dark:text-zinc-400"><%= t("member.agents.show.platform") %></dt><dd class="font-mono"><%= @host.platform %>/<%= @host.arch %></dd></div>
+        <div><dt class="text-gray-500 dark:text-zinc-400"><%= t("member.agents.show.heartbeat") %></dt><dd><%= @host.last_heartbeat_at ? l(@host.last_heartbeat_at, format: :short) : t("member.agents.show.never") %></dd></div>
+        <% if @host.service_account %>
+          <div class="col-span-2"><dt class="text-gray-500 dark:text-zinc-400"><%= t("member.agents.show.service_account") %></dt><dd class="font-mono break-all"><%= @host.service_account.name %></dd></div>
+        <% end %>
+      </dl>
+    </section>
+    <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3">
+      <h2 class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.show.capabilities") %></h2>
+      <%# CYRA-498 — l'elenco dei programmi era una riga sola incollata dal terminale
+          («node 22.1.0, ruby 3.4.1, …»): dettaglio tecnico, che sta dietro un'apertura esplicita e in
+          tabella, non davanti a chi apre la pagina per sapere se la macchina lavora. %>
+      <div>
+        <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.agents.show.runtime") %></p>
+        <% if @host.runtimes.any? %>
+          <details class="mt-1" data-test="host-runtimes" <%= "open" if params[:runtimes_sort].present? %>>
+            <summary class="cursor-pointer text-[12px] text-indigo-700 dark:text-indigo-300 hover:underline"><%= t("member.agents.show.runtime_toggle", count: @host.runtimes.size) %></summary>
+            <div class="mt-2">
+              <%= render(Ui::TableComponent.new(compact: true, stacked: true, label: t("member.agents.show.runtime"))) do |t| %>
+                <% t.with_head do %>
+                  <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.show.runtime_col_name"), sort: "name", param: :runtimes_sort) %>
+                  <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.show.runtime_col_version"), sort: "version", initial: :desc, param: :runtimes_sort) %>
+                <% end %>
+                <% @runtimes.each do |runtime| %>
+                  <%= render Ui::TableComponent::RowComponent.new(test_id: "host-runtime-row") do %>
+                    <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-zinc-900 dark:text-zinc-100")) { runtime["name"].presence || "—" } %>
+                    <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.show.runtime_col_version"), mono: true, class: "text-gray-600 dark:text-zinc-400")) { runtime["version"].presence || "—" } %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            </div>
+          </details>
+        <% else %>
+          <p class="text-[12px] text-gray-500 dark:text-zinc-400">—</p>
+        <% end %>
+      </div>
+      <%# Le sigle dei progetti (CYRA, CLFL…) da sole non dicono niente: diventano il nome per esteso,
+          con il link, per i progetti che chi legge può aprire. Le altre restano sigle. %>
+      <div>
+        <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.agents.show.repository") %></p>
+        <% if @host.repositories.any? %>
+          <ul class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[12px]" data-test="host-repositories">
+            <% @host.repositories.each do |key| %>
+              <% project = @repository_projects[key] %>
+              <li>
+                <% if project %>
+                  <%= link_to project.name, member_project_path(project), class: "text-indigo-700 dark:text-indigo-300 hover:underline", data: { test: "host-repository-link" } %>
+                  <span class="font-mono text-[11px] text-gray-400 dark:text-zinc-500"><%= key %></span>
+                <% else %>
+                  <span class="font-mono text-gray-600 dark:text-zinc-400"><%= key %></span>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="text-[12px] text-gray-500 dark:text-zinc-400">—</p>
+        <% end %>
+      </div>
+      <%# T1 — the certification note closes this panel instead of sitting on the page ground. %>
+      <% if @host.certified? %>
+        <p class="pt-3 border-t border-stone-100 dark:border-zinc-800 text-[12px] text-gray-500 dark:text-zinc-400" data-test="host-certified-note">
+          <% if @host.certified_by %>
+            <%= t("member.agents.show.certified_on_by", date: l(@host.certified_at, format: :short), name: @host.certified_by.name) %>
+          <% else %>
+            <%= t("member.agents.show.certified_on", date: l(@host.certified_at, format: :short)) %>
+          <% end %>
+        </p>
+      <% end %>
+    </section>
+  </div>
+</div>

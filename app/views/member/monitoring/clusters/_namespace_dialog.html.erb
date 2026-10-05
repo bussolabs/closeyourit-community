@@ -1,0 +1,22 @@
+<%# locals: cluster:, namespace: — one choice "project · environment": no dependent selects (F6, N7, H1). %>
+<div data-controller="ui--dialog">
+  <%= render Ui::ButtonComponent.new(label: t(namespace.linked? ? "member.clusters.namespaces.change" : "member.clusters.namespaces.link"),
+        icon: "link", variant: :secondary_muted, size: :sm, data: { action: "ui--dialog#open" },
+        test_id: "cluster-namespace-open-#{namespace.id}") %>
+  <%= render Ui::ModalComponent.new(title: t("member.clusters.namespaces.dialog_title", name: namespace.name),
+        form: { url: member_monitoring_cluster_namespace_path(cluster, namespace), method: :patch,
+                data: { test: "cluster-namespace-form-#{namespace.id}" } },
+        test_id: "cluster-namespace-dialog-#{namespace.id}",
+        data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+    <% modal.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.clusters.namespaces.cancel"), variant: :secondary_muted, size: :sm,
+            data: { action: "ui--dialog#close" }) %>
+      <%= render Ui::ButtonComponent.new(label: t("member.clusters.namespaces.save"), type: "submit", variant: :primary, size: :sm,
+            icon: "check", test_id: "cluster-namespace-submit-#{namespace.id}") %>
+    <% end %>
+    <%= hidden_field_tag :confirm, 1, id: nil %>
+    <%= render Ui::SelectComponent.new(name: "link", size: :sm, options: @link_options,
+          selected: (namespace.linked? ? "#{namespace.project_id}:#{namespace.environment_id}" : ""),
+          aria_label: t("member.clusters.namespaces.project"), test_id: "cluster-namespace-select-#{namespace.id}") %>
+  <% end %>
+</div>

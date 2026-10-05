@@ -1,0 +1,5 @@
+<%# locals: (anchor:) %>
+<%# The panel's own Save: only this panel is on screen, so it saves only this panel's fields. %>
+<%= hidden_field_tag :section, anchor, id: nil %>
+<%= render Ui::ButtonComponent.new(label: t("member.project_settings.save"), type: "submit",
+      variant: :primary, size: :sm, icon: "check", test_id: "project-settings-submit-#{anchor}") %>

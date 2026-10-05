@@ -1,0 +1,30 @@
+---
+en:
+  member:
+    guides:
+      index:
+        feature_matrix:
+          title: Feature matrix
+      feature_matrix:
+        title: Feature matrix
+        subtitle: The map of what exists, where, and from which version.
+        what_title: What it is for
+        what_intro: When a product is made of several applications — the website, the iPhone app, the Android app — it is easy to lose track of what is already done and where. The matrix puts everything in a single table.
+        what_b1: Features in rows, grouped by category (for example everything about signing in).
+        what_b2: The platforms of the product in columns.
+        what_b3: In every cell, how far along you are and, if it is already available, from which version.
+        setup_title: How to fill it in
+        setup_step1: Open the product from the matrix and create a category, for example "Sign in".
+        setup_step2: "Add the features of that category, for example 'Two-factor code'. If a page explains it, link it: from the table you reach it in one click."
+        setup_step3: Click the cell at the crossing with a platform and choose how far along you are. If it is available, indicate the version too.
+        columns_title: How columns appear
+        columns_intro: Columns are the platforms of the product. They appear on their own, in two ways.
+        columns_b1: The platforms declared by the projects of the product.
+        columns_b2: The platforms where you marked at least one feature — even if the project that builds them does not exist yet.
+        columns_b3: From a feature menu you can mark it on a new platform, and the column appears.
+        versions_title: Versions
+        versions_intro: "The version is not typed by hand: you pick it among those already released, so it is always a real version and carries its date and the link to the release."
+        versions_b1: You are offered the versions of the product projects that run on that platform.
+        versions_b2: Versions that reached production come first; the one running now is marked.
+        versions_b3: If a feature is marked as available but no version is indicated, the table flags it — and at the top you see how many cells are in that state.
+        cta: Open the matrix

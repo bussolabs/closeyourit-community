@@ -1,0 +1,51 @@
+<%# locals: list, item, can_edit %>
+<div id="<%= dom_id(item) %>" class="flex items-center gap-3 px-4 py-2.5 border-b border-stone-100 dark:border-zinc-800 last:border-0"
+     data-test="todo-item" data-todo-reorder-target="item" data-id="<%= item.id %>">
+  <% if can_edit %>
+    <%= button_to toggle_member_todo_list_item_path(list, item), method: :patch,
+          class: "shrink-0", data: { test: "todo-item-toggle-#{item.id}" } do %>
+      <span class="inline-flex items-center justify-center w-4 h-4 rounded border <%= item.done? ? 'bg-indigo-600 border-indigo-600 dark:border-indigo-400 text-white' : 'border-stone-300 dark:border-zinc-700 text-transparent hover:border-indigo-400' %>">
+        <%= render Ui::IconComponent.new(name: "check", class: "text-[9px]") %>
+      </span>
+    <% end %>
+  <% else %>
+    <span class="inline-flex items-center justify-center w-4 h-4 rounded border <%= item.done? ? 'bg-indigo-600 border-indigo-600 dark:border-indigo-400 text-white' : 'border-stone-300 dark:border-zinc-700 text-transparent' %>">
+      <%= render Ui::IconComponent.new(name: "check", class: "text-[9px]") %>
+    </span>
+  <% end %>
+
+  <% title_class = item.done? ? "text-gray-500 dark:text-zinc-400 line-through" : "text-zinc-900 dark:text-zinc-100" %>
+  <% if can_edit %>
+    <%# A click on the text opens the rename field in place. %>
+    <details class="group/rename min-w-0" data-test="todo-item-rename">
+      <summary class="list-none cursor-text truncate text-[13px] <%= title_class %> group-open/rename:hidden" title="<%= t("member.todo_lists.item.rename") %>"
+               data-test="todo-item-title"><%= item.title %></summary>
+      <%= form_with url: member_todo_list_item_path(list, item), method: :patch, class: "flex items-center gap-2" do %>
+        <input type="text" name="title" value="<%= item.title %>" required aria-label="<%= t("member.todo_lists.item.rename") %>"
+               class="h-7 min-w-0 w-64 max-w-full rounded-md border border-stone-200 dark:border-zinc-800 px-2 text-[13px] focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400">
+        <%= render Ui::ButtonComponent.new(label: t("member.todo_lists.item.save"), type: "submit", size: :sm, test_id: "todo-item-rename-#{item.id}") %>
+      <% end %>
+    </details>
+  <% else %>
+    <span class="text-[13px] <%= title_class %> truncate" data-test="todo-item-title"><%= item.title %></span>
+  <% end %>
+
+  <% if item.ticket %>
+    <% if can_edit %>
+      <%= link_to member_ticket_path(item.ticket), class: "shrink-0", data: { test: "todo-item-ticket" } do %>
+        <%= render Ui::BadgeComponent.new(label: item.ticket.code, color: :sky, icon: "ticket", size: :sm) %>
+      <% end %>
+    <% else %>
+      <span class="shrink-0" data-test="todo-item-ticket"><%= render Ui::BadgeComponent.new(label: item.ticket.code, color: :sky, icon: "ticket", size: :sm) %></span>
+    <% end %>
+  <% end %>
+
+  <% if can_edit %>
+    <%= button_to member_todo_list_item_path(list, item), method: :delete,
+          class: "ml-auto shrink-0 text-gray-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400",
+          form: { data: { turbo_confirm: t("member.todo_lists.item.delete_confirm") } },
+          data: { test: "todo-item-delete-#{item.id}" } do %>
+      <%= render Ui::IconComponent.new(name: "x", class: "text-[12px]") %>
+    <% end %>
+  <% end %>
+</div>

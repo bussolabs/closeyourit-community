@@ -1,0 +1,495 @@
+{
+  "dump_sha256": "f0c9d9f0ebff5094f1408b88a463f5f70e6b0b05d1f8483de6b5f6fc99830d0b",
+  "manifest": {
+    "schema_version": 1,
+    "system_info": {
+      "os": "Linux",
+      "cpu_arch": "arm64",
+      "os_version": "7.0.12-linuxkit #1 SMP PREEMPT Thu Aug 27 14:02:21 UTC 2026"
+    },
+    "crash_info": {
+      "type": "SIGSEGV / SEGV_MAPERR",
+      "address": "0x0000000000000000",
+      "crashing_thread": 0
+    },
+    "threads": [
+      {
+        "thread_id": 7,
+        "frames": [
+          {
+            "module": "cyi-native-symbols",
+            "trust": "context",
+            "module_offset": "0x00000000000041e8",
+            "instruction": "0x0000aaaae71641e8"
+          },
+          {
+            "module": "cyi-native-symbols",
+            "trust": "frame_pointer",
+            "module_offset": "0x0000000000004218",
+            "instruction": "0x0000aaaae7164218"
+          },
+          {
+            "module": "cyi-native-symbols",
+            "trust": "frame_pointer",
+            "module_offset": "0x0000000000004354",
+            "instruction": "0x0000aaaae7164354"
+          },
+          {
+            "module": "libc.so.6",
+            "trust": "frame_pointer",
+            "module_offset": "0x0000000000027740",
+            "instruction": "0x0000ffff7f657740"
+          },
+          {
+            "module": "libc.so.6",
+            "trust": "frame_pointer",
+            "module_offset": "0x0000000000027814",
+            "instruction": "0x0000ffff7f657814"
+          },
+          {
+            "module": "cyi-native-symbols",
+            "trust": "frame_pointer",
+            "module_offset": "0x00000000000040ec",
+            "instruction": "0x0000aaaae71640ec"
+          },
+          {
+            "module": "cyi-native-symbols",
+            "trust": "scan",
+            "module_offset": "0x00000000000040bc",
+            "instruction": "0x0000aaaae71640bc"
+          },
+          {
+            "module": "cyi-native-symbols",
+            "trust": "scan",
+            "module_offset": "0x00000000000040ec",
+            "instruction": "0x0000aaaae71640ec"
+          },
+          {
+            "module": "cyi-native-symbols",
+            "trust": "scan",
+            "module_offset": "0x000000000000003c",
+            "instruction": "0x0000aaaae716003c"
+          },
+          {
+            "module": "cyi-native-symbols",
+            "trust": "scan",
+            "module_offset": "0x00000000000040bc",
+            "instruction": "0x0000aaaae71640bc"
+          }
+        ]
+      },
+      {
+        "thread_id": 8,
+        "frames": [
+          {
+            "module": "libc.so.6",
+            "trust": "context",
+            "module_offset": "0x000000000007e834",
+            "instruction": "0x0000ffff7f6ae834"
+          },
+          {
+            "module": "libc.so.6",
+            "trust": "frame_pointer",
+            "module_offset": "0x0000000000081684",
+            "instruction": "0x0000ffff7f6b1684"
+          },
+          {
+            "module": "cyi-native-symbols",
+            "trust": "frame_pointer",
+            "module_offset": "0x000000000001d638",
+            "instruction": "0x0000aaaae717d638"
+          },
+          {
+            "module": "libc.so.6",
+            "trust": "frame_pointer",
+            "module_offset": "0x000000000008202c",
+            "instruction": "0x0000ffff7f6b202c"
+          },
+          {
+            "module": "libc.so.6",
+            "trust": "frame_pointer",
+            "module_offset": "0x00000000000ebf58",
+            "instruction": "0x0000ffff7f71bf58"
+          }
+        ]
+      },
+      {
+        "thread_id": 9,
+        "frames": [
+          {
+            "module": "libc.so.6",
+            "trust": "context",
+            "module_offset": "0x000000000007e834",
+            "instruction": "0x0000ffff7f6ae834"
+          },
+          {
+            "module": "libc.so.6",
+            "trust": "frame_pointer",
+            "module_offset": "0x0000000000081384",
+            "instruction": "0x0000ffff7f6b1384"
+          },
+          {
+            "module": "cyi-native-symbols",
+            "trust": "frame_pointer",
+            "module_offset": "0x000000000001c298",
+            "instruction": "0x0000aaaae717c298"
+          },
+          {
+            "module": "libc.so.6",
+            "trust": "frame_pointer",
+            "module_offset": "0x000000000008202c",
+            "instruction": "0x0000ffff7f6b202c"
+          },
+          {
+            "module": "libc.so.6",
+            "trust": "frame_pointer",
+            "module_offset": "0x00000000000ebf58",
+            "instruction": "0x0000ffff7f71bf58"
+          }
+        ]
+      },
+      {
+        "thread_id": 10,
+        "frames": [
+          {
+            "module": "libc.so.6",
+            "trust": "context",
+            "module_offset": "0x000000000007e834",
+            "instruction": "0x0000ffff7f6ae834"
+          },
+          {
+            "module": "libc.so.6",
+            "trust": "frame_pointer",
+            "module_offset": "0x0000000000081384",
+            "instruction": "0x0000ffff7f6b1384"
+          },
+          {
+            "module": "cyi-native-symbols",
+            "trust": "frame_pointer",
+            "module_offset": "0x000000000001c298",
+            "instruction": "0x0000aaaae717c298"
+          },
+          {
+            "module": "libc.so.6",
+            "trust": "frame_pointer",
+            "module_offset": "0x000000000008202c",
+            "instruction": "0x0000ffff7f6b202c"
+          },
+          {
+            "module": "libc.so.6",
+            "trust": "frame_pointer",
+            "module_offset": "0x00000000000ebf58",
+            "instruction": "0x0000ffff7f71bf58"
+          }
+        ]
+      },
+      {
+        "thread_id": 11,
+        "frames": [
+          {
+            "module": "libc.so.6",
+            "trust": "context",
+            "module_offset": "0x00000000000e7c24",
+            "instruction": "0x0000ffff7f717c24"
+          },
+          {
+            "module": "libc.so.6",
+            "trust": "frame_pointer",
+            "module_offset": "0x000000000008202c",
+            "instruction": "0x0000ffff7f6b202c"
+          },
+          {
+            "module": "libc.so.6",
+            "trust": "frame_pointer",
+            "module_offset": "0x00000000000ebf58",
+            "instruction": "0x0000ffff7f71bf58"
+          }
+        ]
+      },
+      {
+        "thread_id": 12,
+        "frames": [
+          {
+            "module": "libc.so.6",
+            "trust": "context",
+            "module_offset": "0x00000000000e7c24",
+            "instruction": "0x0000ffff7f717c24"
+          },
+          {
+            "module": "libc.so.6",
+            "trust": "frame_pointer",
+            "module_offset": "0x000000000008202c",
+            "instruction": "0x0000ffff7f6b202c"
+          },
+          {
+            "module": "libc.so.6",
+            "trust": "frame_pointer",
+            "module_offset": "0x00000000000ebf58",
+            "instruction": "0x0000ffff7f71bf58"
+          }
+        ]
+      }
+    ],
+    "modules": [
+      {
+        "filename": "cyi-native-symbols",
+        "base_addr": "0x0000aaaae7160000",
+        "end_addr": "0x0000aaaae71df000",
+        "code_id": "a60db736fd5a31a114e0d9552ad905f63c095e8e",
+        "debug_id": "36B70DA65AFDA13114E0D9552AD905F60"
+      },
+      {
+        "filename": "libffi.so.8",
+        "base_addr": "0x0000ffff7e2c0000",
+        "end_addr": "0x0000ffff7e2c8000",
+        "code_id": "652d9c9b36fdd2ed382a0547d762723d700c3708",
+        "debug_id": "9B9C2D65FD36EDD2382A0547D762723D0"
+      },
+      {
+        "filename": "libresolv.so.2",
+        "base_addr": "0x0000ffff7e2f0000",
+        "end_addr": "0x0000ffff7e2fd000",
+        "code_id": "e89a36aad5b416eb2f99f76f0cff42a30e85bb31",
+        "debug_id": "AA369AE8B4D5EB162F99F76F0CFF42A30"
+      },
+      {
+        "filename": "libkeyutils.so.1",
+        "base_addr": "0x0000ffff7e320000",
+        "end_addr": "0x0000ffff7e324000",
+        "code_id": "ea1634b13180e0126f37e3289508013a19a613d3",
+        "debug_id": "B13416EA803112E06F37E3289508013A0"
+      },
+      {
+        "filename": "libtasn1.so.6",
+        "base_addr": "0x0000ffff7e350000",
+        "end_addr": "0x0000ffff7e362000",
+        "code_id": "abf58e92e4b1277cdb1a9e95cb722a1a48a3675d",
+        "debug_id": "928EF5ABB1E47C27DB1A9E95CB722A1A0"
+      },
+      {
+        "filename": "libp11-kit.so.0",
+        "base_addr": "0x0000ffff7e390000",
+        "end_addr": "0x0000ffff7e4b7000",
+        "code_id": "8374bde7a348a2c9fff8894517b79e8a8631e809",
+        "debug_id": "E7BD748348A3C9A2FFF8894517B79E8A0"
+      },
+      {
+        "filename": "libbrotlicommon.so.1",
+        "base_addr": "0x0000ffff7e4e0000",
+        "end_addr": "0x0000ffff7e500000",
+        "code_id": "18e3f8653c3e432b95a3f3feae554cbedb0ab8f8",
+        "debug_id": "65F8E3183E3C2B4395A3F3FEAE554CBE0"
+      },
+      {
+        "filename": "libsasl2.so.2",
+        "base_addr": "0x0000ffff7e520000",
+        "end_addr": "0x0000ffff7e53b000",
+        "code_id": "e775e4d1111289ee3545c08f4e3b109938b1b277",
+        "debug_id": "D1E475E71211EE893545C08F4E3B10990"
+      },
+      {
+        "filename": "libkrb5support.so.0",
+        "base_addr": "0x0000ffff7e560000",
+        "end_addr": "0x0000ffff7e56c000",
+        "code_id": "d859271fca910cc4189899fd4708f0872222b7b8",
+        "debug_id": "1F2759D891CAC40C189899FD4708F0870"
+      },
+      {
+        "filename": "libcom_err.so.2",
+        "base_addr": "0x0000ffff7e590000",
+        "end_addr": "0x0000ffff7e593000",
+        "code_id": "cf25c53c8c2e39d744114b911cd65a8af6af3ee3",
+        "debug_id": "3CC525CF2E8CD73944114B911CD65A8A0"
+      },
+      {
+        "filename": "libk5crypto.so.3",
+        "base_addr": "0x0000ffff7e5c0000",
+        "end_addr": "0x0000ffff7e5eb000",
+        "code_id": "89aa396c1c22948b10301c6340508d97b20cd226",
+        "debug_id": "6C39AA89221C8B9410301C6340508D970"
+      },
+      {
+        "filename": "libkrb5.so.3",
+        "base_addr": "0x0000ffff7e610000",
+        "end_addr": "0x0000ffff7e6da000",
+        "code_id": "befdfec38e8886f8f8644720dc1653912e81500b",
+        "debug_id": "C3FEFDBE888EF886F8644720DC1653910"
+      },
+      {
+        "filename": "libgmp.so.10",
+        "base_addr": "0x0000ffff7e700000",
+        "end_addr": "0x0000ffff7e775000",
+        "code_id": "1a2fed02d81513b2187c24e45aed00db5293400c",
+        "debug_id": "02ED2F1A15D8B213187C24E45AED00DB0"
+      },
+      {
+        "filename": "libnettle.so.8",
+        "base_addr": "0x0000ffff7e7a0000",
+        "end_addr": "0x0000ffff7e7e8000",
+        "code_id": "cbeeab1821fec8fdc417aed352f29a212091982e",
+        "debug_id": "18ABEECBFE21FDC8C417AED352F29A210"
+      },
+      {
+        "filename": "libhogweed.so.6",
+        "base_addr": "0x0000ffff7e810000",
+        "end_addr": "0x0000ffff7e857000",
+        "code_id": "d83b2e636f7358e522a10524695e39d969f4a222",
+        "debug_id": "632E3BD8736FE55822A10524695E39D90"
+      },
+      {
+        "filename": "libgnutls.so.30",
+        "base_addr": "0x0000ffff7e880000",
+        "end_addr": "0x0000ffff7ea99000",
+        "code_id": "ee8d40691280754a1acbae0ac3b2bacdc811047b",
+        "debug_id": "69408DEE80124A751ACBAE0AC3B2BACD0"
+      },
+      {
+        "filename": "libunistring.so.2",
+        "base_addr": "0x0000ffff7ead0000",
+        "end_addr": "0x0000ffff7ec79000",
+        "code_id": "763ac3518d026f825aeeb880914e415db21266bb",
+        "debug_id": "51C33A76028D826F5AEEB880914E415D0"
+      },
+      {
+        "filename": "libm.so.6",
+        "base_addr": "0x0000ffff7eca0000",
+        "end_addr": "0x0000ffff7ed22000",
+        "code_id": "f68c2dd13b2e35335f626321ae06e85817657333",
+        "debug_id": "D12D8CF62E3B33355F626321AE06E8580"
+      },
+      {
+        "filename": "libz.so.1",
+        "base_addr": "0x0000ffff7ed50000",
+        "end_addr": "0x0000ffff7ed6a000",
+        "code_id": "567e568e51b0e021ed3b5c1592ef569f4a3ef272",
+        "debug_id": "8E567E56B05121E0ED3B5C1592EF569F0"
+      },
+      {
+        "filename": "libbrotlidec.so.1",
+        "base_addr": "0x0000ffff7ed90000",
+        "end_addr": "0x0000ffff7ed9a000",
+        "code_id": "189cc883d68a93b37d31e3c0597c18685a45ea01",
+        "debug_id": "83C89C188AD6B3937D31E3C0597C18680"
+      },
+      {
+        "filename": "libzstd.so.1",
+        "base_addr": "0x0000ffff7edc0000",
+        "end_addr": "0x0000ffff7ee5d000",
+        "code_id": "8be916d3352b37f4385d60250d41ab89262e328d",
+        "debug_id": "D316E98B2B35F437385D60250D41AB890"
+      },
+      {
+        "filename": "liblber-2.5.so.0",
+        "base_addr": "0x0000ffff7ee80000",
+        "end_addr": "0x0000ffff7ee8f000",
+        "code_id": "ca72d1e76b027cbec2da2172e3062f9d8874da38",
+        "debug_id": "E7D172CA026BBE7CC2DA2172E3062F9D0"
+      },
+      {
+        "filename": "libldap-2.5.so.0",
+        "base_addr": "0x0000ffff7eeb0000",
+        "end_addr": "0x0000ffff7ef0a000",
+        "code_id": "654ddf7cb7db38e5a921e3348a58de422dce5496",
+        "debug_id": "7CDF4D65DBB7E538A921E3348A58DE420"
+      },
+      {
+        "filename": "libgssapi_krb5.so.2",
+        "base_addr": "0x0000ffff7ef30000",
+        "end_addr": "0x0000ffff7ef7c000",
+        "code_id": "6af766cbf0d5398e89c698b38acf401bcac5a6bf",
+        "debug_id": "CB66F76AD5F08E3989C698B38ACF401B0"
+      },
+      {
+        "filename": "libcrypto.so.3",
+        "base_addr": "0x0000ffff7efa0000",
+        "end_addr": "0x0000ffff7f38b000",
+        "code_id": "809a2b22ca6c7092688d79bc033e3cd1e2eafde9",
+        "debug_id": "222B9A806CCA9270688D79BC033E3CD10"
+      },
+      {
+        "filename": "libssl.so.3",
+        "base_addr": "0x0000ffff7f400000",
+        "end_addr": "0x0000ffff7f49c000",
+        "code_id": "d3815ae0b832235f6abeec5dfbeb8d8f8e891050",
+        "debug_id": "E05A81D332B85F236ABEEC5DFBEB8D8F0"
+      },
+      {
+        "filename": "libpsl.so.5",
+        "base_addr": "0x0000ffff7f4c0000",
+        "end_addr": "0x0000ffff7f4d1000",
+        "code_id": "025eaa96ba4dc447423de850f13abcbffbf7f610",
+        "debug_id": "96AA5E024DBA47C4423DE850F13ABCBF0"
+      },
+      {
+        "filename": "libssh2.so.1",
+        "base_addr": "0x0000ffff7f500000",
+        "end_addr": "0x0000ffff7f53b000",
+        "code_id": "6a58617537860cbac344d456110e66c5da7bc600",
+        "debug_id": "7561586A8637BA0CC344D456110E66C50"
+      },
+      {
+        "filename": "librtmp.so.1",
+        "base_addr": "0x0000ffff7f560000",
+        "end_addr": "0x0000ffff7f57b000",
+        "code_id": "04529a1a79f03d72030079cae23512621a480e3c",
+        "debug_id": "1A9A5204F079723D030079CAE23512620"
+      },
+      {
+        "filename": "libidn2.so.0",
+        "base_addr": "0x0000ffff7f590000",
+        "end_addr": "0x0000ffff7f5be000",
+        "code_id": "b85d663fef649424244684692cac28f8b559e3da",
+        "debug_id": "3F665DB864EF2494244684692CAC28F80"
+      },
+      {
+        "filename": "libnghttp2.so.14",
+        "base_addr": "0x0000ffff7f5e0000",
+        "end_addr": "0x0000ffff7f60a000",
+        "code_id": "a7dfadf96722176bb3d1934472c48cc949ebff38",
+        "debug_id": "F9ADDFA722676B17B3D1934472C48CC90"
+      },
+      {
+        "filename": "libc.so.6",
+        "base_addr": "0x0000ffff7f630000",
+        "end_addr": "0x0000ffff7f7bc000",
+        "code_id": "6f268ff546c56d7f14e9501a55698cc2d0ab4732",
+        "debug_id": "F58F266FC5467F6D14E9501A55698CC20"
+      },
+      {
+        "filename": "libgcc_s.so.1",
+        "base_addr": "0x0000ffff7f7e0000",
+        "end_addr": "0x0000ffff7f7f4000",
+        "code_id": "1519dbfec103a5026ac67580b40a2c60168b150c",
+        "debug_id": "FEDB191503C102A56AC67580B40A2C600"
+      },
+      {
+        "filename": "libstdc++.so.6",
+        "base_addr": "0x0000ffff7f820000",
+        "end_addr": "0x0000ffff7fa1b000",
+        "code_id": "82e1681dd0b9091f0abe0f54e61dc58fef262eb1",
+        "debug_id": "1D68E182B9D01F090ABE0F54E61DC58F0"
+      },
+      {
+        "filename": "libcurl.so.4",
+        "base_addr": "0x0000ffff7fa40000",
+        "end_addr": "0x0000ffff7fae3000",
+        "code_id": "05ecfe0d4924f9d905de0d9092b24af0c1aa3f1d",
+        "debug_id": "0DFEEC052449D9F905DE0D9092B24AF00"
+      },
+      {
+        "filename": "ld-linux-aarch64.so.1",
+        "base_addr": "0x0000ffff7fb0d000",
+        "end_addr": "0x0000ffff7fb34000",
+        "code_id": "49057df2bb24947d2dfb9f4e21ff2a2545d30ad8",
+        "debug_id": "F27D054924BB7D942DFB9F4E21FF2A250"
+      },
+      {
+        "filename": "linux-gate.so",
+        "base_addr": "0x0000ffff7fb49000",
+        "end_addr": "0x0000ffff7fb4b000",
+        "code_id": "957a5340985eb133afa6414e516ab6e20b0f7dac",
+        "debug_id": "40537A955E9833B1AFA6414E516AB6E20"
+      }
+    ]
+  }
+}

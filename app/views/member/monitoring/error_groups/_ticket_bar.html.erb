@@ -1,0 +1,15 @@
+<%= link_to member_ticket_path(@group.ticket),
+      class: "flex items-center flex-wrap gap-2.5 rounded-lg border border-indigo-200 dark:border-indigo-500/40 bg-indigo-50/60 dark:bg-indigo-500/15 px-4 py-2.5 hover:border-indigo-300 dark:hover:border-indigo-500/50",
+      data: { test: "error-ticket-bar" } do %>
+  <%= render Ui::IconComponent.new(name: "ticket", class: "text-[12px] text-indigo-600 dark:text-indigo-400") %>
+  <span class="font-mono text-[12px] font-semibold text-indigo-700 dark:text-indigo-300"><%= @group.ticket.code %></span>
+  <span class="min-w-0 truncate text-[12.5px] text-zinc-900 dark:text-zinc-100"><%= @group.ticket.title %></span>
+  <span class="ml-auto flex items-center gap-2">
+    <% if @group.ticket.status %>
+      <%= render Ui::BadgeComponent.new(label: @group.ticket.status.display_label, color: @group.ticket.status.color, size: :sm, test_id: "error-ticket-bar-status") %>
+    <% end %>
+    <span class="font-mono text-[11px] text-gray-600 dark:text-zinc-400" data-test="error-ticket-bar-assignee">
+      <%= @group.ticket.assignee&.name || t("member.monitoring.ticket_bar.unassigned") %>
+    </span>
+  </span>
+<% end %>

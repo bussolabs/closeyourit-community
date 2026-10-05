@@ -1,0 +1,49 @@
+<% content_for :title, t("member.assistant.panel.title") %>
+
+<div class="p-7 space-y-6" data-test="assistant-index">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.assistant.panel.title"),
+        subtitle: t("member.assistant.list.subtitle"),
+        breadcrumb: [ { label: t("member.assistant.panel.title") } ],
+        counts_test_id: "assistant-conversations-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.assistant.panel.history"), value: @pagination.total, test_id: "stat-conversations") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%# turbo: false → redirect html alla nuova conversazione: qui NON c'è il frame del pannello da rimpiazzare. %>
+      <%= render Ui::ButtonComponent.new(label: t("member.assistant.panel.new"), href: member_assistant_conversations_path,
+            method: :post, variant: :primary, size: :sm, icon: "plus", test_id: "assistant-new", data: { turbo: false }) %>
+    <% end %>
+  <% end %>
+
+  <%# T1 — search, list, pagination and the empty answers share one panel. %>
+  <section data-test="assistant-conversations" class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <% if @conversations.any? || @query.present? %>
+      <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+        <%= form_with url: member_assistant_conversations_path, method: :get, class: "relative max-w-md" do %>
+          <%= render Ui::IconComponent.new(name: "search", class: "text-gray-400 dark:text-zinc-500 text-[12px] absolute left-3 top-1/2 -translate-y-1/2") %>
+          <%= search_field_tag :q, @query, placeholder: t("member.assistant.list.search_placeholder"),
+                "aria-label": t("member.assistant.list.search_placeholder"), autocomplete: "off",
+                data: { test: "assistant-search", keyboard_search: "" },
+                class: "w-full h-[34px] pl-9 pr-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if @conversations.any? %>
+      <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+        <%= render partial: "member/assistant_conversations/row", collection: @conversations, as: :conversation %>
+      </ul>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "assistant-conversations-pagination")) %>
+      <p data-test="assistant-retention" class="px-4 py-2.5 border-t border-stone-200 dark:border-zinc-800 text-[12px] text-gray-500 dark:text-zinc-400">
+        <%= t("member.assistant.list.retention", days: Assistant::Constants::RETENTION_DAYS) %>
+      </p>
+    <% elsif @query.present? %>
+      <p data-test="assistant-search-empty" class="px-4 py-8 text-center text-[13px] text-gray-500 dark:text-zinc-400"><%= t("member.assistant.list.search_empty") %></p>
+    <% else %>
+      <%= render Ui::EmptyStateComponent.new(title: t("member.assistant.panel.empty_history"),
+            body: t("member.assistant.panel.empty_body"), example: t("member.assistant.panel.empty_example"),
+            icon: "messages-square", test_id: "assistant-conversations-empty") %>
+    <% end %>
+  </section>
+</div>

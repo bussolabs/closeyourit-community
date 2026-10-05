@@ -1,0 +1,7 @@
+<%# locals: cell — lo stato della cella; il trattino quando l'incrocio non è stato impostato. %>
+<% if cell.nil? %>
+  <span class="text-gray-300 dark:text-zinc-600">—</span>
+<% else %>
+  <%= render Ui::BadgeComponent.new(label: cell.status.label, color: cell.status.color,
+        icon: feature_status_icon(cell.status).delete_prefix("fa-"), size: :sm) %>
+<% end %>

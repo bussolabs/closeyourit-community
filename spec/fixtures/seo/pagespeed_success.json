@@ -1,0 +1,73 @@
+{
+  "id": "https://acme.example/",
+  "analysisUTCTimestamp": "2026-08-15T13:02:11.123Z",
+  "loadingExperience": {
+    "id": "https://acme.example/",
+    "origin_fallback": false,
+    "overall_category": "AVERAGE",
+    "metrics": {
+      "LARGEST_CONTENTFUL_PAINT_MS": {
+        "percentile": 3120,
+        "category": "AVERAGE",
+        "distributions": [
+          { "min": 0, "max": 2500, "proportion": 0.61 },
+          { "min": 2500, "max": 4000, "proportion": 0.27 },
+          { "min": 4000, "proportion": 0.12 }
+        ]
+      },
+      "INTERACTION_TO_NEXT_PAINT": {
+        "percentile": 184,
+        "category": "FAST",
+        "distributions": [
+          { "min": 0, "max": 200, "proportion": 0.82 },
+          { "min": 200, "max": 500, "proportion": 0.14 },
+          { "min": 500, "proportion": 0.04 }
+        ]
+      },
+      "CUMULATIVE_LAYOUT_SHIFT_SCORE": {
+        "percentile": 8,
+        "category": "FAST",
+        "distributions": [
+          { "min": 0, "max": 10, "proportion": 0.79 },
+          { "min": 10, "max": 25, "proportion": 0.16 },
+          { "min": 25, "proportion": 0.05 }
+        ]
+      },
+      "FIRST_CONTENTFUL_PAINT_MS": {
+        "percentile": 1640,
+        "category": "FAST",
+        "distributions": [
+          { "min": 0, "max": 1800, "proportion": 0.74 },
+          { "min": 1800, "max": 3000, "proportion": 0.2 },
+          { "min": 3000, "proportion": 0.06 }
+        ]
+      },
+      "EXPERIMENTAL_TIME_TO_FIRST_BYTE": {
+        "percentile": 910,
+        "category": "AVERAGE",
+        "distributions": [
+          { "min": 0, "max": 800, "proportion": 0.48 },
+          { "min": 800, "max": 1800, "proportion": 0.41 },
+          { "min": 1800, "proportion": 0.11 }
+        ]
+      }
+    }
+  },
+  "lighthouseResult": {
+    "lighthouseVersion": "12.8.2",
+    "categories": {
+      "performance": { "id": "performance", "title": "Performance", "score": 0.72 },
+      "accessibility": { "id": "accessibility", "title": "Accessibility", "score": 0.94 },
+      "best-practices": { "id": "best-practices", "title": "Best Practices", "score": 1 },
+      "seo": { "id": "seo", "title": "SEO", "score": null }
+    },
+    "audits": {
+      "largest-contentful-paint": { "id": "largest-contentful-paint", "numericValue": 2842.4, "numericUnit": "millisecond" },
+      "first-contentful-paint": { "id": "first-contentful-paint", "numericValue": 1502.9, "numericUnit": "millisecond" },
+      "cumulative-layout-shift": { "id": "cumulative-layout-shift", "numericValue": 0.0421, "numericUnit": "unitless" },
+      "total-blocking-time": { "id": "total-blocking-time", "numericValue": 310, "numericUnit": "millisecond" },
+      "speed-index": { "id": "speed-index", "numericValue": 3910.1, "numericUnit": "millisecond" },
+      "server-response-time": { "id": "server-response-time", "numericValue": 618.7, "numericUnit": "millisecond" }
+    }
+  }
+}

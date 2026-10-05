@@ -1,0 +1,607 @@
+# examples:
+#   periodic_cleanup:
+#     class: CleanSoftDeletedRecordsJob
+#     queue: background
+#     args: [ 1000, { batch_size: 500 } ]
+#     schedule: every hour
+#   periodic_cleanup_with_command:
+#     command: "SoftDeletedRecord.due.delete_all"
+#     priority: 2
+#     schedule: at 5am every day
+
+# Su quale corsia mettere un giro nuovo (CYRA-714), le due che compaiono qui sotto:
+#   queue: maintenance -> CONTROLLI. Durano secondi, scattano spesso (ogni minuto o pochi minuti) e la
+#                         loro unica utilità è partire in orario: sorveglianza delle lavorazioni degli
+#                         agenti, cron utente, salute dei servizi esterni, dispatcher che si limitano
+#                         a chiedere «chi è maturo?» e accodare.
+#   queue: batch       -> LAVORI LUNGHI. Attraversano tabelle intere e durano minuti: potature,
+#                         recuperi (backfill), aggregazioni, scansioni, previsioni.
+# Stanno su corsie di worker diverse (config/queue.yml) e non si aspettano più a vicenda. Prima erano
+# insieme all'AI su un thread solo: un addestramento da un'ora fermava per un'ora anche i giri al
+# minuto, e per aggirarlo gli orari qui sotto erano stati spostati a mano. Un giro lungo messo per
+# sbaglio su `maintenance` rimette in fila tutti i controlli che arrivano dopo di lui: la coda serve
+# in ordine di arrivo, non di urgenza. spec/config/queue_yml_spec.rb tiene la regola.
+production: &schedule
+  reap_coworkers:
+    class: Coworkers::ReapJob
+    queue: maintenance
+    schedule: every minute
+
+  # CYSK-29 — un simbolo non visto da 400 giorni esce; se torna, rientra con un first_seen nuovo.
+  # Corsia `batch` (CYRA-714): girava su `default`, la corsia real-time degli avvisi e delle notifiche,
+  # e una potatura che attraversa la tabella intera ne teneva occupato uno slot su tre.
+  usage_prune:
+    class: Usage::PruneJob
+    queue: batch
+    schedule: at 4am every day
+  # Anche questa su `batch` per la stessa ragione: pota a lotti con una pausa fra l'uno e l'altro,
+  # quindi dura quanto è lunga la tabella dei job finiti dell'ultima ora.
+  clear_solid_queue_finished_jobs:
+    command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
+    queue: batch
+    schedule: every hour at minute 12
+
+  # Gemello del precedente per i job FALLITI, che non finiscono mai e quindi quello sopra non tocca.
+  prune_failed_jobs:
+    class: Jobs::PruneFailedExecutionsJob
+    queue: batch
+    schedule: every day at 3am
+
+  # CYRA-940 — a visitor's address does not stay forever: after the retention it is erased, the message stays.
+  erase_expired_helpdesk_emails:
+    class: Helpdesk::EraseExpiredEmailsJob
+    queue: batch
+    schedule: every day at 4am
+
+  # CYRA-654 — i rimandi della home scaduti da più di due giorni. Non nascondono più niente
+  # (Home::Deferral.live li esclude), restano solo scritti.
+  prune_home_deferrals:
+    class: Jobs::PruneHomeDeferralsJob
+    queue: batch
+    schedule: every day at 3am
+
+  # CYRA-750 — le fette del mese in arrivo, pronte prima che serva. All'una e non alle 3: le
+  # potature staccano le fette scadute e devono trovare il lavoro già fatto. Corsia `maintenance`
+  # perché dura secondi e non deve mettersi in coda dietro ai lavori lunghi della notte.
+  ensure_partitions:
+    class: Ops::EnsurePartitionsJob
+    queue: maintenance
+    schedule: every day at 1am
+
+  prune_error_events:
+    class: Errors::PruneEventsJob
+    queue: batch
+    schedule: every day at 3am
+
+  # Orfani della staging d'ingest (CYRA-211): il job di ingest cancella la propria riga appena l'evento
+  # è persistito, qui restano solo i payload dei job scartati dopo i retry.
+  prune_ingest_payloads:
+    class: Errors::PruneIngestPayloadsJob
+    queue: batch
+    schedule: every day at 3am
+
+  prune_metric_samples:
+    class: Metrics::PruneSamplesJob
+    queue: batch
+    schedule: every day at 3am
+
+  prune_alerting_notifications:
+    class: Alerting::PruneNotificationsJob
+    queue: batch
+    schedule: every day at 3am
+
+  prune_logs:
+    class: Logs::PruneJob
+    queue: batch
+    schedule: every day at 3am
+
+  prune_analytics:
+    class: Analytics::PruneJob
+    queue: batch
+    schedule: every day at 3am
+
+  prune_replays:
+    class: Replays::PruneJob
+    queue: batch
+    schedule: every day at 3am
+
+  prune_ai_requests:
+    class: Ai::PruneRequestsJob
+    queue: batch
+    schedule: every day at 3am
+
+  prune_assistant_conversations:
+    class: Assistant::PruneConversationsJob
+    queue: batch
+    schedule: every day at 3am
+
+  # Recupero automatico degli embedding (CYRA-232): senza questi giri i contenuti creati/modificati
+  # durante un guasto del servizio embedding restavano fuori dalla ricerca PER SEMPRE (serviva un backfill
+  # a mano). I job sono idempotenti — accodano il re-embed solo per le righe col checksum stale (mai
+  # embeddate, testo cambiato senza job riuscito, o EMBEDDING_VERSION bumpata) — quindi la passata
+  # giornaliera ripara da sola la finestra di guasto. Costo: find_each a batch che ricalcola il checksum
+  # in Ruby (CPU leggera, nessuna chiamata rete); l'embed vero parte solo per le righe che ne hanno
+  # bisogno. Off-peak, dopo i prune (3am) e prima del check drift (6am) che così ne verifica l'esito.
+  # «Valore in comune» (CYRA-777): l'impronta sui segreti che ne sono privi, poi il giro sulle
+  # proposte. IN QUESTO ORDINE e non insieme: senza impronta un valore non entra in nessun
+  # raggruppamento, quindi uno scan che partisse prima del backfill non vedrebbe proprio i segreti
+  # più vecchi — quelli che hanno avuto più tempo per essere ricopiati in giro. Prima dei backfill
+  # degli embedding (4am) perché non chiama nessun servizio esterno e dura poco.
+  backfill_secret_fingerprints:
+    class: Secrets::Consolidation::BackfillFingerprintsJob
+    queue: batch
+    schedule: every day at 3:40am
+
+  scan_secret_consolidation:
+    class: Secrets::Consolidation::ScanJob
+    queue: batch
+    schedule: every day at 3:50am
+
+  backfill_ticket_embeddings:
+    class: Ticketing::BackfillEmbeddingsJob
+    queue: batch
+    schedule: every day at 4am
+
+  backfill_error_embeddings:
+    class: Errors::BackfillEmbeddingsJob
+    queue: batch
+    schedule: every day at 4am
+
+  backfill_knowledge_embeddings:
+    class: Knowledge::BackfillEmbeddingsJob
+    queue: batch
+    schedule: every day at 4am
+
+  backfill_idea_embeddings:
+    class: Ideas::BackfillEmbeddingsJob
+    queue: batch
+    schedule: every day at 4am
+
+  backfill_helpdesk_embeddings:
+    class: Helpdesk::BackfillEmbeddingsJob
+    queue: batch
+    schedule: every day at 4am
+
+  # Downloads only when the file is missing or a week old, and only with MAXMIND_LICENSE_KEY (CYRA-914 P10).
+  refresh_geo_database:
+    class: Analytics::RefreshGeoDatabaseJob
+    queue: batch
+    schedule: every day at 4:30am
+
+  # Pareri di eleggibilità agenti mai prodotti (CYRA-847). Stessa ragione dei backfill qui sopra e
+  # stesso rimedio: una valutazione fallita durante un guasto del server AI non viene MAI ritentata
+  # (R502-LLM-002 è un codice definitivo), il gate è fail-closed e il ticket resta fuori dalla coda
+  # degli agenti finché una persona non se ne accorge — 2.372 volte in cinque settimane. ORARIO e non
+  # giornaliero: il tetto per giro (AGENT_ELIGIBILITY_RECOVERY_PER_RUN) tiene bassa la punta di
+  # chiamate al modello, e con un giro al giorno lo stesso tetto non smaltirebbe mai l'arretrato —
+  # i pareri persi in un giorno di guasto sono più di quelli che un giro solo può recuperare.
+  # Al minuto 50 per non cadere addosso agli altri giri orari (5, 8, 12, 15, 20, 35).
+  recover_agent_eligibility:
+    class: Ticketing::RecoverAgentEligibilityJob
+    queue: batch
+    schedule: every hour at minute 50
+
+  # Codice della richiesta riconosciuto nel testo dei log (CYRA-559). Stessa logica dei backfill qui
+  # sopra: quando il riconoscimento sbaglia, i log entrati nel frattempo restano scollegati PER SEMPRE
+  # dagli errori e dagli altri log della stessa richiesta, perché l'unico rimedio era un comando
+  # lanciato a mano al deploy. Il giro notturno ripara da solo la finestra di guasto ed è idempotente
+  # (tocca solo i log senza codice e con un identificativo riconoscibile). Alle 4:30 e non alle 4: la
+  # corsia `batch` ha UN thread e i quattro backfill degli embedding partono tutti alle 4, quindi
+  # questo aspetterebbe comunque — l'attesa però resta fra lavori lunghi e non tocca più i controlli
+  # (CYRA-714). Dopo il prune delle 3, così non ripassa log che stanno per sparire.
+  backfill_log_trace_ids:
+    class: Logs::BackfillTraceIdsJob
+    queue: batch
+    schedule: "30 4 * * *"
+
+  # Domande d'esempio di "Chiedi alla KB" (CYRA-421): rigenerate ogni notte dai contenuti reali di ogni
+  # progetto, così gli esempi sopra il campo parlano di pagine che esistono davvero invece di essere un
+  # testo fisso. Leggero (query + insert, nessuna rete), corsia maintenance come i backfill.
+  generate_knowledge_sample_questions:
+    class: Knowledge::GenerateSampleQuestionsJob
+    queue: batch
+    schedule: every day at 4am
+
+  # Monitor di ciò che è invisibile alla ricerca semantica (CYRA-206/232): logga un WARN se restano righe
+  # a versione obsoleta o mai indicizzate (oltre la grazia). Sola lettura: rende visibile un degrado
+  # altrimenti silenzioso; il rimedio automatico sono i backfill qui sopra.
+  check_embedding_version_drift:
+    class: Embeddings::CheckVersionDriftJob
+    queue: batch
+    schedule: every day at 6am
+
+  # Canarino di disponibilità della cache condivisa (CYRA-270): i freni anti-doppione degli avvisi usano
+  # Rails.cache come lucchetto, e una cache in lock viene scambiata per «già avvisato» → l'avviso tace nel
+  # momento peggiore, mentre l'eccezione di lock è esclusa dal self-monitoring (anti-ricorsione). Un
+  # round-trip write/read ogni minuto lascia un WARN nei log quando la cache non risponde — l'unico
+  # segnale, altrimenti muto. Sola osservazione: non tocca i gate (fail-open ritirato in v0.70.2).
+  # Corsia :default (real-time, 3 thread, isolata dall'AI): quando è nato, :maintenance aveva un thread
+  # solo condiviso coi training AI e un job lungo lo avrebbe tenuto in coda per un'ora, facendogli
+  # mancare l'ora del guasto. Da CYRA-714 :maintenance è la corsia dei controlli e reggerebbe anche
+  # lui, ma resta qui: il canarino della cache serve proprio quando qualcosa va storto, e :default
+  # è la corsia con più slot liberi e la meno popolata di giri periodici. :default è prioritaria su
+  # :ingest → un picco non lo affama.
+  cache_canary:
+    class: Ops::CacheCanaryJob
+    queue: default
+    schedule: every minute
+  # Salute del servizio di embedding (CYEM-2): chiama il servizio dalla stessa strada delle feature
+  # vere (stesso EMBED_BASE_URL, stesso client) e avvisa se non risponde. La smoke del repo embedding
+  # gira DENTRO il container e prova solo che il servizio parli a se stesso, quindi non vede i guasti
+  # sul percorso; Uptime non può arrivarci perché rifiuta gli indirizzi privati. Ogni 5 minuti:
+  # abbastanza da accorgersene subito, abbastanza poco da non pesare.
+  check_embedding_service_health:
+    class: Embeddings::CheckServiceHealthJob
+    queue: maintenance
+    schedule: every 5 minutes
+  # Salute del server AI generativo (CYRA-712, CYRA-765): l'altra metà dell'AI, che degradava in
+  # silenzio come gli embedding — assistente, smistamento automatico, bozze e riconoscimento dei
+  # doppioni si spegnevano e nelle schermate non cambiava niente. Fa una generazione VERA, minima,
+  # con lo stesso client e lo stesso alias delle feature: un `/models` verde non direbbe niente se
+  # vLLM è giù dietro LiteLLM. Ogni 15 minuti e non 5: è il patto scritto nel ticket, e il server
+  # genera per le funzioni vere — non gli si tolgono slot per riempire una card.
+  check_llm_health:
+    class: Ai::CheckLlmHealthJob
+    queue: maintenance
+    schedule: every 15 minutes
+  # Il mittente di TUTTE le email è ancora abilitato a spedire? (CYRA-233) Il dominio da cui partivano
+  # avvisi, riepiloghi, inviti e reimpostazione password non aveva alcuna configurazione di spedizione, e
+  # il fornitore rifiutava ogni invio: siccome l'invio vive dentro un job, il rifiuto non si vedeva da
+  # nessuna parte e il percorso «qualcosa si rompe → arriva l'avviso» era interrotto proprio nel tratto
+  # che avvisa. Il giro chiede al fornitore se il dominio è verificato e lascia un ERROR nei log quando
+  # non lo è — mai un'email, che dovrebbe passare dal canale rotto. GIORNALIERO e non orario: la verifica
+  # di un dominio cambia di rado, e un guasto scoperto entro un giorno arriva comunque molto prima del
+  # prossimo avviso che nessuno riceverebbe. Le 6:30 nascono come compenso — stava dietro ai backfill
+  # delle 4 e allo scan delle 5 sull'unico thread di allora — e dal 09/2026 non lo sono più: questo è
+  # un controllo e sta sulla corsia `maintenance`, che i giri notturni non occupano (CYRA-714).
+  # L'orario resta perché va bene di per sé, non perché serva ad aggirare un'attesa.
+  check_mail_sender:
+    class: Ops::MailSenderCheckJob
+    queue: maintenance
+    schedule: "30 6 * * *"
+
+  # Le chiavi che le organizzazioni hanno collegato ai servizi esterni (CYRA-549). Si provano quando
+  # si incollano e poi mai più: in mezzo vengono revocate, scadono, o il servizio viene spento nella
+  # console del fornitore, e la funzione che ci sta sopra smette di rispondere senza dirlo a nessuno.
+  # GIORNALIERO: una chiave revocata si vede entro il giorno dopo, che arriva molto prima di chi se
+  # ne accorgerebbe da solo, e le prove sono chiamate vere al fornitore — farle più spesso costa
+  # senza cambiare la risposta. Le 7 nascono come compenso, quando backfill e scan occupavano l'unico
+  # thread di `maintenance`; il compenso non serve più (CYRA-714) ma il mattino va bene per una
+  # raffica di chiamate ai fornitori.
+  #
+  # 7:07 e non 7:00: nasce da una sovrapposizione con il controllo del generativo, che ai quarti
+  # d'ora provava le STESSE chiavi con la stessa sonda. Da CYRA-765 quel controllo non passa più
+  # dalle credenziali delle organizzazioni (l'AI generativa la offre il sistema), quindi la
+  # coincidenza non c'è più; i sette minuti di scarto restano perché vanno bene di per sé.
+  verify_integration_credentials:
+    class: Integrations::VerifyJob
+    queue: batch
+    schedule: "7 7 * * *"
+
+  evaluate_crons:
+    class: Crons::EvaluateJob
+    queue: maintenance
+    schedule: every minute
+
+  dispatch_uptime_checks:
+    class: Uptime::DispatchChecksJob
+    queue: uptime
+    schedule: every minute
+
+  # Avvisi uptime scritti e mai affidati alla coda (CYRA-792): il disservizio si registra prima che
+  # l'avviso parta, e se l'accodamento salta in quel varco nessun controllo successivo lo ripropone —
+  # la transizione non si ripete su un incident già aperto. Ogni minuto perché il ritardo qui è un
+  # allarme che non arriva; il lotto è limitato e la grazia di due minuti evita di accodare due volte
+  # ciò che la consegna normale sta ancora facendo. Corsia `maintenance`: è una query su indice
+  # parziale (nel funzionamento normale: zero righe) più gli accodamenti.
+  reconcile_uptime_alerts:
+    class: Uptime::ReconcileAlertsJob
+    queue: maintenance
+    schedule: every minute
+
+  # Rollup uptime nella stessa tabella (granularity hourly/daily). `args` posizionale per evitare la
+  # gotcha kwargs/positional dei recurring. Il daily gira PRIMA del prune (2am < 3am) così potando il
+  # raw >3gg i giorni chiusi sono già aggregati.
+  rollup_uptime_hourly:
+    class: Uptime::RollupJob
+    queue: batch
+    args: [ "hourly" ]
+    schedule: every hour at minute 5
+
+  rollup_uptime_daily:
+    class: Uptime::RollupJob
+    queue: batch
+    args: [ "daily" ]
+    schedule: every day at 2am
+
+  prune_uptime:
+    class: Uptime::PruneJob
+    queue: batch
+    schedule: every day at 3am
+
+  check_stale_servers:
+    class: Servers::CheckStaleJob
+    queue: servers
+    schedule: every minute
+
+  # CYAG-22 — a Kubernetes cluster with no snapshot for 3 minutes goes down and alerts once.
+  check_stale_clusters:
+    class: Clusters::CheckStaleJob
+    queue: servers
+    schedule: every minute
+
+  # CYAG-22 — forget cluster nodes and workloads gone for a day, events older than two days.
+  prune_clusters:
+    class: Clusters::PruneJob
+    queue: batch
+    schedule: every hour
+
+  # Azioni operative rimaste a metà (CYRA-809): partite e mai concluse, restavano "in corso" per
+  # sempre e occupavano l'unico posto attivo di quella macchina — da lì in poi non ne partiva più
+  # nessuna, e la pagina non poteva annullarle. La strada ordinaria è l'agent al ritorno (Claim
+  # riconcilia da sé prima di consegnare); questo giro è la rete per la macchina che non torna MAI —
+  # spenta, dismessa, credenziale revocata — dove nessun claim arriverà a fare quel lavoro. Ogni 5
+  # minuti come i gemelli delle lavorazioni degli agenti e degli addestramenti: la soglia vera è la
+  # grazia sul silenzio (ACTION_ORPHAN_AFTER_SECONDS), non la cadenza. Corsia `maintenance` — è una
+  # query su indice che nel funzionamento normale non trova niente.
+  reconcile_server_actions:
+    class: Servers::ReconcileActionsJob
+    queue: maintenance
+    schedule: every 5 minutes
+
+  # CYRA-624 — i rilasci in produzione non ancora visti in piedi. La consegna del closer accoda il job
+  # da sé; qui si raccoglie ciò che aspetta perché GitHub non rispondeva o perché il rilascio non era
+  # ancora partito. Ogni minuto, ma ogni riga torna a guardare ogni due: il ritardo qui è un ticket
+  # che resta «In chiusura» più del dovuto, non un rilascio perso.
+  observe_agent_release_proof:
+    class: Agents::ReleaseProbeJob
+    queue: maintenance
+    schedule: every minute
+
+  # CYRA-620 — le prove di staging non ancora viste. La consegna del closer accoda il job da sé; qui
+  # si raccoglie ciò che aspetta perché il servizio non rispondeva o perché la spedizione non era
+  # ancora visibile.
+  verify_agent_staging_proof:
+    class: Agents::StagingProofJob
+    queue: maintenance
+    schedule: every minute
+
+  # CYRA-614 — le proposte consegnate e non ancora verificate. La consegna accoda il job da sé subito
+  # dopo il commit; questo giro è la rete: raccoglie ciò che è arrivato mentre il lavoro era giù, e
+  # ripassa le righe che aspettavano i controlli remoti. Ogni minuto perché il ritardo qui è ritardo
+  # che chi approva vede, ma il lotto è limitato: ogni riga costa una chiamata a GitHub.
+  verify_agent_delivery_candidates:
+    class: Agents::CandidateVerificationJob
+    queue: maintenance
+    schedule: every minute
+
+  # Lavorazioni degli agenti la cui prenotazione è scaduta senza consegna: senza questo giro restavano
+  # "in corso" per sempre e potevano bloccare i tentativi successivi sullo stesso ticket (CYRA-201).
+  mark_stale_agent_attempts:
+    class: Agents::MarkStaleAttemptsJob
+    queue: maintenance
+    schedule: every 5 minutes
+
+  # Addestramenti dei dataset rimasti orfani di un processo morto (CYRA-791): senza questo giro
+  # restavano "in corso" per sempre e la guardia anti-doppione rifiutava ogni avvio successivo su
+  # quel dataset. Ogni 5 minuti come il gemello degli agenti qui sopra: la query è su una tabella
+  # piccola e la soglia vera è il silenzio di due ore, non la cadenza. Corsia `maintenance` — dura
+  # secondi e serve solo se parte in orario.
+  mark_stale_dataset_trainings:
+    class: Datasets::MarkStaleTrainingsJob
+    queue: maintenance
+    schedule: every 5 minutes
+
+  # Allarme "il sistema gira a vuoto" (CYRA-212): con host attivi ma nessun risultato buono nella finestra,
+  # avvisa via Alerting. Cadenza larga: la finestra è 1h e l'anti-spam dell'alerting collassa i giri.
+  detect_stalled_agents:
+    class: Agents::DetectStalledAttemptsJob
+    queue: maintenance
+    schedule: every 15 minutes
+
+  # Allarme "una macchina butta via il lavoro" (CYRA-282): quota di fallimenti anomala su UN host. Gemello
+  # per-host del precedente, che è org-scoped e tace se un altro host progredisce. Cadenza ORARIA (non 15'
+  # come gli altri): il throttle di default delle regole è 5', più corto della cadenza, quindi un guasto
+  # persistente ri-notifica a ogni giro — su una finestra di 6h un giro ogni 15' darebbe fino a 24 avvisi
+  # per lo stesso host. Un giro all'ora tiene il re-alert a ~1/h, tempestivo per un guasto senza spammare.
+  detect_failing_agent_hosts:
+    class: Agents::DetectFailingHostsJob
+    queue: maintenance
+    schedule: every hour at minute 8
+
+  # Allarme "una macchina è ferma" (CYRA-450): un host che non batte da oltre la soglia di allarme (offline
+  # + grazia) va segnalato. Cadenza allineata alla soglia (15') e a detect_stalled_agents: una macchina morta
+  # è rilevata al più entro un giro. Un riavvio breve rientra prima del giro grazie alla grazia sulla soglia,
+  # non alla cadenza. Il re-alert NON spamma: la regola di default nasce con throttle a 1h (Alerting::Rules::
+  # InstallDefaults), quindi i giri da 15' su una macchina morta collassano in ~1 avviso l'ora.
+  detect_stale_agent_hosts:
+    class: Agents::DetectStaleHostsJob
+    queue: maintenance
+    schedule: every 15 minutes
+
+  # Decadimento del chip "visitatori online" analytics: ri-broadcasta i progetti con pageview recenti
+  # così il conteggio scende quando il traffico cessa (il cable-su-pageview copre solo la salita).
+  decay_analytics_realtime:
+    class: Analytics::DecayRealtimeJob
+    queue: maintenance
+    schedule: every minute
+
+  # Allarme "crollo/picco di traffico" (CYRA-147): confronta l'ultima ora con la baseline oraria e
+  # accoda l'avviso rule-based. Cadenza oraria, coerente con la finestra di confronto. Il throttle di
+  # default della regola (5 minuti) è più corto della cadenza, quindi NON collassa i giri: un'anomalia
+  # persistente ri-avvisa a ogni giro (~1 all'ora). Per meno rumore si alza il throttle della regola.
+  detect_traffic_anomalies:
+    class: Analytics::DetectTrafficAnomaliesJob
+    queue: maintenance
+    schedule: every hour at minute 15
+
+  prune_server_samples:
+    class: Servers::PruneJob
+    queue: batch
+    schedule: every day at 3am
+
+  # CYRA-679 — previsione di saturazione del volume dati: un giro al giorno basta, la pendenza si
+  # misura su una finestra di 7 giorni. Dopo il prune (3am) così la finestra è già potata.
+  forecast_server_disks:
+    class: Servers::ForecastJob
+    queue: batch
+    schedule: every day at 4am
+
+  # Digest notifiche: raccoglie le righe :queued (cadenza daily/weekly) per canale e le riepiloga.
+  # `args` posizionale [bucket, via]. Weekly in cron (lunedì 8am) per parsing inequivocabile.
+  digest_email_daily:
+    class: Notifications::DigestJob
+    queue: notifications
+    args: [ "daily", "email" ]
+    schedule: every day at 8am
+
+  digest_telegram_daily:
+    class: Notifications::DigestJob
+    queue: notifications
+    args: [ "daily", "telegram" ]
+    schedule: every day at 8am
+
+  digest_email_weekly:
+    class: Notifications::DigestJob
+    queue: notifications
+    args: [ "weekly", "email" ]
+    schedule: "0 8 * * 1"
+
+  digest_telegram_weekly:
+    class: Notifications::DigestJob
+    queue: notifications
+    args: [ "weekly", "telegram" ]
+    schedule: "0 8 * * 1"
+
+  # Riepilogo periodico dei DATI via email (CYRA-160): traffico, errori e uptime del periodo. Il
+  # digest qui sopra riassume le NOTIFICHE trattenute — cose già annunciate una per una — e nessuna
+  # email portava i numeri: per sapere come stava andando bisognava entrare e guardare le pagine.
+  # UN solo giro giornaliero per tutte le frequenze: la cadenza vera (giornaliera, settimanale dal
+  # lunedì, mensile dal primo) vive nella preferenza di ciascuno, e il giro chiede a chi tocca. Alle
+  # 8 come i digest, sulla stessa corsia: è la stessa email della mattina.
+  dispatch_data_reports:
+    class: Reports::DispatchJob
+    queue: notifications
+    schedule: every day at 8am
+
+  # Rilascio delle email trattenute dalle quiet hours (CYRA-208): le righe :held (email immediata
+  # scattata nel silenzio) restano in attesa finché la finestra per-utente non finisce, poi partono in
+  # un riepilogo. Le quiet hours hanno granularità oraria: il giro ogni 15' (tick :00/:15/:30/:45)
+  # becca la fine del silenzio entro pochi minuti = prima finestra utile.
+  release_held_notifications:
+    class: Notifications::ReleaseHeldJob
+    queue: notifications
+    schedule: every 15 minutes
+
+  # Promemoria di rotazione dei secret (CYRA-138, Fase 4 pezzo A2): giro giornaliero sui secret
+  # due_soon/overdue (Secrets::Variable.due_for_rotation) che avvisa owner + chi ha secrets.manage sul
+  # progetto — idempotente via dedup_key (variabile, scadenza), niente spam finché non si ruota.
+  secret_rotation_reminders:
+    class: Secrets::RotationReminderJob
+    queue: notifications
+    schedule: every day at 9am
+
+  # Promemoria di scadenza delle credenziali di ingest (CYRA-716): giro giornaliero sui token con una
+  # data di scadenza entro il preavviso o già passata (Projects::Token.due_for_expiry) che avvisa chi
+  # ha tokens.manage sul progetto — idempotente via dedup_key (token, scadenza), un solo avviso per
+  # finestra. Alle 9 come il gemello dei secret: sono la stessa domanda, arrivano insieme.
+  project_token_expiry_reminders:
+    class: Projects::Tokens::ExpiryReminderJob
+    queue: notifications
+    schedule: every day at 9am
+
+  # Promemoria di scadenza delle attività (CYRA-147): giro giornaliero sulle Workload::Action aperte in
+  # scadenza/scadute che avvisa i partecipanti via la pipeline rule-based (workload_due_soon).
+  workload_due_reminders:
+    class: Workload::DueReminderJob
+    queue: notifications
+    schedule: every day at 7am
+
+  # Snapshot di salute dei servizi esterni per /valhalla/health (CYRA-166): mai sondati a
+  # request-time (bloccherebbero Puma), qui girano fuori banda e scrivono lo stato in Solid Cache.
+  probe_valhalla_services:
+    class: Valhalla::ProbeServicesJob
+    queue: maintenance
+    schedule: every 5 minutes
+
+  # Vulnerabilità delle dipendenze (CYRA-506): scopre i lockfile nei repository collegati, li
+  # confronta con OSV.dev e apre/chiude i finding. Alle 5 perché la scansione vera (una per progetto,
+  # corsia `batch`) sta dietro ai prune delle 3 e ai backfill delle 4, che quella corsia serve uno
+  # alla volta: accodarla prima non la farebbe partire prima. Il dispatcher invece è leggero e sta
+  # sui controlli. Giornaliero e non orario: il lavoro utile è il confronto con advisory NUOVI, e
+  # OSV pubblica a quel ritmo.
+  scan_vulnerabilities:
+    class: Vulnerabilities::DispatchScansJob
+    queue: maintenance
+    schedule: every day at 5am
+
+  # Advisory che non colpiscono più nessun progetto: pura cache, si riscaricano in una richiesta.
+  # I finding NON si potano mai — sono la memoria di quanto è rimasta aperta una falla.
+  prune_vulnerability_advisories:
+    class: Vulnerabilities::PruneJob
+    queue: batch
+    schedule: every day at 3am
+
+  # Cockpit SEO (CYRA-528): accoda un giro per i siti scaduti. ORARIO, non giornaliero, perché la
+  # cadenza vera è per-sito (`next_audit_at`, giornaliera o settimanale) e questo giro si limita a
+  # chiedere chi è maturo — un sito creato a mezzogiorno non deve aspettare la notte per la prima
+  # visita. Al minuto 20 per non cadere insieme ai rollup (minuto 5) e ai prune sull'ora.
+  dispatch_seo_audits:
+    class: Seo::DispatchAuditsJob
+    queue: maintenance
+    schedule: every hour at minute 20
+
+  # Misure di velocità con PageSpeed Insights (CYRA-539). Al minuto 35 e non al 20: questo giro e la
+  # visita accodano entrambi sulla corsia `seo`, che ne serve UNO alla volta, e partire insieme
+  # vorrebbe dire mandare il secondo lotto mentre il primo è ancora in giro. Il dispatcher in sé è
+  # leggero e sta sui controlli (CYRA-714): è il lavoro che accoda a dover essere distanziato.
+  # Anche qui la cadenza vera è per-sito (`next_lab_run_at`).
+  # Senza chiave API il job non accoda niente e lo dice una volta sola nel log.
+  dispatch_seo_lab_runs:
+    class: Seo::DispatchLabRunsJob
+    queue: maintenance
+    schedule: every hour at minute 35
+
+  # Pagine sparite dal sito e giri troppo vecchi. I RILIEVI non si potano mai, come i finding.
+  prune_seo:
+    class: Seo::PruneJob
+    queue: batch
+    schedule: every day at 3am
+
+  prune_traces:
+    class: Traces::PruneJob
+    queue: batch
+    schedule: every day at 3am
+
+  prune_crashes:
+    class: Crashes::PruneJob
+    queue: batch
+    schedule: every hour at minute 25
+
+  prune_artifacts:
+    class: Artifacts::PruneJob
+    queue: batch
+    schedule: every hour at minute 35
+
+  prune_session_health:
+    class: SessionHealth::PruneJob
+    queue: batch
+    schedule: every day at 3am
+
+  prune_measurements:
+    class: Measurements::PruneJob
+    queue: batch
+    schedule: every day at 3am
+
+  evaluate_measurements:
+    class: Alerting::Measurements::ScheduleJob
+    queue: alerts
+    schedule: every minute
+
+  prune_measurement_evaluations:
+    class: Alerting::Measurements::PruneJob
+    queue: batch
+    schedule: every day at 3am
+
+# Development runs the production schedule, so alerts and checks fire locally too (CYRA-932).
+development: *schedule

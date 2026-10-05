@@ -1,0 +1,34 @@
+<% scope = "member.organization_ai" %>
+<% modes = Organizations::AiSetting::MODES %>
+<% input = lambda do |name, **options|
+     render Ui::InputComponent.new(name: name.to_s, label: t("#{scope}.fields.#{name}"), autocomplete: "off",
+                                   hint: t("#{scope}.fields.#{name}_hint"), test_id: "org-ai-#{name.to_s.dasherize}",
+                                   error: errors&.dig(name)&.first, **options)
+   end %>
+<%= render Ui::SectionComponent.new(title: t("#{scope}.mode.title"), test_id: "org-ai-mode") do |section| %>
+  <% section.with_subtitle do %><p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("#{scope}.mode.hint") %></p><% end %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+    <%= render Ui::SelectComponent.new(name: "mode", label: t("#{scope}.mode.label"), test_id: "org-ai-mode-select",
+          options: modes.map { |mode| [ t("#{scope}.mode.options.#{mode}"), mode ] },
+          descriptions: modes.index_with { |mode| t("#{scope}.mode.descriptions.#{mode}") },
+          selected: setting.mode) %>
+    <%= input.call(:monthly_token_cap, type: "number", min: 1, inputmode: "numeric", value: setting.monthly_token_cap) %>
+  </div>
+<% end %>
+<%= render Ui::SectionComponent.new(title: t("#{scope}.models.title"), test_id: "org-ai-models") do |section| %>
+  <% section.with_subtitle do %><p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("#{scope}.models.hint") %></p><% end %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+    <% %i[chat_model embedding_model transcription_model rerank_model].each do |field| %>
+      <%= input.call(field, value: setting.public_send(field)) %>
+    <% end %>
+  </div>
+<% end %>
+<%= render Ui::SectionComponent.new(title: t("#{scope}.provider.title"), test_id: "org-ai-provider") do |section| %>
+  <% section.with_subtitle do %><p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("#{scope}.provider.hint") %></p><% end %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+    <%= input.call(:base_url, type: "url", inputmode: "url", value: setting.base_url, placeholder: "https://api.openai.com/v1") %>
+    <%= input.call(:api_key, type: "password") %>
+    <%= input.call(:rerank_base_url, type: "url", inputmode: "url", value: setting.rerank_base_url) %>
+    <%= input.call(:rerank_api_key, type: "password") %>
+  </div>
+<% end %>

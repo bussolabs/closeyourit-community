@@ -1,0 +1,36 @@
+<% content_for :title, t("auth.sessions.title") %>
+
+<%= render Ui::CardComponent.new do %>
+  <h1 class="font-display text-[20px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("auth.sessions.title") %></h1>
+  <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("auth.sessions.subtitle") %></p>
+
+  <%= form_with url: login_path, method: :post, class: "mt-5 space-y-4", data: { test: "login-form", controller: "dev--login-prefill" } do %>
+    <% if Rails.env.development? && (personas = Dev::Personas.all).any? %>
+      <div>
+        <label for="dev-persona" class="block font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1.5">Dev · prefill credenziali</label>
+        <div class="relative">
+          <select id="dev-persona" data-test="dev-persona" data-action="change->dev--login-prefill#fill"
+                  class="w-full h-[34px] pl-3 pr-9 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-950 text-[13px] text-zinc-900 dark:text-zinc-100 appearance-none focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+            <option value="">—</option>
+            <% personas.each do |persona| %>
+              <option value="<%= persona[:email] %>" data-password="<%= persona[:password] %>"><%= persona[:label] %></option>
+            <% end %>
+          </select>
+          <%= render Ui::IconComponent.new(name: "chevron-down", class: "text-gray-400 dark:text-zinc-500 text-[11px] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none") %>
+        </div>
+      </div>
+    <% end %>
+
+    <%= render Ui::InputComponent.new(name: "email", label: t("auth.fields.email"), type: "email", required: true, test_id: "login-email", autocomplete: "username", data: { "dev--login-prefill-target" => "email" }) %>
+
+    <div>
+      <div class="flex items-center justify-between mb-1.5">
+        <label for="password" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("auth.fields.password") %><span class="text-red-500 dark:text-red-400 ml-0.5">*</span></label>
+        <%= link_to t("auth.sessions.forgot"), new_password_path, class: "text-[11.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "login-forgot" } %>
+      </div>
+      <%= render Ui::InputComponent.new(name: "password", type: "password", required: true, test_id: "login-password", autocomplete: "current-password", data: { "dev--login-prefill-target" => "password" }) %>
+    </div>
+
+    <%= render Ui::ButtonComponent.new(label: t("auth.sessions.submit"), type: "submit", size: :lg, test_id: "login-submit", class: "w-full") %>
+  <% end %>
+<% end %>

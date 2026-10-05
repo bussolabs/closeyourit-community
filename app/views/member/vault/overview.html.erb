@@ -1,0 +1,73 @@
+<% content_for :title, t("member.vault.title") %>
+
+<div class="p-7 space-y-6" data-test="member-vault-overview">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.vault.title"),
+        subtitle: t("member.vault.help_title"),
+        breadcrumb: [ { label: t("member.vault.title") } ],
+        counts_test_id: "vault-counts",
+        test_id: "vault-header") do |h| %>
+    <%# CYRA-930 — personal and organization secrets belong to no project: they live up here. %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.vault.count_personal"), value: @overview.personal_secrets_count, test_id: "vault-count-personal") %>
+      <% if can?("shared_secrets.manage") || can?("shared_secret_files.manage") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.vault.count_organization"), value: @overview.organization_secrets_count, test_id: "vault-count-organization") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-930 — a row per project: what it keeps and what is wrong with it. %>
+  <%= render "member/overviews/project_matrix", matrix: @matrix, pagination: @matrix_pagination, prefix: "vault" %>
+
+  <%# CYRA-930 — the four explanations side by side on a wide screen: stacked, they were a long scroll. %>
+  <div class="grid items-start gap-6 lg:grid-cols-2 [&>*]:min-w-0" data-test="vault-overview-guides">
+    <%# CYRA-401 — la panoramica insegna il primo giro completo: crealo → delegalo → leggilo, senza uscire
+        dall'area (Scenario 2). Sotto, il comando pronto (segnaposto: qui non c'è un progetto in contesto). %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="vault-onboarding">
+      <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+        <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.vault.onboarding_title") %></h2>
+        <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.vault.onboarding_intro") %></p>
+      </div>
+      <ol class="px-4 py-4 space-y-4">
+        <li class="flex gap-3" data-test="vault-onboarding-create">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">1</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><span class="font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.vault.onboarding_create_title") %></span> — <%= t("member.vault.onboarding_create_body") %></div>
+        </li>
+        <li class="flex gap-3" data-test="vault-onboarding-delegate">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">2</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><span class="font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.vault.onboarding_delegate_title") %></span> — <%= t("member.vault.onboarding_delegate_body") %></div>
+        </li>
+        <li class="flex gap-3" data-test="vault-onboarding-read">
+          <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5">3</span>
+          <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><span class="font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.vault.onboarding_read_title") %></span> — <%= t("member.vault.onboarding_read_body") %></div>
+        </li>
+      </ol>
+    </div>
+
+    <%# F148 — no project in context here: a picker fills the commands with a real project and environment. %>
+    <%= render SecretUsageComponent.new(kind: :project, project: @usage_project, environment: @usage_environment,
+          environment_codes: @usage_environments) do |usage| %>
+      <% if @usage_projects.any? %>
+        <% usage.with_picker do %>
+          <%= form_with url: member_vault_path, method: :get, class: "flex flex-wrap items-end gap-2", data: { test: "secret-usage-picker" } do %>
+            <div class="w-48"><%= render Ui::SelectComponent.new(name: "usage_project",
+                  options: @usage_projects.map { |project| [ project.name, project.key, project.color ] }, selected: @usage_project&.key,
+                  placeholder: t("member.secret_usage.picker_project"), test_id: "secret-usage-picker-project") %></div>
+            <% if @usage_environments.any? %>
+              <div class="w-40"><%= render Ui::SelectComponent.new(name: "usage_environment",
+                    options: @usage_environments.map { |code| [ code, code ] }, selected: @usage_environment,
+                    placeholder: t("member.secret_usage.picker_environment"), test_id: "secret-usage-picker-environment") %></div>
+            <% end %>
+            <%= render Ui::ButtonComponent.new(label: t("member.secret_usage.picker_apply"), type: :submit, variant: :secondary_muted, size: :sm, test_id: "secret-usage-picker-apply") %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= render "member/vault/capabilities" %>
+
+    <%# CYRA-430 — in fondo, lo stato reale dei tre collegamenti automatici: da qui si scopre che
+        esistono e da dove si attivano. %>
+    <%= render "member/vault/integrations", integrations: @integrations %>
+  </div>
+</div>

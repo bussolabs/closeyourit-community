@@ -1,0 +1,118 @@
+<% content_for :title, t("member.vault_variables.title") %>
+
+<div class="p-7 space-y-6" data-test="member-vault-variable-search">
+  <%# CYRA-428 — stesso titolo e stesse schede dell'elenco per progetto: è la stessa voce di menu,
+      letta per variabile invece che per progetto. %>
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.vault.levels.project"),
+        breadcrumb: [ { label: t("member.vault.title"), href: member_vault_path },
+                      { label: t("member.vault.levels.project") } ],
+        counts_test_id: "vault-variables-counts", tabs_test_id: "vault-projects-tabs") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.vault_variables.stat_results"), value: @search.total_rows, test_id: "vault-variables-stat-total") %>
+      <%# CYRA-424 — la domanda vera è «dove manca»: le assenze in evidenza (ambra) accanto ai risultati. %>
+      <% if @search.total_absences.positive? %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.vault_variables.stat_absences"), value: @search.total_absences, value_color: :amber, test_id: "vault-variables-stat-absences") %>
+      <% end %>
+    <% end %>
+    <%= render "member/vault_projects/tabs", header: h, active_tab: :by_variable %>
+  <% end %>
+
+  <%# CYRA-422 — what the search shows (and never shows: a value), said on the page and not only in the
+      title's tooltip. It floats and can be closed for good (T1). %>
+  <% content_for :floating_notice do %>
+    <%= render Ui::FloatingNoticeComponent.new(key: "vault_variables_help", title: t("member.vault_variables.title"),
+                                               test_id: "vault-variables-help") do %>
+      <p><%= t("member.vault_variables.help_title") %></p>
+    <% end %>
+  <% end %>
+
+  <%# T1 — the search bar is the toolbar of the results panel. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="vault-variables-card">
+    <%= render(Ui::TableToolbarComponent.new(
+          url: member_vault_variables_path, query: @search.query, framed: true,
+          search_placeholder: t("member.vault_variables.search_placeholder"),
+          count: (t("member.vault_variables.count_results", count: @search.total_rows) if @search.any?),
+          search_test_id: "vault-variables-search", apply_test_id: "vault-variables-filter",
+          test_id: "vault-variables-toolbar")) do |toolbar| %>
+      <% if @search.any? %>
+        <%# Ordinamento sempre visibile (control, non chip): il "come" ordinare non è un filtro removibile. %>
+        <% toolbar.with_control do %>
+          <div class="w-44"><%= render Ui::SelectComponent.new(name: "sort",
+                options: [ [ t("member.vault_variables.sort_name"), "name" ], [ t("member.vault_variables.sort_occurrences"), "occurrences" ] ],
+                selected: @search.sort, aria_label: t("member.vault_variables.sort_label"),
+                test_id: "vault-variables-sort") %></div>
+        <% end %>
+      <% end %>
+      <% if @search.project_options.any? %>
+        <% toolbar.with_filter(key: "project", label: t("member.vault_variables.filter_project")) do %>
+          <div class="w-44"><%= render Ui::SelectComponent.new(name: "project",
+                options: @search.project_options, selected: params[:project], include_blank: true,
+                placeholder: t("member.vault_variables.all_projects"), test_id: "vault-variables-filter-project") %></div>
+        <% end %>
+      <% end %>
+      <% if @search.environment_options.any? %>
+        <% toolbar.with_filter(key: "environment", label: t("member.vault_variables.filter_environment")) do %>
+          <div class="w-40"><%= render Ui::SelectComponent.new(name: "environment",
+                options: @search.environment_options, selected: params[:environment], include_blank: true,
+                placeholder: t("member.vault_variables.all_environments"), test_id: "vault-variables-filter-environment") %></div>
+        <% end %>
+      <% end %>
+    <% end %>
+    <div>
+      <% if @search.blank? %>
+        <div class="px-6 py-14 text-center" data-test="vault-variables-empty-query">
+          <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500"><%= render Ui::IconComponent.new(name: "search", class: "text-[18px]") %></span>
+          <h3 class="mt-3 font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.vault_variables.empty_query") %></h3>
+          <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-sm mx-auto"><%= t("member.vault_variables.empty_query_body") %></p>
+        </div>
+      <% elsif @search.rows.empty? %>
+        <div class="px-6 py-14 text-center" data-test="vault-variables-no-match">
+          <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500"><%= render Ui::IconComponent.new(name: "circle-question-mark", class: "text-[18px]") %></span>
+          <h3 class="mt-3 font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.vault_variables.no_match") %></h3>
+          <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-sm mx-auto"><%= t("member.vault_variables.no_match_body") %></p>
+        </div>
+      <% else %>
+        <div class="divide-y divide-stone-100 dark:divide-zinc-800" data-test="vault-variables-results">
+          <% @search.rows.each do |row| %>
+            <%# Una riga = una chiave dentro un progetto: la matrice degli ambienti attivi del progetto, con
+                le assenze marcate. Il nome del progetto porta DIRITTO alla variabile nella tabella dei
+                segreti (highlight + anchor), non più alla scheda generale del progetto. %>
+            <section class="px-4 py-3.5" data-test="vault-variables-row" data-name="<%= row.name %>" data-project="<%= row.project.id %>">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-mono text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= row.name %></span>
+                <span class="text-gray-300 dark:text-zinc-600">·</span>
+                <%= link_to member_project_secrets_path(row.project, highlight: row.name, anchor: "secret-#{row.name.parameterize}"),
+                      class: "inline-flex items-center gap-1.5 text-[12.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300",
+                      data: { test: "vault-variables-open" } do %>
+                  <%= render Ui::IconComponent.new(name: "folder-open", class: "text-[11px] text-gray-400 dark:text-zinc-500") %><%= row.project.name %><%= render Ui::IconComponent.new(name: "arrow-right", class: "text-[10px]") %>
+                <% end %>
+                <span class="ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="vault-variables-presence">
+                  <%= t("member.vault_variables.present_of", present: row.present_count, total: row.cells.size) %>
+                </span>
+              </div>
+              <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                <% row.cells.each do |cell| %>
+                  <% if cell.present %>
+                    <span data-test="vault-variables-cell" data-state="present"
+                          class="inline-flex items-center gap-1.5 rounded border border-emerald-200 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-500/15 px-2 py-1 text-[11.5px] font-medium text-emerald-700 dark:text-emerald-300"
+                          aria-label="<%= t('member.vault_variables.cell_present', environment: cell.environment.label) %>">
+                      <%= render Ui::IconComponent.new(name: "check", class: "text-[10px]") %><%= cell.environment.label %>
+                    </span>
+                  <% else %>
+                    <span data-test="vault-variables-cell" data-state="absent"
+                          class="inline-flex items-center gap-1.5 rounded border border-dashed border-amber-300 dark:border-amber-500/50 bg-amber-50/60 dark:bg-amber-500/10 px-2 py-1 text-[11.5px] font-medium text-amber-700 dark:text-amber-300"
+                          aria-label="<%= t('member.vault_variables.cell_absent', environment: cell.environment.label) %>">
+                      <%= render Ui::IconComponent.new(name: "minus", class: "text-[10px]") %><%= cell.environment.label %>
+                    </span>
+                  <% end %>
+                <% end %>
+              </div>
+            </section>
+          <% end %>
+        </div>
+        <%= render(Ui::PaginationComponent.new(pagination: @search.pagination, test_id: "vault-variables-pagination")) %>
+      <% end %>
+    </div>
+  </div>
+</div>

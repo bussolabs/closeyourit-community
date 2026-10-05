@@ -1,0 +1,14 @@
+<%# Badge "N persone stanno guardando" — PUNTO DI MONTAGGIO (in integrazione: 1 riga nella show del
+    ticket/monitor). Il wrapper monta il controller Stimulus `viewers`, che registra il viewer corrente
+    sul ViewersChannel e applica i Turbo Stream di conteggio in arrivo. Il <span id="viewers_<gid>">
+    interno (reso da _count) è il TARGET dei broadcast → il wrapper NON viene mai sostituito, quindi la
+    subscription non si ricrea (niente doppio conteggio). `resource` = ticket o monitor.
+    Org derivata dalla risorsa stessa (resource.project.organization): coincide con la current_org del
+    canale (validata anti-BOLA) → stesso nome-stream tra render iniziale e broadcast. %>
+<span data-controller="viewers"
+      data-viewers-resource-value="<%= resource.to_gid_param %>"
+      data-test="viewers-badge">
+  <%= render "member/viewers/count",
+        resource: resource,
+        count: Realtime::ViewersRegistry.count(Realtime::Streams.viewers(resource.project.organization, resource)) %>
+</span>

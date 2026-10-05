@@ -1,0 +1,173 @@
+---
+it:
+  member:
+    access_schema:
+      title: Permessi effettivi
+      hint: Cosa può fare davvero, per progetto. Le modifiche non salvate sono evidenziate.
+      summary: "%{actions} azioni su %{projects} progetti"
+      new_tag: nuovo
+      member_added: nuovo membro
+      member_removed: rimosso dal team
+      no_project_access: Nessun accesso ai progetti.
+      org_title: Permessi a livello organizzazione
+      org_none: Nessun permesso org.
+      empty_projects:
+        one: 1 progetto senza accesso
+        other: "%{count} progetti senza accesso"
+    roles:
+      title: Ruoli
+      help_title: "Insiemi di permessi da dare a persone e team."
+      new: Nuovo ruolo
+      new_title: Nuovo ruolo
+      edit_title: Modifica ruolo
+      back: Torna ai ruoli
+      created: Ruolo creato.
+      updated: Ruolo salvato.
+      deleted: Ruolo eliminato.
+      search_placeholder: Cerca ruoli…
+      th_role: Ruolo
+      th_permissions: Permessi
+      th_used_by: Usato da
+      dangerous: delicato
+      no_permissions: niente oltre la lettura
+      show_title: Cosa concede questo ruolo
+      show_subtitle: Scheda di sola lettura. Per cambiare qualcosa, usa «Modifica ruolo».
+      show_link: Apri la scheda
+      show_dangerous_note: I permessi segnati come delicati distruggono dati, aprono informazioni riservate, eseguono comandi sulle macchine o allargano i privilegi di chi li riceve.
+      show_empty: Questo ruolo non concede ancora nessun permesso.
+      show_holders: Chi ce l'ha
+      th_areas: Aree
+      keys_count:
+        zero: 0 permessi
+        one: 1 permesso
+        other: "%{count} permessi"
+      used_teams:
+        zero: 0 team
+        one: 1 team
+        other: "%{count} team"
+      used_members:
+        zero: 0 membri
+        one: 1 membro
+        other: "%{count} membri"
+      count:
+        one: 1 ruolo
+        other: "%{count} ruoli"
+      empty: Ancora nessun ruolo.
+      # CYRA-555 — cercare un nome che non c'è non vuol dire che i ruoli non ci siano: il messaggio
+      # lo dice col numero vero, quello del chip in testata.
+      no_results_body:
+        zero: Non c'è ancora nessun ruolo da cercare.
+        one: "C'è %{count} ruolo, ma non corrisponde a quello che hai cercato."
+        other: "Ci sono %{count} ruoli, ma nessuno corrisponde a quello che hai cercato."
+      name: Nome
+      color: Colore
+      permissions: Permessi
+      selected_count: "%{selected} / %{total} selezionati"
+      legend: "progetto vale sui progetti collegati · org vale a livello organizzazione."
+      select_all: Seleziona tutti
+      propagate_note: Salvando, ogni team e membro con questo ruolo si aggiorna subito.
+      delegates: delega il controllo
+      save: Salva ruolo
+      delete: Elimina
+      # CYRA-695 — la conferma dice la CONSEGUENZA, non l'azione: chi legge deve sapere quante
+      # persone e quanti team restano senza quei permessi appena preme.
+      delete_confirm: "Eliminare il ruolo «%{name}»? %{members} e %{teams} perdono subito i suoi permessi. L'azione è irreversibile."
+      delete_dialog:
+        title: "Eliminare il ruolo %{name}?"
+        body: "%{members} e %{teams} perdono subito i suoi permessi. Non si può annullare."
+      cancel: Annulla
+    teams:
+      title: Team
+      help_title: "Gruppi di persone con i loro ruoli e progetti."
+      new: Nuovo team
+      new_title: Nuovo team
+      edit_title: Modifica team
+      back: Torna ai team
+      created: Team creato.
+      updated: Team salvato.
+      deleted: Team eliminato.
+      search_placeholder: Cerca team…
+      th_team: Team
+      th_roles: Ruoli
+      th_scope: Ambito
+      th_members: Membri
+      count:
+        one: 1 team
+        other: "%{count} team"
+      empty: Ancora nessun team.
+      no_results_body:
+        zero: Non c'è ancora nessun team da cercare.
+        one: "C'è %{count} team, ma non corrisponde a quello che hai cercato."
+        other: "Ci sono %{count} team, ma nessuno corrisponde a quello che hai cercato."
+      all_projects: Tutti i progetti
+      no_roles: Nessun ruolo
+      no_scope: Nessun ambito
+      name: Nome
+      color: Colore
+      default_assignee: Assegnatario di default dei ticket
+      default_assignee_placeholder: Nessuno
+      default_assignee_hint: I nuovi ticket dei progetti gestiti dal team, senza assegnatario esplicito, vanno a questa persona (il progetto ha la precedenza).
+      members: Membri
+      roles: Ruoli
+      roles_note: I membri ottengono ogni permesso di questi ruoli, sull'ambito qui sotto.
+      manage_roles: Gestisci ruoli
+      scope_groups: Ambito · Gruppi
+      scope_projects: Ambito · Progetti
+      group_note: Un gruppo copre tutti i suoi progetti — presenti e futuri.
+      project_note: Singoli progetti, oltre ai gruppi sopra.
+      add_member: Aggiungi un membro…
+      add_role: Aggiungi un ruolo…
+      add_group: Aggiungi un gruppo…
+      add_project: Aggiungi un progetto…
+      used_members:
+        zero: 0 membri
+        one: 1 membro
+        other: "%{count} membri"
+      save: Salva team
+      delete: Elimina
+      # CYRA-695 — gemella della conferma sui ruoli: cancellare un team toglie ai suoi membri i
+      # permessi che arrivavano da lì, e finora non lo diceva nessuno.
+      delete_confirm: "Eliminare il team «%{name}»? %{members} perdono subito i permessi che arrivavano da qui. L'azione è irreversibile."
+      delete_dialog:
+        title: "Eliminare il team %{name}?"
+        body: "%{members} perdono subito i permessi che arrivavano da qui. Non si può annullare."
+      cancel: Annulla
+    members:
+      access:
+        manage_title: Accesso e permessi
+        # CYRA-580 — le tre schede della pagina. «Effettivi» apre di default ed è di sola lettura.
+        tabs:
+          effective: Permessi effettivi
+          access: Accesso
+          overrides: Eccezioni
+        summary_title: Da dove arriva l'accesso
+        summary_hint: Questa scheda si legge soltanto. Per cambiare qualcosa passa ad «Accesso» o a «Eccezioni».
+        summary_none: Nessuno
+        scope_title: Ambito personale
+        scope_hint: Progetti che questo membro vede direttamente — in aggiunta a quelli dei suoi team.
+        direct_roles: Ruoli diretti
+        direct_roles_hint: Ruoli assegnati a questo membro direttamente, oltre a quelli dei team.
+        add_role: Aggiungi un ruolo…
+        # CYRA-580 — «override» è parola da programmatori (glossario di prodotto): la scheda e il
+        # riquadro portano lo stesso nome, «Eccezioni». La chiave i18n resta quella che era.
+        overrides_title: Eccezioni ai permessi
+        overrides_hint: Le eccezioni personali vincono sui ruoli.
+        secret_environments_title: Ambienti dei segreti
+        secret_environments_hint: Su quali ambienti questa persona può vedere e cambiare i segreti.
+        secret_environments_org_wide: In tutta l'organizzazione
+        secret_environments_org_wide_hint: Vale su ogni progetto. Lascia vuoto per non porre limiti.
+        secret_environments_all: Tutti gli ambienti
+        secret_environments_per_project: Eccezioni per progetto
+        secret_environments_per_project_hint: "Su un singolo progetto puoi allargare o restringere: qui l'elenco scelto vince su quello generale."
+        secret_environments_inherit: Come sopra
+        secret_environments_no_projects: Assegna prima un progetto a questa persona per poter fare un'eccezione.
+        state_inherit: Eredita
+        state_allow: Consenti
+        state_deny: Nega
+        origin_via_roles: dai ruoli
+        origin_not_granted: non concesso
+        origin_personal_allow: Personale · aggiunto
+        origin_personal_deny: Personale · bloccato
+        team_count:
+          one: 1 team
+          other: "%{count} team"

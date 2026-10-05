@@ -1,0 +1,128 @@
+<%# locals: host:, performance:, range: — rendimento storico dell'host (CYRA-279).
+    Le tile stanno sul canvas, non dentro il pannello: sono lo stesso gesto della sezione Signals
+    della dashboard, e annidarle nella card dei tempi farebbe due bordi uno dentro l'altro.
+    Il selettore di periodo governa TUTTO il blocco sotto — tile, tabella e ticket lavorati —
+    e resta visibile anche quando il periodo è vuoto: senza, un host con storia vecchia mostrerebbe
+    "niente" e non avrebbe modo di allargare la finestra. %>
+<section class="space-y-4" data-test="host-performance">
+  <%# T1 — title, compare, range and the notes on the figures form one panel; the tiles stay tiles below it. %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="host-performance-head">
+    <div class="px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+      <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.performance.title") %></h2>
+      <div class="flex items-center gap-2 flex-wrap">
+        <%# CYRA-451 — «di chi mi fido di più» è una domanda di confronto: da qui si aprono due host
+            affiancati sullo stesso periodo, invece di ricordare i numeri saltando fra due schede. %>
+        <%= link_to t("member.agents.performance.compare_cta"),
+              compare_member_agents_path(host_ids: [ host.id ], range: range),
+              class: "h-[26px] px-2.5 inline-flex items-center rounded-md border border-stone-200 dark:border-zinc-800 text-[12px] font-medium text-gray-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-stone-50 dark:hover:bg-zinc-800",
+              data: { test: "host-compare-cta" } %>
+      <div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800" data-test="range-selector">
+        <% Agents::Hosts::StatsRange::KEYS.each do |key| %>
+          <%= link_to t("member.agents.performance.ranges.#{key}"), member_agent_path(host, range: key),
+                class: "h-[26px] px-2.5 inline-flex items-center rounded-[5px] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 text-[12px] font-medium #{range == key ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-stone-200 dark:border-zinc-800' : 'text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}",
+                data: { test: "range-#{key}" } %>
+        <% end %>
+      </div>
+      </div>
+    </div>
+    <% if performance.any? && (performance.host_time? || performance.workflow_time? || !performance.cost.any?) %>
+      <div class="px-4 py-3 border-t border-stone-200 dark:border-zinc-800">
+        <div class="space-y-1">
+          <%# CYRA-499 — due tempi affiancati senza una parola che li distingua si leggono a indovinare,
+              e quello dell'agente passa per il tempo totale. Ogni riga c'è solo se la sua tile c'è. %>
+          <% if performance.host_time? || performance.workflow_time? %>
+            <p class="text-[11.5px] text-gray-500 dark:text-zinc-400 leading-relaxed" data-test="perf-time-legend">
+              <% if performance.host_time? %>
+                <span class="font-medium text-zinc-700 dark:text-zinc-300"><%= t("member.agents.performance.host_time") %>:</span>
+                <%= t("member.agents.performance.host_time_legend") %>
+              <% end %>
+              <% if performance.workflow_time? %>
+                <% if performance.host_time? %><span class="mx-1 text-stone-300 dark:text-zinc-600">·</span><% end %>
+                <span class="font-medium text-zinc-700 dark:text-zinc-300"><%= t("member.agents.performance.workflow_time") %>:</span>
+                <%= t("member.agents.performance.workflow_time_legend") %>
+              <% end %>
+            </p>
+          <% end %>
+          <%# CYRA-451 voleva che l'assenza di costo tracciato fosse DETTA, non nascosta; CYRA-499 che
+              nessun riquadro mostri un trattino. La frase resta, fuori dalla griglia: nessuna tile vuota
+              e l'informazione non si perde. %>
+          <% unless performance.cost.any? %>
+            <p class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="perf-cost-unavailable"><%= t("member.agents.performance.cost_unavailable") %></p>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <% if performance.any? %>
+    <%# CYRA-451 — le tile portano la variazione sul periodo precedente: un numero da solo non dice
+        se stia migliorando. Su `all` il confronto non esiste e la riga del delta non compare.
+        CYRA-499 — l'elenco delle tile lo decide l'helper: una misura senza valore non compare
+        affatto, invece di occupare un quinto della riga con un trattino. %>
+    <% tiles = agent_performance_tiles(performance, previous) %>
+    <div class="grid grid-cols-2 <%= agent_tiles_grid_class(tiles.size) %> gap-4">
+      <% tiles.each do |tile| %>
+        <%= render Ui::MetricTileComponent.new(**tile) %>
+      <% end %>
+    </div>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="host-phase-table">
+      <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3">
+        <h3 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.performance.by_phase") %></h3>
+        <% if performance.plans_sent_back_pct %>
+          <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="perf-plans-sent-back">
+            <%= t("member.agents.performance.plans_sent_back",
+                  count: performance.plans_sent_back, total: performance.plans_total,
+                  percent: agent_percent(performance.plans_sent_back_pct)) %>
+          </span>
+        <% end %>
+      </div>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.agents.performance.by_phase"))) do |table| %>
+        <% table.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.performance.col_phase")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.performance.col_attempts"), align: :right) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.performance.col_approved"), align: :right) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.performance.col_rejected"), align: :right) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.performance.col_failed"), align: :right) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.performance.col_interrupted"), align: :right) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.performance.col_avg"), align: :right) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.performance.col_median"), align: :right) %>
+        <% end %>
+        <%# Le fasi mai eseguite restano in tabella, spente: "questo host non fa la produzione" è
+            informazione, e una riga che sparisce non la dà. %>
+        <% performance.by_phase.each do |row| %>
+          <%= render Ui::TableComponent::RowComponent.new(faded: !row.any?, test_id: "phase-row", data: { phase: row.phase }) do %>
+            <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-zinc-900 dark:text-zinc-100")) { t("member.agents.phases.#{row.phase}") } %>
+            <%# CYRA-451 — ogni cella apre le lavorazioni che stanno dietro al numero: 98 interrotti su
+                146 erano un dato senza un elenco da consultare. Lo zero non è un link: non c'è niente
+                da aprire, e un link che porta a una lista vuota è una promessa mancata. %>
+            <%= render "phase_cell", host:, range:, phase: row.phase, outcome: nil, value: row.attempts, color: :neutral, label: t("member.agents.performance.col_attempts") %>
+            <%= render "phase_cell", host:, range:, phase: row.phase, outcome: "approved", value: row.approved, color: :emerald, label: t("member.agents.performance.col_approved") %>
+            <%= render "phase_cell", host:, range:, phase: row.phase, outcome: "rejected", value: row.rejected, color: :red, label: t("member.agents.performance.col_rejected") %>
+            <%= render "phase_cell", host:, range:, phase: row.phase, outcome: "failed", value: row.failed, color: :amber, label: t("member.agents.performance.col_failed") %>
+            <%= render "phase_cell", host:, range:, phase: row.phase, outcome: "interrupted", value: row.interrupted, color: :neutral, label: t("member.agents.performance.col_interrupted") %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.performance.col_avg"), align: :right, mono: true,
+                  class: (row.avg_seconds ? "text-gray-500 dark:text-zinc-400" : "text-gray-300 dark:text-zinc-600"))) { agent_duration(row.avg_seconds) } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.performance.col_median"), align: :right, mono: true,
+                  class: (row.median_seconds ? "text-gray-500 dark:text-zinc-400" : "text-gray-300 dark:text-zinc-600"))) { agent_duration(row.median_seconds) } %>
+          <% end %>
+        <% end %>
+        <% table.with_foot do %>
+          <tr data-test="phase-total-row">
+            <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "font-semibold text-zinc-900 dark:text-zinc-100")) { t("member.agents.performance.total") } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.performance.col_attempts"), align: :right, mono: true, class: "font-semibold text-zinc-900 dark:text-zinc-100")) { performance.attempts_count.to_s } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.performance.col_approved"), align: :right, class: agent_count_class(performance.outcomes.approved, :emerald))) { performance.outcomes.approved.to_s } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.performance.col_rejected"), align: :right, class: agent_count_class(performance.outcomes.rejected, :red))) { performance.outcomes.rejected.to_s } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.performance.col_failed"), align: :right, class: agent_count_class(performance.outcomes.failed, :amber))) { performance.outcomes.failed.to_s } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.performance.col_interrupted"), align: :right, class: agent_count_class(performance.outcomes.interrupted, :neutral))) { performance.outcomes.interrupted.to_s } %>
+            <td></td>
+            <td></td>
+          </tr>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.agents.performance.empty"), body: t("member.agents.performance.empty_body"),
+          icon: "chart-column", compact: true, framed: true, test_id: "host-performance-empty") %>
+  <% end %>
+</section>

@@ -1,0 +1,16 @@
+<%# locals: (action:, limit: 3) %>
+<%# Overlapping initials of the participants; past the limit a "+N". %>
+<% people = action.participants.to_a %>
+<% if people.empty? %>
+  <span class="text-[11px] text-gray-400 dark:text-zinc-500"><%= t("member.workload.actions.participants_count", count: 0) %></span>
+<% else %>
+  <span class="inline-flex items-center -space-x-1.5" aria-label="<%= people.map(&:name).to_sentence %>">
+    <% people.first(limit).each do |account| %>
+      <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-[8.5px] font-semibold ring-2 ring-white dark:ring-zinc-900"
+            title="<%= account.name %>" data-test="workload-participant-initials"><%= avatar_initials(account.name) %></span>
+    <% end %>
+    <% if people.size > limit %>
+      <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 text-[8.5px] font-semibold ring-2 ring-white dark:ring-zinc-900">+<%= people.size - limit %></span>
+    <% end %>
+  </span>
+<% end %>

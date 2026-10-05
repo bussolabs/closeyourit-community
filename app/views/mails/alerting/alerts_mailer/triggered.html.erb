@@ -1,0 +1,32 @@
+<%# Alert monitoring — corpo della mail (frame: layouts/mailer.html.erb). Accento semantico per evento. %>
+<% content_for :accent, mail_accent_for(@notification.event_type) %>
+<% content_for :preheader, @notification.title %>
+
+<!-- pill tipo evento -->
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 12px 0;"><tr>
+  <td style="background-color:<%= mail_accent_soft_for(@notification.event_type) %>;border-radius:6px;padding:3px 10px;font-family:<%= MailerHelper::FONT_SANS %>;font-size:11.5px;font-weight:600;color:<%= mail_accent_for(@notification.event_type) %>;">&#9679; <%= alerting_event_label(@notification.event_type) %></td>
+</tr></table>
+
+<h1 style="<%= mail_h1_style(size: 20) %>"><%= @notification.title %></h1>
+
+<!-- meta box: progetto + origine -->
+<% if @notification.project || @notification.body.present? %>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 0 0;border:1px solid <%= MailerHelper::MAIL_BORDER %>;border-radius:10px;background-color:<%= MailerHelper::MAIL_SUBTLE %>;">
+    <tr><td style="padding:14px 16px;">
+      <% if @notification.project %>
+        <p style="margin:0 0 <%= @notification.body.present? ? "8px" : "0" %> 0;<%= mail_mono_style %>"><span style="color:<%= MailerHelper::MAIL_MUTED %>;"><%= t("alerting.alerts.mailer.triggered.label_project") %>&nbsp;&nbsp;</span><span style="color:<%= MailerHelper::MAIL_ACCENT %>;font-weight:500;"><%= @notification.project.key %></span> · <%= @notification.project.name %></p>
+      <% end %>
+      <% if @notification.body.present? %>
+        <p style="margin:0;<%= mail_mono_style %>"><span style="color:<%= MailerHelper::MAIL_MUTED %>;"><%= t("alerting.alerts.mailer.triggered.label_source") %>&nbsp;&nbsp;</span><%= @notification.body %></p>
+      <% end %>
+    </td></tr>
+  </table>
+<% end %>
+
+<% if @notification.url.present? %>
+  <div style="margin:22px 0 0 0;">
+    <%= render "mails/shared/button", label: t("alerting.alerts.mailer.triggered.action"), url: mail_absolute_url(@notification.url), color: mail_accent_for(@notification.event_type) %>
+  </div>
+<% end %>
+
+<p style="<%= mail_note_style %>"><%= t("alerting.alerts.mailer.triggered.footer") %></p>

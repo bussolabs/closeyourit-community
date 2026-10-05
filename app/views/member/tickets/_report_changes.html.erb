@@ -1,0 +1,20 @@
+<%# locals: (report:, previous:) %>
+<%# CYRA-883 — what changed since the version before, closed until asked for. Lines as written in
+    the source: removed in red, added in green, unchanged lines left out. %>
+<% changes = report_changes(previous.body, report.body) %>
+<% if changes.any? %>
+  <details class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ticket-report-diff">
+    <summary class="list-none cursor-pointer px-4 py-2 flex items-center gap-2 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:bg-stone-50 dark:hover:bg-zinc-800 rounded-lg [&::-webkit-details-marker]:hidden">
+      <%= render Ui::IconComponent.new(name: "git-compare", class: "text-[11px]") %>
+      <%= t("member.tickets.show.report_changes", version: previous.version) %>
+    </summary>
+    <ul class="border-t border-stone-100 dark:border-zinc-800 px-4 py-2.5 space-y-1 font-mono text-[11.5px] leading-relaxed">
+      <% changes.each do |kind, line| %>
+        <li class="px-2 py-0.5 rounded [overflow-wrap:anywhere] <%= kind == :added ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-800 dark:text-emerald-200" : "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-300 line-through decoration-red-300" %>"
+            data-test="ticket-report-diff-<%= kind %>">
+          <span class="sr-only"><%= t("member.tickets.show.report_change_#{kind}") %></span><%= kind == :added ? "+" : "−" %> <%= line %>
+        </li>
+      <% end %>
+    </ul>
+  </details>
+<% end %>

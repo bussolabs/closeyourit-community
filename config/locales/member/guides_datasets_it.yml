@@ -1,0 +1,37 @@
+---
+it:
+  member:
+    guides:
+      index:
+        datasets:
+          title: Dataset
+      datasets:
+        title: Dataset
+        subtitle: Insegnare a CloseYourIt una scelta che oggi rifai a mano.
+        what_title: A cosa serve
+        what_intro: "C'è una scelta che rifai in continuazione sempre con lo stesso criterio: guardi una cosa, la leggi e decidi. Qui gliela insegni mostrandogli qualche decina di casi che hai già sistemato tu; da lì in poi, quando arriva un caso nuovo, la domanda la fai a lui e controlli la risposta."
+        what_b1: "Ogni segnalazione che arriva è un guasto o una richiesta nuova? Gliene mostri una quarantina già smistate da te, poi gli chiedi le altre."
+        what_b2: "La foto di un pezzo appena prodotto: buono o da scartare? Gliene mostri un po' per tipo e ti dice come vede quelli nuovi."
+        what_b3: "Il messaggio di un cliente: urgente o può aspettare? Stessa storia — prima gli esempi, poi le domande."
+        when_title: Quando ne vale la pena
+        when_b1: La stessa domanda torna spesso, non una volta ogni tanto.
+        when_b2: "La risposta è corta: una scelta fra poche, un sì o no, un numero. Se la risposta è un discorso, questo non è lo strumento giusto."
+        when_b3: I casi già decisi ce li hai già. Ne servono almeno tre per partire, ma sotto la ventina la risposta è poco affidabile.
+        when_b4: Chi decide resta una persona. Quello che leggi qui è una proposta, non un verdetto.
+        how_title: Come si fa
+        how_step1: Crea la raccolta e scegli a quale progetto appartiene. La vede chi vede quel progetto.
+        how_step2: "Dichiara cosa gli darai (il testo di una segnalazione, una foto, un numero) e cosa deve dirti in risposta. Nelle schermate la prima colonna si chiama «Input», la seconda «Target»."
+        how_step3: Aggiungi i casi che hai già deciso tu, uno per riga, con la risposta giusta accanto. Sono gli esempi da cui impara.
+        how_step4: "Premi «Allena»: si legge i tuoi esempi, poi prova a rispondere da solo su una parte che gli hai tenuto nascosta, per vedere quante volte ci prende. Ci vuole qualche minuto."
+        how_step5: "Da lì in poi apri «Predici», gli dai un caso nuovo e leggi la risposta."
+        trust_title: Quanto ci si può fidare
+        trust_intro: "A fine lavoro trovi la percentuale di volte in cui ha risposto come avresti risposto tu, misurata sui casi che gli erano stati tenuti nascosti: è la stima più onesta che si possa dare."
+        trust_b1: Se la percentuale è bassa, di solito mancano esempi oppure la domanda non è abbastanza netta.
+        trust_b2: Puoi rifarlo tutte le volte che vuoi dopo aver aggiunto altri casi. Resta valida l'ultima volta.
+        trust_b3: La risposta su un caso nuovo resta una proposta da controllare, come il consiglio di un collega.
+        not_title: Cosa NON è
+        not_intro: "Non ha niente a che vedere con le macchine che lavorano i ticket. Non smista quello che arriva, non risponde da solo e non fa partire niente in automatico: qui la risposta la chiedi tu, un caso per volta, quando ti serve."
+        not_b1: "Non tocca i tuoi ticket: quello che insegni qui resta qui."
+        not_b2: "Non impara da solo strada facendo: impara dai casi che gli dai, quando glieli dai."
+        not_b3: Non è una ricerca dentro i tuoi dati. Risponde su un caso alla volta, quello che gli metti davanti.
+        cta: Vai ai Dataset

@@ -1,0 +1,53 @@
+<%# locals: () %>
+<% on_preferences = controller_path == "member/preferences" %>
+<div class="md:hidden shrink-0 border-t border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-4 space-y-3" data-test="member-menu-profile">
+  <% if current_organization %>
+    <details class="relative px-3" data-controller="ui--dismissable" data-test="member-menu-org-switcher">
+      <summary class="list-none cursor-pointer flex h-8 items-center gap-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2 text-gray-600 dark:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+        <span class="h-1.5 w-1.5 rounded-[2px] <%= organization_swatch_class(current_organization) %>" aria-hidden="true"></span>
+        <span class="flex-1 truncate text-[12px] font-medium"><%= current_organization.name %></span>
+        <%= render Ui::IconComponent.new(name: "chevron-down", class: "text-[9px] text-gray-500 dark:text-zinc-400") %>
+      </summary>
+      <div class="absolute inset-x-3 bottom-9 z-10 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-1">
+        <% switchable_organizations.each do |org| %>
+          <%= button_to member_organization_switches_path(organization_id: org.id), method: :post,
+                class: "w-full flex items-center gap-2 px-2 h-8 text-left text-[12px] #{org.id == current_organization.id ? 'bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100'}",
+                data: { test: "member-menu-org-switch-#{org.id}" } do %>
+            <span class="h-1.5 w-1.5 rounded-[2px] <%= organization_swatch_class(org) %>" aria-hidden="true"></span>
+            <span class="truncate"><%= org.name %></span>
+          <% end %>
+        <% end %>
+      </div>
+    </details>
+  <% end %>
+
+  <div class="space-y-0.5">
+    <div class="mb-1 flex items-center gap-2.5 px-3">
+      <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-stone-200 dark:bg-zinc-700 text-[10px] font-semibold text-zinc-900 dark:text-zinc-100" aria-hidden="true"><%= avatar_initials(account_display_name) %></span>
+      <p class="truncate text-[12px] font-semibold text-zinc-900 dark:text-zinc-100" data-test="member-menu-name"><%= account_display_name %></p>
+    </div>
+    <% if current_organization %>
+      <%= render Ui::NavLinkComponent.new(label: t("member.nav.preferences"), path: member_preferences_path, icon: "settings",
+            active: on_preferences, size: :account, test_id: "member-menu-account") %>
+    <% end %>
+    <% if Current.account&.god? %>
+      <%= render Ui::NavLinkComponent.new(label: t("member.nav.valhalla"), path: valhalla_root_path, icon: "crown",
+            icon_class: "text-amber-500 dark:text-amber-400", size: :account, test_id: "member-menu-valhalla") %>
+    <% end %>
+    <%# CYRA-935 — on a phone the footer is not there: Support opens from here. %>
+    <% if current_organization %>
+      <%= render Ui::ButtonComponent.new(label: t("member.support.button"), icon: "life-buoy", variant: :ghost, size: :sm,
+            class: "w-full justify-start md:hidden", test_id: "member-menu-support",
+            data: { action: "ui--mobile-nav#close ui--support#open" }) %>
+    <% end %>
+    <%# CYRA-698 — the signed-in area has no footer: the privacy notice lives here, with the other
+        entries that are not work navigation. %>
+    <% if Website::MarketingGate.enabled? %>
+      <%= render Ui::NavLinkComponent.new(label: t("website.footer.privacy"), path: privacy_path, icon: "shield-half",
+            size: :account, test_id: "member-menu-privacy") %>
+    <% end %>
+    <%= button_to logout_path, method: :delete, class: "w-full flex items-center gap-2.5 px-3 h-8 rounded-md text-[12px] font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/15", data: { test: "member-menu-logout" } do %>
+      <%= render Ui::IconComponent.new(name: "log-out", class: "w-[1.25em] shrink-0 text-[13px]") %><span class="truncate"><%= t("home.sign_out") %></span>
+    <% end %>
+  </div>
+</div>

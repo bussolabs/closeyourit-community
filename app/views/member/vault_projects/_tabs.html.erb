@@ -1,0 +1,8 @@
+<%# locals: header:, active_tab — adds the tabs to the page header (DESIGN.md T2). %>
+<%# CYRA-428 — le due letture degli STESSI dati: l'elenco dei progetti (parti dal progetto e vedi cosa
+    contiene) e la ricerca per nome di variabile (parti dalla chiave e vedi dove c'è e dove manca).
+    Erano due voci di menu; sono due schede della stessa voce. %>
+<% header.with_tab(label: t("member.vault.tabs.by_project"), href: member_vault_projects_path, active: active_tab.to_s == "by_project", icon: "folder", test_id: "vault-projects-tab-by-project") %>
+<% if vault_variable_search_nav_visible? %>
+  <% header.with_tab(label: t("member.vault.tabs.by_variable"), href: member_vault_variables_path, active: active_tab.to_s == "by_variable", icon: "search", test_id: "vault-projects-tab-by-variable") %>
+<% end %>

@@ -1,0 +1,6 @@
+<%= render(Ui::DescriptionListComponent.new(columns: 1, gap_y: 3, gap_x: nil)) do |list| %>
+  <% list.with_item(label: "Punto del codice", value: "app/models/ticket.rb:42") %>
+  <% list.with_item(label: "Rilascio", hint: "Da dove arriva il numero") do %>
+    <p class="mt-1"><a class="font-mono text-[12px] text-indigo-600" href="#">a1b2c3d</a></p>
+  <% end %>
+<% end %>

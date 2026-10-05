@@ -1,0 +1,17 @@
+<%# locals: cluster: — the ⋯ menu: a new access code and delete, each behind its confirmation (B13, F16). %>
+<%= render Ui::ConfirmDialogComponent.new(title: t("member.clusters.rotate_dialog.title", name: cluster.name),
+      url: rotate_member_monitoring_cluster_path(cluster), method: :patch,
+      confirm_label: t("member.clusters.actions.rotate"), dialog_id: "cluster-rotate-dialog", test_id: "cluster-rotate-dialog") do |dialog| %>
+  <% dialog.with_body { t("member.clusters.rotate_dialog.body") } %>
+<% end %>
+<%= render Ui::ConfirmDialogComponent.new(title: t("member.clusters.delete_dialog.title", name: cluster.name),
+      url: member_monitoring_cluster_path(cluster), confirm_label: t("member.clusters.actions.delete"),
+      dialog_id: "cluster-delete-dialog", test_id: "cluster-delete-dialog") do |dialog| %>
+  <% dialog.with_body { t("member.clusters.delete_dialog.body") } %>
+<% end %>
+<%= render Ui::RowMenuComponent.new(test_id: "cluster-menu", aria_label: t("member.clusters.actions.more")) do %>
+  <%= render Ui::ConfirmDialogComponent::RemoteTriggerComponent.new(dialog_id: "cluster-rotate-dialog",
+        label: t("member.clusters.actions.rotate"), test_id: "cluster-rotate") %>
+  <%= render Ui::ConfirmDialogComponent::RemoteTriggerComponent.new(dialog_id: "cluster-delete-dialog",
+        label: t("member.clusters.actions.delete"), test_id: "cluster-delete") %>
+<% end %>

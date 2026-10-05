@@ -1,0 +1,7 @@
+<%= render "form",
+      monitor: @monitor,
+      url: member_monitoring_monitors_path,
+      method: :post,
+      title: t("member.uptime.form.new_title"),
+      lead: t("member.uptime.form.lead_new"),
+      submit_label: t("member.uptime.form.save_new") %>

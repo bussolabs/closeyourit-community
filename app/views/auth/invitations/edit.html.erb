@@ -1,0 +1,56 @@
+<% content_for :title, t("auth.invitations.title") %>
+
+<%= render Ui::CardComponent.new do %>
+  <h1 class="font-display text-[20px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("auth.invitations.title") %></h1>
+  <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= @existing_account ? t("auth.invitations.existing_title") : t("auth.invitations.subtitle") %></p>
+
+  <%# Contesto invito: organizzazione + email + ruolo, read-only (dall'invito) %>
+  <div class="mt-4 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-950 divide-y divide-stone-200 dark:divide-zinc-800" data-test="invite-context">
+    <div class="flex items-center justify-between px-3 py-2.5">
+      <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("auth.invitations.organization") %></span>
+      <span class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100" data-test="invite-organization"><%= @invitation.organization.name %></span>
+    </div>
+    <div class="flex items-center justify-between px-3 py-2.5">
+      <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("auth.invitations.email") %></span>
+      <span class="font-mono text-[12px] text-zinc-900 dark:text-zinc-100" data-test="invite-email"><%= @invitation.email %></span>
+    </div>
+    <div class="flex items-center justify-between px-3 py-2.5">
+      <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("auth.invitations.role") %></span>
+      <span class="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-300" data-test="invite-role"><%= @invitation.role.capitalize %></span>
+    </div>
+  </div>
+  <% if @invitation.invited_by %>
+    <p class="mt-1.5 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("auth.invitations.invited_by", name: @invitation.invited_by.name) %></p>
+  <% end %>
+
+  <%# Account già registrato su questa email: AcceptInvitation collega quello e scarta la password del
+      modulo, quindi qui non si chiede nulla — si conferma e si va all'accesso. %>
+  <% if @existing_account %>
+    <p class="mt-5 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="invite-existing">
+      <%= t("auth.invitations.existing_body", organization: @invitation.organization.name) %>
+    </p>
+
+    <%= form_with url: invitation_path(@token), method: :patch, class: "mt-5", data: { test: "invite-form" } do %>
+      <%= render Ui::ButtonComponent.new(label: t("auth.invitations.existing_submit"), type: "submit", size: :lg, test_id: "invite-submit", class: "w-full") %>
+    <% end %>
+  <% else %>
+  <%= form_with url: invitation_path(@token), method: :patch, class: "mt-5 space-y-4", data: { test: "invite-form" } do %>
+    <%= render Ui::InputComponent.new(name: "name", label: t("auth.fields.name"), required: true,
+          test_id: "invite-name", value: params[:name], error: @errors&.dig(:name)&.first) %>
+
+    <div data-controller="ui--password-rules">
+      <%= render Ui::InputComponent.new(name: "password", label: t("auth.fields.password"), type: "password", required: true,
+            test_id: "invite-password", error: @errors&.dig(:password)&.first,
+            data: { "ui--password-rules-target" => "input", action: "input->ui--password-rules#check" }) %>
+      <%= render Ui::PasswordRulesComponent.new(test_id: "invite-password-rules") %>
+    </div>
+
+    <%= render Ui::InputComponent.new(name: "password_confirmation", label: t("auth.fields.password_confirmation"), type: "password", required: true,
+          test_id: "invite-password-confirmation", error: @errors&.dig(:password_confirmation)&.first) %>
+
+    <%= render Ui::ButtonComponent.new(label: t("auth.invitations.submit"), type: "submit", size: :lg, test_id: "invite-submit", class: "w-full") %>
+  <% end %>
+  <% end %>
+<% end %>
+
+<p class="mt-5 text-center text-[11px] text-gray-500 dark:text-zinc-400"><%= t("auth.invitations.expiry_note") %></p>

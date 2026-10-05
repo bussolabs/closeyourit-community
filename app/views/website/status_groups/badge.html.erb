@@ -1,0 +1,9 @@
+<%
+  # Stessa scelta della gemella per-monitor: lingua dal locale già risolto, mai dal param grezzo.
+  locale = I18n.locale == I18n.default_locale ? nil : I18n.locale
+%>
+<% content_for :title, "#{@group.name} — #{t('website.status_group.title')}" %>
+<%= render "website/shared/badge",
+      state: @state,
+      label: t("website.status_group.headline.#{@state}"),
+      url: public_group_status_url(@org.slug, @group.slug, locale:) %>

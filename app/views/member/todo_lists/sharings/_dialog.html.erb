@@ -1,0 +1,13 @@
+<%# locals: list — the sharing form in a dialog over the list (same PATCH as the sharing page).
+    F24: standard modal shell; the form wraps header and panel so Save in the header submits it. %>
+<%= render Ui::ModalComponent.new(title: t("member.todo_lists.share.title"), size: :sm, padded: false, test_id: "todo-share-dialog",
+      form: { url: member_todo_list_sharing_path(list), method: :patch, data: { test: "todo-share-form" } },
+      data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+  <% modal.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: t("member.todo_lists.form.cancel"), variant: :secondary_muted, size: :sm, data: { action: "ui--dialog#close" }) %>
+    <%= render Ui::ButtonComponent.new(label: t("member.todo_lists.share.save"), type: "submit", icon: "check", size: :sm, test_id: "todo-share-submit") %>
+  <% end %>
+  <div class="p-4">
+    <%= render "member/todo_lists/sharings/recipients" %>
+  </div>
+<% end %>

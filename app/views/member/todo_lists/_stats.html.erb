@@ -1,0 +1,16 @@
+<%# locals: list, can_edit — chip di avanzamento nell'header della lista.
+    Wrapper display:contents (come member/monitoring/*/_stats): le chip partecipano direttamente al
+    flex del counts slot — niente flex annidato, niente margine doppio.
+    CYRA-828 — l'id è il bersaglio stabile del turbo_stream: spuntare una voce rimpiazza QUESTO blocco
+    insieme alla riga, così la casella e il numero delle completate cambiano nello stesso scambio. %>
+<div id="todo_list_stats" class="contents" data-test="todo-list-stats">
+  <%# "3 of 5 done" with a bar next to it: same numbers as before, read at a glance. %>
+  <%= render Ui::StatLabelComponent.new(label: t("member.todo_lists.progress_label"),
+        value: t("member.todo_lists.progress_header", done: list.done_count, total: list.items_count), test_id: "todo-list-progress") %>
+  <span class="inline-block w-16 h-[5px] self-center rounded-full bg-stone-100 dark:bg-zinc-800 overflow-hidden" aria-hidden="true">
+    <span class="block h-full bg-indigo-500" style="width: <%= todo_list_progress_percent(list) %>%"></span>
+  </span>
+  <% unless can_edit %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.todo_lists.shared_by_label"), value: list.account.name, value_color: :indigo, test_id: "todo-list-shared-by") %>
+  <% end %>
+</div>

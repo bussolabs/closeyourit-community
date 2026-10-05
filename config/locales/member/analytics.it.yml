@@ -1,0 +1,145 @@
+it:
+  member:
+    nav:
+      analytics: Statistiche del sito
+    monitoring:
+      analytics:
+        title: Statistiche del sito
+        empty: Nessun progetto web
+        empty_body: Le statistiche del sito si attivano sui progetti con piattaforma web. Aggiungi la piattaforma web a un progetto, poi invia i pageview con l'SDK closeyourit-js (trackPageviews).
+        no_data: Nessun dato nel periodo.
+        onboarding:
+          title: Collega il tuo sito
+          body: "Nessuna visita è ancora arrivata per %{project}. Incolla questo codice nelle pagine del sito e le statistiche partono da sole."
+          snippet_label: Codice da incollare
+          copy: Copia
+          copied: Copiato
+          key_placeholder: LA_TUA_CHIAVE_PUBBLICA
+          expected_domain: Domini attesi
+          domain_unknown: Nessun dominio dichiarato per questo progetto.
+          token_label: Chiave pubblica
+          token_link: Apri i codici del progetto
+          token_locked: Chiedila a un amministratore del progetto.
+          waiting: In attesa della prima visita. La pagina si aggiorna da sola appena arriva.
+          guide: Leggi la guida alle statistiche
+        range_empty:
+          title: Nessuna visita in questo periodo
+          last_visit: "L'ultima visita risale al %{at}."
+          go_to: "Vai al periodo %{range}"
+          panels_label: Riquadri senza dati in questo periodo
+        filter_project: Progetto
+        filter_environment: Environment
+        apply: Applica
+        chart_title: Pageview
+        timeline_sub: "ultimi %{range} · %{count} intervalli"
+        timeline_window: "dal %{from} al %{to}"
+        automated_toggle: Visite di controllo
+        chart_peak: "picco %{count}"
+        chart_summary: "Istogramma dei pageview degli ultimi %{range}, picco %{count}."
+        # CYRA-570: nessun pageview nel periodo — lo dice il grafico, non cinquantasei barre a zero.
+        chart_empty: "Nessun pageview in questo periodo."
+        tooltip_visitors:
+          one: "%{count} visitatore"
+          other: "%{count} visitatori"
+        pages_title: Pagine più viste
+        referrers_title: Referrer principali
+        channels_title: Canali
+        # CYRA-497: i canali arrivano dal dato con nomi inglesi; qui vivono le parole che si leggono.
+        channels:
+          direct: Accesso diretto
+          organic_search: Ricerca
+          organic_social: Social
+          ai_assistants: Assistenti AI
+          referral: Da altri siti
+          email: Email
+          paid: Campagne a pagamento
+        entry_exit_title: Pagine di ingresso e uscita
+        entry_pages: Pagine di ingresso
+        exit_pages: Pagine di uscita
+        locations_title: Località
+        comparison:
+          vs_previous: Le variazioni sono rispetto al periodo precedente della stessa durata.
+          flat: "="
+        realtime:
+          title: Adesso
+          window: ultimi 30 min
+          loading: Caricamento…
+        filters:
+          active: Filtri
+          referrer_host: Referrer
+          country_code: Paese
+          device_type: Dispositivo
+          screen_class: Schermo
+          browser_version: Versione browser
+          os_version: Versione OS
+        devices_title: Browser e sistema operativo
+        browsers: Browser
+        oses: Sistemi operativi
+        device_types_title: Dispositivo e schermo
+        device_type: Tipo dispositivo
+        screen_size: Dimensione schermo
+        device_labels:
+          mobile: Mobile
+          tablet: Tablet
+          laptop: Laptop
+          desktop: Desktop
+        utm_title: Campagne (UTM)
+        utm_source: Sorgente
+        utm_medium: Mezzo
+        utm_campaign: Campagna
+        utm_term: Termine
+        utm_content: Contenuto
+        utm_empty: "Nessuna visita arrivata da un link di campagna nel periodo."
+        col_pageviews: pageview
+        col_visitors: visitatori
+        stats:
+          pageviews: Pageview
+          visitors: Visitatori
+          realtime: Adesso
+          bounce: Bounce
+          duration: Visita media
+          views_per_visit: Pagine/visita
+        bucket:
+          no_data: nessun traffico
+          tooltip: "%{pageviews} pageview · %{visitors} visitatori"
+        goals:
+          title: Goal
+          help_title: "Le visite o gli eventi che contano come obiettivo raggiunto."
+          new: Nuovo goal
+          manage: Gestisci goal
+          count: Goal
+          empty: Nessun goal. Creane uno per tracciare le conversioni.
+          created: Goal creato
+          deleted: Goal eliminato
+          delete: Elimina
+          delete_dialog:
+            title: "Eliminare il goal %{name}?"
+            body: "Visite ed eventi restano: sparisce solo il conteggio delle conversioni di questo goal. Non si può annullare."
+          save: Salva goal
+          cancel: Annulla
+          col_goal: Goal
+          col_kind: Tipo
+          col_unique: Unici
+          col_total: Totali
+          col_rate: Tasso
+          kinds:
+            pageview_path: Path pagina
+            custom_event: Evento custom
+          form:
+            display_name: Nome
+            kind: Tipo
+            path_pattern: Pattern del path
+            path_hint: Per i goal path-pagina — path esatto o prefisso con "*" (es. /blog/*).
+            event_name: Nome evento
+            event_hint: Per i goal evento-custom — il nome inviato da captureEvent.
+        share:
+          title: Condivisione ed embed
+          create: Crea link
+          active: Link pubblico
+          revoke: Revoca
+          confirm_revoke: Revocare il link pubblico?
+          published_by: "Pubblicato da %{name} il %{at}."
+          created: Link pubblico creato
+          revoked: Link pubblico revocato
+          public_url: URL pubblico
+          embed: Codice embed

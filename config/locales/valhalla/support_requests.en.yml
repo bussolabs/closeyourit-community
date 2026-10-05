@@ -1,0 +1,30 @@
+en:
+  valhalla:
+    nav:
+      support_requests: Support requests
+    support_requests:
+      title: Support requests
+      help_title: What people sent from the Support button, with the page they were on.
+      count_new: New
+      count_total: Total
+      search_placeholder: Search the requests…
+      empty_title: No support request yet
+      empty_body: When someone presses Support and sends a message, it shows up here.
+      col_when: When
+      col_from: From
+      col_organization: Organization
+      col_page: Page
+      col_request: Request
+      col_status: Status
+      states:
+        pending: New
+        handled: Handled
+      handle: Mark as handled
+      reopen: Mark as new
+      handled: Request marked as handled.
+      reopened: Request marked as new.
+      handled_by: "Handled by %{name} on %{date}"
+      message_title: Request
+      context_title: Sent with the request
+      reply: Reply by email
+      no_organization: No organization

@@ -1,0 +1,16 @@
+<%# Pannello-evidenza illustrativo: stream di log con correlazione trace_id. %>
+<div class="rounded-lg border border-stone-200 bg-white overflow-hidden" aria-hidden="true">
+  <div class="flex items-center gap-2 px-4 h-9 border-b border-stone-200">
+    <span class="font-mono text-[11px] text-gray-500">logs / api · tail</span>
+    <span class="ml-auto font-mono text-[10.5px] text-gray-500">trace_id = <span class="text-indigo-600">a41f-9c02</span></span>
+  </div>
+  <div class="px-4 py-3 font-mono text-[11.5px] leading-[1.9] overflow-x-auto">
+    <p><span class="text-gray-500">14:02:11</span> <span class="inline-block w-10 text-[10px] font-medium text-sky-600">info</span> <span class="text-zinc-900">checkout started</span> <span class="text-gray-500">cart=3</span> <span class="text-indigo-600">a41f-9c02</span></p>
+    <p><span class="text-gray-500">14:02:12</span> <span class="inline-block w-10 text-[10px] font-medium text-amber-600">warn</span> <span class="text-zinc-900">discount code expired</span> <span class="text-gray-500">code=SAVE10</span> <span class="text-indigo-600">a41f-9c02</span></p>
+    <p><span class="text-gray-500">14:02:12</span> <span class="inline-block w-10 text-[10px] font-medium text-red-600">error</span> <span class="text-zinc-900">NoMethodError — order not created</span> <span class="text-indigo-600">a41f-9c02</span></p>
+    <p><span class="text-gray-500">14:02:14</span> <span class="inline-block w-10 text-[10px] font-medium text-sky-600">info</span> <span class="text-zinc-900">payment webhook received</span> <span class="text-gray-500">psp=stripe</span> <span class="text-gray-500">b7e3-1d40</span></p>
+  </div>
+  <div class="px-4 py-2.5 border-t border-stone-100 font-mono text-[10.5px] text-gray-500">
+    3 lines share this trace → <span class="text-zinc-900">1 error · 1 slow query</span> · linked ticket <span class="text-zinc-900">DRRA-321</span>
+  </div>
+</div>

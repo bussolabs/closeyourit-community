@@ -1,0 +1,63 @@
+<% content_for :title, @series.name %>
+<div class="p-7 space-y-6" data-test="measurement-detail">
+  <%= render "header", title: @series.name, count_label: measurement_label("interval_count"), stat_value: @buckets.size, project_id: @project.id, series_id: @series.id %>
+  <%= render Ui::GridComponent.new(cols: 1, lg: 3, gap: 6) do %>
+    <%= render Ui::StackComponent.new(gap: 6, class: "lg:col-span-2 min-w-0") do %>
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+        <%= render Ui::TableToolbarComponent.new(framed: true, url: member_monitoring_measurement_path(@series)) do |toolbar| %>
+          <% toolbar.with_filter(key: "range", label: measurement_label("period"), active: measurement_range.custom? || measurement_range.key != "24h") do %>
+            <%= render Ui::RangeFilterComponent.new(name: "range", test_id: "measurement-range", bounds_test_prefix: "measurement-range", label: measurement_label("period"), options: Monitoring::TimeRange::PRESETS.keys.map { |key| [t("shared.time_range.presets.#{key}"), key] } + [[t("shared.time_range.custom"),"custom"]], selected: measurement_range.key, custom: "custom", from: (measurement_range.from if measurement_range.custom?), to: (measurement_range.to if measurement_range.custom?)) %>
+          <% end %>
+          <% toolbar.with_filter(key: "statistic", label: measurement_label("statistic"), active: params[:statistic].present?) do %>
+            <div data-filter-bar-compound><%= render Ui::RowMenuComponent.new(label: measurement_label("statistic"), icon: "chart-no-axes-combined", width: :lg) do %><%= render Ui::StackComponent.new(gap: 2, class: "p-3") do %>
+            <%= render Ui::SelectComponent.new(name: "statistic", label: measurement_label("statistic"), options: Alerting::Measurements::Configuration::STATISTICS.fetch(@series.metric_type).map { |key| [measurement_label(key),key] }, selected: @statistic) %>
+            <%= render Ui::InputComponent.new(name: "quantile", label: measurement_label("quantile"), value: @quantile) if %w[histogram exponentialHistogram].include?(@series.metric_type) %>
+            <%= render Ui::ButtonComponent.new(label: t("shared.time_range.apply"), size: :sm, data: {action: "ui--filter-bar#submit"}) %>
+            <% end %><% end %></div>
+          <% end %>
+          <% toolbar.with_filter(key: "interval_seconds", label: measurement_label("interval"), active: params[:interval_seconds].present?) do %>
+            <%= render Ui::InputComponent.new(name: "interval_seconds", label: measurement_label("interval"), type: "number", min: 1, max: 86400, value: @interval, data: {filter_bar_value: "", action: "change->ui--filter-bar#submit"}) %>
+          <% end %>
+        <% end %>
+        <div class="p-4 space-y-4">
+          <h2 class="font-medium"><%= measurement_label("trend") %> · <%= measurement_label(@statistic) %></h2>
+          <%= render Ui::HistogramComponent.new(**measurement_chart(@buckets, @series, @statistic)) %>
+          <p class="text-xs text-gray-500 dark:text-zinc-400"><%= measurement_label("chart_note") %></p>
+          <% if @statistic == "percentile" %><p class="text-xs text-gray-500 dark:text-zinc-400" data-test="measurement-estimate-note"><%= measurement_label("estimate_note") %></p><% end %>
+        </div>
+        <%= render Ui::TableComponent.new(stacked: true, label: measurement_label("trend")) do |table| %>
+          <% table.with_head do %><% %w[period value status diagnostics].each do |key| %><%= render Ui::TableComponent::HeaderComponent.new(label: measurement_label(key)) %><% end %><% end %>
+          <% @pagination.records.each do |bucket| %>
+            <% value = measurement_bucket_value(bucket, @statistic) %>
+            <%= render Ui::TableComponent::RowComponent.new(test_id: "measurement-bucket") do %>
+              <%= render Ui::TableComponent::CellComponent.new(label: measurement_label("period"), mono: true) do %><%= measurement_timestamp(bucket[:start_time_unix_nano]) %> → <%= measurement_timestamp(bucket[:time_unix_nano]) %><% end %>
+              <%= render Ui::TableComponent::CellComponent.new(label: measurement_label("value"), mono: true) do %><div><div><%= measurement_number(value) %> <%= measurement_unit(@series, @statistic) if value %></div>
+                <% if @statistic == "percentile" && value %><div class="text-xs" data-test="measurement-estimate-bounds"><%= measurement_label("bounds") %>: <%= measurement_bounds(bucket[:quantiles].first) %></div><% end %></div>
+              <% end %>
+              <%= render Ui::TableComponent::CellComponent.new(label: measurement_label("status")) do %><%= measurement_label(value.nil? ? "unknown" : "known") %><% end %>
+              <%= render Ui::TableComponent::CellComponent.new(label: measurement_label("diagnostics")) do %><%= (bucket[:diagnostics] + Array(bucket[:quantiles]).flat_map { |estimate| estimate[:diagnostics] }).uniq.join(", ").presence || "—" %><% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+        <%= render Ui::PaginationComponent.new(pagination: @pagination) %>
+      </div>
+      <%= render Ui::SectionComponent.new(title: measurement_label("attributes")) do %>
+        <% [[measurement_label("resource"),@series.resource], [measurement_label("scope"),@series.instrumentation_scope], [measurement_label("point"),@series.point_attributes]].each do |label, data| %>
+          <details class="min-w-0 py-2"><summary class="cursor-pointer text-sm"><%= label %></summary><pre class="whitespace-pre-wrap break-all text-xs font-mono mt-2"><%= JSON.pretty_generate(data) %></pre></details>
+        <% end %>
+      <% end %>
+    <% end %>
+    <%= render Ui::StackComponent.new(gap: 6) do %>
+      <%= render Ui::DetailsComponent.new(title: measurement_label("details")) do |details| %>
+        <% {project: @project.name, type: @series.metric_type, unit: @series.unit, temporality: measurement_label({0=>"unspecified",1=>"delta",2=>"cumulative"}.fetch(@series.temporality)), monotonic: measurement_label(@series.monotonic ? "yes" : "no"), identity: @series.identity_digest}.each do |key,value| %>
+          <% details.with_row(label: measurement_label(key)) do %><span class="break-all"><%= value %></span><% end %>
+        <% end %>
+      <% end %>
+      <%= render Ui::SectionComponent.new(title: measurement_label("alerts")) do %>
+        <% if @rules.empty? %><p class="text-sm text-gray-500 dark:text-zinc-400"><%= measurement_label("no_alerts") %></p><% end %>
+        <% @rules.each do |rule| %><p class="py-2 break-all"><%= link_to rule.name, member_monitoring_measurement_rule_path(rule), class: "text-indigo-600 dark:text-indigo-400" %></p><% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%= render Ui::AuditMetaComponent.new(created_at: @series.created_at, updated_at: @series.updated_at) %>
+</div>

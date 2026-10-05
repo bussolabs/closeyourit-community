@@ -1,0 +1,34 @@
+<%# locals: host:, metric:, label:, buckets:, range:, total_bytes:, threshold:, last_sample: — un
+    riquadro metrica della show. Titolo con il totale della macchina dove lo conosciamo (memoria e
+    disco), valore corrente a destra e istogramma con l'asse Y: senza scala dichiarata una colonna a
+    metà altezza non dice su cosa insista — 50% di CPU e 50% di un disco da 42 GB sono informazioni
+    diverse (CYRA-472). La FAMIGLIA della metrica (server_metric_kind, CYRA-703) decide fondo scala,
+    colore, formato e asse: :pct fisso 0–100, :temp/:watt/:bytes scalano sul picco del periodo.
+    `threshold` è la soglia d'allarme effettiva (CYRA-458), nil dove non c'è una regola. %>
+<% metric = metric.to_sym %>
+<% last_sample = local_assigns[:last_sample] %>
+<% kind = server_metric_kind(metric) %>
+<% current = { cpu: host.cpu_pct, mem: host.mem_pct, disk: host.disk_pct, temp: host.temp_max,
+               gpu: last_sample&.gpu_pct, gpu_watt: last_sample&.gpu_watt,
+               net: server_metric_value({ count: 1, net_out: last_sample&.net_sent_bytes,
+                                          net_in: last_sample&.net_recv_bytes }, :net) }[metric] %>
+<div data-test="server-chart-<%= metric %>">
+  <div class="flex items-baseline justify-between gap-2">
+    <p class="font-mono text-[10px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400">
+      <%= label %><% if total_bytes %> · <span data-test="server-chart-<%= metric %>-total"><%= server_bytes_text(total_bytes) %></span><% end %>
+    </p>
+    <span class="flex items-baseline gap-1.5">
+      <p class="font-mono text-[12px] <%= kind == :pct ? server_pct_color(current) : 'text-zinc-900 dark:text-zinc-100' %>"
+         data-test="server-chart-<%= metric %>-current"><%= server_metric_text(current, metric, total_bytes: total_bytes) %></p>
+      <% if threshold %><span class="font-mono text-[10px] text-gray-400 dark:text-zinc-500" data-test="server-threshold-<%= metric %>"><%= t("member.servers.limits.label", value: server_threshold_pct(threshold)) %></span><% end %>
+    </span>
+  </div>
+  <%# Istogramma condiviso con errori/metriche: barre + tooltip flottante (finestra oraria + valore)
+      + asse Y con la scala + asse X con gli orari. %>
+  <%= render Ui::HistogramComponent.new(
+        bars: server_chart_bars(buckets, metric, range, total_bytes: total_bytes),
+        gridlines: server_chart_gridlines(buckets, metric),
+        xticks: chart_xticks(buckets, range),
+        buckets_test_id: "server-#{metric}-buckets",
+        summary: server_chart_summary(label, range, metric: metric, total_bytes: total_bytes, buckets: buckets)) %>
+</div>

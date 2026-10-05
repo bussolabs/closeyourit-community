@@ -1,0 +1,16 @@
+en:
+  member:
+    presence:
+      online_title: Online now
+      online_count: "%{count} online"
+      only_you: Only you
+      trigger_label:
+        one: Realtime connection, %{count} user online
+        other: Realtime connection, %{count} users online
+      empty: No other users online
+      more_title:
+        one: and 1 more member online
+        other: and %{count} more members online
+      viewers_count:
+        one: "%{count} viewer"
+        other: "%{count} viewers"

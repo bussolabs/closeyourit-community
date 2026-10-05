@@ -1,0 +1,113 @@
+<% content_for :title, t("member.vault_attention.title") %>
+
+<%# CYRA-428 — un posto solo per «cosa devo fare adesso» sui segreti: anomalie, rotazioni e richieste
+    in attesa in una lista sola ordinata per rischio, al posto di tre pagine di cui due quasi sempre
+    vuote. Sotto la lista resta il contesto che non è un'azione da fare adesso: le assenze già
+    dichiarate volute e i segreti che nessuna regola di rotazione copre. %>
+<%# CYRA-571 — il contenitore tiene insieme le righe e i dialoghi condivisi: le azioni di riga
+    stanno nello scope di ui--shared-dialog e gli passano su cosa si sta decidendo. %>
+<div class="p-7 space-y-6" data-test="member-vault-attention" data-controller="ui--shared-dialog">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.vault_attention.title"),
+        subtitle: t("member.vault_attention.help_title"),
+        breadcrumb: [ { label: t("member.vault.title"), href: member_vault_path },
+                      { label: t("member.vault_attention.title") } ],
+        test_id: "vault-attention-header",
+        counts_test_id: "vault-attention-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.vault_attention.stat_total"), value: @report.count,
+            value_color: @report.any? ? :amber : :neutral, test_id: "vault-attention-stat-total") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.vault_attention.stat_high"), value: @report.high_count,
+            value_color: @report.high_count.positive? ? :red : :neutral, test_id: "vault-attention-stat-high") %>
+      <%# CYRA-777 — il chip compare solo quando c'è una proposta: è l'unica riga che non segnala un
+          guasto, e a zero occuperebbe posto nell'header senza dire niente. %>
+      <% if @report.count_for(:consolidation).positive? %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.vault_attention.stat_consolidation"),
+              value: @report.count_for(:consolidation), value_color: :indigo,
+              test_id: "vault-attention-stat-consolidation") %>
+      <% end %>
+      <% if @pending %>
+        <%# CYRA-420 — «Da decidere» conta solo ciò su cui puoi agire, mai le tue richieste (per
+            l'approvazione a due): la differenza col totale non si intuisce dai numeri, sta scritta qui. %>
+        <span class="inline-flex items-center gap-1">
+          <%= render Ui::StatLabelComponent.new(label: t("member.vault_attention.stat_decidable"),
+                value: @pending.decidable_count,
+                value_color: @pending.decidable_count.positive? ? :indigo : :neutral,
+                test_id: "vault-attention-stat-decidable") %>
+          <%= render Ui::TooltipComponent.new(text: t("member.vault_change_requests.stat_decidable_hint"),
+                test_id: "vault-attention-stat-decidable-hint") %>
+        </span>
+      <% end %>
+      <%# How many secrets a rotation rule covers: on top too, so "0 overdue" never reads as all fine. %>
+      <% if @rotation && @rotation.total_count.positive? %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.vault_attention.stat_rotation_coverage"),
+              value: "#{@rotation.covered_count} / #{@rotation.total_count}", value_color: @rotation.coverage_tone,
+              href: "#vault-attention-rotation", test_id: "vault-attention-stat-rotation-coverage") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-571 — un modulo solo per tutte le azioni delle righe (qui e nelle assenze volute più
+      sotto): le decisioni lo puntano invece di portarsene uno ciascuna. %>
+  <%= render Ui::RowActionsFormComponent.new(test_id: "vault-attention-actions-form") %>
+
+  <% if @report.any? %>
+    <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="vault-attention-list">
+      <%# F169 — C1: search and filters above the list; the counts on top stay the whole report's. %>
+      <%= render(Ui::TableToolbarComponent.new(framed: true, url: member_vault_attention_path, query: params[:q],
+            search_placeholder: t("member.vault_attention.search"), search_test_id: "vault-attention-search",
+            apply_test_id: "vault-attention-filter", test_id: "vault-attention-toolbar")) do |toolbar| %>
+        <% toolbar.with_filter(key: "project_id", label: t("member.review_fixes.project_filter")) do %>
+          <div class="w-48"><%= render Ui::SelectComponent.new(name: "project_id", multiple: true, summary: true,
+            options: @project_options, selected: params[:project_id], placeholder: t("member.review_fixes.project_filter"),
+            test_id: "vault-attention-filter-project") %></div>
+        <% end %>
+        <% toolbar.with_filter(key: "risk", label: t("member.vault_attention.filter_risk")) do %>
+          <div class="w-36"><%= render Ui::SelectComponent.new(name: "risk", multiple: true, summary: true,
+            options: %w[high medium low].map { |risk| [ t("member.vault_attention.risk.#{risk}"), risk ] },
+            selected: params[:risk], placeholder: t("member.vault_attention.filter_risk"), test_id: "vault-attention-filter-risk") %></div>
+        <% end %>
+        <% toolbar.with_filter(key: "kind", label: t("member.vault_attention.filter_kind")) do %>
+          <div class="w-48"><%= render Ui::SelectComponent.new(name: "kind", multiple: true, summary: true,
+            options: %w[anomaly rotation_overdue rotation_due_soon change_request consolidation].map { |kind| [ t("member.vault_attention.kind.#{kind}").upcase_first, kind ] },
+            selected: params[:kind], placeholder: t("member.vault_attention.filter_kind"), test_id: "vault-attention-filter-kind") %></div>
+        <% end %>
+      <% end %>
+      <% if @pagination.records.empty? %>
+        <%= render Ui::NoResultsComponent.new(title: t("member.vault_attention.no_match"), query: params[:q].presence,
+              reset_href: member_vault_attention_path, test_id: "vault-attention-no-match", reset_test_id: "vault-attention-reset-filters") %>
+      <% end %>
+      <% @pagination.records.each do |item| %>
+        <%= render "member/vault/attention/row", item: item, pending: @pending %>
+      <% end %>
+      <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "vault-attention-pagination")) %>
+    </section>
+  <% else %>
+    <%# Stato positivo ma ONESTO: dice cosa è stato guardato, non un generico "tutto bene". %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.vault_attention.empty"), body: t("member.vault_attention.empty_body"),
+                                           icon: "check", framed: true, test_id: "vault-attention-empty") %>
+  <% end %>
+
+  <% if @health&.acknowledged&.any? %>
+    <%= render "member/vault/attention/acknowledged", rows: @health.acknowledged %>
+  <% end %>
+
+  <%# Nessuna richiesta in attesa: il posto dove le decideresti spiega comunque come funziona la
+      protezione a due, che altrimenti nessuno scoprirebbe (CYRA-420). %>
+  <% if @pending && !@pending.any? %>
+    <%= render "member/vault/attention/change_requests_context", pending: @pending %>
+  <% end %>
+
+  <% if @rotation %>
+    <%= render "member/vault/attention/rotation_context", rotation: @rotation, uncovered: @uncovered %>
+  <% end %>
+
+  <%# I due dialoghi con la motivazione obbligatoria: uno per pagina, aperti dalla riga che li usa
+      (CYRA-571). Ciascuno c'è solo se in lista esiste una riga che può aprirlo. %>
+  <% if @report.count_for(:anomaly).positive? %>
+    <%= render "member/vault/attention/acknowledge_dialog" %>
+  <% end %>
+  <% if @report.count_for(:change_request).positive? %>
+    <%= render "member/vault/change_requests/reject_dialog" %>
+  <% end %>
+</div>

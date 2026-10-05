@@ -1,0 +1,94 @@
+<%# locals: (card:) %>
+<%# CYRA-702 — il piano come lo legge chi decide dalla coda: il brief dell'agente (o la sintesi,
+    per i piani che un brief non ce l'hanno), i punti aperti e i rischi. Scenari, criteri, note e
+    analisi restano sulla scheda a tutta pagina e nel Markdown: qui sono solo conteggi, perché la
+    decisione è «approvo o no», non «rileggo tutto il documento in una colonna stretta». %>
+<% document = card.plan.document %>
+<% decision_card = document.decision_card %>
+<div class="divide-y divide-stone-100 dark:divide-zinc-800" data-test="approvals-detail-plan">
+  <div class="px-4 py-3.5">
+    <div class="flex items-baseline justify-between gap-3 mb-1.5">
+      <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400"><%= t(decision_card ? "member.approvals.compact.if_approved" : "member.approvals.compact.in_brief") %></p>
+      <p class="text-[11px] text-gray-500 dark:text-zinc-400" data-test="automation-plan-signature"><%= t("member.tickets.automation.plan.written", version: card.plan.version, date: l(card.plan.created_at, format: :long)) %></p>
+    </div>
+    <% if decision_card %>
+      <%= render "member/home/approvals/decision_card", decision_card: %>
+    <% elsif document.decision_brief %>
+      <%= render Ui::MarkdownComponent.new(text: document.decision_brief,
+            class: "text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-[70ch]",
+            test_id: "approvals-compact-brief") %>
+    <% else %>
+      <%# Senza brief: primo paragrafo della sintesi, al massimo 280 caratteri. CYRA-859 %>
+      <%= render Ui::MarkdownComponent.new(text: document.summary.to_s.split(/\n{2,}/).first.to_s.truncate(280, separator: " "),
+            class: "text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-[70ch]",
+            test_id: "approvals-compact-summary") %>
+      <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400" data-test="approvals-compact-no-brief"><%= t("member.approvals.compact.no_brief") %></p>
+    <% end %>
+  </div>
+
+  <% if document.open_points.present? || document.risks.present? %>
+    <%# The count and the first warning (a risk before an open point) are always visible; the rest opens
+        with a click. CYRA-884, reverses the closed warnings of CYRA-859. %>
+    <% counts = [ (t("member.approvals.compact.open_points_count", count: document.open_points.size) if document.open_points.present?),
+                  (t("member.approvals.compact.risks_count", count: document.risks.size) if document.risks.present?) ].compact %>
+    <% first_risk = document.risks.first&.to_h&.deep_stringify_keys %>
+    <% first_warning = first_risk ? "**#{first_risk["title"]}** — #{first_risk["impact"]}" : document.open_points.first %>
+    <% hidden_count = document.open_points.size + document.risks.size - (decision_card&.dig("risk").present? ? 0 : 1) %>
+    <div class="px-4 py-3 space-y-2" data-test="approvals-compact-warnings">
+      <p class="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-amber-800 dark:text-amber-200" data-test="approvals-compact-warnings-count">
+        <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[10px]") %> <%= counts.join(" · ") %>
+      </p>
+      <%# The card's own risk line already shows the danger: no second one here. %>
+      <% unless decision_card&.dig("risk").present? %>
+        <div class="rounded-md border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 px-2.5 py-1.5 text-[12.5px] text-amber-900 dark:text-amber-200 leading-relaxed max-w-[70ch]" data-test="approvals-compact-first-warning">
+          <%= render Ui::MarkdownComponent.new(text: first_warning, inline: true) %>
+        </div>
+      <% end %>
+      <% if hidden_count.positive? %>
+        <details data-test="approvals-compact-more-warnings">
+          <summary class="cursor-pointer list-none text-[12px] text-indigo-600 dark:text-indigo-400"><%= t("member.approvals.compact.show_all_warnings", count: hidden_count) %></summary>
+          <div class="mt-3 space-y-3">
+            <% if document.open_points.present? %>
+              <div data-test="approvals-compact-open-points">
+                <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-amber-700 dark:text-amber-300 mb-1"><%= t("member.approvals.compact.open_points") %></p>
+                <ul class="space-y-1">
+                  <% document.open_points.each do |point| %>
+                    <li class="text-[12.5px] text-amber-900 dark:text-amber-200 leading-relaxed"><%= render Ui::MarkdownComponent.new(text: point, inline: true) %></li>
+                  <% end %>
+                </ul>
+              </div>
+            <% end %>
+            <% if document.risks.present? %>
+              <div data-test="approvals-compact-risks">
+                <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400 mb-1"><%= t("member.approvals.compact.risks") %></p>
+                <ul class="space-y-1">
+                  <% document.risks.each do |raw_risk| %>
+                    <% risk = raw_risk.to_h.deep_stringify_keys %>
+                    <li class="text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed"><strong><%= risk["title"] %></strong> — <%= risk["impact"] %></li>
+                  <% end %>
+                </ul>
+              </div>
+            <% end %>
+          </div>
+        </details>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="px-4 py-2.5 flex items-center flex-wrap gap-x-2 gap-y-1 font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="approvals-compact-counts">
+    <span><%= t("member.approvals.compact.counts.scenarios", count: document.scenarios.size) %></span>
+    <span aria-hidden="true">·</span>
+    <span><%= t("member.approvals.compact.counts.criteria", count: document.definition_of_done.size) %></span>
+    <span aria-hidden="true">·</span>
+    <%= link_to t("member.approvals.compact.full_page"),
+                member_home_approvals_item_path(kind: card.kind, id: card.id),
+                class: "text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "approvals-compact-full-page" } %>
+    <% if card.ticket? %>
+      <span aria-hidden="true">·</span>
+      <%= link_to t("member.tickets.automation.plan.download"),
+                  member_ticket_automation_plan_path(card.ticket),
+                  class: "text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "approvals-plan-download" } %>
+      <span class="inline-flex items-center rounded-md bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 text-[11px] text-gray-600 dark:text-zinc-400">v<%= card.plan.version %></span>
+    <% end %>
+  </div>
+</div>

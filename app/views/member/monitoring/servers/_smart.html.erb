@@ -1,0 +1,26 @@
+<%# locals: host: — esito SMART corrente per device dal jsonb dell'host %>
+<% devices = host.smart_data.is_a?(Hash) ? host.smart_data : {} %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="server-smart">
+  <div class="px-5 py-3.5 border-b border-stone-200 dark:border-zinc-800 flex items-center gap-1.5">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.servers.show.smart") %></h2>
+    <%= render Ui::TooltipComponent.new(title: t("member.servers.show.smart"), text: t("member.servers.show.help_smart"), test_id: "help-smart") %>
+  </div>
+  <% if devices.empty? %>
+    <p class="px-5 py-8 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="server-smart-empty"><%= t("member.servers.show.smart_empty") %></p>
+  <% else %>
+    <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% devices.each do |device, item| %>
+        <div class="px-5 py-3 flex items-center justify-between gap-3" data-test="server-smart-row">
+          <div class="min-w-0">
+            <span class="font-mono text-[12px] font-medium text-zinc-900 dark:text-zinc-100"><%= device %></span>
+            <span class="block text-[11px] text-gray-500 dark:text-zinc-400 truncate"><%= item["model"].presence || "—" %><% if item["capacity_bytes"] %> · <%= server_bytes_text(item["capacity_bytes"]) %><% end %></span>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <% if item["temp"] %><span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= server_temp_text(item["temp"]) %></span><% end %>
+            <%= render Ui::BadgeComponent.new(label: item["status"].presence || "—", color: server_smart_color(item["status"]), dot: true) %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

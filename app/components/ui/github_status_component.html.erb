@@ -1,0 +1,4 @@
+<%= tag.span(**html_options) do %>
+  <%= render Ui::IconComponent.new(name: "github", class: github_size) %>
+  <%= render Ui::IconComponent.new(name: state_icon, class: "absolute -right-1 -bottom-1 #{state_size} #{state_color}") %>
+<% end %>

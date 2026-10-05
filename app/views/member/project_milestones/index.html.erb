@@ -1,0 +1,74 @@
+<% content_for :title, t("member.milestones.title") %>
+<% can_manage = can?("projects.edit", scope: @project) %>
+
+<div class="p-7 space-y-6" data-test="project-milestones">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "milestones" %>
+
+  <% if @total_milestones.zero? %>
+    <%# A viewer reads what will appear here, not an invitation to create. %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.milestones.empty"),
+          body: t(can_manage ? "member.milestones.empty_body" : "member.milestones.empty_body_viewer"),
+          icon: "flag", framed: true, test_id: "milestones-empty") do |empty| %>
+      <% if can_manage %>
+        <% empty.with_action do %>
+          <%= render Ui::ButtonComponent.new(label: t("member.milestones.new"), href: new_member_project_milestone_path(@project), variant: :primary, size: :sm, icon: "plus", test_id: "milestones-empty-new") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%# CYRA-924 — count and New sit beside the section title (C63, T5): the bar holds only search, filters, View. %>
+    <div class="space-y-3">
+    <div class="flex flex-wrap items-center justify-between gap-3" data-test="milestones-heading">
+      <div class="flex items-baseline gap-2 min-w-0">
+        <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.milestones.title") %></h2>
+        <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400 whitespace-nowrap" data-test="milestones-count"><%= count_label("member.milestones.count", @pagination.total) %></span>
+      </div>
+      <% if can_manage %>
+        <%= render Ui::ButtonComponent.new(label: t("member.milestones.new"), href: new_member_project_milestone_path(@project), variant: :primary, size: :sm, icon: "plus", test_id: "milestone-new") %>
+      <% end %>
+    </div>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="milestones-table">
+      <%= render(Ui::TableToolbarComponent.new(framed: true,
+            url: member_project_milestones_path(@project), query: params[:q],
+            search_placeholder: t("member.milestones.search_placeholder"),
+            apply_label: t("member.milestones.apply"),
+            search_test_id: "milestones-search", apply_test_id: "milestones-filter", test_id: "milestones-toolbar")) do |toolbar| %>
+        <% toolbar.with_filter(key: "status", label: t("member.milestones.col_status")) do %>
+          <div class="w-36"><%= render Ui::SelectComponent.new(name: "status", multiple: true, summary: true, options: Member::ProjectMilestonesController::STATUS_FILTERS.map { |s| [ t("member.milestones.status_#{s}"), s ] }, selected: params[:status], placeholder: t("member.milestones.col_status"), test_id: "filter-status") %></div>
+        <% end %>
+      <% end %>
+
+        <% if @milestones.empty? %>
+          <%= render Ui::NoResultsComponent.new(query: @query.presence, reset_href: member_project_milestones_path(@project),
+                body: t("member.milestones.no_results_body", count: @total_milestones),
+                icon: "flag", test_id: "milestones-no-results", reset_test_id: "milestones-reset-search") %>
+        <% else %>
+          <%= render(Ui::TableComponent.new(stacked: true, grouped: true, label: t("member.milestones.title"))) do |t| %>
+            <% t.with_head do %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.milestones.col_milestone"), sort: "milestone") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.milestones.col_code"), sort: "code", classes: "w-24") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.milestones.col_due"), sort: "due", classes: "w-44") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.milestones.col_progress"), classes: "w-56") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.milestones.col_status"), sort: "status", initial: :desc, classes: "w-24") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.milestones.col_tickets"), sort: "tickets", initial: :desc, align: :right, classes: "w-20") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: tag.span(t("member.milestones.edit"), class: "sr-only"), classes: "w-10", visible: can_manage) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+            <% end %>
+            <% group_shown = false %>
+            <% @milestones.each do |milestone| %>
+              <% grouped = @grouped && !milestone.active? %>
+              <% if grouped && !group_shown %>
+                <% group_shown = true %>
+                <%= render Ui::TableComponent::GroupRowComponent.new(key: "inactive", colspan: t.column_count, collapsed: true,
+                      label: t("member.milestones.inactive_group", count: @inactive_count), test_id: "milestones-inactive-group") %>
+              <% end %>
+              <%= render "member/project_milestones/row", milestone: milestone, can_manage: can_manage, hidden: grouped,
+                    progress: @progress_by_id[milestone.id] || Projects::Milestone::EMPTY_PROGRESS %>
+            <% end %>
+          <% end %>
+          <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "milestones-pagination")) %>
+        <% end %>
+    </div>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,25 @@
+---
+en:
+  member:
+    guides:
+      index:
+        guidance:
+          title: Guidance
+      guidance:
+        title: Guidance
+        subtitle: How to give whoever works — people and assistants — the references and procedures to follow.
+        what_title: What it is for
+        what_intro: "It gathers a project's working context in one place: where to find things and how they should be done. Whoever works, be it a person or an automatic assistant, finds it ready."
+        what_references: "References: pointers to where to find something — a repository, a page, a link or a path."
+        what_procedures: "Procedures: written instructions to follow while working."
+        levels_title: The three levels
+        levels_intro: You can declare guidance at three levels. The higher one flows down automatically; at a closer level you can add new items, replace what comes from above or turn it off.
+        level_org: Applies to every project of the organization. It is the common base.
+        level_group: Applies to the projects of a group. It adds to the organization's one.
+        level_project: Applies to a single project. It always has the last word.
+        how_title: How to manage it
+        how_org: "For the organization: Administration menu, «Guidance» item."
+        how_group: "For a group: open it and press the «Guidance» button at the top."
+        how_project: "For a project: open it and go to the «Guidance» tab."
+        preview_title: The project preview
+        preview_intro: "On the project page you see the preview of what actually applies, that is what whoever works will receive: each item shows where it comes from and whether it replaces, appends to or disables the one coming from above."

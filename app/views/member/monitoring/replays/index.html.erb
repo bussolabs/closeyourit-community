@@ -1,0 +1,102 @@
+<% content_for :title, t("member.monitoring.replays.title") %>
+
+<div class="p-7 space-y-6" data-test="member-replays">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.monitoring.replays.title"),
+        subtitle: t("member.monitoring.replays.help_title"),
+        breadcrumb: [ { label: t("member.monitoring.replays.title") } ],
+        counts_test_id: "replays-stats") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.replays.count_label"),
+            value: @pagination.total, test_id: "replays-total") %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-376 — la pagina vuota diceva quando compaiono le sessioni, mai come farle comparire: chi
+      ci arrivava non aveva una strada verso l'interruttore né sapeva se qualche progetto lo avesse
+      già acceso. L'invito porta alle impostazioni del progetto, e compare solo dove è vero:
+      piattaforma web dichiarata e permesso di modificare quel progetto. %>
+  <% if @sessions.empty? && !@filtering %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.replays.empty"),
+          body: t("member.monitoring.replays.empty_body"), icon: "film",
+          framed: true, test_id: "replays-empty") do |empty| %>
+      <% empty.with_action do %>
+        <% if @activatable_projects.any? %>
+          <p class="mt-1 text-[12.5px] text-gray-600 dark:text-zinc-400"><%= t("member.monitoring.replays.empty_activate_intro") %></p>
+          <div class="mt-2.5 flex items-center justify-center flex-wrap gap-1.5" data-test="replays-empty-activate-list">
+            <% @activatable_projects.each do |candidate| %>
+              <%= render Ui::ButtonComponent.new(
+                    label: t("member.monitoring.replays.empty_activate_on", project: candidate.name),
+                    href: member_project_settings_path(candidate), variant: :primary, size: :sm,
+                    icon: "sliders", test_id: "replays-empty-activate") %>
+            <% end %>
+          </div>
+        <% elsif @capable_projects.empty? %>
+          <p class="mt-1 text-[12.5px] text-gray-600 dark:text-zinc-400 max-w-sm mx-auto" data-test="replays-empty-no-web"><%= t("member.monitoring.replays.empty_no_web") %></p>
+        <% elsif @collecting_projects.empty? %>
+          <p class="mt-1 text-[12.5px] text-gray-600 dark:text-zinc-400 max-w-sm mx-auto" data-test="replays-empty-ask-admin"><%= t("member.monitoring.replays.empty_ask_admin") %></p>
+        <% end %>
+
+        <% if @collecting_projects.any? %>
+          <p class="mt-4 text-[12px] text-gray-500 dark:text-zinc-400" data-test="replays-empty-active-on">
+            <%= t("member.monitoring.replays.empty_active_on", projects: @collecting_projects.map(&:name).to_sentence) %>
+          </p>
+        <% end %>
+
+        <p class="mt-4">
+          <%= link_to member_guides_replays_path,
+                class: "inline-flex items-center gap-1.5 text-[12.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300",
+                data: { test: "replays-empty-guide" } do %>
+            <%= render Ui::IconComponent.new(name: "book-open", class: "text-[11px]") %><%= t("member.monitoring.replays.empty_guide") %>
+          <% end %>
+        </p>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="replays-table">
+      <%= render(Ui::TableToolbarComponent.new(framed: true,
+            url: member_monitoring_replays_path, query: params[:q],
+            search_placeholder: t("member.monitoring.replays.search_placeholder"),
+            search_test_id: "replays-search", apply_test_id: "replays-filter",
+            test_id: "replays-toolbar")) do |toolbar| %>
+        <% toolbar.with_filter(key: "environment", label: t("member.monitoring.replays.filter_environment")) do %>
+          <div class="w-36"><%= render Ui::SelectComponent.new(name: "environment", multiple: true, summary: true,
+            options: @environments.map { |e| [ e, e ] }, selected: params[:environment],
+            placeholder: t("member.monitoring.replays.filter_environment"), test_id: "filter-environment") %></div>
+        <% end %>
+        <% toolbar.with_filter(key: "project_id", label: t("member.monitoring.replays.filter_project")) do %>
+          <div class="w-40"><%= render Ui::SelectComponent.new(name: "project_id", multiple: true, summary: true,
+            options: @projects.map { |p| [ p.name, p.id, p.color ] }, selected: params[:project_id],
+            placeholder: t("member.monitoring.replays.filter_project"), test_id: "filter-project") %></div>
+        <% end %>
+        <% toolbar.with_filter(key: "with_errors", label: t("member.monitoring.replays.filter_errors")) do %>
+          <div class="w-36"><%= render Ui::SelectComponent.new(name: "with_errors", multiple: false,
+            options: [ [ t("member.monitoring.replays.errors_all"), "" ], [ t("member.monitoring.replays.errors_only"), "1" ] ],
+            selected: params[:with_errors], placeholder: t("member.monitoring.replays.filter_errors"), test_id: "filter-errors") %></div>
+        <% end %>
+      <% end %>
+
+        <% if @sessions.empty? %>
+          <p class="px-4 py-10 text-center text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="replays-no-match"><%= t("member.monitoring.replays.no_match") %></p>
+        <% else %>
+          <%= render(Ui::TableComponent.new(stacked: true, label: t("member.monitoring.replays.title"))) do |t| %>
+            <% t.with_head do %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.replays.col_session")) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.replays.col_project")) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.replays.col_user"), sort: "user") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.replays.col_entry"), sort: "page") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.replays.col_errors"), align: :right, classes: "w-20") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.replays.col_duration"), sort: "duration", initial: :desc, align: :right, classes: "w-24") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.replays.col_started"), sort: "started", initial: :desc, align: :right, classes: "w-28") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+            <% end %>
+            <% @sessions.each do |session| %>
+              <%= render "member/monitoring/replays/session_row", session: session,
+                    errors_count: @error_counts[[ session.project_id, session.replay_session_id ]] || 0 %>
+            <% end %>
+          <% end %>
+          <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "replays-pagination")) %>
+        <% end %>
+    </div>
+  <% end %>
+</div>

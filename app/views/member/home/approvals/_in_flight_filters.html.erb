@@ -1,0 +1,55 @@
+<%# locals: board %>
+<%# CYRA-651 — la stessa barra della coda (vedi `_filters`), per l'elenco di ciò che va avanti da
+    solo: stato, progetto e agente in tre menu a tendina invece di tre file di chip. `view` viaggia
+    come campo nascosto — è l'elenco che si sta guardando, non un filtro, e perderlo riporterebbe
+    alla coda delle decisioni a ogni scelta.
+
+    Progetto e agente compaiono solo con più di una scelta: un menu con una voce sola non filtra
+    niente, dice soltanto ciò che la tabella già mostra su ogni riga. %>
+<% state_options = [ [ "#{t('member.approvals.in_flight.filters.all')} · #{board.total}", "" ] ] %>
+<% Agents::Workflows::InFlight::AUTONOMOUS_STATES.each do |state| %>
+  <% count = board.totals.fetch(state, 0) %>
+  <% next if count.zero? && board.state != state %>
+  <% state_options << [ "#{t("member.approvals.in_flight.filters.#{state}")} · #{count}", state ] %>
+<% end %>
+<%= render(Ui::TableToolbarComponent.new(url: member_home_approvals_path, framed: true,
+      hidden: { view: Agents::Workflows::InFlight::VIEW },
+      apply_test_id: "approvals-in-flight-filters-apply", test_id: "approvals-in-flight-filters")) do |toolbar| %>
+  <% toolbar.with_filter(key: "state", label: t("member.approvals.filters.state")) do %>
+    <div class="w-48">
+      <%= render Ui::SelectComponent.new(name: "state", options: state_options, selected: board.state,
+            summary: true, placeholder: t("member.approvals.filters.state"),
+            aria_label: t("member.approvals.filters.state"),
+            test_id: "approvals-in-flight-filter-state") %>
+    </div>
+  <% end %>
+  <%# Il menu resta anche con una scelta sola quando è ACCESO: senza, il campo non starebbe nel form
+      e la prima scelta fatta altrove lo lascerebbe fuori dall'indirizzo, allargando l'elenco in
+      silenzio. %>
+  <% if board.projects.size > 1 || board.project.present? %>
+    <% toolbar.with_filter(key: "project", label: t("member.approvals.filters.project")) do %>
+      <div class="w-48">
+        <%= render Ui::SelectComponent.new(name: "project",
+              options: [ [ t("member.approvals.filters.all_projects"), "" ] ] +
+                       board.projects.map { |project| [ "#{project.key} · #{project.name}", project.key ] },
+              selected: board.project, summary: true,
+              placeholder: t("member.approvals.filters.project"),
+              aria_label: t("member.approvals.filters.project"),
+              test_id: "approvals-in-flight-filter-project") %>
+      </div>
+    <% end %>
+  <% end %>
+  <% if board.agents.size > 1 || board.agent.present? %>
+    <% toolbar.with_filter(key: "agent_id", label: t("member.approvals.filters.agent")) do %>
+      <div class="w-48">
+        <%= render Ui::SelectComponent.new(name: "agent_id",
+              options: [ [ t("member.approvals.filters.all_agents"), "" ] ] +
+                       board.agents.map { |agent| [ agent.hostname, agent.id ] },
+              selected: board.agent, summary: true,
+              placeholder: t("member.approvals.filters.agent"),
+              aria_label: t("member.approvals.filters.agent"),
+              test_id: "approvals-in-flight-filter-agent") %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

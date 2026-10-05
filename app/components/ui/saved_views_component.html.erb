@@ -1,0 +1,96 @@
+<%# CYRA-924 — a section of the toolbar's View menu: no trigger of its own. %>
+<div data-controller="ui--saved-views ui--dialog" data-test="<%= @test_id %>">
+  <p class="px-3 pt-1 pb-1.5 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-400 dark:text-zinc-500"><%= t("shared.saved_views.section_title") %></p>
+  <div>
+    <% if @views.any? %>
+      <div class="px-2 pb-1.5">
+        <input type="text" data-ui--saved-views-target="search" data-action="input->ui--saved-views#filter"
+               placeholder="<%= t("shared.saved_views.search_placeholder") %>"
+               class="w-full h-8 px-2.5 rounded border border-stone-200 dark:border-zinc-800 text-[12.5px] focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400">
+      </div>
+      <div class="max-h-56 overflow-y-auto" data-ui--saved-views-target="list">
+        <% @views.each do |view| %>
+          <div class="flex items-center hover:bg-stone-50 dark:hover:bg-zinc-800" data-ui--saved-views-target="option"
+               data-label="<%= view.name.downcase %>">
+            <%= link_to view.name, applied_path(view.filters),
+                  class: "flex-1 truncate px-3 h-8 flex items-center text-[12.5px] text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400",
+                  data: { test: "saved-view-apply-#{view.id}" } %>
+            <%= button_to delete_path(view), method: :delete,
+                  class: "px-2.5 h-8 flex items-center text-gray-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 border-l border-stone-100 dark:border-zinc-800",
+                  form: { class: "inline-flex" },
+                  data: { test: "saved-view-delete-#{view.id}", turbo_confirm: t("shared.saved_views.delete_confirm") } do %>
+              <%= render Ui::IconComponent.new(name: "x", class: "text-[11px]") %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+      <div class="my-1 border-t border-stone-100 dark:border-zinc-800"></div>
+    <% else %>
+      <%# CYRA-395 — da vuoto il pannello diceva solo «nessuna vista» e offriva di aggiungerne
+          «un'altra»: non spiegava cosa venga salvato né a cosa serva, e nessuno ci entrava. %>
+      <%= render Ui::EmptyNoteComponent.new(text: t("shared.saved_views.empty"), hint: t("shared.saved_views.empty_hint"),
+            class: "px-3 py-2", test_id: "saved-views-empty") %>
+      <% if @presets.any? %>
+        <div class="my-1 border-t border-stone-100 dark:border-zinc-800"></div>
+        <p class="px-3 pt-1 pb-0.5 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-400 dark:text-zinc-500"><%= t("shared.saved_views.presets") %></p>
+        <% @presets.each do |preset| %>
+          <%= link_to preset[:name], applied_path(preset[:filters]),
+                class: "flex items-center px-3 h-8 text-[12.5px] text-zinc-700 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-indigo-600 dark:hover:text-indigo-400",
+                data: { test: "saved-view-preset-#{preset[:key]}" } %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <%# The menu stays open: a modal dialog inside a hidden ancestor would not render. %>
+    <button type="button" data-action="ui--dialog#open" data-test="saved-view-add"
+            class="w-full flex items-center gap-2 px-3 h-8 text-[12.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:bg-stone-50 dark:hover:bg-zinc-800">
+      <%# Con zero viste non si «aggiunge un'altra»: si salva questa. %>
+      <%= render Ui::IconComponent.new(name: "plus", class: "text-[11px]") %><%= @views.any? ? t("shared.saved_views.add") : t("shared.saved_views.save_current") %>
+    </button>
+  </div>
+
+  <%# Saves the current filters as a new view. F24: standard modal shell; the form wraps header and panel
+      so Save in the header submits it. %>
+  <%= render Ui::ModalComponent.new(title: t("shared.saved_views.title"), size: :sm, padded: false, test_id: "saved-view-modal",
+        form: { url: create_path, method: :post },
+        data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+    <% modal.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("shared.saved_views.cancel"), variant: :secondary_muted, size: :sm, data: { action: "ui--dialog#close" }) %>
+      <%= render Ui::ButtonComponent.new(label: t("shared.saved_views.save"), type: "submit", icon: "bookmark", size: :sm, test_id: "saved-view-save") %>
+    <% end %>
+    <input type="hidden" name="resource_type" value="<%= @resource_type %>">
+    <% active_filters.each do |key, value| %>
+      <% Array(value).each do |v| %>
+        <input type="hidden" name="<%= value.is_a?(Array) ? "#{key}[]" : key %>" value="<%= v %>">
+      <% end %>
+    <% end %>
+
+    <div class="p-4 space-y-3">
+      <div>
+        <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("shared.saved_views.summary_label") %></p>
+        <% if active_filters.any? %>
+          <div class="flex flex-wrap gap-1.5" data-test="saved-view-summary">
+            <% active_filters.each do |key, value| %>
+              <span class="inline-flex items-center gap-1 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-2 py-1 text-[11.5px] text-zinc-700 dark:text-zinc-300">
+                <span class="text-gray-500 dark:text-zinc-400"><%= filter_label(key) %>:</span><%= filter_display(key, value) %>
+              </span>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="saved-view-summary-none"><%= t("shared.saved_views.summary_none") %></p>
+        <% end %>
+      </div>
+      <%= text_field_tag :name, nil, placeholder: t("shared.saved_views.name_placeholder"), autocomplete: "off",
+            data: { test: "saved-view-name" },
+            class: "w-full h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+      <%# CYRA-924 — unchecked, the view keeps only how the list looks (grouping, sort). The hidden 0
+          goes first, so an unchecked box still says so. %>
+      <label class="flex items-start gap-2 text-[12.5px] text-zinc-700 dark:text-zinc-300 cursor-pointer">
+        <%= hidden_field_tag :include_filters, "0", id: nil %>
+        <%= check_box_tag :include_filters, "1", true, id: nil, data: { test: "saved-view-include-filters" },
+              class: "mt-0.5 rounded border-stone-300 dark:border-zinc-700 text-indigo-600 dark:text-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400" %>
+        <span><%= t("shared.saved_views.include_filters") %>
+          <span class="block text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("shared.saved_views.include_filters_hint") %></span></span>
+      </label>
+    </div>
+  <% end %>
+</div>

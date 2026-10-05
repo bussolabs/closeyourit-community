@@ -1,0 +1,21 @@
+it:
+  connections:
+    invitations:
+      mailer:
+        subject: "Sei stato invitato in %{organization}"
+        overline: "Invito"
+        greeting: "Ciao,"
+        intro: "Sei stato invitato a collaborare nell'organizzazione qui sotto. Accetta per creare il tuo account e iniziare."
+        body: "Sei stato invitato a unirti a %{organization} come %{role}."
+        action: "Accetta invito"
+        expiry: "L'invito scade tra 7 giorni. Se non ti aspettavi questa email, ignorala pure."
+  activerecord:
+    errors:
+      models:
+        connections/ticket_dependency:
+          attributes:
+            blocker:
+              not_self_dependency: non può essere il ticket stesso
+              same_organization: deve appartenere alla stessa organizzazione
+            base:
+              creates_cycle: crea una dipendenza circolare tra i ticket

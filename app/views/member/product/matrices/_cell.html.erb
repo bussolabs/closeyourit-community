@@ -1,0 +1,25 @@
+<%# locals: feature, platform, cell, can_manage
+    Cella della matrice dentro il suo turbo frame: la edit rende lo STESSO frame col form, così
+    modificare una cella non ricarica la matrice. Il frame è lazy per costruzione — le versioni
+    indicabili si caricano solo nella richiesta di edit, mai per ogni cella della pagina.
+
+    Il link alla modifica avvolge SOLO lo stato: la riga della versione resta fuori perché contiene
+    il link al rilascio, e un <a> dentro un <a> è HTML invalido (il browser lo espelle dal link
+    esterno, e il link al tag semplicemente non verrebbe reso). %>
+<%= turbo_frame_tag feature_cell_frame_id(feature, platform) do %>
+  <span class="flex flex-col items-start gap-1">
+    <% if can_manage %>
+      <%= link_to edit_member_product_feature_cell_path(feature, platform),
+                  class: "block -m-1 p-1 rounded hover:bg-stone-100 dark:hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400",
+                  data: { test: "product-cell-#{feature.id}-#{platform.id}" } do %>
+        <%= render "member/product/matrices/cell_status", cell: cell %>
+      <% end %>
+    <% else %>
+      <span data-test="product-cell-<%= feature.id %>-<%= platform.id %>">
+        <%= render "member/product/matrices/cell_status", cell: cell %>
+      </span>
+    <% end %>
+
+    <%= render "member/product/matrices/cell_version", cell: cell %>
+  </span>
+<% end %>

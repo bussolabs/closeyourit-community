@@ -1,0 +1,22 @@
+<%# locals: (decision_card:, show_level: true) %>
+<%# The approver's card: one sentence, up to four labelled points (the fourth only on bugs), the risk. Shared by plan and
+    delivery. CYRA-885 %>
+<div class="space-y-2.5" data-test="approvals-decision-card">
+  <% if show_level %>
+    <%= render "member/home/approvals/decision_card_level", decision_card: %>
+  <% end %>
+  <p class="font-display text-[16px] font-semibold text-zinc-900 dark:text-zinc-100 leading-snug text-balance max-w-[70ch]" data-test="approvals-decision-card-headline"><%= decision_card["headline"] %></p>
+  <dl class="grid grid-cols-1 sm:grid-cols-[max-content_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-[13px] max-w-[70ch]">
+    <% Array(decision_card["points"]).first(4).each do |point| %>
+      <div class="contents" data-test="approvals-decision-card-point">
+        <dt class="font-semibold text-zinc-900 dark:text-zinc-100"><span class="text-indigo-600 dark:text-indigo-400" aria-hidden="true">→</span> <%= point.to_h["label"] %></dt>
+        <dd class="text-zinc-700 dark:text-zinc-300 leading-relaxed"><%= point.to_h["text"] %></dd>
+      </div>
+    <% end %>
+  </dl>
+  <% if decision_card["risk"].present? %>
+    <p class="flex items-start gap-1.5 rounded-md border px-2.5 py-1.5 text-[12.5px] leading-relaxed max-w-[70ch] <%= decision_card["risk_level"] == "high" ? "border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15 text-red-800 dark:text-red-200" : "border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 text-amber-900 dark:text-amber-200" %>" data-test="approvals-decision-card-risk">
+      <%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[10px] mt-1") %><span><%= decision_card["risk"] %></span>
+    </p>
+  <% end %>
+</div>

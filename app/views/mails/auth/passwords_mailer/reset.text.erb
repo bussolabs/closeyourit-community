@@ -1,0 +1,7 @@
+<%= t("auth.passwords.mailer.greeting", name: @account.name) %>
+
+<%= t("auth.passwords.mailer.body") %>
+
+<%= edit_password_url(@token) %>
+
+<%= t("auth.passwords.mailer.ignore") %>

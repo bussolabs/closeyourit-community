@@ -1,0 +1,15 @@
+<%= tag.div(**row_options) do %>
+  <% if @icon %>
+    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shrink-0"><%= render Ui::IconComponent.new(name: @icon, class: "text-[13px]") %></span>
+  <% end %>
+  <div class="min-w-0 flex-1">
+    <p id="<%= @name %>_switch_label" class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= @label %></p>
+    <% if @hint %><p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= @hint %></p><% end %>
+  </div>
+  <%# Fuori dal button: dentro cambierebbe il nome accessibile della pill. `aria-live` perché
+      «salvato» / «non salvato» arriva dopo il clic e chi non vede lo schermo deve sentirlo. %>
+  <span data-ui--switch-target="status" aria-live="polite" class="<%= status_class %>"><%= immediate_label %></span>
+  <%= button_tag(button_options) do %>
+    <span data-ui--switch-target="knob" class="<%= knob_class %>"></span>
+  <% end %>
+<% end %>

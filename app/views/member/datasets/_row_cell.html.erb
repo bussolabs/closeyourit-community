@@ -1,0 +1,18 @@
+<%# locals: row:, column:, row_index: — il valore di una cella, reso secondo il tipo della sua
+    colonna: la foto allegata (o il trattino se manca), la spunta del sì/no, il testo. Il numero di
+    riga serve solo al testo alternativo della foto (CYRA-802). %>
+<% if column.kind_photo? %>
+  <% cell = row.cells.detect { |c| c.column_id == column.id && c.image.attached? } %>
+  <% if cell %>
+    <%= image_tag rails_blob_path(cell.image, disposition: :inline),
+          alt: t("member.datasets.rows.photo_alt", column: column.label, row: row_index + 1),
+          loading: "lazy", decoding: "async",
+          class: "w-12 h-12 object-cover rounded border border-stone-200 dark:border-zinc-800", data: { test: "dataset-cell-photo" } %>
+  <% else %>
+    <span class="text-gray-300 dark:text-zinc-600">—</span>
+  <% end %>
+<% elsif column.kind_boolean? %>
+  <%= ActiveModel::Type::Boolean.new.cast(row.value_for(column.code)) ? "✓" : "—" %>
+<% else %>
+  <%= row.value_for(column.code).presence || content_tag(:span, "—", class: "text-gray-300 dark:text-zinc-600") %>
+<% end %>

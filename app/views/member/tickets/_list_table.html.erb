@@ -1,0 +1,79 @@
+<%= render(Ui::TableComponent.new(stacked: true, label: t("member.tickets.title"))) do |t| %>
+  <% t.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tickets.col_code"), sort: "code") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tickets.col_title"), sort: "title") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tickets.col_kind"), sort: "kind") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tickets.col_project"), sort: "project") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tickets.col_priority"), sort: "priority") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tickets.col_status"), sort: "status") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tickets.col_created"), sort: "created", initial: :desc) %>
+      <%# CYRA-408 — scadenza e assegnatario spariscono quando NESSUN risultato mostrato le ha:
+          due colonne di trattini su ogni riga di ogni pagina rubavano lo spazio al titolo. La
+          scelta vale solo per questi risultati, ed è dichiarata sotto la tabella. %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tickets.col_due"), sort: "due", visible: @show_due) %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tickets.col_assignee"), sort: "assignee", align: :right, visible: @show_assignee) %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+  <% end %>
+      <% @tickets.each do |ticket| %>
+        <%= render Ui::TableComponent::RowComponent.new(href: member_ticket_path(ticket), link_label: ticket.code, frame: "_top", test_id: "ticket-row") do %>
+          <%= render Ui::TableComponent::CellComponent.new(label: t("member.tickets.col_code"), class: "whitespace-nowrap") do %>
+            <span class="inline-flex items-center gap-1.5">
+              <%# Icona del gate agenti (CYRA-184): niente colonna in più, la tabella è già larga. %>
+              <%= render "member/tickets/agent_indicator", ticket: ticket %>
+              <%# Presa in carico in corso (CYRA-295): stessa ragione, nessuna colonna nuova. %>
+              <%= render "member/tickets/lease_indicator", ticket: ticket %>
+              <%= link_to ticket.code, member_ticket_path(ticket), class: "font-mono text-[12px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { turbo_frame: "_top" } %>
+              <%# CYRA-623 — lo stesso segno «bloccato» della bacheca: un prerequisito ancora
+                  aperto. Precalcolato in aggregato per l'intera pagina (mai un blocked? per
+                  riga) e riconoscibile RIGA per riga: in questa pagina «bloccato» è già il nome
+                  di un filtro che riguarda un'altra cosa. %>
+              <% if (local_assigns[:blocked_ticket_ids] || @blocked_ticket_ids)&.include?(ticket.id) %>
+                <span class="shrink-0" data-test="ticket-list-blocked-<%= ticket.id %>">
+                  <%= render Ui::BadgeComponent.new(label: t("member.tickets.dependencies.blocked_badge"), color: :amber, icon: "lock", size: :sm) %>
+                </span>
+              <% end %>
+            </span>
+          <% end %>
+          <%# CYRA-408 — il titolo è l'unico campo che serve per decidere se aprire un ticket:
+              prende lo spazio che le altre colonne lasciano libero (w-full in tabella), su due
+              righe. Prima era tagliato a una quarantina di caratteri mentre due colonne
+              restavano vuote. %>
+          <%= render Ui::TableComponent::CellComponent.new(header: true, class: "w-full") do %>
+            <div class="flex items-center gap-2">
+              <%# CYRA-399 — due righe, non una troncata a metà parola: i titoli che arrivano
+                  dagli errori sono lunghi, e il resto si legge col tooltip. %>
+              <%= link_to ticket.title, member_ticket_path(ticket), title: ticket.title,
+                    class: "min-w-0 line-clamp-2 text-[13px] font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400",
+                    data: { turbo_frame: "_top", test: "ticket-list-title" } %>
+              <%= render "member/tickets/attachments_indicator", ticket: ticket %>
+              <%# CYRA-844 — domande senza risposta, riconoscibili senza aprire il ticket. %>
+              <%= render "member/tickets/open_questions_badge", ticket: ticket,
+                    count: @open_questions_counts&.fetch(ticket.id, 0), test_id: "ticket-open-questions-#{ticket.id}" %>
+              <%# CYRA-374 — la riga dice da sola che aspetta una MIA decisione: lo stato «In
+                  revisione» lo dicono anche i ticket che revisiona qualcun altro, e la
+                  differenza era leggibile solo aprendo il ticket. %>
+              <% if ticket_awaiting_decision?(ticket) %>
+                <span class="shrink-0" data-test="ticket-awaiting-<%= ticket.id %>">
+                  <%= render Ui::BadgeComponent.new(label: t("member.tickets.awaiting.badge"), color: :amber, icon: "clipboard-check", size: :sm) %>
+                </span>
+              <% end %>
+            </div>
+          <% end %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.tickets.col_kind"), test_id: "ticket-kind-cell")) { render Ui::BadgeComponent.new(label: t("member.tickets.kind.#{ticket.kind}"), color: ticket_kind_color(ticket.kind), dot: true) } %>
+          <%= render Ui::TableComponent::CellComponent.new(label: t("member.tickets.col_project")) do %>
+            <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-[12.5px] text-gray-500 dark:text-zinc-400"><span class="w-2 h-2 rounded-[2px] <%= Ui::Colors.swatch(ticket.project.color) %>"></span><%= ticket.project.name %></span>
+          <% end %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.tickets.col_priority"))) { render Ui::BadgeComponent.new(label: ticket.priority.display_label, color: ticket.priority.color, icon: (ticket.priority.code == "high" ? "arrow-up" : nil)) } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.tickets.col_status"))) { render Ui::BadgeComponent.new(label: ticket.status.display_label, color: ticket.status.color) } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.tickets.col_created"), mono: true, class: "whitespace-nowrap text-gray-500 dark:text-zinc-400", test_id: "ticket-created-cell")) { milestone_short_date(ticket.created_at.to_date) } %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.tickets.col_due"), mono: true, class: "text-gray-500 dark:text-zinc-400 whitespace-nowrap", visible: @show_due, test_id: "ticket-due-cell")) { (l(ticket.due_at, format: :long) if ticket.due_at) || "—" } %>
+          <%= render Ui::TableComponent::CellComponent.new(label: t("member.tickets.col_assignee"), align: :right, visible: @show_assignee) do %>
+            <% if ticket.assignee %>
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold" title="<%= ticket.assignee.name %>"><%= avatar_initials(ticket.assignee.name) %></span>
+            <% else %>
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 text-[10px]" title="<%= t('member.tickets.unassigned') %>"><%= render Ui::IconComponent.new(name: "user", class: "text-[10px]") %></span>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+<% end %>

@@ -1,0 +1,97 @@
+<%# CYRA-745 — «Chi ha fatto cosa e quando»: i registri di lavoro, ticket, permessi e cassaforte in un
+    elenco solo. Le righe arrivano già normalizzate da Activity::AuditQuery: la tabella non conosce i
+    sei schemi sorgente, legge una forma sola. %>
+<% content_for :title, t("member.activity.title") %>
+
+<div class="p-7 space-y-6" data-test="member-activity">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.activity.title"),
+        subtitle: t("member.activity.subtitle"),
+        breadcrumb: [ { label: t("member.activity.title") } ],
+        counts_test_id: "activity-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.activity.stat_events"), value: @pagination.total, test_id: "activity-stat-total") %>
+      <% if @source_filter %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.activity.filter_source"), value: activity_source_label(@source_filter), test_id: "activity-stat-source") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% filtering = params[:source].present? || params[:event_action].present? || params[:actor_id].present? || params[:from].present? || params[:to].present? %>
+  <% if @rows.empty? && !filtering %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.activity.empty"), body: t("member.activity.empty_body"), icon: "history", framed: true, test_id: "activity-empty") %>
+  <% else %>
+    <div data-test="activity-table">
+      <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+        <%= render(Ui::TableToolbarComponent.new(framed: true,
+              url: member_activity_path,
+              apply_test_id: "activity-filter", test_id: "activity-toolbar")) do |toolbar| %>
+          <% toolbar.with_filter(key: "source", label: t("member.activity.filter_source")) do %>
+            <div class="w-40"><%= render Ui::SelectComponent.new(name: "source", summary: true,
+              options: Activity::AuditQuery::SOURCES.map { |s| [ activity_source_label(s), s.to_s ] },
+              selected: params[:source], placeholder: t("member.activity.filter_source"), test_id: "filter-source") %></div>
+          <% end %>
+          <% toolbar.with_filter(key: "event_action", label: t("member.activity.filter_action")) do %>
+            <div class="w-52"><%= render Ui::SelectComponent.new(name: "event_action", summary: true,
+              options: activity_action_options, selected: params[:event_action],
+              placeholder: t("member.activity.filter_action"), test_id: "filter-action") %></div>
+          <% end %>
+          <% toolbar.with_filter(key: "actor_id", label: t("member.activity.filter_actor")) do %>
+            <div class="w-52"><%= render Ui::SelectComponent.new(name: "actor_id", summary: true,
+              options: @actors.map { |a| [ a.name.presence || a.email, a.id ] }, selected: params[:actor_id],
+              placeholder: t("member.activity.filter_actor"), test_id: "filter-actor") %></div>
+          <% end %>
+          <%# Il periodo: «torna al giorno in cui è successo» è metà delle domande che si fanno a un
+              registro, e senza questi due campi si poteva chiedere solo scrivendolo nell'indirizzo. %>
+          <% toolbar.with_filter(key: "from", label: t("member.activity.filter_from")) do %>
+            <input type="datetime-local" name="from" value="<%= params[:from] %>"
+                   aria-label="<%= t('member.activity.filter_from') %>" data-test="activity-filter-from"
+                   class="h-[34px] px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 text-[12.5px] text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400">
+          <% end %>
+          <% toolbar.with_filter(key: "to", label: t("member.activity.filter_to")) do %>
+            <input type="datetime-local" name="to" value="<%= params[:to] %>"
+                   aria-label="<%= t('member.activity.filter_to') %>" data-test="activity-filter-to"
+                   class="h-[34px] px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 text-[12.5px] text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400">
+          <% end %>
+        <% end %>
+
+        <% if @rows.empty? %>
+          <%= render Ui::NoResultsComponent.new(reset_href: member_activity_path, icon: "history",
+                test_id: "activity-no-match", reset_test_id: "activity-reset-filters") %>
+        <% else %>
+          <%= render(Ui::TableComponent.new(stacked: true, label: t("member.activity.title"))) do |t| %>
+            <% t.with_head do %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.activity.col_when"), sort: "occurred_at", initial: :desc, classes: "w-40") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.activity.col_source"), classes: "w-32") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.activity.col_action"), classes: "w-56") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.activity.col_subject")) %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.activity.col_actor"), classes: "w-52") %>
+              <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.activity.col_project"), classes: "w-36") %>
+            <% end %>
+            <% @rows.each do |row| %>
+              <%= render Ui::TableComponent::RowComponent.new(test_id: "activity-row") do %>
+                <%= render(Ui::TableComponent::CellComponent.new(header: true, mono: true, class: "text-gray-500 dark:text-zinc-400 whitespace-nowrap")) { l(row.occurred_at, format: :short) } %>
+                <%= render Ui::TableComponent::CellComponent.new(label: t("member.activity.col_source"), class: "text-gray-600 dark:text-zinc-400 whitespace-nowrap") do %>
+                  <%= render Ui::IconComponent.new(name: activity_source_icon(row.source), class: "text-[11px] text-gray-400 dark:text-zinc-500 mr-1.5") %><%= activity_source_label(row.source) %>
+                <% end %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.activity.col_action"), class: "text-zinc-900 dark:text-zinc-100")) { activity_action_label(row) } %>
+                <%= render Ui::TableComponent::CellComponent.new(label: t("member.activity.col_subject"), mono: true, class: "text-zinc-900 dark:text-zinc-100") do %>
+                  <% subject_path = activity_subject_path(row) %>
+                  <%= subject_path && row.subject_label.present? ? link_to(row.subject_label, subject_path, class: "text-indigo-600 dark:text-indigo-400 hover:underline") : (row.subject_label.presence || "—") %>
+                <% end %>
+                <%= render Ui::TableComponent::CellComponent.new(label: t("member.activity.col_actor"), class: "text-gray-600 dark:text-zinc-400") do %>
+                  <%= activity_actor_label(row) %>
+                  <% if row.impersonated? %>
+                    <%= render Ui::BadgeComponent.new(label: t("member.activity.impersonated"), color: :violet, size: :sm) %>
+                  <% end %>
+                <% end %>
+                <%= render(Ui::TableComponent::CellComponent.new(label: t("member.activity.col_project"), class: "text-gray-500 dark:text-zinc-400")) { @projects[row.project_id]&.name || "—" } %>
+              <% end %>
+            <% end %>
+          <% end %>
+          <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "activity-pagination")) %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

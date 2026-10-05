@@ -1,0 +1,19 @@
+<%# Copertura per piattaforma di un prodotto nell'elenco: un chip «piattaforma coperte/attese» per
+    ogni piattaforma con almeno una funzionalità attesa. `rows` sono i Product::MatrixCoverage::Row
+    del prodotto — già in memoria, nessuna query qui. Vuoto quando nessuna funzionalità dichiara una
+    piattaforma. %>
+<% rows = Array(rows) %>
+<% if rows.empty? %>
+  <span class="font-mono text-[12px] text-gray-400 dark:text-zinc-500" data-test="product-matrix-coverage-empty-<%= group.id %>"><%= t("member.product.matrices.coverage.none") %></span>
+<% else %>
+  <div class="flex items-center flex-wrap gap-1.5" data-test="product-matrix-coverage-<%= group.id %>">
+    <% rows.each do |row| %>
+      <span class="inline-flex items-center gap-1.5 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2 py-0.5 text-[11.5px] whitespace-nowrap"
+            data-test="product-matrix-coverage-<%= group.id %>-<%= row.platform.id %>"
+            title="<%= t("member.product.matrices.coverage.ratio_hint") %>">
+        <span class="w-1.5 h-1.5 rounded-full <%= Ui::Colors.swatch(row.platform.color) %>"></span><%= row.platform.label %>
+        <span class="font-mono <%= row.complete? ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-900 dark:text-zinc-100" %>"><%= row.covered %>/<%= row.expected %></span>
+      </span>
+    <% end %>
+  </div>
+<% end %>

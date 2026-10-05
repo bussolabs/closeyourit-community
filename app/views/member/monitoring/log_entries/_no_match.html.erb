@@ -1,0 +1,41 @@
+<%# CYRA-391 — ci si arriva col codice della richiesta preso da un errore: se qui non c'è
+    niente, il motivo non è «filtri troppo stretti» ma che quei registri non sono mai
+    arrivati o sono scaduti. Dirlo qui evita il vicolo cieco. %>
+<div class="px-4 py-10 text-center" data-test="logs-no-match">
+  <% if params[:trace_id].present? %>
+    <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="logs-no-match-trace"><%= t("member.monitoring.logs.no_match_trace") %></p>
+  <% else %>
+    <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.logs.no_match") %></p>
+    <%# CYRA-350 — la causa più probabile e la via d'uscita: senza, chi filtra su un livello
+        vuoto non sa se sbaglia lui, se manca la configurazione o se i dati sono scaduti. %>
+    <% if params[:level].present? %>
+      <p class="mt-1.5 text-[12px] text-gray-500 dark:text-zinc-400 max-w-md mx-auto" data-test="logs-no-match-level"><%= t("member.monitoring.logs.no_match_level") %></p>
+    <% end %>
+    <%# CYRA-340: quando è il periodo a svuotare l'elenco, la via d'uscita è allargarlo. %>
+    <% unless current_time_range.unbounded? %>
+      <p class="mt-1.5 text-[12px] text-gray-500 dark:text-zinc-400" data-test="logs-no-match-range"><%= t("shared.time_range.empty_window") %></p>
+    <% end %>
+  <% end %>
+  <%= render "member/monitoring/log_entries/retention_note", classes: "mt-1.5 text-[12px] text-gray-400 dark:text-zinc-500" %>
+  <%# CYRA-814 — le tre vie d'uscita vanno a capo: su uno schermo da 390 px stanno su una riga sola
+      per 440 px e sfondavano la pagina, che finiva per scorrere lateralmente tutta invece della
+      sola tabella. I bottoni non si stringono (il testo non va a capo dentro): l'unico modo è
+      lasciarli impilare. %>
+  <%# CYRA-821 — le tre vie d'uscita cambiano periodo, filtri o pagina: escono dal frame dei
+      risultati, altrimenti ricaricherebbero il solo elenco lasciando la barra qui sopra su
+      ciò che hanno appena tolto. %>
+  <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+    <% unless current_time_range.unbounded? %>
+      <%= render Ui::ButtonComponent.new(label: t("shared.time_range.widen"),
+            href: member_monitoring_log_entries_path(request.query_parameters.except("page", "from", "to").merge(range: "30d")),
+            variant: :secondary_muted, size: :sm, icon: "history",
+            test_id: "logs-widen-range", data: { turbo_frame: "_top" }) %>
+    <% end %>
+    <%= render Ui::ButtonComponent.new(label: t("member.monitoring.logs.clear_filters"), href: member_monitoring_log_entries_path(ft: "1"),
+          variant: :secondary_muted, size: :sm, icon: "funnel-x", test_id: "logs-clear-filters",
+          data: { turbo_frame: "_top" }) %>
+    <%= render Ui::ButtonComponent.new(label: t("member.monitoring.logs.open_guide"), href: member_guides_logs_path,
+          variant: :secondary_muted, size: :sm, icon: "book", test_id: "logs-open-guide",
+          data: { turbo_frame: "_top" }) %>
+  </div>
+</div>

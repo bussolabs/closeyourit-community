@@ -1,0 +1,51 @@
+it:
+  member:
+    assistant:
+      proposals:
+        heading: "Azioni proposte"
+        open:
+          one: "1 da confermare"
+          other: "%{count} da confermare"
+        all_done: "tutte gestite"
+        confirm: "Conferma"
+        confirm_all:
+          one: "Conferma"
+          other: "Conferma tutte (%{count})"
+        edit: "Modifica"
+        save: "Salva"
+        discard: "Scarta"
+        restore: "Annulla"
+        failed: "Non è andata: correggi e riprova."
+        similar: "Forse esiste già:"
+        assign_to: "Assegna a %{name}"
+        on_list: "Lista: %{name}"
+        kinds:
+          create_ticket: "Nuovo ticket"
+          comment_ticket: "Commento"
+          change_ticket_status: "Cambio stato"
+          change_ticket_priority: "Cambio priorità"
+          assign_ticket: "Assegnazione"
+          create_todo: "Nuovo todo"
+          create_idea: "Nuova idea"
+        done:
+          create_ticket: "Ticket creato"
+          comment_ticket: "Commento aggiunto"
+          change_ticket_status: "Stato cambiato"
+          change_ticket_priority: "Priorità cambiata"
+          assign_ticket: "Assegnato"
+          create_todo: "Todo aggiunto"
+          create_idea: "Idea creata"
+        fields:
+          title: "Titolo"
+          description: "Descrizione"
+          body: "Testo"
+          problem: "Problema"
+          project_id: "Progetto"
+          priority_id: "Priorità"
+          status_id: "Stato"
+          assignee_id: "Assegnatario"
+          list_id: "Lista"
+        errors:
+          not_confirmable: "Questa azione è già stata gestita."
+          not_visible: "Non vedi più quello su cui agiva questa azione."
+          forbidden: "Non hai il permesso per questa azione."

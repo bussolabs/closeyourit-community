@@ -1,0 +1,37 @@
+en:
+  member:
+    guides:
+      index:
+        assistant:
+          title: The assistant
+      assistant:
+        title: The assistant
+        subtitle: What you can ask it, by voice or in writing, and what it does for you.
+        how_title: How it works
+        how_intro: "The assistant lives in the top bar: the microphone to speak, the wand to write. It answers from what your organization holds, and it only sees what you can see."
+        how_b1: "Speak or write in your own words: no commands to learn."
+        how_b2: "It answers in the language you used."
+        how_b3: "When you ask it to change something, it shows a card with what it is about to do. Nothing happens until you confirm."
+        ask_title: Questions it answers
+        ask_intro: "Ask about the state of the work, about one ticket, or about what the team already knows. Some examples to say as they are:"
+        ask_b1: "«How is Payments API doing?» — tickets to do, in progress and done, open errors, monitors that are down."
+        ask_b2: "«Which tickets are open on Storefront?» — lists and counts, also by person."
+        ask_b3: "«Show me API-3» — title, status, assignee, description and the latest comments."
+        ask_b4: "«What do we know about the slow login?» — it searches the tickets by meaning, not by exact words."
+        ask_b5: "«Why did we choose to keep logs for 14 days?» — it searches notes, decisions and guides in the knowledge base."
+        ask_b6: "«How do I invite a colleague?» — it explains the steps and links the right page."
+        do_title: Things it prepares for you
+        do_intro: "For each of these it shows a card to confirm. You can correct it before saying yes."
+        do_b1: "«Open a bug on Storefront: the checkout fails on Safari» — a new ticket; it also shows similar ones that already exist."
+        do_b2: "«Move API-3 to in review» — a change of status."
+        do_b3: "«Assign DASH-2 to me» — a change of assignee."
+        do_b4: "«Raise the priority of STR-1 to high» — a change of priority."
+        do_b5: "«Comment on API-1 that the fix is on staging» — a comment on a ticket."
+        do_b6: "«Save an idea for Dashboard: export to PDF» — a new idea on a project."
+        do_b7: "«Remind me to call the client on Friday» — a personal todo. Todos have no due date: the day stays in the text."
+        limits_title: What it does not do
+        limits_intro: "Knowing the limits saves a few attempts."
+        limits_b1: "It never changes anything without your confirmation."
+        limits_b2: "It does not see projects or tickets you have no access to."
+        limits_b3: "It does not delete anything, and it does not touch secrets, members or settings."
+        limits_b4: "It can get things wrong: read the card before confirming, and check the answer on the linked page when it matters."

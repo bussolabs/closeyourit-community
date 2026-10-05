@@ -1,0 +1,11 @@
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+  <%= render(Ui::TableComponent.new(stacked: true)) do |t| %>
+    <% t.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: "Name") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: "State") %>
+    <% end %>
+    <% titles = { empty: "No servers yet", no_results: "No server matches", loading: "Loading servers", error: "Could not load the servers" } %>
+    <% t.with_state(kind: kind, title: titles.fetch(kind), body: (kind == :empty ? "Install the agent to see the first one." : nil),
+          reset_href: ("#" if kind.in?(%i[no_results error])), reset_label: (kind == :error ? "Retry" : "Reset filters")) %>
+  <% end %>
+</div>

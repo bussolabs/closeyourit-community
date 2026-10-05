@@ -1,0 +1,12 @@
+<%# locals: (href:, icon:, label:, description: nil, description_test: nil, test: nil) %>
+<%# The card of a page in a landing without a table (Administration): icon, name and the menu entry's line. %>
+<%= link_to href, class: "block min-w-0 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 transition-colors hover:border-stone-300 dark:hover:border-zinc-700 hover:bg-stone-50 dark:hover:bg-zinc-800",
+      data: { test:, overview_card: true } do %>
+  <div class="flex items-center gap-2.5 min-w-0">
+    <span class="inline-flex items-center justify-center w-7 h-7 rounded-md shrink-0 bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400"><%= render Ui::IconComponent.new(name: icon, class: "text-[12px]") %></span>
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 truncate"><%= label %></h2>
+  </div>
+  <% if description.present? %>
+    <p class="mt-2 text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-xl" data-test="<%= description_test %>"><%= description %></p>
+  <% end %>
+<% end %>

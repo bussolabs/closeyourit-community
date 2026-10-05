@@ -1,0 +1,13 @@
+<%# locals: (idea:, voted:, test_id: nil) %>
+<%# Upvote di un'idea. Idempotente: PUT vota, DELETE rimuove (button_to → form).
+    CYRA-360 — chi non ha ancora votato vede un'azione piena, non un pulsante spento accanto ad
+    altri: il voto è il gesto che la pagina chiede. Chi ha già votato lo vede acceso (tinted).
+    Il conteggio non sta più qui ma nel titolo del riquadro «Interesse», dove resta leggibile anche
+    quando l'idea è congelata e il pulsante non c'è: ripeterlo a due centimetri era una colonna di
+    troppo in miniatura. %>
+<% test_id ||= "idea-vote-#{idea.id}" %>
+<%= render Ui::ButtonComponent.new(label: t(voted ? "member.ideas.vote.voted" : "member.ideas.vote.upvote"),
+      href: member_idea_vote_path(idea), method: (voted ? :delete : :put),
+      variant: (voted ? :tinted : :primary), size: :sm, icon: "chevron-up",
+      form_class: "pointer-events-auto", test_id: test_id,
+      title: t(voted ? "member.ideas.vote.remove_title" : "member.ideas.vote.upvote")) %>

@@ -1,0 +1,29 @@
+<%# Chi perde la copia locale e con che nome continuerà a leggere il valore. L'alias parte dal nome
+    che quel progetto usa OGGI: accettare la proposta non deve costringere nessuno a rimettere le
+    mani nel codice che legge quella variabile d'ambiente. %>
+<%= render Ui::SectionComponent.new(body_class: nil, test_id: "vault-consolidation-projects") do |section| %>
+  <% section.with_title { t("member.vault_consolidations.projects_title") } %>
+  <% section.with_subtitle { t("member.vault_consolidations.projects_subtitle") } %>
+  <%= render(Ui::TableComponent.new(stacked: true, label: t("member.vault_consolidations.projects_title"), body_test_id: "vault-consolidation-projects-table")) do |table| %>
+    <% table.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_consolidations.col_project")) %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_consolidations.col_current")) %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_consolidations.col_after")) %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.vault_consolidations.col_repository")) %>
+    <% end %>
+    <% @impact["projects"].each do |row| %>
+      <%= render Ui::TableComponent::RowComponent.new(test_id: "vault-consolidation-project-row") do %>
+        <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-[12.5px] text-zinc-900 dark:text-zinc-100")) { row["project"] } %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: t("member.vault_consolidations.col_current"), mono: true, class: "text-gray-500 dark:text-zinc-400 line-through")) { row["name"] } %>
+        <%= render Ui::TableComponent::CellComponent.new(label: t("member.vault_consolidations.col_after")) do %>
+          <%= render Ui::InputComponent.new(name: "local_names[#{row['project_id']}]",
+                value: row["name"], required: true,
+                test_id: "vault-consolidation-alias-#{row['project_id']}") %>
+        <% end %>
+        <%# Il repository che riceverà il valore aggiornato: senza, chi conferma non sa che l'effetto
+            esce anche fuori da CloseYourIt. %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: t("member.vault_consolidations.col_repository"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { row["repository"] || "—" } %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

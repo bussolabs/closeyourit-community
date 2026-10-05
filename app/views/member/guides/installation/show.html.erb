@@ -1,0 +1,52 @@
+<% content_for :title, t("member.installation.title") %>
+<div class="p-7 space-y-6" data-test="installation-guide">
+  <%= render Ui::PageHeaderComponent.new(title: t("member.installation.title"), subtitle: t("member.installation.subtitle"), breadcrumb: [{label: t("member.guides.index.title"), href: member_guides_path}, {label: t("member.installation.title")}]) do |header| %>
+    <% header.with_counts do %><%= render Ui::StatLabelComponent.new(label: t("member.installation.observations"), value: @records.size) %><% end %>
+  <% end %>
+  <%= render Ui::SectionComponent.new(title: t("member.installation.select")) do %>
+    <%= form_with url: member_guides_installation_path, method: :get, class: "space-y-4" do %>
+      <%= render Ui::GridComponent.new(cols: 1, md: 2, gap: 4) do %>
+        <%= render Ui::InputComponent.new(name: "project_query", label: t("member.installation.project_search"), value: @project_query, maxlength: 100) %>
+        <%= render Ui::SelectComponent.new(name: "project_id", label: t("member.installation.project"), options: @projects.map { |project| [project.name,project.id]}, selected: @project&.id) %>
+        <%= render Ui::SelectComponent.new(name: "run_id", label: t("member.installation.observation"), options: @choices.map { |row| ["#{row.dig('tuple','integration')} · #{row.dig('tuple','package','version')} · #{row.dig('tuple','runtime','version')} · #{row['run_id']}",row['run_id']] }, selected: @candidate&.fetch("run_id")) %>
+        <%= render Ui::InputComponent.new(name: "version", label: t("member.installation.version"), value: params[:version], placeholder: @candidate&.dig("tuple","package","version"), maxlength: 100) %>
+      <% end %>
+      <%= render Ui::ButtonComponent.new(label: t("member.installation.load"), type: :submit, variant: :secondary, size: :sm) %>
+      <p class="text-xs text-gray-500 dark:text-zinc-400"><%= t("member.installation.selection_note") %></p>
+    <% end %>
+  <% end %>
+  <% unless @project %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.installation.#{@project_query.present? ? 'no_matching_projects' : 'no_projects'}"), body: t("member.installation.#{@project_query.present? ? 'no_matching_projects_body' : 'no_projects_body'}"), icon: "folder", framed: true, test_id: "installation-no-projects") %>
+  <% end %>
+  <% if @observation %>
+    <% tuple = @observation.fetch("tuple"); package = tuple.fetch("package") %>
+    <%= render Ui::SectionComponent.new(title: "#{package['name']} #{package['version']}", test_id: "installation-observation") do %>
+      <div class="space-y-4" data-installation-run-id="<%= @observation['run_id'] %>" data-installation-package="<%= package['name'] %>" data-installation-version="<%= package['version'] %>" data-installation-auth-mode="<%= tuple['auth_mode'] %>" data-installation-signal="<%= @signal %>">
+        <p class="font-medium"><%= t("member.installation.claims.#{@observation['claim']}") %></p>
+        <p class="font-mono text-sm break-all"><%= tuple['runtime'].values.join(' ') %> · <%= tuple['platform'].values.join(' · ') %><% if tuple['framework'] %> · <%= tuple['framework'].values.join(' ') %><% end %></p>
+        <div class="flex flex-wrap gap-3"><% %w[errors logs metrics performance usage traces sessions].each do |signal| %><span class="text-sm"><%= signal %>: <%= t("member.installation.#{tuple['signals'].include?(signal) ? 'observed' : 'not_attested'}") %></span><% end %></div>
+        <p class="text-sm"><%= t("member.installation.claim_note") %></p>
+        <details><summary class="cursor-pointer text-sm"><%= t("member.installation.evidence") %></summary>
+        <ul class="list-disc pl-5 space-y-1 text-sm"><% @observation.fetch("limitations").each do |limitation| %><li><%= limitation %></li><% end %></ul>
+          <p class="my-3 text-sm"><%= t("member.installation.selection_limits") %></p>
+          <dl class="space-y-2 mt-3 font-mono text-xs break-all"><% {"run" => @observation['run_id'], "finished" => @observation['finished_at'], "artifact" => package['sha256'], "manifest" => @observation['manifest_sha256'], "backend" => tuple.dig('backend','commit')}.each do |key,value| %><div><dt class="text-gray-500 dark:text-zinc-400"><%= t("member.installation.#{key}") %></dt><dd><%= value %></dd></div><% end %></dl>
+        </details>
+      </div>
+    <% end %>
+    <%= render "setup" %>
+    <%= render "receipt" if @project %>
+  <% else %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.installation.unobserved"), body: t("member.installation.unobserved_body"), icon: "circle-help", framed: true, test_id: "installation-unobserved") %>
+  <% end %>
+  <%= render Ui::SectionComponent.new(title: t("member.installation.history")) do %>
+    <%= render Ui::TableComponent.new(stacked: true, label: t("member.installation.history")) do |table| %>
+      <% table.with_head do %><% %w[observation finished claim].each do |key| %><%= render Ui::TableComponent::HeaderComponent.new(label: t("member.installation.#{key}")) %><% end %><% end %>
+      <% @history.each do |row| %><%= render Ui::TableComponent::RowComponent.new(href: member_guides_installation_path(run_id: row['run_id'], project_id: @project&.id), link_label: row['run_id']) do %>
+        <%= render Ui::TableComponent::CellComponent.new(label: t("member.installation.observation"), header: true) do %><%= row.dig('tuple','integration') %> <span class="font-mono"><%= row.dig('tuple','package','version') %> · <%= row['run_id'] %></span><% end %>
+        <%= render Ui::TableComponent::CellComponent.new(label: t("member.installation.finished"), mono: true) do %><%= row['finished_at'] %><% end %>
+        <%= render Ui::TableComponent::CellComponent.new(label: t("member.installation.claim")) do %><%= t("member.installation.claims.#{row['claim']}") %><% end %>
+      <% end %><% end %>
+    <% end %>
+    <%= render Ui::PaginationComponent.new(pagination: @history_page) %>
+  <% end %>
+</div>

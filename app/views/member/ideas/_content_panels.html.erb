@@ -1,0 +1,29 @@
+<%# Problem, solution, monetization and risks read as one text: one panel, one heading per part. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 divide-y divide-stone-200 dark:divide-zinc-800" data-test="idea-content">
+  <section class="px-4 py-3.5" data-test="idea-problem">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.ideas.show.problem") %></h2>
+    <%= render Ui::MarkdownComponent.new(text: @idea.problem,
+          class: "text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed", test_id: "idea-problem-text") %>
+  </section>
+  <% if @idea.solution.present? %>
+    <section class="px-4 py-3.5" data-test="idea-solution">
+      <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.ideas.show.solution") %></h2>
+      <%= render Ui::MarkdownComponent.new(text: @idea.solution,
+            class: "text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed", test_id: "idea-solution-text") %>
+    </section>
+  <% end %>
+  <% if @idea.monetization.present? %>
+    <section class="px-4 py-3.5" data-test="idea-monetization">
+      <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.ideas.show.monetization") %></h2>
+      <%= render Ui::MarkdownComponent.new(text: @idea.monetization,
+            class: "text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed", test_id: "idea-monetization-text") %>
+    </section>
+  <% end %>
+  <% if @idea.risks.present? %>
+    <section class="px-4 py-3.5" data-test="idea-risks">
+      <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.ideas.show.risks") %></h2>
+      <%= render Ui::MarkdownComponent.new(text: @idea.risks,
+            class: "text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed", test_id: "idea-risks-text") %>
+    </section>
+  <% end %>
+</div>

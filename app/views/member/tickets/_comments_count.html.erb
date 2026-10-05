@@ -1,0 +1,4 @@
+<%# locals: ticket, count
+    Contatore commenti sulla scheda Discussione (CYRA-883). Target del broadcast realtime
+    (replace) quando si aggiunge/elimina un commento. id stabile = contratto write↔read-side. %>
+<span id="ticket_comments_count_<%= ticket.id %>" class="font-mono text-[11.5px] text-gray-400 dark:text-zinc-500 <%= "hidden" if count.zero? %>" data-test="member-ticket-comments-count"><%= count %></span>

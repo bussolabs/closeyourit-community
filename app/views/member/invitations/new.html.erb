@@ -1,0 +1,38 @@
+<% content_for :title, t("member.invitations.new_title") %>
+
+<div class="p-7">
+  <%= form_with url: member_invitations_path, method: :post, class: "space-y-6", data: { test: "member-invite-form" } do %>
+    <%= render Ui::PageHeaderComponent.new(title: t("member.invitations.new_title"), breadcrumb: [ { label: t("member.members.title"), href: member_members_path }, { label: t("member.invitations.new_title") } ]) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.invitations.cancel"), href: member_members_path, variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: t("member.invitations.submit"), type: "submit", icon: "send", test_id: "member-invite-submit", size: :sm) %>
+      <% end %>
+    <% end %>
+
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <% if @error %>
+            <div class="md:col-span-2" data-test="member-invite-error">
+              <%= render Ui::AlertComponent.new(variant: :danger) do %><%= @error %><% end %>
+            </div>
+          <% end %>
+
+          <div class="md:col-span-2">
+            <label class="block text-[12.5px] font-medium text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.invitations.org_label") %></label>
+            <div class="flex items-center gap-2 h-[38px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-[13px] text-gray-500 dark:text-zinc-400">
+              <span class="w-2 h-2 rounded-[3px] bg-indigo-500"></span><%= current_organization.name %>
+              <%= render Ui::IconComponent.new(name: "lock", class: "ml-auto text-[11px] text-gray-300 dark:text-zinc-600") %>
+            </div>
+          </div>
+
+          <%= render Ui::InputComponent.new(name: "email", label: t("member.invitations.email"), type: "email", required: true, test_id: "invite-email", value: @invitation.email) %>
+
+          <%= render Ui::SelectComponent.new(name: "role", label: t("member.invitations.role"), required: true,
+                options: [ [ t("member.roles.member"), "member" ], [ t("member.roles.admin"), "admin" ], [ t("member.roles.customer"), "customer" ] ],
+                selected: @invitation.role, hint: t("member.invitations.role_hint_html").html_safe, test_id: "invite-role") %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

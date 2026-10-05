@@ -1,0 +1,50 @@
+<% content_for :title, t("member.secret_assets.title", project: @project.name) %>
+<% can_manage = can?("secret_files.manage", scope: @project) %>
+
+<div class="p-7 space-y-6" data-test="member-project-secret-assets">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "secrets" %>
+
+  <%# T1 — one panel holds the files, like the variables tab: tabs, what it holds and the action, then the list. %>
+  <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="project-secret-assets-panel">
+    <div class="border-b border-stone-200 dark:border-zinc-800 px-3 py-2"><%= render "member/project_secrets/subnav", project: @project, active: "files" %></div>
+    <div class="flex flex-wrap items-start justify-between gap-3 border-b border-stone-200 dark:border-zinc-800 px-4 py-3">
+      <p class="min-w-0 text-[13px] text-zinc-600 dark:text-zinc-400" data-test="project-secret-assets-lead"><%= t("member.secret_assets.section_lead") %></p>
+      <% if can_manage %>
+        <%= render Ui::ButtonComponent.new(label: t("member.secret_assets.upload_cta"), href: new_member_project_secret_asset_path(@project), variant: :primary, size: :sm, icon: "plus", test_id: "project-secret-asset-new") %>
+      <% end %>
+    </div>
+
+    <% if @assets.empty? %>
+      <%= render Ui::EmptyStateComponent.new(title: t("member.secret_assets.empty"), body: t("member.secret_assets.empty_body"),
+            icon: "file-lock", test_id: "project-secret-assets-empty") %>
+    <% else %>
+      <div class="divide-y divide-stone-200 dark:divide-zinc-800" data-test="project-secret-assets-list">
+        <% @assets.each do |asset| %>
+          <% version = asset.current_version %>
+          <div class="flex items-center gap-3 p-4" data-test="secret-asset-row">
+            <%= render Ui::IconComponent.new(name: "file-lock", class: "text-indigo-500 dark:text-indigo-400 shrink-0") %>
+            <div class="min-w-0">
+              <p class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 truncate"><%= asset.name %></p>
+              <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= asset.asset_type %> · v<%= version&.number %> · <%= number_to_human_size(version&.byte_size.to_i) %><% if asset.environment %> · <%= asset.environment.label %><% end %><% if asset.shared? %> · <%= t("member.secret_assets.shared_badge") %><% end %></p>
+            </div>
+            <div class="ml-auto flex items-center gap-1.5">
+              <%= render Ui::ButtonComponent.new(label: t("member.secret_assets.versions"), href: versions_member_project_secret_asset_path(@project, asset), variant: :secondary_muted, size: :sm, icon: "history", test_id: "project-secret-asset-versions-#{asset.id}") %>
+              <%= render Ui::ButtonComponent.new(label: t("member.secret_assets.download"), href: download_member_project_secret_asset_path(@project, asset), variant: :secondary_muted, size: :sm, icon: "download", test_id: "project-secret-asset-download-#{asset.id}") %>
+              <% if can_manage && !asset.shared? %>
+                <%= render Ui::RowMenuComponent.new(test_id: "project-secret-asset-menu-#{asset.id}", aria_label: t("member.secret_assets.more_menu")) do %>
+                  <%= button_to member_project_secret_asset_path(@project, asset), method: :delete, form: { class: "block", data: { turbo_confirm: t("member.secret_assets.archive_confirm") } },
+                        class: Ui::RowMenuComponent.item_class(:danger), data: { test: "project-secret-asset-archive-#{asset.id}" } do %>
+                    <%= render Ui::IconComponent.new(name: "archive", class: "w-[1.25em] text-[12px]") %><%= t("member.secret_assets.archive") %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+
+  <%# CYRA-422 — riga permanente: cifratura, tracciamento delle letture e retention del registro. %>
+  <%= render SecretProtectionComponent.new(kind: :project_files) %>
+</div>

@@ -1,0 +1,7 @@
+<%# CYRA-899 — the row preview on the board: the same detail the decision panel shows. `_top` so its
+    links leave the frame and open the page. %>
+<%= turbo_frame_tag "approvals-preview-#{@card.kind}-#{@card.id}", target: "_top" do %>
+  <div class="bg-white dark:bg-zinc-900" data-test="approvals-preview">
+    <%= render "member/home/approvals/detail", card: @card %>
+  </div>
+<% end %>

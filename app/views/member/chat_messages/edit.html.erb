@@ -1,0 +1,28 @@
+<% content_for :title, t("member.chat.messages.edit") %>
+<div class="p-7">
+  <%= form_with url: member_chat_conversation_message_path(@conversation, @message), method: :patch,
+        class: "space-y-6", data: { test: "chat-message-edit-form" } do |form| %>
+    <%= form.hidden_field :expected_updated_at, value: @expected_updated_at %>
+    <%= render Ui::PageHeaderComponent.new(title: t("member.chat.messages.edit"),
+          breadcrumb: [ { label: t("member.chat.title"), href: member_chat_conversations_path },
+                        { label: @conversation.title_for(Current.account), href: member_chat_conversation_path(@conversation) },
+                        { label: t("member.breadcrumb.edit") } ]) do |h| %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.todo_lists.form.cancel"),
+              href: member_chat_conversation_path(@conversation), variant: :secondary_muted, size: :sm) %>
+        <%= render Ui::ButtonComponent.new(label: t("member.todo_lists.form.save"), type: "submit",
+              icon: "check", size: :sm, test_id: "chat-message-save") %>
+      <% end %>
+    <% end %>
+    <div class="space-y-3 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
+      <% if @error %>
+        <p id="chat-message-error" role="alert" class="text-sm text-red-600 dark:text-red-400"><%= @error %></p>
+      <% end %>
+      <%= form.label :body, t("member.chat.messages.body"), class: "block text-sm font-medium" %>
+      <%= form.text_area :body, value: @message.body, rows: 6,
+            aria: { invalid: @error.present?, describedby: ("chat-message-error" if @error) },
+            class: "block w-full rounded-lg border border-stone-200 dark:border-zinc-800 bg-transparent p-3 text-sm focus:border-indigo-600 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400",
+            data: { test: "chat-message-edit-body" } %>
+    </div>
+  <% end %>
+</div>

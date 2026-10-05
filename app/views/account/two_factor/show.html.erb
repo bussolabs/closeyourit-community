@@ -1,0 +1,46 @@
+<% content_for :title, t("account.two_factor.title") %>
+
+<div class="mx-auto max-w-2xl px-6 py-8" data-test="account-two-factor">
+  <div class="flex items-center gap-2.5 mb-1">
+    <h1 class="font-display text-[18px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("account.two_factor.title") %></h1>
+    <% if @account.otp_enabled? %>
+      <span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-500/15 px-2 py-0.5 text-[11px] font-medium text-green-700 dark:text-green-300" data-test="two-factor-status-on"><%= t("account.two_factor.status_on") %></span>
+    <% else %>
+      <span class="inline-flex items-center rounded-md bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 text-[11px] font-medium text-gray-500 dark:text-zinc-400" data-test="two-factor-status-off"><%= t("account.two_factor.status_off") %></span>
+    <% end %>
+  </div>
+  <p class="text-[13px] text-gray-500 dark:text-zinc-400 mb-6"><%= t("account.two_factor.lead") %></p>
+
+  <%= render Ui::CardComponent.new do %>
+    <% if @account.otp_enabled? %>
+      <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("account.two_factor.enabled_title") %></h2>
+      <p class="mt-1.5 text-[13px] text-zinc-600 dark:text-zinc-400"><%= t("account.two_factor.enabled_body") %></p>
+      <%# FIX-3/FIX-C: la disattivazione richiede una riprova d'identità — password corrente OPPURE un
+          codice (TOTP o di recupero). I due campi sono alternativi: ne basta uno valido. %>
+      <%= form_with url: account_two_factor_path, method: :delete, class: "mt-4 space-y-3 max-w-xs", data: { test: "two-factor-disable-form" } do %>
+        <%= render Ui::InputComponent.new(
+              name: "password", type: "password", label: t("account.two_factor.disable_password_label"),
+              autocomplete: "current-password", test_id: "two-factor-disable-password",
+              hint: t("account.two_factor.disable_password_hint")) %>
+        <%= render Ui::InputComponent.new(
+              name: "code", label: t("account.two_factor.disable_code_label"),
+              autocomplete: "one-time-code", inputmode: "text", test_id: "two-factor-disable-code",
+              hint: t("account.two_factor.disable_code_hint")) %>
+        <%= render Ui::ButtonComponent.new(
+              label: t("account.two_factor.disable"), type: "submit", variant: :danger_outline,
+              test_id: "two-factor-disable") %>
+      <% end %>
+      <div class="mt-4">
+        <%= link_to t("account.two_factor.back_to_app"), root_path, class: "text-[13px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300", data: { test: "two-factor-back" } %>
+      </div>
+    <% else %>
+      <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("account.two_factor.disabled_title") %></h2>
+      <p class="mt-1.5 text-[13px] text-zinc-600 dark:text-zinc-400"><%= t("account.two_factor.disabled_body") %></p>
+      <div class="mt-4">
+        <%= render Ui::ButtonComponent.new(
+              label: t("account.two_factor.setup"), href: setup_account_two_factor_path,
+              icon: "shield-half", test_id: "two-factor-setup-start") %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,28 @@
+<%# Le pagine live (turbo_refreshes_with method: :morph) si ri-fetchano da sole anche più volte in
+    pochi secondi. La risposta successiva non contiene più il flash — già consumato — e il morph
+    cancellava il toast dopo un paio di secondi, spesso prima che lo si leggesse: da fuori sembrava
+    che l'azione appena lanciata non avesse prodotto niente.
+
+    Due accorgimenti, che vanno insieme:
+    - il contenitore è SEMPRE nel DOM, anche vuoto. Se sparisse, il morph rimuoverebbe lui e con lui
+      i toast dentro, permanent o no.
+    - ogni toast è data-turbo-permanent: Turbo lo salta sia in morph sia in rimozione, così vive i
+      suoi 5 secondi (ui--alert) e se ne va quando deve. L'id deriva dal contenuto perché deve
+      restare stabile fra un morph e l'altro; se lo stesso messaggio ricompare mentre è ancora a
+      schermo, Turbo lo riconosce dall'id e non lo duplica.
+
+    L'id sul contenitore (CYRA-828) serve a chi risponde in turbo_stream: un'azione che fallisce
+    senza ricaricare la pagina rimpiazza #flash-container per far comparire il messaggio. %>
+<div id="flash-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-80 max-w-[calc(100vw-2rem)] pointer-events-none" data-test="flash-container">
+  <% flash.each do |type, message| %>
+    <%= render Ui::AlertComponent.new(
+          variant: flash_variant(type),
+          dismissible: true,
+          test_id: "flash-#{type}",
+          id: "flash-#{type}-#{Digest::MD5.hexdigest(message.to_s)}",
+          data: { turbo_permanent: true },
+          class: "pointer-events-auto transition duration-200 ease-out"
+        ) do %><%= message %><% end %>
+  <% end %>
+  <%= local_assigns[:extra] %>
+</div>

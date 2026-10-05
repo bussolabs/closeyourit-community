@@ -1,0 +1,259 @@
+#!/usr/bin/env bash
+#
+# Day-to-day commands of a self-hosted CloseYourIt (CYRA-919). Installed by install.sh as
+# /usr/local/bin/closeyourit; everything lives in /opt/closeyourit.
+#
+#   closeyourit status | logs | restart
+#   closeyourit update [version]
+#   closeyourit backup
+#   closeyourit restore <file>
+#   closeyourit enable ingest | disable ingest
+#   closeyourit doctor
+set -euo pipefail
+
+HOME_DIR="${CLOSEYOURIT_HOME:-/opt/closeyourit}"
+REPO="bussolabs/closeyourit-community"
+KEEP_BACKUPS=7
+
+say() { printf '%s\n' "$*"; }
+fail() { printf 'closeyourit: %s\n' "$*" >&2; exit 1; }
+
+cd "$HOME_DIR" 2>/dev/null || fail "$HOME_DIR not found: is CloseYourIt installed?"
+[ -f .env ] || fail "$HOME_DIR/.env not found"
+
+env_get() { grep -E "^$1=" .env | tail -1 | cut -d= -f2-; }
+env_set() {
+  if grep -qE "^$1=" .env; then
+    sed -i.bak "s|^$1=.*|$1=$2|" .env && rm -f .env.bak
+  else
+    printf '%s=%s\n' "$1" "$2" >> .env
+  fi
+}
+
+compose() {
+  local profiles=()
+  [ "$(env_get INGEST_ENABLED)" = "true" ] && profiles=(--profile ingest)
+  docker compose "${profiles[@]}" "$@"
+}
+
+latest_version() {
+  # Quiet on failure: doctor and update treat an empty answer as "no newer release".
+  curl -fsL "https://api.github.com/repos/$REPO/releases/latest" 2>/dev/null | sed -nE 's/.*"tag_name": *"v?([^"]+)".*/\1/p' | head -1
+}
+
+wait_until_up() {
+  local domain
+  domain="$(env_get DOMAIN)"
+  for _ in $(seq 1 60); do
+    if compose exec -T app curl -fsS -o /dev/null http://localhost/up </dev/null 2>/dev/null; then return 0; fi
+    sleep 3
+  done
+  say "the app did not answer on https://$domain/up within 3 minutes"
+  return 1
+}
+
+cmd_status() {
+  say "version: $(env_get CLOSEYOURIT_VERSION)"
+  compose ps
+}
+
+cmd_logs() { compose logs -f --tail=200 app worker; }
+
+cmd_restart() { compose up -d --remove-orphans; wait_until_up && say "✔ restarted"; }
+
+cmd_backup() {
+  local stamp file
+  # Dumps hold every secret of every organization: root only.
+  install -d -m 700 backups
+  stamp="$(date -u +%Y%m%d-%H%M%S)"
+  file="closeyourit-$stamp.dump"
+  compose exec -T postgres pg_dump -U closeyourit -d closeyourit -Fc -f "/backups/$file" </dev/null
+  chmod 600 backups/closeyourit-*.dump
+  say "✔ backups/$file"
+
+  # Only the newest copies stay on the server.
+  ls -1t backups/closeyourit-*.dump 2>/dev/null | tail -n +$((KEEP_BACKUPS + 1)) | xargs -r rm -f
+
+  local bucket
+  bucket="$(env_get BACKUP_S3_BUCKET)"
+  if [ -n "$bucket" ]; then
+    docker run --rm --env-file .env -v "$HOME_DIR/backups:/backups:ro" amazon/aws-cli \
+      s3 cp "/backups/$file" "s3://$bucket/closeyourit/$file"
+    say "✔ copied to s3://$bucket/closeyourit/$file"
+  fi
+}
+
+cmd_restore() {
+  local file="${1:-}"
+  [ -n "$file" ] || fail "usage: closeyourit restore <file in backups/>"
+  file="$(basename "$file")"
+  [ -f "backups/$file" ] || fail "backups/$file not found"
+  printf 'The database will be replaced by %s. Type "restore" to go on: ' "$file"
+  local answer; read -r answer < /dev/tty
+  [ "$answer" = "restore" ] || fail "nothing changed"
+
+  compose stop app worker
+  # A fresh database rather than --clean: the monthly partitions of the telemetry tables cannot be
+  # dropped one by one, and --clean would leave errors behind.
+  compose exec -T postgres psql -U closeyourit -d postgres -v ON_ERROR_STOP=1 \
+    -c "DROP DATABASE IF EXISTS closeyourit WITH (FORCE)" -c "CREATE DATABASE closeyourit OWNER closeyourit"
+  compose exec -T postgres pg_restore -U closeyourit -d closeyourit --no-owner --exit-on-error "/backups/$file"
+  compose up -d
+  wait_until_up && say "✔ restored from $file"
+}
+
+# The files the installer wrote, as they are in the release: compose.yml, Caddyfile, nats.conf
+# and this command. Downloaded into .update/ before anything changes.
+UPDATED_FILES=(compose.yml Caddyfile ingest/nats.conf)
+
+fetch_release_files() {
+  local raw="https://raw.githubusercontent.com/$REPO/v$1/installer" file
+  rm -rf .update && mkdir -p .update/ingest
+  for file in "${UPDATED_FILES[@]}"; do
+    curl -fsSL "$raw/$(basename "$file")" -o ".update/$file" || return 1
+  done
+  curl -fsSL "$raw/closeyourit" -o .update/closeyourit
+}
+
+swap_release_files() {
+  local file
+  rm -rf .previous && mkdir -p .previous/ingest
+  for file in "${UPDATED_FILES[@]}"; do cp -p "$file" ".previous/$file"; cp ".update/$file" "$file"; done
+}
+
+restore_release_files() {
+  local file
+  for file in "${UPDATED_FILES[@]}"; do cp -p ".previous/$file" "$file"; done
+}
+
+cmd_update() {
+  local target current last
+  current="$(env_get CLOSEYOURIT_VERSION)"
+  target="${1:-$(latest_version)}"
+  target="${target#v}"
+  [ -n "$target" ] || fail "could not read the latest version from GitHub"
+  if [ "$target" = "$current" ]; then say "already on $current"; return 0; fi
+  fetch_release_files "$target" || fail "version $target not found: its files cannot be downloaded. Nothing changed, $current is still running."
+
+  say "→ backup before updating"
+  cmd_backup
+  last="$(ls -1t backups/closeyourit-*.dump | head -1)"
+  say "→ $current → $target"
+  swap_release_files
+  env_set CLOSEYOURIT_VERSION "$target"
+  if ! compose pull app worker; then
+    restore_release_files
+    env_set CLOSEYOURIT_VERSION "$current"
+    fail "version $target not found: its images cannot be downloaded. Nothing changed, $current is still running."
+  fi
+  if compose up -d --remove-orphans && wait_until_up; then
+    # Replaced last and by rename: this very script is the file being replaced.
+    install -m 755 .update/closeyourit /usr/local/bin/closeyourit.new && mv -f /usr/local/bin/closeyourit.new /usr/local/bin/closeyourit
+    say "✔ updated to $target"
+    return 0
+  fi
+
+  say "→ $target does not answer: going back to $current"
+  restore_release_files
+  env_set CLOSEYOURIT_VERSION "$current"
+  compose up -d --remove-orphans
+  wait_until_up || true
+  fail "update to $target failed; $current is running again. If $current does not work either, $target may have already changed the database: put it back with closeyourit restore $(basename "$last")"
+}
+
+# Running for at least a minute: a crash loop keeps restarting it, so it never gets there.
+service_steady() {
+  local id started
+  id="$(compose ps -q "$1")"
+  [ -n "$id" ] || return 1
+  started="$(docker inspect -f '{{if .State.Running}}{{.State.StartedAt}}{{end}}' "$id")"
+  [ -n "$started" ] && [ $(( $(date +%s) - $(date -d "$started" +%s) )) -ge 60 ]
+}
+
+# Running, and not restarted, ten seconds after the start.
+gateway_stable() {
+  local id
+  sleep 10
+  id="$(compose ps -q gateway)"
+  [ -n "$id" ] && [ "$(docker inspect -f '{{.State.Running}} {{.RestartCount}}' "$id")" = "true 0" ]
+}
+
+cmd_enable() {
+  [ "${1:-}" = "ingest" ] || fail "usage: closeyourit enable ingest"
+  # The gateway image runs as uid 10001 and reads these two files itself.
+  chown 10001:10001 ingest/nats_password ingest/envelope_key
+  env_set INGEST_ENABLED true
+  compose up -d --remove-orphans
+  if ! gateway_stable; then
+    env_set INGEST_ENABLED false
+    docker compose --profile ingest stop gateway nats
+    fail "the ingest gateway did not stay up; telemetry keeps going straight to the app. See: cd $HOME_DIR && docker compose --profile ingest logs gateway"
+  fi
+  env_set INGEST_UPSTREAM gateway:8080
+  compose up -d caddy
+  say "✔ ingest gateway on: /api/* now goes through the queue"
+}
+
+cmd_disable() {
+  [ "${1:-}" = "ingest" ] || fail "usage: closeyourit disable ingest"
+  env_set INGEST_UPSTREAM app:80
+  compose up -d caddy
+  # Give the gateway time to deliver what is still queued before stopping it.
+  sleep 30
+  env_set INGEST_ENABLED false
+  docker compose --profile ingest stop gateway nats
+  say "✔ ingest gateway off"
+}
+
+cmd_doctor() {
+  local problems=0 domain free_pct last age days
+  domain="$(env_get DOMAIN)"
+
+  free_pct="$(df -P "$HOME_DIR" | awk 'NR==2 {gsub("%","",$5); print 100-$5}')"
+  if [ "$free_pct" -lt 10 ]; then say "✗ disk: only $free_pct% free"; problems=$((problems+1)); else say "✓ disk: $free_pct% free"; fi
+
+  if compose ps --status running --services | grep -qx app && wait_until_up; then say "✓ app answers"; else say "✗ app does not answer"; problems=$((problems+1)); fi
+
+  days="$(echo | openssl s_client -servername "$domain" -connect "$domain:443" 2>/dev/null | openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2)"
+  if [ -n "$days" ]; then
+    local left=$(( ( $(date -d "$days" +%s) - $(date +%s) ) / 86400 ))
+    if [ "$left" -lt 14 ]; then say "✗ certificate: expires in $left days"; problems=$((problems+1)); else say "✓ certificate: $left days left"; fi
+  else
+    say "✗ certificate: https://$domain does not answer"; problems=$((problems+1))
+  fi
+
+  if [ "$(env_get INGEST_ENABLED)" = "true" ]; then
+    local service
+    for service in gateway nats; do
+      if service_steady "$service"; then say "✓ ingest $service: running"; else say "✗ ingest $service: down or restarting (closeyourit status)"; problems=$((problems+1)); fi
+    done
+  fi
+
+  last="$(ls -1t backups/closeyourit-*.dump 2>/dev/null | head -1 || true)"
+  if [ -z "$last" ]; then
+    say "✗ backup: none yet (closeyourit backup)"; problems=$((problems+1))
+  else
+    age=$(( ( $(date +%s) - $(stat -c %Y "$last") ) / 3600 ))
+    if [ "$age" -gt 26 ]; then say "✗ backup: the last one is $age hours old"; problems=$((problems+1)); else say "✓ backup: $(basename "$last"), $age hours ago"; fi
+  fi
+
+  local latest current
+  current="$(env_get CLOSEYOURIT_VERSION)"
+  latest="$(latest_version || true)"
+  if [ -n "$latest" ] && [ "$latest" != "$current" ]; then say "• version: $current, $latest is available (closeyourit update)"; else say "✓ version: $current"; fi
+
+  [ "$problems" -eq 0 ] && say "everything looks fine" || { say "$problems problem(s) above"; return 1; }
+}
+
+case "${1:-}" in
+  status)  cmd_status ;;
+  logs)    cmd_logs ;;
+  restart) cmd_restart ;;
+  update)  shift; cmd_update "${1:-}" ;;
+  backup)  cmd_backup ;;
+  restore) shift; cmd_restore "${1:-}" ;;
+  enable)  shift; cmd_enable "${1:-}" ;;
+  disable) shift; cmd_disable "${1:-}" ;;
+  doctor)  cmd_doctor ;;
+  *) say "usage: closeyourit status|logs|restart|update [version]|backup|restore <file>|enable ingest|disable ingest|doctor"; exit 2 ;;
+esac

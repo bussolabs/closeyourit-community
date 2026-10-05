@@ -1,0 +1,52 @@
+<% content_for :title, t("valhalla.accounts.title") %>
+
+<%= turbo_stream_from "valhalla_accounts" %>
+
+<div class="p-7 space-y-6" data-test="valhalla-accounts">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("valhalla.accounts.title"),
+        title_tooltip: t("valhalla.accounts.help_title"),
+        breadcrumb: [ { label: t("valhalla.accounts.title") } ],
+        root_href: valhalla_root_path,
+        counts_test_id: "accounts-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.accounts", count: @pagination.total), value: @pagination.total, test_id: "accounts-count-accounts") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("valhalla.accounts.new"), href: new_valhalla_account_path, icon: "plus", size: :sm, test_id: "valhalla-account-new") %>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <%= render(Ui::TableToolbarComponent.new(framed: true,
+          url: valhalla_accounts_path, query: params[:q],
+          search_placeholder: t("valhalla.accounts.search_placeholder"),
+          search_test_id: "valhalla-accounts-search", test_id: "valhalla-accounts-toolbar")) do |toolbar| %>
+      <% toolbar.with_filter(key: "role", label: t("valhalla.accounts.filter_role")) do %>
+        <div class="w-40"><%= render Ui::SelectComponent.new(name: "role", multiple: true, summary: true, options: Connections::Membership.roles.keys.map { |r| [ t("valhalla.accounts.roles.#{r}"), r ] }, selected: params[:role], placeholder: t("valhalla.accounts.filter_role"), test_id: "valhalla-accounts-filter-role") %></div>
+      <% end %>
+    <% end %>
+
+      <% if @accounts.any? %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("valhalla.accounts.title"), body_id: "valhalla_accounts")) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.accounts.col_account"), sort: "account") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.accounts.col_email"), sort: "email") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.accounts.col_org")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.accounts.col_role")) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.accounts.col_created"), sort: "created", initial: :desc, align: :right) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.accounts.actions.edit"), label_hidden: true, classes: "w-10") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+          <% end %>
+          <%= render partial: "valhalla/accounts/account", collection: @accounts, as: :account %>
+        <% end %>
+        <%= render(Ui::PaginationComponent.new(pagination: @pagination, test_id: "valhalla-accounts-pagination")) %>
+      <% else %>
+        <div class="p-12 flex flex-col items-center text-center" data-test="valhalla-accounts-empty">
+          <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 mb-4"><%= render Ui::IconComponent.new(name: "users", class: "text-[18px]") %></span>
+          <h3 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("valhalla.accounts.empty_title") %></h3>
+          <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-[280px]"><%= t("valhalla.accounts.empty_body") %></p>
+        </div>
+      <% end %>
+  </div>
+</div>
