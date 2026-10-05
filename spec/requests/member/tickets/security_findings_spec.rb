@@ -63,6 +63,17 @@ RSpec.describe "Member ticket security findings", type: :request do
     expect(response.body).not_to include("ticket-security-findings")
   end
 
+  # On the desktop frame the page drops its own padding: a bare line touched the panel edge.
+  it "the all-clear line sits in its own panel" do
+    segnala
+
+    get member_ticket_path(ticket)
+
+    line = Nokogiri::HTML(response.body).at_css("[data-test='ticket-security-clear']")
+    expect(line).to be_present
+    expect(line.ancestors("[data-test='ticket-security-clear-panel']")).to be_present
+  end
+
   it "l'avviso precede la decisione da prendere sul ticket" do
     ticket.update!(status: create(:ticket_status, organization:, review_gate: true))
     create(:ticket_report, ticket:, organization:, body: "Fatto e verificato.")

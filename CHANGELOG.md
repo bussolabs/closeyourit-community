@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.173.3] - 2026-10-05
+
+### Changed
+
+- **Tutti i progetti nella vista a schede.** La vista a schede mostra sempre tutti i progetti, divisi per gruppo, senza dover premere «Mostra altri». [Progetti](/member/projects)
+
 ## [0.173.2] - 2026-10-05
 
 ### Fixed

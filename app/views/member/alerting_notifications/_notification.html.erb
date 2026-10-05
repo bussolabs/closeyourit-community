@@ -21,7 +21,7 @@
       <%# CYRA-488 — etichetta scritta del tipo accanto all'icona: dichiara di che avviso si tratta
            («Server giù», «Revisione richiesta») senza doverlo dedurre dalla sola icona. %>
       <p class="flex items-center gap-1.5 mb-0.5">
-        <span class="font-mono text-[10.5px] uppercase tracking-wide text-gray-400 dark:text-zinc-500" data-test="notification-type-label"><%= alerting_event_label(notification.event_type) %></span>
+        <span class="text-[11.5px] text-gray-400 dark:text-zinc-500" data-test="notification-type-label"><%= alerting_event_label(notification.event_type) %></span>
         <% if critical %>
           <span class="inline-flex items-center gap-1 rounded-full bg-rose-50 dark:bg-rose-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-rose-700 dark:text-rose-300 uppercase tracking-wide" data-test="notification-critical"><%= render Ui::IconComponent.new(name: "triangle-alert", class: "text-[9px]") %><%= t("alerting.notifications.severity.critical") %></span>
         <% end %>

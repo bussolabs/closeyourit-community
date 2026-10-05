@@ -31,10 +31,13 @@
   <% if @security_findings.any? %>
     <%= render "member/tickets/security_findings", findings: @security_findings %>
   <% elsif @security_findings_declared %>
-    <p class="mb-4 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="ticket-security-clear">
-      <%= render Ui::IconComponent.new(name: "shield-check", class: "mr-1.5 text-gray-400 dark:text-zinc-500") %>
-      <%= t("member.tickets.automation.security.clear") %>
-    </p>
+    <%# In its own panel: on the desktop frame the page drops its padding and a bare line touched the edge. %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-2.5" data-test="ticket-security-clear-panel">
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="ticket-security-clear">
+        <%= render Ui::IconComponent.new(name: "shield-check", class: "mr-1.5 text-emerald-600 dark:text-emerald-400") %>
+        <%= t("member.tickets.automation.security.clear") %>
+      </p>
+    </div>
   <% end %>
 
   <%# CYRA-402 — la decisione che sblocca il lavoro stava in mezzo a nove bottoni tutti uguali,

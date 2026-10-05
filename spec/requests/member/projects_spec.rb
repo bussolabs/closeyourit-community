@@ -357,7 +357,7 @@ RSpec.describe "Member::Projects", type: :request do
       expect(response.body).not_to eq(page1)
     end
 
-    it "cards view: 12 cards, and Show more reaches the ones after (D23)" do
+    it "cards view: every visible project, with no Show more" do
       sign_in(member)
       projects = Array.new(15) do |i|
         project = create(:project, organization: org, name: "Proj #{format('%02d', i)}")
@@ -365,12 +365,9 @@ RSpec.describe "Member::Projects", type: :request do
         project
       end
       get member_projects_path
-      expect(response.body.scan('data-test="project-card-').size).to eq(12)
-      expect(response.body).not_to include(%(data-test="project-card-#{projects.last.id}"))
-
-      get member_projects_path, params: { limit: 24 }
-      expect(response.body.scan('data-test="project-card-').size).to eq(15)
+      expect(response.body.scan(%(data-test="project-card-)).size).to eq(15)
       expect(response.body).to include(%(data-test="project-card-#{projects.last.id}"))
+      expect(response.body).not_to include(%(data-test="projects-more"))
     end
 
     # CYRA-924 — no sort select in the bar (C9): the table sorts on its columns, the cards from the View menu.
@@ -560,20 +557,22 @@ RSpec.describe "Member::Projects", type: :request do
       expect(html).to have_no_css("section[data-test='projects-all'] h2")
     end
 
-    it "shows 12 cards, then Show more adds the next 12 keeping the filters (D23)" do
-      create_list(:project, 13, organization: org)
+    # Cards show every project: a group cut after twelve looked complete and hid the rest.
+    it "shows every project, grouped or not, with no Show more" do
+      group = create(:group, organization: org)
+      create_list(:project, 13, organization: org, group:)
 
-      get member_projects_path, params: { q: "", grouped: "none" }
+      get member_projects_path
 
-      expect(html).to have_css("[data-test^='project-card-']", count: 12)
-      more = html.find("[data-test='projects-more']")
-      expect(more[:href]).to include("limit=24", "grouped=none")
-      expect(more.text.strip).to eq(I18n.t("ui.card_grid.show_more_count", count: 1))
+      section = html.find("section[data-test='projects-group-#{group.id}']")
+      expect(section).to have_css("[data-test^='project-card-']", count: 13)
+      expect(section).to have_text(I18n.t("member.groups.projects_count", count: 13))
+      expect(html).to have_no_css("[data-test='projects-more']")
 
-      get more[:href]
+      get member_projects_path, params: { grouped: "none" }
 
-      expect(Capybara.string(response.body)).to have_css("[data-test^='project-card-']", count: 13)
-      expect(Capybara.string(response.body)).to have_no_css("[data-test='projects-more']")
+      expect(html).to have_css("[data-test^='project-card-']", count: 13)
+      expect(html).to have_no_css("[data-test='projects-more']")
     end
 
     it "draws the card states as badges with a dot (D22)" do

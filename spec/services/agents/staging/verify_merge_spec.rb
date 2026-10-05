@@ -67,6 +67,31 @@ RSpec.describe Agents::Staging::VerifyMerge do
     expect(workflow.phase).to eq("closer_production_queued")
   end
 
+  # A project whose proof of done is the merge itself has nothing to observe in production: the
+  # production step used to refuse it ("no proof declared") and the work never became done.
+  it "with the merge as proof of done, the verified merge completes the work" do
+    create(:ticket_status, :done, organization:)
+    congela_piano!(workflow, kind: "merge")
+    dichiara
+
+    described_class.call(workflow:, client: client_che_risponde(true, true))
+
+    workflow.reload
+    expect(workflow.completed_at).to be_present
+    expect(workflow.ready_execution_phase).to be_nil
+    expect(ticket.reload.status.category).to eq("done")
+  end
+
+  it "with a production proof, the verified merge opens production and completes nothing" do
+    congela_piano!(workflow, kind: "deploy_smoke", environment_id: SecureRandom.uuid)
+    dichiara
+
+    described_class.call(workflow:, client: client_che_risponde(true, true))
+
+    expect(workflow.reload.completed_at).to be_nil
+    expect(workflow.phase).to eq("closer_production_queued")
+  end
+
   # Le due domande non sono la stessa: una macchina che lavora su una copia vecchia può spingere
   # qualcosa che atterra benissimo e non è il codice che è stato approvato.
   it "il commit dichiarato è atterrato ma NON contiene il codice approvato: non passa" do

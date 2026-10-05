@@ -12,8 +12,6 @@ module Member
     # correlate (nessun counter cache su projects): il costo si paga SOLO quando quella
     # colonna è attiva. "open" ordina per i ticket "Da fare" (categoria open, non il code
     # letterale) — coerente col conteggio mostrato nella colonna (CYRA-358).
-    CARDS_STEP = 12
-
     SORT_COLUMNS = {
       "name" => "LOWER(projects.name)",
       "key" => :key,
@@ -78,13 +76,10 @@ module Member
         @pagination = paginate(sorted_scope)
         @projects = @pagination.records
       else
-        # D23 — the first 12 cards, then "Show more" asks for 12 more through `limit`. Grouping (D20) is
-        # a View choice: `grouped=none` drops the group headings.
+        # Cards show every project, grouped or not: a group cut after twelve looked complete.
+        # Grouping (D20) is a View choice: `grouped=none` drops the group headings.
         @cards_grouped = params[:grouped] != "none"
-        @card_limit = [ params[:limit].to_i, CARDS_STEP ].max
-        page = sorted_scope.limit(@card_limit + 1).to_a
-        @more_cards = page.size > @card_limit
-        @projects = page.first(@card_limit)
+        @projects = sorted_scope.to_a
         @card_health = ::Projects::CardHealth.new(@projects)
       end
       # Chip e toolbar contano su TUTTO lo scope (non sulla pagina): coerenti tra loro e col numero

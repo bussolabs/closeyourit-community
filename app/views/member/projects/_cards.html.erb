@@ -1,5 +1,5 @@
 <%# Cards view of the projects list (D19–D24): toolbar, groups ("Ungrouped" last) or one group with grouping
-    off, Show more after 12, and the visible groups without projects as sections to set up (CYRA-362). %>
+    off, and the visible groups without projects as sections to set up (CYRA-362). %>
 <%= render Ui::CardGridComponent.new(test_id: "projects-cards", setup_test_id: "projects-empty-groups") do |grid| %>
   <% grid.with_toolbar { render "toolbar" } %>
   <% if @projects.empty? %>
@@ -36,10 +36,6 @@
     <% grid.with_group(test_id: "projects-all") do %>
       <%= render partial: "card", collection: @projects, as: :project, locals: { health: @card_health } %>
     <% end %>
-  <% end %>
-  <% if @more_cards %>
-    <% grid.with_more(href: member_projects_path(request.query_parameters.merge("limit" => @card_limit + Member::ProjectsController::CARDS_STEP)),
-         count: [ @projects_total - @card_limit, Member::ProjectsController::CARDS_STEP ].min, test_id: "projects-more") %>
   <% end %>
   <% @empty_groups.to_a.each do |group| %>
     <% grid.with_setup_item(label: group.name, href: (member_group_path(group) if can_view_groups?), test_id: "projects-empty-group-#{group.id}") do %>
