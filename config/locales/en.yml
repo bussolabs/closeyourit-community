@@ -39,6 +39,7 @@ en:
   date:
     formats:
       card: "%a %-d %b"
+      day: "%A %-d %B"
       day_month: "%b %-d"
       day_month_year: "%b %-d, %Y"
   # Fallback per i simboli di validazione custom (no rails-i18n nel progetto): evita

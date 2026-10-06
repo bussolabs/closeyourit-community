@@ -15,19 +15,18 @@
       schermate più giù, mentre le azioni stanno qui. Da lg in su sparisce: il posto di stato e
       priorità resta il pannello Dettagli (CYRA-65). The meta slot sits in the title block, before
       the actions, while the counts moved to the header's bottom row (DESIGN.md T2). %>
+  <%# CYRA-393 — the code opens the title, in the accent colour like the home cards; hovering it spells
+      out the project key, since codes travel alone (branches, commits, chat). %>
+  <% h.with_mark do %>
+    <span class="font-mono font-semibold text-indigo-600 dark:text-indigo-400" data-test="ticket-code"
+          title="<%= t("member.tickets.show.code_title", key: @ticket.project.key, project: @ticket.project.name) %>"><%= @ticket.code %></span>
+  <% end %>
   <% h.with_meta do %>
     <%= render "member/tickets/mobile_summary", ticket: @ticket %>
   <% end %>
   <% h.with_counts do %>
-    <%# CYRA-393 — il codice sta in cima accanto al nome del progetto: da solo non dice a quale
-        progetto appartiene, e due progetti hanno sigle che differiscono per una lettera sola.
-        Il titolo al passaggio del mouse scioglie la sigla per esteso. %>
-    <span class="inline-flex items-center gap-1.5 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="ticket-code"
-          title="<%= t("member.tickets.show.code_title", key: @ticket.project.key, project: @ticket.project.name) %>">
-      <span class="font-mono font-semibold text-zinc-900 dark:text-zinc-100"><%= @ticket.code %></span>
-      <span class="text-gray-300 dark:text-zinc-600">·</span>
-      <%= link_to @ticket.project.name, member_project_path(@ticket.project), class: "hover:text-zinc-900 dark:hover:text-zinc-100" %>
-    </span>
+    <%= link_to @ticket.project.name, member_project_path(@ticket.project), data: { test: "ticket-project" },
+          class: "text-[11.5px] text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100" %>
     <span class="inline-flex items-center gap-1.5 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="ticket-open-since">
       <%= render Ui::IconComponent.new(name: "clock", class: "text-[10px]") %><%= ticket_created_line(@ticket) %>
     </span>

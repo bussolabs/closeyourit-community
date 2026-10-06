@@ -23,6 +23,7 @@ it:
       # CYRA-324 — forma breve con il giorno della settimana per le card («lun 5 ago»): a qualche
       # giorno di distanza dice quando è successo senza costringere a fare il conto.
       card: "%a %-d %b"
+      day: "%A %-d %B"
       # CYRA-497 — le scadenze e le date dei documenti erano scritte a mano con strftime, che non
       # guarda la lingua: uscivano «09 Aug 15:14» e «Aug 9». Passando dai formati, i mesi restano
       # quelli sopra, in italiano, ovunque.

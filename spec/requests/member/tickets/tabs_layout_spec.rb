@@ -153,16 +153,18 @@ RSpec.describe "Member ticket tabs layout", type: :request do
 
     before { organization.update!(cto: owner) }
 
-    it "opens with the phase strip and one line with who decides" do
+    it "opens with who decides, and the six steps as tabs below (CYRA-1003)" do
       get member_ticket_path(ticket, tab: "automation")
 
       summary = page_html.at_css('[data-test="automation-summary"]')
-      expect(summary.at_css('[data-test="approval-phase-strip"]')).to be_present
-      expect(summary.at_css('[data-test="automation-summary-strip"]').text).to include("Marta Rossi")
+      tabs = page_html.css('[data-test="automation-step-tabs"] [data-test="approval-phase-strip"] [role="tab"]')
+      expect(tabs.size).to eq(Agents::Workflows::PhaseResolver::STEPS.size)
+      expect(tabs.count { |tab| tab["aria-selected"] == "true" }).to eq(1)
+      expect(summary.at_css('[data-test="automation-summary-cto"]').text).to include("Marta Rossi")
       expect(response.body).not_to include('data-test="ticket-automation"')
     end
 
-    it "shows the plan before the steps" do
+    it "puts the plan in the Plan to approve tab, apart from the attempts (CYRA-1003)" do
       attempt = create(:agent_attempt, organization:, workflow:)
       workflow.update!(ticket_snapshot_digest: "snapshot")
       Agents::Plan.create!(workflow:, attempt:, ticket_snapshot_digest: "snapshot", contract_version: 2,
@@ -172,7 +174,9 @@ RSpec.describe "Member ticket tabs layout", type: :request do
 
       get member_ticket_path(ticket, tab: "automation")
 
-      expect(position("automation-plan")).to be < position("automation-steps")
+      plan_tab = page_html.at_css('[data-test="automation-anchor-plan_to_approve"]')
+      expect(plan_tab.at_css('[data-test="automation-plan"]')).to be_present
+      expect(plan_tab.at_css('[data-test="automation-steps"]')).to be_nil
     end
 
     it "sends the agent work report to the Report tab" do
@@ -182,11 +186,32 @@ RSpec.describe "Member ticket tabs layout", type: :request do
 
       get member_ticket_path(ticket, tab: "automation")
       expect(response.body).not_to include('data-test="automation-work-report"')
-      expect(response.body).to include('data-test="automation-work-report-moved"')
+      expect(page_html.at_css('.rounded-lg.border [data-test="automation-work-report-moved"]')).to be_present
 
       get member_ticket_path(ticket, tab: "report")
       expect(response.body).to include('data-test="automation-work-report"', "Foto modificabili.")
       expect(response.body).to include('data-test="ticket-tab-report"')
+    end
+
+    it "opens the Report tab with the outcome, its counts and the open risk right below (CYRA-1003)" do
+      create(:agent_attempt, organization:, workflow:, phase: "autopilot", status: :approved,
+                             result: { "work_report" => {
+                               "summary" => "Arrotondamento aggiunto.", "commit" => "a" * 40,
+                               "changed_files" => [ { "path" => "src/price.js", "summary" => "Nuova funzione." } ],
+                               "tests" => [ { "command" => "npm test", "status" => "passed", "summary" => "Verde." } ],
+                               "acceptance_evidence" => [ { "criterion_id" => "DOD-1", "status" => "verified", "evidence" => "Esporta.", "source" => "reported" },
+                                                          { "criterion_id" => "DOD-2", "status" => "missing", "evidence" => "Manca.", "source" => "reported" } ],
+                               "risks" => [ { "id" => "R-1", "title" => "Metà negative", "impact" => "Arrotonda verso il positivo." } ],
+                               "deviations" => [] } })
+
+      get member_ticket_path(ticket, tab: "report")
+
+      expect(position("automation-work-report-outcome")).to be < position("automation-work-report-risks")
+      expect(position("automation-work-report-risks")).to be < position("automation-work-report-tests")
+      tally = page_html.at_css('[data-test="automation-work-report-tally"]').text
+      expect(tally).to include("1/2", "1/1", "1 open risk")
+      expect(page_html.at_css('[data-test="automation-work-report-tests"] [data-status="passed"] svg[data-icon="circle-check"]')).to be_present
+      expect(page_html.at_css('[data-test="automation-work-report-criteria"] [data-status="missing"] svg[data-icon="circle-x"]')).to be_present
     end
 
     it "keeps reassess and close on one row, with the reason behind a click" do
@@ -232,24 +257,28 @@ RSpec.describe "Member ticket tabs layout", type: :request do
       expect(response.body).to include('data-test="member-ticket-timeline-filter"')
     end
 
-    it "folds system events in a row into one line" do
-      3.times { create(:ticket_event, ticket:) }
+    it "draws one timeline: a dot per event, nothing folded, a separator per day" do
+      create(:ticket_event, ticket:, created_at: 2.days.ago)
+      2.times { create(:ticket_event, ticket:) }
+      create(:ticket_comment, ticket:, author: owner)
 
       get member_ticket_path(ticket, tab: "discussion")
 
-      group = page_html.at_css('details[data-test="member-ticket-event-group"]')
-      expect(group).to be_present
-      expect(group.css('[data-test^="member-ticket-event-"]').size).to be >= 3
+      expect(page_html.at_css('[data-test="member-ticket-event-group"]')).to be_nil
+      expect(page_html.css('[data-test="member-ticket-timeline"] [data-test="timeline-dot"]').size).to be >= 3
+      days = page_html.css('[data-test="member-ticket-timeline-day"]').map { |day| day.text.strip }
+      expect(days.size).to eq(2)
+      expect(days.last).to start_with(I18n.t("member.tickets.comments.today"))
     end
 
-    it "shows relative dates with the exact time on hover" do
+    it "shows the exact time, the relative one on hover" do
       create(:ticket_comment, ticket:, author: owner, created_at: 2.hours.ago)
 
       get member_ticket_path(ticket, tab: "discussion")
 
       time = page_html.at_css('[data-test="member-ticket-comment-time"]')
-      expect(time.text.strip).to eq(I18n.t("member.home.time_ago", time: "about 2 hours"))
-      expect(time["title"]).to match(%r{\A\d{2}/\d{2} · \d{2}:\d{2}\z})
+      expect(time.text.strip).to match(/\A\d{2}:\d{2}\z/)
+      expect(time["title"]).to eq(I18n.t("member.home.time_ago", time: "about 2 hours"))
     end
 
     it "keeps the length sentence for when the comment nears its limit" do

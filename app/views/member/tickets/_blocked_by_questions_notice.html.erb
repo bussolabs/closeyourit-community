@@ -1,0 +1,9 @@
+<%# locals: (ticket:, count:) %>
+<%# A machine will not pick the ticket up while a blocking question is open. A notice, so it joins the
+    toast stack bottom-right; the Questions tab badge keeps the state visible. CYRA-782 %>
+<%= render Ui::AlertComponent.new(variant: :warning, dismissible: true, class: "pointer-events-auto transition duration-200 ease-out",
+      test_id: "ticket-blocked-by-questions") do %>
+  <%= t("member.tickets.questions.blocked", count: count) %>
+  <%= link_to t("member.tickets.questions.blocked_link"), member_ticket_path(ticket, tab: "questions"),
+        class: "font-semibold underline underline-offset-2" %>
+<% end %>

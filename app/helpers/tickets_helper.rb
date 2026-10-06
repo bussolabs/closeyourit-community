@@ -129,4 +129,10 @@ module TicketsHelper
   def ticket_awaiting_decision?(ticket)
     ticket.awaiting_review_by?(Current.account)
   end
+
+  # The day separator of the discussion timeline: «Oggi · lunedì 5 ottobre», «Ieri · …», or the date alone.
+  def timeline_day_label(date, today: Date.current)
+    prefix = { today => t("member.tickets.comments.today"), today - 1 => t("member.tickets.comments.yesterday") }[date]
+    [ prefix, l(date, format: :day) ].compact.join(" · ")
+  end
 end

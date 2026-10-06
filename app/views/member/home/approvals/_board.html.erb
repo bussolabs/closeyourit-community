@@ -19,7 +19,7 @@
       would also send every ticked checkbox. %>
   <%= form_with url: member_home_approvals_bulk_path(state: batch.filter, project: batch.project, agent_id: batch.agent,
                                                      phase: plan.phase),
-                method: :post, id: "approvals-approve-one", data: { turbo_frame: local_assigns[:frame] } do %>
+                method: :post, id: "approvals-approve-one", class: "hidden", data: { turbo_frame: local_assigns[:frame] } do %>
   <% end %>
   <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden" data-test="approvals-board-panel">
     <%# CYRA-924 — the filter bar sits inside the panel (C61) but OUTSIDE the bulk form: it is a GET

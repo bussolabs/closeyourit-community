@@ -127,14 +127,6 @@ RSpec.describe "Lessico ticket in italiano (CYRA-392)", type: :model do
   # una spiegazione che compare a intermittenza è peggio di nessuna, perché fa sembrare speciali
   # proprio gli stati che l'hanno.
   describe "ogni sigla di stato ha la frase che la spiega" do
-    it "ogni fase del workflow ha la sua frase in it e in en" do
-      %w[it en].each do |locale|
-        PHASE_KEYS.each do |phase|
-          expect(I18n.t("member.tickets.automation.phase_hint.#{phase}", locale:, raise: true)).to be_present
-        end
-      end
-    end
-
     it "ogni state del contratto ha la sua frase in it e in en" do
       %w[it en].each do |locale|
         STATE_KEYS.each do |state|
@@ -164,7 +156,6 @@ RSpec.describe "Lessico ticket in italiano (CYRA-392)", type: :model do
 
     it "tiene it ed en allineati su frasi, esiti e fasi di esecuzione" do
       %w[
-        member.tickets.automation.phase_hint
         member.tickets.automation.execution_phase
         member.tickets.automation.steps.state_hint
         member.tickets.automation.steps.outcome_hint

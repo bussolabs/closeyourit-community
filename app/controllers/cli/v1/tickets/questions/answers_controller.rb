@@ -14,7 +14,7 @@ module Cli
             question = ticket.questions.readable_by(Current.account, organization: Current.organization)
                              .find(params[:question_id])
 
-            result = ::Ticketing::Questions::Answer.call(
+            result = ::Ticketing::Questions::Reply.call(
               question: question, author: Current.account, body: params[:body]
             )
             if result.ok?

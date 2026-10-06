@@ -1,5 +1,27 @@
-<%# locals: findings: — i rilievi del revisore su un passo della lavorazione, uno per riga:
-    gravità e aspetto in monospazio, titolo in grassetto, dettaglio solo quando c'è (CYRA-802). %>
-<ul class="px-3.5 py-2.5 border-t border-stone-100 dark:border-zinc-800 space-y-1.5" data-test="automation-review-findings">
-  <% findings.each do |finding| %><li class="text-[12px] text-zinc-700 dark:text-zinc-300"><span class="font-mono text-[10px] text-gray-500 dark:text-zinc-400"><%= finding["severity"] %> · <%= finding["aspect"] %></span> <strong><%= finding["title"] %></strong><% if finding["detail"].present? %> — <%= finding["detail"] %><% end %></li><% end %>
+<%# locals: findings: — the reviewer's findings, one block each: severity badge and title, then the
+    detail in two lines with the rest behind «Show all». CYRA-1003 %>
+<ul class="px-3.5 py-2.5 border-t border-stone-100 dark:border-zinc-800 divide-y divide-stone-100 dark:divide-zinc-800" data-test="automation-review-findings">
+  <% findings.each do |finding| %>
+    <% severity = finding_severity(finding) %>
+    <li class="py-2 first:pt-0 last:pb-0 flex flex-col gap-1" data-test="automation-review-finding">
+      <div class="flex items-start gap-2">
+        <%= render Ui::BadgeComponent.new(label: t("member.tickets.automation.steps.findings.severity.#{severity}"),
+              color: Member::AutomationWorkflowHelper::FINDING_COLOR.fetch(severity), size: :sm, class: "mt-px shrink-0",
+              test_id: "automation-review-finding-severity") %>
+        <strong class="text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= finding["title"] %></strong>
+      </div>
+      <% if finding["detail"].present? %>
+        <div class="min-w-0" data-controller="ui--clamp" data-ui--clamp-max-value="40"
+             data-ui--clamp-more-value="<%= t("member.tickets.show.show_all") %>" data-ui--clamp-less-value="<%= t("member.tickets.show.show_less") %>">
+          <div data-ui--clamp-target="body">
+            <%= render Ui::MarkdownComponent.new(text: finding["detail"], class: "text-[12px] text-zinc-600 dark:text-zinc-400 leading-relaxed") %>
+          </div>
+          <%= render Ui::ButtonComponent.new(variant: :link, class: "mt-1",
+                data: { ui__clamp_target: "toggle", action: "ui--clamp#toggle" }) do %>
+            <span data-ui--clamp-target="label"><%= t("member.tickets.show.show_all") %></span>
+          <% end %>
+        </div>
+      <% end %>
+    </li>
+  <% end %>
 </ul>

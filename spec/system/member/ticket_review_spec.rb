@@ -44,6 +44,8 @@ RSpec.describe "Member ticket review", type: :system do
     within_test "member-ticket-timeline" do
       expect(page).to have_text("Manca il test sul caso limite")
     end
+    # The status badge lives in the Details panel, shown only on the Detail tab.
+    visit member_ticket_path(ticket)
     expect_test "ticket-status-badge"
     expect(find("[data-test='ticket-status-badge']")).to have_text(in_progress.label)
   end

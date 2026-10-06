@@ -116,6 +116,21 @@ RSpec.describe Agents::Candidates::Verify do
       expect(workflow.blocked_reason).to include("checks_failing")
     end
 
+    # CYRA-1005 — a check GitHub cancelled or could not start never judged the code: the stop says so.
+    it "stops with checks_not_run, not checks_failing, when a check was cancelled before judging the code" do
+      described_class.call(candidate:, client: client_con(risposta(checks: [ check_run("SUCCESS"), check_run("CANCELLED") ])))
+
+      expect(workflow.reload).to have_attributes(autopilot_approved_at: nil, phase: "review_blocked")
+      expect(workflow.blocked_reason).to include("checks_not_run")
+      expect(workflow.blocked_reason).not_to include("checks_failing")
+    end
+
+    it "keeps checks_failing when a real failure sits next to a cancelled check" do
+      described_class.call(candidate:, client: client_con(risposta(checks: [ check_run("FAILURE"), check_run("STARTUP_FAILURE") ])))
+
+      expect(workflow.reload.blocked_reason).to include("checks_failing")
+    end
+
     # «Ho guardato e di controlli non ce n'è» è una risposta, non un verde: resta la decisione umana.
     it "nessun controllo configurato: il lavoro resta davanti a una persona" do
       described_class.call(candidate:, client: client_con(risposta(checks: [])))

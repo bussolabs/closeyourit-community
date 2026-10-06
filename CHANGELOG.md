@@ -2,6 +2,47 @@
 
 ## [Unreleased]
 
+## [0.175.1] - 2026-10-06
+
+### Fixed
+
+- **Le novità della 0.175.0 arrivano ora.** La versione 0.175.0 non era stata pubblicata: le sue novità entrano con questa. Le pagine delle chiavi Claude e OpenRouter hanno indirizzi più corti. [Agenti](/member/agents)
+
+## [0.175.0] - 2026-10-06
+
+### Added
+
+- **Una chiave Claude per tutte le macchine.** Il proprietario incolla una volta la chiave Claude dell'organizzazione e ogni macchina certificata la riceve da sola. Nessuno può più rileggerla. Senza questa chiave, ogni macchina usa il proprio accesso, come prima. [Agenti](/member/agents)
+- **OpenCode può rileggere il lavoro.** Scegli OpenCode come revisore e, nella pagina Automator, il modello OpenRouter. Il proprietario mette una volta la chiave OpenRouter dell'organizzazione e nessuno può più rileggerla. [Automator](/member/agents/automator)
+- **Una scelta dei motori per tutta l'organizzazione.** Nella pagina Automator scegli una volta chi lavora e chi rilegge. Le macchine con i motori di partenza la seguono subito; quelle con una scelta propria la tengono e possono tornare a seguirla. [Automator](/member/agents/automator)
+
+### Changed
+
+- **Pagina ticket più ordinata.** La discussione si legge come un'unica cronologia e ogni scheda cambia tutta la pagina. Le revisioni si aprono con l'esito e con chi ha riletto; una revisione respinta mostra giudizio e problemi in modo leggibile. [Ticket](/member/tickets)
+- **Valutazione iniziale più chiara.** La valutazione dell'automazione si apre con l'avviso, poi i fatti e i motivi. Il pannello Agenti dice l'esito già nel titolo. [Ticket](/member/tickets)
+- **Scegli per nome chi rilegge il lavoro.** Nella pagina di ogni macchina indichi quale motore rilegge il lavoro prima della consegna: Claude o Codex. Ogni macchina tiene la scelta che aveva. [Agenti](/member/agents)
+
+### Fixed
+
+- **Soste dell'automazione spiegate.** Quando l'automazione passa la mano a una persona, il ticket mostra l'ultimo motivo dell'agente. I controlli annullati o mai partiti risultano non eseguiti, non falliti. [Ticket](/member/tickets)
+- **Scelte multiple da tastiera.** Il menu resta aperto dopo ogni scelta e conserva l’opzione evidenziata. I pulsanti delle fasi e delle revisioni seguono lo stile comune. [Ticket](/member/tickets)
+
+## [0.174.0] - 2026-10-05
+
+### Added
+
+- **Domande durante la lavorazione.** Le domande ancora aperte compaiono anche nella scheda Automazione. Rispondere permette alla lavorazione di proseguire; ritirare una domanda non chiude il tentativo. [Ticket](/member/tickets)
+
+### Changed
+
+- **Resoconti più leggibili.** Il risultato della lavorazione viene prima dei dettagli. Puoi esplorare i passaggi dell’automazione in schede separate ed espandere le revisioni lunghe quando servono. [Ticket](/member/tickets)
+
+### Fixed
+
+- **Ricerca e selezioni più comode.** La ricerca apre le colonne che contengono risultati, inclusi i ticket conclusi meno recenti. I menu di selezione restano interamente visibili anche nelle colonne strette. [Ticket](/member/tickets)
+
+- **Versioni dei crash nativi.** Le segnalazioni inviate dalle applicazioni C e C++ conservano la versione e l’ambiente di origine, anche quando questi dati arrivano insieme al rapporto di crash.
+
 ## [0.173.3] - 2026-10-05
 
 ### Changed

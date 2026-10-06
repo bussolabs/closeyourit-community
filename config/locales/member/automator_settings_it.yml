@@ -1,0 +1,38 @@
+---
+it:
+  member:
+    agents:
+      automator_settings_link: Automator
+      choice:
+        title: Scelta dei motori
+        follows: Segue l'organizzazione
+        own: Scelta di questa macchina
+        follows_hint: Questa macchina usa i motori scelti nella pagina Automator. Se cambi un motore qui sotto, la macchina avrà una scelta tutta sua.
+        own_hint: Questa macchina ha una scelta sua e non segue la pagina Automator.
+        follow: Torna a seguire l'organizzazione
+        followed: La macchina segue di nuovo l'organizzazione. Vale dal prossimo lavoro.
+        organization_link: Scelta dell'organizzazione
+    automator_settings:
+      title: Automator
+      subtitle: Chi lavora e chi rilegge, scelti una volta per tutte le macchine.
+      following: Seguono l'organizzazione
+      own_choice: Con scelta propria
+      save: Salva
+      saved: Scelta salvata. Vale dal prossimo lavoro di ogni macchina che segue l'organizzazione.
+      invalid: Scelta non valida.
+      form_title: Motori dell'organizzazione
+      form_hint: Ogni macchina usa questi motori, a meno che non abbia una scelta sua.
+      after_save: I motori scelti devono essere installati sulle macchine, con l'accesso fatto.
+      reviewer_descriptions:
+        claude: Claude rilegge. Se lavora anche Claude, lo fa in una sessione nuova.
+        codex: Codex rilegge. Se lavora anche Codex, lo fa in una sessione nuova.
+        opencode: OpenCode rilegge e non può scrivere. Deve essere su ogni macchina, con l'accesso fatto.
+      opencode_model_label: Modello OpenRouter per OpenCode
+      opencode_model_hint: Serve solo se rilegge OpenCode. Copia il nome del modello da openrouter.ai/models, per esempio anthropic/claude-sonnet-4.5.
+      openrouter_missing_title: Manca la chiave OpenRouter.
+      openrouter_missing: OpenCode rilegge con la chiave OpenRouter dell'organizzazione. Senza, le macchine che rileggono con OpenCode non prendono lavoro.
+      openrouter_missing_link: Imposta la chiave
+      own_title: Macchine con una scelta propria
+      own_hint: Queste macchine non seguono la scelta qui sopra. Dalla loro pagina possono tornare a seguirla.
+      all_follow: Tutte le macchine seguono questa scelta.
+      choice_line: "Lavora %{work}, rilegge %{review}"

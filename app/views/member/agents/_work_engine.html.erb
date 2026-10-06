@@ -10,10 +10,10 @@
       <%= render Ui::SelectComponent.new(name: "work_engine", label: t("member.agents.engine.label"), test_id: "host-engine-select",
             options: engines.map { |engine| [ t("member.agents.engine.engines.#{engine}"), engine ] },
             descriptions: engines.index_with { |engine| t("member.agents.engine.descriptions.#{engine}") },
-            selected: host.work_engine, wrapper_class: "min-w-[16rem]") %>
+            selected: host.effective_work_engine, wrapper_class: "min-w-[16rem]") %>
       <%= render Ui::ButtonComponent.new(label: t("member.agents.engine.save"), type: "submit", size: :sm, test_id: "host-engine-save") %>
     <% end %>
   <% else %>
-    <p class="text-[13px] text-zinc-900 dark:text-zinc-100"><%= t("member.agents.engine.engines.#{host.work_engine}") %></p>
+    <p class="text-[13px] text-zinc-900 dark:text-zinc-100"><%= t("member.agents.engine.engines.#{host.effective_work_engine}") %></p>
   <% end %>
 </section>

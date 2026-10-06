@@ -16,9 +16,9 @@ module Ticketing
 
     class << self
       # Le colonne della pagina: primo blocco per ciascuno stato attivo.
-      def columns(scope:, statuses:, counts:)
+      def columns(scope:, statuses:, counts:, searching: false)
         statuses.map do |status|
-          batch = cards(scope: scope, status: status)
+          batch = cards(scope: scope, status: status, searching: searching)
           Column.new(status: status, tickets: batch.tickets, has_more: batch.has_more,
                      total: counts[status.id].to_i)
         end
@@ -27,9 +27,9 @@ module Ticketing
       # Un blocco di card (CYRA-390/CYRA-572): ne chiede una in più del blocco per sapere se offrire
       # «mostra altre», senza una seconda query di conteggio. La pagina 1 è il blocco già reso dalla
       # pagina, quindi il piede chiede dalla 2 in poi.
-      def cards(scope:, status:, page: 1)
+      def cards(scope:, status:, page: 1, searching: false)
         per = Constants::BOARD_COLUMN_PAGE
-        records = for_column(scope, status)
+        records = for_column(scope, status, searching)
                   .offset((page - 1) * per).limit(per + 1).to_a
         Block.new(tickets: records.first(per), has_more: records.size > per)
       end
@@ -45,10 +45,12 @@ module Ticketing
       # card sono già raggruppate per colonna — non serve e romperebbe il "periodo recente"; il suo
       # filtro (WHERE sugli id) sopravvive al reorder, quindi la ricerca continua a restringere le
       # card. Componibile con .limit/.offset del chiamante.
-      def for_column(scope, status)
+      # A search drops the recent window: a match closed long ago must still show up as a card.
+      def for_column(scope, status, searching)
         column = scope.where(status_id: status.id)
         if status.category_done?
-          return column.where(closed_at: Constants::BOARD_DONE_WINDOW.ago..).reorder(closed_at: :desc)
+          column = column.where(closed_at: Constants::BOARD_DONE_WINDOW.ago..) unless searching
+          return column.reorder(closed_at: :desc)
         end
 
         column.reorder(created_at: :desc)

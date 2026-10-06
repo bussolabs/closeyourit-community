@@ -1,44 +1,40 @@
 <%# locals: ticket, can_manage
-    Pannello dell'eleggibilità agenti (CYRA-184): verdetto, motivazione, chi ha deciso e — per chi
-    gestisce il ticket — i pulsanti di override. Vive fuori da _automation di proposito: quello si
-    rende solo se esiste un workflow, mentre il gate va letto e ribaltato su QUALSIASI ticket.
-    È l'UNICO posto in cui l'eleggibilità compare (prima era anche una riga della card Dettagli, con
-    la stessa etichetta e lo stesso badge). Il verdetto lo rende _agent_eligibility, che porta l'id
-    target del broadcast: i pulsanti restano FUORI da quel partial perché sono per-viewer e un
-    broadcast (che non sa chi guarda) li porterebbe via. %>
-<%# CYRA-883 — one line: title and the override buttons on top, verdict and its reason below. %>
-<% btn = "inline-flex items-center gap-1.5 rounded-md border px-2 h-6 text-[11px] font-medium" %>
-<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ticket-agent-eligibility-panel">
-  <div class="px-4 py-2.5 border-b border-stone-200 dark:border-zinc-800 flex flex-wrap items-center gap-2">
-    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.agent_eligibility.title") %></h2>
-    <% if can_manage %>
-      <div class="ml-auto flex flex-wrap items-center gap-1.5">
-        <% unless ticket.agent_eligibility_allowed? %>
-          <%= button_to t("member.tickets.agent_eligibility.actions.allow"),
-                        member_ticket_eligibility_path(ticket), method: :patch,
-                        params: { eligibility: "allowed" },
-                        form: { data: { turbo_confirm: t("member.tickets.agent_eligibility.actions.allow_confirm") } },
-                        class: "#{btn} border-emerald-200 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-500/25",
-                        data: { test: "agent-eligibility-allow" } %>
+    Pannello dell'eleggibilità agenti (CYRA-184): the verdict and its reason live in _agent_eligibility,
+    the broadcast target (Ticketing::SetAgentEligibility), title included. The switch stays OUTSIDE that
+    target: it is per-viewer, and a broadcast (which does not know who is looking) would wipe it.
+    Who works the ticket is a two-way choice, not a destructive action: no red. %>
+<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden" data-test="ticket-agent-eligibility-panel">
+  <%= render "member/tickets/agent_eligibility", ticket: ticket %>
+  <% if can_manage %>
+    <div class="px-4 py-2.5 border-t border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800/40 flex flex-wrap items-center justify-between gap-2">
+      <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.agent_eligibility.switch.label") %></span>
+      <%= render Ui::ButtonGroupComponent.new(class: "border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900", role: "group",
+            aria: { label: t("member.tickets.agent_eligibility.switch.label") }, test_id: "agent-eligibility-switch") do |group| %>
+        <% allowed = ticket.agent_eligibility_allowed? %>
+        <% blocked = ticket.agent_eligibility_blocked? %>
+        <%# The chosen side is a plain pressed button with no action; the other one sends the change. %>
+        <% if allowed %>
+          <% group.with_button(label: t("member.tickets.agent_eligibility.switch.agents"), variant: :tinted, size: :sm, aria: { pressed: "true" }) %>
+        <% else %>
+          <% group.with_button(label: t("member.tickets.agent_eligibility.switch.agents"), href: member_ticket_eligibility_path(ticket),
+               method: :patch, params: { eligibility: "allowed" }, confirm: t("member.tickets.agent_eligibility.actions.allow_confirm"),
+               variant: :ghost, size: :sm, aria: { pressed: "false" }, test_id: "agent-eligibility-allow") %>
         <% end %>
-        <% unless ticket.agent_eligibility_blocked? %>
-          <%= button_to t("member.tickets.agent_eligibility.actions.block"),
-                        member_ticket_eligibility_path(ticket), method: :patch,
-                        params: { eligibility: "blocked" },
-                        class: "#{btn} border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-500/25",
-                        data: { test: "agent-eligibility-block" } %>
+        <% if blocked %>
+          <% group.with_button(label: t("member.tickets.agent_eligibility.switch.person"), variant: :tinted, size: :sm, aria: { pressed: "true" }) %>
+        <% else %>
+          <% group.with_button(label: t("member.tickets.agent_eligibility.switch.person"), href: member_ticket_eligibility_path(ticket),
+               method: :patch, params: { eligibility: "blocked" }, variant: :ghost, size: :sm, aria: { pressed: "false" },
+               test_id: "agent-eligibility-block") %>
         <% end %>
-        <% if ticket.agent_eligibility_source_human? %>
-          <%= button_to t("member.tickets.agent_eligibility.actions.reset"),
-                        member_ticket_eligibility_path(ticket), method: :patch,
-                        params: { eligibility: "auto" },
-                        class: "#{btn} border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-700 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800",
-                        data: { test: "agent-eligibility-reset" } %>
-        <% end %>
+      <% end %>
+    </div>
+    <% if ticket.agent_eligibility_source_human? %>
+      <div class="px-4 py-2 border-t border-stone-200 dark:border-zinc-800 flex justify-end">
+        <%= render Ui::ButtonComponent.new(label: t("member.tickets.agent_eligibility.actions.reset"), href: member_ticket_eligibility_path(ticket),
+              method: :patch, params: { eligibility: "auto" }, variant: :ghost, size: :sm, icon: "rotate-ccw",
+              test_id: "agent-eligibility-reset") %>
       </div>
     <% end %>
-  </div>
-  <div class="px-4 py-3">
-    <%= render "member/tickets/agent_eligibility", ticket: ticket %>
-  </div>
+  <% end %>
 </section>

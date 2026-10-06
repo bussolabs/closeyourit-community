@@ -1,43 +1,94 @@
 <%# locals: attempt %>
+<%# CYRA-1003 — the agent's report in the order of the question «is it done well?»: the outcome with its
+    counts, the open risks, then checks, criteria and files. Who says it is written once per panel. %>
 <% report = automation_work_report(attempt) %>
 <% if report %>
-  <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="automation-work-report">
-    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3">
-      <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.automation.work_report.title") %></h3>
-      <span class="font-mono text-[9.5px] uppercase tracking-[1.1px] text-amber-700 dark:text-amber-300"><%= t("member.tickets.automation.work_report.reported") %></span>
-    </div>
-    <div class="divide-y divide-stone-100 dark:divide-zinc-800">
-      <div class="px-4 py-3.5">
-        <%= render Ui::MarkdownComponent.new(text: report["summary"], class: "text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed") %>
-        <% if report["commit"].present? %><p class="mt-1 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= report["commit"] %></p><% end %>
-      </div>
-      <% if report["changed_files"].present? %>
-        <div class="px-4 py-3.5">
-          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-2"><%= t("member.tickets.automation.work_report.files") %></p>
-          <ul class="space-y-1.5"><% report["changed_files"].each do |file| %><li class="text-[12px] text-zinc-700 dark:text-zinc-300"><code><%= file["path"] %></code> — <%= file["summary"] %></li><% end %></ul>
-        </div>
+  <% evidence = delivery_evidence(attempt) %>
+  <% risks = Array(report["deviations"]).size + Array(report["risks"]).size %>
+  <% reported = render(Ui::BadgeComponent.new(label: t("member.tickets.automation.work_report.reported"), color: :amber)) %>
+  <div class="space-y-6" data-test="automation-work-report">
+    <%= render Ui::SectionComponent.new(title: t("member.tickets.automation.work_report.outcome"), test_id: "automation-work-report-outcome") do |section| %>
+      <% section.with_actions { reported } %>
+      <%= render Ui::MarkdownComponent.new(text: report["summary"], class: "text-[13px] text-zinc-800 dark:text-zinc-200 leading-relaxed max-w-[70ch]") %>
+      <ul class="mt-3 flex flex-wrap gap-2" data-test="automation-work-report-tally">
+        <% [ [ (evidence.criteria_done == evidence.criteria_total ? "verified" : "partial"), t("member.tickets.automation.work_report.tally.criteria", done: evidence.criteria_done, total: evidence.criteria_total) ],
+             [ (evidence.tests_done == evidence.tests_total ? "passed" : "failed"), t("member.tickets.automation.work_report.tally.tests", done: evidence.tests_done, total: evidence.tests_total) ],
+             [ "not_run", t("member.tickets.automation.work_report.tally.files", count: Array(report["changed_files"]).size) ],
+             [ (risks.zero? ? "passed" : "partial"), t("member.tickets.automation.work_report.tally.risks", count: risks) ] ].each do |status, label| %>
+          <% icon, color = work_report_status_icon(status) %>
+          <li class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 text-[12px] text-zinc-700 dark:text-zinc-300 tabular-nums">
+            <%= render Ui::IconComponent.new(name: icon, class: "text-[12px] #{color}") %><%= label %>
+          </li>
+        <% end %>
+      </ul>
+      <% if report["commit"].present? %><p class="mt-2 font-mono text-[11px] text-gray-500 dark:text-zinc-400 select-all break-all"><%= report["commit"] %></p><% end %>
+    <% end %>
+
+    <% if risks.positive? %>
+      <%= render Ui::SectionComponent.new(title: t("member.tickets.automation.work_report.risks_title"), tone: :amber, body_class: nil, test_id: "automation-work-report-risks") do |section| %>
+        <% section.with_actions { reported } %>
+        <ul class="divide-y divide-amber-100 dark:divide-amber-500/20">
+          <% Array(report["risks"]).each do |risk| %>
+            <li class="px-4 py-3 text-[12.5px] text-zinc-800 dark:text-zinc-200">
+              <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= risk["id"] %></span>
+              <strong><%= risk["title"] %></strong> — <%= risk["impact"] %>
+              <% if risk["mitigation"].present? %><p class="mt-0.5 text-gray-500 dark:text-zinc-400"><%= risk["mitigation"] %></p><% end %>
+            </li>
+          <% end %>
+          <% Array(report["deviations"]).each do |item| %>
+            <li class="px-4 py-3 text-[12.5px] text-zinc-800 dark:text-zinc-200">
+              <strong><%= item["title"] %></strong> — <%= item["reason"] %>
+              <p class="mt-0.5 text-gray-500 dark:text-zinc-400"><%= item["impact"] %></p>
+            </li>
+          <% end %>
+        </ul>
       <% end %>
-      <% if report["tests"].present? %>
-        <div class="px-4 py-3.5">
-          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-2"><%= t("member.tickets.automation.work_report.tests") %></p>
-          <ul class="space-y-1.5"><% report["tests"].each do |test| %><li class="flex items-start gap-2 text-[12px] text-zinc-700 dark:text-zinc-300"><span class="font-mono text-[10px] <%= test["status"] == "passed" ? "text-emerald-700 dark:text-emerald-300" : "text-amber-700 dark:text-amber-300" %>"><%= test["status"] %></span><code><%= test["command"] %></code><span>— <%= test["summary"] %></span></li><% end %></ul>
-        </div>
+    <% end %>
+
+    <% if report["tests"].present? %>
+      <%= render Ui::SectionComponent.new(title: t("member.tickets.automation.work_report.tests"), body_class: nil, test_id: "automation-work-report-tests") do |section| %>
+        <% section.with_actions { reported } %>
+        <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+          <% report["tests"].each do |test| %>
+            <% icon, color = work_report_status_icon(test["status"]) %>
+            <li class="px-4 py-2.5 grid grid-cols-[14px_minmax(0,1fr)] gap-2.5 items-start text-[12.5px] text-zinc-700 dark:text-zinc-300" data-status="<%= test["status"] %>">
+              <%= render Ui::IconComponent.new(name: icon, label: t("member.tickets.automation.work_report.test_status.#{test["status"]}", default: test["status"].to_s), class: "text-[13px] mt-0.5 #{color}") %>
+              <span class="min-w-0"><code class="font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= test["command"] %></code> — <%= test["summary"] %></span>
+            </li>
+          <% end %>
+        </ul>
       <% end %>
-      <% if report["acceptance_evidence"].present? %>
-        <div class="px-4 py-3.5">
-          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-2"><%= t("member.tickets.automation.work_report.criteria") %></p>
-          <ul class="space-y-2"><% report["acceptance_evidence"].each do |evidence| %><li class="text-[12px] text-zinc-700 dark:text-zinc-300"><div class="flex items-center gap-2"><strong class="font-mono text-[10.5px]"><%= evidence["criterion_id"] %></strong><span class="rounded bg-stone-100 dark:bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px]"><%= evidence["status"] %></span><span class="font-mono text-[9.5px] uppercase text-amber-700 dark:text-amber-300"><%= t("member.tickets.automation.work_report.reported") %></span></div><p class="mt-0.5"><%= evidence["evidence"] %></p></li><% end %></ul>
-        </div>
+    <% end %>
+
+    <% if report["acceptance_evidence"].present? %>
+      <%= render Ui::SectionComponent.new(title: t("member.tickets.automation.work_report.criteria"), body_class: nil, test_id: "automation-work-report-criteria") do |section| %>
+        <% section.with_actions { reported } %>
+        <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+          <% report["acceptance_evidence"].each do |item| %>
+            <% icon, color = work_report_status_icon(item["status"]) %>
+            <li class="px-4 py-2.5 grid grid-cols-[14px_minmax(0,1fr)_auto] gap-2.5 items-start text-[12.5px] text-zinc-700 dark:text-zinc-300" data-status="<%= item["status"] %>">
+              <%= render Ui::IconComponent.new(name: icon, label: t("member.tickets.automation.work_report.criterion_status.#{item["status"]}", default: item["status"].to_s), class: "text-[13px] mt-0.5 #{color}") %>
+              <span class="min-w-0"><%= item["evidence"] %>
+                <% if item["source"] == "attested" %><%= render Ui::BadgeComponent.new(label: t("member.tickets.automation.work_report.attested"), color: :emerald, class: "ml-1") %><% end %></span>
+              <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= item["criterion_id"] %></span>
+            </li>
+          <% end %>
+        </ul>
       <% end %>
-      <% if report["deviations"].present? || report["risks"].present? %>
-        <div class="px-4 py-3.5">
-          <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-2"><%= t("member.tickets.automation.work_report.exceptions") %></p>
-          <ul class="space-y-1.5">
-            <% Array(report["deviations"]).each do |item| %><li class="text-[12px] text-zinc-700 dark:text-zinc-300"><strong><%= item["title"] %></strong> — <%= item["reason"] %> <span class="text-gray-500 dark:text-zinc-400"><%= item["impact"] %></span></li><% end %>
-            <% Array(report["risks"]).each do |risk| %><li class="text-[12px] text-zinc-700 dark:text-zinc-300"><strong><%= [risk["id"], risk["title"]].compact_blank.join(" · ") %></strong> — <%= risk["impact"] %> <span class="text-gray-500 dark:text-zinc-400"><%= risk["mitigation"] %></span></li><% end %>
-          </ul>
-        </div>
+    <% end %>
+
+    <% if report["changed_files"].present? %>
+      <%= render Ui::SectionComponent.new(title: t("member.tickets.automation.work_report.files"), body_class: nil, test_id: "automation-work-report-files") do |section| %>
+        <% section.with_actions { reported } %>
+        <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+          <% report["changed_files"].each do |file| %>
+            <li class="px-4 py-2.5 flex flex-col sm:flex-row sm:gap-4 text-[12.5px]">
+              <code class="font-mono text-[12px] text-zinc-900 dark:text-zinc-100 sm:w-56 shrink-0 break-all"><%= file["path"] %></code>
+              <span class="text-gray-500 dark:text-zinc-400"><%= file["summary"] %></span>
+            </li>
+          <% end %>
+        </ul>
       <% end %>
-    </div>
-  </section>
+    <% end %>
+  </div>
 <% end %>

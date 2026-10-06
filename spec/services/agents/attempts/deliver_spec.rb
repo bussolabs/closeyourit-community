@@ -71,7 +71,7 @@ RSpec.describe Agents::Attempts::Deliver do
 
   # CYRA-921
   context "when the machine reviews with the same engine" do
-    before { host.update!(review_mode: "same") }
+    before { host.update!(reviewer: "claude") }
 
     it "accepts a review by the same engine" do
       result = described_class.call(organization:, host:, attempt:, payload: payload.merge(reviewer_runtime: "claude"))
@@ -88,8 +88,55 @@ RSpec.describe Agents::Attempts::Deliver do
     end
   end
 
+  # CYAU-226/227: the reviewer is fixed when the work is claimed, so changing the machine's or the
+  # organization's choice mid-job does not reject work reviewed as the machine was told.
+  context "when the reviewer was named at claim time" do
+    let(:attempt) do
+      create(:agent_attempt, organization:, workflow:, host:, service_account: host_service_account,
+                             skill_key: "/closeyourit-triage", external_run_id: "run-42", phase: "triage",
+                             runtime: "claude", expected_reviewer: "codex")
+    end
+
+    it "accepts the named reviewer after the machine's choice changed" do
+      host.update!(reviewer: "claude", work_engine: "claude")
+
+      described_class.call(organization:, host:, attempt:, payload:)
+
+      expect(attempt.reload).to be_status_approved
+    end
+
+    it "accepts the named reviewer after the organization's choice changed" do
+      create(:agent_automator_setting, organization:, work_engine: "claude", reviewer: "claude")
+
+      described_class.call(organization:, host:, attempt:, payload:)
+
+      expect(attempt.reload).to be_status_approved
+    end
+
+    # CYAU-228
+    context "when OpenCode was named" do
+      let(:attempt) do
+        create(:agent_attempt, organization:, workflow:, host:, service_account: host_service_account,
+                               skill_key: "/closeyourit-triage", external_run_id: "run-42", phase: "triage",
+                               runtime: "claude", expected_reviewer: "opencode")
+      end
+
+      it "accepts an OpenCode review" do
+        described_class.call(organization:, host:, attempt:, payload: payload.merge(reviewer_runtime: "opencode"))
+
+        expect(attempt.reload).to be_status_approved
+      end
+    end
+
+    it "refuses a reviewer other than the one named at claim time" do
+      described_class.call(organization:, host:, attempt:, payload: payload.merge(reviewer_runtime: "claude"))
+
+      expect(attempt.reload).not_to be_status_approved
+    end
+  end
+
   it "keeps asking the other engine by default" do
-    expect(host.review_mode).to eq("cross")
+    expect(host.effective_reviewer).to eq("codex")
     result = described_class.call(organization:, host:, attempt:, payload: payload.merge(reviewer_runtime: "claude"))
 
     expect(attempt.reload).not_to be_status_approved
@@ -1041,7 +1088,53 @@ RSpec.describe Agents::Attempts::Deliver do
         [ scope, described_class.call(organization:, host: scope[:host], attempt: scope[:attempt], payload:) ]
       end
 
+      # CYRA-1004 — the head an earlier attempt already delivered, with the diff review that let it through.
+      def previously_reviewed_head!(review_status: :accepted, depth: "diff", head_sha: AgentReviewAttestation::OBSERVED_HEAD_SHA)
+        create(:agent_attempt, organization:, workflow:, host:, service_account: host_service_account,
+                               skill_key: Agents::PhaseProfile.for("autopilot").skill_key,
+                               external_run_id: "run-earlier-#{SecureRandom.hex(4)}", phase: "autopilot",
+                               runtime: "claude", status: :approved, review_status:,
+                               review: { "status" => review_status.to_s, "summary" => "Earlier review", "depth" => depth },
+                               observed_head_sha: head_sha)
+      end
+
+      def deliver_already_delivered_on_result
+        deliver_autopilot_state(
+          "already-delivered",
+          review: { status: "accepted", summary: "La proposta precedente è coerente", depth: "result" },
+          delivery: { prUrl: "https://github.com/bussolabs/closeyourit-rails/pull/110", cyiStatus: "in_review", autoMerged: false },
+          reason: "Commit già in cima al branch e proposta aperta"
+        )
+      end
+
+      it "rejects already-delivered work reviewed on the result when nobody ever reviewed its diff" do
+        previously_reviewed_head!(review_status: :unavailable)
+
+        scope, result = deliver_already_delivered_on_result
+
+        expect(result.error.code).to eq("R409-ATTEMPT-006")
+        expect(scope[:attempt].reload).to be_status_review_failed
+        expect(workflow.reload.autopilot_completed_at).to be_nil
+      end
+
+      it "rejects already-delivered work whose accepted diff review was on a different head" do
+        previously_reviewed_head!(head_sha: "1" * 40)
+
+        _scope, result = deliver_already_delivered_on_result
+
+        expect(result.error.code).to eq("R409-ATTEMPT-006")
+      end
+
+      it "rejects already-delivered work when the earlier accepted review was on the result only" do
+        previously_reviewed_head!(depth: "result")
+
+        _scope, result = deliver_already_delivered_on_result
+
+        expect(result.error.code).to eq("R409-ATTEMPT-006")
+      end
+
       it "accetta il lavoro già consegnato riletto sul solo result, senza impronte" do
+        previously_reviewed_head!
         scope, result = deliver_autopilot_state(
           "already-delivered",
           review: { status: "accepted", summary: "La proposta precedente è coerente", depth: "result" },

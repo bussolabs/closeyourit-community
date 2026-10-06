@@ -42,30 +42,8 @@ module Member
       t("member.tickets.automation.stage.#{::Agents::Workflows::PhaseResolver.stage(phase)}")
     end
 
-    # La frase che spiega la fase (CYRA-384). Nessun humanize di scorta: una fase nuova senza
-    # spiegazione resta senza frase, invece di ricevere il proprio nome ripetuto come se lo fosse.
-    def automation_phase_hint(phase)
-      t("member.tickets.automation.phase_hint.#{phase}", default: nil)
-    end
-
     def automation_execution_phase_label(phase)
       t("member.tickets.automation.execution_phase.#{phase}", default: phase.to_s.humanize)
-    end
-
-    # Le sigle che il passo mostra, ciascuna con la frase che la spiega (CYRA-384): l'esito del
-    # tentativo e gli stati del payload. Tradotte lo erano già (CYRA-392) — «bloccato» però non dice
-    # né cosa è successo né se riparte da sé, ed è la parola su cui si decide se intervenire.
-    #
-    # Solo le sigle che una spiegazione ce l'hanno davvero: un valore fuori vocabolario non entra
-    # nell'elenco, invece di comparirci accanto a una riga vuota.
-    def automation_glossary(attempt)
-      outcome = automation_outcome(attempt)
-      entries = [ ({ term: outcome[:label], hint: outcome[:hint] } if outcome[:hint].present?) ]
-      entries += automation_state_values(attempt).filter_map do |value|
-        hint = automation_state_hint(value)
-        { term: automation_state_label(value), hint: } if hint.present?
-      end
-      entries.compact.uniq
     end
 
     # Stesso verdetto a partire dal solo status: lo storico dell'host (CYRA-279) ha l'esito
@@ -81,23 +59,6 @@ module Member
     end
 
     private
-    # Gli stati che il passo mostra come chip, letti dal payload consegnato: `state` per ogni fase, più
-    # il verdetto della revisione incrociata dell'autopilot. Dato esterno, quindi accesso difensivo su
-    # ogni livello — questo gira su OGNI passo, non solo su quelli che il contratto ha validato.
-    def automation_state_values(attempt)
-      result = attempt.result
-      return [] unless result.is_a?(Hash)
-
-      review = result["review"]
-      [ result["state"], (review["verdict"] if review.is_a?(Hash)) ].compact_blank
-    end
-
-    def automation_state_hint(value)
-      return nil if value.blank?
-
-      t("member.tickets.automation.steps.state_hint.#{value.to_s.tr('-', '_')}", default: nil)
-    end
-
     # Etichetta italiana per lo `state`/`verdict` del payload agente (contratto agent-result) mostrato
     # come chip (CYRA-392): valori inglesi (workable/blocked/unavailable/…) che stonavano accanto agli
     # esiti già tradotti. I trattini del contratto (needs-clarification) diventano underscore nella

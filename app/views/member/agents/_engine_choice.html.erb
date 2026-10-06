@@ -1,0 +1,24 @@
+<%# locals: (host:, can_manage:) %>
+<%# CYAU-227 — whether the machine follows the organization's choice of engines or has its own. Changing
+    an engine below gives the machine its own choice; going back drops it. %>
+<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3" data-test="host-engine-choice">
+  <div class="flex flex-wrap items-center gap-2">
+    <h2 class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.choice.title") %></h2>
+    <% if host.follows_organization? %>
+      <%= render Ui::BadgeComponent.new(label: t("member.agents.choice.follows"), color: :indigo, dot: true, test_id: "host-choice-status") %>
+    <% else %>
+      <%= render Ui::BadgeComponent.new(label: t("member.agents.choice.own"), color: :amber, dot: true, test_id: "host-choice-status") %>
+    <% end %>
+  </div>
+  <p class="text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-[70ch]"><%= t("member.agents.choice.#{host.follows_organization? ? 'follows_hint' : 'own_hint'}") %></p>
+  <% if can_manage %>
+    <div class="flex flex-wrap items-center gap-3">
+      <% unless host.follows_organization? %>
+        <%= form_with url: follow_organization_member_agent_path(host), method: :patch do %>
+          <%= render Ui::ButtonComponent.new(label: t("member.agents.choice.follow"), type: "submit", size: :sm, icon: "rotate-ccw", test_id: "host-follow-organization") %>
+        <% end %>
+      <% end %>
+      <%= render Ui::ButtonComponent.new(label: t("member.agents.choice.organization_link"), href: member_agents_automator_setting_path, variant: :secondary_muted, size: :sm, test_id: "host-organization-choice-link") %>
+    </div>
+  <% end %>
+</section>

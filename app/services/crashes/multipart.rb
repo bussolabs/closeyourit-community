@@ -22,31 +22,19 @@ module Crashes
               "CONTENT_LENGTH" => bytes.bytesize.to_s, "rack.multipart.tempfile_factory" => factory }
       params = Rack::Multipart.parse_multipart(env)
       raise Rejected, "invalid_multipart" unless params.is_a?(Hash)
-      event = metadata(params["sentry"])
+      event = Metadata.call(json: params["sentry"], crashpad: params["__sentry-event"])
       items = params.filter_map do |name, value|
         next unless value.is_a?(Hash) && value[:tempfile].respond_to?(:read)
         value[:tempfile].rewind
         header = { "filename" => value[:filename], "attachment_type" => name == "upload_file_minidump" ? "event.minidump" : "event.attachment" }
-        { header: header, bytes: value[:tempfile].read(MAX_FILE + 1) }
+        { header: header, bytes: value[:tempfile].read(MAX_FILE + 1), metadata: name == "__sentry-event" }
       end
       raise Rejected, "duplicate_file_field" unless items.size == files
+      items.reject! { |item| item.delete(:metadata) }
       raise Rejected, "missing_minidump" unless items.any? { |item| item[:header]["attachment_type"] == "event.minidump" }
       [ event, items ]
     rescue Zlib::Error, JSON::ParserError, EOFError, Rack::Multipart::Error, Rack::QueryParser::ParameterTypeError, Rack::QueryParser::ParamsTooDeepError
       raise Rejected, "invalid_multipart"
-    end
-
-    private
-
-    def metadata(value)
-      raise Rejected, "invalid_event_metadata" if value.is_a?(String) && value.bytesize > 64.kilobytes
-      value = JSON.parse(value, max_nesting: 16) if value.is_a?(String)
-      return {} if value.nil?
-      raise Rejected, "invalid_event_metadata" unless value.is_a?(Hash)
-      # Filenames, arbitrary form fields and user dictionaries never become event context.
-      result = value.slice("event_id", "release", "environment", "dist", "platform")
-      raise Rejected, "invalid_event_metadata" unless result.values.all? { |item| item.is_a?(String) && item.bytesize <= 1024 && !item.include?("\0") }
-      Errors::Ingest::Scrub.call(payload: result)
     end
   end
 end

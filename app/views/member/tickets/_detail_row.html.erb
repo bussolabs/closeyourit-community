@@ -1,6 +1,10 @@
-<%# locals: (label:, test_id:) %>
-<%# One Details row (CYRA-883): label on the left, value on the right, like the project Information. %>
-<div class="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-3 px-4 py-2.5" data-test="<%= test_id %>">
-  <span class="pt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= label %></span>
-  <div class="min-w-0 [&>.mt-1]:mt-0 [&>p.mt-1]:mt-0"><%= yield %></div>
+<%# locals: (label:, test_id:, action: nil) %>
+<%# One Details row (CYRA-883): label on the left, value on the right edge, both centred on one line and
+    every row the same height. `action:` follows the label on its line (take-over after Assignee). %>
+<div class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 min-h-[44px] px-4 py-2" data-test="<%= test_id %>">
+  <div class="flex items-center gap-2" data-test="<%= test_id %>-label">
+    <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= label %></span>
+    <%= action %>
+  </div>
+  <div class="min-w-0 flex flex-col items-end text-right [&>.mt-1]:mt-0 [&>p.mt-1]:mt-0"><%= yield %></div>
 </div>

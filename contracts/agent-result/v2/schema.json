@@ -18,6 +18,14 @@
         "codex"
       ]
     },
+    "reviewer_runtime": {
+      "description": "The engine that reviewed the work. OpenCode only reviews (CYAU-228), so it is never a runtime.",
+      "enum": [
+        "claude",
+        "codex",
+        "opencode"
+      ]
+    },
     "contract_version": {
       "const": 2
     },
@@ -1191,7 +1199,7 @@
           "$ref": "#/$defs/runtime"
         },
         "reviewer_runtime": {
-          "$ref": "#/$defs/runtime"
+          "$ref": "#/$defs/reviewer_runtime"
         },
         "result": {
           "anyOf": [
@@ -1230,46 +1238,6 @@
           "additionalProperties": false
         }
       },
-      "allOf": [
-        {
-          "if": {
-            "required": [
-              "runtime"
-            ],
-            "properties": {
-              "runtime": {
-                "const": "claude"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "reviewer_runtime": {
-                "const": "codex"
-              }
-            }
-          }
-        },
-        {
-          "if": {
-            "required": [
-              "runtime"
-            ],
-            "properties": {
-              "runtime": {
-                "const": "codex"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "reviewer_runtime": {
-                "const": "claude"
-              }
-            }
-          }
-        }
-      ],
       "additionalProperties": true
     }
   }

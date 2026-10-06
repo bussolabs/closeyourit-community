@@ -78,6 +78,8 @@ module Member
     def stopped
       return cancelled_line if @workflow.cancelled_at?
       return blocked_line if @workflow.phase == "review_blocked"
+      # An open question holds the ticket out of the queue: «waits for a free machine» would be false.
+      return t("stopped.waiting_answer", count: @pending_questions) if @pending_questions.positive?
       # Prima della mappa delle fasi: la fase dice «in coda», ma da quella coda il ticket non esce
       # finché il prerequisito non è a posto. Chi legge starebbe aspettando una cosa che non succede.
       return dependencies_line if @blocking_count.positive?
@@ -137,6 +139,24 @@ module Member
       return t("needs.decided_by", name: @cto_name) if @cto_name.present?
 
       t("needs.no_decider")
+    end
+
+    # Halted for real: the row keeps «Perché si è fermata». Otherwise it reads «A che punto è».
+    def halted?
+      return true if @workflow.cancelled_at? || @workflow.blocked_at? || @blocking_count.positive?
+      return true if @pending_questions.positive?
+      return true if %w[awaiting_approval awaiting_autopilot_approval].include?(@workflow.phase)
+
+      missing_release_probe?
+    end
+
+    # The «what you need» row is highlighted only when a person has to act: an open question, or a
+    # decision that belongs to the one reading.
+    def needs_person?
+      return true if @pending_questions.positive?
+
+      key = NEEDS_KEYS[@workflow.phase]
+      key.present? && key != "finished" && !retrying? && @decides
     end
 
     # CYRA-877 — a rejected step with budget left is already being redone by the queue: nothing to decide, and

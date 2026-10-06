@@ -56,7 +56,13 @@ module Ui
       danger: "bg-red-600 text-white hover:bg-red-700 font-semibold",
       danger_outline: "text-red-600 dark:text-red-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-red-50 dark:hover:bg-red-500/15 font-medium",
       success: "bg-emerald-600 text-white hover:bg-emerald-700 font-semibold",
-      success_outline: "text-emerald-700 dark:text-emerald-300 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 font-medium"
+      success_outline: "text-emerald-700 dark:text-emerald-300 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 font-medium",
+      # An in-page tab (role="tab"), drawn like the page header tabs: underline when aria-selected.
+      tab: "h-11 px-1 gap-1.5 border-b-2 border-transparent text-[13px] font-medium text-gray-500 dark:text-zinc-400 " \
+           "hover:text-zinc-900 dark:hover:text-zinc-100 aria-selected:border-indigo-600 dark:aria-selected:border-indigo-400 " \
+           "aria-selected:font-semibold aria-selected:text-zinc-900 dark:aria-selected:text-zinc-100",
+      # An action that reads as a text link (it still posts): no box, no padding.
+      link: "gap-1 font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline underline-offset-2"
     }.freeze
 
     SIZES = {
@@ -74,6 +80,8 @@ module Ui
     }.freeze
 
     ICON_SIZES = { sm: "text-[11px]", md: "text-[12px]", lg: "text-[13px]" }.freeze
+    # A link takes only a text size: `sm` is the «See all →» in a panel header.
+    LINK_SIZES = { sm: "text-[11px]", md: "text-[12px]", lg: "text-[13px]" }.freeze
 
     def initialize(label: nil, variant: :primary, size: :md, type: "button",
                    href: nil, method: nil, confirm: nil, form_class: nil, form_id: nil,
@@ -108,6 +116,10 @@ module Ui
     private
 
     def klass
+      # A tab and a link carry their own shape: no size box, no radius.
+      return [ BASE, FOCUS_GROUPED, VARIANTS.fetch(@variant) ].join(" ") if @variant == :tab
+      return [ BASE, FOCUS_GROUPED, VARIANTS.fetch(@variant), LINK_SIZES.fetch(@size) ].join(" ") if @variant == :link
+
       [ BASE, (@grouped ? FOCUS_GROUPED : FOCUS), (RADIUS unless @grouped),
         VARIANTS.fetch(@variant), size_klass ].compact.join(" ")
     end

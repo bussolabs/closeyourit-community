@@ -1318,7 +1318,7 @@ en:
         secrets_disabled_note: Secrets disabled on this environment.
         releases: Releases
         releases_events: events
-        releases_all: See all
+        releases_all: See all →
         releases_count:
           one: "1 release"
           other: "%{count} releases"
@@ -1498,10 +1498,6 @@ en:
         title: Connections
       context:
         title: Context
-      recent_comments:
-        title: Latest comments
-        view_all: See the discussion →
-        ago: "%{time} ago"
       evidence:
         title: Delivery record
         subtitle: "What the system saw with its own eyes. It cannot be edited and it moves nothing forward."
@@ -1919,6 +1915,10 @@ en:
           blocked: better keep it with a person
           evaluated_at: "Opinion given on %{when}"
         decided_by: "Decided by %{name} on %{when}"
+        switch:
+          label: Who works it
+          agents: Agents
+          person: A person
         unknown_actor: Someone
         manual_reason: "Decision made manually by %{name}."
         actions:
@@ -1943,8 +1943,8 @@ en:
       automation:
         none: No automated work on this ticket.
         # CYRA-602 — the EIGHT words of the journey, the only ones a reader ever meets. Sixteen
-        # internal phases, eight words: the detail does not vanish, it lives in the sentence
-        # below (`phase_hint`). Before, the same moment had three different names one click apart.
+        # internal phases, eight words: the detail does not vanish, it lives in the
+        # summary row «Where it stands». Before, the same moment had three different names one click apart.
         stage:
           to_plan: To plan
           plan_to_approve: Plan to approve
@@ -1975,25 +1975,6 @@ en:
           cancelled: Cancelled
         # CYRA-384 — one sentence per phase, next to the label: the label says what the state is
         # called, not what it means for you nor who has to move.
-        phase_hint:
-          inactive: Automated work was never requested on this ticket.
-          triage_queued: Waiting for a free machine to read the ticket. It usually starts within a few minutes.
-          triaging: A machine is reading the ticket to decide whether it can be worked as it stands.
-          planning: A machine is writing the work plan.
-          awaiting_approval: The plan is ready and waiting for a person to approve it or ask for changes.
-          autopilot_queued: "The plan is approved: waiting for a free machine to carry it out."
-          autopilot: A machine is doing the work the plan describes.
-          verifying_candidate: "The system is opening the pull request and reading the automated checks on that code. It carries on by itself: nothing is needed from you."
-          verifying_staging: "The system is checking whether the code you approved really landed on the main line. It carries on by itself: nothing is needed from you."
-          awaiting_production_proof: "The system is checking whether the production release is really up. It carries on by itself: nothing is needed from you."
-          awaiting_autopilot_approval: The work is delivered and waiting for a person to read it.
-          closer_staging_queued: "The work is approved: waiting for a machine to put it on the test environment."
-          closer_staging: A machine is putting the work on the test environment.
-          closer_production_queued: "The staging check went through: waiting for a machine to put the work on the live site. Nothing is needed from you."
-          closer_production: A machine is putting the work on the live site.
-          review_blocked: The work stopped retrying on its own and is waiting for a decision.
-          completed: "The work reached the end: there is nothing left to do here."
-          cancelled: A person stopped the work, and it never resumes on this ticket.
         # Execution phases (Agents::Attempt#phase, a different vocabulary from Workflow#phase):
         # rendered by the retry banner and by the summary's "what it did" line. They used to live
         # under `phase`, where three of the five would have clashed with a workflow phase of the
@@ -2008,23 +1989,29 @@ en:
         # attempt outcomes, open questions): a summary guessed from the machine's free text can lie
         # exactly where the decision is made.
         summary:
+          title: Automation
+          halted_badge: Stopped
           done:
             label: What it did
             none: It has not finished any step yet.
             last: "%{phase}: %{outcome}, %{ago} ago."
           stopped:
             label: Why it stopped
+            where_label: Where it stands
+            waiting_answer:
+              one: "Waiting for your answer to the open question."
+              other: "Waiting for your answers to the %{count} open questions."
             blocked: "It stopped on %{phase} %{count} times in a row: it will not retry on its own."
             agent_blocked: "It stopped by itself on %{phase} and wrote why: «%{reason}» It will not retry on its own."
             agent_blocked_no_reason: "it did not write the reason"
             candidate_check: "It stopped while checking the pull request: \"%{reason}\" It will not retry on its own."
             release_probe: "It stopped while checking the release: «%{reason}» It will not retry by itself."
             held_by_person: "Held before production: %{name} stopped it. No release of this repository goes to production until it resumes."
-            retrying: "It is not stopped: the last step was rejected and is already retrying."
-            verifying_candidate: "It is not stuck: the system is opening the pull request and reading the checks on that code."
-            verifying_staging: "It is not stuck: the system is checking whether the approved code landed on the main line."
-            awaiting_production_proof: "It is not stuck: the system is checking whether the production release is really up."
-            retry_hint: "It is not stuck: the system cannot read something on GitHub (%{code}). Retrying at %{at}. Nothing is needed from you."
+            retrying: "The last step was rejected and is already retrying."
+            verifying_candidate: "The system is opening the pull request and reading the checks on that code."
+            verifying_staging: "The system is checking whether the approved code landed on the main line."
+            awaiting_production_proof: "The system is checking whether the production release is really up."
+            retry_hint: "The system cannot read something on GitHub (%{code}). Retrying at %{at}. Nothing is needed from you."
             awaiting_approval: "It is stopped on the plan: waiting for a person to approve it."
             awaiting_autopilot_approval: "It is stopped on the delivered work: waiting for a person to read it."
             cancelled: "A person stopped it: %{reason}"
@@ -2032,15 +2019,15 @@ en:
             dependencies_anonymous: "Held by a prerequisite on a project you cannot see. The queue leaves it alone until it is sorted."
             missing_release_probe: "It cannot start: the project does not declare how one can tell that a release of its own succeeded, and without that the machine does not know where to open the proposal nor when to call itself done. Set it from the project's GitHub panel, then it starts again on its own."
             cancelled_no_reason: A person stopped it, without giving a reason.
-            completed: "It is not stopped: it reached the end."
+            completed: "It reached the end."
             inactive: "It never started: nobody requested it on this ticket."
-            queued: "It is not stopped: it is waiting for a free machine."
-            production_busy: "Not stuck: waiting for the release of %{code} to finish. One release at a time per repository, so production never goes backwards."
-            production_busy_anonymous: "Not stuck: waiting for another release on this repository to finish. One at a time, so production never goes backwards."
-            production_soak: "Not stuck: the code is being tried on staging. If no new errors show up, it goes to production from %{at}."
+            queued: "It is waiting for a free machine."
+            production_busy: "Waiting for the release of %{code} to finish. One release at a time per repository, so production never goes backwards."
+            production_busy_anonymous: "Waiting for another release on this repository to finish. One at a time, so production never goes backwards."
+            production_soak: "The code is being tried on staging. If no new errors show up, it goes to production from %{at}."
             production_staging_error: "Held before production: a new error showed up on staging, “%{title}”. Resolve or ignore it and the release resumes on its own."
             production_staging_error_anonymous: "Held before production: a new error showed up on staging. The release resumes once it is resolved or ignored."
-            working: "It is not stopped: it is working on it right now."
+            working: "It is working on it right now."
           needs:
             label: What it needs from you
             answer_questions:
@@ -2053,7 +2040,6 @@ en:
             unblock: Get the work going again, or stop it.
             nothing: "Nothing: the work carries on by itself."
             finished: "Nothing: the work is over."
-          retrying_hint: "A step was rejected and the machine is redoing it by itself: nothing needed from you."
         effective_cto: Who decides
         no_cto: Not configured
         running_on: Running on
@@ -2085,6 +2071,9 @@ en:
           retrying_body: "%{phase} was rejected and is already retrying. No action needed."
         steps:
           title: Work steps
+          tabs: One step per tab
+          empty_step: No attempt in this step.
+          review_note: "The review of the work is read in the «In progress» attempts."
           empty: No steps yet. The work has not started.
           queued: "It usually starts within a few minutes: until it does there are no steps to read, and nothing to fix."
           queued_since: "Waiting for %{ago} (%{time})."
@@ -2093,6 +2082,16 @@ en:
             other: "%{count} attempts"
           unknown_host: unknown machine
           review: review
+          review_outcome:
+            accepted: Review approved
+            changes_requested: Review rejected
+            unavailable: Review not run
+          review_by: "by %{runtime}"
+          findings:
+            severity:
+              major: Major
+              minor: Minor
+              info: Note
           failure_no_reason: The machine reported a failure without a reason.
           # CYRA-384 — consecutive attempts with the same outcome folded into a single row: in a row
           # they buried the rest of the card, and reaching the plan meant scrolling past every one.
@@ -2165,6 +2164,17 @@ en:
             approved: Whoever read the work accepted it.
             changes_requested: Whoever read the work asked for changes.
             unavailable: The work could not be read.
+          risk:
+            low: low
+            medium: medium
+            high: high
+            critical: critical
+          triage:
+            area: Area
+            risk: Risk
+            capabilities: Skills
+            reasons: Why
+            answer: Answer
         # CYRA-384 — the security finding used to sit inside the long text of a secondary card, and
         # nobody saw it. The machine writes it in a dedicated field of the delivered result: looking
         # for it in free text means guessing, and here guessing wrong costs both ways.
@@ -2188,6 +2198,26 @@ en:
           tests: Checks run
           criteria: Evidence by criterion
           exceptions: Deviations and residual risks
+          outcome: Outcome
+          risks_title: "To decide: risks and deviations"
+          tally:
+            criteria: "%{done}/%{total} criteria proven"
+            tests: "%{done}/%{total} checks passed"
+            files:
+              one: 1 file changed
+              other: "%{count} files changed"
+            risks:
+              zero: No open risk
+              one: 1 open risk
+              other: "%{count} open risks"
+          test_status:
+            passed: passed
+            failed: failed
+            not_run: not run
+          criterion_status:
+            verified: proven
+            partial: partly proven
+            missing: not proven
         failure:
           human_action: "What a person needs to do:"
           category: Category
@@ -2241,6 +2271,8 @@ en:
             blank: Write at least one answer.
             gone: There are no questions awaiting an answer.
       comments:
+        today: Today
+        yesterday: Yesterday
         title: Discussion
         empty: No comments yet. Start the discussion.
         placeholder: Write a comment…
@@ -2267,6 +2299,7 @@ en:
           too_long: "The comment is over %{count} characters (currently %{actual}). For a long text use the work report."
       questions:
         title: Questions
+        open_title: Open questions
         open_count: Open
         placeholder: "Ask a short question: answers go here, not in the discussion…"
         submit: Ask
@@ -2274,8 +2307,12 @@ en:
         settled:
           one: "1 answered or withdrawn"
           other: "%{count} answered or withdrawn"
+        settled_from_work:
+          one: "1 from the automation"
+          other: "%{count} from the automation"
         shared_label: Visible to the client too
         blocking: Blocks the work
+        from_work: From the automation
         shared: Shared
         withdrawn: Withdrawn
         covers_round: answer to the whole round
@@ -2294,12 +2331,12 @@ en:
           one: This ticket is waiting for the answer to a question.
           other: This ticket is waiting for the answers to %{count} questions.
         blocked_link: Go to questions
-        from_automation: The automation questions live in the Questions tab, with their answers.
         errors:
           invalid: Invalid question. It must read as a question in plain words, not a command or a URL.
           answer_invalid: Invalid answer. Check the text.
           closed: "This question was withdrawn: it can no longer be answered."
           already_answered: "This question already has an answer: it cannot be withdrawn."
+          not_author: You can only withdraw the questions you asked.
       attachments:
         indicator: Has attachments
         title: Attachments

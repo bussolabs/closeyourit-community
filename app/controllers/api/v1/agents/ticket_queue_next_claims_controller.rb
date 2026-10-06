@@ -48,7 +48,7 @@ module Api
           AgentLeaseSerializer.new(outcome.lease).as_json.merge(
             "attempt_id" => outcome.attempt.id,
             # CYRA-921: which engine the machine must use to review before delivering.
-            "review_mode" => outcome.attempt.host.review_mode,
+            "review_mode" => outcome.attempt.review_mode, "reviewer" => outcome.attempt.reviewer, "reviewer_model" => outcome.attempt.reviewer_model,
             # CYRA-921: which engine does the work, frozen on the attempt at claim time.
             "work_engine" => outcome.attempt.runtime,
             "candidate" => AgentTicketCandidateSerializer.new(outcome.ticket).as_json

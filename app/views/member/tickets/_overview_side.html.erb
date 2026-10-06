@@ -1,0 +1,9 @@
+<%# locals: (can_manage:) %>
+<%# CYRA-883 — the Detail tab's side column, grouped by question: who and what (Agents, Details), code
+    (GitHub), links between tickets (Connections), where it comes from (Context). Only on that tab. %>
+<%= render "member/tickets/agent_eligibility_panel", ticket: @ticket, can_manage: can_manage %>
+<%= render "member/tickets/details_panel", can_manage: can_manage %>
+<%= render "member/tickets/github_panel", ticket: @ticket %>
+<%= render "member/tickets/connections_panel", can_manage: can_manage %>
+<%= render "member/tickets/helpdesk_requests_panel", requests: @helpdesk_requests %>
+<%= render "member/tickets/context_panel" %>

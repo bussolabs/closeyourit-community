@@ -6,11 +6,12 @@ module Agents
   class Host < ApplicationRecord
     HOST_STATUSES = %w[idle busy waiting recovery_required].freeze
     SUPPORTED_PLATFORM = "linux"
-    # Who reviews the work before delivery (CYRA-921): the other engine, or the same one in a new
-    # session for a machine that has only one.
-    REVIEW_MODES = %w[cross same].freeze
     # Which engine does the work (CYRA-921). It overrides the phase profile's runtime for this machine.
     WORK_ENGINES = %w[claude codex].freeze
+    # Which engine reviews the work before delivery, by name (CYAU-226). The work engine itself means a
+    # new session of the same engine, for a machine that has only one. OpenCode only reviews (CYAU-228).
+    REVIEW_ONLY_ENGINES = %w[opencode].freeze
+    REVIEWERS = (WORK_ENGINES + REVIEW_ONLY_ENGINES).freeze
 
     belongs_to :organization,
                class_name: "Organizations::Organization",
@@ -27,8 +28,11 @@ module Agents
     belongs_to :service_account,
                class_name: "Accounts::Account",
                optional: true
-    validates :review_mode, inclusion: { in: REVIEW_MODES }
-    validates :work_engine, inclusion: { in: WORK_ENGINES }
+    # CYAU-227: both null means the machine follows the organization's choice.
+    validates :reviewer, inclusion: { in: REVIEWERS }, allow_nil: true
+    validates :work_engine, inclusion: { in: WORK_ENGINES }, allow_nil: true
+    before_validation :complete_engine_choice
+    validate :opencode_has_a_model
 
     has_many :host_tokens,
              class_name: "Agents::HostToken",
@@ -74,6 +78,12 @@ module Agents
     scope :active, -> { where(revoked_at: nil) }
 
     def revoked? = revoked_at.present?
+
+    def follows_organization? = work_engine.nil?
+    def effective_work_engine = work_engine || organization_choice.work_engine
+    def effective_reviewer = reviewer || organization_choice.reviewer
+    # CYAU-228 — the OpenRouter model OpenCode reviews with; Claude and Codex use the model the automator pins.
+    def effective_reviewer_model = effective_reviewer == "opencode" ? organization_choice.opencode_model : nil
     def supported_platform? = platform == SUPPORTED_PLATFORM
 
     # Certificazione esplicita: un host resta ineleggibile finché un umano non lo abilita. Il gate
@@ -127,6 +137,49 @@ module Agents
     end
 
     private
+
+    def organization_choice = AutomatorSetting.for(organization)
+
+    # CYAU-227: a machine's own choice is always complete, so setting one engine on a machine that follows
+    # the organization starts from the organization's other engine.
+    # CYAU-226: moving the work to the engine that was reviewing would silently make the review weaker,
+    # so the engine that was working becomes the reviewer.
+    def complete_engine_choice
+      return if work_engine.nil? && reviewer.nil?
+      return keep_following if following_in_database? && choice_matches_organization?
+
+      reviewer_chosen = will_save_change_to_reviewer?
+      previous_worker = work_engine_in_database || organization_choice.work_engine
+      self.work_engine ||= organization_choice.work_engine
+      self.reviewer ||= organization_choice.reviewer
+      return if reviewer_chosen || reviewer != work_engine || previous_worker == work_engine
+
+      self.reviewer = previous_worker
+    end
+
+    def following_in_database? = work_engine_in_database.nil? && reviewer_in_database.nil?
+
+    # Each engine form of a following machine sets one engine, pre-filled with the choice in force: saving it
+    # unchanged is not a choice, so the machine keeps following. Setting both engines is always a choice.
+    def choice_matches_organization?
+      return work_engine == organization_choice.work_engine if reviewer.nil?
+
+      work_engine.nil? && reviewer == organization_choice.reviewer
+    end
+
+    def keep_following
+      self.work_engine = nil
+      self.reviewer = nil
+    end
+
+    # CYAU-228 — OpenCode reviews with the organization's OpenRouter model: without one the machine would
+    # never take work and no page would say why.
+    def opencode_has_a_model
+      return unless reviewer == "opencode" && will_save_change_to_reviewer?
+      return if organization_choice.opencode_model.present?
+
+      errors.add(:reviewer, :opencode_model_missing)
+    end
 
     def telemetry_snapshots_are_arrays
       %i[runtimes repositories active_runs last_stops].each do |attribute|

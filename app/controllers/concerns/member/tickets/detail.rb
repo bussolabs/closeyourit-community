@@ -112,8 +112,6 @@ module Member
         @work_report_attempt = work_report_attempt(@workflow)
         @tab = "detail" if @tab == "report" && @report.nil? && @workflow.nil?
         @advice = @tab == "detail" ? advice_lines_of(@ticket) : []
-        # CYRA-883 — the last two comments close the detail tab; the whole thread stays in Discussion.
-        @recent_comments = @tab == "detail" ? @ticket.comments.includes(:author).reorder(created_at: :desc).limit(2).to_a.reverse : []
         # Su quale scheda vive DAVVERO il racconto del lavoro consegnato (CYRA-557). Nil = da nessuna
         # parte, e il banner della revisione non offre una decisione da prendere alla cieca.
         @review_evidence_tab = review_evidence_tab if @ticket.status.review_gate?
@@ -255,7 +253,9 @@ module Member
         # CYRA-626 — anche le righe dei candidati: la scheda cerca quella che il sistema non riesce a
         # leggere, e senza precarico sarebbe una query in più a ogni apertura.
         @workflow.delivery_candidates.load
-        @clarifications = @workflow.clarifications.order(:created_at).to_a
+        # The automator's open questions are answered from this tab too; the Questions tab keeps them.
+        @automation_questions = readable_ticket_questions.origin_agent.open.chronological
+                                                     .includes(:author, :closed_by, answers: :author).to_a
         @current_plan = @workflow.plans.last
         # Quante volte la fase su cui si è fermata è stata bocciata: è il numero che il banner mostra, e
         # deve essere LO STESSO che ha fatto scattare il blocco (Agents::Attempts::Deliver). Quindi conta

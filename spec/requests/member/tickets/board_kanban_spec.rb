@@ -56,6 +56,33 @@ RSpec.describe "Member::Tickets board as a kanban panel (K9-K14)", type: :reques
     end
   end
 
+  context "when the search finds a ticket in a column the person had collapsed" do
+    before do
+      owner.update!(board_collapsed_statuses: [ "open" ])
+      create(:ticket, organization: org, project: project, status: open, title: "Webhook retries duplicate orders")
+      get_board(q: "webhook", semantic: "0")
+    end
+
+    it "opens that column, without touching the saved choice" do
+      column = html.find("[data-test='board-column-open']")
+      expect(column["data-collapsed"]).to eq("false")
+      expect(column).to have_css("[data-test='board-card-title']", text: "Webhook retries duplicate orders")
+      expect(owner.reload.board_collapsed_statuses).to eq([ "open" ])
+    end
+  end
+
+  it "shows a done ticket the search finds even when it was closed before the recent window" do
+    done = create(:ticket_status, organization: org, code: "done", label: "Done", position: 3, category: :done)
+    old = create(:ticket, organization: org, project: project, status: done, title: "Webhook signature check")
+    old.update_columns(closed_at: (Ticketing::Constants::BOARD_DONE_WINDOW + 30.days).ago)
+
+    get_board(q: "webhook", semantic: "0")
+
+    column = html.find("[data-test='board-column-done']")
+    expect(column["data-collapsed"]).to eq("false")
+    expect(column).to have_css("[data-test='board-card-title']", text: "Webhook signature check")
+  end
+
   it "shows only the total and collapses nothing on its own without a search" do
     create(:ticket, organization: org, project: project, status: open, title: "Webhook retries")
     get_board

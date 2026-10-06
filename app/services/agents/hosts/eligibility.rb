@@ -73,10 +73,24 @@ module Agents
       end
 
       # CYRA-921 — the machine's work engine, not the phase default, must be installed.
+      # CYAU-228 — a review-only engine too: an automator that cannot run it would only see its work rejected.
       def runtime_available?(_profile)
-        @host.runtimes.any? do |runtime|
-          runtime.is_a?(Hash) && runtime["present"] == true && runtime["name"] == @host.work_engine
-        end
+        required = [ @host.effective_work_engine ]
+        required << @host.effective_reviewer if Agents::Host::REVIEW_ONLY_ENGINES.include?(@host.effective_reviewer)
+        required.all? { |engine| runtime_present?(engine) } && opencode_ready?
+      end
+
+      # CYAU-228 — OpenCode reviews with the organization's OpenRouter model and key: without either the
+      # review cannot run, so the machine waits instead of working a ticket it cannot deliver.
+      def opencode_ready?
+        return true unless @host.effective_reviewer == "opencode"
+
+        organization = @host.organization
+        Agents::AutomatorSetting.for(organization).opencode_model.present? && organization.openrouter_credential.present?
+      end
+
+      def runtime_present?(engine)
+        @host.runtimes.any? { |runtime| runtime.is_a?(Hash) && runtime["present"] == true && runtime["name"] == engine }
       end
 
       def denied

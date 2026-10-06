@@ -46,6 +46,19 @@ RSpec.describe "Member ticket automation tab", type: :request do
       expect(response.body).to include("Mancano evidenze.")
     end
 
+    it "opens each review with its outcome and reviewer, then the text across the full width" do
+      Agents::Attempt.where(workflow:).update_all(reviewer_runtime: "claude")
+
+      get member_ticket_path(ticket, tab: "automation")
+
+      reviews = Nokogiri::HTML(response.body).css("[data-test='automation-step-review']")
+      heads = reviews.map { |review| review.at_css("[data-test='automation-step-review-outcome']")&.text&.squish }
+      outcome = ->(status) { "#{I18n.t("member.tickets.automation.steps.review_outcome.#{status}")} #{I18n.t("member.tickets.automation.steps.review_by", runtime: "claude")}" }
+      expect(heads).to include(outcome.call(:accepted)).and include(outcome.call(:changes_requested))
+      expect(reviews.map { |review| review["class"] }).to all(satisfy { |classes| !classes.include?("bg-") })
+      expect(reviews.first.at_css("[data-test='automation-step-review-summary']")).to be_present
+    end
+
     # CYRA-282 — un guasto tecnico riportato dalla macchina si legge sulla scheda del ticket, col motivo.
     it "mostra il motivo di un tentativo fallito" do
       create(:agent_attempt, organization:, workflow:, host:, phase: "autopilot", status: :failed,
@@ -76,6 +89,31 @@ RSpec.describe "Member ticket automation tab", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Manca la prova", "Il ramo nuovo non è coperto", "Nome poco chiaro")
+    end
+
+    it "shows the reviewer's verdict and one block per finding when the server turns the delivery down" do
+      create(:agent_attempt, organization:, workflow:, host:, phase: "planner", status: :review_failed,
+                             review_status: :unavailable, reviewer_runtime: "claude",
+                             started_at: 20.seconds.ago, finished_at: 10.seconds.ago, result: {},
+                             review: { "status" => "changes_requested", "summary" => "Da rivedere.",
+                                       "findings" => [
+                                         { "severity" => "major", "aspect" => "", "title" => "SC-5 not covered",
+                                           "detail" => "No step builds it" },
+                                         { "severity" => "info", "title" => "Name not given" }
+                                       ] })
+
+      get member_ticket_path(ticket, tab: "automation")
+
+      page = Nokogiri::HTML(response.body)
+      outcome = page.css("[data-test='automation-step-review-outcome']").map { |node| node.text.squish }
+      expect(outcome.join).to include(I18n.t("member.tickets.automation.steps.review_outcome.changes_requested"))
+      expect(outcome.join).not_to include(I18n.t("member.tickets.automation.steps.review_outcome.unavailable"))
+
+      findings = page.at_css("[data-test='automation-review-findings']").css("[data-test='automation-review-finding']")
+      expect(findings.map { |node| node.at_css("[data-test='automation-review-finding-severity']").text.squish })
+        .to eq([ I18n.t("member.tickets.automation.steps.findings.severity.major"),
+                 I18n.t("member.tickets.automation.steps.findings.severity.info") ])
+      expect(findings.first.text).not_to include("·")
     end
 
     it "la tab dettaglio non porta con sé i passi (restano nella propria scheda)" do
@@ -184,8 +222,8 @@ RSpec.describe "Member ticket automation tab", type: :request do
 
       step = steps(response.body).first
       expect(step.text).to include(I18n.t("member.tickets.automation.steps.outcome.interrupted"))
-      expect(step.at_css("[data-test='automation-glossary']").text)
-        .to include(I18n.t("member.tickets.automation.steps.outcome_hint.interrupted"))
+      expect(step.at_css("[data-test='automation-step-outcome']")["title"])
+        .to eq(I18n.t("member.tickets.automation.steps.outcome_hint.interrupted"))
     end
   end
 
@@ -299,13 +337,12 @@ RSpec.describe "Member ticket automation tab", type: :request do
 
     before { workflow.update!(triage_started_at: 5.minutes.ago, triage_requested_at: nil) }
 
-    # CYRA-782 — le domande non si rispondono più da qui: vivono nella scheda Domande insieme a
-    # quelle poste da una persona. Resta il rimando, così chi arriva dall'automazione sa dove andare.
-    it "rimanda alla scheda Domande invece di offrire i campi di risposta" do
+    # The open questions sit in the fixed side column with their answer field: no pointer line to
+    # the Questions tab any more.
+    it "drops the pointer to the Questions tab" do
       get member_ticket_path(ticket, tab: "automation")
 
-      expect(response.body).to include(I18n.t("member.tickets.questions.from_automation"))
-      expect(response.body).to include(member_ticket_path(ticket, tab: "questions"))
+      expect(response.body).not_to include(I18n.t("member.tickets.questions.from_automation"))
     end
 
     # Stesso fatto di sempre: dopo la cancellazione del commento di risposta, un commento qualsiasi
@@ -434,17 +471,6 @@ RSpec.describe "Member ticket automation tab", type: :request do
         .to include(I18n.t("member.tickets.automation.summary.needs.approve_plan"))
     end
 
-    # La sintesi viene PRIMA dei passi: è l'inversione che il ticket chiede — oggi per arrivare alla
-    # riga che conta bisogna scorrere il registro.
-    it "sta sopra il registro dei passi" do
-      workflow.update!(triage_started_at: 10.minutes.ago)
-
-      get member_ticket_path(ticket, tab: "automation")
-
-      corpo = response.body
-      expect(corpo.index("automation-summary")).to be < corpo.index("automation-steps")
-    end
-
     # La decisione sul piano si prende in cima, nella sintesi, non in fondo alla scheda del piano:
     # è l'azione che il ticket chiede di mettere in evidenza.
     it "porta in evidenza i pulsanti con cui si decide sul piano" do
@@ -512,7 +538,8 @@ RSpec.describe "Member ticket automation tab", type: :request do
 
       get member_ticket_path(ticket, tab: "automation")
 
-      pagina = Nokogiri::HTML(response.body)
+      # CYRA-1003 — counted in the To plan tab: the Done tab repeats every attempt as the whole history.
+      pagina = Nokogiri::HTML(response.body).at_css("[data-test='automation-anchor-to_plan']")
       fuori_dal_gruppo = pagina.css("[data-test='automation-step']").reject do |passo|
         passo.ancestors("[data-test='automation-step-group']").any?
       end
@@ -522,27 +549,92 @@ RSpec.describe "Member ticket automation tab", type: :request do
 
   # CYRA-384 — «ogni sigla di stato è scritta in italiano e accompagnata da una frase che la spiega».
   describe "le sigle di stato spiegate" do
-    it "il passo spiega il suo esito e le sigle che mostra" do
+    it "explains the outcome on hover and lays the triage out as alert, facts and reasons" do
       workflow.update!(triage_started_at: 3.minutes.ago, triaged_at: 2.minutes.ago)
       create(:agent_attempt, organization:, workflow:, host:, phase: "triage", status: :approved,
                              started_at: 3.minutes.ago, finished_at: 2.minutes.ago,
-                             result: { "state" => "workable", "reasons" => [ "Tocca solo un service" ] },
+                             result: { "state" => "needs-clarification", "category" => "backend", "risk" => "low",
+                                       "capabilities" => %w[backend testing], "reasons" => [ "Tocca solo un service", "Manca la regola" ] },
                              review: { "status" => "accepted", "summary" => "Schema conforme." })
 
       get member_ticket_path(ticket, tab: "automation")
 
-      glossario = Nokogiri::HTML(response.body).at_css("[data-test='automation-glossary']").text
-      expect(glossario).to include(I18n.t("member.tickets.automation.steps.state_hint.workable"))
-      expect(glossario).to include(I18n.t("member.tickets.automation.steps.outcome_hint.approved"))
+      page = Nokogiri::HTML(response.body)
+      expect(page.at_css("[data-test='automation-glossary']")).to be_nil
+      expect(page.at_css("[data-test='automation-step-outcome']")["title"]).to eq(I18n.t("member.tickets.automation.steps.outcome_hint.approved"))
+      alert = page.at_css("[data-test='automation-triage-clarification']")
+      expect(alert.text).to include(I18n.t("member.tickets.automation.steps.state_hint.needs_clarification"))
+      expect(alert.at_css("a")["href"]).to eq(member_ticket_path(ticket, tab: "questions"))
+      facts = page.at_css("[data-test='automation-triage-facts']").text
+      expect(facts).to include("backend", I18n.t("member.tickets.automation.steps.risk.low"), "testing")
+      # The attempt shows in its step tab and again in the Done history: read the first.
+      expect(page.at_css("[data-test='automation-triage-reasons']").css("li").map(&:text)).to eq([ "Tocca solo un service", "Manca la regola" ])
+    end
+  end
+
+  # The automator's open questions are answered from the Automation tab too; the Questions tab keeps them.
+  describe "automator questions" do
+    let!(:round) { create(:agent_clarification, workflow:, questions: [ "Which rounding?", "What about zero?" ]) }
+
+    it "shows the open ones with an answer field in the fixed side column" do
+      get member_ticket_path(ticket, tab: "automation")
+
+      page = Nokogiri::HTML(response.body)
+      round.questions.each do |question|
+        expect(page.at_css("[data-test='ticket-side'] [data-test='automation-questions'] [data-test='ticket-answer-body-#{question.id}']")).to be_present
+      end
     end
 
-    it "la fase corrente della lavorazione porta la frase che la spiega" do
-      workflow.update!(triage_started_at: 3.hours.ago, triaged_at: 2.hours.ago, planned_at: 1.hour.ago)
+    # The step tabs switch the left column only; what holds for the whole workflow stays on the right.
+    it "puts the step tabs on the left and the summary and the questions on the right" do
+      get member_ticket_path(ticket, tab: "automation")
+
+      page = Nokogiri::HTML(response.body)
+      expect(page.at_css("[data-test='ticket-main'] [data-test='automation-step-tabs']")).to be_present
+      expect(page.at_css("[data-test='ticket-side'] [data-test='automation-summary']")).to be_present
+      expect(page.at_css("[data-test='ticket-main'] [data-test='automation-summary']")).to be_nil
+      expect(page.at_css("[data-test='ticket-main'] [data-test='automation-questions']")).to be_nil
+    end
+
+    it "leaves out a question that already has an answer" do
+      answered = round.questions.order(:position).first
+      Ticketing::Questions::Reply.call(question: answered, author: cto, body: "Half up.")
 
       get member_ticket_path(ticket, tab: "automation")
 
-      expect(Nokogiri::HTML(response.body).at_css("[data-test='automation-phase-hint']").text)
-        .to include(I18n.t("member.tickets.automation.phase_hint.awaiting_approval"))
+      page = Nokogiri::HTML(response.body)
+      expect(page.at_css("[data-test='ticket-question-#{answered.id}']")).to be_nil
+    end
+
+    it "shows «Ferma» on the summary and the attention dot on the tab while a question waits" do
+      get member_ticket_path(ticket, tab: "automation")
+
+      page = Nokogiri::HTML(response.body)
+      expect(page.at_css("[data-test='automation-summary-badge']").text.strip)
+        .to eq(I18n.t("member.tickets.automation.summary.halted_badge"))
+      expect(page.at_css("[data-test='ticket-tab-automation-attention']")).to be_present
+    end
+
+    it "brings the person back to the Automation tab after answering from there" do
+      question = round.questions.first
+
+      post member_ticket_question_answers_path(ticket, question), params: { body: "Half up.", return_tab: "automation" }
+
+      expect(response).to redirect_to(member_ticket_path(ticket, tab: "automation"))
+    end
+  end
+
+  describe "summary card" do
+    it "lists who decides as the first row and drops the repeated sentence below" do
+      get member_ticket_path(ticket, tab: "automation")
+
+      page = Nokogiri::HTML(response.body)
+      labels = page.css("[data-test='automation-summary'] dl dt").map { |dt| dt.text.strip }
+      expect(labels).to eq([ I18n.t("member.tickets.automation.effective_cto"),
+                             I18n.t("member.tickets.automation.summary.done.label"),
+                             I18n.t("member.tickets.automation.summary.stopped.where_label"),
+                             I18n.t("member.tickets.automation.summary.needs.label") ])
+      expect(page.at_css("[data-test='automation-phase-hint']")).to be_nil
     end
   end
 end

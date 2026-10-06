@@ -67,7 +67,10 @@ module Agents
         # ne produce nessuna e il tetto esistente non la vedrebbe mai passare.
         def block_from_agent!
           reason = @payload.dig("result", "failure", "summary").presence ||
-                   @payload.dig("result", "reason").presence || "agent_blocked: nessun motivo dichiarato"
+                   @payload.dig("result", "reason").presence ||
+                   # CYRA-1006 — an escalated triage writes its cause as the last of its `reasons`.
+                   Array(@payload.dig("result", "reasons")).last.presence ||
+                   "agent_blocked: nessun motivo dichiarato"
 
           return block!(reason) unless unreachable?
 

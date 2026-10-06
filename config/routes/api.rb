@@ -101,6 +101,9 @@ namespace :api do
       resource :workspace_manifest, only: :show
       # Bundle skill versionato pinnato (repo/ref/version/digest) servito all'host cyi_ah_ per il clone del plugin.
       resource :skill_manifest, only: :show
+      # The organization's Claude credential for the host's Claude sessions (CYAU-224).
+      resource :claude_credential, only: :show
+      resource :openrouter_credential, only: :show # CYAU-228 — the key OpenCode reviews with
     end
     # Coda agenti host-scoped (CYAU-84): appiattita, senza agent_id nell'URL. L'host è identificato dal token
     # cyi_ah_ (Current.agent_host); scope/capability/claim sono host-only (token host-bound + ProjectScope +

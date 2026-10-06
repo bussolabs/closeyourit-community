@@ -47,14 +47,13 @@ RSpec.describe Member::AutomationHelper, type: :helper do
 
     # CYRA-392 — lo `state` del payload agente (contratto agent-result) è in inglese: mostrato come
     # chip stonava accanto agli esiti già tradotti. Ora è localizzato, con fallback humanize.
-    it "rende lo state del triage come chip in italiano, non in inglese grezzo" do
+    it "flags a triage that needs clarification instead of printing the state as a chip" do
       attempt = build_stubbed(:agent_attempt, status: :approved, phase: "triage",
-                                              result: { "state" => "workable" })
+                                              result: { "state" => "needs-clarification" })
 
-      considerations = I18n.with_locale(:it) { helper.automation_considerations(attempt) }
+      triage = helper.automation_considerations(attempt)[:triage]
 
-      expect(considerations[:chips]).to include("lavorabile")
-      expect(considerations[:chips]).not_to include("workable")
+      expect(triage[:clarification]).to be(true)
     end
 
     it "ricade su humanize per uno state fuori vocabolario" do
@@ -68,17 +67,16 @@ RSpec.describe Member::AutomationHelper, type: :helper do
 
     # Ogni fase riassume cose diverse: quello che il triage chiama «capacità» il planner lo chiama
     # «criteri di accettazione». I rami sotto sono i riepiloghi delle singole fasi.
-    it "il triage riassume capacità e approvazione umana" do
+    it "the triage sums up area, risk, skills and the reasons as a list" do
       attempt = build_stubbed(:agent_attempt, status: :approved, phase: "triage",
-                                              result: { "category" => "bug", "reasons" => [ "manca il caso limite" ],
+                                              result: { "category" => "bug", "risk" => "low", "reasons" => [ "manca il caso limite", "" ],
                                                         "requires_human_approval" => true,
                                                         "capabilities" => [ "rails", "rspec" ] })
 
-      considerations = helper.automation_considerations(attempt)
+      triage = I18n.with_locale(:it) { helper.automation_considerations(attempt)[:triage] }
 
-      expect(considerations[:text]).to eq("manca il caso limite")
-      expect(considerations[:chips]).to include("bug")
-      expect(considerations[:counts].values.join).to include("rails")
+      expect(triage).to include(area: "bug", risk: "basso", capabilities: %w[rails rspec], human_approval: true,
+                                reasons: [ "manca il caso limite" ], clarification: false)
     end
 
     it "il triage senza capacità non stampa il conteggio vuoto" do
@@ -197,49 +195,12 @@ RSpec.describe Member::AutomationHelper, type: :helper do
     end
   end
 
-  # CYRA-384 — «ogni sigla di stato è scritta in italiano e accompagnata da una frase che la spiega».
-  # Tradotta lo era già (CYRA-392); mancava la frase, e senza quella «bloccato» resta una parola che
-  # non dice né cosa è successo né chi deve muoversi.
-  describe "#automation_phase_hint" do
-    it "spiega con una frase cosa vuol dire la fase" do
-      expect(helper.automation_phase_hint("review_blocked"))
-        .to eq(I18n.t("member.tickets.automation.phase_hint.review_blocked"))
-    end
-
-    # Nessun humanize qui: una fase nuova senza spiegazione deve restare senza frase, non ricevere il
-    # proprio nome ripetuto come se fosse una spiegazione.
-    it "non inventa una spiegazione per una fase che non ne ha" do
-      expect(helper.automation_phase_hint("qualcosa_di_nuovo")).to be_nil
-    end
-  end
-
   describe "#automation_outcome" do
     it "porta con sé la frase che spiega l'esito" do
       attempt = build_stubbed(:agent_attempt, status: :review_failed)
 
       expect(helper.automation_outcome(attempt)[:hint])
         .to eq(I18n.t("member.tickets.automation.steps.outcome_hint.rejected"))
-    end
-  end
-
-  describe "#automation_glossary" do
-    it "spiega l'esito del passo e ogni sigla di stato che il passo mostra" do
-      attempt = build_stubbed(:agent_attempt, status: :approved, phase: "triage",
-                                              result: { "state" => "workable" })
-
-      voci = I18n.with_locale(:it) { helper.automation_glossary(attempt) }
-
-      expect(voci).to include({ term: "approvato",
-                                hint: I18n.t("member.tickets.automation.steps.outcome_hint.approved", locale: :it) })
-      expect(voci).to include({ term: "lavorabile",
-                                hint: I18n.t("member.tickets.automation.steps.state_hint.workable", locale: :it) })
-    end
-
-    it "non elenca una sigla fuori vocabolario, che una spiegazione non ce l'ha" do
-      attempt = build_stubbed(:agent_attempt, status: :approved, phase: "closer_staging",
-                                              result: { "state" => "some-new-state" })
-
-      expect(helper.automation_glossary(attempt).map { |voce| voce[:term] }).not_to include("Some new state")
     end
   end
 

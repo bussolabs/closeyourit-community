@@ -95,8 +95,3 @@
 <%# L'analisi tecnica non vive più qui (CYRA-259): in coda a descrizione, scenari e DoD faceva
     muro di testo, col markdown mostrato coi suoi simboli. Ora è la scheda "analysis". %>
 <%= render "member/tickets/attachments", ticket: @ticket, can_manage: can_manage %>
-
-<%# CYRA-883 — the last comments, so the conversation shows without opening its tab. %>
-<% if @recent_comments.any? %>
-  <%= render "member/tickets/recent_comments", comments: @recent_comments %>
-<% end %>

@@ -68,6 +68,33 @@ RSpec.describe Agents::Hosts::Eligibility do
       expect(described_class.capable?(host:, project:, phase:)).to be(true)
     end
 
+    # CYAU-228 — OpenCode only reviews; a machine that does not declare it takes no work.
+    it "needs OpenCode, the organization's model and its OpenRouter key on a machine that reviews with OpenCode" do
+      create(:agent_automator_setting, organization: host.organization, opencode_model: "anthropic/claude-sonnet-4.5")
+      host.update!(reviewer: "opencode")
+      create(:agent_openrouter_credential, organization: host.organization)
+      expect(described_class.capable?(host:, project:, phase:)).to be(false)
+
+      host.update!(runtimes: host.runtimes + [ { "name" => "opencode", "present" => true, "version" => "1" } ])
+      expect(described_class.capable?(host: host.reload, project:, phase:)).to be(true)
+    end
+
+    it "keeps a machine that reviews with OpenCode out of work without the organization's OpenRouter key" do
+      create(:agent_automator_setting, organization: host.organization, opencode_model: "anthropic/claude-sonnet-4.5")
+      host.update!(reviewer: "opencode", runtimes: host.runtimes + [ { "name" => "opencode", "present" => true } ])
+
+      expect(described_class.capable?(host: host.reload, project:, phase:)).to be(false)
+    end
+
+    it "keeps a machine that reviews with OpenCode out of work without a model" do
+      # The forms refuse this state; the gate still holds if it is reached another way.
+      host.update!(runtimes: host.runtimes + [ { "name" => "opencode", "present" => true } ])
+      host.update_columns(work_engine: "claude", reviewer: "opencode")
+      create(:agent_openrouter_credential, organization: host.organization)
+
+      expect(described_class.capable?(host: host.reload, project:, phase:)).to be(false)
+    end
+
     it "è falso su una fase sconosciuta (fail-closed)" do
       expect(described_class.capable?(host:, project:, phase: "inesistente")).to be(false)
     end

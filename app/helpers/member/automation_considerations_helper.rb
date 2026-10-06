@@ -37,11 +37,19 @@ module Member
         chips: [], counts: {} }
     end
 
+    # The triage is laid out, not printed: an alert when it needs an answer, then area, risk and skills
+    # as facts, then the machine's reasons as a list in the machine's own words (and language).
     def triage_considerations(result)
-      chips = [ result["category"], result["risk"], automation_state_label(result["state"]) ].compact_blank
-      chips << t("member.tickets.automation.steps.human_approval") if result["requires_human_approval"]
-      { text: Array(result["reasons"]).compact_blank.join(" · ").presence, chips:,
-        counts: capability_counts(result) }
+      { text: nil, chips: [], counts: {},
+        triage: { area: result["category"].presence, risk: triage_risk_label(result["risk"]),
+                  capabilities: Array(result["capabilities"]).compact_blank, human_approval: result["requires_human_approval"] == true,
+                  reasons: Array(result["reasons"]).compact_blank, clarification: result["state"] == "needs-clarification" } }
+    end
+
+    def triage_risk_label(risk)
+      return nil if risk.blank?
+
+      t("member.tickets.automation.steps.risk.#{risk}", default: risk.to_s)
     end
 
     def capability_counts(result)

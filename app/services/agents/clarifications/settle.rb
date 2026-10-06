@@ -49,10 +49,11 @@ module Agents
       # senza una riga a cui appendere la risposta, e quel caso non esiste più.
       #
       # Una domanda già risposta si salta: il momento in cui ha smesso di aspettare è uno solo.
+      # A withdrawn one too: Answer refuses it, and the round must not close on a refused answer. CYRA-1002
       def entries
         questions.each_with_index.filter_map do |question, index|
           body = @answers[index].to_s.strip
-          next if body.blank? || question.answered_at.present?
+          next if body.blank? || question.answered_at.present? || question.closed_at.present?
 
           [ index + 1, question, body ]
         end

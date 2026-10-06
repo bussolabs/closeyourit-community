@@ -5,10 +5,13 @@
     nell'append realtime (lo stream è uno per ticket, condiviso da tutti i lettori) → la
     frase tace il codice, e chi ha i permessi lo rilegge al ricaricamento della pagina. %>
 <% presenter = Ticketing::ActivityPresenter.new(event, visible_ticket_ids: visible_ticket_ids) %>
-<%# CYRA-883 — `compact` (the discussion): a small grey line under the comments, no icon; the
-    comments-only filter of the discussion hides it. The history page keeps the full row. %>
-<div id="<%= dom_id(event) %>" class="<%= compact ? "pl-[60px] pr-4 py-1.5 group-has-[#timeline-only-comments:checked]/timeline:hidden" : "px-4 py-3" %> flex items-center gap-3" data-test="member-ticket-event-<%= event.id %>">
-  <% unless compact %>
+<%# CYRA-883 — `compact` (the discussion): a short grey line with its dot on the timeline and the exact
+    time on the right; the comments-only filter hides it. The history page keeps the full row. %>
+<div id="<%= dom_id(event) %>" class="<%= compact ? "relative pl-[60px] pr-4 py-1.5 group-has-[#timeline-only-comments:checked]/timeline:hidden" : "px-4 py-3" %> flex items-center gap-3" data-test="member-ticket-event-<%= event.id %>">
+  <% if compact %>
+    <span class="absolute left-[29px] top-1/2 -translate-y-1/2 w-[7px] h-[7px] rounded-full bg-stone-300 dark:bg-zinc-600 ring-4 ring-white dark:ring-zinc-900"
+          aria-hidden="true" data-test="timeline-dot"></span>
+  <% else %>
     <span class="shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500">
       <%= render Ui::IconComponent.new(name: presenter.icon, class: "text-[10px]") %>
     </span>
@@ -23,7 +26,7 @@
       <%= render Ui::BadgeComponent.new(label: t("member.tickets.activity.impersonated"), color: :violet, size: :sm) %>
     <% end %>
     <% if compact %>
-      <span class="font-mono text-[10.5px] text-gray-400 dark:text-zinc-500" title="<%= event.created_at.strftime("%d/%m · %H:%M") %>"><%= card_time(event.created_at) %></span>
+      <span class="ml-auto font-mono text-[10.5px] text-gray-400 dark:text-zinc-500" title="<%= card_time(event.created_at) %>"><%= event.created_at.strftime("%H:%M") %></span>
     <% else %>
       <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= event.created_at.strftime("%d/%m · %H:%M") %></span>
     <% end %>

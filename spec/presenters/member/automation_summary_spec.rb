@@ -293,7 +293,7 @@ RSpec.describe Member::AutomationSummary do
 
     it "soddisfatto il prerequisito la riga torna quella di prima" do
       expect(summary(blocking_codes: [], blocking_count: 0).stopped).to eq(summary.stopped)
-      expect(summary.stopped).to include("aspetta una macchina libera")
+      expect(summary.stopped).to include("Aspetta una macchina libera")
     end
 
     # Le due frasi esistono in tutte e due le lingue, sono diverse fra loro, e nessuna delle due è un
@@ -309,6 +309,52 @@ RSpec.describe Member::AutomationSummary do
           expect(col_codice).not_to eq(senza)
         end
       end
+    end
+  end
+
+  # The «why it stopped» row is titled «A che punto è» unless the work is really halted, and the
+  # «what you need» row is highlighted only when a person has to act.
+  describe "row title and highlight" do
+    it "titles the row «A che punto è» and drops «Non è ferma» while it runs" do
+      allow(workflow).to receive(:phase).and_return("verifying_candidate")
+
+      expect(summary.halted?).to be(false)
+      expect(summary.stopped).not_to start_with("Non è ferma")
+    end
+
+    it "keeps «Perché si è fermata» when the work is blocked" do
+      workflow.update_columns(blocked_at: Time.current, blocked_phase: "autopilot", blocked_kind: "attempt_limit")
+      allow(workflow).to receive(:phase).and_return("review_blocked")
+
+      expect(summary.halted?).to be(true)
+    end
+
+    it "says it waits for an answer, not for a free machine, while a question is open" do
+      allow(workflow).to receive(:phase).and_return("triage_queued")
+
+      expect(summary(pending_questions: 1).stopped)
+        .to eq(I18n.t("member.tickets.automation.summary.stopped.waiting_answer", count: 1))
+    end
+
+    it "asks a person to act when a question is open or a decision is theirs" do
+      allow(workflow).to receive(:phase).and_return("triage_queued")
+      expect(summary(pending_questions: 1).needs_person?).to be(true)
+
+      allow(workflow).to receive(:phase).and_return("awaiting_approval")
+      expect(summary.needs_person?).to be(true)
+      expect(summary(decides: false).needs_person?).to be(false)
+    end
+
+    it "counts an open question as halted: the work waits for a person" do
+      allow(workflow).to receive(:phase).and_return("triage_queued")
+
+      expect(summary(pending_questions: 1).halted?).to be(true)
+    end
+
+    it "asks nothing while the work carries on by itself" do
+      allow(workflow).to receive(:phase).and_return("verifying_candidate")
+
+      expect(summary.needs_person?).to be(false)
     end
   end
 end

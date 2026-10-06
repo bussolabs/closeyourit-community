@@ -772,14 +772,13 @@ RSpec.describe "Member::Tickets", type: :request do
       expect(response.body).to include('data-test="member-ticket-watchers-count"')
     end
 
-    it "nei Dettagli lo stato viene prima della frase che lo spiega" do
+    it "shows the status in Details without the sentence that explained it" do
       sign_in(admin)
       open_status = create(:ticket_status, organization: org, code: "open")
       ticket = create(:ticket, organization: org, project: project, status: open_status, with_agent_workflow: true)
       get member_ticket_path(ticket)
-      badge = response.body.index('data-test="ticket-status"')
-      hint = response.body.index('data-test="ticket-status-hint"')
-      expect(badge).to be < hint
+      expect(response.body).to include('data-test="ticket-status"')
+      expect(response.body).not_to include('data-test="ticket-status-hint"')
     end
   end
 
@@ -1455,12 +1454,13 @@ RSpec.describe "Member::Tickets", type: :request do
   describe "la sigla dice a quale progetto appartiene" do
     let(:ticket) { create(:ticket, organization: org, project:, status:, priority:, with_agent_workflow: true) }
 
-    it "in cima al dettaglio il codice sta accanto al nome del progetto" do
+    it "opens the title with the code and keeps the project name under it" do
       sign_in(admin)
       get member_ticket_path(ticket)
 
-      riga = Nokogiri::HTML(response.body).at_css("[data-test='ticket-code']")
-      expect(riga.text).to include(ticket.code).and include(ticket.project.name)
+      html = Nokogiri::HTML(response.body)
+      expect(html.at_css("[data-test='ticket-code']").text).to eq(ticket.code)
+      expect(html.at_css("[data-test='ticket-project']").text).to include(ticket.project.name)
     end
 
     it "passando sopra il codice si legge la sigla per esteso" do
@@ -1486,7 +1486,8 @@ RSpec.describe "Member::Tickets", type: :request do
 
       html = Nokogiri::HTML(response.body)
       expect(html.css("[data-test='breadcrumb-crumb']").last.text).to include(ticket.code)
-      expect(html.at_css("[data-test='ticket-code']").text).to include(ticket.code).and include(ticket.project.name)
+      expect(html.at_css("[data-test='ticket-code']").text).to include(ticket.code)
+      expect(html.at_css("[data-test='ticket-project']").text).to include(ticket.project.name)
     end
 
     it "la pagina del progetto dice qual è la sua sigla" do

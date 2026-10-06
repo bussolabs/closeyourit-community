@@ -9,8 +9,8 @@ module Member
   # ombreggerebbe ::Agents di dominio) → model SEMPRE ::Agents::Host.
   class AgentsController < Member::BaseController
     before_action :require_view
-    before_action :set_host, only: %i[show certify decertify destroy review engine]
-    before_action :require_manage, only: %i[certify decertify destroy review engine]
+    before_action :set_host, only: %i[show certify decertify destroy review engine follow_organization]
+    before_action :require_manage, only: %i[certify decertify destroy review engine follow_organization]
 
     # CYRA-694 — filtri ricordati (memoria per-indirizzo, vedi RememberableFilters).
     remembers_filters :kind, :enabled, :q, :sort, only: :index
@@ -92,12 +92,13 @@ module Member
       redirect_to(member_agent_path(@host), **flash_message)
     end
 
-    # CYRA-921 — who reviews this machine's work before delivery: the other engine or the same one.
+    # CYAU-226 — which engine reviews this machine's work before delivery, by name.
     def review
-      if @host.update(review_mode: params[:review_mode])
+      if @host.update(reviewer: params[:reviewer])
         redirect_to member_agent_path(@host), notice: t("member.agents.review.updated")
       else
-        redirect_to member_agent_path(@host), alert: t("member.agents.review.invalid")
+        reason = @host.errors.of_kind?(:reviewer, :opencode_model_missing) ? "opencode_model_missing" : "invalid"
+        redirect_to member_agent_path(@host), alert: t("member.agents.review.#{reason}")
       end
     end
 
@@ -108,6 +109,12 @@ module Member
       else
         redirect_to member_agent_path(@host), alert: t("member.agents.engine.invalid")
       end
+    end
+
+    # CYAU-227 — the machine drops its own choice and follows the organization's from the next job.
+    def follow_organization
+      @host.update!(work_engine: nil, reviewer: nil)
+      redirect_to member_agent_path(@host), notice: t("member.agents.choice.followed")
     end
 
     def decertify

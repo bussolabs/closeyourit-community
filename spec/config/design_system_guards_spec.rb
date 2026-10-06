@@ -129,7 +129,6 @@ RSpec.describe "Design system guards" do
     app/views/member/shared_secrets/_cell.html.erb
     app/views/member/shared_secrets/_new_row.html.erb
     app/views/member/shared_secrets/_row.html.erb
-    app/views/member/tickets/_agent_eligibility_panel.html.erb
     app/views/member/tickets/_assignee_picker.html.erb
     app/views/member/tickets/_attachments.html.erb
     app/views/member/tickets/_comment.html.erb
@@ -140,7 +139,6 @@ RSpec.describe "Design system guards" do
     app/views/member/tickets/_links.html.erb
     app/views/member/tickets/_page_footer.html.erb
     app/views/member/tickets/_question.html.erb
-    app/views/member/tickets/_question_answer_form.html.erb
     app/views/member/tickets/_reviewer_picker.html.erb
     app/views/member/tickets/_scenario_fields.html.erb
     app/views/member/tickets/_technical_analysis.html.erb

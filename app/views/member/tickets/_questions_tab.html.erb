@@ -24,6 +24,11 @@
         <summary class="list-none cursor-pointer px-4 py-2.5 flex items-center gap-2 text-[12px] font-medium text-gray-500 dark:text-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden">
           <%= render Ui::IconComponent.new(name: "chevron-right", class: "text-[9px] motion-safe:transition-transform group-open:rotate-90") %>
           <%= t("member.tickets.questions.settled", count: settled.size) %>
+          <% from_work = settled.count(&:origin_agent?) %>
+          <% if from_work.positive? %>
+            <%= render Ui::BadgeComponent.new(label: t("member.tickets.questions.settled_from_work", count: from_work), color: :indigo,
+                  icon: "bot", size: :sm, test_id: "ticket-questions-settled-from-work") %>
+          <% end %>
         </summary>
         <div class="divide-y divide-stone-200 dark:divide-zinc-800 border-t border-stone-100 dark:border-zinc-800 opacity-70">
           <% settled.each do |question| %>

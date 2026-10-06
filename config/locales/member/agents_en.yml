@@ -181,17 +181,16 @@ en:
       decertify_ok: Certification revoked.
       review:
         title: Who reviews the work
-        hint: Every piece of work is read again before delivery. With two engines the other one is better; with one, the same one in a new session.
+        hint: Every piece of work is read again before delivery by the engine chosen here. With two engines the other one is better; with one, the same one in a new session.
         label: Review
         save: Save
         updated: Review updated. It applies from the next piece of work.
         invalid: Not a valid choice.
-        modes:
-          cross: The other engine
-          same: The same engine
+        opencode_model_missing: OpenCode cannot review until the Automator page names an OpenRouter model.
         descriptions:
-          cross: Claude reviews Codex and Codex reviews Claude. Both must be on the machine.
-          same: The same engine reviews in a new session. One engine is enough.
+          other: An engine other than the one working reviews. It must be on the machine too.
+          same: The engine doing the work reviews, in a new session. One engine is enough.
+          opencode: OpenCode reviews and cannot write. It must be on the machine and signed in.
       engine:
         title: Who does the work
         hint: The engine that works the tickets on this machine. It must be installed and signed in there.
@@ -202,6 +201,7 @@ en:
         engines:
           claude: Claude
           codex: Codex
+          opencode: OpenCode
         descriptions:
           claude: Claude Code works the tickets. The default.
           codex: Codex works the tickets, with the same limits on commands, files and network as Claude.

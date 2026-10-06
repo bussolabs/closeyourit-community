@@ -185,17 +185,16 @@ it:
       decertify_ok: Certificazione revocata.
       review:
         title: Chi rilegge il lavoro
-        hint: Prima di consegnare, ogni lavoro viene riletto. Con due motori conviene l'altro; con uno solo, lo stesso in una sessione nuova.
+        hint: Prima di consegnare, ogni lavoro viene riletto dal motore scelto qui. Con due motori conviene l'altro; con uno solo, lo stesso in una sessione nuova.
         label: Rilettura
         save: Salva
         updated: Rilettura aggiornata. Vale dal prossimo lavoro.
         invalid: Scelta non valida.
-        modes:
-          cross: L'altro motore
-          same: Lo stesso motore
+        opencode_model_missing: OpenCode non può rileggere finché nella pagina Automator manca il modello OpenRouter.
         descriptions:
-          cross: Claude rilegge Codex e Codex rilegge Claude. Servono tutti e due sulla macchina.
-          same: Lo stesso motore rilegge in una sessione nuova. Basta un motore solo.
+          other: Un motore diverso da chi lavora rilegge. Deve essere anche lui sulla macchina.
+          same: Lo stesso motore che lavora rilegge, in una sessione nuova. Basta un motore solo.
+          opencode: OpenCode rilegge e non può scrivere. Deve essere sulla macchina, con l'accesso fatto.
       engine:
         title: Chi fa il lavoro
         hint: Il motore che lavora i ticket su questa macchina. Deve essere installato e con l'accesso fatto.
@@ -206,6 +205,7 @@ it:
         engines:
           claude: Claude
           codex: Codex
+          opencode: OpenCode
         descriptions:
           claude: Claude Code lavora i ticket. È la scelta di partenza.
           codex: Codex lavora i ticket, con gli stessi limiti di Claude su comandi, file e rete.

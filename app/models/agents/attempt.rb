@@ -9,9 +9,18 @@ module Agents
     # skill/sandbox/permessi/tool/ttl/bundle/service_account. Con raise_on_assign_to_attr_readonly ogni
     # tentativo di modifica solleva ActiveRecord::ReadonlyAttributeError.
     attr_readonly :host_id, :phase, :runtime, :skill_key, :sandbox, :permission_mode,
-                  :allowed_tools, :ttl, :bundle_digest, :bundle_ref, :service_account_id
+                  :allowed_tools, :ttl, :bundle_digest, :bundle_ref, :service_account_id, :expected_reviewer,
+                  :expected_reviewer_model
 
     belongs_to :organization, class_name: "Organizations::Organization"
+
+    # The reviewer named when the work was claimed (CYAU-226/227), or the machine's choice in force for
+    # attempts claimed before it was recorded. Delivery checks against it.
+    def reviewer = expected_reviewer || host.effective_reviewer
+    # CYAU-228 — the OpenRouter model fixed with the reviewer, or the one in force for older attempts.
+    def reviewer_model = expected_reviewer ? expected_reviewer_model : host.effective_reviewer_model
+    # What automators that predate the named reviewer read: with two engines, "cross" is the other one.
+    def review_mode = reviewer == runtime ? "same" : "cross"
     belongs_to :workflow, class_name: "Agents::Workflow", inverse_of: :attempts
     belongs_to :host, class_name: "Agents::Host"
     # Host-first: il service account dell'host che ha eseguito la fase. Le FK legacy verso agente, comando,

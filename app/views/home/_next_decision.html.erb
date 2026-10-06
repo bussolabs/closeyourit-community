@@ -57,7 +57,7 @@
 
   <%# Destra: la decisione, e sotto — staccati — i modi per non prenderla adesso. `return_to: "home"`
       riporta qui dopo aver deciso, invece di scaricare sulla plancia chi non ci era mai andato. %>
-  <div class="flex flex-col gap-3 min-[900px]:sticky min-[900px]:top-6">
+  <div class="flex flex-col gap-6 min-[900px]:sticky min-[900px]:top-6">
     <%= render "member/home/approvals/decision_panel", card: card, state: nil, view: nil, return_to: "home", collapse_secondary: true %>
     <%= render "home/not_now", card: card %>
   </div>

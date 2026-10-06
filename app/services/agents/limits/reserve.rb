@@ -14,7 +14,7 @@ module Agents
         @phase = phase.to_s
         @profile = Agents::PhaseProfile.for(@phase)
         # CYRA-921 — limits per engine count the engine that really does the work.
-        @runtime = @profile && host.work_engine
+        @runtime = @profile && host.effective_work_engine
         @idempotency_key = idempotency_key.to_s.strip
         @ttl_seconds = @profile&.ttl
         @estimated_cost_supplied = !estimated_cost.nil?

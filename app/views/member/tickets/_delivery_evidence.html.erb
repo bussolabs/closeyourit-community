@@ -16,15 +16,20 @@
 <% candidate = workflow&.review_candidate %>
 <% probe = workflow&.probes&.detect { |row| row.closed_at.present? } %>
 <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ticket-delivery-evidence">
-  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
-    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
-      <%= t("member.tickets.evidence.title") %>
-    </h2>
-    <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.evidence.subtitle") %></p>
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-start justify-between gap-3">
+    <div>
+      <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <%= t("member.tickets.evidence.title") %>
+      </h2>
+      <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.evidence.subtitle") %></p>
+    </div>
+    <%= render Ui::BadgeComponent.new(label: t("member.tickets.automation.work_report.attested"), color: :emerald) %>
   </div>
 
   <% if candidate&.head_sha.present? %>
-    <div class="px-4 py-3 border-b border-stone-100 dark:border-zinc-800" data-test="ticket-evidence-candidate">
+    <% icon, color = work_report_status_icon(candidate.state_verified_passing? ? "passed" : candidate.state_verified_none_configured? ? "failed" : "partial") %>
+    <div class="px-4 py-3 border-b border-stone-100 dark:border-zinc-800 grid grid-cols-[14px_minmax(0,1fr)] gap-x-2.5" data-test="ticket-evidence-candidate">
+      <%= render Ui::IconComponent.new(name: icon, class: "row-span-3 text-[13px] mt-0.5 #{color}") %>
       <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400">
         <%= t("member.tickets.evidence.code") %>
       </p>
@@ -64,7 +69,8 @@
   <% end %>
 
   <% if probe.present? %>
-    <div class="px-4 py-3" data-test="ticket-evidence-release">
+    <div class="px-4 py-3 grid grid-cols-[14px_minmax(0,1fr)] gap-x-2.5" data-test="ticket-evidence-release">
+      <%= render Ui::IconComponent.new(name: "circle-check", class: "row-span-2 text-[13px] mt-0.5 text-emerald-600 dark:text-emerald-400") %>
       <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400">
         <%= t("member.tickets.evidence.release") %>
       </p>
@@ -77,7 +83,8 @@
       </p>
     </div>
   <% else %>
-    <div class="px-4 py-3" data-test="ticket-evidence-release-none">
+    <div class="px-4 py-3 flex items-start gap-2.5" data-test="ticket-evidence-release-none">
+      <%= render Ui::IconComponent.new(name: "circle-dashed", class: "text-[13px] mt-0.5 text-gray-400 dark:text-zinc-500") %>
       <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.evidence.no_release") %></p>
     </div>
   <% end %>

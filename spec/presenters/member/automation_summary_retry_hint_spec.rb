@@ -26,7 +26,7 @@ RSpec.describe Member::AutomationSummary, "il guasto esterno" do
     I18n.with_locale(:it) do
       riga = sintesi(retry_hint: guasto).stopped
 
-      expect(riga).to eq("Non è ferma: il sistema non riesce a leggere una cosa su GitHub " \
+      expect(riga).to eq("Il sistema non riesce a leggere una cosa su GitHub " \
                          "(R502-GITHUB-001). Riprova alle #{I18n.l(riprova_alle, format: :short)}. " \
                          "Da te non serve niente.")
       expect(riga).not_to include("ci sta lavorando adesso")

@@ -1,0 +1,65 @@
+<%# locals: (ticket:, workflow:, attempts:, current_plan:, decides:) %>
+<%# CYRA-1003 — one tab per step, open where the work is: the plan in «Plan to approve», the attempts in
+    the step of their phase, the whole history in «Done». The tab row carries each step's state, so it
+    replaces the summary's phase strip. The passaggio-<step> anchors sit on the panels. %>
+<% steps = Agents::Workflows::PhaseResolver::STEPS %>
+<% pipeline = approval_pipeline(automation_pipeline_source(workflow)) %>
+<% by_step = automation_attempts_by_step(attempts) %>
+<% open = automation_open_step(pipeline, by_step) %>
+<% state_icons = { "done" => [ "circle-check", "text-emerald-600 dark:text-emerald-400" ], "current" => [ "circle-dot", "text-indigo-600 dark:text-indigo-400" ],
+                   "failed" => [ "circle-x", "text-red-600 dark:text-red-400" ], "pending" => [ "circle", "text-gray-300 dark:text-zinc-600" ] } %>
+<div class="space-y-6" data-controller="tabs" data-tabs-index-value="<%= steps.index(open) %>" data-test="automation-step-tabs">
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <ol class="flex items-center gap-5 overflow-x-auto scrollbar-none px-4" role="tablist" aria-label="<%= t("member.tickets.automation.steps.tabs") %>" data-test="approval-phase-strip">
+      <% pipeline.each_with_index do |step, index| %>
+        <% icon, color = state_icons.fetch(step[:state], state_icons["pending"]) %>
+        <% count = by_step[step[:phase]].to_a.size %>
+        <li role="presentation">
+          <%= render Ui::ButtonComponent.new(variant: :tab, role: "tab",
+                id: "automation-step-tab-#{step[:phase]}",
+                aria: { controls: "passaggio-#{step[:phase]}", selected: step[:phase] == open },
+                title: t("member.approvals.phase_state.#{step[:state]}"),
+                test_id: "approval-phase-#{step[:state]}",
+                data: { tabs_target: "tab", action: "tabs#select", tabs_index_param: index,
+                        phase: step[:phase], status: step[:state] }) do %>
+            <%= render Ui::IconComponent.new(name: icon, class: "text-[11px] #{color}") %>
+            <%= approval_phase_name(step[:phase]) %>
+            <% if count.positive? %><span class="font-mono text-[10.5px] text-gray-400 dark:text-zinc-500"><%= count %></span><% end %>
+            <span class="sr-only"> — <%= t("member.approvals.phase_state.#{step[:state]}") %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ol>
+  </div>
+
+  <div>
+    <% steps.each do |step| %>
+      <div class="space-y-6 scroll-mt-6" role="tabpanel" id="passaggio-<%= step %>" aria-labelledby="automation-step-tab-<%= step %>"
+           data-tabs-target="panel" data-test="automation-anchor-<%= step %>" <%= "hidden" unless step == open %>>
+        <% if step == "plan_to_approve" && current_plan %>
+          <%= render "member/tickets/automation_plan", ticket:, workflow:, current_plan:, decides: %>
+        <% elsif step == "to_plan" %>
+          <%= render "member/tickets/automation_steps", workflow:, attempts: by_step[step].to_a %>
+        <% elsif step == "done" %>
+          <%# No attempt runs in «Done»: its tab is the whole history, every attempt in order. %>
+          <%= render "member/tickets/automation_steps", workflow:, attempts:,
+                empty_text: t("member.tickets.automation.steps.empty_step") %>
+        <% else %>
+          <%= render "member/tickets/automation_steps", workflow:, attempts: by_step[step].to_a,
+                empty_text: t(step == "to_review" ? "member.tickets.automation.steps.review_note" : "member.tickets.automation.steps.empty_step") %>
+        <% end %>
+        <%# CYRA-883 — the agent's work report lives in the Report tab; the pointer sits with the work. %>
+        <% if step == "in_progress" && by_step[step].to_a.any? { |attempt| automation_work_report(attempt) } %>
+          <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-2.5">
+            <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="automation-work-report-moved">
+              <%= render Ui::IconComponent.new(name: "clipboard-check", class: "mr-1.5 text-gray-400 dark:text-zinc-500") %>
+              <%= t("member.tickets.automation.work_report.moved") %>
+              <%= link_to t("member.tickets.automation.work_report.moved_link"), member_ticket_path(ticket, tab: "report"),
+                    class: "font-semibold underline underline-offset-2" %>
+            </p>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

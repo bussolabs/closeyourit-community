@@ -25,6 +25,7 @@ Le differenze principali sono:
   `already-delivered`, che e' dell'autopilot e dice che una sessione precedente aveva gia' aperto la
   proposta;
 - la cross-review conserva i singoli `findings`, oltre alla sintesi e alle attestazioni del diff.
+- `reviewer_runtime` è il motore che ha riletto, per nome (CYAU-226): può essere lo stesso di `runtime`, in una sessione nuova. `opencode` rilegge soltanto (CYAU-228) e non è mai un `runtime`.
 
 I dati dichiarati dall'agente restano `reported`. Le impronte `observed`, i controlli GitHub e le
 attestazioni della review sono `attested`: l'interfaccia non li presenta come equivalenti.

@@ -26,6 +26,33 @@ RSpec.describe Agents::Clarifications::Settle, type: :service do
     expect(clarification.response_snapshot).to eq("1. Sì\n2. No")
   end
 
+  it "skips a withdrawn question and leaves the round open when nothing else was answered" do
+    clarification = giro(questions: [ "Which?" ])
+    question = clarification.questions.first
+    question.update!(closed_at: Time.current)
+    workflow.update!(triage_requested_at: nil)
+
+    result = described_class.call(clarification:, author:, answers: [ "Too late." ])
+
+    expect(result).not_to be_ok
+    expect(question.answers).to be_empty
+    expect(clarification.reload.answered_at).to be_nil
+    expect(workflow.reload.triage_requested_at).to be_nil
+  end
+
+  it "closes the round on the answered question when another one was withdrawn" do
+    clarification = giro(questions: [ "First?", "Second?" ])
+    first, second = clarification.questions.order(:position).to_a
+    first.update!(closed_at: Time.current)
+
+    result = described_class.call(clarification:, author:, answers: [ "A", "B" ], covers_round: true)
+
+    expect(result).to be_ok
+    expect(first.answers).to be_empty
+    expect(second.reload.answers.first.body).to eq("B")
+    expect(clarification.reload.answered_at).to be_present
+  end
+
   it "rimette la lavorazione in coda al triage" do
     clarification = giro(questions: [ "Quale?" ])
     workflow.update!(triage_started_at: Time.current, triage_requested_at: nil)

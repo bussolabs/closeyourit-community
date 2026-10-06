@@ -15,6 +15,8 @@ module Ticketing
       end
 
       def call
+        # Only the one who asked withdraws: someone else's question is answered, not dropped.
+        return not_author unless @question.author_id == @actor.id
         return already_answered if @question.answered_at?
         return Result.ok(@question) if @question.closed_at?
 
@@ -27,6 +29,10 @@ module Ticketing
       end
 
       private
+
+      def not_author
+        Result.err(AppError.new(I18n.t("member.tickets.questions.errors.not_author"), code: "R403-QUESTION-003"))
+      end
 
       def already_answered
         Result.err(AppError.new(I18n.t("member.tickets.questions.errors.already_answered"),

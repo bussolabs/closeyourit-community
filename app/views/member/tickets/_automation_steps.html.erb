@@ -11,14 +11,7 @@
     l'ultimo fallito si apre d'ufficio, perché è lì che sta il perché la lavorazione si è fermata. %>
 <% last_technical_failure_id = attempts.select(&:status_failed?).last&.id %>
 <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="automation-steps">
-  <%# CYRA-619 — le ancore dei sei passaggi. La plancia manda qui premendo un quadratino: prima
-      portava al referto di un singolo tentativo — un oggetto interno, a volte l'ultimo di diciannove —
-      e chi arrivava non capiva a che punto fosse il lavoro. Sono ancore e basta, senza ingombro: la
-      pagina resta identica, cambia solo dove ci si ferma arrivando. %>
-  <% Agents::Workflows::PhaseResolver::STEPS.each do |step| %>
-    <span id="passaggio-<%= step %>" class="block scroll-mt-6"
-          data-test="automation-anchor-<%= step %>"></span>
-  <% end %>
+  <%# CYRA-619 — the anchors of the six steps (passaggio-<step>) now sit on the step tabs (CYRA-1003). %>
   <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3">
     <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.automation.steps.title") %></h2>
     <div class="flex items-center flex-wrap gap-1.5">
@@ -28,7 +21,9 @@
   </div>
 
   <div class="px-4 py-4">
-    <% if attempts.empty? %>
+    <% if attempts.empty? && local_assigns[:empty_text] %>
+      <%= render Ui::EmptyNoteComponent.new(text: empty_text) %>
+    <% elsif attempts.empty? %>
       <%# CYRA-410 — su un ticket appena creato qui si leggeva «La lavorazione non è mai partita» mentre
           il badge due righe sopra diceva «In coda per la valutazione»: la stessa scheda si contraddiceva,
           e la frase si legge come un guasto invece che come l'attesa normale che è. Con una fase in coda

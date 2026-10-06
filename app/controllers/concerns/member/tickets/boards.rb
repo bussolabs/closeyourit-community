@@ -46,7 +46,7 @@ module Member
         # Ogni colonna carica solo il primo blocco, e le colonne CONCLUSE lo restringono alla finestra
         # recente (Ticketing::BoardScope). Query per colonna, con LIMIT, invece dell'unica query che
         # caricava tutte le 1163 righe (di cui 931 concluse) e le riversava in pagina.
-        @columns = Ticketing::BoardScope.columns(scope: scope, statuses: statuses, counts: counts)
+        @columns = Ticketing::BoardScope.columns(scope: scope, statuses: statuses, counts: counts, searching: search_q.present?)
         # Preferenza personale delle colonne ridotte (CYRA-390): la view rende collassato ciò che sta
         # nel Set già dal server, senza flash e senza JS obbligatorio. Di default (board mai
         # configurata) si riducono le sole colonne CONCLUSE vuote nella finestra recente (CYRA-691).
@@ -70,6 +70,8 @@ module Member
         # match collapses by itself (never saved as the person's choice).
         @found_counts = (scope.unscope(:order).where(status_id: statuses.map(&:id)).group(:status_id).count if search_q.present?)
         @auto_collapsed_ids = @found_counts ? statuses.map(&:id).reject { |id| @found_counts[id].to_i.positive? }.to_set : Set.new
+        # A column holding a match opens even if the person collapsed it; the saved choice is untouched.
+        @collapsed_status_codes -= statuses.reject { |status| @auto_collapsed_ids.include?(status.id) }.map(&:code) if @found_counts
         @board_in_progress = statuses.sum { |status| status.category_in_progress? ? counts[status.id].to_i : 0 }
         @awaiting_count = awaiting_review_count
         @in_progress_labels = in_progress_status_labels
@@ -85,7 +87,8 @@ module Member
         page = [ params[:page].to_i, 2 ].max
         base = apply_ticket_filters(visible.tickets).with_attached_files
           .includes(:project, :priority, :assignee, :status, agent_lease: %i[account host])
-        batch = Ticketing::BoardScope.cards(scope: searched(base), status: @status, page: page)
+        batch = Ticketing::BoardScope.cards(scope: searched(base), status: @status, page: page,
+                                                searching: search_q.present?)
         @cards = batch.tickets
         @has_more = batch.has_more
         @next_page = page + 1

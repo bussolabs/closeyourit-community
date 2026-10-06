@@ -159,6 +159,17 @@ RSpec.describe "Member::Tickets::Eligibilities", type: :request do
       expect(panel.at_css("[id='#{broadcast_target_id}'] [data-test='agent-eligibility-allow']")).to be_nil
     end
 
+    it "states the verdict in the title and offers who works it as a two-way switch, never red" do
+      get member_ticket_path(ticket)
+
+      panel = eligibility_panel
+      expect(panel.at_css("[data-test='agent-eligibility-title'] [data-test='agent-eligibility-badge']")).to be_present
+      switch = panel.at_css("[data-test='agent-eligibility-switch']")
+      expect(switch.at_css("[data-test='agent-eligibility-allow']")).to be_present
+      expect(switch.at_css("[aria-pressed='true']").text).to include(I18n.t("member.tickets.agent_eligibility.switch.person"))
+      expect(switch.to_html).not_to include("red-")
+    end
+
     it "mostra il verdetto senza pulsanti a chi non gestisce il ticket" do
       member = create(:account).tap { |a| create(:membership, account: a, organization:, role: :member) }
       create(:project_membership, account: member, project:)

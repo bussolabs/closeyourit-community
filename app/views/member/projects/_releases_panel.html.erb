@@ -4,7 +4,7 @@
       test_id: "project-releases", data: { controller: "ui--dialog" }) do |section| %>
   <% if @releases.size > shown.size %>
     <% section.with_actions do %>
-      <%= render Ui::ButtonComponent.new(label: t("member.projects.show.releases_all"), variant: :ghost, size: :sm,
+      <%= render Ui::ButtonComponent.new(label: t("member.projects.show.releases_all"), variant: :link, size: :sm,
             test_id: "project-releases-all", data: { action: "ui--dialog#open" }) %>
     <% end %>
   <% end %>

@@ -75,6 +75,16 @@ RSpec.describe "Member ticket automation actions", type: :request do
     expect(workflow.reload.blocked_at).to be_nil
   end
 
+  it "puts stop on the left and retry on the right of a blocked work" do
+    workflow.update!(planned_at: nil, blocked_at: Time.current, blocked_phase: "planner", blocked_kind: "attempt_limit",
+                     blocked_reason: "review_limit: planner rejected 2 times")
+
+    get member_ticket_path(ticket, tab: "automation")
+
+    body = response.body
+    expect(body.index('data-test="automation-cancel"')).to be < body.index('data-test="automation-retry"')
+  end
+
   # CYRA-871 — «Ferma» dalla tabella delle lavorazioni in volo: il rilascio non va in produzione e
   # tiene occupata la fila, finché il CTO non preme «Sblocca e riprova».
   it "ferma un rilascio che aspetta la produzione" do

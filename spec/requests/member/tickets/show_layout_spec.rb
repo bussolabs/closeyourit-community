@@ -35,7 +35,8 @@ RSpec.describe "Member ticket page layout", type: :request do
       show
 
       expect(doc.css("[data-test='breadcrumb-crumb']").last.text.strip).to eq(ticket.code)
-      expect(test_id("ticket-code").text).to include(ticket.code).and include("Payments API")
+      expect(test_id("ticket-code").text).to include(ticket.code)
+      expect(test_id("ticket-project").text).to include("Payments API")
     end
 
     it "shows vote and watch as icon and number, with the label kept for screen readers" do
@@ -49,10 +50,10 @@ RSpec.describe "Member ticket page layout", type: :request do
       expect(watch["aria-label"]).to be_present
     end
 
-    it "moves take-over next to the assignee" do
+    it "puts take-over on the left, under the assignee label" do
       show
 
-      expect(doc.at_css("[data-test='ticket-details'] [data-test='ticket-lease-take']")).to be_present
+      expect(doc.at_css("[data-test='detail-assignee-label'] [data-test='ticket-lease-take']")).to be_present
       expect(doc.css("[data-test='ticket-lease-take']").size).to eq(1)
     end
   end
@@ -69,6 +70,12 @@ RSpec.describe "Member ticket page layout", type: :request do
 
       expect(doc.at_css("[data-test='ticket-page-footer'] [data-test='ticket-audit']")).to be_present
       expect(doc.at_css("[data-test='ticket-details'] [data-test='ticket-audit']")).to be_nil
+    end
+
+    it "keeps the footer as the last block of the page, so it touches the frame edge" do
+      show
+
+      expect(doc.at_css("[data-test='member-ticket']").element_children.last["data-test"]).to eq("ticket-page-footer")
     end
 
     it "groups dependencies, links and children in one Connections section" do
@@ -122,28 +129,11 @@ RSpec.describe "Member ticket page layout", type: :request do
       expect(row.at_css("details [data-test='member-ticket-attachment-form']")).to be_present
     end
 
-    it "shows the last two comments at the bottom of the detail tab, linking to the discussion" do
-      author = account_with(:member)
-      allow_n_plus_one do # fixture setup: each comment validates its author's membership
-        %w[First Second Third].each_with_index do |body, i|
-          create(:ticket_comment, ticket: ticket, author: author, body: body, created_at: (3 - i).hours.ago)
-        end
-      end
-
-      show
-
-      recent = test_id("ticket-recent-comments")
-      expect(recent.text).to include("Second").and include("Third")
-      expect(recent.text).not_to include("First")
-      expect(recent.at_css("a[href*='tab=discussion']")).to be_present
-    end
-
-    it "shows no recent comments block without comments, nor on the discussion tab" do
-      show
-      expect(test_id("ticket-recent-comments")).to be_nil
-
+    it "keeps comments out of the detail tab: the thread lives in Discussion" do
       create(:ticket_comment, ticket: ticket, author: owner, body: "Hello")
-      get member_ticket_path(ticket, tab: "discussion")
+
+      show
+
       expect(test_id("ticket-recent-comments")).to be_nil
     end
   end

@@ -20,13 +20,11 @@
     <%= render Ui::BadgeComponent.new(label: @ticket.priority.display_label, color: @ticket.priority.color, icon: (@ticket.priority.code == "high" ? "arrow-up" : nil)) %>
   <% end %>
 
-  <%# Assegnatario (id="<dom_id>_assignee" = target broadcast Ticketing::AssignTicket) e, accanto,
-      la presa in carico (CYRA-883: era nella riga dei pulsanti in alto). %>
-  <%= render "member/tickets/detail_row", label: t("member.tickets.show.assignee"), test_id: "detail-assignee" do %>
-    <div class="flex flex-wrap items-center gap-2">
-      <%= render "member/tickets/assignee_picker", can_manage: can_manage %>
-      <%= render "member/tickets/lease_button" %>
-    </div>
+  <%# Assegnatario (id="<dom_id>_assignee" = target broadcast Ticketing::AssignTicket); the take-over sits
+      on the left, under the label. %>
+  <%= render "member/tickets/detail_row", label: t("member.tickets.show.assignee"), test_id: "detail-assignee",
+        action: render("member/tickets/lease_button") do %>
+    <%= render "member/tickets/assignee_picker", can_manage: can_manage %>
   <% end %>
   <%= render "member/tickets/detail_row", label: t("member.tickets.show.reviewer"), test_id: "detail-reviewer" do %>
     <%= render "member/tickets/reviewer_picker", can_manage: can_manage %>

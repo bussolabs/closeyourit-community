@@ -8,17 +8,19 @@
     i pulsanti di override sono per-viewer (gated can_manage) e stanno nel pannello che lo contiene,
     FUORI da questo div — se ci finissero dentro, il primo broadcast li cancellerebbe dalla pagina di
     chi gestisce il ticket. %>
-<div id="<%= dom_id(ticket) %>_agent_eligibility" class="space-y-2" data-test="member-ticket-agent-eligibility">
-  <%# CYRA-883 — the verdict and the reason of the DECISION on one line. The advice has its own, below. %>
-  <p class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+<div id="<%= dom_id(ticket) %>_agent_eligibility" data-test="member-ticket-agent-eligibility">
+  <%# The verdict sits in the title; under it the reason of the DECISION, who took it, then the advice. %>
+  <div class="px-4 py-2.5 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-2" data-test="agent-eligibility-title">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.agent_eligibility.title") %></h2>
     <%= render Ui::BadgeComponent.new(label: t("member.tickets.agent_eligibility.#{ticket.agent_eligibility}"),
-                                      color: agent_eligibility_color(ticket.agent_eligibility), dot: true) %>
-    <% if ticket.agent_eligibility_reason.present? %>
-      <span class="text-[12px] text-gray-700 dark:text-zinc-300" data-test="member-ticket-agent-eligibility-reason"><%= ticket.agent_eligibility_reason %></span>
-    <% elsif ticket.agent_eligibility_advice_unknown? %>
-      <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.agent_eligibility.not_evaluated_yet") %></span>
-    <% end %>
-  </p>
+                                      color: agent_eligibility_color(ticket.agent_eligibility), dot: true, test_id: "agent-eligibility-badge") %>
+  </div>
+  <div class="px-4 py-3 space-y-2">
+  <% if ticket.agent_eligibility_reason.present? %>
+    <p class="text-[12.5px] text-zinc-800 dark:text-zinc-200" data-test="member-ticket-agent-eligibility-reason"><%= ticket.agent_eligibility_reason %></p>
+  <% elsif ticket.agent_eligibility_advice_unknown? %>
+    <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.agent_eligibility.not_evaluated_yet") %></p>
+  <% end %>
 
   <%# Su un ticket su cui nessuno ha deciso non c'è niente da attribuire: niente paragrafo, così non
       resta una riga vuota a spingere in giù i pulsanti. %>
@@ -48,4 +50,5 @@
       <% end %>
     </div>
   <% end %>
+  </div>
 </div>

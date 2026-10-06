@@ -12,11 +12,25 @@ export default class extends Controller {
 
   connect() {
     this.expanded = false
+    // CYRA-1003 — in a hidden tab or a closed <details> nothing has a height yet: measure once it shows.
+    if (this.bodyTarget.getClientRects().length === 0) {
+      this.observer = new ResizeObserver(() => {
+        if (this.bodyTarget.getClientRects().length === 0) return
+        this.observer.disconnect()
+        this.connect()
+      })
+      this.observer.observe(this.bodyTarget)
+      return
+    }
     if (this.bodyTarget.scrollHeight <= this.maxValue + 24) {
       this.toggleTarget.hidden = true
       return
     }
     this.collapse()
+  }
+
+  disconnect() {
+    this.observer?.disconnect()
   }
 
   toggle() {

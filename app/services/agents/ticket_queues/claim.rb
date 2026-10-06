@@ -213,8 +213,10 @@ module Agents
 
         attempt = Agents::Attempt.find_or_create_by!(organization: @organization, idempotency_key: attempt_key(context)) do |record|
           record.assign_attributes(
-            # CYRA-921 — the runtime is the machine's work engine; delivery checks the reviewer against it.
-            **profile.to_h, runtime: @host.work_engine, phase: profile.phase, workflow: context.workflow, host: @host,
+            # CYRA-921 — the runtime is the machine's work engine. CYAU-226/227: the reviewer is fixed here too,
+            # so a choice changed mid-job does not reject the delivery.
+            **profile.to_h, runtime: @host.effective_work_engine, expected_reviewer: @host.effective_reviewer,
+            expected_reviewer_model: @host.effective_reviewer_model, phase: profile.phase, workflow: context.workflow, host: @host,
             service_account: @host.service_account, external_run_id: @params[:run_id],
             status: :running, started_at: Agents::Leases::Clock.current
           )

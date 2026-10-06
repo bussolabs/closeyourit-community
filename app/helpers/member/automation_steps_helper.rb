@@ -11,6 +11,33 @@ module Member
     # e si è solo aggiunto un gesto.
     STEP_GROUP_MIN = 3
 
+    # CYRA-1003 — the icon of a check or a criterion in the work report, by the status the agent declared.
+    WORK_REPORT_ICONS = {
+      "passed" => [ "circle-check", "text-emerald-600 dark:text-emerald-400" ],
+      "verified" => [ "circle-check", "text-emerald-600 dark:text-emerald-400" ],
+      "failed" => [ "circle-x", "text-red-600 dark:text-red-400" ],
+      "missing" => [ "circle-x", "text-red-600 dark:text-red-400" ],
+      "partial" => [ "circle-alert", "text-amber-600 dark:text-amber-400" ],
+      "not_run" => [ "circle-dashed", "text-gray-400 dark:text-zinc-500" ]
+    }.freeze
+
+    def work_report_status_icon(status) = WORK_REPORT_ICONS.fetch(status.to_s, WORK_REPORT_ICONS["not_run"])
+
+    # CYRA-1003 — the attempts of each step, for the step tabs. An unknown execution phase lands in
+    # «In progress», which is true for almost every phase and never hides an attempt.
+    def automation_attempts_by_step(attempts)
+      attempts.group_by { |attempt| ::Agents::Workflows::PhaseResolver.step_of_execution_phase(attempt.phase) || "in_progress" }
+    end
+
+    # The tab that opens first: where the work is or stopped, else the last step reached, else the first.
+    def automation_open_step(pipeline, attempts_by_step)
+      at_work = pipeline.find { |step| %w[current failed].include?(step[:state]) }
+      return at_work[:phase] if at_work
+
+      ::Agents::Workflows::PhaseResolver::STEPS.reverse.find { |step| attempts_by_step[step].present? } ||
+        ::Agents::Workflows::PhaseResolver::STEPS.first
+    end
+
     # I passi in righe: quelli soli restano soli, e le sequenze di tentativi consecutivi con lo stesso
     # esito diventano UNA riga apribile (CYRA-384) — «19 tentativi interrotti fra 02:58 e 08:55».
     # In fila coprivano tutto il resto della scheda, e per arrivare al piano bisognava scorrerli tutti.

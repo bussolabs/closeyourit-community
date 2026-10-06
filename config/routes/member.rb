@@ -953,6 +953,12 @@ namespace :member do
   # resources :agents così /member/agents/tokens non finisce catturato da agents#show (:id="tokens").
   namespace :agents do
     resources :tokens, only: %i[index create destroy]
+    # CYAU-224 — the Claude credential lent to the machines (owner only, write-only).
+    resource :claude_credential, path: "claude", only: %i[show update destroy]
+    # CYAU-227 — who works and who reviews for every machine without a choice of its own.
+    resource :automator_setting, path: "automator", only: %i[show update]
+    # CYAU-228 — the OpenRouter key OpenCode reviews with (owner only, write-only).
+    resource :openrouter_credential, path: "openrouter", only: %i[show update destroy]
   end
   # CYRA-516 — `destroy` elimina la macchina DISMESSA e con lei il suo storico: senza, un Mac buttato
   # via resta in elenco per sempre (la revoca stacca le credenziali ma non toglie la riga).
@@ -965,6 +971,7 @@ namespace :member do
       post :decertify   # revoca la certificazione (torna ineleggibile)
       patch :review     # CYRA-921 — chi rilegge il lavoro: l'altro motore o lo stesso
       patch :engine     # CYRA-921 — who does the work: Claude or Codex
+      patch :follow_organization, path: "follow" # CYAU-227 — drop the machine's own choice, follow the organization's
     end
   end
   # CYRA-593 — l'elenco di TUTTE le lavorazioni in volo, comprese quelle che l'agente sta ancora

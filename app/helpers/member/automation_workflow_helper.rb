@@ -41,8 +41,22 @@ module Member
       return nil if summary.blank?
 
       findings = Array(attempt.review["findings"]).select { |item| item.is_a?(Hash) }.map(&:deep_stringify_keys)
-      { summary:, findings:, accepted: attempt.review_status_accepted?, runtime: attempt.reviewer_runtime }
+      { summary:, findings:, accepted: attempt.review_status_accepted?, status: review_status_of(attempt), runtime: attempt.reviewer_runtime }
     end
+
+    REVIEW_STATUSES = %w[accepted changes_requested unavailable].freeze
+
+    # The badge sits on the reviewer's text, so it reads the reviewer's own verdict: the column turns
+    # «unavailable» whenever the server refuses the delivery, even after a full review. CYRA-1003
+    def review_status_of(attempt)
+      [ attempt.review["status"], attempt.review_status ].find { |status| REVIEW_STATUSES.include?(status) }
+    end
+
+    FINDING_SEVERITY = { "critical" => "major", "high" => "major", "major" => "major", "medium" => "minor",
+                         "minor" => "minor", "low" => "info", "info" => "info" }.freeze
+    FINDING_COLOR = { "major" => :red, "minor" => :amber, "info" => :gray }.freeze
+
+    def finding_severity(finding) = FINDING_SEVERITY.fetch(finding["severity"].to_s.downcase, "info")
 
     # Il resoconto v2 è una dichiarazione dell'agente: la UI lo nomina esplicitamente per non
     # confonderlo con candidate/fingerprint/check osservati dal sistema.
@@ -60,7 +74,9 @@ module Member
     def automation_needs_person?(workflow)
       return false if workflow.nil? || workflow.cancelled_at? || workflow.completed_at?
 
-      ::Agents::Workflows::PhaseResolver::HUMAN_GATED_PHASES.include?(workflow.phase)
+      # An open automator question waits on a person too.
+      ::Agents::Workflows::PhaseResolver::HUMAN_GATED_PHASES.include?(workflow.phase) ||
+        workflow.clarifications.where(answered_at: nil).exists?
     end
 
     def automation_failure(attempt)

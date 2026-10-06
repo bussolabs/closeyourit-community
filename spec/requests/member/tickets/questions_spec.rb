@@ -55,6 +55,28 @@ RSpec.describe "Member ticket questions", type: :request do
       expect(response.body).to include("Quale strada?").and include("Quella di sinistra.")
     end
 
+    it "marks a question asked by the automation, and only that one" do
+      from_work = domanda(origin: :agent, body: "Which rounding?")
+      from_person = domanda(body: "Who reviews?")
+
+      get member_ticket_path(ticket, tab: "questions")
+
+      page = Nokogiri::HTML(response.body)
+      expect(page.at_css("[data-test='ticket-question-#{from_work.id}'] [data-test='ticket-question-from-work']")).to be_present
+      expect(page.at_css("[data-test='ticket-question-#{from_person.id}'] [data-test='ticket-question-from-work']")).to be_nil
+    end
+
+    it "tells how many settled questions came from the automation" do
+      domanda(origin: :agent, body: "Which rounding?").update!(closed_at: Time.current)
+      domanda(body: "Who reviews?").update!(closed_at: Time.current)
+
+      get member_ticket_path(ticket, tab: "questions")
+
+      summary = Nokogiri::HTML(response.body).at_css("[data-test='ticket-questions-settled'] summary")
+      expect(summary.at_css("[data-test='ticket-questions-settled-from-work']").text)
+        .to include(I18n.t("member.tickets.questions.settled_from_work", count: 1))
+    end
+
     # Il pallino conta le domande aperte, ed è la sola cosa della pagina che aspetta una persona.
     it "il pallino sulla striscia conta le domande aperte" do
       domanda
@@ -80,6 +102,17 @@ RSpec.describe "Member ticket questions", type: :request do
 
         expect(response.body).to include(I18n.t("member.tickets.questions.blocked", count: 1))
       end
+    end
+
+    it "shows the notice in the bottom-right toast stack, not inside the page" do
+      domanda(blocking: true)
+
+      get member_ticket_path(ticket)
+
+      page = Nokogiri::HTML(response.body)
+      expect(page.css("[data-test='ticket-blocked-by-questions']").size).to eq(1)
+      expect(page.at_css("[data-test='flash-container'] [data-test='ticket-blocked-by-questions']")).to be_present
+      expect(page.css("[data-test='flash-container']").size).to eq(1)
     end
 
     it "non lo dichiara per una domanda che non blocca" do
@@ -156,14 +189,26 @@ RSpec.describe "Member ticket questions", type: :request do
   end
 
   describe "ritirare una domanda" do
-    it "chi può modificare il ticket la ritira" do
+    it "the manager withdraws a question they asked" do
       entra(gestore)
-      riga = domanda(blocking: true)
+      riga = domanda(blocking: true, author: gestore)
 
       patch member_ticket_question_closure_path(ticket, riga), params: { confirm: 1 }
 
       expect(riga.reload.closed_at).to be_present
       expect(riga.closed_by).to eq(gestore)
+    end
+
+    it "nobody withdraws a question someone else asked, and the button is not offered" do
+      entra(gestore)
+      riga = domanda(blocking: true)
+
+      get member_ticket_path(ticket, tab: "questions")
+      expect(response.body).not_to include("ticket-question-close-#{riga.id}")
+
+      patch member_ticket_question_closure_path(ticket, riga), params: { confirm: 1 }
+
+      expect(riga.reload.closed_at).to be_nil
     end
 
     it "chi non può modificare il ticket non la ritira" do

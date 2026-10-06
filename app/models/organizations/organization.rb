@@ -288,6 +288,24 @@ module Organizations
             foreign_key: :organization_id,
             inverse_of: :organization,
             dependent: :destroy
+    # The Claude credential lent to the automator machines (CYAU-224).
+    has_one :claude_credential,
+            class_name: "Agents::ClaudeCredential",
+            foreign_key: :organization_id,
+            inverse_of: :organization,
+            dependent: :destroy
+    # The OpenRouter key OpenCode reviews with on the automator machines (CYAU-228).
+    has_one :openrouter_credential,
+            class_name: "Agents::OpenrouterCredential",
+            foreign_key: :organization_id,
+            inverse_of: :organization,
+            dependent: :destroy
+    # Who works and who reviews for every machine without a choice of its own (CYAU-227).
+    has_one :automator_setting,
+            class_name: "Agents::AutomatorSetting",
+            foreign_key: :organization_id,
+            inverse_of: :organization,
+            dependent: :destroy
     # Le FK cancellano lease e tombstone senza invertire l'ordine dei lock applicativi.
     has_many :agent_leases,
              class_name: "Agents::Lease",

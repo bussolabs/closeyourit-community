@@ -19,7 +19,7 @@ module Api
 
           outcome = result.value
           data = AgentLeaseSerializer.new(outcome.lease).as_json.merge(
-            "attempt_id" => outcome.attempt.id, "review_mode" => outcome.attempt.host.review_mode,
+            "attempt_id" => outcome.attempt.id, "review_mode" => outcome.attempt.review_mode, "reviewer" => outcome.attempt.reviewer, "reviewer_model" => outcome.attempt.reviewer_model,
             "work_engine" => outcome.attempt.runtime
           )
           render json: { data: }, status: outcome.fresh_acquisition ? :created : :ok

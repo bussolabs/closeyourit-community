@@ -26,7 +26,7 @@
     in più: il controller lo rimette nel redirect, così la card successiva è dello stesso stato. %>
 <% variant = approval_variant(card) %>
 <%# On a short window the column scrolls on its own, or its last buttons stay out of reach. CYRA-998 %>
-<aside class="lg:col-span-1 lg:sticky lg:top-[calc(var(--page-header-h,0px)+0.5rem)] lg:max-h-[calc(100dvh-12rem)] lg:overflow-y-auto space-y-3" data-test="approvals-decision">
+<aside class="lg:col-span-1 lg:sticky lg:top-[calc(var(--page-header-h,0px)+0.5rem)] lg:max-h-[calc(100dvh-12rem)] lg:overflow-y-auto space-y-6" data-test="approvals-decision">
   <% if card.can?(:approve) %>
     <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
       <%= form_with url: member_home_approvals_decision_path(**filters), method: :post, class: "space-y-2.5",

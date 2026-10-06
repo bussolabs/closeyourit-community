@@ -133,6 +133,16 @@ RSpec.describe Agents::Attempts::Deliver, "il blocco dichiarato dalla macchina" 
     end
   end
 
+  # CYRA-1006 — an escalated triage carries its cause in `reasons`, not `reason`: the stop showed
+  # «nessun motivo dichiarato» while the agent had written why it handed the ticket to the team.
+  it "writes the last triage reason when an escalated triage has no single reason" do
+    workflow.update!(triage_started_at: 1.minute.ago)
+    consegna("triage", triage_meta.merge(state: "escalated",
+                                         reasons: [ "Area: backend", "Clarification limit reached: escalated to the team" ]))
+
+    expect(workflow.reload.blocked_reason).to eq("Clarification limit reached: escalated to the team")
+  end
+
   describe "«non sono riuscito a guardare» non è «serve una persona»" do
     before do
       workflow.update!(triage_started_at: 5.minutes.ago, triaged_at: 4.minutes.ago,

@@ -75,6 +75,12 @@ RSpec.describe "Member::ProjectMilestones", type: :request do
       expect(response).to have_http_status(:ok)
     end
 
+    it "shows «View activity history» as a link, the way the ticket page does" do
+      sign_in(owner)
+      get member_project_milestone_path(project, milestone)
+      expect(Capybara.string(response.body)).to have_css("button[data-test='milestone-history'].text-indigo-600")
+    end
+
     it "milestone di un progetto di un'altra org → 404 (anti-BOLA)" do
       sign_in(owner)
       foreign_project = create(:project, organization: create(:organization))

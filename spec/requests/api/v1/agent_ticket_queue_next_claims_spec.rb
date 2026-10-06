@@ -40,10 +40,50 @@ RSpec.describe "Api::V1::AgentTicketQueueNextClaims (automator)", type: :request
     expect(data.fetch("attempt_id")).to eq(Agents::Attempt.sole.id)
     # CYRA-921: the machine learns with the work which engine reviews it.
     expect(data.fetch("review_mode")).to eq("cross")
+    # CYAU-226: the reviewer by name; review_mode stays for automators that only know it.
+    expect(data.fetch("reviewer")).to eq("codex")
     expect(data.fetch("work_engine")).to eq("claude")
     expect(data.fetch("candidate")).to include("code" => ticket.code, "id" => ticket.id)
     expect(data.dig("candidate", "workflow")).to include("execution_phase" => "triage")
     expect(Agents::Lease.sole).to have_attributes(ticket_id: ticket.id, authoritative_ttl_seconds: 3600)
+  end
+
+  # CYAU-227
+  it "uses the organization's engines for a machine without a choice of its own" do
+    create(:agent_automator_setting, organization:, work_engine: "codex", reviewer: "codex")
+    host.update!(runtimes: [ { "name" => "codex", "present" => true } ])
+    create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true)
+
+    post path, params:, headers:, as: :json
+
+    expect(response).to have_http_status(:created)
+    expect(response.parsed_body.fetch("data")).to include("work_engine" => "codex", "reviewer" => "codex", "review_mode" => "same")
+    expect(Agents::Attempt.sole).to have_attributes(runtime: "codex", expected_reviewer: "codex")
+  end
+
+  # CYAU-228
+  it "names the OpenRouter model when OpenCode reviews" do
+    create(:agent_automator_setting, organization:, reviewer: "opencode", opencode_model: "anthropic/claude-sonnet-4.5")
+    create(:agent_openrouter_credential, organization:)
+    host.update!(runtimes: host.runtimes + [ { "name" => "opencode", "present" => true } ])
+    create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true)
+
+    post path, params:, headers:, as: :json
+
+    expect(response).to have_http_status(:created)
+    expect(response.parsed_body.fetch("data")).to include("reviewer" => "opencode", "reviewer_model" => "anthropic/claude-sonnet-4.5")
+
+    # The model is fixed with the work: a later change on the Automator page does not reach this attempt.
+    Agents::AutomatorSetting.for(organization).update!(opencode_model: "openai/gpt-oss-20b")
+    expect(Agents::Attempt.sole.reload.reviewer_model).to eq("anthropic/claude-sonnet-4.5")
+  end
+
+  it "names no reviewer model for Claude or Codex" do
+    create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true)
+
+    post path, params:, headers:, as: :json
+
+    expect(response.parsed_body.fetch("data")).to include("reviewer_model" => nil)
   end
 
   # CYRA-921
@@ -55,6 +95,8 @@ RSpec.describe "Api::V1::AgentTicketQueueNextClaims (automator)", type: :request
 
     expect(response).to have_http_status(:created)
     expect(response.parsed_body.dig("data", "work_engine")).to eq("codex")
+    expect(response.parsed_body.dig("data", "reviewer")).to eq("claude")
+    expect(response.parsed_body.dig("data", "review_mode")).to eq("cross")
     expect(Agents::Attempt.sole.runtime).to eq("codex")
   end
 

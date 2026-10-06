@@ -66,7 +66,7 @@
           data: { controller: "ui--dialog" }
         ) do |c| %>
       <% c.with_action do %>
-        <%= render Ui::ButtonComponent.new(label: t("ui.audit.view_history"), variant: :ghost, size: :sm, icon: "history",
+        <%= render Ui::ButtonComponent.new(label: t("ui.audit.view_history"), variant: :link, icon: "history",
               test_id: "milestone-history", data: { action: "ui--dialog#open" }) %>
         <%= render "member/shared/activity_modal", subtitle: @milestone.label, events: @activity_events %>
       <% end %>

@@ -1,14 +1,12 @@
 <%# locals: (can_manage:) %>
-<%# CYRA-392 — una riga sotto lo stato: chi decide e qual è il passo successivo. Solo per i
-    code di default (Types::InstallDefaults); uno status custom dell'org non ha la frase. %>
-<% status_hint = t("ticketing.status_hints.#{@ticket.status.code}", default: "") %>
+<%# The sentence that explained each status left the panel: the ticket lifecycle guide keeps it. %>
 <div class="mt-1">
   <% if can_manage %>
     <details class="relative inline-block" id="<%= dom_id(@ticket) %>_status" data-test="ticket-status">
       <summary class="list-none cursor-pointer inline-flex items-center gap-1.5">
         <span data-test="ticket-status-badge"><%= render Ui::BadgeComponent.new(label: @ticket.status.display_label, color: @ticket.status.color, dot: true) %></span><%= render Ui::IconComponent.new(name: "chevron-down", class: "text-[9px] text-gray-400 dark:text-zinc-500") %>
       </summary>
-      <div class="absolute left-0 top-7 z-10 w-52 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-1">
+      <div class="absolute right-0 top-7 z-10 w-52 text-left rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-1">
         <% @statuses.each do |s| %>
           <%= button_to status_member_ticket_path(@ticket, status_id: s.id, inline: 1), method: :patch, class: "w-full text-left flex items-center gap-2 px-3 h-8 text-[12.5px] hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "ticket-status-#{s.id}" } do %>
             <%= render Ui::BadgeComponent.new(label: s.display_label, color: s.color, dot: true) %>
@@ -20,6 +18,3 @@
     <%= render "member/tickets/status_badge", ticket: @ticket %>
   <% end %>
 </div>
-<% if status_hint.present? %>
-  <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400 leading-snug" data-test="ticket-status-hint"><%= status_hint %></p>
-<% end %>

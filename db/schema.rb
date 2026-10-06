@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_05_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_06_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -182,6 +182,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_150000) do
     t.decimal "cost_usd", precision: 14, scale: 6
     t.datetime "created_at", null: false
     t.string "delivery_digest"
+    t.string "expected_reviewer"
+    t.string "expected_reviewer_model"
     t.string "external_run_id", null: false
     t.text "failure_reason"
     t.datetime "finished_at"
@@ -223,7 +225,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_150000) do
     t.index ["workflow_id", "created_at"], name: "index_agents_attempts_on_workflow_id_and_created_at"
     t.index ["workflow_id"], name: "index_agents_attempts_on_workflow_id"
     t.check_constraint "cost_usd IS NULL OR cost_usd >= 0::numeric", name: "agents_attempts_cost_nonnegative"
+    t.check_constraint "expected_reviewer::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text, 'opencode'::character varying::text])", name: "agents_attempts_expected_reviewer_valid"
     t.check_constraint "observed_head_sha IS NULL OR observed_head_sha::text ~ '^[0-9a-f]{40}$'::text", name: "agents_attempts_observed_head_sha_shape"
+  end
+
+  create_table "agents_automator_settings", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "opencode_model"
+    t.uuid "organization_id", null: false
+    t.string "reviewer", default: "codex", null: false
+    t.datetime "updated_at", null: false
+    t.string "work_engine", default: "claude", null: false
+    t.index ["organization_id"], name: "index_agents_automator_settings_on_organization_id", unique: true
+    t.check_constraint "reviewer::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text, 'opencode'::character varying::text])", name: "agents_automator_settings_reviewer_valid"
+    t.check_constraint "work_engine::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text])", name: "agents_automator_settings_work_engine_valid"
   end
 
   create_table "agents_clarifications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -239,6 +254,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_150000) do
     t.index ["question_comment_id"], name: "index_agents_clarifications_on_question_comment_id"
     t.index ["response_comment_id"], name: "index_agents_clarifications_on_response_comment_id"
     t.index ["workflow_id"], name: "index_agents_clarifications_on_workflow_id"
+  end
+
+  create_table "agents_claude_credentials", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "kind", null: false
+    t.uuid "organization_id", null: false
+    t.uuid "set_by_id"
+    t.text "token", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_agents_claude_credentials_on_organization_id", unique: true
+    t.index ["set_by_id"], name: "index_agents_claude_credentials_on_set_by_id"
   end
 
   create_table "agents_delivery_candidates", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -297,20 +323,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_150000) do
     t.uuid "organization_id", null: false
     t.string "platform", null: false
     t.jsonb "repositories", default: [], null: false
-    t.string "review_mode", default: "cross", null: false
+    t.string "reviewer"
     t.datetime "revoked_at"
     t.integer "running", default: 0, null: false
     t.jsonb "runtimes", default: [], null: false
     t.uuid "service_account_id"
     t.integer "slots", default: 1, null: false
     t.datetime "updated_at", null: false
-    t.string "work_engine", default: "claude", null: false
+    t.string "work_engine"
     t.index ["certified_by_id"], name: "index_agents_hosts_on_certified_by_id"
     t.index ["heartbeat_project_id"], name: "index_agents_hosts_on_heartbeat_project_id"
     t.index ["organization_id", "fingerprint"], name: "index_agents_hosts_on_organization_id_and_fingerprint", unique: true
     t.index ["organization_id", "last_heartbeat_at"], name: "index_agents_hosts_on_org_heartbeat"
     t.index ["organization_id"], name: "index_agents_hosts_on_organization_id"
     t.index ["service_account_id"], name: "index_agents_hosts_on_service_account_id", unique: true
+    t.check_constraint "(work_engine IS NULL) = (reviewer IS NULL)", name: "agents_hosts_engine_choice_complete"
     t.check_constraint "heartbeat_expected_interval_minutes > 0", name: "agents_hosts_heartbeat_interval_positive"
     t.check_constraint "heartbeat_grace_minutes >= 0", name: "agents_hosts_heartbeat_grace_nonnegative"
     t.check_constraint "host_status::text = ANY (ARRAY['idle'::character varying::text, 'busy'::character varying::text, 'waiting'::character varying::text, 'recovery_required'::character varying::text])", name: "agents_hosts_status"
@@ -318,7 +345,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_150000) do
     t.check_constraint "jsonb_typeof(last_stops) = 'array'::text", name: "agents_hosts_last_stops_array"
     t.check_constraint "jsonb_typeof(repositories) = 'array'::text", name: "agents_hosts_repositories_array"
     t.check_constraint "jsonb_typeof(runtimes) = 'array'::text", name: "agents_hosts_runtimes_array"
-    t.check_constraint "review_mode::text = ANY (ARRAY['cross'::character varying::text, 'same'::character varying::text])", name: "agents_hosts_review_mode_valid"
+    t.check_constraint "reviewer::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text, 'opencode'::character varying::text])", name: "agents_hosts_reviewer_valid"
     t.check_constraint "running >= 0", name: "agents_hosts_running_nonnegative"
     t.check_constraint "slots > 0", name: "agents_hosts_slots_positive"
     t.check_constraint "work_engine::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text])", name: "agents_hosts_work_engine_valid"
@@ -426,6 +453,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_150000) do
     t.index ["policy_id"], name: "index_agents_limit_usages_on_policy_id"
     t.check_constraint "cost >= 0::numeric", name: "agents_limit_usage_cost_nonnegative"
     t.check_constraint "runs >= 0", name: "agents_limit_usage_runs_nonnegative"
+  end
+
+  create_table "agents_openrouter_credentials", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "organization_id", null: false
+    t.uuid "set_by_id"
+    t.text "token", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_agents_openrouter_credentials_on_organization_id", unique: true
+    t.index ["set_by_id"], name: "index_agents_openrouter_credentials_on_set_by_id"
   end
 
   create_table "agents_plans", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -4171,10 +4208,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_150000) do
   add_foreign_key "agents_attempts", "agents_hosts", column: "host_id", on_delete: :restrict
   add_foreign_key "agents_attempts", "agents_workflows", column: "workflow_id", on_delete: :cascade
   add_foreign_key "agents_attempts", "organizations", on_delete: :cascade
+  add_foreign_key "agents_automator_settings", "organizations", on_delete: :cascade
   add_foreign_key "agents_clarifications", "agents_attempts", column: "attempt_id", on_delete: :restrict
   add_foreign_key "agents_clarifications", "agents_workflows", column: "workflow_id", on_delete: :cascade
   add_foreign_key "agents_clarifications", "ticketing_comments", column: "question_comment_id", on_delete: :nullify
   add_foreign_key "agents_clarifications", "ticketing_comments", column: "response_comment_id", on_delete: :nullify
+  add_foreign_key "agents_claude_credentials", "accounts", column: "set_by_id", on_delete: :nullify
+  add_foreign_key "agents_claude_credentials", "organizations", on_delete: :cascade
   add_foreign_key "agents_delivery_candidates", "agents_attempts", column: "attempt_id"
   add_foreign_key "agents_delivery_candidates", "agents_workflows", column: "workflow_id"
   add_foreign_key "agents_delivery_candidates", "github_repositories", column: "repository_id"
@@ -4197,6 +4237,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_150000) do
   add_foreign_key "agents_limit_reservations", "organizations", on_delete: :cascade
   add_foreign_key "agents_limit_reservations", "projects", on_delete: :nullify
   add_foreign_key "agents_limit_usages", "agents_limit_policies", column: "policy_id", on_delete: :cascade
+  add_foreign_key "agents_openrouter_credentials", "accounts", column: "set_by_id", on_delete: :nullify
+  add_foreign_key "agents_openrouter_credentials", "organizations", on_delete: :cascade
   add_foreign_key "agents_plans", "accounts", column: "approved_by_id", on_delete: :nullify
   add_foreign_key "agents_plans", "agents_attempts", column: "attempt_id", on_delete: :restrict
   add_foreign_key "agents_plans", "agents_workflows", column: "workflow_id", on_delete: :cascade

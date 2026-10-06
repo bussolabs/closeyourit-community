@@ -788,7 +788,11 @@ RSpec.describe "Member::Projects", type: :request do
 
       panel = Capybara.string(response.body).find("[data-test='project-releases']")
       expect(panel).to have_css("[data-test='project-release-row']", count: 3)
-      expect(panel).to have_css("button[data-test='project-releases-all']", text: "See all")
+      expect(panel).to have_css("button[data-test='project-releases-all']", text: "See all →")
+      # «See all» and «View activity history» read as links, the way the ticket page shows them.
+      # Same look as the «See all →» of the Monitoring panel above it.
+      expect(panel).to have_css("button[data-test='project-releases-all'].text-indigo-600.text-\\[11px\\]")
+      expect(Capybara.string(response.body)).to have_css("button[data-test='project-history'].text-indigo-600")
       expect(panel).to have_css("dialog[data-test='project-releases-modal'] [data-test='project-release-all-row']", count: 5, visible: :all)
     end
 

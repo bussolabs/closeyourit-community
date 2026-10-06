@@ -1,7 +1,8 @@
 <%# locals: ticket, timeline, comments_count, visible_ticket_ids, can_manage %>
 <%# Timeline unificata: commenti (bolle) + eventi di sistema (righe), fusi per created_at. %>
 <%# CYRA-883 — no title (the tab carries the count). A comments-only filter, done with a radio and CSS
-    so it needs no JavaScript; system events in a row fold into one line. %>
+    so it needs no JavaScript. One vertical line runs through the timeline: a dot per system event, the
+    avatar on it for a comment, the exact time on the right and a separator for each day. %>
 <div class="group/timeline rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-ticket-comments">
   <% if timeline.any? %>
     <div class="px-4 pt-3 pb-1 flex items-center gap-1" role="radiogroup" aria-label="<%= t("member.tickets.comments.filter_label") %>"
@@ -17,14 +18,17 @@
 
   <%# Container stabile = target degli append realtime (commenti via AddComment, eventi via
       RecordActivity). Esiste SEMPRE (anche a timeline vuota) così l'append ha sempre un bersaglio. %>
-  <div id="ticket_timeline_<%= ticket.id %>" data-test="member-ticket-timeline">
-    <% timeline.chunk_while { |left, right| left[1] == :event && right[1] == :event }.each do |run| %>
-      <% if run.first[1] == :comment %>
-        <%= render "member/tickets/comment", comment: run.first[2], ticket: ticket, can_manage: can_manage %>
-      <% elsif run.size == 1 %>
-        <%= render "member/tickets/event", event: run.first[2], ticket: ticket, visible_ticket_ids: visible_ticket_ids, compact: true %>
-      <% else %>
-        <%= render "member/tickets/event_group", events: run.map(&:last), ticket: ticket, visible_ticket_ids: visible_ticket_ids %>
+  <div id="ticket_timeline_<%= ticket.id %>" class="relative pb-2 <%= "before:absolute before:left-[32px] before:top-3 before:bottom-3 before:w-px before:bg-stone-200 dark:before:bg-zinc-800" if timeline.any? %>"
+       data-test="member-ticket-timeline">
+    <% timeline.chunk_while { |left, right| left[0].to_date == right[0].to_date }.each do |day| %>
+      <div class="relative pl-[60px] pr-4 pt-3 pb-1 font-mono uppercase text-[10px] tracking-[1.2px] text-gray-400 dark:text-zinc-500"
+           data-test="member-ticket-timeline-day"><%= timeline_day_label(day.first[0].to_date) %></div>
+      <% day.each do |_created_at, kind, item| %>
+        <% if kind == :comment %>
+          <%= render "member/tickets/comment", comment: item, ticket: ticket, can_manage: can_manage %>
+        <% else %>
+          <%= render "member/tickets/event", event: item, ticket: ticket, visible_ticket_ids: visible_ticket_ids, compact: true %>
+        <% end %>
       <% end %>
     <% end %>
   </div>

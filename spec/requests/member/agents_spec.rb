@@ -697,8 +697,8 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       expect(host.certified_by).to eq(owner)
     end
 
-    # CYRA-921
-    it "lets the machine be reviewed by the same engine" do
+    # CYRA-921, CYAU-226
+    it "lets the machine name the engine that reviews its work" do
       sign_in(owner)
       host = create(:agent_host, organization:)
 
@@ -706,23 +706,52 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       expect(response.body).to include('data-test="host-review-mode"')
 
       # A weaker review is a dangerous action: the first request asks for confirmation (CYRA-728).
-      patch review_member_agent_path(host), params: { review_mode: "same" }
+      patch review_member_agent_path(host), params: { reviewer: "claude" }
       expect(response).to have_http_status(:unprocessable_content)
-      expect(host.reload.review_mode).to eq("cross")
+      expect(host.reload.effective_reviewer).to eq("codex")
 
-      patch review_member_agent_path(host), params: { review_mode: "same", confirm: "1" }
+      patch review_member_agent_path(host), params: { reviewer: "claude", confirm: "1" }
 
       expect(response).to redirect_to(member_agent_path(host))
-      expect(host.reload.review_mode).to eq("same")
+      expect(host.reload.reviewer).to eq("claude")
     end
 
-    it "refuses an unknown review mode" do
+    it "refuses an unknown reviewer" do
       sign_in(owner)
       host = create(:agent_host, organization:)
 
-      patch review_member_agent_path(host), params: { review_mode: "nobody", confirm: "1" }
+      patch review_member_agent_path(host), params: { reviewer: "nobody", confirm: "1" }
 
-      expect(host.reload.review_mode).to eq("cross")
+      expect(host.reload.effective_reviewer).to eq("codex")
+    end
+
+    it "says why OpenCode cannot review while the organization has no OpenRouter model" do
+      sign_in(owner)
+      host = create(:agent_host, organization:)
+
+      patch review_member_agent_path(host), params: { reviewer: "opencode", confirm: "1" }
+
+      expect(flash[:alert]).to eq(I18n.t("member.agents.review.opencode_model_missing"))
+      expect(host.reload).to be_follows_organization
+    end
+
+    it "keeps a following machine following when its pre-filled reviewer is saved unchanged" do
+      sign_in(owner)
+      host = create(:agent_host, organization:)
+
+      patch review_member_agent_path(host), params: { reviewer: "codex", confirm: "1" }
+
+      expect(host.reload).to be_follows_organization
+    end
+
+    # CYAU-226: the reviewer is a name, so a new worker that was the reviewer hands the review to the old worker.
+    it "keeps a different reviewer when the work moves to the engine that was reviewing" do
+      sign_in(owner)
+      host = create(:agent_host, organization:)
+
+      patch engine_member_agent_path(host), params: { work_engine: "codex", confirm: "1" }
+
+      expect(host.reload).to have_attributes(work_engine: "codex", reviewer: "claude")
     end
 
     # CYRA-921
@@ -735,7 +764,7 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
 
       patch engine_member_agent_path(host), params: { work_engine: "codex" }
       expect(response).to have_http_status(:unprocessable_content)
-      expect(host.reload.work_engine).to eq("claude")
+      expect(host.reload.effective_work_engine).to eq("claude")
 
       patch engine_member_agent_path(host), params: { work_engine: "codex", confirm: "1" }
 
@@ -749,7 +778,37 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
 
       patch engine_member_agent_path(host), params: { work_engine: "gemini", confirm: "1" }
 
-      expect(host.reload.work_engine).to eq("claude")
+      expect(host.reload.effective_work_engine).to eq("claude")
+    end
+
+    # CYAU-227
+    it "shows that a machine follows the organization's choice" do
+      sign_in(owner)
+      create(:agent_automator_setting, organization:, work_engine: "codex", reviewer: "claude")
+      host = create(:agent_host, organization:)
+
+      get member_agent_path(host)
+
+      expect(response.body).to include(I18n.t("member.agents.choice.follows"))
+      expect(response.body).not_to include('data-test="host-follow-organization"')
+    end
+
+    it "sends a machine with its own choice back to following the organization, after confirmation" do
+      sign_in(owner)
+      host = create(:agent_host, organization:, work_engine: "codex", reviewer: "claude")
+
+      get member_agent_path(host)
+      expect(response.body).to include(ERB::Util.html_escape(I18n.t("member.agents.choice.own")))
+      expect(response.body).to include('data-test="host-follow-organization"')
+
+      patch follow_organization_member_agent_path(host)
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(host.reload).not_to be_follows_organization
+
+      patch follow_organization_member_agent_path(host), params: { confirm: "1" }
+
+      expect(response).to redirect_to(member_agent_path(host))
+      expect(host.reload).to be_follows_organization
     end
 
     it "revoca la certificazione" do
@@ -773,9 +832,9 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       it "cannot change who reviews" do
         host = create(:agent_host, organization:)
 
-        patch review_member_agent_path(host), params: { review_mode: "same", confirm: "1" }
+        patch review_member_agent_path(host), params: { reviewer: "claude", confirm: "1" }
 
-        expect(host.reload.review_mode).to eq("cross")
+        expect(host.reload.effective_reviewer).to eq("codex")
       end
 
       it "cannot change who does the work" do
@@ -783,7 +842,15 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
 
         patch engine_member_agent_path(host), params: { work_engine: "codex", confirm: "1" }
 
-        expect(host.reload.work_engine).to eq("claude")
+        expect(host.reload.effective_work_engine).to eq("claude")
+      end
+
+      it "cannot send a machine back to following the organization" do
+        host = create(:agent_host, organization:, work_engine: "codex", reviewer: "claude")
+
+        patch follow_organization_member_agent_path(host), params: { confirm: "1" }
+
+        expect(host.reload).not_to be_follows_organization
       end
 
       it "non può certificare: host non certificato" do

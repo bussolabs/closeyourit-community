@@ -15,10 +15,10 @@ module Member
           question = ticket.questions.readable_by(Current.account, organization: Current.organization)
                            .find(params[:question_id])
 
-          result = Ticketing::Questions::Answer.call(
+          result = Ticketing::Questions::Reply.call(
             question: question, author: Current.account, body: params[:body]
           )
-          redirect_to member_ticket_path(ticket, tab: "questions"),
+          redirect_to member_ticket_path(ticket, tab: params[:return_tab] == "automation" ? "automation" : "questions"),
                       result.ok? ? { notice: t("member.tickets.questions.answered") }
                                  : { alert: result.error.message }
         end

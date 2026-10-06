@@ -1,0 +1,72 @@
+<% content_for :title, t("member.automator_settings.title") %>
+<% scope = "member.automator_settings" %>
+<% engines = Agents::Host::WORK_ENGINES %>
+
+<div class="p-7 space-y-6" data-test="automator-settings">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("#{scope}.title"),
+        subtitle: t("#{scope}.subtitle"),
+        breadcrumb: [ { label: t("member.nav.section_automation") }, { label: t("member.agents.title"), href: member_agents_path }, { label: t("#{scope}.title") } ],
+        counts_test_id: "automator-settings-counts",
+        test_id: "automator-settings-header") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("#{scope}.following"), value: @following_count, value_color: :indigo, test_id: "automator-settings-following") %>
+      <%= render Ui::StatLabelComponent.new(label: t("#{scope}.own_choice"), value: @own_choice_hosts.size, test_id: "automator-settings-own") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("#{scope}.save"), type: "submit", form: "automator-settings-form",
+            variant: :primary, size: :sm, icon: "check", test_id: "automator-settings-save") %>
+    <% end %>
+  <% end %>
+
+  <%= render Ui::SectionComponent.new(title: t("#{scope}.form_title"), header_padding: :wide, body_class: "px-5 py-5", test_id: "automator-settings-panel") do |section| %>
+    <% section.with_subtitle do %>
+      <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("#{scope}.form_hint") %></p>
+    <% end %>
+    <% if @openrouter_missing %>
+      <%= render(Ui::AlertComponent.new(variant: :warning, title: t("#{scope}.openrouter_missing_title"), test_id: "automator-settings-openrouter-missing")) do %>
+        <%= t("#{scope}.openrouter_missing") %>
+        <% if current_membership&.owner? %>
+          <%= link_to t("#{scope}.openrouter_missing_link"), member_agents_openrouter_credential_path, class: "font-medium underline" %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <% if @error %>
+      <%= render(Ui::AlertComponent.new(variant: :danger, title: @error, test_id: "automator-settings-error")) %>
+    <% end %>
+    <%= form_with url: member_agents_automator_setting_path, method: :patch, id: "automator-settings-form", data: { test: "automator-settings-form" } do %>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+        <%= render Ui::SelectComponent.new(name: "work_engine", label: t("member.agents.engine.title"), test_id: "automator-settings-engine",
+              options: engines.map { |engine| [ t("member.agents.engine.engines.#{engine}"), engine ] },
+              descriptions: engines.index_with { |engine| t("member.agents.engine.descriptions.#{engine}") },
+              selected: @setting.work_engine) %>
+        <%= render Ui::SelectComponent.new(name: "reviewer", label: t("member.agents.review.title"), test_id: "automator-settings-reviewer",
+              options: Agents::Host::REVIEWERS.map { |engine| [ t("member.agents.engine.engines.#{engine}"), engine ] },
+              descriptions: Agents::Host::REVIEWERS.index_with { |engine| t("#{scope}.reviewer_descriptions.#{engine}") },
+              selected: @setting.reviewer) %>
+        <%= render Ui::InputComponent.new(name: "opencode_model", value: @setting.opencode_model.to_s, label: t("#{scope}.opencode_model_label"),
+              placeholder: "anthropic/claude-sonnet-4.5", autocomplete: "off", spellcheck: false,
+              hint: t("#{scope}.opencode_model_hint"), wrapper_class: "md:col-span-2", test_id: "automator-settings-opencode-model") %>
+      </div>
+      <p class="mt-3 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("#{scope}.after_save") %></p>
+    <% end %>
+  <% end %>
+
+  <%= render Ui::SectionComponent.new(title: t("#{scope}.own_title"), header_padding: :wide, body_class: "px-5 py-5", test_id: "automator-settings-own-hosts") do |section| %>
+    <% section.with_subtitle do %>
+      <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("#{scope}.own_hint") %></p>
+    <% end %>
+    <% if @own_choice_hosts.empty? %>
+      <p class="text-[12.5px] text-gray-600 dark:text-zinc-400" data-test="automator-settings-all-follow"><%= t("#{scope}.all_follow") %></p>
+    <% else %>
+      <ul class="divide-y divide-stone-100 dark:divide-zinc-800 text-[12.5px]">
+        <% @own_choice_hosts.each do |host| %>
+          <li class="flex flex-wrap items-center justify-between gap-2 py-2" data-test="automator-settings-own-host">
+            <%= link_to host.hostname, member_agent_path(host), class: "font-medium text-indigo-700 dark:text-indigo-300 hover:underline" %>
+            <span class="text-gray-600 dark:text-zinc-400"><%= t("#{scope}.choice_line", work: t("member.agents.engine.engines.#{host.work_engine}"), review: t("member.agents.engine.engines.#{host.reviewer}")) %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+</div>

@@ -1,6 +1,5 @@
-<%# Tab Automazione (CYRA-219): quello che la lavorazione ha fatto, e le decisioni che aspetta.
-    Sostituisce il riquadro in sidebar, che mostrava solo la fase corrente e il piano — mai i passi, e le
-    domande in sola lettura. L'ordine è quello dell'urgenza: prima ciò che aspetta una persona. %>
+<%# Automation tab, left column (CYRA-219): what stops the work, then one tab per step. The summary,
+    the open questions and the workflow-wide actions sit in the fixed side column (_automation_side). %>
 <% if workflow.nil? %>
   <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-8 text-center" data-test="automation-empty">
     <p class="text-[13px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.automation.none") %></p>
@@ -8,12 +7,6 @@
 <% else %>
   <% cto = ticket.project.effective_cto %>
   <% decides = cto.present? && cto == Current.account %>
-
-  <%# 0. La sintesi (CYRA-384): cosa ha fatto, perché si è fermata, cosa serve da chi legge — e la
-      decisione, se ce n'è una da prendere. Prima di tutto il resto, perché è la riga che si cercava
-      scorrendo decine di tentativi. %>
-  <%= render "member/tickets/automation_summary", ticket: ticket, workflow: workflow, summary: summary,
-        attempts: attempts, cto: cto %>
 
   <%# CYRA-624 — il momento in cui il sistema sta guardando se il rilascio è in piedi. Dice a chiare
       lettere che non aspetta niente da chi legge: prima qui non c'era niente, perché il ticket era già
@@ -41,44 +34,14 @@
           can_manage: can_manage, cto: cto %>
   <% end %>
 
-  <%# 3. Le domande: l'unica cosa che aspetta una risposta scritta da una persona. %>
-  <%# CYRA-782 — le domande dell'automazione non si rispondono più da qui: vivono nella scheda
-      Domande insieme a quelle poste da una persona, e lì la risposta appartiene alla domanda che
-      nomina. Resta il rimando, così chi arriva dall'automazione sa dove andare. %>
-  <% if clarifications.any? %>
-    <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="automation-questions-moved">
-      <%= render Ui::IconComponent.new(name: "circle-question-mark", class: "mr-1.5 text-gray-400 dark:text-zinc-500") %>
-      <%= t("member.tickets.questions.from_automation") %>
-      <%= link_to t("member.tickets.questions.blocked_link"), member_ticket_path(ticket, tab: "questions"),
-            class: "font-semibold underline underline-offset-2" %>
-    </p>
-  <% end %>
-
-  <%# 4. Il piano corrente e il suo gate — stesse rotte e stessa condizione di prima (CTO effettivo +
-      fase awaiting_approval). CYRA-883 — before the steps: a plan waiting for a yes sat below them. %>
-  <% if current_plan %>
-    <%= render "member/tickets/automation_plan", ticket: ticket, workflow: workflow,
-          current_plan: current_plan, decides: decides %>
-  <% end %>
-
-  <%# 5. I passi: com'è andata finora, tentativo per tentativo. %>
-  <%= render "member/tickets/automation_steps", workflow: workflow, attempts: attempts %>
-
-  <%# CYRA-883 — the agent's work report lives in the Report tab; a pointer stays here. %>
-  <% if attempts.any? { |attempt| attempt.phase == "autopilot" && automation_work_report(attempt) } %>
-    <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="automation-work-report-moved">
-      <%= render Ui::IconComponent.new(name: "clipboard-check", class: "mr-1.5 text-gray-400 dark:text-zinc-500") %>
-      <%= t("member.tickets.automation.work_report.moved") %>
-      <%= link_to t("member.tickets.automation.work_report.moved_link"), member_ticket_path(ticket, tab: "report"),
-            class: "font-semibold underline underline-offset-2" %>
-    </p>
-  <% end %>
-
-  <%= render "member/tickets/automation_actions", ticket:, workflow:, decides:, can_manage: %>
+  <%# 4–5. CYRA-1003 — the plan and the steps, one tab per step of the model (the plan in its own step). %>
+  <%= render "member/tickets/automation_step_tabs", ticket:, workflow:, attempts:, current_plan:, decides: %>
 
   <% if workflow.cancelled_at? && workflow.cancellation_reason.present? %>
-    <p class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="automation-cancelled">
-      <%= t("member.tickets.automation.cancelled", reason: workflow.cancellation_reason) %>
-    </p>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-2.5">
+      <p class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="automation-cancelled">
+        <%= t("member.tickets.automation.cancelled", reason: workflow.cancellation_reason) %>
+      </p>
+    </div>
   <% end %>
 <% end %>

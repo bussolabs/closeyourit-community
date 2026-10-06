@@ -79,6 +79,16 @@
       "path": "fixtures/invalid/triage_two_recommended.json",
       "definition": "triage_result",
       "valid": false
+    },
+    {
+      "path": "fixtures/valid/delivery_envelope_opencode_reviewer.json",
+      "definition": "delivery_envelope",
+      "valid": true
+    },
+    {
+      "path": "fixtures/invalid/delivery_envelope_opencode_runtime.json",
+      "definition": "delivery_envelope",
+      "valid": false
     }
   ]
 }

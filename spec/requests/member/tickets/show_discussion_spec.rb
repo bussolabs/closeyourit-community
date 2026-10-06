@@ -100,10 +100,13 @@ RSpec.describe "Member ticket show — discussion & attachments rendering", type
     # target id stabili (devono combaciare coi target dei broadcast).
     expect(response.body).to include(%(id="ticket_timeline_#{ticket.id}"))
     expect(response.body).to include(%(id="ticket_comments_count_#{ticket.id}"))
-    expect(response.body).to include(%(id="ticketing_ticket_#{ticket.id}_status"))
-    expect(response.body).to include(%(id="ticketing_ticket_#{ticket.id}_assignee"))
     expect(response.body).to include(%(id="ticketing_ticket_#{ticket.id}_watchers"))
     # la bolla-commento ha il suo dom_id stabile (append de-dup / remove).
     expect(response.body).to include(%(id="#{ActionView::RecordIdentifier.dom_id(comment)}"))
+
+    # Status and assignee live in the Details panel, which only the Detail tab shows.
+    get member_ticket_path(ticket)
+    expect(response.body).to include(%(id="ticketing_ticket_#{ticket.id}_status"))
+    expect(response.body).to include(%(id="ticketing_ticket_#{ticket.id}_assignee"))
   end
 end

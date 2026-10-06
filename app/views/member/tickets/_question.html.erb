@@ -1,4 +1,4 @@
-<%# locals: (ticket:, question:, can_manage:) %>
+<%# locals: (ticket:, question:, can_manage:, return_tab: nil) %>
 <%# CYRA-883 — an open question carries an amber line on its left edge. %>
 <div class="px-4 py-4 <%= "shadow-[inset_3px_0_0_var(--color-amber-400)]" if question.open? %>" data-test="ticket-question-<%= question.id %>">
   <div class="flex items-start gap-3">
@@ -12,6 +12,10 @@
     <div class="min-w-0 flex-1">
       <div class="flex items-center gap-2 flex-wrap">
         <span class="text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= question.author.name %></span>
+        <% if question.origin_agent? %>
+          <%= render Ui::BadgeComponent.new(label: t("member.tickets.questions.from_work"), color: :indigo, icon: "bot", size: :sm,
+                test_id: "ticket-question-from-work") %>
+        <% end %>
         <% if question.blocking && question.open? %>
           <%= render Ui::BadgeComponent.new(label: t("member.tickets.questions.blocking"), color: :amber, icon: "hand", size: :sm) %>
         <% end %>
@@ -46,7 +50,7 @@
       <% end %>
 
       <% if question.open? %>
-        <%= render "member/tickets/question_answer_form", ticket: ticket, question: question, can_manage: can_manage %>
+        <%= render "member/tickets/question_answer_form", ticket: ticket, question: question, can_manage: can_manage, return_tab: return_tab %>
       <% end %>
     </div>
   </div>

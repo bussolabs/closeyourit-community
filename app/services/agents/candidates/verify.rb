@@ -35,7 +35,10 @@ module Agents
 
       # Le conclusioni che un controllo può avere e che valgono come rosse. `nil` non c'è: un
       # controllo senza conclusione è ancora in corso, e va aspettato.
-      FAILING_CONCLUSIONS = %w[FAILURE TIMED_OUT CANCELLED ACTION_REQUIRED STARTUP_FAILURE].freeze
+      FAILING_CONCLUSIONS = %w[FAILURE TIMED_OUT ACTION_REQUIRED].freeze
+      # CYRA-1005 — cancelled or never started: GitHub gave no verdict on the code (no runner, an outage).
+      # It still stops, since nothing restarts those checks, but as checks_not_run: re-run them, do not fix code.
+      NOT_RUN_CONCLUSIONS = %w[CANCELLED STARTUP_FAILURE].freeze
       FAILING_STATUS_STATES = %w[FAILURE ERROR].freeze
 
       def initialize(candidate:, client: nil, now: Time.current)
@@ -93,6 +96,7 @@ module Agents
         return postpone!("unreachable", "checks_unknown") unless state[:checks_known]
         return postpone!("checks_running", nil, state:) if checks.any? { |c| still_running?(c) }
         return fail!(state, checks) if checks.any? { |c| failing?(c) }
+        return fail!(state, checks, code: "checks_not_run") if checks.any? { |c| not_run?(c) }
         return postpone!("checks_running", nil, state:) if checks.empty? && within_grace?(state)
 
         pass!(state, checks)
@@ -108,6 +112,10 @@ module Agents
 
       def still_running?(check)
         check["__typename"] == "CheckRun" && check["conclusion"].nil?
+      end
+
+      def not_run?(check)
+        check["__typename"] == "CheckRun" && NOT_RUN_CONCLUSIONS.include?(check["conclusion"].to_s.upcase)
       end
 
       def failing?(check)
@@ -148,10 +156,10 @@ module Agents
                                             client: client)
       end
 
-      def fail!(state, checks)
+      def fail!(state, checks, code: "checks_failing")
         ApplicationRecord.transaction do
           write_verdict!(state, checks, :verified_failing)
-          stop!("checks_failing")
+          stop!(code)
         end
         Result.ok(@candidate)
       end

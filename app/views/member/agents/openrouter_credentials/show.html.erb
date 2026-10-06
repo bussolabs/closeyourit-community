@@ -1,0 +1,6 @@
+<% content_for :title, t("member.openrouter_credential.title") %>
+
+<div class="p-7 space-y-6" data-test="openrouter-credential">
+  <%= render "member/agents/lent_credential", name: "openrouter_credential", credential: @credential, error: @error,
+                                               path: member_agents_openrouter_credential_path %>
+</div>

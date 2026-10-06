@@ -1,19 +1,19 @@
 <%# locals: (host:, can_manage:) %>
-<%# CYRA-921 — who reads the work again before it is delivered. "Same" is for a machine with one engine:
-    the server accepts only the reviewer chosen here. %>
-<% modes = Agents::Host::REVIEW_MODES %>
+<%# CYAU-226 — the engine that reads the work again before delivery, by name. The work engine itself is
+    for a machine with one engine; the server accepts only the reviewer chosen here. %>
+<% reviewers = Agents::Host::REVIEWERS %>
 <section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3" data-test="host-review-mode">
   <h2 class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.review.title") %></h2>
   <p class="text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-[70ch]"><%= t("member.agents.review.hint") %></p>
   <% if can_manage %>
     <%= form_with url: review_member_agent_path(host), method: :patch, class: "flex flex-wrap items-end gap-3" do %>
-      <%= render Ui::SelectComponent.new(name: "review_mode", label: t("member.agents.review.label"), test_id: "host-review-select",
-            options: modes.map { |mode| [ t("member.agents.review.modes.#{mode}"), mode ] },
-            descriptions: modes.index_with { |mode| t("member.agents.review.descriptions.#{mode}") },
-            selected: host.review_mode, wrapper_class: "min-w-[16rem]") %>
+      <%= render Ui::SelectComponent.new(name: "reviewer", label: t("member.agents.review.label"), test_id: "host-review-select",
+            options: reviewers.map { |engine| [ t("member.agents.engine.engines.#{engine}"), engine ] },
+            descriptions: reviewers.index_with { |engine| t("member.agents.review.descriptions.#{Agents::Host::REVIEW_ONLY_ENGINES.include?(engine) ? engine : (engine == host.effective_work_engine ? 'same' : 'other')}") },
+            selected: host.effective_reviewer, wrapper_class: "min-w-[16rem]") %>
       <%= render Ui::ButtonComponent.new(label: t("member.agents.review.save"), type: "submit", size: :sm, test_id: "host-review-save") %>
     <% end %>
   <% else %>
-    <p class="text-[13px] text-zinc-900 dark:text-zinc-100"><%= t("member.agents.review.modes.#{host.review_mode}") %></p>
+    <p class="text-[13px] text-zinc-900 dark:text-zinc-100"><%= t("member.agents.engine.engines.#{host.effective_reviewer}") %></p>
   <% end %>
 </section>

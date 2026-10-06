@@ -185,4 +185,83 @@ RSpec.describe Agents::Host, type: :model do
       expect(host.heartbeat_stale?(now:)).to be(false)
     end
   end
+
+  # CYAU-227 — a machine with no choice of its own follows the organization's.
+  describe "engine choice" do
+    let(:organization) { create(:organization) }
+    let(:host) { create(:agent_host, organization:) }
+
+    it "follows the organization when the machine has no choice of its own" do
+      create(:agent_automator_setting, organization:, work_engine: "codex", reviewer: "claude")
+
+      expect(host).to be_follows_organization
+      expect(host).to have_attributes(effective_work_engine: "codex", effective_reviewer: "claude")
+    end
+
+    it "keeps its own choice when the organization changes" do
+      host.update!(work_engine: "claude", reviewer: "codex")
+      create(:agent_automator_setting, organization:, work_engine: "codex", reviewer: "claude")
+
+      expect(host.reload).not_to be_follows_organization
+      expect(host).to have_attributes(effective_work_engine: "claude", effective_reviewer: "codex")
+    end
+
+    it "starts its own choice from the organization's when only one engine is set" do
+      create(:agent_automator_setting, organization:, work_engine: "codex", reviewer: "claude")
+
+      host.update!(reviewer: "codex")
+
+      expect(host.reload).to have_attributes(work_engine: "codex", reviewer: "codex")
+    end
+
+    it "hands the review to the organization's worker when the work moves to the organization's reviewer" do
+      create(:agent_automator_setting, organization:, work_engine: "claude", reviewer: "codex")
+
+      host.update!(work_engine: "codex")
+
+      expect(host.reload).to have_attributes(work_engine: "codex", reviewer: "claude")
+    end
+
+    it "keeps a single-engine choice when the work stays on the same engine" do
+      create(:agent_automator_setting, organization:, work_engine: "claude", reviewer: "claude")
+
+      host.update!(work_engine: "claude")
+
+      expect(host.reload).to have_attributes(effective_work_engine: "claude", effective_reviewer: "claude")
+    end
+
+    # Saving the form a following machine is pre-filled with is not a choice.
+    it "keeps following the organization when the engine saved is the one in force" do
+      create(:agent_automator_setting, organization:, work_engine: "claude", reviewer: "codex")
+
+      host.update!(reviewer: "codex")
+      host.update!(work_engine: "claude")
+
+      expect(host.reload).to be_follows_organization
+    end
+
+    # CYAU-228
+    it "accepts OpenCode as reviewer but never as the engine that works" do
+      create(:agent_automator_setting, organization:, opencode_model: "anthropic/claude-sonnet-4.5")
+      host.update!(work_engine: "claude", reviewer: "opencode")
+      expect(host.reload).to have_attributes(effective_work_engine: "claude", effective_reviewer: "opencode")
+
+      expect(host.update(work_engine: "opencode")).to be(false)
+    end
+
+    it "refuses OpenCode as its reviewer while the organization has no OpenRouter model" do
+      create(:agent_automator_setting, organization:, opencode_model: nil)
+
+      expect(host.update(reviewer: "opencode")).to be(false)
+      expect(host.errors).to include(:reviewer)
+    end
+
+    it "goes back to following the organization" do
+      host.update!(work_engine: "codex", reviewer: "claude")
+
+      host.update!(work_engine: nil, reviewer: nil)
+
+      expect(host.reload).to be_follows_organization
+    end
+  end
 end

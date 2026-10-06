@@ -1363,7 +1363,7 @@ it:
         secrets_disabled_note: Secret disabilitati su questo ambiente.
         releases: Release
         releases_events: eventi
-        releases_all: Vedi tutte
+        releases_all: Vedi tutte →
         releases_count:
           one: "1 release"
           other: "%{count} release"
@@ -1545,10 +1545,6 @@ it:
         title: Collegamenti
       context:
         title: Contesto
-      recent_comments:
-        title: Ultimi commenti
-        view_all: Vedi la discussione →
-        ago: "%{time} fa"
       evidence:
         title: Verbale di consegna
         subtitle: "Quello che il sistema ha guardato con i propri occhi. Non si modifica e non fa avanzare niente."
@@ -1978,6 +1974,10 @@ it:
           blocked: lo terrei a una persona
           evaluated_at: "Parere dato il %{when}"
         decided_by: "Deciso da %{name} il %{when}"
+        switch:
+          label: Chi lo lavora
+          agents: Agenti
+          person: Una persona
         unknown_actor: Qualcuno
         manual_reason: "Decisione presa a mano da %{name}."
         actions:
@@ -2004,7 +2004,7 @@ it:
         # CYRA-392 — fase corrente della lavorazione (Agents::Workflow#phase). Senza queste chiavi il
         # badge cadeva sul default humanize e mostrava l'inglese ("Triage queued") in pagina italiana.
         # CYRA-602 — le OTTO parole del percorso, le uniche che chi legge incontra. Sedici fasi
-        # interne, otto parole: il dettaglio non sparisce, vive nella frase sotto (`phase_hint`).
+        # interne, otto parole: il dettaglio non sparisce, vive nella riga «A che punto è» della sintesi.
         # Prima lo stesso momento si chiamava in tre modi a un clic di distanza.
         stage:
           to_plan: Da pianificare
@@ -2037,25 +2037,6 @@ it:
         # CYRA-384 — la sigla dice come si chiama lo stato, non cosa comporta né chi si deve muovere.
         # Una frase per fase, accanto alla sigla: senza, «Lavorazione ferma» resta una parola che non
         # dice se toccherà a te fare qualcosa.
-        phase_hint:
-          inactive: La lavorazione automatica non è mai stata richiesta su questo ticket.
-          triage_queued: Aspetta una macchina libera che legga il ticket. Di solito comincia entro pochi minuti.
-          triaging: Una macchina sta leggendo il ticket per capire se si può lavorare così com'è.
-          planning: Una macchina sta scrivendo il piano di lavoro.
-          awaiting_approval: Il piano è pronto e aspetta che una persona lo approvi o chieda modifiche.
-          autopilot_queued: "Il piano è approvato: aspetta una macchina libera che lo esegua."
-          autopilot: Una macchina sta facendo il lavoro previsto dal piano.
-          verifying_candidate: "Il sistema sta aprendo la proposta e leggendo i controlli automatici su quel codice. Va avanti da sé: non serve niente da te."
-          verifying_staging: "Il sistema sta guardando se il codice che hai approvato è davvero atterrato sulla linea principale. Va avanti da sé: non serve niente da te."
-          awaiting_production_proof: "Il sistema sta guardando se il rilascio in produzione è davvero in piedi. Va avanti da sé: non serve niente da te."
-          awaiting_autopilot_approval: Il lavoro è consegnato e aspetta che una persona lo rilegga.
-          closer_staging_queued: "Il lavoro è approvato: aspetta una macchina che lo porti sull'ambiente di prova."
-          closer_staging: Una macchina sta portando il lavoro sull'ambiente di prova.
-          closer_production_queued: "La prova sull'ambiente di prova è andata: aspetta una macchina che porti il lavoro sul sito vero. Non serve niente da te."
-          closer_production: Una macchina sta portando il lavoro sul sito vero.
-          review_blocked: La lavorazione ha smesso di riprovare da sola e aspetta una decisione.
-          completed: "La lavorazione è arrivata in fondo: qui non c'è altro da fare."
-          cancelled: Una persona ha fermato la lavorazione, e su questo ticket non riparte più.
         # Fasi di ESECUZIONE (Agents::Attempt#phase, vocabolario diverso da Workflow#phase): le rendono
         # il banner di retry e la riga «cosa ha fatto» della sintesi. Stesso lessico di CYRA-392 —
         # «valutazione», mai «triage», in pagina italiana. Una sola resa: stavano sotto `phase`, dove
@@ -2070,23 +2051,29 @@ it:
         # tentativi, domande aperte): una sintesi ricavata a naso dal testo libero della macchina può
         # dire il falso proprio dove si decide.
         summary:
+          title: Lavorazione
+          halted_badge: Ferma
           done:
             label: Cosa ha fatto
             none: Non ha ancora concluso nessun passo.
             last: "%{phase}: %{outcome}, %{ago} fa."
           stopped:
             label: Perché si è fermata
+            where_label: A che punto è
+            waiting_answer:
+              one: "Aspetta la tua risposta alla domanda aperta."
+              other: "Aspetta le tue risposte alle %{count} domande aperte."
             blocked: "Si è fermata su %{phase} %{count} volte di fila: non riprova più da sola."
             agent_blocked: "Si è fermata da sola su %{phase} e ha scritto perché: «%{reason}» Non riprova più da sola."
             agent_blocked_no_reason: "non ha scritto il motivo"
             candidate_check: "Si è fermata sul controllo della proposta: «%{reason}» Non riprova più da sola."
             release_probe: "Si è fermata sul controllo del rilascio: «%{reason}» Non riprova più da sola."
             held_by_person: "Ferma prima della produzione: l'ha fermata %{name}. Nessun rilascio di questo repository va in produzione finché non riparte."
-            retrying: "Non è ferma: l'ultimo passo è stato respinto ed è già in un nuovo tentativo."
-            verifying_candidate: "Non è ferma: il sistema sta aprendo la proposta e leggendo i controlli su quel codice."
-            verifying_staging: "Non è ferma: il sistema sta guardando se il codice approvato è atterrato sulla linea principale."
-            awaiting_production_proof: "Non è ferma: il sistema sta guardando se il rilascio in produzione è davvero in piedi."
-            retry_hint: "Non è ferma: il sistema non riesce a leggere una cosa su GitHub (%{code}). Riprova alle %{at}. Da te non serve niente."
+            retrying: "L'ultimo passo è stato respinto ed è già in un nuovo tentativo."
+            verifying_candidate: "Il sistema sta aprendo la proposta e leggendo i controlli su quel codice."
+            verifying_staging: "Il sistema sta guardando se il codice approvato è atterrato sulla linea principale."
+            awaiting_production_proof: "Il sistema sta guardando se il rilascio in produzione è davvero in piedi."
+            retry_hint: "Il sistema non riesce a leggere una cosa su GitHub (%{code}). Riprova alle %{at}. Da te non serve niente."
             awaiting_approval: "È ferma sul piano: aspetta che una persona lo approvi."
             awaiting_autopilot_approval: "È ferma sul lavoro consegnato: aspetta che una persona lo rilegga."
             cancelled: "Una persona l'ha fermata: %{reason}"
@@ -2094,15 +2081,15 @@ it:
             dependencies_anonymous: "È trattenuta da un prerequisito su un progetto che non puoi vedere. La coda non la prende finché non è a posto."
             missing_release_probe: "Non può partire: il progetto non dichiara come si capisce che un suo rilascio è riuscito, e senza quel dato la macchina non sa dove aprire la proposta né quando dirsi finita. Si imposta dalla scheda GitHub del progetto, poi riparte da sola."
             cancelled_no_reason: Una persona l'ha fermata, senza indicare il motivo.
-            completed: "Non è ferma: è arrivata in fondo."
+            completed: "È arrivata in fondo."
             inactive: "Non è mai partita: su questo ticket non l'ha chiesta nessuno."
-            queued: "Non è ferma: aspetta una macchina libera."
-            production_busy: "Non è ferma: aspetta che finisca il rilascio di %{code}. Sullo stesso repository ne esce uno alla volta, così la produzione non torna indietro."
-            production_busy_anonymous: "Non è ferma: aspetta che finisca un altro rilascio su questo repository. Ne esce uno alla volta, così la produzione non torna indietro."
-            production_soak: "Non è ferma: il codice è in prova in staging. Se non compaiono errori nuovi, va in produzione dalle %{at}."
+            queued: "Aspetta una macchina libera."
+            production_busy: "Aspetta che finisca il rilascio di %{code}. Sullo stesso repository ne esce uno alla volta, così la produzione non torna indietro."
+            production_busy_anonymous: "Aspetta che finisca un altro rilascio su questo repository. Ne esce uno alla volta, così la produzione non torna indietro."
+            production_soak: "Il codice è in prova in staging. Se non compaiono errori nuovi, va in produzione dalle %{at}."
             production_staging_error: "Ferma prima della produzione: in staging è comparso un errore nuovo, «%{title}». Risolvilo o ignoralo e il rilascio riparte da solo."
             production_staging_error_anonymous: "Ferma prima della produzione: in staging è comparso un errore nuovo. Il rilascio riparte quando viene risolto o ignorato."
-            working: "Non è ferma: ci sta lavorando adesso."
+            working: "Ci sta lavorando adesso."
           needs:
             label: Cosa serve da te
             answer_questions:
@@ -2115,7 +2102,6 @@ it:
             unblock: Fai ripartire la lavorazione, oppure fermala.
             nothing: "Niente: la lavorazione va avanti da sola."
             finished: "Niente: la lavorazione è finita."
-          retrying_hint: "Un passo è stato respinto e la macchina lo sta rifacendo da sola: non serve niente da te."
         effective_cto: Chi decide
         no_cto: Non configurato
         running_on: In lavorazione su
@@ -2149,6 +2135,9 @@ it:
           retrying_body: "La fase %{phase} è stata respinta ed è già in un nuovo tentativo. Nessuna azione necessaria."
         steps:
           title: Passi della lavorazione
+          tabs: Un passo per scheda
+          empty_step: Nessun tentativo in questo passo.
+          review_note: "La rilettura del lavoro si legge nei tentativi di «In lavorazione»."
           # CYRA-410 — «mai partita» sotto un badge che diceva «In coda» leggeva come un guasto. Questo
           # testo resta solo dove è vero: nessuna coda in corso, quindi nessun avvio da aspettare.
           empty: Ancora nessun passo. La lavorazione non è partita.
@@ -2161,6 +2150,16 @@ it:
             other: "%{count} tentativi"
           unknown_host: macchina sconosciuta
           review: revisione
+          review_outcome:
+            accepted: Revisione approvata
+            changes_requested: Revisione respinta
+            unavailable: Revisione non eseguita
+          review_by: "da %{runtime}"
+          findings:
+            severity:
+              major: Grave
+              minor: Minore
+              info: Nota
           failure_no_reason: La macchina ha segnalato un guasto senza indicarne il motivo.
           # CYRA-384 — i tentativi consecutivi con lo stesso esito raccolti in una riga sola: in fila
           # coprivano tutto il resto della scheda, e per arrivare al piano bisognava scorrerli uno per uno.
@@ -2237,6 +2236,17 @@ it:
             approved: Chi ha riletto il lavoro l'ha accettato.
             changes_requested: Chi ha riletto il lavoro ha chiesto delle modifiche.
             unavailable: Non è stato possibile rileggere il lavoro.
+          risk:
+            low: basso
+            medium: medio
+            high: alto
+            critical: critico
+          triage:
+            area: Area
+            risk: Rischio
+            capabilities: Competenze
+            reasons: Perché
+            answer: Rispondi
         # CYRA-384 — la segnalazione di sicurezza stava dentro il testo lungo di una scheda
         # secondaria, e non la vedeva nessuno. La scrive la macchina in un campo apposta del risultato
         # consegnato: cercarla nel testo vuol dire indovinare, e qui indovinare male costa da tutte e due le parti.
@@ -2260,6 +2270,26 @@ it:
           tests: Controlli eseguiti
           criteria: Prove per criterio
           exceptions: Scostamenti e rischi residui
+          outcome: Esito
+          risks_title: "Da decidere: rischi e scostamenti"
+          tally:
+            criteria: "%{done}/%{total} criteri provati"
+            tests: "%{done}/%{total} controlli superati"
+            files:
+              one: 1 file toccato
+              other: "%{count} file toccati"
+            risks:
+              zero: Nessun rischio aperto
+              one: 1 rischio aperto
+              other: "%{count} rischi aperti"
+          test_status:
+            passed: superato
+            failed: fallito
+            not_run: non eseguito
+          criterion_status:
+            verified: provato
+            partial: provato in parte
+            missing: non provato
         failure:
           human_action: "Cosa deve fare una persona:"
           category: Categoria
@@ -2316,6 +2346,8 @@ it:
             blank: Scrivi almeno una risposta.
             gone: Non ci sono domande in attesa di risposta.
       comments:
+        today: Oggi
+        yesterday: Ieri
         title: Discussione
         empty: Ancora nessun commento. Inizia la discussione.
         placeholder: Scrivi un commento…
@@ -2345,6 +2377,7 @@ it:
           too_long: "Il commento supera i %{count} caratteri (adesso sono %{actual}). Per un testo lungo usa il resoconto di lavorazione."
       questions:
         title: Domande
+        open_title: Domande aperte
         open_count: Aperte
         placeholder: "Fai una domanda breve: chi risponde lo fa qui, non nella discussione…"
         submit: Chiedi
@@ -2352,8 +2385,12 @@ it:
         settled:
           one: "1 risolta o ritirata"
           other: "%{count} risolte o ritirate"
+        settled_from_work:
+          one: "1 dalla lavorazione"
+          other: "%{count} dalla lavorazione"
         shared_label: Visibile anche al cliente
         blocking: Blocca il lavoro
+        from_work: Dalla lavorazione
         shared: Condivisa
         withdrawn: Ritirata
         covers_round: risposta all'intero giro
@@ -2372,12 +2409,12 @@ it:
           one: Questo ticket aspetta la risposta a una domanda.
           other: Questo ticket aspetta la risposta a %{count} domande.
         blocked_link: Vai alle domande
-        from_automation: Le domande dell'automazione vivono nella scheda Domande, con le loro risposte.
         errors:
           invalid: Domanda non valida. Deve essere una domanda scritta in parole, non un comando o un indirizzo.
           answer_invalid: Risposta non valida. Controlla il testo.
           closed: "Questa domanda è stata ritirata: non si può più rispondere."
           already_answered: "Questa domanda ha già una risposta: non si può ritirare."
+          not_author: Puoi ritirare solo le domande che hai fatto tu.
       attachments:
         indicator: Contiene allegati
         title: Allegati

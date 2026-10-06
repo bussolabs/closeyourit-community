@@ -16,8 +16,13 @@
       <%# CYRA-453 — tolta dal menu, la pagina delle versioni si raggiunge da qui: è amministrazione,
           quindi il collegamento esiste solo per chi amministra le macchine. %>
       <% if can_manage %>
+        <%= render Ui::ButtonComponent.new(label: t("member.agents.automator_settings_link"), href: member_agents_automator_setting_path, variant: :secondary_muted, size: :sm, icon: "settings", test_id: "agents-automator-settings-link") %>
         <%= render Ui::ButtonComponent.new(label: t("member.agents.skill_bundle_link"), href: member_skill_bundle_path, variant: :secondary_muted, size: :sm, icon: "box", test_id: "agents-skill-bundle-link") %>
         <%= render Ui::ButtonComponent.new(label: t("member.agents.tokens_link"), href: member_agents_tokens_path, variant: :secondary_muted, size: :sm, icon: "key", test_id: "agents-tokens-link") %>
+      <% end %>
+      <% if current_membership&.owner? %>
+        <%= render Ui::ButtonComponent.new(label: t("member.agents.claude_credential_link"), href: member_agents_claude_credential_path, variant: :secondary_muted, size: :sm, icon: "lock", test_id: "agents-claude-credential-link") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.agents.openrouter_credential_link"), href: member_agents_openrouter_credential_path, variant: :secondary_muted, size: :sm, icon: "lock", test_id: "agents-openrouter-credential-link") %>
       <% end %>
     <% end %>
   <% end %>

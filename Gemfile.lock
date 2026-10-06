@@ -599,6 +599,7 @@ DEPENDENCIES
   lookbook (~> 2.3)
   lucide-rails (= 0.7.4)
   maxmind-db
+  msgpack (~> 1.8, >= 1.8.5)
   neighbor
   nokogiri
   parallel_tests

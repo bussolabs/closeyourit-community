@@ -1,0 +1,38 @@
+---
+en:
+  member:
+    agents:
+      automator_settings_link: Automator
+      choice:
+        title: Engine choice
+        follows: Follows the organization
+        own: This machine's own choice
+        follows_hint: This machine uses the engines chosen on the Automator page. If you change an engine below, the machine gets a choice of its own.
+        own_hint: This machine has its own choice and does not follow the Automator page.
+        follow: Follow the organization again
+        followed: The machine follows the organization again. It applies from the next job.
+        organization_link: Organization's choice
+    automator_settings:
+      title: Automator
+      subtitle: Who works and who reviews, chosen once for every machine.
+      following: Follow the organization
+      own_choice: Own choice
+      save: Save
+      saved: Choice saved. It applies from the next job of every machine that follows the organization.
+      invalid: Invalid choice.
+      form_title: Organization's engines
+      form_hint: Every machine uses these engines unless it has a choice of its own.
+      after_save: The chosen engines must be installed on the machines and signed in.
+      reviewer_descriptions:
+        claude: Claude reviews. If Claude also works, it reviews in a new session.
+        codex: Codex reviews. If Codex also works, it reviews in a new session.
+        opencode: OpenCode reviews and cannot write. It must be on every machine and signed in.
+      opencode_model_label: OpenRouter model for OpenCode
+      opencode_model_hint: Needed only when OpenCode reviews. Copy the model name from openrouter.ai/models, for example anthropic/claude-sonnet-4.5.
+      openrouter_missing_title: The OpenRouter key is missing.
+      openrouter_missing: OpenCode reviews with the organization's OpenRouter key. Without it, machines that review with OpenCode take no work.
+      openrouter_missing_link: Set the key
+      own_title: Machines with their own choice
+      own_hint: These machines do not follow the choice above. From their page they can go back to following it.
+      all_follow: Every machine follows this choice.
+      choice_line: "%{work} works, %{review} reviews"

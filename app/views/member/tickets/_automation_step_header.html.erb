@@ -21,7 +21,9 @@
   <% end %>
 </div>
 <div class="shrink-0 flex items-center gap-2">
-  <%= render Ui::BadgeComponent.new(label: outcome[:label], color: outcome[:color], icon: outcome[:icon]) %>
+  <%# CYRA-384 — the sentence that explains the outcome, on hover. %>
+  <%= render Ui::BadgeComponent.new(label: outcome[:label], color: outcome[:color], icon: outcome[:icon], title: outcome[:hint],
+        test_id: "automation-step-outcome") %>
   <%# Il chevron sta solo dove c'è davvero qualcosa sotto, e ruota col gruppo aperto. motion-safe: chi ha
       chiesto meno animazioni vede lo stato finale senza la rotazione. %>
   <% if expandable %>

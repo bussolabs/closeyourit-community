@@ -82,6 +82,7 @@ export default class extends Controller {
 
   disconnect() {
     if (this.outside) document.removeEventListener("click", this.outside)
+    this.close()
   }
 
   // Punto unico di ri-sincronizzazione (native "change" + custom "ui--select:refresh"): rilegge le
@@ -399,10 +400,18 @@ export default class extends Controller {
     if (row && !row.hidden && !row.disabled) {
       row.classList.add(...HIGHLIGHT)
       this.search.setAttribute("aria-activedescendant", row.id)
-      row.scrollIntoView({ block: "nearest" })
+      this.revealRow(row)
     } else {
       this.search.setAttribute("aria-activedescendant", "")
     }
+  }
+
+  // Scrolls the list only: scrollIntoView would also scroll the page, and that closes the panel.
+  revealRow(row) {
+    const list = this.list.getBoundingClientRect()
+    const box = row.getBoundingClientRect()
+    if (box.top < list.top) this.list.scrollTop -= list.top - box.top
+    else if (box.bottom > list.bottom) this.list.scrollTop += box.bottom - list.bottom
   }
 
   // --- Apertura/chiusura -----------------------------------------------------
@@ -413,10 +422,9 @@ export default class extends Controller {
   // senza listener a monte non hanno effetti. La guardia in close() è necessaria perché
   // l'outside-click lo invoca a OGNI click del documento, anche a panel già chiuso.
   open() {
-    // Out of the flow BEFORE it shows: an absolute panel would stretch the dialog's scroll box for
-    // a frame, and that scroll would close it again.
-    const dialog = this.element.closest("dialog")
-    if (dialog) this.panel.style.position = "fixed"
+    // Out of the flow BEFORE it shows: an absolute panel would stretch its scroll box for a frame,
+    // and that scroll would close it again.
+    this.panel.style.position = "fixed"
     this.panel.classList.remove("hidden")
     this.search.value = ""
     this.filter()
@@ -428,20 +436,24 @@ export default class extends Controller {
     this.dispatch("opened")
   }
 
-  // Inside a <dialog> the panel would be cut by the dialog's own scroll box: there it leaves the
-  // flow (fixed, measured from the trigger) and opens upwards when there is no room below. Scrolling
-  // the dialog closes it, so it never drifts away from its trigger.
+  // A scrolling ancestor (a dialog, the ticket side column) would cut the panel or stretch: it leaves
+  // the flow (fixed, measured from the trigger) and opens upwards when there is no room below. Any
+  // scroll outside the panel, or a resize, closes it, so it never drifts away from its trigger.
   float() {
-    const dialog = this.element.closest("dialog")
-    if (!dialog) return
-
     const rect = this.trigger.getBoundingClientRect()
     const below = window.innerHeight - rect.bottom
     const height = this.panel.offsetHeight
     const top = below < height + 8 && rect.top > below ? rect.top - height - 2 : rect.bottom + 2
     Object.assign(this.panel.style, { position: "fixed", left: `${rect.left}px`, right: "auto", top: `${Math.max(top, 8)}px`, width: `${rect.width}px` })
-    this.onDialogScroll = () => this.close()
-    requestAnimationFrame(() => { if (this.isOpen) dialog.addEventListener("scroll", this.onDialogScroll, { once: true }) })
+    // Choosing an option can scroll the hidden native select without moving the floating panel.
+    this.onOutsideScroll = (event) => {
+      if (event.target !== this.select && !this.panel.contains(event.target)) this.close()
+    }
+    requestAnimationFrame(() => {
+      if (!this.isOpen) return
+      document.addEventListener("scroll", this.onOutsideScroll, true)
+      window.addEventListener("resize", this.onOutsideScroll)
+    })
   }
 
   initialActiveIndex() {
@@ -454,7 +466,10 @@ export default class extends Controller {
   close() {
     if (!this.isOpen) return
     this.panel.classList.add("hidden")
-    if (this.onDialogScroll) this.element.closest("dialog")?.removeEventListener("scroll", this.onDialogScroll)
+    if (this.onOutsideScroll) {
+      document.removeEventListener("scroll", this.onOutsideScroll, true)
+      window.removeEventListener("resize", this.onOutsideScroll)
+    }
     this.trigger.setAttribute("aria-expanded", "false")
     this.search.setAttribute("aria-expanded", "false")
     this.search.setAttribute("aria-activedescendant", "")

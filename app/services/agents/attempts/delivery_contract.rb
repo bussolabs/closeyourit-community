@@ -10,8 +10,6 @@ module Agents
     # `review_failed` per QUALUNQUE esito di validazione, e farlo anche qui vorrebbe dire due
     # scritture con due verità diverse.
     class DeliveryContract < ApplicationService
-      REVIEWERS = { "claude" => "codex", "codex" => "claude" }.freeze
-
       # Il result di ogni fase è validato contro il $def del contratto canonico VENDORIZZATO. L'assenza
       # di contract_version identifica lo storico v1; il valore 2 attiva il decision packet strutturato.
       # La barriera server è esattamente lo schema pubblicato, senza drift tra la consegna e il contratto. Gli
@@ -52,8 +50,8 @@ module Agents
 
       # nil = la consegna passa; altrimenti il Result.err con cui va respinta.
       def call
-        # CYRA-921: a machine set to "same" is reviewed by its own engine in a new session.
-        expected_reviewer = @attempt.host.review_mode == "same" ? @attempt.runtime : REVIEWERS[@attempt.runtime]
+        # CYAU-226: the engine named when the work was claimed; its own engine means a new session of it.
+        expected_reviewer = @attempt.reviewer
         valid_review = @payload["runtime"] == @attempt.runtime &&
                        @payload["reviewer_runtime"] == expected_reviewer &&
                        @payload.dig("review", "status") == "accepted" &&
@@ -63,6 +61,7 @@ module Agents
                        valid_review_depth? &&
                        valid_review_attestation?
         return review_failed unless valid_review
+        return unreviewed_delivered_head unless delivered_head_reviewed?
         return missing_observed_head unless valid_observed_head?
         return invalid_result unless valid_result?
         return wrong_release unless valid_release?
@@ -282,6 +281,24 @@ module Agents
       def review_failed
         Result.err(AppError.new("Revisione incrociata mancante o non approvata",
                                 code: "R409-ATTEMPT-003", status: :conflict))
+      end
+
+      # CYRA-1004 — already-delivered work reviewed on the result alone passes only if an earlier attempt
+      # of this workflow had THIS head accepted by a diff review. Otherwise a pushed diff whose review was
+      # unavailable came back on retry as "already delivered" and moved on without anyone reading it.
+      def delivered_head_reviewed?
+        return true unless result_state == "already-delivered"
+        return true unless @payload.dig("review", "depth") == Agents::PhaseProfile::REVIEW_DEPTH_RESULT
+
+        head = @payload.dig("observed", "head_sha").presence or return false
+        @attempt.workflow.attempts.where(phase: @attempt.phase, review_status: :accepted, observed_head_sha: head)
+                .where.not(id: @attempt.id)
+                .any? { |earlier| earlier.review.is_a?(Hash) && earlier.review["depth"] == Agents::PhaseProfile::REVIEW_DEPTH_DIFF }
+      end
+
+      def unreviewed_delivered_head
+        Result.err(AppError.new("Codice già consegnato ma mai riletto sul diff",
+                                code: "R409-ATTEMPT-006", status: :conflict))
       end
 
       def invalid_result

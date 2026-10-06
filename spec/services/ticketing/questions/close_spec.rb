@@ -3,10 +3,10 @@ require "rails_helper"
 RSpec.describe Ticketing::Questions::Close, type: :service do
   let(:organization) { create(:organization) }
   let(:ticket) { create(:ticket, organization: organization) }
-  let(:question) { create(:ticket_question, :blocking, ticket: ticket, organization: organization) }
   let(:actor) do
     create(:account).tap { |a| create(:membership, account: a, organization: organization, role: :member) }
   end
+  let(:question) { create(:ticket_question, :blocking, ticket: ticket, organization: organization, author: actor) }
 
   it "ritira la domanda segnando chi e quando" do
     result = described_class.call(question: question, actor: actor)
@@ -38,6 +38,16 @@ RSpec.describe Ticketing::Questions::Close, type: :service do
 
     expect(result).to be_err
     expect(result.error.code).to eq("R409-QUESTION-002")
+    expect(question.reload.closed_at).to be_nil
+  end
+
+  it "refuses to withdraw someone else's question" do
+    other = create(:account).tap { |a| create(:membership, account: a, organization: organization, role: :owner) }
+
+    result = described_class.call(question: question, actor: other)
+
+    expect(result).to be_err
+    expect(result.error.code).to eq("R403-QUESTION-003")
     expect(question.reload.closed_at).to be_nil
   end
 end
