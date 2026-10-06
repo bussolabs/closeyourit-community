@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/bussolabs/closeyourit-docs",
-  "commit": "e8f7bdb534c7a3a7ec8110bd2ce1f817086a03cb",
+  "commit": "4a71be76ec8d98d13cbfd9de2f45991d988caa77",
   "contract": "agent-result/v2",
-  "sha256sums": "970e5ec4f35b530d1e106e731514232299838caa466b5744ad41050e0c324a43"
+  "sha256sums": "cc5370b4e660e00cb305a48c5e8c63ba2cd5cd1d9907049b943cf310938459f6"
 }

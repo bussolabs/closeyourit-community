@@ -19,7 +19,7 @@ RSpec.describe "Api::V1::AgentTicketQueueNextClaims (automator)", type: :request
   let(:path) { "/api/v1/ticket_queue/next_claim" }
 
   before do
-    host.update!(last_heartbeat_at: Time.current, certified_at: Time.current, repositories: [ project.key ],
+    host.update!(last_heartbeat_at: Time.current, certified_at: Time.current, repositories: [ project.key ], automator_version: "0.39.0",
                  runtimes: [ { "name" => "claude", "present" => true } ])
     create(:project_membership, account: host.service_account, project:)
   end
@@ -114,7 +114,7 @@ RSpec.describe "Api::V1::AgentTicketQueueNextClaims (automator)", type: :request
       organization:, fingerprint: SecureRandom.hex(12), hostname: "runner-2", platform: "linux", arch: "amd64"
     ).value
     other_host = other.fetch(:host)
-    other_host.update!(last_heartbeat_at: Time.current, certified_at: Time.current, repositories: [ project.key ],
+    other_host.update!(last_heartbeat_at: Time.current, certified_at: Time.current, repositories: [ project.key ], automator_version: "0.39.0",
                        runtimes: [ { "name" => "claude", "present" => true } ])
     create(:project_membership, account: other_host.service_account, project:)
 

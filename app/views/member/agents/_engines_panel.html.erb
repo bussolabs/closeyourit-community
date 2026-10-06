@@ -1,0 +1,10 @@
+<%# locals: (host:, can_manage:) %>
+<%# CYRA-1032 — the engines in one panel: whether the machine follows the organization on top, then one
+    column per role, who works and who reviews. The columns stack on a phone. %>
+<%= render Ui::SectionComponent.new(title: t("member.agents.choice.title"), body_class: nil, test_id: "host-engines") do %>
+  <%= render "member/agents/engine_choice", host:, can_manage: %>
+  <div class="grid grid-cols-1 md:grid-cols-2 border-t border-stone-100 dark:border-zinc-800 divide-y md:divide-y-0 md:divide-x divide-stone-100 dark:divide-zinc-800">
+    <%= render "member/agents/work_engine", host:, can_manage: %>
+    <%= render "member/agents/review_mode", host:, can_manage: %>
+  </div>
+<% end %>

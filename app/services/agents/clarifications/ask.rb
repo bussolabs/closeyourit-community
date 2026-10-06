@@ -24,8 +24,8 @@ module Agents
     # lettori esterni (skill di triage e automator) lo chiedono a `GET .../clarifications`, che è il
     # contratto `agent-clarification/v1`: il testo di un commento è tornato a essere solo testo.
     class Ask < ApplicationService
-      # A v2 question may be `{ body, options }`: the ticket stores only the text, the proposed
-      # answers stay in the attempt result. CYRA-887
+      # A v2 question may be `{ body, options }`. CYRA-887; the question row keeps the proposed answers
+      # too, so every reader (tabs, queue, CLI) finds them in one place. CYRA-1033
       def self.texts(questions)
         Array(questions).map { |question| question.is_a?(Hash) ? (question["body"] || question[:body]) : question }
       end
@@ -33,6 +33,7 @@ module Agents
       def initialize(workflow:, attempt:, questions:, author:)
         @workflow = workflow
         @attempt = attempt
+        @raw_questions = Array(questions)
         @questions = self.class.texts(questions)
         @author = author
       end
@@ -71,9 +72,16 @@ module Agents
         @questions.each_with_index do |body, index|
           Ticketing::Question.new(
             ticket: @workflow.ticket, round_id: clarification.id, body: body.to_s, position: index + 1,
-            blocking: true, audience: :internal, origin: :agent, author: @author
+            blocking: true, audience: :internal, origin: :agent, author: @author, options: options_at(index)
           ).save(validate: false)
         end
+      end
+
+      def options_at(index)
+        question = @raw_questions[index]
+        return unless question.is_a?(Hash)
+
+        Array(question["options"] || question[:options]).map { |option| option.to_h.stringify_keys.slice("label", "recommended", "reason") }.presence
       end
 
       # Il commento lo legge una persona, non la macchina: la lingua è quella di chi ha aperto il

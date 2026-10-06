@@ -32,7 +32,7 @@ module Agents
         return concluded_ticket if concluded_ticket?
 
         ApplicationRecord.transaction do
-          rows.each { |_position, question, body| answer!(question, body) }
+          rows.each { |_position, question, body, choice| answer!(question, body, choice) }
           close_round!(rows)
         end
         Result.ok(@clarification)
@@ -42,7 +42,8 @@ module Agents
 
       def workflow = @clarification.workflow
 
-      # [[posizione, domanda, testo], …] nell'ordine delle domande del giro.
+      # [[posizione, domanda, testo, scelta], …] nell'ordine delle domande del giro. An answer is either
+      # the text or `{ body:, choice: }` when a proposed answer was clicked (CYRA-1033).
       #
       # Le righe di primo livello sono l'unica sorgente da CYRA-784. Un giro che non ne ha nemmeno una
       # non ha niente da chiudere: prima ci si arrivava con l'archivio jsonb, che chiudeva il giro
@@ -52,10 +53,11 @@ module Agents
       # A withdrawn one too: Answer refuses it, and the round must not close on a refused answer. CYRA-1002
       def entries
         questions.each_with_index.filter_map do |question, index|
-          body = @answers[index].to_s.strip
+          entry = @answers[index]
+          body = (entry.is_a?(Hash) ? entry[:body] : entry).to_s.strip
           next if body.blank? || question.answered_at.present? || question.closed_at.present?
 
-          [ index + 1, question, body ]
+          [ index + 1, question, body, (entry[:choice] if entry.is_a?(Hash)) ]
         end
       end
 
@@ -64,9 +66,9 @@ module Agents
         @questions ||= @clarification.questions.includes(ticket: :project).order(:position, :created_at).to_a
       end
 
-      def answer!(question, body)
+      def answer!(question, body, choice)
         Ticketing::Questions::Answer.call(
-          question: question, author: @author, body: body, covers_round: @covers_round
+          question: question, author: @author, body: body, covers_round: @covers_round, choice_index: choice
         )
       end
 
@@ -91,7 +93,7 @@ module Agents
       # «1. » davanti al testo di qualcuno — e quel testo è ciò che il contratto serve verbatim ai due
       # repository esterni, che lo mostrano a una persona.
       def snapshot(rows)
-        return rows.first.last if @covers_round
+        return rows.first[2] if @covers_round
 
         rows.map { |position, _question, body| "#{position}. #{body}" }.join("\n")
       end

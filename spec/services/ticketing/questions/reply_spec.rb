@@ -80,4 +80,45 @@ RSpec.describe Ticketing::Questions::Reply, type: :service do
     expect(clarification.reload.answered_at).to be_nil
     expect(workflow.reload.triage_requested_at).to be_nil
   end
+
+  # CYRA-1033 — a click on a proposed answer: the answer reads as the label and remembers which one.
+  describe "with a choice" do
+    let(:clarification) { round(questions: [ "Email or show?" ]) }
+    let(:question) do
+      clarification.questions.first.tap do |row|
+        row.update_column(:options, [ { "label" => "Show only", "recommended" => true }, { "label" => "Email" } ])
+      end
+    end
+
+    it "answers with the chosen label, records the choice and closes the round" do
+      result = described_class.call(question:, author:, body: nil, choice: 2)
+
+      expect(result).to be_ok
+      answer = question.reload.resolved_answer
+      expect(answer.body).to eq("Email")
+      expect(answer.choice_index).to eq(2)
+      expect(clarification.reload.answered_at).to be_present
+    end
+
+    it "refuses a choice out of range and leaves the round open" do
+      result = described_class.call(question:, author:, body: nil, choice: 3)
+
+      expect(result).not_to be_ok
+      expect(result.error.code).to eq("R422-QUESTION-003")
+      expect(clarification.reload.answered_at).to be_nil
+    end
+
+    it "refuses a choice together with a typed answer" do
+      result = described_class.call(question:, author:, body: "Something else", choice: 1)
+
+      expect(result.error.code).to eq("R422-QUESTION-003")
+      expect(question.reload.answers).to be_empty
+    end
+
+    it "keeps typed answers without a choice" do
+      described_class.call(question:, author:, body: "Show it, and email on Fridays")
+
+      expect(question.reload.resolved_answer.choice_index).to be_nil
+    end
+  end
 end

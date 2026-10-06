@@ -76,6 +76,16 @@ module Ticketing
 
     def open? = answered_at.nil? && closed_at.nil?
 
+    # CYRA-1033 — the proposed answers of a choice question, in the order they were asked; empty for a
+    # plain question. `choice` is 1-based, the number a person reads next to each answer.
+    def choice_options
+      Array(options).map do |option|
+        { "label" => option["label"].to_s, "recommended" => option["recommended"] == true, "reason" => option["reason"].presence }
+      end
+    end
+
+    def choice_label(choice) = (choice_options[choice - 1]&.fetch("label") if choice.to_i.positive?)
+
     private
 
     def body_reads_as_a_question

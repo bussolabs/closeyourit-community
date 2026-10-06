@@ -36,7 +36,7 @@ RSpec.describe "Api::V1::Agents::AttemptResults", type: :request do
   let(:path) { api_v1_agent_attempt_result_path(attempt) }
 
   before do
-    host.update!(last_heartbeat_at: Time.current, certified_at: Time.current, repositories: [ project.key ],
+    host.update!(last_heartbeat_at: Time.current, certified_at: Time.current, repositories: [ project.key ], automator_version: "0.39.0",
                  runtimes: [ { "name" => "claude", "present" => true } ])
     # B.5 — scope per-host: la consegna passa da Agents::Hosts::Eligibility, che ora richiede che il
     # service account dell'host veda il progetto; la registrazione lo conia senza progetti, lo abilitiamo qui.

@@ -2317,6 +2317,9 @@ en:
         withdrawn: Withdrawn
         covers_round: answer to the whole round
         answer_placeholder: Write the answer…
+        other_placeholder: "Other: write your own answer…"
+        choices_legend: Proposed answers
+        recommended: Recommended
         answer_submit: Answer
         close: Withdraw
         close_confirm: Withdraw this question without an answer?
@@ -2334,6 +2337,7 @@ en:
         errors:
           invalid: Invalid question. It must read as a question in plain words, not a command or a URL.
           answer_invalid: Invalid answer. Check the text.
+          invalid_choice: Pick one of the proposed answers, or write your own without picking.
           closed: "This question was withdrawn: it can no longer be answered."
           already_answered: "This question already has an answer: it cannot be withdrawn."
           not_author: You can only withdraw the questions you asked.

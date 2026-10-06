@@ -1,0 +1,40 @@
+<%# locals: (host:, repository_projects:) %>
+<%= render Ui::DetailsComponent.new(title: t("member.agents.show.host"), test_id: "host-details") do |details| %>
+  <% details.with_row(label: t("member.agents.show.version"), value: host.automator_version.presence) %>
+  <% details.with_row(label: t("member.agents.show.platform")) do %>
+    <span class="font-mono"><%= host.platform %>/<%= host.arch %></span>
+  <% end %>
+  <% details.with_row(label: t("member.agents.show.heartbeat"),
+        value: host.last_heartbeat_at ? l(host.last_heartbeat_at, format: :short) : t("member.agents.show.never")) %>
+  <% if host.service_account %>
+    <% details.with_row(label: t("member.agents.show.service_account")) do %>
+      <span class="font-mono break-all"><%= host.service_account.name %></span>
+    <% end %>
+  <% end %>
+  <% details.with_row(label: t("member.agents.show.fingerprint")) do %>
+    <span class="font-mono break-all"><%= host.fingerprint %></span>
+  <% end %>
+  <%# Project keys alone (CYRA, CLFL…) say nothing: the full name, linked, for projects the reader can open. %>
+  <% if host.repositories.any? %>
+    <% details.with_row(label: t("member.agents.show.repository"), test_id: "host-repositories") do %>
+      <% host.repositories.each do |key| %>
+        <% if (project = repository_projects[key]) %>
+          <%= link_to project.name, member_project_path(project), class: "text-indigo-700 dark:text-indigo-300 hover:underline", title: key, data: { test: "host-repository-link" } %>
+        <% else %>
+          <span class="font-mono text-gray-600 dark:text-zinc-400"><%= key %></span>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <% if host.certified? %>
+    <% details.with_footer do %>
+      <p class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="host-certified-note">
+        <% if host.certified_by %>
+          <%= t("member.agents.show.certified_on_by", date: l(host.certified_at, format: :short), name: host.certified_by.name) %>
+        <% else %>
+          <%= t("member.agents.show.certified_on", date: l(host.certified_at, format: :short)) %>
+        <% end %>
+      </p>
+    <% end %>
+  <% end %>
+<% end %>

@@ -49,4 +49,21 @@ RSpec.describe Errors::Symbolication::Native::Stack do
     manifest["threads"] = [ { "frames" => [ manifest["threads"][0]["frames"][0] ] * 501 } ]
     expect { described_class.call(manifest: manifest) }.to raise_error(Artifacts::Rejected, "native_budget")
   end
+
+  it "uses Cocoa call sites while preserving raw addresses and leaving the top frame unchanged" do
+    manifest["system_info"] = { "os" => "iOS", "cpu_arch" => "arm64" }
+    manifest["modules"][0] = { "base_addr" => "0x1000", "end_addr" => "0x2000", "debug_id" => "e633bc80-53b3-4b50-8acf-ef994b52c903" }
+    manifest["threads"][0]["frames"] = [ { "instruction" => "0x1010", "trust" => "sentry" }, { "instruction" => "0x2000", "trust" => "sentry" } ]
+    frames = described_class.call(manifest: manifest)
+    expect(frames.first).to include("instruction" => "0x1010", "lookup_address" => "0x1010", "lookup_offset" => "0x10")
+    expect(frames.last).to include("instruction" => "0x2000", "lookup_address" => "0x1ffc", "lookup_offset" => "0xffc", "module_offset" => "0x1000", "status" => nil)
+    manifest["system_info"]["cpu_arch"] = "x86_64"
+    expect(described_class.call(manifest: manifest).last).to include("lookup_address" => "0x1fff", "lookup_offset" => "0xfff")
+  end
+
+  it "rejects Cocoa return-address underflow instead of wrapping into another module" do
+    manifest["system_info"] = { "os" => "macOS", "cpu_arch" => "arm64" }
+    manifest["threads"][0]["frames"] = [ { "instruction" => "0x1010" }, { "instruction" => "0x3", "trust" => "sentry" } ]
+    expect(described_class.call(manifest: manifest).last["status"]).to eq("invalid_address")
+  end
 end

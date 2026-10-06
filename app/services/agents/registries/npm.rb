@@ -5,6 +5,14 @@ module Agents
     # npm. È l'unico dei quattro che dichiara da quale codice il pacchetto è stato costruito
     # (`gitHead`): lì il confronto col codice sigillato si può fare, e si fa.
     class Npm < Client
+      # CYRA-1034 — only the latest published version, from the small `/latest` document.
+      def latest(package)
+        raise Error.new("package name outside the alphabet", code: "R422-REGISTRY-001") unless
+          package.is_a?(String) && ALPHABETS.fetch(family).match?(package)
+
+        get(url_for(package, "latest"), allow_not_found: true)&.dig("version")
+      end
+
       def lookup(package, version)
         validate!(package, version)
         url = url_for(package)

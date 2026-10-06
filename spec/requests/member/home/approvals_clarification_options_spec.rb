@@ -31,7 +31,7 @@ RSpec.describe "Member::Home::Approvals clarification options", type: :request d
       attempt = create(:agent_attempt, workflow:, organization: org, phase: "triage",
                                        result: { "contract_version" => 2, "questions" => questions })
       create(:agent_clarification, workflow:, attempt:, answered_at: nil,
-                                   questions: Agents::Clarifications::Ask.texts(questions))
+                                   questions: questions)
     end
   end
 
@@ -46,6 +46,25 @@ RSpec.describe "Member::Home::Approvals clarification options", type: :request d
     expect(radios.map { |radio| radio["form"] }.uniq).to eq([ "approvals-reply-form" ])
     expect(page.css("input[name='answers[2]']")).to be_empty
     expect(page.at_css("[data-test='approvals-reply-text']")["required"]).to be_nil
+  end
+
+  # CYRA-1033 — up to four proposed answers, and one line on why the recommended one.
+  context "with four proposed answers and a reason" do
+    let(:questions) do
+      [ { "body" => "Cosa succede se il peso manca?",
+          "options" => [ { "label" => "Errore chiaro", "recommended" => true, "reason" => "Il prezzo negativo fa già così." },
+                         { "label" => "Costo zero" }, { "label" => "Peso minimo" }, { "label" => "Chiedi il peso" } ] } ]
+    end
+
+    it "offers all four and shows the reason" do
+      sign_in(owner)
+
+      get member_home_approvals_item_path(kind: "clarification", id: clarification.id)
+
+      values = page.css("input[type='radio'][name='answers[1]']").map { |radio| radio["value"] }
+      expect(values).to eq([ "Errore chiaro", "Costo zero", "Peso minimo", "Chiedi il peso", "" ])
+      expect(page.at_css("[data-test='approvals-clarification-reason']").text).to eq("Il prezzo negativo fa già così.")
+    end
   end
 
   it "turns the picked answers and the free text into one reply" do

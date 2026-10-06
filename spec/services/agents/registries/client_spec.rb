@@ -74,6 +74,29 @@ RSpec.describe Agents::Registries::Client do
     end
   end
 
+  # CYRA-1034 — the latest release only, from the small `/latest` document.
+  describe "npm latest" do
+    let(:client) { described_class.for("npm") }
+
+    it "reads the latest published version" do
+      stub_request(:get, "https://registry.npmjs.org/%40openai%2Fcodex/latest")
+        .to_return(status: 200, body: { "version" => "0.160.1" }.to_json)
+
+      expect(client.latest("@openai/codex")).to eq("0.160.1")
+    end
+
+    it "gives nothing for a package that does not exist" do
+      stub_request(:get, "https://registry.npmjs.org/no-such-package/latest").to_return(status: 404, body: "")
+
+      expect(client.latest("no-such-package")).to be_nil
+    end
+
+    it "refuses a name outside the alphabet without calling anyone" do
+      expect { client.latest("../evil") }
+        .to raise_error(described_class::Error) { |e| expect(e.code).to eq("R422-REGISTRY-001") }
+    end
+  end
+
   describe "pub.dev" do
     let(:client) { described_class.for("pub") }
     let(:url) { "https://pub.dev/api/packages/closeyourit" }

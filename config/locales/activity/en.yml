@@ -41,3 +41,5 @@ en:
       secret_approval_enabled: two-person approval for secrets
       session_replay_enabled: Session replay
       roadmap_enabled: roadmap
+      supporter_enabled: supporter on
+      supporter_reserved_topics: supporter reserved topics

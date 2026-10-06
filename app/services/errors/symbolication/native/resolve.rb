@@ -59,7 +59,7 @@ module Errors
           artifact = rows.first.last
           expected = artifact.attributes.slice("format", "architecture", "debug_id", "code_id")
           bytes = ::Artifacts::NativeSymbols::Read.call(artifact: artifact)
-          result = ::Artifacts::NativeSymbols::Processor.call(bytes: bytes, expected: expected, addresses: rows.map { |frame, _| "0x#{frame.fetch("module_offset").to_i(16).to_s(16)}" })
+          result = ::Artifacts::NativeSymbols::Processor.call(bytes: bytes, expected: expected, addresses: rows.map { |frame, _| frame.fetch("lookup_offset") })
           @dependencies << { "kind" => "native_symbol", "id" => artifact.id }
           rows.each_with_index do |(frame, _), index|
             output = result.fetch("frames").fetch(index)

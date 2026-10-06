@@ -32,7 +32,7 @@ RSpec.describe "Agent queue contract v1", type: :request do
   let(:deferral_path) { "/api/v1/ticket_queue/deferrals" }
 
   before do
-    host.update!(last_heartbeat_at: Time.current, certified_at: Time.current, repositories: [ project.key ],
+    host.update!(last_heartbeat_at: Time.current, certified_at: Time.current, repositories: [ project.key ], automator_version: "0.39.0",
                  runtimes: [ { "name" => "claude", "present" => true } ])
     create(:project_membership, account: host.service_account, project:)
   end

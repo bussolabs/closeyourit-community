@@ -214,6 +214,7 @@ sfondo sfocato, riquadro del titolo con le azioni a destra, contenuto nel suo ri
 - Le opzioni in più vanno sul `<dialog>`: il cablaggio resta del chiamante (`id`, `data-ui--dialog-target`,
   `data-action`…). Il componente non apre e non chiude niente da solo.
 - Senza contenuto non disegna il riquadro vuoto (es. una conferma senza testo).
+- Il riquadro del titolo resta fermo e scorre solo il riquadro del contenuto: i pulsanti sono sempre a portata.
 - Il riquadro porta `data-test="<test_id>-panel"`.
 - Mai un `<dialog>` scritto a mano con barra del titolo e piede propri. Eccezioni: ricerca globale e
   aiuto tastiera (palette).

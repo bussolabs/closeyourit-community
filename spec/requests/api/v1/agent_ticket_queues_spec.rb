@@ -20,7 +20,7 @@ RSpec.describe "Api::V1::Agents::TicketQueues (automator)", type: :request do
 
   before do
     host.update!(
-      last_heartbeat_at: Time.current, certified_at: Time.current, repositories: [ project.key ],
+      last_heartbeat_at: Time.current, certified_at: Time.current, repositories: [ project.key ], automator_version: "0.39.0",
       runtimes: [ { "name" => "claude", "present" => true } ]
     )
     # B.5 — scope per-host: la registrazione conia il service account dell'host senza progetti (fail-closed);

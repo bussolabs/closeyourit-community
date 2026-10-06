@@ -1,0 +1,6 @@
+Real Linux arm64 SIGABRT event, Sentry Native 0.17.1, captured 2026-10-06.
+Producer: closeyourit-integrations scripts/capture-native-policy-input.py, process exits 134/0.
+Raw event SHA256 aa55f060194a56eb6077f1057fe17d75b1e4c4b2ddb9dee48bb3a740ea22801e.
+Sanitized with NativeEventPrivacy from integrations commit d001542 and Sentry Java 8.59.0.
+Fixture SHA256 c8e9e52294e9fd08eec47f58b2ba9e8854545d0bc1ace3033c4b7ac4533ba168
+This is Linux input, not an Android runtime certification.

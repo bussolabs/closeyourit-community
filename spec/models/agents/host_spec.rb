@@ -264,4 +264,16 @@ RSpec.describe Agents::Host, type: :model do
       expect(host.reload).to be_follows_organization
     end
   end
+  # CYAU-235
+  describe "#effective_supporter" do
+    it "follows the organization unless the machine chose for itself" do
+      host = create(:agent_host)
+      create(:agent_automator_setting, organization: host.organization, supporter: "claude")
+      expect(host.reload.effective_supporter).to eq("claude")
+
+      host.update!(supporter: "codex")
+      expect(host.effective_supporter).to eq("codex")
+      expect(build(:agent_host, supporter: "nobody")).to be_invalid
+    end
+  end
 end

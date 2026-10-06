@@ -5,6 +5,7 @@ module Projects
 
     def effective_cto = cto || organization.cto
     include Iconable
+    include SupporterReservedTopics
 
     belongs_to :organization,
                class_name: "Organizations::Organization",

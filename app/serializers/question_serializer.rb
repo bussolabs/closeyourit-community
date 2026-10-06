@@ -23,6 +23,9 @@ class QuestionSerializer < ApplicationSerializer
     else "open"
     end
   end
+  # CYRA-1033 — the proposed answers of a choice question (empty for a plain one); `choice` on an
+  # answer is the 1-based number that was picked, null when the answer was typed.
+  attribute(:options) { |question| question.choice_options }
   attribute(:answers) do |question|
     question.answers.map do |answer|
       {
@@ -30,6 +33,7 @@ class QuestionSerializer < ApplicationSerializer
         body: answer.body,
         author: answer.author&.name,
         covers_round: answer.covers_round,
+        choice: answer.choice_index,
         created_at: answer.created_at
       }
     end

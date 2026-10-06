@@ -4,7 +4,7 @@ module Errors
   class Symbolication
     module Native
       class Stack < ApplicationService
-        PROFILES = { "Linux" => "elf", "Mac OS X" => "macho", "macOS" => "macho", "Windows NT" => "pdb", "Windows" => "pdb" }.freeze
+        PROFILES = { "Linux" => "elf", "Android" => "elf", "Mac OS X" => "macho", "macOS" => "macho", "iOS" => "macho", "Windows NT" => "pdb", "Windows" => "pdb" }.freeze
         ARCHITECTURES = { "amd64" => "x86_64", "x86_64" => "x86_64", "arm64" => "arm64", "aarch64" => "arm64" }.freeze
 
         def initialize(manifest:)
@@ -27,8 +27,9 @@ module Errors
         def resolve_frame(frame, thread_index, frame_index, modules)
           base = { "thread_index" => thread_index, "frame_index" => frame_index, "instruction" => frame["instruction"], "trust" => frame["trust"], "locations" => [] }
           position = hex(frame["instruction"])
-          candidates = modules.select { |entry| contains?(entry, position) }
-          reason = "invalid_address" if position.nil?
+          lookup = lookup_address(frame, frame_index, position)
+          candidates = modules.select { |entry| contains?(entry, lookup) }
+          reason = "invalid_address" if lookup.nil?
           reason ||= "missing_module" if candidates.empty?
           reason ||= "ambiguous_module" if candidates.size > 1
           if reason
@@ -38,7 +39,18 @@ module Errors
           offset = position - mod[:base]
           reason = mod[:reason]
           reason ||= "invalid_address" if offset >= 0xffffffff || (frame.key?("module_offset") && hex(frame["module_offset"]) != offset)
-          base.merge("module_index" => mod[:index], "module_offset" => frame.fetch("module_offset", "0x#{offset.to_s(16)}"), "status" => reason, "identity" => mod[:identity])
+          base.merge("module_index" => mod[:index], "module_offset" => frame.fetch("module_offset", "0x#{offset.to_s(16)}"),
+            "lookup_address" => "0x#{lookup.to_s(16)}", "lookup_offset" => "0x#{(lookup - mod[:base]).to_s(16)}", "status" => reason, "identity" => mod[:identity])
+        end
+
+        def lookup_address(frame, index, position)
+          return position unless position && frame["trust"] == "sentry" && PROFILES[@manifest.dig("system_info", "os")] == "macho"
+          size = { "arm64" => 4, "x86_64" => 1 }[@manifest.dig("system_info", "cpu_arch")]
+          return position unless size
+          aligned = position - position % size
+          return aligned if index.zero?
+          # Cocoa supplies return addresses; minidump walkers already supply adjusted call sites.
+          aligned - size if aligned >= size
         end
 
         def contains?(entry, position)

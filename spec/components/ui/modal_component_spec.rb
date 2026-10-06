@@ -23,6 +23,22 @@ RSpec.describe Ui::ModalComponent, type: :component do
   # A page has one page header: a dialog header must not reuse its page-header-* hooks, or a
   # dialog that opens by itself (the changelog) makes every page-header lookup ambiguous.
   # A page has one h1: a dialog title is an h2, even in a dialog rendered closed on every page.
+  # The header with its buttons stays put; only the content panel scrolls, so the actions are always in reach.
+  it "keeps the header fixed and scrolls only the content panel" do
+    render_inline(described_class.new(title: "T", test_id: "m")) { "x" }
+
+    expect(dialog[:class]).to include("overflow-hidden", "open:flex", "open:flex-col")
+    expect(dialog[:class]).not_to include("overflow-y-auto")
+    expect(page.find("[data-test='m-header']", visible: :all).ancestor("div.shrink-0", visible: :all)).to be_present
+    expect(page.find("[data-test='m-panel']", visible: :all)[:class]).to include("min-h-0", "overflow-y-auto")
+  end
+
+  it "lets a form shell shrink, so its panel scrolls too" do
+    render_inline(described_class.new(title: "T", form: { url: "/x", class: "extra" }, test_id: "m")) { "x" }
+
+    expect(page.find("form", visible: :all)[:class]).to include("flex", "min-h-0", "flex-col", "extra")
+  end
+
   it "titles the dialog with an h2, never a second h1" do
     render_inline(described_class.new(title: "Resolve error"))
     expect(dialog).to have_css("h2", text: "Resolve error", visible: :all)

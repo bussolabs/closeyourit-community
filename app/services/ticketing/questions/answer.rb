@@ -12,19 +12,20 @@ module Ticketing
     # solo — ed è il primo. Senza il lock la seconda lo riscriverebbe, e la storia direbbe che la
     # domanda è rimasta aperta più di quanto è stata.
     class Answer < ApplicationService
-      def initialize(question:, author:, body:, origin: :human, covers_round: false)
+      def initialize(question:, author:, body:, origin: :human, covers_round: false, choice_index: nil)
         @question = question
         @author = author
         @body = body
         @origin = origin
         @covers_round = covers_round
+        @choice_index = choice_index
       end
 
       def call
         return closed if @question.closed_at?
 
         answer = @question.answers.new(author: @author, body: @body, origin: @origin,
-                                       covers_round: @covers_round)
+                                       covers_round: @covers_round, choice_index: @choice_index)
         return invalid(answer) unless answer.valid?
 
         ApplicationRecord.transaction do

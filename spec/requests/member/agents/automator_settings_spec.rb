@@ -68,6 +68,24 @@ RSpec.describe "Member::Agents::AutomatorSettings", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
       expect(organization.reload.automator_setting).to be_nil
     end
+    # CYAU-235
+    it "saves the supporter's engine and the organization's reserved topics" do
+      get member_agents_automator_setting_path
+      expect(response.body).to include('data-test="automator-settings-supporter"', 'data-test="automator-settings-reserved-topics"')
+
+      patch member_agents_automator_setting_path,
+            params: { work_engine: "claude", reviewer: "codex", supporter: "claude", supporter_reserved_topics: "Stripe\npaypal", confirm: "1" }
+
+      expect(response).to redirect_to(member_agents_automator_setting_path)
+      expect(organization.reload.automator_setting).to have_attributes(supporter: "claude", supporter_reserved_topics: "stripe\npaypal")
+    end
+
+    it "refuses an unknown supporter engine" do
+      patch member_agents_automator_setting_path, params: { work_engine: "claude", reviewer: "codex", supporter: "nobody", confirm: "1" }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(organization.reload.automator_setting).to be_nil
+    end
   end
 
   context "with agents.view only" do

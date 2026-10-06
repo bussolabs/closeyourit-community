@@ -1,0 +1,25 @@
+<%# locals: (host:, runtimes:, runtime_versions:) %>
+<%# CYRA-1032 — the installed programs as a sortable table, always open. CYRA-1034 — the latest release
+    of the programs the server follows, checked once a day; empty when it does not know. %>
+<%= render Ui::SectionComponent.new(title: t("member.agents.show.runtime"), body_class: nil, test_id: "host-capabilities") do %>
+  <% if host.runtimes.any? %>
+    <div data-test="host-runtimes">
+      <%= render(Ui::TableComponent.new(compact: true, stacked: true, label: t("member.agents.show.runtime"))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.show.runtime_col_name"), sort: "name", param: :runtimes_sort) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.show.runtime_col_version"), sort: "version", initial: :desc, param: :runtimes_sort) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.agents.show.runtime_col_latest")) %>
+        <% end %>
+        <% runtimes.each do |runtime| %>
+          <%= render Ui::TableComponent::RowComponent.new(test_id: "host-runtime-row") do %>
+            <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-zinc-900 dark:text-zinc-100")) { runtime["name"].presence || "—" } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.show.runtime_col_version"), mono: true, class: "text-gray-600 dark:text-zinc-400 break-all")) { runtime["version"].presence || "—" } %>
+            <%= render "member/agents/runtime_latest_cell", status: runtime_versions[runtime["name"]] %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="px-4 py-4 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.agents.show.runtime_none") %></p>
+  <% end %>
+<% end %>

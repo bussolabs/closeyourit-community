@@ -34,6 +34,7 @@ module Projects
         "projects_groups" => "id IN (:groups)",
         "agents_limit_policies" => "project_id IN (:projects)",
         "agents_attempts" => "workflow_id IN (SELECT id FROM agents_workflows WHERE ticket_id IN (:tickets))",
+        "agents_supporter_decisions" => "workflow_id IN (SELECT id FROM agents_workflows WHERE ticket_id IN (:tickets))",
         "connections_account_secret_accesses" => "project_id IN (:projects)",
         "knowledge_sample_questions" => "project_id IN (:projects)",
         "knowledge_pages" => "id IN (:pages)",

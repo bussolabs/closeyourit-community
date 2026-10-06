@@ -1,0 +1,9 @@
+<%# locals: (host:, range:, tab:) %>
+<%# The period selector: it governs the performance figures and the work history (CYRA-1032). %>
+<div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800" data-test="range-selector">
+  <% Agents::Hosts::StatsRange::KEYS.each do |key| %>
+    <%= link_to t("member.agents.performance.ranges.#{key}"), member_agent_path(host, tab:, range: key),
+          class: "h-[26px] px-2.5 inline-flex items-center rounded-[5px] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 text-[12px] font-medium #{range == key ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-stone-200 dark:border-zinc-800' : 'text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}",
+          data: { test: "range-#{key}" } %>
+  <% end %>
+</div>

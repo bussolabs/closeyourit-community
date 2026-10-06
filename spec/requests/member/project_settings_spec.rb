@@ -423,4 +423,26 @@ RSpec.describe "Member::ProjectSettings", type: :request do
       expect(container["data-section-panels-initial-value"]).to eq("retention")
     end
   end
+  # CYAU-235 — the supporter starts switched off; the project adds its own reserved topics.
+  describe "supporter" do
+    before { sign_in(owner) }
+
+    it "shows the switch, off, and the reserved topics field" do
+      get member_project_settings_path(project)
+      expect(response.body).to include('data-test="project-supporter-toggle"', 'data-test="project-supporter-reserved-topics"')
+      expect(project.supporter_enabled).to be(false)
+    end
+
+    it "switches the supporter on by itself" do
+      patch member_project_settings_path(project), params: { supporter_enabled: "1" }, as: :json
+      expect(response).to have_http_status(:no_content)
+      expect(project.reload.supporter_enabled).to be(true)
+    end
+
+    it "saves the project's reserved topics and returns to the supporter panel" do
+      patch member_project_settings_path(project), params: { section: "supporter", supporter_reserved_topics: " PayPal \napp/services/billing/" }
+      expect(response).to redirect_to(member_project_settings_path(project, section: "supporter"))
+      expect(project.reload.supporter_reserved_topic_list).to eq(%w[paypal app/services/billing/])
+    end
+  end
 end

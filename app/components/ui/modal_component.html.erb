@@ -1,11 +1,13 @@
 <%= tag.dialog(**dialog_options) do %>
   <% inner = capture do %>
-    <div class="p-4 space-y-2">
-      <%= render Ui::PageHeaderComponent.new(title: @title, subtitle: @subtitle, collapsible: false, heading: :h2, test_id: header_test_id) do |h| %>
-        <% if actions? %><% h.with_actions do %><%= actions %><% end %><% end %>
-      <% end %>
+    <div class="flex min-h-0 flex-1 flex-col gap-2 p-4">
+      <div class="shrink-0">
+        <%= render Ui::PageHeaderComponent.new(title: @title, subtitle: @subtitle, collapsible: false, heading: :h2, test_id: header_test_id) do |h| %>
+          <% if actions? %><% h.with_actions do %><%= actions %><% end %><% end %>
+        <% end %>
+      </div>
       <% if content.present? %><%= tag.div(content, class: panel_class, data: { test: panel_test_id }) %><% end %>
     </div>
   <% end %>
-  <% if @form %><%= helpers.form_with(**@form) { inner } %><% else %><%= inner %><% end %>
+  <% if @form %><%= helpers.form_with(**form_options) { inner } %><% else %><%= inner %><% end %>
 <% end %>

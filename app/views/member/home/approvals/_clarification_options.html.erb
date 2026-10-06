@@ -14,4 +14,7 @@
     <%= radio_button_tag "answers[#{position}]", "", false, form: "approvals-reply-form", class: "accent-indigo-600" %>
     <%= t("member.approvals.clarification.other") %>
   </label>
+  <% if (reason = options.find { |option| option["recommended"] }&.dig("reason")).present? %>
+    <p class="basis-full text-[12px] text-gray-500 dark:text-zinc-400" data-test="approvals-clarification-reason"><%= reason %></p>
+  <% end %>
 </fieldset>

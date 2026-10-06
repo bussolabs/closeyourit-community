@@ -92,6 +92,30 @@ RSpec.describe "Cli::V1::Tickets::Questions", type: :request do
       expect(altra.reload.answered_at).to be_nil
     end
 
+    # CYRA-1033 — `--choice N` picks a proposed answer; the reply lists the answers and the choice.
+    it "answers a choice question by number" do
+      riga = domanda
+      riga.update_column(:options, [ { "label" => "Show only", "recommended" => true, "reason" => "Simpler." }, { "label" => "Email" } ])
+
+      post "#{path}/#{riga.id}/answers", params: { choice: 2 }, headers: headers
+
+      expect(response).to have_http_status(:created)
+      data = response.parsed_body["data"]
+      expect(data["options"]).to eq([ { "label" => "Show only", "recommended" => true, "reason" => "Simpler." },
+                                      { "label" => "Email", "recommended" => false, "reason" => nil } ])
+      expect(data["answers"].first).to include("body" => "Email", "choice" => 2)
+    end
+
+    it "refuses a choice that does not exist" do
+      riga = domanda
+      riga.update_column(:options, [ { "label" => "A" }, { "label" => "B" } ])
+
+      post "#{path}/#{riga.id}/answers", params: { choice: 5 }, headers: headers
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body.dig("error", "code")).to eq("R422-QUESTION-003")
+    end
+
     it "non ritira una domanda senza il permesso di modificare il ticket" do
       riga = domanda(blocking: true)
 

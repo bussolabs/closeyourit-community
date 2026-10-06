@@ -1,0 +1,11 @@
+<%# locals: (status:) %>
+<%= render Ui::TableComponent::CellComponent.new(label: t("member.agents.show.runtime_col_latest"), mono: true, class: "text-gray-600 dark:text-zinc-400") do %>
+  <% if status %>
+    <span class="inline-flex flex-wrap items-center gap-1.5" data-test="host-runtime-latest">
+      <%= status[:latest] %>
+      <% if status[:outdated] %>
+        <%= render Ui::BadgeComponent.new(label: t("member.agents.show.runtime_outdated"), color: :amber, size: :sm, test_id: "host-runtime-outdated") %>
+      <% end %>
+    </span>
+  <% end %>
+<% end %>

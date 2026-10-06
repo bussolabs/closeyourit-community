@@ -465,13 +465,12 @@ RSpec.describe "Member sorting (index tabellari)", type: :request do
       create(:agent_host, organization: org, runtimes: [ { "name" => "ruby", "version" => "4.0.6" }, { "name" => "Node", "version" => "22.1.0" } ])
     end
 
-    it "sorts runtimes by name both ways and keeps the list open" do
+    it "sorts runtimes by name both ways" do
       sign_in(owner)
-      get member_agent_path(host), params: { runtimes_sort: "name" }
+      get member_agent_path(host), params: { tab: "details", runtimes_sort: "name" }
       ordered?(response.body, "Node", "ruby")
-      expect(Nokogiri::HTML(response.body).at_css("[data-test='host-runtimes']")["open"]).not_to be_nil
 
-      get member_agent_path(host), params: { runtimes_sort: "-name" }
+      get member_agent_path(host), params: { tab: "details", runtimes_sort: "-name" }
       ordered?(response.body, "ruby", "Node")
     end
   end

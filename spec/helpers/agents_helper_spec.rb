@@ -153,6 +153,11 @@ RSpec.describe AgentsHelper, type: :helper do
       expect(helper.agent_step_connector_class(:pending)).to include("stone")
     end
 
+    # CYRA-1032 — the work has reached the step in progress, so the segment leading to it is filled too.
+    it "fills the segment leading to the step in progress" do
+      expect(helper.agent_step_connector_class(:current)).to include("emerald")
+    end
+
     # CYRA-499 — un riquadro che mostra sempre un trattino occupa un quinto della riga senza dire
     # niente: una misura senza valore non si mostra affatto, e la griglia si stringe di conseguenza.
     describe "#agent_performance_tiles" do
@@ -193,11 +198,47 @@ RSpec.describe AgentsHelper, type: :helper do
         expect(tile[:caption]).to eq(t("member.agents.performance.workflow_median_caption",
                                        value: helper.agent_duration(7200), count: 2))
       end
+    end
 
-      it "la griglia si stringe sul numero di riquadri, con classi che Tailwind vede" do
-        expect(helper.agent_tiles_grid_class(5)).to eq("lg:grid-cols-5")
-        expect(helper.agent_tiles_grid_class(3)).to eq("lg:grid-cols-3")
-        expect(helper.agent_tiles_grid_class(1)).to eq("lg:grid-cols-2")
+    # CYRA-1032 — the figures as one strip: the steps get a cell of their own, the two times carry
+    # their explanation as a hint, and the plans sent back join the strip when there are plans.
+    describe "#agent_performance_strip" do
+      def outcomes = Agents::Hosts::Performance::Outcomes.new(approved: 4, rejected: 1, failed: 0, interrupted: 0, total: 5)
+
+      def report(plans_total: 0, plans_sent_back: 0)
+        Agents::Hosts::Performance::Report.new(
+          range: "30d", tickets_count: 3, attempts_count: 5, outcomes:,
+          cost: Agents::Hosts::Performance::Cost.new(total: BigDecimal("0"), tracked: 0, untracked: 0),
+          plans_total:, plans_sent_back:,
+          host_seconds_avg: 300, host_seconds_median: 300,
+          workflow_seconds_avg: 7200, workflow_seconds_median: 7200,
+          workflow_tickets_count: 2, by_phase: []
+        )
+      end
+
+      def cell(cells, test_id) = cells.find { |c| c[:test_id] == test_id }
+
+      it "puts the steps in their own cell, right after the tickets" do
+        cells = helper.agent_performance_strip(report, nil)
+
+        expect(cells.map { |c| c[:test_id] }).to eq(%w[perf-tickets perf-attempts perf-rejected perf-host-time perf-workflow-time])
+        expect(cell(cells, "perf-attempts")[:value]).to eq(5)
+        expect(cell(cells, "perf-tickets")[:caption]).to be_nil
+      end
+
+      it "explains the two times in a hint instead of a line of text" do
+        cells = helper.agent_performance_strip(report, nil)
+
+        expect(cell(cells, "perf-host-time")[:hint]).to eq(t("member.agents.performance.host_time_legend"))
+        expect(cell(cells, "perf-workflow-time")[:hint]).to eq(t("member.agents.performance.workflow_time_legend"))
+      end
+
+      it "adds the plans sent back only when there were plans" do
+        expect(cell(helper.agent_performance_strip(report, nil), "perf-plans-sent-back")).to be_nil
+
+        plans = cell(helper.agent_performance_strip(report(plans_total: 33, plans_sent_back: 2), nil), "perf-plans-sent-back")
+        expect(plans[:value]).to eq(helper.agent_percent(6.1))
+        expect(plans[:caption]).to eq(t("member.agents.performance.plans_caption", count: 2, total: 33))
       end
     end
 

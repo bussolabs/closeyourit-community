@@ -64,7 +64,6 @@
         "proposal_started": "Compito avviato da te. Avanzamento e risultato restano qui e in Incarichi.",
         "proposal_expired": "Proposta non più avviabile. Chiedi al Puck una nuova proposta in chat.",
         "presets": {
-          "mascot_hint": "La scelta della mascotte vale solo in questo browser.",
           "title": "Preset pronti",
           "intro": "Scegli una card per compilare il form. Tutto resta modificabile.",
           "blank": "Crea da zero",
@@ -104,6 +103,8 @@
           "hint": "Si applica subito, solo in questo browser. Puoi cambiarla quando vuoi.",
           "saved": "Mascotte salvata in questo browser.",
           "unavailable": "Mascotte cambiata per questa pagina. Il browser non consente di salvarla: abilita lo spazio di archiviazione e scegli di nuovo.",
+          "used_by": "Già usata da %{names}",
+          "used_legend": "Il punto indica le mascotte già usate dai tuoi Puck. Passa sopra una mascotte per vederla muoversi. La scelta vale solo in questo browser.",
           "names": {
             "01": "Nuvola azzurra",
             "02": "Germoglio menta",

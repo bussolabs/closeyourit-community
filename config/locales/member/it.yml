@@ -2395,6 +2395,9 @@ it:
         withdrawn: Ritirata
         covers_round: risposta all'intero giro
         answer_placeholder: Scrivi la risposta…
+        other_placeholder: "Altro: scrivi la tua risposta…"
+        choices_legend: Risposte proposte
+        recommended: Consigliata
         answer_submit: Rispondi
         close: Ritira
         close_confirm: Ritirare questa domanda senza risposta?
@@ -2412,6 +2415,7 @@ it:
         errors:
           invalid: Domanda non valida. Deve essere una domanda scritta in parole, non un comando o un indirizzo.
           answer_invalid: Risposta non valida. Controlla il testo.
+          invalid_choice: Scegli una delle risposte proposte, oppure scrivine una tua senza sceglierne.
           closed: "Questa domanda è stata ritirata: non si può più rispondere."
           already_answered: "Questa domanda ha già una risposta: non si può ritirare."
           not_author: Puoi ritirare solo le domande che hai fatto tu.

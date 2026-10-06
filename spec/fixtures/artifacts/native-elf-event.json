@@ -1,0 +1,108 @@
+{
+  "timestamp": "2026-10-06T09:37:19.387Z",
+  "exception": {
+    "values": [
+      {
+        "type": "SIGABRT",
+        "value": "Native application error",
+        "stacktrace": {
+          "frames": [
+            {
+              "native": true,
+              "instruction_addr": "0xffffbbdf7818"
+            },
+            {
+              "native": true,
+              "instruction_addr": "0xffffbbdf7744"
+            },
+            {
+              "native": true,
+              "instruction_addr": "0xaaaab21c0e20"
+            },
+            {
+              "native": true,
+              "instruction_addr": "0xaaaab21c1010"
+            },
+            {
+              "native": true,
+              "instruction_addr": "0xffffbbe0a8ac"
+            },
+            {
+              "native": true,
+              "instruction_addr": "0xffffbbe53c18"
+            }
+          ]
+        },
+        "mechanism": {
+          "type": "signalhandler",
+          "handled": false,
+          "synthetic": true
+        }
+      }
+    ]
+  },
+  "level": "fatal",
+  "event_id": "a7594d1a1ce74a202b49990a7dcbd307",
+  "contexts": {
+    "device": {
+      "archs": [
+        "arm64"
+      ]
+    },
+    "os": {
+      "name": "Linux"
+    }
+  },
+  "release": "native-policy@1",
+  "environment": "certification",
+  "platform": "native",
+  "debug_meta": {
+    "images": [
+      {
+        "type": "elf",
+        "debug_id": "e6ae858d-de8e-8831-d583-3fba1257a2ad",
+        "code_id": "8d85aee68ede3188d5833fba1257a2ad50a1941e",
+        "code_file": "native-policy-input",
+        "image_addr": "0xaaaab21c0000",
+        "image_size": 135168,
+        "arch": "arm64"
+      },
+      {
+        "type": "elf",
+        "debug_id": "f58f266f-c546-7f6d-14e9-501a55698cc2",
+        "code_id": "6f268ff546c56d7f14e9501a55698cc2d0ab4732",
+        "code_file": "libc.so.6",
+        "image_addr": "0xffffbbdd0000",
+        "image_size": 1712128,
+        "arch": "arm64"
+      },
+      {
+        "type": "elf",
+        "debug_id": "5be32198-b192-dc07-c757-1719315e7e72",
+        "code_id": "9821e35b92b107dcc7571719315e7e729135f522",
+        "code_file": "libsentry.so",
+        "image_addr": "0xffffbbf80000",
+        "image_size": 593920,
+        "arch": "arm64"
+      },
+      {
+        "type": "elf",
+        "debug_id": "f27d0549-24bb-7d94-2dfb-9f4e21ff2a25",
+        "code_id": "49057df2bb24947d2dfb9f4e21ff2a2545d30ad8",
+        "code_file": "ld-linux-aarch64.so.1",
+        "image_addr": "0xffffbc03b000",
+        "image_size": 159744,
+        "arch": "arm64"
+      },
+      {
+        "type": "elf",
+        "debug_id": "d0e90cfd-50de-057a-fbe4-12a5f54dcad7",
+        "code_id": "fd0ce9d0de507a05fbe412a5f54dcad786034452",
+        "code_file": "linux-gate.so",
+        "image_addr": "0xffffbc077000",
+        "image_size": 8192,
+        "arch": "arm64"
+      }
+    ]
+  }
+}

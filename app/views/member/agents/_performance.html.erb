@@ -1,12 +1,10 @@
 <%# locals: host:, performance:, range: — rendimento storico dell'host (CYRA-279).
-    Le tile stanno sul canvas, non dentro il pannello: sono lo stesso gesto della sezione Signals
-    della dashboard, e annidarle nella card dei tempi farebbe due bordi uno dentro l'altro.
     Il selettore di periodo governa TUTTO il blocco sotto — tile, tabella e ticket lavorati —
     e resta visibile anche quando il periodo è vuoto: senza, un host con storia vecchia mostrerebbe
     "niente" e non avrebbe modo di allargare la finestra. %>
 <section class="space-y-4" data-test="host-performance">
-  <%# T1 — title, compare, range and the notes on the figures form one panel; the tiles stay tiles below it. %>
-  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="host-performance-head">
+  <%# T1 — title, compare, range and the figures strip form one panel (CYRA-1032). %>
+  <div class="overflow-hidden rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="host-performance-head">
     <div class="px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
       <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.performance.title") %></h2>
       <div class="flex items-center gap-2 flex-wrap">
@@ -16,66 +14,22 @@
               compare_member_agents_path(host_ids: [ host.id ], range: range),
               class: "h-[26px] px-2.5 inline-flex items-center rounded-md border border-stone-200 dark:border-zinc-800 text-[12px] font-medium text-gray-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-stone-50 dark:hover:bg-zinc-800",
               data: { test: "host-compare-cta" } %>
-      <div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800" data-test="range-selector">
-        <% Agents::Hosts::StatsRange::KEYS.each do |key| %>
-          <%= link_to t("member.agents.performance.ranges.#{key}"), member_agent_path(host, range: key),
-                class: "h-[26px] px-2.5 inline-flex items-center rounded-[5px] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 text-[12px] font-medium #{range == key ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-stone-200 dark:border-zinc-800' : 'text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}",
-                data: { test: "range-#{key}" } %>
-        <% end %>
-      </div>
+      <%= render "member/agents/range_selector", host:, range:, tab: nil %>
       </div>
     </div>
-    <% if performance.any? && (performance.host_time? || performance.workflow_time? || !performance.cost.any?) %>
-      <div class="px-4 py-3 border-t border-stone-200 dark:border-zinc-800">
-        <div class="space-y-1">
-          <%# CYRA-499 — due tempi affiancati senza una parola che li distingua si leggono a indovinare,
-              e quello dell'agente passa per il tempo totale. Ogni riga c'è solo se la sua tile c'è. %>
-          <% if performance.host_time? || performance.workflow_time? %>
-            <p class="text-[11.5px] text-gray-500 dark:text-zinc-400 leading-relaxed" data-test="perf-time-legend">
-              <% if performance.host_time? %>
-                <span class="font-medium text-zinc-700 dark:text-zinc-300"><%= t("member.agents.performance.host_time") %>:</span>
-                <%= t("member.agents.performance.host_time_legend") %>
-              <% end %>
-              <% if performance.workflow_time? %>
-                <% if performance.host_time? %><span class="mx-1 text-stone-300 dark:text-zinc-600">·</span><% end %>
-                <span class="font-medium text-zinc-700 dark:text-zinc-300"><%= t("member.agents.performance.workflow_time") %>:</span>
-                <%= t("member.agents.performance.workflow_time_legend") %>
-              <% end %>
-            </p>
-          <% end %>
-          <%# CYRA-451 voleva che l'assenza di costo tracciato fosse DETTA, non nascosta; CYRA-499 che
-              nessun riquadro mostri un trattino. La frase resta, fuori dalla griglia: nessuna tile vuota
-              e l'informazione non si perde. %>
-          <% unless performance.cost.any? %>
-            <p class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="perf-cost-unavailable"><%= t("member.agents.performance.cost_unavailable") %></p>
-          <% end %>
-        </div>
-      </div>
+    <%# CYRA-451 — the missing cost is said, not hidden; CYRA-1032 — the figures follow as one strip. %>
+    <% if performance.any? && !performance.cost.any? %>
+      <p class="px-4 pb-3 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="perf-cost-unavailable"><%= t("member.agents.performance.cost_unavailable") %></p>
+    <% end %>
+    <% if performance.any? %>
+      <%= render "member/agents/performance_strip", cells: agent_performance_strip(performance, previous) %>
     <% end %>
   </div>
 
   <% if performance.any? %>
-    <%# CYRA-451 — le tile portano la variazione sul periodo precedente: un numero da solo non dice
-        se stia migliorando. Su `all` il confronto non esiste e la riga del delta non compare.
-        CYRA-499 — l'elenco delle tile lo decide l'helper: una misura senza valore non compare
-        affatto, invece di occupare un quinto della riga con un trattino. %>
-    <% tiles = agent_performance_tiles(performance, previous) %>
-    <div class="grid grid-cols-2 <%= agent_tiles_grid_class(tiles.size) %> gap-4">
-      <% tiles.each do |tile| %>
-        <%= render Ui::MetricTileComponent.new(**tile) %>
-      <% end %>
-    </div>
-
     <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="host-phase-table">
       <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-3">
         <h3 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.performance.by_phase") %></h3>
-        <% if performance.plans_sent_back_pct %>
-          <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="perf-plans-sent-back">
-            <%= t("member.agents.performance.plans_sent_back",
-                  count: performance.plans_sent_back, total: performance.plans_total,
-                  percent: agent_percent(performance.plans_sent_back_pct)) %>
-          </span>
-        <% end %>
       </div>
       <%= render(Ui::TableComponent.new(stacked: true, label: t("member.agents.performance.by_phase"))) do |table| %>
         <% table.with_head do %>

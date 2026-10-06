@@ -15,6 +15,8 @@ module Member
       def update
         @setting = current_organization.automator_setting || current_organization.build_automator_setting
         @setting.assign_attributes(work_engine: params[:work_engine], reviewer: params[:reviewer], opencode_model: params[:opencode_model])
+        # CYAU-235 — the supporter's engine and the reserved topics every project of the organization inherits.
+        @setting.assign_attributes(params.permit(:supporter, :supporter_reserved_topics))
         return redirect_to(member_agents_automator_setting_path, notice: t("member.automator_settings.saved")) if @setting.save
 
         # A rejected choice is never written: the page shows the choice still in force.

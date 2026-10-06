@@ -71,6 +71,13 @@ en:
       session_replay_enabled_hint: Records how people browse this site and makes it watchable under Session replay. Sensitive values stay masked and recordings are deleted when they expire.
       secret_approval_enabled_label: Two-person approval for secrets
       secret_approval_enabled_hint: Requires a second approver to confirm secret changes in protected environments.
+      supporter_section: Supporter
+      supporter_hint: The supporter answers the machines' questions and approves plans up to risk 6 of 10. Every decision it takes stays on the ticket.
+      supporter_enabled_label: Supporter on
+      supporter_enabled_hint: When off, every question and plan goes to a person, as today.
+      supporter_reserved_topics_label: Project reserved topics
+      supporter_reserved_topics_placeholder: "mailchimp\napp/services/payments/"
+      supporter_reserved_topics_hint: One per line. They add to the organization's and the built-in topics, never remove them. A line with a slash (/) is a code folder.
       tickets_section: Tickets
       default_assignee_label: Default assignee
       default_assignee_placeholder: None

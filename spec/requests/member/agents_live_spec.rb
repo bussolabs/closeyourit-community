@@ -53,21 +53,23 @@ RSpec.describe "Member::Agents — attività e storico separati (CYRA-823)", typ
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include('id="host-activity"')
-      expect(response.body).to include('id="host-worked"')
       expect(response.body).to include("turbo-cable-stream-source")
       expect(response.body).to include('data-controller="agent-activity"')
+
+      # CYRA-1032 — the history frame lives on the work tab.
+      get member_agent_path(host, tab: "work")
+      expect(response.body).to include('id="host-worked"')
     end
 
-    it "rende entrambe le sezioni, come prima: nessun buco da riempire con una seconda richiesta" do
+    it "renders each tab whole: no gap left for a second request to fill" do
       host = online_host(hostname: "mac-1")
       concluded(host:)
 
       get member_agent_path(host)
+      expect(response.body).to include('data-test="host-activity"', 'data-test="host-performance"')
 
-      expect(response.body).to include('data-test="host-activity"')
-      expect(response.body).to include('data-test="host-performance"')
-      expect(response.body).to include('data-test="host-worked-tickets"')
-      expect(response.body).to include('data-test="worked-row"')
+      get member_agent_path(host, tab: "work")
+      expect(response.body).to include('data-test="host-worked-tickets"', 'data-test="worked-row"')
     end
   end
 
@@ -267,11 +269,10 @@ RSpec.describe "Member::Agents — attività e storico separati (CYRA-823)", typ
       vecchio = concluded(host:, phase: "triage", age: 3.hours).ticket
       concluded(host:, phase: "triage", age: 1.hour)
 
-      get member_agent_path(host, range: "30d", phase: "triage", per: 1, page: 2)
+      get member_agent_path(host, tab: "work", range: "30d", phase: "triage", per: 1, page: 2)
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include('data-test="host-activity"')
-      expect(response.body).to include('data-test="host-performance"')
+      expect(response.body).to include('data-test="host-tab-work"', 'data-test="host-worked-tickets"')
       expect(response.body).to include(vecchio.code)
     end
   end

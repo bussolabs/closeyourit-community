@@ -8,13 +8,13 @@
     ANTI-BOLA: `agents.view` è org-level ma i ticket sono visibili per progetto → titolo, link e prodotti
     solo per i ticket che l'utente può vedere; codice e percorso restano (sono attività dell'host).
     Partial NON ispezionato dal conformance spec CYRA-25 → Ui::BadgeComponent qui è ammesso. %>
-<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-4" data-test="host-activity">
-  <h2 class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.activity.title") %></h2>
+<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="host-activity">
+  <h2 class="px-5 py-4 text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.activity.title") %></h2>
 
   <% if active_runs.empty? %>
-    <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="host-activity-none"><%= t("member.agents.activity.none") %></p>
+    <p class="px-5 py-4 border-t border-stone-200 dark:border-zinc-800 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="host-activity-none"><%= t("member.agents.activity.none") %></p>
   <% else %>
-    <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+    <ul class="divide-y divide-stone-200 dark:divide-zinc-800 border-t border-stone-200 dark:border-zinc-800">
       <% active_runs.each do |run| %>
         <% code = run["ticket"] %>
         <% ticket = code && tickets_by_code[code] %>
@@ -24,8 +24,9 @@
         <% current_phase = (code && leases_by_ticket_code[code]&.execution_phase).presence %>
         <% timeline = ::Agents::RunTimeline.new(workflow:, current_phase:) %>
         <% products = timeline.products %>
-        <li class="space-y-2.5 py-3" data-test="host-run">
-          <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <%# CYRA-1032 — one line per run: the ticket, its steps, then when it started and what it produced. %>
+        <li class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)_minmax(0,auto)] items-center gap-x-6 gap-y-2.5 px-5 py-3.5" data-test="host-run">
+          <div class="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
             <% if visible %>
               <%= link_to ticket.code, member_ticket_path(ticket), class: "font-mono text-[12px] font-semibold text-indigo-700 dark:text-indigo-300 hover:underline" %>
               <span class="text-[12px] text-zinc-900 dark:text-zinc-100"><%= ticket.title %></span>
@@ -40,38 +41,42 @@
             <% if run["stalled"] %>
               <%= render Ui::BadgeComponent.new(label: t("member.agents.activity.stalled"), color: :amber, dot: true, size: :sm, test_id: "host-run-stalled") %>
             <% end %>
-            <% if (started_label = agent_run_started_label(run)) %>
-              <span class="ml-auto text-[11px] text-gray-400 dark:text-zinc-500"><%= started_label %></span>
-            <% end %>
           </div>
 
           <%# Il percorso: pallini + connettori, etichette sotto. La sequenza viene da PhaseProfile::PHASES.
               Senza workflow (ticket non risolto) non c'è percorso da raccontare: si mostra solo la riga. %>
-          <% if workflow %>
-            <%= render "member/agents/run_timeline", timeline: timeline %>
-          <% end %>
+          <div class="min-w-0">
+            <% if workflow %>
+              <%= render "member/agents/run_timeline", timeline: timeline %>
+            <% end %>
+          </div>
 
           <%# Prodotti: solo per i ticket visibili (nome del ramo e numero PR sono contenuto del ticket).
               Ogni voce compare solo se esiste: una lavorazione appena presa non ha ancora nulla. %>
-          <% if visible %>
-            <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="host-run-products">
-              <% if products.plan_version %>
-                <span><%= t("member.agents.activity.products.plan", version: products.plan_version) %></span>
-              <% end %>
-              <% if products.attempts_count.positive? %>
-                <span><%= t("member.agents.activity.products.attempts", count: products.attempts_count) %></span>
-              <% end %>
-              <% if products.branch_name %>
-                <span class="font-mono"><%= products.branch_name %></span>
-              <% end %>
-              <% if products.pull_request_number %>
-                <span class="font-mono">#<%= products.pull_request_number %></span>
-              <% end %>
-              <% if products.plan_version.nil? && products.attempts_count.zero? && products.branch_name.nil? && products.pull_request_number.nil? %>
-                <span class="text-gray-400 dark:text-zinc-500"><%= t("member.agents.activity.products.none") %></span>
-              <% end %>
-            </div>
-          <% end %>
+          <div class="flex min-w-0 flex-col gap-1 lg:items-end lg:text-right">
+            <% if (started_label = agent_run_started_label(run)) %>
+              <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= started_label %></span>
+            <% end %>
+            <% if visible %>
+              <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[12px] text-gray-600 dark:text-zinc-300 lg:justify-end" data-test="host-run-products">
+                <% if products.plan_version %>
+                  <span><%= t("member.agents.activity.products.plan", version: products.plan_version) %></span>
+                <% end %>
+                <% if products.attempts_count.positive? %>
+                  <span><%= t("member.agents.activity.products.attempts", count: products.attempts_count) %></span>
+                <% end %>
+                <% if products.branch_name %>
+                  <span class="font-mono"><%= products.branch_name %></span>
+                <% end %>
+                <% if products.pull_request_number %>
+                  <span class="font-mono">#<%= products.pull_request_number %></span>
+                <% end %>
+                <% if products.plan_version.nil? && products.attempts_count.zero? && products.branch_name.nil? && products.pull_request_number.nil? %>
+                  <span class="text-gray-400 dark:text-zinc-500"><%= t("member.agents.activity.products.none") %></span>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
         </li>
       <% end %>
     </ul>
@@ -83,7 +88,7 @@
       fermata senza chiuderli. In tutti gli altri casi i numeri della pagina concordano e non serve
       aggiungere niente. %>
   <% if unreported_attempts.any? %>
-    <p class="text-[11.5px] text-amber-700 dark:text-amber-300 pt-1 border-t border-stone-100 dark:border-zinc-800" data-test="host-unreported-work">
+    <p class="px-5 py-3 border-t border-stone-200 dark:border-zinc-800 text-[12px] text-amber-700 dark:text-amber-300" data-test="host-unreported-work">
       <%= t("member.agents.activity.unreported", count: unreported_attempts.size) %>
     </p>
   <% end %>

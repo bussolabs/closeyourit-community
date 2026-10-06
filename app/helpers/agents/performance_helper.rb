@@ -17,15 +17,28 @@ module Agents
       tiles
     end
 
-    # La griglia si stringe sul numero di riquadri rimasti: cinque colonne con tre riquadri lascerebbero
-    # due buchi in fondo alla riga. Classi LETTERALI — lo scanner Tailwind non vede le interpolate.
-    def agent_tiles_grid_class(count)
-      case count
-      when 5 then "lg:grid-cols-5"
-      when 4 then "lg:grid-cols-4"
-      when 3 then "lg:grid-cols-3"
-      else "lg:grid-cols-2"
-      end
+    # CYRA-1032 — the cells of the machine page strip: the same measures as the tiles, plus the steps
+    # in a cell of their own, the two times explained in a hint, and the plans sent back when any.
+    def agent_performance_strip(performance, previous)
+      cells = agent_performance_tiles(performance, previous)
+      cells.first[:caption] = nil
+      cells.insert(1, { label: t("member.agents.performance.attempts_label"), value: performance.attempts_count,
+                        test_id: "perf-attempts", value_test_id: "perf-attempts-value" })
+      agent_strip_hint(cells, "perf-host-time", "host_time_legend")
+      agent_strip_hint(cells, "perf-workflow-time", "workflow_time_legend")
+      cells << agent_plans_cell(performance) if performance.plans_sent_back_pct
+      cells
+    end
+
+    def agent_strip_hint(cells, test_id, key)
+      cell = cells.find { |c| c[:test_id] == test_id }
+      cell&.merge!(hint: t("member.agents.performance.#{key}"), hint_test_id: "#{test_id}-hint")
+    end
+
+    def agent_plans_cell(performance)
+      { label: t("member.agents.performance.plans_label"), value: agent_percent(performance.plans_sent_back_pct),
+        caption: t("member.agents.performance.plans_caption", count: performance.plans_sent_back, total: performance.plans_total),
+        test_id: "perf-plans-sent-back", value_test_id: "perf-plans-sent-back-value" }
     end
 
     def agent_tickets_tile(performance, previous)

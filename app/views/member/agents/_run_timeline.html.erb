@@ -1,22 +1,20 @@
-<%# locals: timeline: (Agents::RunTimeline) — il percorso di una lavorazione: pallini con i
-    connettori sopra, etichette sotto. I due giri leggono la stessa sequenza perché devono restare
-    incolonnati: il connettore che precede un pallino e lo spazio che precede la sua etichetta hanno
-    la stessa larghezza (CYRA-802). %>
-<div data-test="host-run-timeline">
-  <div class="flex items-center gap-1">
-    <% timeline.steps.each_with_index do |step, index| %>
+<%# locals: timeline: (Agents::RunTimeline) — the path of a run: one column per step, the dot on the
+    line and its label under it. The segment leading to a step is drawn from the step before; the step
+    in progress pulses (CYRA-1032). %>
+<ol class="grid grid-cols-5" data-test="host-run-timeline">
+  <% timeline.steps.each_with_index do |step, index| %>
+    <li class="relative flex flex-col items-center gap-1.5">
       <% unless index.zero? %>
         <span class="<%= agent_step_connector_class(step.status) %>" aria-hidden="true"></span>
       <% end %>
       <span class="<%= agent_step_dot_class(step.status) %>"
             title="<%= t("member.agents.activity.step_status.#{step.status}") %>"
-            data-test="host-run-step" data-phase="<%= step.phase %>" data-status="<%= step.status %>"></span>
-    <% end %>
-  </div>
-  <div class="mt-1 flex items-center gap-1">
-    <% timeline.steps.each_with_index do |step, index| %>
-      <% unless index.zero? %><span class="flex-1" aria-hidden="true"></span><% end %>
+            data-test="host-run-step" data-phase="<%= step.phase %>" data-status="<%= step.status %>">
+        <% if step.status == :current %>
+          <span class="absolute -inset-1 rounded-full bg-indigo-400/30 motion-safe:animate-ping" aria-hidden="true"></span>
+        <% end %>
+      </span>
       <span class="<%= agent_step_label_class(step.status) %>"><%= t("member.agents.phases.#{step.phase}") %></span>
-    <% end %>
-  </div>
-</div>
+    </li>
+  <% end %>
+</ol>

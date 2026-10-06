@@ -2,18 +2,18 @@
 <%# CYRA-921 — which engine does the machine's work. The server records the work under it and the
     machine must have that engine installed to receive any. %>
 <% engines = Agents::Host::WORK_ENGINES %>
-<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3" data-test="host-work-engine">
-  <h2 class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.engine.title") %></h2>
+<div class="px-4 py-4 space-y-3" data-test="host-work-engine">
+  <h3 class="text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.engine.title") %></h3>
   <p class="text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-[70ch]"><%= t("member.agents.engine.hint") %></p>
   <% if can_manage %>
     <%= form_with url: engine_member_agent_path(host), method: :patch, class: "flex flex-wrap items-end gap-3" do %>
       <%= render Ui::SelectComponent.new(name: "work_engine", label: t("member.agents.engine.label"), test_id: "host-engine-select",
             options: engines.map { |engine| [ t("member.agents.engine.engines.#{engine}"), engine ] },
             descriptions: engines.index_with { |engine| t("member.agents.engine.descriptions.#{engine}") },
-            selected: host.effective_work_engine, wrapper_class: "min-w-[16rem]") %>
+            selected: host.effective_work_engine, wrapper_class: "min-w-0 flex-1") %>
       <%= render Ui::ButtonComponent.new(label: t("member.agents.engine.save"), type: "submit", size: :sm, test_id: "host-engine-save") %>
     <% end %>
   <% else %>
     <p class="text-[13px] text-zinc-900 dark:text-zinc-100"><%= t("member.agents.engine.engines.#{host.effective_work_engine}") %></p>
   <% end %>
-</section>
+</div>

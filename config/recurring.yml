@@ -419,6 +419,12 @@ production: &schedule
     queue: maintenance
     schedule: every 15 minutes
 
+  # CYRA-1034 — the latest releases of the programs the machines report, for their details tab.
+  refresh_agent_runtime_versions:
+    class: Agents::RefreshRuntimeVersionsJob
+    queue: maintenance
+    schedule: at 4:15am every day
+
   # Decadimento del chip "visitatori online" analytics: ri-broadcasta i progetti con pageview recenti
   # così il conteggio scende quando il traffico cessa (il cable-su-pageview copre solo la salita).
   decay_analytics_realtime:

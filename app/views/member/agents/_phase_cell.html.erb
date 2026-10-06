@@ -1,14 +1,13 @@
 <%# locals: host:, range:, phase:, outcome:, value:, color:, label: — cella cliccabile del riepilogo per
     passaggio (CYRA-451). Zero → testo spento e nessun link: non c'è nessuna lavorazione da mostrare.
-    CYRA-823: la cella filtra l'elenco sotto, quindi chiede al server SOLO quell'elenco — il
-    riepilogo da cui si è partiti non cambia per il fatto di averlo aperto. %>
+    CYRA-1032: the history lives on the work tab, so the cell opens that tab already filtered. %>
 <%= render Ui::TableComponent::CellComponent.new(label: label, align: :right, class: agent_count_class(value, color)) do %>
   <% if value.to_i.zero? %>
     <%= value %>
   <% else %>
-    <%= link_to value, member_agent_path(host, range: range, phase: phase, outcome: outcome, anchor: "worked"),
+    <%= link_to value, member_agent_path(host, tab: "work", range: range, phase: phase, outcome: outcome),
           class: "underline decoration-stone-300 dark:decoration-zinc-600 underline-offset-2 hover:decoration-current",
-          data: { test: "phase-cell-link", turbo_frame: "host-worked" },
+          data: { test: "phase-cell-link", turbo_frame: "_top" },
           title: t("member.agents.performance.cell_title", phase: t("member.agents.phases.#{phase}")) %>
   <% end %>
 <% end %>

@@ -1,0 +1,19 @@
+<%# locals: (ticket:, question:, return_tab: nil) %>
+<%# CYRA-1033 — the proposed answers of a choice question: one click answers. The recommended one is
+    tinted and says why in one line; the text field below stays for a different answer. %>
+<div class="mt-3 flex flex-col items-start gap-1.5" role="group" aria-label="<%= t("member.tickets.questions.choices_legend") %>" data-test="ticket-question-choices-<%= question.id %>">
+  <% question.choice_options.each.with_index(1) do |option, number| %>
+    <div class="flex flex-wrap items-center gap-2 max-w-full">
+      <%= render Ui::ButtonComponent.new(label: "#{number} · #{option["label"]}", href: member_ticket_question_answers_path(ticket, question),
+            method: :post, params: { choice: number, return_tab: return_tab }.compact,
+            variant: option["recommended"] ? :tinted_outline : :secondary, size: :md,
+            test_id: "ticket-question-choice-#{question.id}-#{number}") %>
+      <% if option["recommended"] %>
+        <%= render Ui::BadgeComponent.new(label: t("member.tickets.questions.recommended"), color: :indigo, size: :sm) %>
+      <% end %>
+    </div>
+    <% if option["reason"].present? %>
+      <p class="pl-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= option["reason"] %></p>
+    <% end %>
+  <% end %>
+</div>

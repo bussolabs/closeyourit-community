@@ -87,12 +87,12 @@ module Agents
       end
 
       # Staging numbers of OTHER workflows of this repository that are above the last stable tag, i.e.
-      # still waiting for their production release.
+      # still waiting for their production release. CYRA-1031 — cancelled workflows count too: their
+      # beta tag and CHANGELOG section may already be published, and cancelling takes neither back.
       def pending_versions(repository, baseline_tag)
         floor = baseline_tag ? parse(baseline_tag) : [ 0, 0, 0 ]
         Agents::ReleaseAssignment.for_phase("closer_staging")
                                  .where(github_repository: repository).where.not(workflow: @workflow)
-                                 .joins(:workflow).where(agents_workflows: { cancelled_at: nil })
                                  .pluck(:version)
                                  .map { |version| parse(version.sub(/-beta\.\d+\z/, "")) }
                                  .select { |version| (version <=> floor) == 1 }

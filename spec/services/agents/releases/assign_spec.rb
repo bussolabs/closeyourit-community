@@ -54,13 +54,15 @@ RSpec.describe Agents::Releases::Assign do
     expect(Agents::ReleaseAssignment.pluck(:version).uniq.size).to eq(2)
   end
 
-  it "a cancelled workflow does not hold a number" do
+  # CYRA-1031 — cancelling cannot take back a beta tag or a CHANGELOG section already published under that
+  # number, so the number stays taken.
+  it "a cancelled workflow keeps its number taken" do
     assign("closer_staging")
     workflow.update!(cancelled_at: Time.current)
     altro = create(:ticket, organization:, project:, kind: :bug, with_agent_workflow: true)
 
     expect(described_class.call(workflow: altro.agent_workflow, execution_phase: "closer_staging").value.version)
-      .to eq("v1.4.3-beta.2")
+      .to eq("v1.4.4-beta.1")
   end
 
   it "production keeps the number of its own staging release" do

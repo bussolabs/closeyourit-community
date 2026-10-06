@@ -40,6 +40,10 @@ en:
         autopilot: work
         closer_staging: staging
         closer_production: production
+      tabs:
+        overview: Overview
+        work: Work
+        details: Details and settings
       activity:
         title: Activity
         idle: Waiting for work
@@ -95,7 +99,9 @@ en:
           one: "median %{value} · across 1 closed ticket"
           other: "median %{value} · across %{count} closed tickets"
         by_phase: Time per step
-        plans_sent_back: "plans sent back %{count}/%{total} · %{percent}"
+        attempts_label: Steps
+        plans_label: Plans sent back
+        plans_caption: "%{count} of %{total} plans"
         total: Total
         col_phase: Step
         col_attempts: Runs
@@ -152,11 +158,10 @@ en:
         filter_outcome: Outcome
       show:
         host: Machine
-        capabilities: What it can do
         runtime: Installed programs
-        runtime_toggle:
-          one: See the installed program
-          other: "See the %{count} installed programs"
+        runtime_col_latest: Latest
+        runtime_outdated: update available
+        runtime_none: The machine has not reported its programs yet.
         runtime_col_name: Program
         runtime_col_version: Version
         repository: Projects it follows

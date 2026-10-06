@@ -64,7 +64,6 @@
         "proposal_started": "Task started by you. Progress and results stay here and in Tasks.",
         "proposal_expired": "This proposal can no longer be started. Ask the Puck for a new proposal in chat.",
         "presets": {
-          "mascot_hint": "Your mascot choice applies only in this browser.",
           "title": "Ready-made presets",
           "intro": "Choose a card to fill in the form. You can edit everything.",
           "blank": "Create from scratch",
@@ -104,6 +103,8 @@
           "hint": "Applies immediately, only in this browser. You can change it anytime.",
           "saved": "Mascot saved in this browser.",
           "unavailable": "Mascot changed for this page. Your browser cannot save it: enable browser storage and choose again.",
+          "used_by": "Already used by %{names}",
+          "used_legend": "The dot marks mascots your Puckies already use. Hover a mascot to see it move. Your choice applies only in this browser.",
           "names": {
             "01": "Blue cloud",
             "02": "Mint sprout",

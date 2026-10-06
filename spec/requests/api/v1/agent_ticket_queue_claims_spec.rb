@@ -24,7 +24,7 @@ RSpec.describe "Api::V1::AgentTicketQueueClaims (automator)", type: :request do
   let(:path) { "/api/v1/ticket_queue/claims" }
 
   before do
-    host.update!(last_heartbeat_at: Time.current, certified_at: Time.current, repositories: [ project.key ],
+    host.update!(last_heartbeat_at: Time.current, certified_at: Time.current, repositories: [ project.key ], automator_version: "0.39.0",
                  runtimes: [ { "name" => "claude", "present" => true } ])
     # B.5 — scope per-host: la registrazione conia il service account dell'host senza progetti (fail-closed);
     # il claim lo ammette solo se quel SA vede il progetto, quindi qui gli concediamo la visibilità.

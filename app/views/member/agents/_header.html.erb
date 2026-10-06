@@ -1,5 +1,5 @@
 <%# locals: host:, active_runs:, waiting_decisions:, can_manage:, history_size:, unreported_attempts:,
-    visible_ticket_ids:, tickets_by_code:, leases_by_ticket_code: — intestazione della scheda host
+    visible_ticket_ids:, tickets_by_code:, leases_by_ticket_code:, tab: — intestazione della scheda host
     E la sezione Attività, dentro lo STESSO turbo frame.
 
     CYRA-823 — stanno insieme perché sono una sola osservazione: i chip dicono quante lavorazioni la
@@ -31,6 +31,11 @@
       <%= render Ui::StatLabelComponent.new(label: t("member.agents.show.certification_label"), value: (host.certified? ? t("member.agents.show.certified_value") : t("member.agents.show.not_certified_value")), value_color: (host.certified? ? :emerald : :amber), test_id: "host-certification") %>
       <%= render Ui::StatLabelComponent.new(label: t("member.agents.show.heartbeat_label"), value: agent_host_time_ago(host.last_heartbeat_at), test_id: "host-heartbeat") %>
     <% end %>
+    <%# CYRA-1032 — the tabs: overview (activity and performance), work history, details and settings. %>
+    <% [ [ "overview", "activity" ], [ "work", "list-checks" ], [ "details", "settings" ] ].each do |name, icon| %>
+      <% header.with_tab(label: t("member.agents.tabs.#{name}"), href: member_agent_path(host, tab: (name == "overview" ? nil : name), range: params[:range].presence),
+           active: tab == name, icon: icon, test_id: "host-tab-#{name}") %>
+    <% end %>
     <% if can_manage %>
       <% header.with_actions do %>
         <% if host.certified? %>
@@ -53,8 +58,10 @@
     <% end %>
   <% end %>
 
-  <%= render "member/agents/activity",
-        active_runs: active_runs, unreported_attempts: unreported_attempts,
-        visible_ticket_ids: visible_ticket_ids, tickets_by_code: tickets_by_code,
-        leases_by_ticket_code: leases_by_ticket_code %>
+  <% if tab == "overview" %>
+    <%= render "member/agents/activity",
+          active_runs: active_runs, unreported_attempts: unreported_attempts,
+          visible_ticket_ids: visible_ticket_ids, tickets_by_code: tickets_by_code,
+          leases_by_ticket_code: leases_by_ticket_code %>
+  <% end %>
 <% end %>

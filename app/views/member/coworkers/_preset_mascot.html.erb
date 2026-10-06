@@ -1,16 +1,21 @@
-<details data-coworker-presets-target="picker" class="md:col-span-2" data-test="coworkers-preset-mascot">
-  <summary class="flex cursor-pointer list-none items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400 [&::-webkit-details-marker]:hidden">
-    <%= image_tag "/coworkers/mascots/01.webp", alt: "", width: 64, height: 64, class: "size-16 object-contain", data: { coworker_presets_target: "image" } %>
-    <span class="text-[13px] font-medium"><%= t("member.coworkers.mascot.choose") %></span>
-    <%= render Ui::IconComponent.new(name: "chevron-down", class: "size-4 text-gray-500 dark:text-zinc-400") %>
-  </summary>
-  <p class="mt-2 text-[12px] text-gray-600 dark:text-zinc-400"><%= t("member.coworkers.presets.mascot_hint") %></p>
-  <div class="grid grid-cols-4 gap-2 py-3 sm:grid-cols-5" role="group" aria-label="<%= t('member.coworkers.mascot.choose') %>">
+<%# Every mascot at once: hovering one plays its animation; a dot marks those the account's Puckies use here. %>
+<div class="md:col-span-2" data-test="coworkers-preset-mascot">
+  <h4 class="text-[13px] font-medium"><%= t("member.coworkers.mascot.choose") %></h4>
+  <div class="grid grid-cols-5 gap-2 py-3" role="group" aria-label="<%= t('member.coworkers.mascot.choose') %>" data-test="coworkers-mascot-grid">
     <% (1..20).each do |number| %>
       <% mascot = format("%02d", number) %>
-      <%= render Ui::ButtonComponent.new(variant: :secondary, class: "h-auto! min-h-16 px-1! py-2! aria-pressed:border-indigo-600 aria-pressed:bg-indigo-50 dark:aria-pressed:border-indigo-400 dark:aria-pressed:bg-indigo-500/15", aria: { label: t("member.coworkers.mascot.names.#{mascot}"), pressed: number == 1 }, data: { action: "coworker-presets#chooseMascot", coworker_presets_target: "mascotOption", mascot: mascot }) do %>
-        <%= image_tag "/coworkers/mascots/#{mascot}.webp", alt: "", width: 48, height: 48, class: "size-12 object-contain", loading: "lazy" %>
+      <% name = t("member.coworkers.mascot.names.#{mascot}") %>
+      <%= render Ui::ButtonComponent.new(variant: :secondary, class: "relative h-auto! min-h-16 px-1! py-2! aria-pressed:border-indigo-600 aria-pressed:bg-indigo-50 dark:aria-pressed:border-indigo-400 dark:aria-pressed:bg-indigo-500/15",
+            aria: { label: name, pressed: number == 1 }, title: name, test_id: "coworkers-mascot-option-#{mascot}",
+            data: { controller: "coworker-mascot-preview", coworker_mascot_preview_mascot_value: mascot, coworker_presets_target: "mascotOption", mascot: mascot, name: name,
+                    action: "coworker-presets#chooseMascot mouseenter->coworker-mascot-preview#play mouseleave->coworker-mascot-preview#stop focus->coworker-mascot-preview#play blur->coworker-mascot-preview#stop" }) do %>
+        <span class="relative size-12 overflow-hidden" aria-hidden="true">
+          <%= image_tag "/coworkers/mascots/#{mascot}.webp", alt: "", width: 48, height: 48, class: "size-full object-contain", loading: "lazy", data: { coworker_mascot_preview_target: "portrait" } %>
+          <img alt="" hidden class="absolute top-0 left-0 h-[600%] w-[600%] max-w-none" data-coworker-mascot-preview-target="sprite" data-test="coworkers-mascot-sprite" data-action="load->coworker-mascot-preview#loaded">
+        </span>
+        <span hidden class="absolute right-1 top-1 size-2 rounded-full bg-indigo-600 dark:bg-indigo-400" data-coworker-presets-target="usedMark" data-mascot="<%= mascot %>" data-test="coworkers-mascot-used"></span>
       <% end %>
     <% end %>
   </div>
-</details>
+  <p class="text-[12px] text-gray-600 dark:text-zinc-400"><%= t("member.coworkers.mascot.used_legend") %></p>
+</div>

@@ -186,6 +186,28 @@ RSpec.describe "Member ticket questions", type: :request do
       expect(riga.answers.first.body).to eq("Questa qui.")
       expect(altra.reload.answered_at).to be_nil
     end
+
+    it "shows the proposed answers as buttons, the recommended one with its reason" do
+      riga = domanda
+      riga.update_column(:options, [ { "label" => "Solo mostrato", "recommended" => true, "reason" => "Nessuno ha chiesto email." },
+                                     { "label" => "Email" } ])
+
+      get member_ticket_path(ticket, tab: "questions")
+
+      expect(response.body).to include(%(data-test="ticket-question-choice-#{riga.id}-1"))
+      expect(response.body).to include(%(data-test="ticket-question-choice-#{riga.id}-2"))
+      expect(response.body).to include("Nessuno ha chiesto email.")
+    end
+
+    # CYRA-1033 — a click on a proposed answer.
+    it "answers with the clicked proposed answer" do
+      riga = domanda
+      riga.update_column(:options, [ { "label" => "Solo mostrato" }, { "label" => "Email" } ])
+
+      post member_ticket_question_answers_path(ticket, riga), params: { choice: 1 }
+
+      expect(riga.reload.resolved_answer).to have_attributes(body: "Solo mostrato", choice_index: 1)
+    end
   end
 
   describe "ritirare una domanda" do

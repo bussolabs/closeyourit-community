@@ -176,6 +176,69 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
   describe "GET show (dettaglio host + attività)" do
     before { sign_in(owner) }
 
+    # CYRA-1032 — three tabs: the overview with activity and performance, the work history, and the
+    # machine details with its engine settings. Each tab renders only its own panels.
+    describe "tabs" do
+      it "opens on the overview: activity and performance, no history and no details" do
+        host = online_host(hostname: "mac-tabs")
+
+        get member_agent_path(host)
+
+        body = response.body
+        expect(body).to include('data-test="host-tab-overview"', 'data-test="host-tab-work"', 'data-test="host-tab-details"')
+        expect(body).to include('data-test="host-activity"', 'data-test="host-performance"')
+        expect(body).not_to include('data-test="host-worked-tickets"')
+        expect(body).not_to include('data-test="host-facts"')
+      end
+
+      it "shows the work history on the work tab, with the period selector" do
+        host = online_host(hostname: "mac-tab-work")
+
+        get member_agent_path(host, tab: "work")
+
+        body = response.body
+        expect(body).to include('data-test="host-worked-tickets"', 'data-test="range-selector"')
+        expect(body).not_to include('data-test="host-activity"')
+        expect(body).not_to include('data-test="host-performance"')
+      end
+
+      it "shows the machine, its engines and its programs on the details tab" do
+        host = online_host(hostname: "mac-tab-details")
+
+        get member_agent_path(host, tab: "details")
+
+        body = response.body
+        expect(body).to include('data-test="host-facts"', 'data-test="host-engines"')
+        expect(body).not_to include('data-test="host-activity"')
+        expect(body).not_to include('data-test="host-performance"')
+      end
+
+      # CYRA-1034 — the details tab says which installed programs have a newer release.
+      it "marks the programs that have an update on the details tab" do
+        allow(Agents::RuntimeVersions).to receive(:status).and_return(nil)
+        allow(Agents::RuntimeVersions).to receive(:status).with("claude", "2.1.289").and_return(latest: "2.1.291", outdated: true)
+        allow(Agents::RuntimeVersions).to receive(:status).with("codex", "0.160.1").and_return(latest: "0.160.1", outdated: false)
+        host = online_host(hostname: "mac-versions", runtimes: [ { "name" => "claude", "version" => "2.1.289" },
+                                                                 { "name" => "codex", "version" => "0.160.1" },
+                                                                 { "name" => "jq", "version" => "jq-1.7" } ])
+
+        get member_agent_path(host, tab: "details")
+
+        body = response.body
+        expect(body).to include(I18n.t("member.agents.show.runtime_col_latest"), "2.1.291")
+        expect(body.scan('data-test="host-runtime-latest"').size).to eq(2)
+        expect(body.scan('data-test="host-runtime-outdated"').size).to eq(1)
+      end
+
+      it "falls back to the overview for an unknown tab" do
+        host = online_host(hostname: "mac-tab-unknown")
+
+        get member_agent_path(host, tab: "nope")
+
+        expect(response.body).to include('data-test="host-performance"')
+      end
+    end
+
     # CYRA-183: l'ELENCO viene dallo snapshot (include le run ferme, che non hanno lease vivo); il lease
     # è la fonte autorevole della fase in corso e il ticket risolto porta titolo e prodotti.
     it "mostra host, chip stato e la sezione Attività col ticket della run" do
@@ -443,12 +506,14 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include('data-test="host-performance"')
       expect(response.body).to include('data-test="host-phase-table"')
-      expect(response.body).to include('data-test="host-worked-tickets"')
       expect(response.body).to include('data-test="range-selector"')
-      expect(response.body).to include(ticket.code, "Sistemare la navbar")
       # Un ticket, due passaggi: il totale dei tentativi non è il numero di ticket.
       expect(response.body).to include(">1<") # ticket lavorati
       expect(response.body).to include("5m 00s") # tempo dell'agente sul ticket: 100s + 200s
+
+      get member_agent_path(host, tab: "work")
+      expect(response.body).to include('data-test="host-worked-tickets"')
+      expect(response.body).to include(ticket.code, "Sistemare la navbar")
     end
 
     # CYRA-499 — il tempo di lavorazione si può calcolare solo sulle lavorazioni CHIUSE. Finché non
@@ -462,6 +527,8 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
 
       expect(response.body).to include('data-test="perf-host-time"')
       expect(response.body).not_to include('data-test="perf-workflow-time"')
+
+      get member_agent_path(host, tab: "work")
       expect(response.body).to include('data-test="worked-row"')
       expect(response.body).not_to include(I18n.t("member.agents.worked.col_workflow_time"))
     end
@@ -488,7 +555,7 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
 
       get member_agent_path(host)
 
-      expect(response.body).to include('data-test="perf-time-legend"')
+      expect(response.body).to include('data-test="perf-host-time-hint"', 'data-test="perf-workflow-time-hint"')
       expect(response.body).to include(I18n.t("member.agents.performance.host_time_legend"))
       expect(response.body).to include(I18n.t("member.agents.performance.workflow_time_legend"))
     end
@@ -557,7 +624,7 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       get member_agent_path(host)
 
       expect(response.body).to include('data-test="phase-cell-link"')
-      expect(response.body).to include(ERB::Util.html_escape(member_agent_path(host, range: "30d", phase: "autopilot", outcome: "interrupted", anchor: "worked")))
+      expect(response.body).to include(ERB::Util.html_escape(member_agent_path(host, tab: "work", range: "30d", phase: "autopilot", outcome: "interrupted")))
     end
 
     it "filtrando per passaggio ed esito la lista mostra solo quelle lavorazioni" do
@@ -565,7 +632,7 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       interrotta = concluded(host:, phase: "autopilot", status: :stale)
       approvata = concluded(host:, phase: "autopilot", status: :approved)
 
-      get member_agent_path(host, phase: "autopilot", outcome: "interrupted")
+      get member_agent_path(host, tab: "work", phase: "autopilot", outcome: "interrupted")
 
       expect(response.body).to include(interrotta.ticket.code)
       expect(response.body).not_to include(approvata.ticket.code)
@@ -576,7 +643,7 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       host = online_host(hostname: "mac-badfilter")
       workflow = concluded(host:, phase: "triage", status: :approved)
 
-      get member_agent_path(host, phase: "non-esiste", outcome: "boh")
+      get member_agent_path(host, tab: "work", phase: "non-esiste", outcome: "boh")
 
       expect(response.body).to include(workflow.ticket.code)
       expect(response.body).not_to include('data-test="worked-filter-chip"')
@@ -631,7 +698,7 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       create(:account_permission, account: viewer, organization:, permission_key: "agents.view", effect: :allow)
       sign_in(viewer)
 
-      get member_agent_path(host)
+      get member_agent_path(host, tab: "work")
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include('data-test="worked-row"')
@@ -646,8 +713,10 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       get member_agent_path(host)
 
       expect(response.body).to include('data-test="host-performance-empty"')
-      expect(response.body).to include('data-test="host-worked-empty"')
       expect(response.body).not_to include('data-test="host-phase-table"')
+
+      get member_agent_path(host, tab: "work")
+      expect(response.body).to include('data-test="host-worked-empty"')
     end
 
     it "i tentativi ancora in corso non entrano nello storico" do
@@ -667,7 +736,7 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       host = online_host(hostname: "mac-n1")
       allow_n_plus_one { 3.times { concluded(host:) } }
 
-      get member_agent_path(host)
+      get member_agent_path(host, tab: "work")
 
       expect(response).to have_http_status(:ok)
       expect(response.body.scan('data-test="worked-row"').size).to eq(3)
@@ -702,7 +771,7 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       sign_in(owner)
       host = create(:agent_host, organization:)
 
-      get member_agent_path(host)
+      get member_agent_path(host, tab: "details")
       expect(response.body).to include('data-test="host-review-mode"')
 
       # A weaker review is a dangerous action: the first request asks for confirmation (CYRA-728).
@@ -712,7 +781,7 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
 
       patch review_member_agent_path(host), params: { reviewer: "claude", confirm: "1" }
 
-      expect(response).to redirect_to(member_agent_path(host))
+      expect(response).to redirect_to(member_agent_path(host, tab: "details"))
       expect(host.reload.reviewer).to eq("claude")
     end
 
@@ -759,7 +828,7 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       sign_in(owner)
       host = create(:agent_host, organization:)
 
-      get member_agent_path(host)
+      get member_agent_path(host, tab: "details")
       expect(response.body).to include('data-test="host-work-engine"')
 
       patch engine_member_agent_path(host), params: { work_engine: "codex" }
@@ -768,7 +837,7 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
 
       patch engine_member_agent_path(host), params: { work_engine: "codex", confirm: "1" }
 
-      expect(response).to redirect_to(member_agent_path(host))
+      expect(response).to redirect_to(member_agent_path(host, tab: "details"))
       expect(host.reload.work_engine).to eq("codex")
     end
 
@@ -787,7 +856,7 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       create(:agent_automator_setting, organization:, work_engine: "codex", reviewer: "claude")
       host = create(:agent_host, organization:)
 
-      get member_agent_path(host)
+      get member_agent_path(host, tab: "details")
 
       expect(response.body).to include(I18n.t("member.agents.choice.follows"))
       expect(response.body).not_to include('data-test="host-follow-organization"')
@@ -797,7 +866,7 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       sign_in(owner)
       host = create(:agent_host, organization:, work_engine: "codex", reviewer: "claude")
 
-      get member_agent_path(host)
+      get member_agent_path(host, tab: "details")
       expect(response.body).to include(ERB::Util.html_escape(I18n.t("member.agents.choice.own")))
       expect(response.body).to include('data-test="host-follow-organization"')
 
@@ -807,7 +876,7 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
 
       patch follow_organization_member_agent_path(host), params: { confirm: "1" }
 
-      expect(response).to redirect_to(member_agent_path(host))
+      expect(response).to redirect_to(member_agent_path(host, tab: "details"))
       expect(host.reload).to be_follows_organization
     end
 

@@ -101,4 +101,17 @@ RSpec.describe Agents::Clarifications::Ask do
         .to raise_error(ActiveRecord::RecordInvalid)
     end.not_to change(ticket.comments, :count)
   end
+
+  # CYRA-1033 — the question keeps the proposed answers it was asked with, in order.
+  it "keeps the proposed answers on the question, and nothing on a plain one" do
+    options = [ { "label" => "Show only", "recommended" => true, "reason" => "Nobody asked for email." },
+                { "label" => "Email every Monday" }, { "label" => "Both" }, { "label" => "Neither" } ]
+    result = described_class.call(workflow:, attempt:, author:,
+                                  questions: [ "Does the week start on Monday?", { "body" => "Email or show?", "options" => options } ])
+
+    plain, choice = result.value.questions.order(:position).to_a
+    expect(plain.options).to be_nil
+    expect(choice.body).to eq("Email or show?")
+    expect(choice.choice_options).to eq(options.map { |option| { "recommended" => false, "reason" => nil }.merge(option) })
+  end
 end

@@ -1,8 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["catalog", "name", "instructions", "option", "image", "picker", "mascotOption"]
-  static values = { storagePrefix: String, basePath: String }
+  static targets = ["catalog", "name", "instructions", "option", "mascotOption", "usedMark"]
+  static values = { storagePrefix: String, basePath: String, pucks: Array, usedBy: String }
 
   connect() {
     this.drafts = new Map()
@@ -10,6 +10,7 @@ export default class extends Controller {
     this.catalogTarget.hidden = false
     this.renderMascot("01")
     this.markSelected()
+    this.markUsed()
   }
 
   choose(event) {
@@ -23,7 +24,6 @@ export default class extends Controller {
     this.instructionsTarget.value = draft.instructions
     this.renderMascot(draft.mascot)
     this.markSelected()
-    this.pickerTarget.open = false
     this.nameTarget.focus()
   }
 
@@ -40,13 +40,34 @@ export default class extends Controller {
 
   chooseMascot(event) {
     this.renderMascot(event.currentTarget.dataset.mascot)
-    this.pickerTarget.open = false
-    this.pickerTarget.querySelector("summary").focus()
+  }
+
+  // Mascots live in this browser only: a Puck with no stored choice shows the default one.
+  markUsed() {
+    const users = new Map()
+    this.pucksValue.forEach(puck => {
+      let mascot = null
+      try {
+        mascot = localStorage.getItem(`${this.storagePrefixValue}:${puck.id}`)
+      } catch {
+        // Storage unavailable: every Puck shows the default mascot.
+      }
+      const value = this.valid(mascot) ? mascot : "01"
+      users.set(value, [...(users.get(value) || []), puck.name])
+    })
+    this.usedMarkTargets.forEach(mark => { mark.hidden = !users.has(mark.dataset.mascot) })
+    this.mascotOptionTargets.forEach(option => {
+      const names = users.get(option.dataset.mascot)
+      option.title = names ? `${option.dataset.name} · ${this.usedByValue.replace("%{names}", names.join(", "))}` : option.dataset.name
+    })
+  }
+
+  valid(value) {
+    return /^(0[1-9]|1[0-9]|20)$/.test(value)
   }
 
   renderMascot(value) {
-    this.mascot = /^(0[1-9]|1[0-9]|20)$/.test(value) ? value : "01"
-    this.imageTarget.src = `/coworkers/mascots/${this.mascot}.webp`
+    this.mascot = this.valid(value) ? value : "01"
     this.mascotOptionTargets.forEach(option => {
       option.setAttribute("aria-pressed", String(option.dataset.mascot === this.mascot))
     })

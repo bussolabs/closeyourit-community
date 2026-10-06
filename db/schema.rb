@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_170000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_06_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -234,10 +234,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_170000) do
     t.string "opencode_model"
     t.uuid "organization_id", null: false
     t.string "reviewer", default: "codex", null: false
+    t.string "supporter", default: "codex", null: false
+    t.text "supporter_reserved_topics"
     t.datetime "updated_at", null: false
     t.string "work_engine", default: "claude", null: false
     t.index ["organization_id"], name: "index_agents_automator_settings_on_organization_id", unique: true
     t.check_constraint "reviewer::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text, 'opencode'::character varying::text])", name: "agents_automator_settings_reviewer_valid"
+    t.check_constraint "supporter::text = ANY (ARRAY['claude'::character varying, 'codex'::character varying, 'opencode'::character varying]::text[])", name: "agents_automator_settings_supporter_valid"
     t.check_constraint "work_engine::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text])", name: "agents_automator_settings_work_engine_valid"
   end
 
@@ -329,6 +332,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_170000) do
     t.jsonb "runtimes", default: [], null: false
     t.uuid "service_account_id"
     t.integer "slots", default: 1, null: false
+    t.string "supporter"
     t.datetime "updated_at", null: false
     t.string "work_engine"
     t.index ["certified_by_id"], name: "index_agents_hosts_on_certified_by_id"
@@ -348,6 +352,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_170000) do
     t.check_constraint "reviewer::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text, 'opencode'::character varying::text])", name: "agents_hosts_reviewer_valid"
     t.check_constraint "running >= 0", name: "agents_hosts_running_nonnegative"
     t.check_constraint "slots > 0", name: "agents_hosts_slots_positive"
+    t.check_constraint "supporter IS NULL OR (supporter::text = ANY (ARRAY['claude'::character varying, 'codex'::character varying, 'opencode'::character varying]::text[]))", name: "agents_hosts_supporter_valid"
     t.check_constraint "work_engine::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text])", name: "agents_hosts_work_engine_valid"
   end
 
@@ -522,6 +527,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_170000) do
     t.datetime "updated_at", null: false
     t.string "version", null: false
     t.index ["organization_id"], name: "index_agents_skill_bundles_singleton", unique: true
+  end
+
+  create_table "agents_supporter_decisions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "engine", null: false
+    t.jsonb "evidence", default: {}, null: false
+    t.uuid "organization_id", null: false
+    t.string "outcome", null: false
+    t.integer "risk_score", null: false
+    t.datetime "seen_at"
+    t.uuid "seen_by_id"
+    t.string "target_digest", null: false
+    t.uuid "target_id", null: false
+    t.string "target_type", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "workflow_id", null: false
+    t.index ["organization_id", "seen_at"], name: "index_agents_supporter_decisions_to_review"
+    t.index ["organization_id"], name: "index_agents_supporter_decisions_on_organization_id"
+    t.index ["seen_by_id"], name: "index_agents_supporter_decisions_on_seen_by_id"
+    t.index ["target_type", "target_id", "target_digest"], name: "index_agents_supporter_decisions_on_target", unique: true
+    t.index ["workflow_id"], name: "index_agents_supporter_decisions_on_workflow_id"
+    t.check_constraint "engine::text = ANY (ARRAY['claude'::character varying, 'codex'::character varying, 'opencode'::character varying]::text[])", name: "agents_supporter_decisions_engine_valid"
+    t.check_constraint "outcome::text = ANY (ARRAY['answered'::character varying, 'approved'::character varying, 'escalated'::character varying]::text[])", name: "agents_supporter_decisions_outcome_valid"
+    t.check_constraint "risk_score >= 1 AND risk_score <= 10", name: "agents_supporter_decisions_risk_score_range"
+    t.check_constraint "target_type::text = ANY (ARRAY['question'::character varying, 'plan'::character varying]::text[])", name: "agents_supporter_decisions_target_type_valid"
   end
 
   create_table "agents_ticket_queue_deferrals", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -2493,6 +2523,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_170000) do
     t.boolean "secret_approval_enabled", default: false, null: false
     t.bigserial "sentry_project_id", null: false
     t.boolean "session_replay_enabled", default: false, null: false
+    t.boolean "supporter_enabled", default: false, null: false
+    t.text "supporter_reserved_topics"
     t.datetime "updated_at", null: false
     t.index ["created_by_id"], name: "index_projects_on_created_by_id"
     t.index ["cto_id"], name: "index_projects_on_cto_id"
@@ -3553,6 +3585,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_170000) do
   create_table "ticketing_answers", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "author_id", null: false
     t.text "body", null: false
+    t.integer "choice_index"
     t.boolean "covers_round", default: false, null: false
     t.datetime "created_at", null: false
     t.integer "origin", default: 0, null: false
@@ -3614,6 +3647,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_170000) do
     t.datetime "closed_at"
     t.uuid "closed_by_id"
     t.datetime "created_at", null: false
+    t.jsonb "options"
     t.integer "origin", default: 0, null: false
     t.integer "position", default: 0, null: false
     t.uuid "resolved_answer_id"
@@ -4245,6 +4279,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_170000) do
   add_foreign_key "agents_release_assignments", "agents_workflows", column: "workflow_id"
   add_foreign_key "agents_release_assignments", "github_repositories"
   add_foreign_key "agents_skill_bundles", "organizations", on_delete: :cascade
+  add_foreign_key "agents_supporter_decisions", "accounts", column: "seen_by_id", on_delete: :nullify
+  add_foreign_key "agents_supporter_decisions", "agents_workflows", column: "workflow_id", on_delete: :cascade
+  add_foreign_key "agents_supporter_decisions", "organizations", on_delete: :cascade
   add_foreign_key "agents_ticket_queue_deferrals", "agents_hosts", column: "host_id", on_delete: :nullify
   add_foreign_key "agents_ticket_queue_deferrals", "organizations", on_delete: :cascade
   add_foreign_key "agents_ticket_queue_deferrals", "ticketing_tickets", column: "ticket_id", on_delete: :cascade

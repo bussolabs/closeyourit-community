@@ -40,6 +40,10 @@ it:
         autopilot: lavorazione
         closer_staging: staging
         closer_production: produzione
+      tabs:
+        overview: Panoramica
+        work: Lavorazioni
+        details: Dettagli e impostazioni
       activity:
         title: Attività
         idle: In attesa di lavoro
@@ -97,7 +101,9 @@ it:
           one: "mediana %{value} · su 1 ticket chiuso"
           other: "mediana %{value} · su %{count} ticket chiusi"
         by_phase: Tempi per passaggio
-        plans_sent_back: "piani rimandati indietro %{count}/%{total} · %{percent}"
+        attempts_label: Passaggi
+        plans_label: Piani rimandati
+        plans_caption: "%{count} su %{total} piani"
         total: Totale
         col_phase: Passaggio
         col_attempts: Eseguiti
@@ -156,11 +162,10 @@ it:
         # CYRA-498: la scheda parlava il vocabolario interno del motore (slot, heartbeat, runtime,
         # fingerprint). Qui restano le parole che si spiegano da sole a chi non lo conosce.
         host: Macchina
-        capabilities: Cosa sa fare
         runtime: Programmi installati
-        runtime_toggle:
-          one: Vedi il programma installato
-          other: "Vedi i %{count} programmi installati"
+        runtime_col_latest: Ultima versione
+        runtime_outdated: da aggiornare
+        runtime_none: La macchina non ha ancora segnalato i programmi.
         runtime_col_name: Programma
         runtime_col_version: Versione
         repository: Progetti che segue

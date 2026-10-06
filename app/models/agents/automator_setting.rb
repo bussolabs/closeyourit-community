@@ -4,10 +4,14 @@ module Agents
   # Who works and who reviews for the whole organization (CYAU-227). A machine with no choice of its own
   # follows it; `Agents::Host#effective_work_engine` and `#effective_reviewer` resolve the choice in force.
   class AutomatorSetting < ApplicationRecord
+    include SupporterReservedTopics
+
     belongs_to :organization, class_name: "Organizations::Organization", inverse_of: :automator_setting
 
     validates :work_engine, inclusion: { in: Host::WORK_ENGINES }
     validates :reviewer, inclusion: { in: Host::REVIEWERS }
+    # CYAU-235 — the supporter answers questions and approves plans with its own engine.
+    validates :supporter, inclusion: { in: Host::SUPPORTERS }
     validates :organization_id, uniqueness: true
     # CYAU-228 — the OpenRouter model OpenCode reviews with, as OpenRouter names it ("vendor/model").
     normalizes :opencode_model, with: ->(value) { value.to_s.strip.presence }

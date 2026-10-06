@@ -42,7 +42,8 @@ module Agents
 
         return false unless @host.repositories.include?(@project.key) && runtime_available?(profile)
 
-        !profile.write_access? || automator_recent_enough?
+        minimum = minimum_version(profile)
+        minimum.nil? || automator_at_least?(minimum)
       end
 
       # CYAU-178 — versione minima dell'automator per le fasi che SCRIVONO codice: da qui in avanti la
@@ -53,17 +54,26 @@ module Agents
       # Le fasi che leggono soltanto restano aperte a tutti: non consegnano codice e l'impronta non la
       # devono portare, quindi escluderle sarebbe fermare lavoro che funziona benissimo.
       MIN_WRITE_VERSION = Gem::Version.new("0.26.0")
+      # CYRA-1033 — triage may propose four answers and a reason on the recommended one; an older
+      # automator rejects that shape and would retry its own result forever.
+      MIN_TRIAGE_VERSION = Gem::Version.new("0.39.0")
 
       private
 
       # Versione assente o non interpretabile = non idonea. NULL è il valore di un host che non l'ha mai
       # dichiarata, e dedurre «sarà aggiornato» dal silenzio è esattamente il modo in cui il difetto
       # tornerebbe dentro.
-      def automator_recent_enough?
+      def minimum_version(profile)
+        return MIN_TRIAGE_VERSION if @phase == "triage"
+
+        MIN_WRITE_VERSION if profile.write_access?
+      end
+
+      def automator_at_least?(minimum)
         raw = @host.automator_version.to_s
         return false if raw.blank?
 
-        Gem::Version.new(raw) >= MIN_WRITE_VERSION
+        Gem::Version.new(raw) >= minimum
       rescue ArgumentError
         false
       end

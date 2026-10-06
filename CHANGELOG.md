@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [0.176.1] - 2026-10-06
+
+### Fixed
+
+- **Le novità della 0.176.0 arrivano ora.** La versione 0.176.0 non era stata pubblicata: le sue novità entrano con questa. La cronologia del progetto mostra con un nome leggibile le impostazioni del supporter.
+
+## [0.176.0] - 2026-10-06
+
+### Added
+
+- **Programmi da aggiornare.** Nella scheda Dettagli e impostazioni di una macchina, la tabella dei programmi installati mostra l'ultima versione e segna quelli da aggiornare. Il controllo si fa una volta al giorno. [Agenti](/member/agents)
+- **Nuovo indirizzo app.closeyour.it.** L'app risponde anche su app.closeyour.it. www.closeyour.it funziona come prima.
+
+### Changed
+
+- **Pagina della macchina a schede.** Panoramica mostra i lavori in corso, una riga ciascuno, e i numeri in una striscia sottile. Lavorazioni elenca i ticket lavorati. Dettagli e impostazioni raccoglie macchina, motori e programmi installati. [Agenti](/member/agents)
+
 ## [0.175.1] - 2026-10-06
 
 ### Fixed

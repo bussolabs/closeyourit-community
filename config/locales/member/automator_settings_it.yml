@@ -36,3 +36,8 @@ it:
       own_hint: Queste macchine non seguono la scelta qui sopra. Dalla loro pagina possono tornare a seguirla.
       all_follow: Tutte le macchine seguono questa scelta.
       choice_line: "Lavora %{work}, rilegge %{review}"
+      supporter_label: Motore del supporter
+      supporter_hint: Il supporter risponde alle domande delle macchine. Meglio un motore diverso da chi lavora, così non gli dà ragione da solo.
+      reserved_topics_label: Temi riservati dell'organizzazione
+      reserved_topics_placeholder: "stripe\npaypal\napp/services/billing/"
+      reserved_topics_hint: Uno per riga. Su questi temi decide sempre una persona, in ogni progetto. Una riga con la barra (/) indica una cartella del codice. Si sommano ai temi fissi (soldi, sicurezza, dati personali, cancellazioni, cambi visibili ai clienti).

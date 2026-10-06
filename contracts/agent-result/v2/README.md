@@ -15,8 +15,10 @@ Le differenze principali sono:
   `risk` (una riga o `null`). I punti sono 3; il quarto c'è solo sui bug ed è il primo, «Cosa succede
   oggi»: lo schema non conosce il tipo del ticket, la regola sta nel planner. È la scheda che la coda mostra a chi decide; `decision_brief` resta
   accettato per i planner che non la scrivono. Il server può solo alzare `risk_level`;
-- il triage può consegnare ogni domanda come testo oppure come oggetto `{ body, options }`, con 2-3
-  `options` (`label`, `recommended`) e al massimo una consigliata: chi risponde sceglie con un clic;
+- il triage può consegnare ogni domanda come testo oppure come oggetto `{ body, options }`, con 2-4
+  `options` (`label`, `recommended`) e al massimo una consigliata: chi risponde sceglie con un clic.
+  Solo la consigliata può portare `reason`, una riga (≤160) sul perché (CYRA-1033). Gli automator che
+  non conoscono la quarta opzione non ricevono lo smistamento: lo decide il server (`MIN_TRIAGE_VERSION`);
 - l'autopilot produce `work_report`, che separa file, test, rischi, scostamenti e prova di ogni
   criterio;
 - un blocco produce `failure`, con categoria, retry esplicito e azione richiesta alla persona;

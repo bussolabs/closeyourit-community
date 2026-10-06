@@ -81,6 +81,21 @@
       "valid": false
     },
     {
+      "path": "fixtures/valid/triage_question_four_options_reason.json",
+      "definition": "triage_result",
+      "valid": true
+    },
+    {
+      "path": "fixtures/invalid/triage_five_options.json",
+      "definition": "triage_result",
+      "valid": false
+    },
+    {
+      "path": "fixtures/invalid/triage_reason_without_recommended.json",
+      "definition": "triage_result",
+      "valid": false
+    },
+    {
       "path": "fixtures/valid/delivery_envelope_opencode_reviewer.json",
       "definition": "delivery_envelope",
       "valid": true

@@ -472,7 +472,7 @@
       }
     },
     "clarification_question": {
-      "description": "Una domanda di chiarimento: il solo testo, oppure il testo con 2-3 risposte proposte, al massimo una consigliata.",
+      "description": "Una domanda di chiarimento: il solo testo, oppure il testo con 2-4 risposte proposte, al massimo una consigliata. Solo la consigliata può portare `reason`, una riga sul perché (CYRA-1033).",
       "oneOf": [
         { "type": "string", "minLength": 1 },
         {
@@ -487,7 +487,7 @@
             "options": {
               "type": "array",
               "minItems": 2,
-              "maxItems": 3,
+              "maxItems": 4,
               "items": {
                 "type": "object",
                 "additionalProperties": false,
@@ -496,8 +496,11 @@
                 ],
                 "properties": {
                   "label": { "type": "string", "minLength": 1, "maxLength": 80, "pattern": "\\S" },
-                  "recommended": { "type": "boolean" }
-                }
+                  "recommended": { "type": "boolean" },
+                  "reason": { "type": "string", "minLength": 1, "maxLength": 160, "pattern": "^[^\\n]*\\S[^\\n]*$" }
+                },
+                "if": { "required": ["reason"] },
+                "then": { "required": ["recommended"], "properties": { "recommended": { "const": true } } }
               },
               "maxContains": 1,
               "minContains": 0,

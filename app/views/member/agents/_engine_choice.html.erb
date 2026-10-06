@@ -1,9 +1,8 @@
 <%# locals: (host:, can_manage:) %>
 <%# CYAU-227 — whether the machine follows the organization's choice of engines or has its own. Changing
     an engine below gives the machine its own choice; going back drops it. %>
-<section class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3" data-test="host-engine-choice">
+<div class="px-4 py-4 space-y-3" data-test="host-engine-choice">
   <div class="flex flex-wrap items-center gap-2">
-    <h2 class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.choice.title") %></h2>
     <% if host.follows_organization? %>
       <%= render Ui::BadgeComponent.new(label: t("member.agents.choice.follows"), color: :indigo, dot: true, test_id: "host-choice-status") %>
     <% else %>
@@ -21,4 +20,4 @@
       <%= render Ui::ButtonComponent.new(label: t("member.agents.choice.organization_link"), href: member_agents_automator_setting_path, variant: :secondary_muted, size: :sm, test_id: "host-organization-choice-link") %>
     </div>
   <% end %>
-</section>
+</div>

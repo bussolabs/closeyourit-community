@@ -195,9 +195,18 @@ RSpec.describe Agents::Hosts::Eligibility do
     # Escludere anche le fasi che leggono fermerebbe lavoro che funziona benissimo: quelle non
     # consegnano codice e l'impronta non la devono portare.
     it "ma continua a prendere quelle che leggono soltanto" do
-      %w[triage planner].each do |phase|
-        expect(described_class.capable?(host: vecchio, project:, phase:)).to be(true), phase
-      end
+      expect(described_class.capable?(host: vecchio, project:, phase: "planner")).to be(true)
+    end
+
+    # CYRA-1033 — triage may now propose four answers and a reason: an automator that rejects that
+    # shape would loop on its own result, so older machines get no triage until they update.
+    it "gives triage only to automators that know choice questions with four answers" do
+      host = macchina("0.38.0")
+      expect(described_class.capable?(host:, project:, phase: "triage")).to be(false)
+      host.update!(automator_version: "0.39.0")
+      expect(described_class.capable?(host:, project:, phase: "triage")).to be(true)
+      host.update!(automator_version: nil)
+      expect(described_class.capable?(host:, project:, phase: "triage")).to be(false)
     end
 
     # Versione mai dichiarata: dedurre «sarà aggiornata» dal silenzio è il modo in cui il difetto

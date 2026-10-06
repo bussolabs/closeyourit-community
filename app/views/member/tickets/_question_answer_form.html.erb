@@ -1,10 +1,11 @@
 <%# locals: (ticket:, question:, can_manage:, return_tab: nil) %>
 <%# The send arrow sits inside the field, like the table search; Withdraw follows on the same row, and
     only for the one who asked. %>
+<%= render "member/tickets/question_choices", ticket: ticket, question: question, return_tab: return_tab if question.choice_options.any? %>
 <div class="mt-3 flex items-center gap-2">
   <%= form_with url: member_ticket_question_answers_path(ticket, question), method: :post, class: "relative min-w-0 flex-1" do %>
     <%= hidden_field_tag :return_tab, return_tab if return_tab %>
-    <%= text_field_tag :body, nil, placeholder: t("member.tickets.questions.answer_placeholder"), maxlength: Ticketing::Constants::ANSWER_MAX_CHARS,
+    <%= text_field_tag :body, nil, placeholder: t(question.choice_options.any? ? "member.tickets.questions.other_placeholder" : "member.tickets.questions.answer_placeholder"), maxlength: Ticketing::Constants::ANSWER_MAX_CHARS,
           class: "w-full h-[34px] rounded-md border border-stone-200 dark:border-zinc-800 pl-3 pr-10 text-[12.5px] placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-400",
           data: { test: "ticket-answer-body-#{question.id}" } %>
     <%= render Ui::ButtonComponent.new(label: t("member.tickets.questions.answer_submit"), type: "submit", icon: "arrow-right", icon_only: true,

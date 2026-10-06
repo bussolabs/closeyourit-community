@@ -14,7 +14,7 @@
     <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.worked.title") %></h2>
     <div class="flex items-center gap-2 flex-wrap">
       <% filters.each do |key, value| %>
-        <%= link_to member_agent_path(host, range: range, **filters.except(key), anchor: "worked"),
+        <%= link_to member_agent_path(host, tab: "work", range: range, **filters.except(key)),
               class: "inline-flex items-center gap-1.5 h-[24px] px-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-[11.5px] text-zinc-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800",
               data: { test: "worked-filter-chip" } do %>
           <span><span class="text-gray-500 dark:text-zinc-400"><%= t("member.agents.worked.filter_#{key}") %>:</span>
@@ -25,6 +25,7 @@
       <span class="inline-flex items-center rounded-md bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-gray-600 dark:text-zinc-400" data-test="worked-count">
         <%= t("member.agents.worked.count", count: worked.total) %>
       </span>
+      <%= render "member/agents/range_selector", host:, range:, tab: "work" %>
     </div>
   </div>
 

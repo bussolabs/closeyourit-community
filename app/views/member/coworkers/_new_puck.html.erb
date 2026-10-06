@@ -7,6 +7,8 @@
         data: { "ui--dialog-target": "dialog", controller: "coworker-presets",
                 "coworker-presets-base-path-value": member_coworkers_path,
                 "coworker-presets-storage-prefix-value": "coworkers:mascot:#{current_organization.id}:#{Current.account.id}",
+                "coworker-presets-pucks-value": @puckies.map { |puck| { id: puck.id, name: puck.name } }.to_json,
+                "coworker-presets-used-by-value": t("member.coworkers.mascot.used_by"),
                 action: "click->ui--dialog#backdrop turbo:submit-end->coworker-presets#created" }) do |modal| %>
     <% modal.with_actions do %>
       <%= render Ui::ButtonComponent.new(label: t("member.coworkers.cancel"), variant: :secondary_muted, size: :sm, class: "max-md:min-h-11", data: { action: "ui--dialog#close" }) %>

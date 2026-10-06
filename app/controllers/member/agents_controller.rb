@@ -47,6 +47,8 @@ module Member
     # senza rompere niente di visibile.
     ACTIVITY_FRAME = ::Agents::Hosts::Broadcast::ACTIVITY_FRAME
     WORKED_FRAME = "host-worked"
+    # CYRA-1032 — the page tabs: the first one is the page without a `tab` parameter.
+    TABS = %w[overview work details].freeze
 
     # CYRA-924 — the runtimes the host declares, sorted in memory (C9).
     RUNTIME_SORT_COLUMNS = {
@@ -59,12 +61,12 @@ module Member
       return render_worked if turbo_frame_request_id == WORKED_FRAME
 
       load_activity
-      load_performance
-      load_worked
-      # Le sigle dei progetti che l'host dichiara di seguire diventano nomi per esteso, ma solo per i
-      # progetti che chi legge può davvero aprire (anti-BOLA): le altre restano sigle.
-      @repository_projects = visible.projects.where(key: @host.repositories).index_by(&:key)
-      @runtimes = sorted_rows(@host.runtimes, columns: RUNTIME_SORT_COLUMNS, param: :runtimes_sort)
+      # CYRA-1032 — each tab loads only what it shows; the header and its counts are on every tab.
+      case tab
+      when "overview" then load_performance
+      when "work" then load_worked
+      when "details" then load_details
+      end
       # Anti-BOLA: `agents.view` è ORG-level, la visibilità dei ticket è per-progetto. Senza questo filtro
       # chi vede gli host ma non il progetto leggerebbe titolo, ramo e PR di un ticket che non gli compete.
       # L'attività dell'host resta visibile (codice + percorso): è il contenuto del ticket a essere gated.
@@ -95,26 +97,26 @@ module Member
     # CYAU-226 — which engine reviews this machine's work before delivery, by name.
     def review
       if @host.update(reviewer: params[:reviewer])
-        redirect_to member_agent_path(@host), notice: t("member.agents.review.updated")
+        redirect_to member_agent_path(@host, tab: "details"), notice: t("member.agents.review.updated")
       else
         reason = @host.errors.of_kind?(:reviewer, :opencode_model_missing) ? "opencode_model_missing" : "invalid"
-        redirect_to member_agent_path(@host), alert: t("member.agents.review.#{reason}")
+        redirect_to member_agent_path(@host, tab: "details"), alert: t("member.agents.review.#{reason}")
       end
     end
 
     # CYRA-921 — which engine does this machine's work: Claude or Codex.
     def engine
       if @host.update(work_engine: params[:work_engine])
-        redirect_to member_agent_path(@host), notice: t("member.agents.engine.updated")
+        redirect_to member_agent_path(@host, tab: "details"), notice: t("member.agents.engine.updated")
       else
-        redirect_to member_agent_path(@host), alert: t("member.agents.engine.invalid")
+        redirect_to member_agent_path(@host, tab: "details"), alert: t("member.agents.engine.invalid")
       end
     end
 
     # CYAU-227 — the machine drops its own choice and follows the organization's from the next job.
     def follow_organization
       @host.update!(work_engine: nil, reviewer: nil)
-      redirect_to member_agent_path(@host), notice: t("member.agents.choice.followed")
+      redirect_to member_agent_path(@host, tab: "details"), notice: t("member.agents.choice.followed")
     end
 
     def decertify
@@ -139,6 +141,7 @@ module Member
     # richieste rimetterebbe in pagina proprio la contraddizione di CYRA-498 — l'intestazione che
     # dice «0 in esecuzione» mentre sotto l'elenco ne mostra tre.
     def render_activity
+      tab
       load_activity
       @visible_ticket_ids = visible_ids_for(activity_tickets)
       render :activity, layout: false
@@ -202,6 +205,16 @@ module Member
       @previous = ::Agents::Hosts::Performance.call(host: @host, range: range, previous: true) if range != "all"
     end
 
+    def tab = @tab ||= params[:tab].presence_in(TABS) || TABS.first
+
+    # Le sigle dei progetti che l'host dichiara di seguire diventano nomi per esteso, ma solo per i
+    # progetti che chi legge può davvero aprire (anti-BOLA): le altre restano sigle.
+    def load_details
+      @repository_projects = visible.projects.where(key: @host.repositories).index_by(&:key)
+      @runtimes = sorted_rows(@host.runtimes, columns: RUNTIME_SORT_COLUMNS, param: :runtimes_sort)
+      @runtime_versions = @runtimes.to_h { |runtime| [ runtime["name"], ::Agents::RuntimeVersions.status(runtime["name"], runtime["version"]) ] }
+    end
+
     def load_worked
       @work_filters = ::Agents::Hosts::WorkedTickets.filters_from(phase: params[:phase], outcome: params[:outcome])
       # `per` viaggia già nei link del footer di paginazione: leggerlo qui è ciò che li rende veri
@@ -216,7 +229,7 @@ module Member
     # a cui applicarlo (la pagina intera li unisce in un pluck solo).
     def activity_tickets = @tickets_by_code.values
 
-    def worked_tickets = @worked.records.filter_map(&:ticket)
+    def worked_tickets = @worked ? @worked.records.filter_map(&:ticket) : []
 
     # Anti-BOLA + scoping org-level: host di un'altra org → RecordNotFound.
     def set_host

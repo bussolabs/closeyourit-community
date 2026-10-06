@@ -5,6 +5,7 @@ module Ui
   # dark ground, a page header panel with the title and the actions, the content in its own panel.
   # It draws no behaviour: the caller keeps its own wiring (Stimulus target, actions, id) on the
   # <dialog>. With `form:` the header and the panel sit in one form, so a Save in the header submits it.
+  # The header stays put and only the content panel scrolls, so the actions are always in reach.
   class ModalComponent < BaseComponent
     renders_one :actions
 
@@ -13,10 +14,10 @@ module Ui
       md: "w-[min(40rem,calc(100vw-2rem))]",
       lg: "w-[min(56rem,calc(100vw-2rem))]"
     }.freeze
-    SHELL = "m-auto max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-xl border border-stone-200 dark:border-zinc-800 " \
+    SHELL = "m-auto max-h-[calc(100dvh-2rem)] overflow-hidden open:flex open:flex-col rounded-xl border border-stone-200 dark:border-zinc-800 " \
             "bg-stone-100 dark:bg-zinc-950 text-left text-zinc-900 dark:text-zinc-100 p-0 " \
             "backdrop:bg-zinc-900/40 backdrop:backdrop-blur-sm"
-    PANEL = "rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden"
+    PANEL = "min-h-0 overflow-y-auto overscroll-contain rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
 
     def initialize(title:, subtitle: nil, size: :md, padded: true, form: nil, test_id: nil, **options)
       raise ArgumentError, "unknown size: #{size}" unless SIZES.key?(size)
@@ -35,6 +36,9 @@ module Ui
     def dialog_options = merge_options(base_class: "#{SHELL} #{SIZES.fetch(@size)}", test_id: @test_id, options: @options)
 
     def panel_class = [ PANEL, ("p-4 text-[12.5px] leading-relaxed text-gray-600 dark:text-zinc-400" if @padded) ].compact.join(" ")
+
+    # The form sits between the dialog and the column: it must shrink too, or the panel never scrolls.
+    def form_options = @form.merge(class: [ "flex min-h-0 flex-1 flex-col", @form[:class] ].compact.join(" "))
 
     def panel_test_id = @test_id && "#{@test_id}-panel"
 

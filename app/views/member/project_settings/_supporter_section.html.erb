@@ -1,0 +1,29 @@
+<%# CYAU-235 — the supporter answers the machines' questions and approves plans up to risk 6 of 10. It starts
+    switched off. The switch saves by itself, like the features; the topics wait for Save. The switch stays
+    outside the form: its button would otherwise submit it. %>
+<%= render Ui::SectionComponent.new(title: t("member.project_settings.supporter_section"), id: "supporter",
+      class: "scroll-mt-4", body_class: "divide-y divide-stone-100 dark:divide-zinc-800", test_id: "project-supporter") do |section| %>
+  <% section.with_subtitle do %>
+    <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.project_settings.supporter_hint") %></p>
+  <% end %>
+
+  <%= render Ui::SwitchComponent.new(
+        name: "supporter_enabled", url: member_project_settings_path(@project),
+        checked: @project.supporter_enabled?, icon: "life-buoy",
+        label: t("member.project_settings.supporter_enabled_label"),
+        hint: t("member.project_settings.supporter_enabled_hint"),
+        test_id: "project-supporter-toggle") %>
+
+  <%= form_with url: member_project_settings_path(@project), method: :patch, class: "block px-4 py-4",
+        data: { test: "project-settings-form-supporter" } do %>
+    <label for="supporter_reserved_topics" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.project_settings.supporter_reserved_topics_label") %></label>
+    <textarea name="supporter_reserved_topics" id="supporter_reserved_topics" rows="4" data-test="project-supporter-reserved-topics"
+              placeholder="<%= t("member.project_settings.supporter_reserved_topics_placeholder") %>"
+              class="w-full px-3 py-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 font-mono text-[12.5px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400"><%= @project.supporter_reserved_topics %></textarea>
+    <p class="mt-1.5 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.project_settings.supporter_reserved_topics_hint") %></p>
+    <% if (error = @errors&.dig(:supporter_reserved_topics)&.first) %>
+      <p class="mt-1.5 text-[11px] text-red-600 dark:text-red-400"><%= error %></p>
+    <% end %>
+    <div class="mt-3 flex justify-end"><%= render "member/project_settings/save_action", anchor: "supporter" %></div>
+  <% end %>
+<% end %>

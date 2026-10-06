@@ -14,13 +14,15 @@ FactoryBot.define do
 
     workflow factory: :agent_workflow
     attempt { create(:agent_attempt, workflow: workflow) }
-    asked { questions }
+    # A question may be `{ "body", "options" }` like a v2 triage result (CYRA-1033).
+    asked { Agents::Clarifications::Ask.texts(questions) }
 
     after(:create) do |clarification, evaluator|
       ticket = clarification.workflow.ticket
-      evaluator.questions.each_with_index do |body, index|
+      evaluator.questions.each_with_index do |question, index|
+        body, options = question.is_a?(Hash) ? [ question["body"], question["options"] ] : [ question, nil ]
         Ticketing::Question.new(
-          ticket: ticket, round_id: clarification.id, body: body, position: index + 1,
+          ticket: ticket, round_id: clarification.id, body: body, position: index + 1, options: options,
           blocking: true, audience: :internal, origin: :agent, author: ticket.reporter
         ).save(validate: false)
       end

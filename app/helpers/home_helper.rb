@@ -117,12 +117,13 @@ module HomeHelper
     card if card.is_a?(Hash) && card["headline"].present?
   end
 
-  # CYRA-887 — proposed answers per question, by position, read from the attempt that asked (the
-  # ticket keeps only the text). An empty list means a plain question.
+  # CYRA-887 — proposed answers per question, by position. CYRA-1033: read from the question rows,
+  # which keep them since then (up to four, with the reason of the recommended one). An empty list
+  # means a plain question.
   def clarification_options(clarification)
-    Array(clarification&.attempt&.result.to_h["questions"]).map do |question|
-      question.is_a?(Hash) ? Array(question["options"]).map(&:to_h).first(3) : []
-    end
+    return [] if clarification.nil?
+
+    clarification.questions.sort_by(&:position).map(&:choice_options)
   end
 
   def queue_breakdown(totals)

@@ -12,6 +12,8 @@ module Agents
     # new session of the same engine, for a machine that has only one. OpenCode only reviews (CYAU-228).
     REVIEW_ONLY_ENGINES = %w[opencode].freeze
     REVIEWERS = (WORK_ENGINES + REVIEW_ONLY_ENGINES).freeze
+    # CYAU-235 — the supporter may use any engine that can review.
+    SUPPORTERS = REVIEWERS
 
     belongs_to :organization,
                class_name: "Organizations::Organization",
@@ -31,6 +33,8 @@ module Agents
     # CYAU-227: both null means the machine follows the organization's choice.
     validates :reviewer, inclusion: { in: REVIEWERS }, allow_nil: true
     validates :work_engine, inclusion: { in: WORK_ENGINES }, allow_nil: true
+    # CYAU-235: null means the machine follows the organization's supporter engine.
+    validates :supporter, inclusion: { in: SUPPORTERS }, allow_nil: true
     before_validation :complete_engine_choice
     validate :opencode_has_a_model
 
@@ -82,6 +86,7 @@ module Agents
     def follows_organization? = work_engine.nil?
     def effective_work_engine = work_engine || organization_choice.work_engine
     def effective_reviewer = reviewer || organization_choice.reviewer
+    def effective_supporter = supporter || organization_choice.supporter
     # CYAU-228 — the OpenRouter model OpenCode reviews with; Claude and Codex use the model the automator pins.
     def effective_reviewer_model = effective_reviewer == "opencode" ? organization_choice.opencode_model : nil
     def supported_platform? = platform == SUPPORTED_PLATFORM

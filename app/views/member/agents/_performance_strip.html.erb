@@ -1,0 +1,23 @@
+<%# locals: (cells:) %>
+<%# CYRA-1032 — the figures as one strip, in the shape of the project health band: the 1px gaps over
+    the stone ground draw the dividers and the cells grow to fill each row. %>
+<% colors = Ui::MetricTileComponent::VALUE_COLORS %>
+<div class="flex flex-wrap gap-px border-t border-stone-200 dark:border-zinc-800 bg-stone-200 dark:bg-zinc-800" data-test="host-performance-strip">
+  <% cells.each do |cell| %>
+    <div class="min-w-36 flex-1 basis-36 bg-white dark:bg-zinc-900 px-4 py-3" data-test="<%= cell[:test_id] %>">
+      <p class="flex items-center gap-1.5 font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400">
+        <span><%= cell[:label] %></span>
+        <% if cell[:hint] %>
+          <%= render Ui::TooltipComponent.new(text: cell[:hint], title: cell[:label], tone: :muted, test_id: cell[:hint_test_id]) %>
+        <% end %>
+      </p>
+      <p class="mt-1 font-mono text-[20px] font-semibold <%= colors.fetch(cell[:value_color] || :neutral, colors[:neutral]) %>" data-test="<%= cell[:value_test_id] %>"><%= cell[:value] %></p>
+      <% if cell[:delta] %>
+        <p class="mt-1 font-mono text-[10.5px] <%= colors.fetch(cell[:delta_color] || :gray, colors[:gray]) %>"><%= cell[:delta] %></p>
+      <% end %>
+      <% if cell[:caption] %>
+        <p class="mt-0.5 text-[10.5px] text-gray-500 dark:text-zinc-400"><%= cell[:caption] %></p>
+      <% end %>
+    </div>
+  <% end %>
+</div>

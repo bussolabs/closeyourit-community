@@ -41,3 +41,5 @@ it:
       secret_approval_enabled: approvazione in due per i secret
       session_replay_enabled: Session replay
       roadmap_enabled: roadmap
+      supporter_enabled: supporter attivo
+      supporter_reserved_topics: temi riservati del supporter

@@ -15,7 +15,7 @@ module Cli
                              .find(params[:question_id])
 
             result = ::Ticketing::Questions::Reply.call(
-              question: question, author: Current.account, body: params[:body]
+              question: question, author: Current.account, body: params[:body], choice: params[:choice]
             )
             if result.ok?
               render_created(QuestionSerializer.new(question.reload))

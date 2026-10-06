@@ -54,4 +54,16 @@ RSpec.describe Agents::AutomatorSetting do
       expect(described_class.for(organization)).to have_attributes(work_engine: "claude", reviewer: "codex", persisted?: false)
     end
   end
+  # CYAU-235 — the supporter has its own engine; Codex unless the organization chooses.
+  it "gives the supporter its own engine, Codex by default" do
+    expect(described_class.new.supporter).to eq("codex")
+    expect(build(:agent_automator_setting, supporter: "claude")).to be_valid
+    expect(build(:agent_automator_setting, supporter: "nobody")).to be_invalid
+  end
+
+  it "keeps the reserved topics as clean lines, at most 100 characters each" do
+    setting = build(:agent_automator_setting, supporter_reserved_topics: "  stripe \n\nstripe\nPayPal")
+    expect(setting.supporter_reserved_topic_list).to eq(%w[stripe paypal])
+    expect(build(:agent_automator_setting, supporter_reserved_topics: "x" * 101)).to be_invalid
+  end
 end

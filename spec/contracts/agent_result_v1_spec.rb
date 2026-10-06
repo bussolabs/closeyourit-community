@@ -84,7 +84,7 @@ RSpec.describe "Agent result contract v1", type: :request do
       organization:, fingerprint: SecureRandom.hex(12), hostname: "runner", platform: "linux", arch: "amd64"
     ).value
     host = registration.fetch(:host)
-    host.update!(last_heartbeat_at: Time.current, certified_at: Time.current, repositories: [ project.key ],
+    host.update!(last_heartbeat_at: Time.current, certified_at: Time.current, repositories: [ project.key ], automator_version: "0.39.0",
                  runtimes: [ { "name" => "claude", "present" => true } ])
     create(:project_membership, account: host.service_account, project:)
     workflow.update!(triage_started_at: Time.current, ticket_snapshot_digest: "snapshot")

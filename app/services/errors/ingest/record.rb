@@ -90,6 +90,8 @@ module Errors
 
       def reconcile_artifacts(event)
         ::Crashes::Reconcile.call(project: @project, event: event)
+        ::Crashes::Cocoa::Record.call(project: @project, event: event)
+        ::Crashes::Elf::Record.call(project: @project, event: event)
         enqueue_symbolication(event)
       end
 
