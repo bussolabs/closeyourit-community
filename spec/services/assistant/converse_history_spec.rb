@@ -67,6 +67,7 @@ RSpec.describe Assistant::ConverseHistory do
 
   it "maps every proposal kind to a declared write tool" do
     names = Assistant::Tools::Registry::WRITE_TOOLS.map(&:tool_name)
-    expect(Assistant::Proposal.kinds.keys.map { |kind| described_class::KIND_TOOLS.fetch(kind) }).to all(be_in(names))
+    assistant_kinds = Assistant::Proposal.kinds.keys - Assistant::Proposal::PUCK_ONLY_KINDS
+    expect(assistant_kinds.map { |kind| described_class::KIND_TOOLS.fetch(kind) }).to all(be_in(names))
   end
 end

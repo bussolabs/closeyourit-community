@@ -43,6 +43,12 @@ RSpec.describe Secrets::Shared::Delegation do
     expect(shared_value.delegations.build(project:, local_name: "SECRETS_JSON")).not_to be_valid
   end
 
+  it "rejects an alias the shell or a runtime reads before any program runs (CYRA-1046)" do
+    %w[PATH LD_PRELOAD DYLD_INSERT_LIBRARIES NODE_OPTIONS].each do |name|
+      expect(shared_value.delegations.build(project:, local_name: name)).not_to be_valid, "#{name} must be rejected"
+    end
+  end
+
   describe "collisione col nome effettivo" do
     it "rifiuta l'alias che coincide con un secret locale del progetto" do
       create(:secret_variable, project:, organization:, environment:, name: "DB_URL", value: "valore-lungo-abbastanza")

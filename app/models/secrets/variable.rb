@@ -20,6 +20,13 @@ module Secrets
     RESERVED_NAME_PREFIX = "GITHUB_"
     # Bundle calcolati al momento del sync GitHub: non devono mai diventare fonte di verità nel vault.
     DERIVED_NAMES = %w[SECRETS_JSON KAMAL_SECRETS_JSON].freeze
+    # Names the shell or a runtime reads before any program starts (CYRA-1046): a secret with one of
+    # these names would make `cyi run` execute code chosen by whoever wrote it. Prefixes cover the
+    # whole dynamic-loader family (LD_PRELOAD, LD_LIBRARY_PATH, DYLD_INSERT_LIBRARIES, ...).
+    RESERVED_RUNTIME_NAMES = %w[
+      PATH ENV SHELL HOME IFS BASH_ENV NODE_OPTIONS GIT_SSH_COMMAND PERL5OPT RUBYOPT PYTHONPATH PYTHONSTARTUP
+    ].freeze
+    RESERVED_RUNTIME_PREFIXES = %w[LD_ DYLD_].freeze
     # Soglia di preavviso della rotazione: entro questa finestra da #rotate_by lo stato passa a
     # :due_soon (vedi #rotation_status). App::Constants perché affianca le altre soglie/retention
     # cross-dominio (SOURCE_FRESH_WITHIN, LOGS_RETENTION_DEFAULT_DAYS, ...).
@@ -53,6 +60,12 @@ module Secrets
     attr_readonly :project_id, :environment_id, :organization_id
 
     encrypts :value
+
+    # Shared by every vault model that validates a name (project, override, change request, shared,
+    # shared alias, personal): the ban must hold on each write path, not only on the project vault.
+    def self.reserved_runtime_name?(name)
+      RESERVED_RUNTIME_NAMES.include?(name) || RESERVED_RUNTIME_PREFIXES.any? { |prefix| name.start_with?(prefix) }
+    end
 
     normalizes :name, with: ->(name) { name.to_s.strip.upcase }
     normalizes :description, with: ->(value) { value.to_s.strip }
@@ -148,6 +161,7 @@ module Secrets
 
       errors.add(:name, :reserved_prefix) if name.start_with?(RESERVED_NAME_PREFIX)
       errors.add(:name, :reserved) if DERIVED_NAMES.include?(name)
+      errors.add(:name, :reserved_runtime) if self.class.reserved_runtime_name?(name)
     end
 
     # L'environment dev'essere DICHIARATO dal progetto (subset), come per Projects::Token.

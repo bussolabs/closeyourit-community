@@ -31,7 +31,8 @@ module Notifications
       "Chat::Message" => ->(r, s) { r.member_chat_conversation_path(s.conversation_id) },
       "Secrets::Variable" => ->(r, _s) { r.member_vault_attention_path },
       "Secrets::Consolidation::Suggestion" => ->(r, s) { r.member_vault_consolidation_path(s) },
-      "Projects::Token" => ->(r, s) { r.member_project_tokens_path(s.project_id) }
+      "Projects::Token" => ->(r, s) { r.member_project_tokens_path(s.project_id) },
+      "Coworkers::Run" => ->(r, s) { r.member_coworker_path(s.puck_id) }
     }.freeze
 
     # A project or an organization stands for many events: the event picks the page.

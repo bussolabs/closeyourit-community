@@ -145,6 +145,15 @@ module Github
       raise Error.new("GitHub contenuto repository non valido", code: "R502-GITHUB-001")
     end
 
+    # Open pull requests or issues of a repository, newest first, for a Puck (CYRA-1014).
+    def pull_requests(installation_id, repo_full_name, state: "open")
+      token_request(Net::HTTP::Get, installation_id, "/repos/#{repo_full_name}/pulls?state=#{URI.encode_www_form_component(state)}&per_page=20")
+    end
+
+    def issues(installation_id, repo_full_name, state: "open")
+      token_request(Net::HTTP::Get, installation_id, "/repos/#{repo_full_name}/issues?state=#{URI.encode_www_form_component(state)}&per_page=20")
+    end
+
     # CYRA-599 — l'occhio: lo stato di una proposta di modifica letto dal server, non raccontato
     # dall'agente che ci ha lavorato. Un solo giro, perché ogni campo qui serve a una regola diversa
     # più avanti e chiederli separatamente costerebbe cinque richieste.

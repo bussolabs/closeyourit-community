@@ -19,12 +19,28 @@ RSpec.describe Coworkers::Puck do
     expect(context[:approvedMemory]).to eq("Approved note")
   end
 
-  it "allows a chat alongside a task but refuses a third run and another browser lane" do
-    other = described_class.create!(account: puck.account, organization: puck.organization, name: "Other", instructions: "Cite sources")
+  it "tells the model what became of the actions an earlier answer proposed" do
+    run = puck.runs.create!(kind: "chat", input: "Create it", output: "Ready.", status: "completed")
+    Assistant::Proposal.create!(coworkers_run: run, organization: puck.organization, account: puck.account, kind: :create_ticket,
+                                status: :confirmed, payload: { "title" => "Footer broken" })
+    actions = puck.context_for("chat", "Next")[:history].last[:actions]
+    expect(actions).to eq([ { kind: "create_ticket", subject: "Footer broken", status: "confirmed" } ])
+  end
+
+  it "tells the model what the Puckies it handed work to answered" do
+    run = puck.runs.create!(kind: "chat", input: "Ask Analyst", output: "Handed off.", status: "completed")
+    helper = described_class.create!(account: puck.account, organization: puck.organization, name: "Analyst", instructions: "Read")
+    helper.runs.create!(kind: "task", input: "From Researcher: list", output: "Open: STR-1", status: "completed", parent_run: run)
+    handoffs = puck.context_for("chat", "Next")[:history].last[:handoffs]
+    expect(handoffs).to eq([ { puck: "Analyst", status: "completed", output: "Open: STR-1" } ])
+  end
+
+  # Organization-wide capacity is CYRA-1027 (spec/services/coworkers/autonomy_spec.rb); a Puck keeps one lane per kind.
+  it "allows a chat alongside a task but refuses a second run in the same lane" do
     Coworkers::Start.call(puck: puck, kind: "task", input: "Research")
-    expect { Coworkers::Start.call(puck: other, kind: "task", input: "Research") }.to raise_error(Coworkers::Start::Busy)
+    expect { Coworkers::Start.call(puck: puck, kind: "task", input: "Research again") }.to raise_error(Coworkers::Start::Busy)
     Coworkers::Start.call(puck: puck, kind: "chat", input: "Discuss")
-    expect { Coworkers::Start.call(puck: other, kind: "chat", input: "Discuss") }.to raise_error(Coworkers::Start::Busy)
+    expect { Coworkers::Start.call(puck: puck, kind: "chat", input: "Discuss again") }.to raise_error(Coworkers::Start::Busy)
   end
 
   it "isolates realtime stream names by organization, owner, Puck and language" do

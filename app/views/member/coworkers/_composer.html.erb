@@ -1,4 +1,5 @@
-<%= form_with url: member_coworker_runs_path(puck), class: "shrink-0 border-t border-stone-200 px-4 py-2.5 dark:border-zinc-800", data: { controller: "chat-compose coworker-composer", action: "resize@window->coworker-composer#grow", test: "coworkers-composer" } do %>
+<%= form_with url: member_coworker_runs_path(puck), class: "shrink-0 border-t border-stone-200 px-4 py-2.5 dark:border-zinc-800", data: { controller: "chat-compose coworker-composer coworker-call", action: "resize@window->coworker-composer#grow ui--voice-inline:dictated->coworker-call#dictated", test: "coworkers-composer",
+                   coworker_call_lang_value: I18n.locale == :it ? "it-IT" : "en-US", coworker_call_labels_value: t("member.coworkers.call").to_json } do %>
   <%= hidden_field_tag :kind, "chat" %>
   <div class="flex items-start gap-2">
     <% dictation = dictation_available? %>
@@ -9,7 +10,13 @@
             data: { coworker_composer_target: "input", "ui--voice-inline-target": "input", action: "keydown->chat-compose#maybeSubmit input->coworker-composer#grow" }) %>
       <%= render "member/shared/dictation_controls", mic_class: "absolute top-1 right-1 h-9! w-9!", overlay: true if dictation %>
     <% end %>
+    <% if dictation %>
+      <%= render Ui::ButtonComponent.new(label: t("member.coworkers.call.toggle"), icon: "phone", icon_only: true, variant: :secondary, aria: { pressed: false },
+            class: "h-11! w-11! rounded-lg! aria-pressed:bg-indigo-600 aria-pressed:text-white [&_svg]:size-5", test_id: "coworkers-call",
+            data: { coworker_call_target: "toggle", action: "coworker-call#toggle" }) %>
+    <% end %>
     <%= render Ui::ButtonComponent.new(label: t("member.coworkers.send"), type: "submit", icon: "send", icon_only: true, class: "h-11! w-11! rounded-lg! [&_svg]:size-5", test_id: "coworkers-send") %>
   </div>
+  <p class="text-[11.5px] text-indigo-700 dark:text-indigo-300" role="status" aria-live="polite" data-coworker-call-target="status"></p>
   <p id="coworkers-compose-hint" class="sr-only"><%= t("member.coworkers.keyboard") %></p>
 <% end %>

@@ -94,6 +94,30 @@
               "description": "Turns a topic into ideas and outlines for your content.",
               "example": "Outline an article explaining backups to small business owners.",
               "instructions": "You are my Editor: creative, concise and attentive to the reader. Help me turn a topic or material I provide into ideas, titles and outlines. Clarify the audience, goal, channel and tone when needed.\n\nSuggest distinct angles and a structure with a clear central message. Respect my voice; avoid generic wording, unsupported promises and invented facts. Flag claims that need checking and cite sources when researching.\n\nPrepare content for us to review, without publishing or sending it. If public web research is needed, propose a task and wait for my manual approval before starting it."
+            },
+            "triage": {
+              "name": "Error triage",
+              "description": "Studies new errors and proposes what to do.",
+              "example": "What happened to SHOP's errors last night?",
+              "instructions": "You are my Error triage: calm, precise and concrete. When new errors arrive or a monitor goes down, read the project's errors, logs and releases and work out what changed.\n\nTell noise from real failures, cite errors with their links and say how many users or requests they touch. Never invent causes: write hypotheses as hypotheses.\n\nPropose the next step: a new ticket, a comment on an existing ticket or a check to run. Every proposal waits for a person."
+            },
+            "release_notes": {
+              "name": "Release notes",
+              "description": "Explains in plain words what changed.",
+              "example": "Write the notes for SHOP's latest release.",
+              "instructions": "You are my Release notes writer: clear, short and reader-minded. Read the project's releases and closed tickets and tell what changes for the people who use the product. If I do not say which release, use the latest.\n\nEvery entry comes from a closed ticket of the project that you read: if there are none, say so and do not invent changes.\n\nWrite in plain language, without technical names, one entry per visible change. Group them: new, improved, fixed.\n\nPrepare the text for review: do not publish and do not change tickets."
+            },
+            "bug_repro": {
+              "name": "Bug reproduction",
+              "description": "Turns a report into clear steps to reproduce it.",
+              "example": "How do I reproduce ticket SHOP-42?",
+              "instructions": "You are my Bug reproduction expert: methodical and patient. Start from a ticket or an error and rebuild the steps that make it happen.\n\nUse the project's tickets, errors, logs and releases. Write numbered steps, what is expected and what really happens. Say what is missing to reproduce it.\n\nYou may propose a comment with the steps on the ticket: it always waits for a person's confirmation."
+            },
+            "support": {
+              "name": "Customer replies",
+              "description": "Prepares clear replies to customer requests.",
+              "example": "Draft a reply for someone who cannot sign in.",
+              "instructions": "You are my Customer replies assistant: kind, clear and honest. Read the request and look in the project's knowledge base, tickets and errors for what can help.\n\nPrepare a short reply without technical jargon that says what to do or when the fix will come. Never promise dates you do not know.\n\nIf work is needed, propose a new ticket. Never send anything to the customer: you prepare the text for a person."
             }
           }
         },
@@ -141,7 +165,204 @@
         "latest": "Latest message",
         "open_new_task": "New task",
         "working": "Working",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "rules_tab": "Rules",
+        "actions": {
+          "pending": "Waiting for your confirmation.",
+          "confirmed_user": "Done, confirmed by you.",
+          "confirmed_rule": "Done by the Puck, as the rules allow.",
+          "discarded_user": "Discarded.",
+          "discarded_rule": "Blocked by the Puck's rules.",
+          "failed": "Did not work: you can try again.",
+          "confirm": "Confirm",
+          "discard": "Discard"
+        },
+        "rules": {
+          "intro": "For each kind of action choose what the Puck does: alone, asks you first, or never.",
+          "allow": "Alone",
+          "ask": "Ask",
+          "deny": "Never",
+          "sensitive": "Closing a ticket always asks for your confirmation, whatever rule you choose."
+        },
+        "notify": {
+          "title": "%{name} is waiting for your decision",
+          "report_title": "%{name} has a report for you"
+        },
+        "watch": {
+          "save": "Save",
+          "label": "Automatic check",
+          "title": "Automatic check",
+          "intro": "The Puck checks your projects on its own: new errors and monitors down. It runs only when there is something new and never changes anything by itself.",
+          "every": "How often",
+          "off": "Off",
+          "interval": {
+            "one": "Every %{count} minute",
+            "other": "Every %{count} minutes"
+          }
+        },
+        "budget": {
+          "save": "Save",
+          "title": "This month's usage",
+          "used": "%{used} tokens used of %{cap}",
+          "no_cap": "no ceiling",
+          "cap": "Monthly ceiling (tokens)",
+          "cap_hint": "Applies to all Puckies of the organization. Empty: no ceiling."
+        },
+        "schedules": {
+          "title": "Repeating tasks",
+          "input": "What the Puck should do",
+          "frequency": "When",
+          "hour": "Hour",
+          "minute": "Minutes",
+          "weekday": "Day",
+          "weekday_hint": "Used only for «once a week».",
+          "save": "Add",
+          "pause": "Pause",
+          "resume": "Resume",
+          "delete": "Delete",
+          "delete_confirm": "Delete this repeating task?",
+          "paused": "paused",
+          "next": "next: %{at}",
+          "frequencies": {
+            "hourly": "Every hour",
+            "daily": "Every day",
+            "weekdays": "On weekdays",
+            "weekly": "Once a week"
+          },
+          "every": {
+            "hourly": "Every hour at minute %{minute}",
+            "daily": "Every day at %{time}",
+            "weekdays": "On weekdays at %{time}",
+            "weekly": "Every %{day} at %{time}"
+          }
+        },
+        "notes": {
+          "title": "Things the Puck wants to remember",
+          "pending": "Waiting for your yes",
+          "active": "Remembered",
+          "accept": "Remember",
+          "dismiss": "Discard",
+          "remove": "Forget"
+        },
+        "busy_budget": "The Puckies' monthly ceiling is reached. Who manages the organization can raise it in the Rules panel.",
+        "signature": "Prepared by Puck «%{name}»",
+        "handoff": {
+          "to": "Handed to %{name}"
+        },
+        "team_puck": {
+          "team": "Team Puck",
+          "team_hint": "Everyone who sees the project sees it. Rules and memory are set by who manages the organization.",
+          "project": "Project",
+          "readonly": "This is a team Puck: rules, memory and schedules are set by who manages the organization."
+        },
+        "activity_page": {
+          "title": "Puckies activity",
+          "subtitle": {
+            "one": "%{count} run",
+            "other": "%{count} runs"
+          },
+          "search": "Search requests",
+          "status": "Status",
+          "kind": "Kind",
+          "puck": "Puck",
+          "created": "Started",
+          "tokens": "Tokens",
+          "request": "Request",
+          "empty": "No work from your Puckies yet.",
+          "pending": {
+            "one": "· %{count} decision for you",
+            "other": "· %{count} decisions for you"
+          },
+          "kinds": {
+            "chat": "Conversation",
+            "task": "Task",
+            "watch": "Automatic check"
+          },
+          "empty_body": "When a Puck works, here you see what it does, for whom and how it went."
+        },
+        "channels": {
+          "pending": {
+            "one": "1 action waits for your confirmation.",
+            "other": "%{count} actions wait for your confirmation."
+          },
+          "title": "Write to the Puck from elsewhere",
+          "telegram": "From Telegram: link your account in preferences, then /puck to pick the Puck and /p <text> to write to it."
+        },
+        "slack": {
+          "link_first": "Link your account first: on CloseYourIt, in Coworkers › Rules, copy the code and send me «link <code>».",
+          "link_invalid": "The code is invalid or expired. Get a new one from CloseYourIt.",
+          "linked": "Done: write to me or mention me and your Puck answers.",
+          "unavailable": "Puckies are not active for your organization.",
+          "no_puck": "You have no Puck yet: create one on CloseYourIt.",
+          "busy": "The Puck is busy or the monthly ceiling is reached. Try again soon.",
+          "title": "Slack",
+          "intro": "To write to your Puckies from Slack, send the bot this message within 15 minutes:",
+          "code": "link %{code}"
+        },
+        "call": {
+          "toggle": "Call the Puck",
+          "started": "I am listening.",
+          "listening": "Listening…",
+          "thinking": "The Puck is thinking…",
+          "speaking": "The Puck is answering…",
+          "noAnswer": "I have no answer."
+        },
+        "screen": {
+          "alt": "%{name}'s screen",
+          "take": "Take over",
+          "give": "Give back to the Puck",
+          "type": "Type into the selected field",
+          "send": "Type"
+        },
+        "procedures": {
+          "title": "Taught procedures",
+          "save": "Save as procedure",
+          "empty": "There are no steps to save: take the screen and do the work once.",
+          "click": "Click at point %{x}, %{y} of the screen",
+          "type": "Type the text that is needed",
+          "from": "Start from %{url}",
+          "follow": "Follow the procedure «%{name}». Stop and ask if something does not match.",
+          "start": "Start now",
+          "repeat": "Repeat every day at 8",
+          "remove_confirm": "Delete this procedure?"
+        },
+        "apps": {
+          "title": "Connected apps",
+          "access": {
+            "read": "Read only",
+            "write": "Read and actions to confirm"
+          },
+          "access_label": "What it may do",
+          "tools": {
+            "one": "%{count} tool",
+            "other": "%{count} tools"
+          },
+          "error": "Not answering",
+          "refresh": "Refresh",
+          "remove": "Remove",
+          "remove_confirm": "Disconnect this app from the Puck?",
+          "add_github": "Connect GitHub (read only)",
+          "name": "App name",
+          "url": "MCP server address",
+          "url_hint": "It must start with https://. The token stays encrypted and the Puck never sees it.",
+          "token": "Token",
+          "add": "Connect"
+        },
+        "sites": {
+          "title": "Sites with a login",
+          "domain": "Domain",
+          "username": "Username",
+          "password": "Password",
+          "hint": "The Puck types the username and password into the page without ever seeing them.",
+          "add": "Add site",
+          "remove_confirm": "Remove this site and its login?"
+        },
+        "devices": {
+          "intro": "Your computer: run this command in the terminal. Every request from the Puck asks you yes or no there.",
+          "online": "connected",
+          "offline": "not reachable",
+          "disconnect": "Disconnect"
+        }
       }
     }
   }

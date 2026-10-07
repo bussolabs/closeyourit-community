@@ -32,7 +32,20 @@ it:
         /ticket <CODICE> — mostra stato di un ticket (es. /ticket DRRA-12)
         /miei-ticket — i tuoi ticket aperti
         /commenta <CODICE> <testo> — commenta un ticket (+foto in didascalia)
+        /puck [nome] — elenca i tuoi Puckies o ne sceglie uno
+        /p <testo> — scrive al Puck scelto; la risposta arriva qui
         /aiuto — questo messaggio
+    puck:
+      usage: "Uso: /p <testo>. Con /puck vedi i tuoi Puckies."
+      none: "Non hai ancora un Puck: crealo su CloseYourIt nella sezione Coworkers."
+      list: "I tuoi Puckies: %{names}. Scegline uno con /puck <nome>."
+      unknown: "Non trovo quel Puck. I tuoi Puckies: %{names}."
+      chosen: "Ora scrivi a %{name} con /p <testo>."
+      asked: "%{name} ci sta lavorando. Ti rispondo qui."
+      busy: "Il Puck è occupato o il tetto del mese è raggiunto. Riprova tra poco."
+      action_gone: "Questa azione non è più in attesa."
+      confirmed: "Fatto."
+      discarded: "Scartata."
     projects:
       list: "I tuoi progetti:\n%{list}"
       item: "%{key} — %{name}"

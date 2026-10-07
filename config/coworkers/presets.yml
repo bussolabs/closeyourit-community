@@ -1,0 +1,38 @@
+# Ready-made roles for a new Puck (CYRA-1025). Texts live in config/locales/member/coworkers/*.yml
+# under member.coworkers.presets.items.<key>. Rules may only be ask or deny: a role never lets a
+# Puck act alone. Bump version when a role changes; existing Puckies keep what they were created with.
+version: 4
+presets:
+  researcher:
+    mascot: "01"
+  observer:
+    mascot: "13"
+  technical:
+    mascot: "16"
+  editor:
+    mascot: "03"
+  triage:
+    mascot: "05"
+    rules:
+      change_ticket_status: deny
+      assign_ticket: ask
+      create_ticket: ask
+  release_notes:
+    mascot: "11"
+    rules:
+      change_ticket_status: deny
+      change_ticket_priority: deny
+      assign_ticket: deny
+      create_ticket: deny
+      comment_ticket: deny
+  bug_repro:
+    mascot: "07"
+    rules:
+      change_ticket_status: deny
+      comment_ticket: ask
+  support:
+    mascot: "14"
+    rules:
+      change_ticket_status: deny
+      change_ticket_priority: deny
+      create_ticket: ask

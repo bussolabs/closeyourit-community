@@ -1,0 +1,40 @@
+<%# Apps and sites the Puck may use; secrets are written once and never shown (CYRA-1014, CYRA-1015). %>
+<section class="mt-6 flex flex-col gap-3 border-t border-stone-200 pt-4 dark:border-zinc-800" data-test="coworkers-apps">
+  <h3 class="text-[13px] font-semibold"><%= t("member.coworkers.apps.title") %></h3>
+  <% puck.connections.order(:created_at).each do |connection| %>
+    <div class="flex flex-wrap items-center gap-2 text-[12.5px]" data-test="coworkers-app">
+      <span class="font-medium"><%= connection.name %></span>
+      <span class="text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.apps.access.#{connection.access}") %> · <%= t("member.coworkers.apps.tools", count: connection.provider == "github" ? Coworkers::Apps::GITHUB.size : connection.tools.size) %></span>
+      <% if connection.last_error %><span class="text-red-600 dark:text-red-400"><%= t("member.coworkers.apps.error") %></span><% end %>
+      <% if connection.provider == "mcp" %>
+        <%= render Ui::ButtonComponent.new(label: t("member.coworkers.apps.refresh"), href: member_coworker_connection_path(puck, connection), method: :patch, authenticity_token: false, variant: :ghost, size: :sm) %>
+      <% end %>
+      <%= render Ui::ButtonComponent.new(label: t("member.coworkers.apps.remove"), href: member_coworker_connection_path(puck, connection), method: :delete, authenticity_token: false, confirm: t("member.coworkers.apps.remove_confirm"), variant: :ghost, size: :sm, test_id: "coworkers-app-remove") %>
+    </div>
+  <% end %>
+  <% unless puck.connections.any? { |connection| connection.provider == "github" } %>
+    <%= render Ui::ButtonComponent.new(label: t("member.coworkers.apps.add_github"), href: member_coworker_connections_path(puck, connection: { provider: "github", access: "read" }), method: :post, authenticity_token: false, variant: :secondary, size: :sm, class: "w-fit", test_id: "coworkers-add-github") %>
+  <% end %>
+  <%= form_with url: member_coworker_connections_path(puck), scope: :connection, class: "flex flex-col gap-2", data: { test: "coworkers-mcp-form" } do %>
+    <%= hidden_field_tag "connection[provider]", "mcp" %>
+    <%= render Ui::InputComponent.new(name: "connection[name]", id: "coworkers-mcp-name", label: t("member.coworkers.apps.name"), required: true, maxlength: 80) %>
+    <%= render Ui::InputComponent.new(name: "connection[url]", id: "coworkers-mcp-url", type: "url", label: t("member.coworkers.apps.url"), required: true, hint: t("member.coworkers.apps.url_hint")) %>
+    <%= render Ui::InputComponent.new(name: "connection[token]", id: "coworkers-mcp-token", type: "password", label: t("member.coworkers.apps.token"), autocomplete: "off") %>
+    <%= render Ui::SelectComponent.new(name: "connection[access]", label: t("member.coworkers.apps.access_label"), selected: "read",
+          options: Coworkers::Connection::ACCESS.map { |access| [ t("member.coworkers.apps.access.#{access}"), access ] }) %>
+    <%= render Ui::ButtonComponent.new(label: t("member.coworkers.apps.add"), type: "submit", size: :sm, class: "w-fit max-md:min-h-11") %>
+  <% end %>
+  <h3 class="mt-2 text-[13px] font-semibold"><%= t("member.coworkers.sites.title") %></h3>
+  <% puck.sites.order(:domain).each do |site| %>
+    <div class="flex items-center gap-2 text-[12.5px]" data-test="coworkers-site">
+      <span class="font-mono"><%= site.domain %></span>
+      <%= render Ui::ButtonComponent.new(label: t("member.coworkers.apps.remove"), href: member_coworker_site_path(puck, site), method: :delete, authenticity_token: false, confirm: t("member.coworkers.sites.remove_confirm"), variant: :ghost, size: :sm) %>
+    </div>
+  <% end %>
+  <%= form_with url: member_coworker_sites_path(puck), scope: :site, class: "flex flex-col gap-2", data: { test: "coworkers-site-form" } do %>
+    <%= render Ui::InputComponent.new(name: "site[domain]", id: "coworkers-site-domain", label: t("member.coworkers.sites.domain"), required: true, placeholder: "app.example.com") %>
+    <%= render Ui::InputComponent.new(name: "site[username]", id: "coworkers-site-username", label: t("member.coworkers.sites.username"), autocomplete: "off") %>
+    <%= render Ui::InputComponent.new(name: "site[password]", id: "coworkers-site-password", type: "password", label: t("member.coworkers.sites.password"), autocomplete: "new-password", hint: t("member.coworkers.sites.hint")) %>
+    <%= render Ui::ButtonComponent.new(label: t("member.coworkers.sites.add"), type: "submit", size: :sm, class: "w-fit max-md:min-h-11") %>
+  <% end %>
+</section>

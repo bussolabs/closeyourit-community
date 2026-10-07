@@ -52,7 +52,8 @@ module Notifications
       { key: :tokens, events: %w[project_token_expiring] },
       # Agenti di automazione (CYRA-212, CYRA-282, CYRA-450): allarmi operativi sul sistema che esegue le
       # lavorazioni — l'org che gira a vuoto, la macchina che butta via il lavoro e quella ferma.
-      { key: :agents, events: %w[agents_stalled agents_host_failing agents_host_stale] },
+      # CYRA-1020 adds the Puck waiting for a person: Puckies are agents too.
+      { key: :agents, events: %w[agents_stalled agents_host_failing agents_host_stale puck_decision_needed puck_report_ready] },
       # Sicurezza delle dipendenze (CYRA-506): la falla trovata in una libreria e la versione di
       # linguaggio che non riceve più patch. Gruppo proprio: chi le riceve non è chi segue le macchine.
       { key: :vulnerabilities, events: %w[vulnerability_new runtime_eol] },

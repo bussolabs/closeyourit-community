@@ -1,0 +1,19 @@
+<%# What the Puck asked to remember: nothing applies until the owner accepts it (CYRA-1012). %>
+<% notes = puck.memory_notes.where(status: %w[pending active]).order(created_at: :desc).to_a %>
+<% if notes.any? %>
+  <section class="mt-5 flex flex-col gap-2" data-test="coworkers-memory-notes">
+    <h3 class="text-[13px] font-semibold"><%= t("member.coworkers.notes.title") %></h3>
+    <% notes.each do |note| %>
+      <div class="rounded-lg border border-stone-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900" data-test="coworkers-memory-note" data-status="<%= note.status %>">
+        <p class="text-[13px] whitespace-pre-wrap break-words"><%= note.body %></p>
+        <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.notes.#{note.status}") %></p>
+        <div class="mt-1.5 flex flex-wrap gap-1">
+          <% if note.status == "pending" %>
+            <%= render Ui::ButtonComponent.new(label: t("member.coworkers.notes.accept"), href: member_coworker_memory_note_path(puck, note, status: "active"), method: :patch, authenticity_token: false, size: :sm, class: "max-md:min-h-11", test_id: "coworkers-note-accept") %>
+          <% end %>
+          <%= render Ui::ButtonComponent.new(label: t("member.coworkers.notes.#{note.status == 'pending' ? 'dismiss' : 'remove'}"), href: member_coworker_memory_note_path(puck, note, status: "dismissed"), method: :patch, authenticity_token: false, variant: :ghost, size: :sm, class: "max-md:min-h-11", test_id: "coworkers-note-dismiss") %>
+        </div>
+      </div>
+    <% end %>
+  </section>
+<% end %>

@@ -21,6 +21,8 @@
           <%= render Ui::ButtonComponent.new(label: t("member.coworkers.presets.title"), variant: :secondary, class: "mt-3 min-h-11 md:hidden", data: { action: "coworker-presets#browse" }) %>
         </div>
         <%= render "member/coworkers/preset_mascot" %>
+        <%= hidden_field_tag "puck[preset]", "", id: "coworker-new-preset", data: { coworker_presets_target: "preset" } %>
+        <%= render "member/coworkers/team_fields" %>
         <%= render Ui::InputComponent.new(name: "puck[name]", id: "coworker-new-name", label: t("member.coworkers.name"), required: true, maxlength: 80, autocomplete: "off", autofocus: true, wrapper_class: "md:col-span-2", test_id: "coworkers-name", data: { coworker_presets_target: "name" }) %>
         <%= render Ui::InputComponent.new(name: "puck[instructions]", id: "coworker-new-instructions", type: "textarea", label: t("member.coworkers.instructions"), required: true, maxlength: 8000, rows: 10, hint: t("member.coworkers.presets.hint"), wrapper_class: "md:col-span-2", test_id: "coworkers-instructions", data: { coworker_presets_target: "instructions" }) %>
         <p class="text-[12px] text-gray-500 dark:text-zinc-400 md:col-span-2"><%= t("member.coworkers.local") %></p>

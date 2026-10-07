@@ -32,7 +32,20 @@ en:
         /ticket <CODE> — show a ticket's status (e.g. /ticket DRRA-12)
         /miei-ticket — your open tickets
         /commenta <CODE> <text> — comment on a ticket (+photo in the caption)
+        /puck [name] — lists your Puckies or picks one
+        /p <text> — writes to the chosen Puck; the answer comes here
         /aiuto — this message
+    puck:
+      usage: "Usage: /p <text>. /puck shows your Puckies."
+      none: "You have no Puck yet: create one on CloseYourIt in Coworkers."
+      list: "Your Puckies: %{names}. Pick one with /puck <name>."
+      unknown: "I cannot find that Puck. Your Puckies: %{names}."
+      chosen: "Now write to %{name} with /p <text>."
+      asked: "%{name} is working on it. I will answer here."
+      busy: "The Puck is busy or the monthly ceiling is reached. Try again soon."
+      action_gone: "This action is no longer waiting."
+      confirmed: "Done."
+      discarded: "Discarded."
     projects:
       list: "Your projects:\n%{list}"
       item: "%{key} — %{name}"

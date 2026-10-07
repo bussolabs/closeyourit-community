@@ -16,3 +16,7 @@ Rails.application.config.filter_parameters += [
 
 # Worker payloads contain private conversations and memory.
 Rails.application.config.filter_parameters += [ :events, :lease_id ]
+
+# CloseYourIt AI gateway (CYRA-1046): the prompt fields of the OpenAI-compatible endpoints. Without
+# these the "Parameters:" line keeps every customer question. Spec: ai_gateway/log_privacy_spec.
+Rails.application.config.filter_parameters += [ :messages, :input, :query, :documents ]

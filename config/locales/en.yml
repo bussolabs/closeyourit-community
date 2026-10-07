@@ -47,6 +47,7 @@ en:
   errors:
     messages:
       not_member: "is not a member of this organization"
+      reserved_runtime: "is a system variable that changes how commands run (PATH, LD_*, NODE_OPTIONS, ...): it cannot be a secret"
       same_idea: "is the idea itself"
       other_project: "belongs to another project"
       already_linked: "is already linked to this idea"

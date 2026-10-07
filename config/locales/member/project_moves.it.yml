@@ -32,6 +32,7 @@ it:
         provision_crosses: "Un secret passa da %{detail}: spostali insieme."
         shared_conflict: "Il secret dell'organizzazione %{detail} esiste già nell'arrivo con un valore diverso."
         agent_running: "Un agent sta lavorando su %{detail}."
+        team_puck_bound: "Il Puck di squadra «%{detail}» è legato a questo progetto: eliminalo prima di spostarlo."
         move_in_progress: "C'è già uno spostamento in corso per %{detail}."
         subject_left_source: "%{detail} non è più nell'organizzazione di partenza."
         requester_not_owner: "%{detail} non è più owner di entrambe le organizzazioni."

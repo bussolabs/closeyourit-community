@@ -244,6 +244,12 @@ it:
         cluster_workload_degraded:
           title: App a metà
           description: "Un'app del cluster ha meno copie funzionanti di quelle previste da almeno 5 minuti."
+        puck_decision_needed:
+          title: "Il Puck aspetta una decisione"
+          description: "Un Puck ha preparato un'azione e aspetta che tu la confermi."
+        puck_report_ready:
+          title: "Il Puck ha un resoconto"
+          description: "Un Puck ha trovato da solo qualcosa di nuovo nei tuoi progetti e te lo racconta."
         server_disk_forecast:
           title: Spazio dati in esaurimento
           description: Al ritmo di riempimento attuale il volume dati di un server saturerà entro pochi giorni.

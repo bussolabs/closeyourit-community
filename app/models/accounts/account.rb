@@ -28,7 +28,7 @@ module Accounts
     # page_header_compact = the page header collapsed on every member page (DESIGN.md B25).
     # dismissed_notices = keys of the floating notices the person closed (Ui::FloatingNoticeComponent).
     # theme = light, dark or system (DESIGN.md A32); blank means light.
-    store_accessor :preferences, :projects_view, :platform_codes, :locale, :telegram_project_id,
+    store_accessor :preferences, :projects_view, :platform_codes, :locale, :telegram_project_id, :telegram_puck_id,
                    :board_collapsed_statuses, :page_header_compact, :dismissed_notices, :theme
 
     def page_header_compact?

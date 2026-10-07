@@ -159,6 +159,16 @@ RSpec.describe Secrets::ChangeRequest, type: :model do
     end
   end
 
+  describe "reserved runtime names (CYRA-1046)" do
+    it "rejects, already at creation, names the shell or a runtime reads before any program runs" do
+      %w[PATH LD_PRELOAD DYLD_INSERT_LIBRARIES NODE_OPTIONS].each do |name|
+        record = build_request(name:, action: "set", value: "x")
+        expect(record).not_to be_valid, "#{name} must be rejected"
+        expect(record.errors[:name]).to include(I18n.t("errors.messages.reserved_runtime"))
+      end
+    end
+  end
+
   describe "tenant-integrity" do
     it "rifiuta un environment di un'altra organizzazione" do
       foreign_env = create(:environment, organization: create(:organization))

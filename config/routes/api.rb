@@ -7,6 +7,8 @@ namespace :api do
       post "readiness", to: "worker#readiness"
       post "claims", to: "worker#claim"
       post "runs/:run_id/events", to: "worker#events"
+      post "runs/:run_id/tools", to: "worker#tools"
+      post "runs/:run_id/session", to: "worker#session"
     end
 
     namespace :otlp do

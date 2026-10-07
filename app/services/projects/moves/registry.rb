@@ -114,7 +114,8 @@ module Projects
         "secrets_provisions" => "blocker when a side stays behind; otherwise follows",
         "agents_leases" => "blocker while an agent holds a ticket",
         "chat_messages" => "follow their moved conversation (Execute#follow_chat!)",
-        "chat_participants" => "follow their moved conversation; non-members of the destination are deleted (Execute)"
+        "chat_participants" => "follow their moved conversation; non-members of the destination are deleted (Execute)",
+        "coworkers_puckies" => "a team Puck bound to a moved project blocks the move (Plan#team_puckies)"
       }.freeze
 
       # Per-organization lookups rewritten by LookupMap (CYRA-879).
@@ -153,6 +154,8 @@ module Projects
         "alerting_rule_host_exclusions" => "deleted with their rule in Execute",
         "assistant_messages" => "a message stays with its conversation in the source organization",
         "assistant_proposals" => "a proposal stays with the assistant reply that made it; a confirmed one keeps the id of what it created",
+        "coworkers_device_calls" => "a computer request stays with its run and its computer in the source organization (CYRA-1029)",
+        "coworkers_slack_links" => "a Slack link stays with its account; a move is blocked while a team Puck is bound (CYRA-1023)",
         "knowledge_ask_logs" => "past questions keep project_ids and group_ids as asked; history only",
         "saved_views" => "a saved filter on a moved project just finds nothing in the source",
         "secrets_consolidation_suggestions" => "realigned by the nightly Consolidation::ScanJob to the values the source still has"

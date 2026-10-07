@@ -15,11 +15,11 @@ module Assistant
 
       def self.declaration
         { name: "get_ticket",
-          description: "Mostra un singolo ticket citato per codice (es. CYRA-279): titolo, stato, " \
-                       "assegnatario, descrizione e ultimi commenti.",
+          description: "Shows a single ticket named by code (e.g. CYRA-279): title, status, " \
+                       "assignee, description and latest comments.",
           parameters: {
             type: "OBJECT",
-            properties: { code: { type: "STRING", description: "Codice del ticket, es. CYRA-279" } },
+            properties: { code: { type: "STRING", description: "Ticket code, e.g. CYRA-279" } },
             required: [ "code" ]
           } }
       end

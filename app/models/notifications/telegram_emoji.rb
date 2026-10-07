@@ -116,7 +116,10 @@ module Notifications
       "cluster_workload_crashloop" => "🔁",
       "cluster_workload_degraded" => "🟡",
       # credenziale di ingest in scadenza (CYRA-716): la stessa chiave della rotazione dei secret
-      "project_token_expiring" => "🔑"
+      "project_token_expiring" => "🔑",
+      # a Puck waits for a decision (CYRA-1020)
+      "puck_decision_needed" => "🙋",
+      "puck_report_ready" => "📋"
     }.freeze
 
     # Prefisso dell'event_type → dominio, per scegliere la label del link footer (i18n).
@@ -151,6 +154,7 @@ module Notifications
       # memoria temporanea giù (CYRA-846): il footer porta alla flotta, dove si vede quale macchina
       # è caduta
       "cache" => :server,
+      "puck" => :puck,
       # CYRA-716: il footer di project_token_expiring porta ai token del progetto, dove si emette la
       # credenziale nuova. È l'unico event_type col prefisso "project".
       "project" => :project_token

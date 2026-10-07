@@ -17,7 +17,9 @@ module Telegram
     API_HOST = "https://api.telegram.org"
 
     # message_thread_id: l'argomento di un gruppo con argomenti (CYRA-852); nil = chat senza argomenti.
-    def initialize(chat_id:, text:, parse_mode: nil, message_thread_id: nil)
+    # reply_markup: inline buttons, e.g. confirming what a Puck proposed (CYRA-1018).
+    def initialize(chat_id:, text:, parse_mode: nil, message_thread_id: nil, reply_markup: nil)
+      @reply_markup = reply_markup
       @chat_id = chat_id.to_s
       @text = text.to_s
       @parse_mode = parse_mode
@@ -74,7 +76,7 @@ module Telegram
 
     def post
       self.class.api_post("sendMessage", chat_id: @chat_id, message_thread_id: @message_thread_id, text: @text,
-                                         disable_web_page_preview: true, parse_mode: @parse_mode)
+                                         disable_web_page_preview: true, parse_mode: @parse_mode, reply_markup: @reply_markup)
     end
   end
 end

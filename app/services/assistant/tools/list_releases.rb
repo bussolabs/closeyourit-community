@@ -6,12 +6,12 @@ module Assistant
     class ListReleases < Base
       def self.declaration
         { name: "list_releases",
-          description: "Elenca i rilasci di UN progetto dal più recente: versione, ambiente, quando, " \
-                       "quale è quello in linea e quanti errori ha raccolto. " \
-                       "Usalo per domande come 'qual è l'ultima versione di CYRA?'.",
+          description: "Lists the releases of ONE project, newest first: version, environment, when, " \
+                       "which one is live and how many errors it collected. " \
+                       "Use it for questions like 'what is the latest version of CYRA?'.",
           parameters: {
             type: "OBJECT",
-            properties: { project: { type: "STRING", description: "Chiave del progetto, es. CYRA" } },
+            properties: { project: { type: "STRING", description: "Project key, e.g. CYRA" } },
             required: [ "project" ]
           } }
       end

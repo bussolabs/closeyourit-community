@@ -7,12 +7,12 @@ module Assistant
     class ListMonitors < Base
       def self.declaration
         { name: "list_monitors",
-          description: "Elenca i controlli di disponibilità di UN progetto: se ogni servizio risponde, " \
-                       "da quando è giù, e la percentuale di disponibilità delle ultime 24 ore. " \
-                       "Usalo per domande come 'CYRA è online?' o 'com'è la disponibilità?'.",
+          description: "Lists the uptime checks of ONE project: whether each service answers, " \
+                       "since when it is down, and the uptime percentage of the last 24 hours. " \
+                       "Use it for questions like 'is CYRA online?' or 'how is the uptime?'.",
           parameters: {
             type: "OBJECT",
-            properties: { project: { type: "STRING", description: "Chiave del progetto, es. CYRA" } },
+            properties: { project: { type: "STRING", description: "Project key, e.g. CYRA" } },
             required: [ "project" ]
           } }
       end

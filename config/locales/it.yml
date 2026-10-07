@@ -126,6 +126,7 @@ it:
   errors:
     messages:
       not_member: "non è un membro di questa organizzazione"
+      reserved_runtime: "è una variabile di sistema che cambia come girano i comandi (PATH, LD_*, NODE_OPTIONS, ...): non può essere un segreto"
       same_idea: "è l'idea stessa"
       other_project: "appartiene a un altro progetto"
       already_linked: "è già collegata a questa idea"

@@ -2,41 +2,61 @@
 
 module Assistant
   module Proposals
-    # Runs a proposal the user confirmed: claims it atomically, re-checks visibility and permission
-    # now, then calls the existing domain service (CYRA-907).
+    # Runs a proposal the user confirmed: re-checks visibility and permission now, then calls the
+    # existing domain service (CYRA-907). Lock, effect and outcome share one transaction, so a crash
+    # cannot leave an applied action marked as still running (CYRA-1017).
+    # allowed_project_ids: the frozen scope of a Puck run, a ceiling on top of today's access.
     class Confirm < ApplicationService
-      def initialize(proposal:, account:, organization:, true_actor: nil)
+      def initialize(proposal:, account:, organization:, true_actor: nil, allowed_project_ids: nil)
         @proposal = proposal
         @account = account
         @organization = organization
         @true_actor = true_actor
+        @allowed_project_ids = allowed_project_ids
       end
 
       def call
-        return err("R409-PROPOSAL-001", :not_confirmable) unless claim
+        result = Assistant::Proposal.transaction do
+          next err("R409-PROPOSAL-001", :not_confirmable) unless claim
 
-        result = run
-        finish(result)
+          run.tap { |outcome| finish(outcome) }
+        end
         result.ok? ? Result.ok(@proposal) : result
       end
 
       private
 
-      # The UPDATE is the lock: only one request moves the row out of pending/failed.
+      # The row lock serializes confirmations: the second one finds the proposal no longer open.
       def claim
-        Assistant::Proposal.where(id: @proposal.id, account_id: @account.id, organization_id: @organization.id,
-                                  status: %i[pending failed]).update_all(status: :running, updated_at: Time.current) == 1
+        locked = Assistant::Proposal.lock.find_by(id: @proposal.id, account_id: @account.id, organization_id: @organization.id)
+        return false unless locked&.confirmable?
+
+        @proposal = locked
+      end
+
+      # Text a Puck prepared says so, added here once whoever confirms it (CYRA-1023, CYRA-419).
+      def signed(text)
+        run = @proposal.coworkers_run
+        return text if run.nil?
+
+        "#{text}\n\n_#{I18n.t('member.coworkers.signature', name: run.puck.name)}_"
+      end
+
+      def ceiling_excludes?(project_id)
+        @allowed_project_ids && !@allowed_project_ids.include?(project_id)
       end
 
       def run
         case @proposal.kind
         when "create_ticket" then create_ticket
-        when "comment_ticket" then with_ticket(nil) { |t| Ticketing::AddComment.call(ticket: t, author: @account, params: { body: payload["body"] }) }
+        when "comment_ticket" then with_ticket(nil) { |t| Ticketing::AddComment.call(ticket: t, author: @account, params: { body: signed(payload["body"]) }) }
         when "change_ticket_status" then with_ticket("tickets.edit") { |t| change_status(t) }
         when "change_ticket_priority" then with_ticket("tickets.edit") { |t| change_priority(t) }
         when "assign_ticket" then with_ticket("tickets.assign") { |t| assign(t) }
         when "create_todo" then create_todo
         when "create_idea" then create_idea
+        when "start_agent_work" then with_ticket("tickets.edit") { |t| start_agent_work(t) }
+        when "external_tool" then external_tool
         end
       end
 
@@ -48,9 +68,11 @@ module Assistant
       end
 
       def create_ticket
+        return err("R404-PROPOSAL-001", :not_visible) if ceiling_excludes?(payload["project_id"])
+
         not_visible_if(Ticketing::CreateTicket.call(
           organization: @organization, reporter: @account, true_actor: @true_actor,
-          params: { project_id: payload["project_id"], title: payload["title"], description: payload["description"],
+          params: { project_id: payload["project_id"], title: payload["title"], description: signed(payload["description"]),
                     kind: payload["ticket_kind"], status_id: Ticketing::FormOptions.default_status_id(@organization),
                     priority_id: payload["priority_id"].presence || Ticketing::FormOptions.default_priority_id(@organization) }
         ), "R404-TICKET-001")
@@ -58,7 +80,7 @@ module Assistant
 
       def with_ticket(permission)
         ticket = Ticketing::Ticket.where(project_id: visible.projects.select(:id)).find_by(id: payload["ticket_id"])
-        return err("R404-PROPOSAL-001", :not_visible) if ticket.nil?
+        return err("R404-PROPOSAL-001", :not_visible) if ticket.nil? || ceiling_excludes?(ticket.project_id)
         return err("R403-PROPOSAL-001", :forbidden) if permission && !resolver.can?(permission, scope: ticket.project)
 
         yield ticket
@@ -96,9 +118,47 @@ module Assistant
       end
 
       def create_idea
+        return err("R404-PROPOSAL-001", :not_visible) if ceiling_excludes?(payload["project_id"])
+
         not_visible_if(Ideas::CreateIdea.call(organization: @organization, author: @account, true_actor: @true_actor,
                                               params: { project_id: payload["project_id"], title: payload["title"],
-                                                        problem: payload["problem"] }), "R404-IDEA-001")
+                                                        problem: signed(payload["problem"]) }), "R404-IDEA-001")
+      end
+
+      # The person lets the automation work the ticket; the agents open the pull request (CYRA-1028).
+      def start_agent_work(ticket)
+        result = Ticketing::SetAgentEligibility.call(ticket: ticket, source: :human, eligibility: "allowed",
+                                                     reason: payload["note"].to_s.first(500).presence, actor: @account, true_actor: @true_actor)
+        attach_proof_video(ticket) if result.ok?
+        result
+      end
+
+      # The reproduction the Puck recorded goes on the ticket the automation will work (CYRA-1028).
+      def attach_proof_video(ticket)
+        video = @proposal.coworkers_run&.video
+        return unless video&.attached?
+
+        # The upload runs after this transaction commits: the copy must outlive the block.
+        copy = Tempfile.new([ "proof", ".webm" ], binmode: true)
+        copy.write(video.download)
+        copy.rewind
+        upload = ActionDispatch::Http::UploadedFile.new(tempfile: copy, filename: video.filename.to_s, type: "video/webm")
+        Ticketing::AttachToTicket.call(ticket: ticket, files: [ upload ], actor: @account, true_actor: @true_actor)
+      end
+
+      # The call a Puck prepared in a connected app, made now with the app's stored token (CYRA-1014).
+      def external_tool
+        run = @proposal.coworkers_run
+        connection = run&.puck&.connections&.find_by(id: payload["connection_id"])
+        # A read-only connection runs only the tools it listed as reads.
+        allowed = connection && (connection.write? || connection.tools.any? { |tool| tool["name"] == payload["tool"] && tool["read_only"] })
+        return err("R404-PROPOSAL-001", :not_visible) if !allowed || !Coworkers::Apps.reachable?(run)
+
+        outcome = Coworkers::Mcp.call_tool(connection, payload["tool"], payload["arguments"] || {})
+        @proposal.payload = payload.merge("result" => outcome[:text].to_s.first(2000))
+        outcome[:error] ? err("R502-PROPOSAL-001", :failed_external) : Result.ok(@proposal)
+      rescue Coworkers::Mcp::Error
+        err("R502-PROPOSAL-001", :failed_external)
       end
 
       def finish(result)

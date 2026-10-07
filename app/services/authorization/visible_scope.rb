@@ -63,7 +63,11 @@ module Authorization
     # --- Gli elenchi di ogni dominio (CYRA-799) -----------------------------------------------
     # Discendono TUTTI dai progetti visibili: un ticket è visibile se lo è il suo progetto, un errore
     # pure, e così via. Chi aggiunge un dominio scrive una riga qui, non una seconda regola.
-    def coworker_puckies = Coworkers::Puck.where(organization: @organization, account: @account)
+    # Own personal Puckies, plus the team Puckies of a visible project (CYRA-1023).
+    def coworker_puckies
+      base = Coworkers::Puck.where(organization: @organization)
+      base.where(visibility: "personal", account: @account).or(base.where(visibility: "team", project_id: projects.select(:id)))
+    end
     def tickets = of_visible_projects(Ticketing::Ticket)
     def ideas = of_visible_projects(Ideas::Idea)
     def helpdesk_requests = of_visible_projects(Helpdesk::Request)

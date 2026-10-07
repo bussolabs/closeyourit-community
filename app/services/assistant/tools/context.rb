@@ -20,8 +20,8 @@ module Assistant
     # chi ha chiesto, invece di consegnare in silenzio una risposta più povera che si legge come un
     # dato di fatto. Nasce falso perché il perimetro appena fotografato non ha ancora perso niente.
     Context = Data.define(:account, :organization, :project_ids, :group_ids, :full_access, :scope_reduced,
-                          :reply_message_id) do
-      def initialize(scope_reduced: false, reply_message_id: nil, **) = super
+                          :reply_message_id, :coworkers_run_id) do
+      def initialize(scope_reduced: false, reply_message_id: nil, coworkers_run_id: nil, **) = super
 
       def self.freeze_for(account:, organization:)
         snapshot = Authorization::ScopeSnapshot.capture(account: account, organization: organization)
@@ -30,15 +30,16 @@ module Assistant
 
       # Il perimetro con cui gli attrezzi vanno a leggere: il tetto dell'invio ripassato dal
       # perimetro di ADESSO (Authorization::ScopeSnapshot#narrow).
-      def self.from_snapshot(snapshot, account:, organization:, reply_message_id: nil)
+      def self.from_snapshot(snapshot, account:, organization:, reply_message_id: nil, coworkers_run_id: nil)
         new(account: account, organization: organization,
             project_ids: snapshot.project_ids, group_ids: snapshot.group_ids,
             full_access: snapshot.full_access, scope_reduced: snapshot.reduced?,
-            reply_message_id: reply_message_id)
+            reply_message_id: reply_message_id, coworkers_run_id: coworkers_run_id)
       end
 
-      # Write tools attach their proposals to this reply; without it they are not offered (CYRA-907).
-      def proposals? = reply_message_id.present?
+      # Write tools attach their proposals to this reply or Puck run; without one they are not
+      # offered (CYRA-907, CYRA-1010).
+      def proposals? = reply_message_id.present? || coworkers_run_id.present?
 
       def projects = Projects::Project.where(id: project_ids)
       def tickets = Ticketing::Ticket.where(project_id: project_ids)

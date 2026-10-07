@@ -1,0 +1,18 @@
+<%# Where else this person can talk to their Puckies (CYRA-1018, CYRA-1019). %>
+<section class="mt-6 flex flex-col gap-2 border-t border-stone-200 pt-4 dark:border-zinc-800" data-test="coworkers-channels">
+  <h3 class="text-[13px] font-semibold"><%= t("member.coworkers.channels.title") %></h3>
+  <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.channels.telegram") %></p>
+  <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.devices.intro") %></p>
+  <code class="block rounded-md bg-white px-2 py-1.5 font-mono text-[11px] dark:bg-zinc-900">cyi puck connect --allow-dir .</code>
+  <% Coworkers::Device.live.where(account: Current.account, organization: Current.organization).order(:created_at).each do |device| %>
+    <div class="flex items-center gap-2 text-[12.5px]" data-test="coworkers-device" data-online="<%= device.online? %>">
+      <span class="font-medium"><%= device.name %></span>
+      <span class="text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.devices.#{device.online? ? 'online' : 'offline'}") %></span>
+      <%= render Ui::ButtonComponent.new(label: t("member.coworkers.devices.disconnect"), href: member_coworker_device_path(@puck, device), method: :delete, authenticity_token: false, variant: :ghost, size: :sm, test_id: "coworkers-device-disconnect") %>
+    </div>
+  <% end %>
+  <% if Coworkers::Slack.configured? %>
+    <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.slack.intro") %></p>
+    <code class="block break-all rounded-md bg-white px-2 py-1.5 font-mono text-[11px] dark:bg-zinc-900" data-test="coworkers-slack-code"><%= t("member.coworkers.slack.code", code: Coworkers::Slack.link_code(account: Current.account, organization: Current.organization)) %></code>
+  <% end %>
+</section>

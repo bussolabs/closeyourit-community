@@ -9,14 +9,14 @@ module Assistant
 
       def self.declaration
         { name: "list_ideas",
-          description: "Elenca le idee di UN progetto: titolo, problema, voti e commenti. " \
-                       "Usalo per domande come 'quali idee ci sono su CYRA?' o 'qual è l'idea più votata?'.",
+          description: "Lists the ideas of ONE project: title, problem, votes and comments. " \
+                       "Use it for questions like 'which ideas are there for CYRA?' or 'which idea has the most votes?'.",
           parameters: {
             type: "OBJECT",
             properties: {
-              project: { type: "STRING", description: "Chiave del progetto, es. CYRA" },
+              project: { type: "STRING", description: "Project key, e.g. CYRA" },
               status: { type: "STRING", enum: STATUSES,
-                        description: "open = aperte (default), converted = diventate ticket, archived = archiviate" }
+                        description: "open = open (default), converted = turned into tickets, archived = archived" }
             },
             required: [ "project" ]
           } }

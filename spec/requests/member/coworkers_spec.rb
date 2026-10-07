@@ -137,8 +137,8 @@ RSpec.describe "Member coworkers", type: :request do
 
   it "accepts approval with the current page CSRF header and no embedded form token" do
     chat = puck.runs.create!(kind: "chat", input: "Research", status: "completed", proposed_task: { "objective" => "Research", "activities" => "Read", "limits" => "No writes" })
-    original_protection = ApplicationController.allow_forgery_protection
-    ApplicationController.allow_forgery_protection = true
+    original_protection = ActionController::Base.allow_forgery_protection
+    ActionController::Base.allow_forgery_protection = true
     get member_coworker_path(puck)
     html = Nokogiri::HTML(response.body)
     token = html.at_css('meta[name="csrf-token"]')["content"]
@@ -148,7 +148,7 @@ RSpec.describe "Member coworkers", type: :request do
     expect(response).to have_http_status(:see_other)
     expect(chat.reload.approved_task).to be_present
   ensure
-    ApplicationController.allow_forgery_protection = original_protection
+    ActionController::Base.allow_forgery_protection = original_protection
   end
 
   # F24: New and Edit Puck open in the shared modal shell, the submit in the header inside the form.
@@ -220,7 +220,7 @@ RSpec.describe "Member coworkers", type: :request do
       expect(html.at_css('[data-test="coworkers-copy"]')).to be_present
       titles = html.css('[data-test="coworkers-task-card"]').map { |card| card.at_css('[data-test="coworkers-task-title"]').text.strip }
       expect(titles).to eq([ "Newer task", "Older task" ])
-      expect(html.css('[data-test="coworkers-panel-switch"] a').length).to eq(3)
+      expect(html.css('[data-test="coworkers-panel-switch"] a').length).to eq(4) # chat, memory, tasks, rules (CYRA-1017)
     end
 
     it "lays the dictation strip over the message field instead of under it" do

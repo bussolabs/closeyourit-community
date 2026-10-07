@@ -14,13 +14,13 @@
     <% end %>
   <% else %>
     <%= turbo_stream_from Realtime::Streams.coworker(@puck, I18n.locale) %>
-    <% panel = params[:panel].presence_in(%w[memory tasks]) %>
+    <% panel = params[:panel].presence_in(%w[memory tasks rules]) %>
     <div class="flex flex-1 min-h-0 min-w-0 flex-col" data-controller="coworker-conversation"
          data-action="turbo:before-stream-render@document->coworker-conversation#streamed">
       <div class="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 px-4 py-1.5 dark:border-zinc-800" data-test="coworkers-header">
         <%= render "animated_mascot", puck: @puck %>
         <nav class="inline-flex rounded-md border border-stone-200 bg-stone-50 p-0.5 dark:border-zinc-800 dark:bg-zinc-800" aria-label="<%= t("member.coworkers.panels") %>" data-test="coworkers-panel-switch">
-          <% [ [ nil, "chat" ], [ "memory", "memory" ], [ "tasks", "tasks" ] ].each do |value, key| %>
+          <% [ [ nil, "chat" ], [ "memory", "memory" ], [ "tasks", "tasks" ], [ "rules", "rules_tab" ] ].each do |value, key| %>
             <%= link_to t("member.coworkers.#{key}"), member_coworker_path(@puck, panel: value), aria: { current: ("page" if panel == value) },
                   class: "inline-flex h-[26px] items-center rounded-[5px] px-2.5 text-[12px] font-medium max-md:h-10 #{panel == value ? 'border border-stone-200 bg-white text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100' : 'text-gray-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'}" %>
           <% end %>

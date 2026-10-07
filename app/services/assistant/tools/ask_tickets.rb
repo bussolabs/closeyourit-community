@@ -13,12 +13,12 @@ module Assistant
     class AskTickets < Base
       def self.declaration
         { name: "ask_tickets",
-          description: "Cerca nei ticket per SIGNIFICATO e risponde a domande sul loro contenuto " \
-                       "(es. 'cosa sappiamo del login lento?', 'ci sono problemi noti sui pagamenti?'). " \
-                       "Per elenchi e conteggi usa invece search_tickets.",
+          description: "Searches tickets by MEANING and answers questions about their content " \
+                       "(e.g. 'what do we know about the slow login?', 'are there known payment problems?'). " \
+                       "For lists and counts use search_tickets instead.",
           parameters: {
             type: "OBJECT",
-            properties: { question: { type: "STRING", description: "La domanda, in linguaggio naturale" } },
+            properties: { question: { type: "STRING", description: "The question, in natural language" } },
             required: [ "question" ]
           } }
       end

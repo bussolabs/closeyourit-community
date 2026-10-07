@@ -200,6 +200,22 @@ namespace :cli do
     # La risposta è asincrona: POST del messaggio → 202 con l'id della risposta, poi si segue
     # quell'id finché smette di essere "in lavorazione". Non c'è streaming — sul web lo fa Turbo,
     # che a un client JSON non serve e costerebbe un WebSocket.
+    # Puckies for the apps (CYRA-1022): the client polls a run while it is active, like the assistant.
+    # `cyi puck connect`: the person's computer as a Puck tool (CYRA-1029).
+    resources :coworker_devices, only: %i[create destroy], controller: "coworkers/devices", path: "coworkers/devices" do
+      member do
+        post :poll
+        post "calls/:call_id", action: :answer, as: :answer
+      end
+    end
+    resources :coworkers, only: :index do
+      resources :runs, only: %i[index show create update], module: :coworkers
+      resources :proposals, only: [], module: :coworkers do
+        post :confirm, on: :member
+        post :discard, on: :member
+      end
+    end
+
     namespace :assistant do
       resources :conversations, only: %i[index show create destroy] do
         resources :messages, only: :create, module: :conversations

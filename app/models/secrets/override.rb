@@ -63,6 +63,7 @@ module Secrets
 
       errors.add(:name, :reserved_prefix) if name.start_with?(::Secrets::Variable::RESERVED_NAME_PREFIX)
       errors.add(:name, :reserved) if ::Secrets::Variable::DERIVED_NAMES.include?(name)
+      errors.add(:name, :reserved_runtime) if ::Secrets::Variable.reserved_runtime_name?(name)
     end
 
     # L'environment dev'essere DICHIARATO dal progetto (subset), come per Secrets::Variable.

@@ -7,7 +7,7 @@ gem "rails", "~> 8.1.3"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
 # Use postgresql as the database for Active Record (primary + queue)
-gem "pg", "~> 1.1"
+gem "pg", "~> 1.7"
 # Nearest-neighbor search su pgvector (colonne vector + has_neighbor) — ricerca semantica
 gem "neighbor"
 # Rendering markdown (GFM) delle pagine Knowledge — output safe (raw HTML escapato)
@@ -42,6 +42,8 @@ gem "tzinfo-data", platforms: %i[ windows jruby ]
 # Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
 gem "solid_cache"
 gem "solid_queue"
+# Next run of a Puck schedule in its time zone (CYRA-1001); also what Solid Queue uses for recurring jobs.
+gem "fugit"
 gem "solid_cable"
 
 # Reduces boot times through caching; required in config/boot.rb
@@ -57,7 +59,7 @@ gem "thruster", require: false
 gem "resend"
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-gem "image_processing", "~> 2.1"
+gem "image_processing", "~> 2.2"
 # Backend di image_processing: da Rails 8.1.3.1 ActiveStorage carica `image_processing/vips` all'avvio
 # (il require serve a disattivare i loader non-fuzzati di libvips), e senza questa gem il boot muore con
 # LoadError — il messaggio non combacia col rescue del framework, quindi non degrada in warning, esplode.
@@ -92,7 +94,7 @@ gem "rack-attack"
 gem "rack-cors"
 
 # Self-monitoring: errori, job, log e query lente passano dal server ingest indipendente.
-gem "closeyourit-ruby", "~> 0.10.0"
+gem "closeyourit-ruby", "~> 0.10.2"
 
 # Sealed box (libsodium) per cifrare i secret con la public key GitHub prima del push (Secrets vault Fase 2).
 # Richiede libsodium a livello OS (Dockerfile: libsodium23 runtime + libsodium-dev build; macOS: brew libsodium).

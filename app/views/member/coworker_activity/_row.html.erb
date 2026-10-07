@@ -1,0 +1,15 @@
+<%# One run: which Puck, what kind, how it went, who asked, and whether a decision waits for the viewer. %>
+<%= render Ui::TableComponent::RowComponent.new(href: member_coworker_path(run.puck_id, anchor: "coworker_run_#{run.id}"), link_label: run.puck.name, test_id: "coworkers-activity-row") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true, label: t("member.coworkers.activity_page.puck")) do %>
+    <div class="font-medium"><%= run.puck.name %></div>
+    <div class="text-xs text-gray-500 dark:text-zinc-400"><%= run.requester.name %></div>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.coworkers.activity_page.kind")) do %><%= t("member.coworkers.activity_page.kinds.#{run.kind}") %><% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.coworkers.activity_page.status")) do %>
+    <%= t("member.coworkers.status.#{run.status}") %>
+    <% if pending.positive? %><span class="ml-1 font-semibold text-indigo-600 dark:text-indigo-400" data-test="coworkers-activity-pending"><%= t("member.coworkers.activity_page.pending", count: pending) %></span><% end %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.coworkers.activity_page.created"), mono: true) do %><%= l(run.created_at, format: "%-d %b %H:%M") %><% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.coworkers.activity_page.tokens"), mono: true) do %><%= number_with_delimiter(run.tokens_used) %><% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.coworkers.activity_page.request")) do %><span class="line-clamp-2"><%= run.input.truncate(140) %></span><% end %>
+<% end %>

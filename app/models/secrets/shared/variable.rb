@@ -19,6 +19,7 @@ module Secrets
 
       def name_not_reserved
         errors.add(:name, :reserved_prefix) if name.to_s.start_with?(::Secrets::Variable::RESERVED_NAME_PREFIX)
+        errors.add(:name, :reserved_runtime) if ::Secrets::Variable.reserved_runtime_name?(name.to_s)
       end
     end
   end

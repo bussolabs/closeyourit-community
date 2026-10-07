@@ -1,0 +1,20 @@
+<%# Actions this run proposed on CloseYourIt, with what the rules did to each (CYRA-1010, CYRA-1017). %>
+<% if run.action_proposals.any? %>
+  <section class="mt-3 flex flex-col gap-2" data-test="coworkers-actions">
+    <% run.action_proposals.each do |proposal| %>
+      <% p = proposal.payload %>
+      <div id="<%= dom_id(proposal) %>" class="rounded-lg border border-stone-200 bg-white px-3 py-2.5 dark:border-zinc-700 dark:bg-zinc-900" data-test="coworkers-action" data-status="<%= proposal.status %>">
+        <p class="font-mono text-[10px] uppercase tracking-widest text-indigo-600 dark:text-indigo-400"><%= t("member.assistant.proposals.kinds.#{proposal.kind}") %></p>
+        <p class="text-[13px] font-semibold"><%= p["title"] || p["ticket_title"] %> <span class="font-normal text-gray-500 dark:text-zinc-400"><%= p["ticket_code"] || p["project_key"] %></span></p>
+        <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= proposal_detail(proposal) %></p>
+        <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400" role="status" data-test="coworkers-action-outcome"><%= t("member.coworkers.actions.#{coworker_action_outcome(proposal)}") %></p>
+        <% if proposal.confirmable? %>
+          <div class="mt-2 flex flex-wrap gap-2">
+            <%= render Ui::ButtonComponent.new(label: t("member.coworkers.actions.confirm"), href: confirm_member_coworker_proposal_path(puck, proposal), method: :post, authenticity_token: false, size: :sm, class: "max-md:min-h-11", test_id: "coworkers-action-confirm") %>
+            <%= render Ui::ButtonComponent.new(label: t("member.coworkers.actions.discard"), href: discard_member_coworker_proposal_path(puck, proposal), method: :post, authenticity_token: false, variant: :ghost, size: :sm, class: "max-md:min-h-11", test_id: "coworkers-action-discard") %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+<% end %>

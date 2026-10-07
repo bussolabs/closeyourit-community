@@ -100,4 +100,17 @@ RSpec.describe Coworkers::ExecuteJob do
       expect(runtime_env).to include("AI_API_KEY" => ENV.fetch("AI_API_KEY"), "AI_BASE_URL" => ENV.fetch("AI_BASE_URL"))
     end
   end
+  it "answers a runtime tool call on the runtime's input (CYRA-1009)" do
+    run.update!(status: "running")
+    job = described_class.new
+    stdin = StringIO.new
+    job.instance_variable_set(:@run, run)
+    job.instance_variable_set(:@stdin, stdin)
+    job.send(:handle, { "type" => "rails_tool", "id" => "call-1", "name" => "list_projects", "input" => {} })
+    answer = JSON.parse(stdin.string)
+    expect(answer).to include("type" => "rails_tool_result", "id" => "call-1")
+    expect(answer["result"]).to be_a(Hash)
+    job.send(:handle, { "type" => "rails_tool", "id" => "call-2", "name" => "drop_database", "input" => {} })
+    expect(JSON.parse(stdin.string.lines.last)["result"]).to eq("error" => "Unknown tool call.")
+  end
 end

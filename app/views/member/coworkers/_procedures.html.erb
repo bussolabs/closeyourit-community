@@ -1,0 +1,18 @@
+<%# What a person taught this Puck by showing it once (CYRA-1013). %>
+<% procedures = puck.procedures.order(:created_at).to_a %>
+<% if procedures.any? %>
+  <section class="mb-6 flex flex-col gap-2" data-test="coworkers-procedures">
+    <h3 class="text-[13px] font-semibold"><%= t("member.coworkers.procedures.title") %></h3>
+    <% procedures.each do |procedure| %>
+      <details class="rounded-lg border border-stone-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900" data-test="coworkers-procedure">
+        <summary class="cursor-pointer text-[13px] font-medium"><%= procedure.name %></summary>
+        <p class="mt-2 whitespace-pre-wrap text-[12.5px]"><%= procedure.steps %></p>
+        <div class="mt-2 flex flex-wrap gap-1">
+          <%= render Ui::ButtonComponent.new(label: t("member.coworkers.procedures.start"), href: start_member_coworker_procedure_path(puck, procedure), method: :post, authenticity_token: false, size: :sm, test_id: "coworkers-procedure-start") %>
+          <%= render Ui::ButtonComponent.new(label: t("member.coworkers.procedures.repeat"), href: repeat_member_coworker_procedure_path(puck, procedure), method: :post, authenticity_token: false, variant: :secondary, size: :sm) %>
+          <%= render Ui::ButtonComponent.new(label: t("member.coworkers.apps.remove"), href: member_coworker_procedure_path(puck, procedure), method: :delete, authenticity_token: false, confirm: t("member.coworkers.procedures.remove_confirm"), variant: :ghost, size: :sm) %>
+        </div>
+      </details>
+    <% end %>
+  </section>
+<% end %>

@@ -26,6 +26,11 @@ production: &schedule
     class: Coworkers::ReapJob
     queue: maintenance
     schedule: every minute
+  # Puckies: scheduled tasks and watch checks that are due (CYRA-1001, CYRA-1011).
+  tick_coworkers:
+    class: Coworkers::TickJob
+    queue: maintenance
+    schedule: every minute
 
   # CYSK-29 — un simbolo non visto da 400 giorni esce; se torna, rientra con un first_seen nuovo.
   # Corsia `batch` (CYRA-714): girava su `default`, la corsia real-time degli avvisi e delle notifiche,

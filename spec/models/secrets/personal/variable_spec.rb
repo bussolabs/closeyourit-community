@@ -26,6 +26,14 @@ RSpec.describe Secrets::Personal::Variable do
       expect(variable).to be_valid
     end
 
+    it "rejects names the shell or a runtime reads before any program runs (CYRA-1046)" do
+      %w[PATH LD_PRELOAD DYLD_INSERT_LIBRARIES NODE_OPTIONS].each do |name|
+        variable = build(:personal_secret_variable, name:)
+        expect(variable).not_to be_valid, "#{name} must be rejected"
+        expect(variable.errors[:name]).to include(I18n.t("errors.messages.reserved_runtime"))
+      end
+    end
+
     it "impone l'unicità del nome per [account, organization]" do
       existing = create(:personal_secret_variable, name: "API_KEY")
       dup = build(:personal_secret_variable, account: existing.account,

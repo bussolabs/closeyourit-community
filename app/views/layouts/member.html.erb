@@ -35,7 +35,7 @@
     <div class="relative h-dvh overflow-hidden" data-controller="ui--support" data-ui--support-identity-value="<%= Current.account.id %>:<%= Current.organization&.id %>" data-action="keydown.esc@window->ui--support#closeOnEscape">
     <div class="relative z-10 flex h-dvh md:gap-3.5 md:p-3.5 bg-stone-100 dark:bg-zinc-950" data-ui--support-target="page" data-controller="ui--mobile-nav keyboard"
          data-keyboard-nav-value="<%= keyboard_nav_bindings.to_json %>">
-      <% if controller_path == "member/coworkers" && Coworkers.available_to?(account: Current.account, organization: Current.organization) %>
+      <% if controller_path.in?(%w[member/coworkers member/coworker_activity]) && Coworkers.available_to?(account: Current.account, organization: Current.organization) %>
         <div class="md:hidden"><%= render "member/nav_sidebar", tree: member_nav_tree, compact: false %></div>
         <%= render "member/coworkers/sidebar" %>
       <% else %>

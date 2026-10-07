@@ -61,6 +61,27 @@ RSpec.describe Secrets::Variable, type: :model do
         expect(variable.errors[:name]).to be_present
       end
     end
+
+    # CYRA-1046: a secret named like a variable the shell or a runtime reads at startup would make
+    # `cyi run` execute code chosen by whoever wrote the secret.
+    it "rejects names the shell or a runtime reads before any program runs" do
+      %w[PATH LD_PRELOAD LD_LIBRARY_PATH DYLD_INSERT_LIBRARIES NODE_OPTIONS BASH_ENV ENV GIT_SSH_COMMAND
+         PERL5OPT RUBYOPT PYTHONPATH PYTHONSTARTUP SHELL HOME IFS].each do |name|
+        variable = build(:secret_variable, name:)
+        expect(variable).not_to be_valid, "#{name} must be rejected"
+        expect(variable.errors[:name]).to include(I18n.t("errors.messages.reserved_runtime"))
+      end
+    end
+
+    it "rejects a reserved runtime name written in lowercase (normalized before validation)" do
+      expect(build(:secret_variable, name: "ld_preload")).not_to be_valid
+    end
+
+    it "keeps names that only contain a reserved word valid" do
+      %w[MY_PATH APP_HOME OLD_LD_PRELOAD PYTHONPATH_EXTRA].each do |name|
+        expect(build(:secret_variable, name:)).to be_valid, "#{name} must stay valid"
+      end
+    end
   end
 
   describe "validazioni sul valore" do

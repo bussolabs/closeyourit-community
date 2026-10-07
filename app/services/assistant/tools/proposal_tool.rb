@@ -8,13 +8,18 @@ module Assistant
       private
 
       def propose(kind, payload)
-        proposal = Assistant::Proposal.create!(message: reply, organization: context.organization,
+        proposal = Assistant::Proposal.create!(**parent, organization: context.organization,
                                                account: context.account, kind: kind,
                                                payload: payload.deep_stringify_keys)
         { proposal_id: proposal.id, status: "awaiting_confirmation" }
       end
 
-      def reply = @reply ||= Assistant::Message.find(context.reply_message_id)
+      # An assistant reply or a Puck run owns the proposal (CYRA-1010).
+      def parent
+        return { coworkers_run_id: context.coworkers_run_id } if context.coworkers_run_id
+
+        { message: Assistant::Message.find(context.reply_message_id) }
+      end
 
       def statuses = context.organization.ticket_statuses.active.ordered
       def priorities = context.organization.ticket_priorities.active.ordered

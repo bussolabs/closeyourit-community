@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## [0.179.2] - 2026-10-07
+
+### Changed
+
+- **Manutenzione interna.** Una riga di codice scambiata per una credenziale bloccava la pubblicazione della versione open source. Per chi usa CloseYourIt non cambia niente.
+
+## [0.179.1] - 2026-10-07
+
+### Fixed
+
+- **Compiti ogni ora dei Puckies nel cambio d'ora.** Nella notte in cui l'orologio torna indietro, un compito ripetuto ogni ora gira in entrambe le ore ripetute, senza saltarne una.
+
+## [0.179.0] - 2026-10-07
+
+### Added
+
+- **Puckies, colleghi AI che lavorano da soli.** Leggono ticket, errori e log, propongono azioni da confermare, seguono regole, compiti a orario e memoria, anche in squadra, su Telegram, Slack e app. Si attivano quando l’organizzazione li configura.
+
+### Security
+
+- **Niente segreti con nomi di sistema.** Un segreto non può più chiamarsi PATH, LD_*, DYLD_*, NODE_OPTIONS o un altro nome che cambia come girano i comandi: vale per segreti di progetto, condivisi, personali, alias e richieste di modifica.
+- **Il gateway AI non scrive le domande nel log.** Il testo delle richieste ai servizi AI (messaggi, input, query, documenti) resta fuori dal log del server: restano solo i dati tecnici.
+- **Il gateway AI conta anche le risposte interrotte.** Una risposta chiusa dal cliente a metà entra comunque nel tetto mensile. Ogni chiave ha un limite di 60 richieste al minuto e una richiesta non può chiedere più di 32768 token.
+
 ## [0.178.0] - 2026-10-07
 
 ### Fixed

@@ -4,7 +4,7 @@
 <article id="coworker_run_<%= run.id %>" class="flex flex-col gap-3 text-[13px] leading-[21px] break-words" data-test="coworkers-run" data-status="<%= run.status %>"
          data-coworker-run-id="<%= run.id %>" data-coworker-puck-id="<%= run.puck_id %>" data-coworker-kind="<%= run.kind %>" data-coworker-created-at="<%= run.created_at.iso8601(6) %>">
   <div class="ml-auto w-fit max-w-[85%] rounded-xl bg-indigo-50 px-3.5 py-2.5 dark:bg-indigo-500/15" data-test="coworkers-user-message">
-    <p class="text-[11.5px] text-indigo-700 dark:text-indigo-300"><span class="font-semibold"><%= t("member.coworkers.you") %></span> · <time datetime="<%= run.created_at.iso8601 %>"><%= l(run.created_at, format: "%H:%M") %></time></p>
+    <p class="text-[11.5px] text-indigo-700 dark:text-indigo-300"><span class="font-semibold"><%= run.kind == "watch" ? t("member.coworkers.watch.label") : t("member.coworkers.you") %></span> · <time datetime="<%= run.created_at.iso8601 %>"><%= l(run.created_at, format: "%H:%M") %></time></p>
     <p class="mt-0.5 whitespace-pre-wrap"><%= run.input %></p>
   </div>
   <div class="mr-auto max-w-[85%] rounded-xl bg-stone-100 px-3.5 py-2.5 dark:bg-zinc-800" data-test="coworkers-puck-message">
@@ -14,10 +14,12 @@
     <%= render Ui::MarkdownComponent.new(text: run.output, short_links: true, class: "mt-1 text-[13px]! leading-[21px]! dark:prose-invert", test_id: "coworkers-output") %>
   <% end %>
   <% unless run.proposed_task.present? && run.approved_task %>
-    <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400" role="status"><%= t(run.kind == "chat" && run.status == "running" ? "member.coworkers.typing" : "member.coworkers.status.#{run.status}") %></p>
+    <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400" role="status"><%= t(run.kind != "task" && run.status == "running" ? "member.coworkers.typing" : "member.coworkers.status.#{run.status}") %></p>
   <% end %>
   <% if run.error_code.present? %><p class="mt-1.5 text-[12px] text-red-600 dark:text-red-400"><%= t("member.coworkers.run_failed") %></p><% end %>
   <% if run.proposed_task.present? %><%= render "member/coworkers/proposal", run: run, puck: puck %><% end %>
+  <%= render "member/coworkers/action_proposals", run: run, puck: puck %>
+  <%= render "member/coworkers/handoffs", run: run %>
   <% unless run.proposed_task.present? && run.approved_task %>
     <%= render "member/coworkers/run_actions", run: run, puck: puck, approve: run.approvable_proposal? %>
   <% end %>

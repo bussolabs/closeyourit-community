@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_190000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_06_234000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -1123,19 +1123,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_190000) do
   create_table "assistant_proposals", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "account_id", null: false
     t.datetime "confirmed_at"
+    t.uuid "coworkers_rule_id"
+    t.uuid "coworkers_run_id"
     t.datetime "created_at", null: false
     t.string "error_code"
     t.integer "kind", null: false
-    t.uuid "message_id", null: false
+    t.uuid "message_id"
     t.uuid "organization_id", null: false
+    t.string "origin", default: "user", null: false
     t.jsonb "payload", default: {}, null: false
     t.uuid "result_id"
     t.string "result_type"
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_assistant_proposals_on_account_id"
+    t.index ["coworkers_rule_id"], name: "index_assistant_proposals_on_coworkers_rule_id"
+    t.index ["coworkers_run_id"], name: "index_assistant_proposals_on_coworkers_run_id"
     t.index ["message_id"], name: "index_assistant_proposals_on_message_id"
     t.index ["organization_id"], name: "index_assistant_proposals_on_organization_id"
+    t.check_constraint "num_nonnulls(message_id, coworkers_run_id) = 1", name: "assistant_proposals_one_parent"
+    t.check_constraint "origin::text = ANY (ARRAY['user'::character varying, 'rule'::character varying]::text[])", name: "assistant_proposals_origin_valid"
   end
 
   create_table "authorization_account_permissions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1624,6 +1631,82 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_190000) do
     t.index ["action_id"], name: "index_connections_workload_participants_on_action_id"
   end
 
+  create_table "coworkers_budgets", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "monthly_token_cap"
+    t.uuid "organization_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_coworkers_budgets_on_organization_id", unique: true
+  end
+
+  create_table "coworkers_connections", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "access", default: "read", null: false
+    t.datetime "created_at", null: false
+    t.string "last_error"
+    t.string "name", null: false
+    t.string "provider", null: false
+    t.uuid "puck_id", null: false
+    t.text "token"
+    t.jsonb "tools", default: [], null: false
+    t.datetime "updated_at", null: false
+    t.string "url"
+    t.index ["puck_id"], name: "index_coworkers_connections_on_puck_id"
+    t.check_constraint "access::text = ANY (ARRAY['read'::character varying, 'write'::character varying]::text[])", name: "coworkers_connections_access_valid"
+    t.check_constraint "provider::text = ANY (ARRAY['github'::character varying, 'mcp'::character varying]::text[])", name: "coworkers_connections_provider_valid"
+  end
+
+  create_table "coworkers_device_calls", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.jsonb "arguments", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.uuid "device_id", null: false
+    t.jsonb "result", default: {}, null: false
+    t.uuid "run_id", null: false
+    t.string "status", default: "pending", null: false
+    t.string "tool", null: false
+    t.datetime "updated_at", null: false
+    t.index ["device_id"], name: "index_coworkers_device_calls_on_device_id"
+    t.index ["run_id"], name: "index_coworkers_device_calls_on_run_id"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'delivered'::character varying, 'done'::character varying, 'denied'::character varying, 'failed'::character varying, 'expired'::character varying]::text[])", name: "coworkers_device_calls_status_valid"
+  end
+
+  create_table "coworkers_devices", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "last_seen_at"
+    t.string "name", null: false
+    t.uuid "organization_id", null: false
+    t.datetime "revoked_at"
+    t.string "token_digest", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_coworkers_devices_on_account_id"
+    t.index ["organization_id"], name: "index_coworkers_devices_on_organization_id"
+    t.index ["token_digest"], name: "index_coworkers_devices_on_token_digest", unique: true
+  end
+
+  create_table "coworkers_memory_notes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.uuid "puck_id", null: false
+    t.uuid "run_id"
+    t.jsonb "scope", default: {}, null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["puck_id"], name: "index_coworkers_memory_notes_on_puck_id"
+    t.index ["run_id"], name: "index_coworkers_memory_notes_on_run_id"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'active'::character varying, 'dismissed'::character varying]::text[])", name: "coworkers_memory_notes_status_valid"
+  end
+
+  create_table "coworkers_procedures", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "created_by_id", null: false
+    t.string "name", null: false
+    t.uuid "puck_id", null: false
+    t.text "steps", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_coworkers_procedures_on_created_by_id"
+    t.index ["puck_id"], name: "index_coworkers_procedures_on_puck_id"
+  end
+
   create_table "coworkers_puckies", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "account_id", null: false
     t.datetime "created_at", null: false
@@ -1632,13 +1715,38 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_190000) do
     t.text "memory", default: "", null: false
     t.string "name", null: false
     t.uuid "organization_id", null: false
+    t.string "preset"
+    t.uuid "project_id"
     t.datetime "updated_at", null: false
+    t.string "visibility", default: "personal", null: false
+    t.integer "watch_every_minutes"
+    t.datetime "watch_next_at"
+    t.jsonb "watch_state", default: {}, null: false
     t.index ["account_id"], name: "index_coworkers_puckies_on_account_id"
     t.index ["organization_id"], name: "index_coworkers_puckies_on_organization_id"
+    t.index ["project_id"], name: "index_coworkers_puckies_on_project_id"
+    t.check_constraint "visibility::text = 'personal'::text OR project_id IS NOT NULL", name: "coworkers_puckies_team_has_project"
+    t.check_constraint "visibility::text = ANY (ARRAY['personal'::character varying, 'team'::character varying]::text[])", name: "coworkers_puckies_visibility_valid"
+  end
+
+  create_table "coworkers_rules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "action", null: false
+    t.datetime "created_at", null: false
+    t.string "decision", null: false
+    t.uuid "puck_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["puck_id", "action"], name: "index_coworkers_rules_on_puck_id_and_action", unique: true
+    t.index ["puck_id"], name: "index_coworkers_rules_on_puck_id"
+    t.check_constraint "decision::text = ANY (ARRAY['allow'::character varying, 'ask'::character varying, 'deny'::character varying]::text[])", name: "coworkers_rules_decision_valid"
   end
 
   create_table "coworkers_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id"
+    t.string "channel", default: "web", null: false
+    t.jsonb "channel_ref", default: {}, null: false
     t.jsonb "context", default: {}, null: false
+    t.string "control"
+    t.jsonb "control_steps", default: [], null: false
     t.datetime "created_at", null: false
     t.datetime "ended_at"
     t.string "error_code"
@@ -1646,23 +1754,89 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_190000) do
     t.string "kind", null: false
     t.datetime "lease_expires_at"
     t.text "output", default: "", null: false
+    t.uuid "parent_run_id"
     t.uuid "proposal_run_id"
     t.boolean "proposal_superseded", default: false, null: false
     t.jsonb "proposed_task", default: {}, null: false
     t.uuid "puck_id", null: false
     t.datetime "runtime_deadline_at"
     t.jsonb "runtime_state", default: {}, null: false
+    t.uuid "schedule_id"
+    t.jsonb "scope", default: {}, null: false
+    t.datetime "slot_at"
     t.datetime "started_at"
     t.string "status", default: "queued", null: false
     t.boolean "stop_requested", default: false, null: false
+    t.integer "tokens_reserved", default: 0, null: false
+    t.integer "tokens_used", default: 0, null: false
     t.jsonb "tools", default: [], null: false
     t.datetime "updated_at", null: false
     t.uuid "worker_lease_id"
     t.integer "worker_sequence", default: 0, null: false
+    t.index ["account_id"], name: "index_coworkers_runs_on_account_id"
     t.index ["lease_expires_at"], name: "index_coworkers_runs_on_lease_expires_at"
+    t.index ["parent_run_id"], name: "index_coworkers_runs_on_parent_run_id"
     t.index ["proposal_run_id"], name: "index_coworkers_runs_on_proposal_run_id", unique: true
     t.index ["puck_id", "kind"], name: "coworkers_active_lane", unique: true, where: "((status)::text = ANY (ARRAY[('queued'::character varying)::text, ('running'::character varying)::text]))"
     t.index ["puck_id"], name: "index_coworkers_runs_on_puck_id"
+    t.index ["schedule_id", "slot_at"], name: "index_coworkers_runs_on_schedule_id_and_slot_at", unique: true, where: "(schedule_id IS NOT NULL)"
+    t.check_constraint "channel::text = ANY (ARRAY['web'::character varying, 'telegram'::character varying, 'slack'::character varying, 'app'::character varying]::text[])", name: "coworkers_runs_channel_valid"
+  end
+
+  create_table "coworkers_schedules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "created_by_id", null: false
+    t.string "frequency", null: false
+    t.integer "hour", default: 8, null: false
+    t.text "input", null: false
+    t.integer "minute", default: 0, null: false
+    t.datetime "next_run_at", null: false
+    t.boolean "paused", default: false, null: false
+    t.uuid "puck_id", null: false
+    t.string "time_zone", null: false
+    t.datetime "updated_at", null: false
+    t.integer "weekday"
+    t.index ["created_by_id"], name: "index_coworkers_schedules_on_created_by_id"
+    t.index ["next_run_at"], name: "index_coworkers_schedules_on_next_run_at"
+    t.index ["puck_id"], name: "index_coworkers_schedules_on_puck_id"
+    t.check_constraint "frequency::text = ANY (ARRAY['hourly'::character varying, 'daily'::character varying, 'weekdays'::character varying, 'weekly'::character varying]::text[])", name: "coworkers_schedules_frequency_valid"
+  end
+
+  create_table "coworkers_sites", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "domain", null: false
+    t.text "password"
+    t.uuid "puck_id", null: false
+    t.datetime "updated_at", null: false
+    t.text "username"
+    t.index ["puck_id", "domain"], name: "index_coworkers_sites_on_puck_id_and_domain", unique: true
+    t.index ["puck_id"], name: "index_coworkers_sites_on_puck_id"
+  end
+
+  create_table "coworkers_slack_links", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id", null: false
+    t.datetime "created_at", null: false
+    t.uuid "organization_id", null: false
+    t.uuid "puck_id"
+    t.string "slack_team_id", null: false
+    t.string "slack_user_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_coworkers_slack_links_on_account_id"
+    t.index ["organization_id"], name: "index_coworkers_slack_links_on_organization_id"
+    t.index ["puck_id"], name: "index_coworkers_slack_links_on_puck_id"
+    t.index ["slack_team_id", "slack_user_id"], name: "index_coworkers_slack_links_on_slack_team_id_and_slack_user_id", unique: true
+  end
+
+  create_table "coworkers_tool_calls", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "args_digest", null: false
+    t.string "call_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.jsonb "result", default: {}, null: false
+    t.uuid "run_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["run_id", "call_id"], name: "index_coworkers_tool_calls_on_run_id_and_call_id", unique: true
+    t.index ["run_id"], name: "index_coworkers_tool_calls_on_run_id"
   end
 
   create_table "crashes_attachments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -4359,6 +4533,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_190000) do
   add_foreign_key "assistant_messages", "organizations", on_delete: :cascade
   add_foreign_key "assistant_proposals", "accounts", on_delete: :cascade
   add_foreign_key "assistant_proposals", "assistant_messages", column: "message_id", on_delete: :cascade
+  add_foreign_key "assistant_proposals", "coworkers_rules", on_delete: :nullify
+  add_foreign_key "assistant_proposals", "coworkers_runs", on_delete: :cascade
   add_foreign_key "assistant_proposals", "organizations", on_delete: :cascade
   add_foreign_key "authorization_account_permissions", "accounts", on_delete: :cascade
   add_foreign_key "authorization_account_permissions", "organizations", on_delete: :cascade
@@ -4446,10 +4622,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_190000) do
   add_foreign_key "connections_ticket_votes", "ticketing_tickets", column: "ticket_id", on_delete: :cascade
   add_foreign_key "connections_workload_participants", "accounts", on_delete: :cascade
   add_foreign_key "connections_workload_participants", "workload_actions", column: "action_id", on_delete: :cascade
+  add_foreign_key "coworkers_budgets", "organizations", on_delete: :cascade
+  add_foreign_key "coworkers_connections", "coworkers_puckies", column: "puck_id", on_delete: :cascade
+  add_foreign_key "coworkers_device_calls", "coworkers_devices", column: "device_id", on_delete: :cascade
+  add_foreign_key "coworkers_device_calls", "coworkers_runs", column: "run_id", on_delete: :cascade
+  add_foreign_key "coworkers_devices", "accounts", on_delete: :cascade
+  add_foreign_key "coworkers_devices", "organizations", on_delete: :cascade
+  add_foreign_key "coworkers_memory_notes", "coworkers_puckies", column: "puck_id", on_delete: :cascade
+  add_foreign_key "coworkers_memory_notes", "coworkers_runs", column: "run_id", on_delete: :nullify
+  add_foreign_key "coworkers_procedures", "accounts", column: "created_by_id"
+  add_foreign_key "coworkers_procedures", "coworkers_puckies", column: "puck_id", on_delete: :cascade
   add_foreign_key "coworkers_puckies", "accounts"
   add_foreign_key "coworkers_puckies", "organizations"
+  add_foreign_key "coworkers_puckies", "projects", on_delete: :cascade
+  add_foreign_key "coworkers_rules", "coworkers_puckies", column: "puck_id", on_delete: :cascade
+  add_foreign_key "coworkers_runs", "accounts", on_delete: :nullify
   add_foreign_key "coworkers_runs", "coworkers_puckies", column: "puck_id"
+  add_foreign_key "coworkers_runs", "coworkers_runs", column: "parent_run_id", on_delete: :nullify
   add_foreign_key "coworkers_runs", "coworkers_runs", column: "proposal_run_id"
+  add_foreign_key "coworkers_runs", "coworkers_schedules", column: "schedule_id", on_delete: :nullify
+  add_foreign_key "coworkers_schedules", "accounts", column: "created_by_id"
+  add_foreign_key "coworkers_schedules", "coworkers_puckies", column: "puck_id", on_delete: :cascade
+  add_foreign_key "coworkers_sites", "coworkers_puckies", column: "puck_id", on_delete: :cascade
+  add_foreign_key "coworkers_slack_links", "accounts", on_delete: :cascade
+  add_foreign_key "coworkers_slack_links", "coworkers_puckies", column: "puck_id", on_delete: :nullify
+  add_foreign_key "coworkers_slack_links", "organizations", on_delete: :cascade
+  add_foreign_key "coworkers_tool_calls", "coworkers_runs", column: "run_id", on_delete: :cascade
   add_foreign_key "crashes_attachments", "crashes_blobs", column: "blob_id"
   add_foreign_key "crashes_attachments", "crashes_blobs", column: ["blob_id", "project_id"], primary_key: ["id", "project_id"]
   add_foreign_key "crashes_attachments", "crashes_reports", column: ["report_id", "project_id"], primary_key: ["id", "project_id"], on_delete: :cascade

@@ -74,6 +74,8 @@ module Alerting
       # Memoria temporanea giù (CYRA-846): come embedding_down, nessun interruttore di sorgente
       # dedicato — la consegna resta governata dai canali email/telegram per-utente.
       when "cache_unavailable" then true
+      # A Puck waiting for a decision (CYRA-1020): only the per-user channels govern it.
+      when "puck_decision_needed", "puck_report_ready" then true
       else false # tipi ignoti
       end
     end

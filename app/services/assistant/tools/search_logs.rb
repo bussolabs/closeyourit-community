@@ -12,17 +12,17 @@ module Assistant
 
       def self.declaration
         { name: "search_logs",
-          description: "Legge i log recenti di UN progetto: quanti per livello e le righe più nuove. " \
-                       "Si può restringere a un livello minimo o a un testo. " \
-                       "Usalo per domande come 'ci sono errori nei log di CYRA?' o 'cosa dicono i log sul pagamento?'.",
+          description: "Reads the recent logs of ONE project: how many per level and the newest lines. " \
+                       "It can be narrowed to a minimum level or a text. " \
+                       "Use it for questions like 'are there errors in the CYRA logs?' or 'what do the logs say about payment?'.",
           parameters: {
             type: "OBJECT",
             properties: {
-              project: { type: "STRING", description: "Chiave del progetto, es. CYRA" },
+              project: { type: "STRING", description: "Project key, e.g. CYRA" },
               level: { type: "STRING", enum: ::Logs::Entry.levels.keys,
-                       description: "Livello minimo: warning comprende anche error e fatal" },
-              query: { type: "STRING", description: "Testo da cercare nel messaggio" },
-              hours: { type: "INTEGER", description: "Quante ore indietro guardare (default 24)" }
+                       description: "Minimum level: warning also includes error and fatal" },
+              query: { type: "STRING", description: "Text to look for in the message" },
+              hours: { type: "INTEGER", description: "How many hours back to look (default 24)" }
             },
             required: [ "project" ]
           } }

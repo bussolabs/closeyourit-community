@@ -48,6 +48,15 @@ RSpec.describe "Coworkers worker", type: :request do
     expect(claim).to be_nil
   end
 
+  it "claims a run by who asked for it, not by who created the Puck" do
+    creator = create(:account)
+    create(:membership, account: creator, organization: organization, role: :member)
+    run.update!(status: "completed")
+    team_run = Coworkers::Puck.create!(organization: organization, account: creator, name: "Team", instructions: "x")
+                              .runs.create!(kind: "chat", input: "Hi", account: account, context: { request: "Hi" })
+    expect(claim).to include("id" => team_run.id)
+  end
+
   it "rejects a forged lease and an out of order batch" do
     lease = claim.fetch("lease_id")
     report(SecureRandom.uuid, sequence: 1)
@@ -183,5 +192,32 @@ RSpec.describe "Coworkers worker", type: :request do
     post "/api/v1/coworkers/readiness", headers: headers, as: :json
     expect(response.parsed_body.fetch("data")).to eq("protocol" => "coworkers-worker/v1")
     expect(run.reload.status).to eq("queued")
+  end
+  describe "tool calls" do
+    let(:project) { create(:project, organization: organization, key: "SHOP") }
+
+    before do
+      create(:ticket, project: project, title: "Checkout fails")
+      run.update!(scope: Coworkers::Scope.capture(account: account, organization: organization))
+    end
+
+    def call_tool(lease, name: "search_tickets", input: { project: "SHOP" })
+      post "/api/v1/coworkers/runs/#{run.id}/tools", headers: headers,
+        params: { lease_id: lease, call_id: "call-1", name: name, input: input }, as: :json
+    end
+
+    it "answers a tool call of a claimed run inside its scope" do
+      call_tool(claim.fetch("lease_id"))
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.dig("data", "result", "tickets", 0, "title")).to eq("Checkout fails")
+    end
+
+    it "refuses a forged lease and an unknown tool" do
+      lease = claim.fetch("lease_id")
+      call_tool(SecureRandom.uuid)
+      expect(response).to have_http_status(:conflict)
+      call_tool(lease, name: "drop_database")
+      expect(response).to have_http_status(:unprocessable_content)
+    end
   end
 end

@@ -7,6 +7,9 @@
     <%= render Ui::ButtonComponent.new(label: t("member.coworkers.new_puck"), icon: "plus", variant: :secondary, size: :sm, test_id: "coworkers-new-puck",
           data: { controller: "ui--dialog", action: "ui--dialog#open", ui__dialog_dialog_param: "coworker-new" }) %>
   </div>
+  <div class="px-2">
+    <%= render Ui::NavLinkComponent.new(label: t("member.coworkers.activity_page.title"), path: member_coworker_activity_path, icon: "list", size: :top) %>
+  </div>
   <nav aria-label="<%= t("member.coworkers.puckies") %>" class="flex-1 p-2 space-y-0.5">
     <% @puckies.each do |puck| %>
       <%= render "member/coworkers/puck_link", puck: puck %>

@@ -1,0 +1,30 @@
+<%# Tasks this Puck repeats at a fixed time, and the form to add one (CYRA-1001). %>
+<% schedules = puck.schedules.order(:created_at).to_a %>
+<section class="mb-6 flex flex-col gap-3" data-test="coworkers-schedules">
+  <h3 class="text-[13px] font-semibold"><%= t("member.coworkers.schedules.title") %></h3>
+  <% schedules.each do |schedule| %>
+    <div class="rounded-lg border border-stone-200 bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900" data-test="coworkers-schedule" data-paused="<%= schedule.paused? %>">
+      <p class="line-clamp-2 text-[13px] font-medium"><%= schedule.input %></p>
+      <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= coworker_schedule_summary(schedule) %></p>
+      <div class="mt-2 flex flex-wrap gap-1">
+        <%= render Ui::ButtonComponent.new(label: t("member.coworkers.schedules.#{schedule.paused? ? 'resume' : 'pause'}"), href: member_coworker_schedule_path(puck, schedule, paused: !schedule.paused?),
+              method: :patch, authenticity_token: false, variant: :secondary, size: :sm, class: "max-md:min-h-11", test_id: "coworkers-schedule-toggle") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.coworkers.schedules.delete"), href: member_coworker_schedule_path(puck, schedule), method: :delete, authenticity_token: false,
+              confirm: t("member.coworkers.schedules.delete_confirm"), variant: :ghost, size: :sm, class: "max-md:min-h-11", test_id: "coworkers-schedule-delete") %>
+      </div>
+    </div>
+  <% end %>
+  <%= form_with url: member_coworker_schedules_path(puck), scope: :schedule, class: "flex flex-col gap-3", data: { test: "coworkers-schedule-form" } do %>
+    <%= hidden_field_tag "schedule[time_zone]", coworker_default_time_zone %>
+    <%= render Ui::InputComponent.new(name: "schedule[input]", id: "coworkers-schedule-input", type: "textarea", rows: 3, label: t("member.coworkers.schedules.input"), required: true, maxlength: 8000, test_id: "coworkers-schedule-input") %>
+    <%= render Ui::SelectComponent.new(name: "schedule[frequency]", label: t("member.coworkers.schedules.frequency"), selected: "daily",
+          options: Coworkers::Schedule::FREQUENCIES.map { |value| [ t("member.coworkers.schedules.frequencies.#{value}"), value ] }, test_id: "coworkers-schedule-frequency") %>
+    <div class="grid grid-cols-2 gap-2">
+      <%= render Ui::SelectComponent.new(name: "schedule[hour]", label: t("member.coworkers.schedules.hour"), selected: 8, options: (0..23).map { |hour| [ format("%02d", hour), hour ] }) %>
+      <%= render Ui::SelectComponent.new(name: "schedule[minute]", label: t("member.coworkers.schedules.minute"), selected: 0, options: [ 0, 15, 30, 45 ].map { |minute| [ format("%02d", minute), minute ] }) %>
+    </div>
+    <%= render Ui::SelectComponent.new(name: "schedule[weekday]", label: t("member.coworkers.schedules.weekday"), selected: 1, hint: t("member.coworkers.schedules.weekday_hint"),
+          options: (0..6).map { |day| [ t("date.day_names")[day], day ] }) %>
+    <%= render Ui::ButtonComponent.new(label: t("member.coworkers.schedules.save"), type: "submit", size: :sm, class: "w-fit max-md:min-h-11", test_id: "coworkers-schedule-save") %>
+  <% end %>
+</section>

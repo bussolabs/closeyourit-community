@@ -1,0 +1,21 @@
+<%# The unattended check and the organization's monthly consumption (CYRA-1011, CYRA-1027). %>
+<section class="mt-6 flex flex-col gap-3 border-t border-stone-200 pt-4 dark:border-zinc-800" data-test="coworkers-watch">
+  <h3 class="text-[13px] font-semibold"><%= t("member.coworkers.watch.title") %></h3>
+  <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.watch.intro") %></p>
+  <%= form_with url: member_coworker_watch_path(puck), method: :patch, class: "flex flex-col gap-2" do %>
+    <%= render Ui::SelectComponent.new(name: "every", label: t("member.coworkers.watch.every"), selected: puck.watch_every_minutes.to_s,
+          options: [ [ t("member.coworkers.watch.off"), "" ] ] + Coworkers::Puck::WATCH_INTERVALS.map { |minutes| [ t("member.coworkers.watch.interval", count: minutes), minutes.to_s ] }, test_id: "coworkers-watch-every") %>
+    <%= render Ui::ButtonComponent.new(label: t("member.coworkers.watch.save"), type: "submit", size: :sm, class: "w-fit max-md:min-h-11", test_id: "coworkers-watch-save") %>
+  <% end %>
+</section>
+<section class="mt-6 flex flex-col gap-2 border-t border-stone-200 pt-4 dark:border-zinc-800" data-test="coworkers-budget">
+  <h3 class="text-[13px] font-semibold"><%= t("member.coworkers.budget.title") %></h3>
+  <% cap = Coworkers::Budget.cap_for(Current.organization) %>
+  <p class="font-mono text-[12.5px]" data-test="coworkers-budget-usage"><%= t("member.coworkers.budget.used", used: number_with_delimiter(Coworkers::Budget.used_this_month(Current.organization)), cap: cap ? number_with_delimiter(cap) : t("member.coworkers.budget.no_cap")) %></p>
+  <% if can?("organization.manage") %>
+    <%= form_with url: member_coworker_budget_path(puck), method: :patch, class: "flex flex-col gap-2" do %>
+      <%= render Ui::InputComponent.new(name: "monthly_token_cap", id: "coworkers-budget-cap", type: "number", value: cap, label: t("member.coworkers.budget.cap"), hint: t("member.coworkers.budget.cap_hint"), test_id: "coworkers-budget-cap") %>
+      <%= render Ui::ButtonComponent.new(label: t("member.coworkers.budget.save"), type: "submit", size: :sm, class: "w-fit max-md:min-h-11", test_id: "coworkers-budget-save") %>
+    <% end %>
+  <% end %>
+</section>

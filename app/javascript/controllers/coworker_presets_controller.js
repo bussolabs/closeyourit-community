@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["catalog", "name", "instructions", "option", "mascotOption", "usedMark"]
+  static targets = ["catalog", "name", "instructions", "option", "mascotOption", "usedMark", "preset"]
   static values = { storagePrefix: String, basePath: String, pucks: Array, usedBy: String }
 
   connect() {
@@ -19,6 +19,8 @@ export default class extends Controller {
       name: this.nameTarget.value, instructions: this.instructionsTarget.value, mascot: this.mascot
     })
     this.selected = option.preset
+    // The server applies the role's rules from its own catalog (CYRA-1025).
+    if (this.hasPresetTarget) this.presetTarget.value = this.selected === "blank" ? "" : this.selected
     const draft = this.drafts.get(this.selected) || option
     this.nameTarget.value = draft.name
     this.instructionsTarget.value = draft.instructions

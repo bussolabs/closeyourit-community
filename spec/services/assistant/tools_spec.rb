@@ -87,7 +87,7 @@ RSpec.describe "Assistant::Tools" do
     it "dice che il progetto non è visibile invece di cercare altrove" do
       create(:ticket, project: altrui, organization: organization)
 
-      expect(run("search_tickets", "project" => "SEGR")[:error]).to include("Nessun progetto visibile")
+      expect(run("search_tickets", "project" => "SEGR")[:error]).to include("No visible project matches SEGR").and include("ask which one")
     end
 
     it "restituisce i soli ticket dell'utente quando glielo si chiede" do
@@ -166,7 +166,7 @@ RSpec.describe "Assistant::Tools" do
     end
 
     it "non riassume un progetto fuori dal perimetro" do
-      expect(run("project_health", "project" => "SEGR")[:error]).to include("Nessun progetto visibile")
+      expect(run("project_health", "project" => "SEGR")[:error]).to include("No visible project matches SEGR").and include("ask which one")
     end
   end
 
@@ -294,7 +294,7 @@ RSpec.describe "Assistant::Tools" do
 
       expect(result[:projects].size).to eq(2)
       expect(result[:total]).to eq(4)
-      expect(result[:troncato]).to include("su 4")
+      expect(result[:troncato]).to include("of 4").and include("may still exist")
     end
   end
 

@@ -39,6 +39,12 @@ RSpec.describe "Shared organization secrets" do
     expect(Secrets::Shared::Save.call(organization:, environment: foreign_environment, name: "TOKEN", value: "x")).to be_err
   end
 
+  it "rejects names the shell or a runtime reads before any program runs (CYRA-1046)" do
+    %w[PATH LD_PRELOAD DYLD_INSERT_LIBRARIES NODE_OPTIONS].each do |name|
+      expect(Secrets::Shared::Save.call(organization:, environment:, name:, value: "x")).to be_err, "#{name} must be rejected"
+    end
+  end
+
   it "delega solo a target validi e include il valore nel bundle senza cambiare formato" do
     shared = save_value.value
     expect(Secrets::Shared::Delegate.call(shared_value: shared, project:).value).to be_persisted

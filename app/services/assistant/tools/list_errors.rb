@@ -10,15 +10,15 @@ module Assistant
 
       def self.declaration
         { name: "list_errors",
-          description: "Elenca gli errori di UN progetto: titolo, livello, quante volte è successo, " \
-                       "quando l'ultima volta, in quale versione e l'eventuale ticket collegato. " \
-                       "Usalo per domande come 'quali errori ha CYRA?' o 'cosa si è rotto oggi?'.",
+          description: "Lists the errors of ONE project: title, level, how many times it happened, " \
+                       "when it last happened, in which release and the linked ticket if any. " \
+                       "Use it for questions like 'which errors does CYRA have?' or 'what broke today?'.",
           parameters: {
             type: "OBJECT",
             properties: {
-              project: { type: "STRING", description: "Chiave del progetto, es. CYRA" },
+              project: { type: "STRING", description: "Project key, e.g. CYRA" },
               status: { type: "STRING", enum: STATUSES,
-                        description: "unresolved = da risolvere (default), resolved = risolti, ignored = ignorati" }
+                        description: "unresolved = still to fix (default), resolved = fixed, ignored = ignored" }
             },
             required: [ "project" ]
           } }

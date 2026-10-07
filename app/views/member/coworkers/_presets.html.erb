@@ -4,7 +4,8 @@
     <p class="text-[13px] text-gray-600 dark:text-zinc-400"><%= t("member.coworkers.presets.intro") %></p>
   </div>
   <div class="space-y-3">
-    <% { researcher: "01", observer: "13", technical: "16", editor: "03" }.each do |key, mascot| %>
+    <% Coworkers::Presets.all.each do |entry| %>
+      <% key, mascot = entry.key, entry.mascot %>
       <% preset = t("member.coworkers.presets.items.#{key}") %>
       <%= render Ui::ButtonComponent.new(variant: :secondary, class: "group relative w-full h-auto! items-start! justify-start! whitespace-normal! gap-3! p-3! text-left aria-pressed:border-indigo-600 aria-pressed:bg-indigo-50 dark:aria-pressed:border-indigo-400 dark:aria-pressed:bg-indigo-500/15", aria: { pressed: false }, test_id: "coworkers-preset-#{key}", data: { action: "coworker-presets#choose", coworker_presets_target: "option", preset: key, name: preset[:name], instructions: preset[:instructions], mascot: mascot }) do %>
         <%= image_tag "/coworkers/mascots/#{mascot}.webp", alt: "", width: 48, height: 48, class: "size-12 shrink-0 object-contain" %>

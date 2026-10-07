@@ -41,6 +41,12 @@ RSpec.describe Secrets::Override do
     expect(build_override(name: "SECRETS_JSON")).not_to be_valid
   end
 
+  it "rejects names the shell or a runtime reads before any program runs (CYRA-1046)" do
+    %w[PATH LD_PRELOAD DYLD_INSERT_LIBRARIES NODE_OPTIONS].each do |name|
+      expect(build_override(name:)).not_to be_valid, "#{name} must be rejected"
+    end
+  end
+
   # Il valore è cifrato at-rest come per Secrets::Variable: nil è un input assente, "" è un valore
   # esplicito legittimo (opzione disattivata).
   it "rifiuta un valore nil" do

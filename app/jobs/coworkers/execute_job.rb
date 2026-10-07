@@ -3,6 +3,8 @@ require "open3"
 module Coworkers
   class ExecuteJob < ApplicationJob
     queue_as :default
+    # A line may carry a proof video (CYRA-1028): about 16 MB of base64 for the 12 MB ceiling.
+    MAX_LINE_BYTES = 20_000_000
     self.queue_adapter = :async if Rails.env.development? && Coworkers.enabled?
 
     def perform(id)
@@ -27,10 +29,13 @@ module Coworkers
       bridge = root.join("bridge.mjs")
       raise "Runtime bridge not found" unless bridge.file?
       Open3.popen2(runtime_env, "node", bridge.to_s, unsetenv_others: true, pgroup: true) do |stdin, stdout, process|
+        # stdin stays open: Rails answers the runtime's tool calls on it (CYRA-1009).
+        @stdin = stdin
         stdin.write({ kind: @run.kind, prompt: @run.context.to_json }.to_json + "\n")
-        stdin.close
+        stdin.flush
         consume(stdout)
       ensure
+        stdin.close unless stdin.closed?
         terminate(process) if process&.alive?
       end
     end
@@ -46,7 +51,7 @@ module Coworkers
 
     def consume(stdout)
       buffer = +""
-      deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 200
+      deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + Limits.deadline(@run.kind).to_i + 20
       loop do
         @run.reload
         return finish("stopped") if @run.stop_requested?
@@ -56,7 +61,7 @@ module Coworkers
         break if chunk.nil?
         next if chunk == :wait_readable
         buffer << chunk
-        raise "Runtime output exceeded limit" if buffer.bytesize > 1_000_000
+        raise "Runtime output exceeded limit" if buffer.bytesize > MAX_LINE_BYTES
         while (line = buffer.slice!(/.*\n/))
           handle(JSON.parse(line))
         end
@@ -70,6 +75,10 @@ module Coworkers
       when "delta"
         @run.update!(output: @run.output + event.fetch("text"))
         publish_throttled
+      # The runtime dropped the text it streamed (a made-up or garbled turn): the bubble starts again.
+      when "reset"
+        @run.update!(output: "")
+        @run.publish
       when "tool"
         @run.update!(tools: @run.tools + [ event.slice("id", "name").merge("success" => false) ])
       when "tool_result"
@@ -78,6 +87,12 @@ module Coworkers
       when "proposal"
         raise "Invalid runtime proposal" unless @run.kind == "chat" && Run.valid_proposal?(event["proposal"])
         @proposal = event["proposal"]
+      when "rails_tool"
+        answer_tool(event)
+      when "rails_session"
+        answer_session(event)
+      when "usage"
+        @run.update!(tokens_used: [ [ @run.tokens_used, event["tokens"].to_i ].max, @run.tokens_reserved * 2 ].min)
       when "result"
         @result = event
       when "end"
@@ -86,10 +101,29 @@ module Coworkers
     end
 
     def complete(event)
-      researched = @run.kind == "chat" || @run.tools.any? { |tool| tool["success"] }
+      researched = @run.kind != "task" || @run.tools.any? { |tool| tool["success"] }
       success = event["code"] == 0 && event["reason"].nil? && @result&.fetch("success", false) && researched
       @run.output = @result["output"] if @result && @result["output"].present?
+      Coworkers.log_failure(@run, event) unless success
       finish(success ? "completed" : "failed", success ? nil : "runtime_failed")
+    end
+
+    def answer_tool(event)
+      result = Tools.call(run: @run, call_id: event["id"], name: event["name"], args: event["input"])
+    rescue Tools::UnknownCall
+      result = { error: "Unknown tool call." }
+    ensure
+      @stdin.write({ type: "rails_tool_result", id: event["id"], result: result }.to_json + "\n")
+      @stdin.flush
+    end
+
+    def answer_session(event)
+      result = Session.call(@run, event["op"].to_s, event["args"])
+    rescue Tools::UnknownCall
+      result = { error: "Unknown session call." }
+    ensure
+      @stdin.write({ type: "rails_session_result", id: event["id"], result: result }.to_json + "\n")
+      @stdin.flush
     end
 
     def publish_throttled

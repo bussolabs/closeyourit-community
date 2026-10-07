@@ -1,0 +1,9 @@
+<%# Only who manages the organization can make a team Puck, bound to one project (CYRA-1023). %>
+<% if can?("organization.manage") %>
+  <div class="grid grid-cols-1 gap-3 md:col-span-2 md:grid-cols-2" data-test="coworkers-team-fields">
+    <%= render Ui::SelectComponent.new(name: "puck[visibility]", label: t("member.coworkers.team_puck.team"), selected: "personal",
+          options: [ [ t("member.coworkers.puckies"), "personal" ], [ t("member.coworkers.team_puck.team"), "team" ] ], hint: t("member.coworkers.team_puck.team_hint")) %>
+    <%= render Ui::SelectComponent.new(name: "puck[project_id]", label: t("member.coworkers.team_puck.project"), include_blank: true,
+          options: visible.projects.order(:name).limit(200).map { |project| [ project.name, project.id ] }) %>
+  </div>
+<% end %>

@@ -10,3 +10,6 @@ post "telegram/webhook" => "telegram/webhooks#create", as: :telegram_webhook
 # il gate è la firma HMAC X-Hub-Signature-256 (== HMAC-SHA256 del body con GITHUB_WEBHOOK_SECRET).
 # Path FISSO — nessun segreto nell'URL.
 post "github/webhook" => "github/webhooks#create", as: :github_webhook
+
+# Events of the Puckies' Slack app (CYRA-1019): the gate is the X-Slack-Signature over the raw body.
+post "slack/events" => "slack/events#create", as: :slack_events

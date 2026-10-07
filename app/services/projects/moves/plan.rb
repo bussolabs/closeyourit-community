@@ -26,7 +26,7 @@ module Projects
       private
 
       def blockers(shared, knowledge)
-        [ *premises_changed, *key_taken, *people_not_members, *provisions_crossing, *agents_running, *move_in_progress,
+        [ *premises_changed, *key_taken, *people_not_members, *provisions_crossing, *agents_running, *team_puckies, *move_in_progress,
           *shared.conflicts.map { { code: "shared_conflict", detail: "#{_1[:kind]} #{_1[:name]} (#{_1[:environment_code]})" } },
           *knowledge.conflicts.map { { code: "knowledge_publication_conflict", detail: _1 } },
           *knowledge.orphaned_titles.map { { code: "knowledge_book_orphaned", detail: _1 } } ]
@@ -109,6 +109,12 @@ module Projects
         checking = Agents::DeliveryCandidate.retryable.where.not(next_check_at: nil).select(:workflow_id)
         workflows.where(updated_at: Projects::Move::STALE_AFTER.ago..)
                  .or(workflows.where(id: watched)).or(workflows.where(id: checking))
+      end
+
+      # A team Puck belongs to the source organization and to one project: it blocks the move (CYRA-1023).
+      def team_puckies
+        Coworkers::Puck.where(project_id: @subject.project_ids).order(:name)
+                       .map { { code: "team_puck_bound", detail: _1.name } }
       end
 
       # One active move per project or group: a group overlaps with its projects and vice versa (CYRA-879).

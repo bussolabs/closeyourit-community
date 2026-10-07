@@ -24,7 +24,7 @@ RSpec.describe "Assistant::Tools project reads" do
     it "#{tool} refuses a project outside the scope" do
       hidden
 
-      expect(run(tool, "project" => "SEGR")[:error]).to include("Nessun progetto visibile")
+      expect(run(tool, "project" => "SEGR")[:error]).to include("No visible project matches SEGR").and include("ask which one")
     end
   end
 

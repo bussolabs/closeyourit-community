@@ -44,6 +44,8 @@ module AssistantHelper
     when "assign_ticket" then t("member.assistant.proposals.assign_to", name: p["assignee_name"])
     when "create_todo" then t("member.assistant.proposals.on_list", name: p["list_name"])
     when "create_idea" then p["problem"].to_s.truncate(160)
+    when "start_agent_work" then p["note"].to_s.truncate(160)
+    when "external_tool" then p["arguments"].to_json.truncate(160)
     end
   end
 

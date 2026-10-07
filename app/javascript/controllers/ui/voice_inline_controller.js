@@ -148,6 +148,8 @@ export default class extends Controller {
     const field = this.inputTarget
     field.value = [field.value.trimEnd(), text].filter(Boolean).join(field.value.trim() ? " " : "")
     field.dispatchEvent(new Event("input", { bubbles: true }))
+    // A Puck call sends what was said as soon as it is written (CYRA-1021).
+    this.dispatch("dictated", { detail: { text } })
   }
 
   // The strip stays up with the reason; the cancel button gives the text field back.

@@ -26,6 +26,27 @@ module Api
           render_error("R422-COWORKERS-001", "Invalid worker event batch", status: :unprocessable_content)
         end
 
+        def tools
+          input = params[:input].respond_to?(:to_unsafe_h) ? params[:input].to_unsafe_h : {}
+          result = ::Coworkers::Worker.call_tool(id: params[:run_id], lease_id: params[:lease_id],
+            call_id: params[:call_id], name: params[:name], input: input)
+          render_ok({ result: result })
+        rescue ::Coworkers::Worker::StaleLease
+          render_error("R409-COWORKERS-001", "Worker lease or sequence is no longer valid", status: :conflict)
+        rescue ::Coworkers::Worker::InvalidEvent
+          render_error("R422-COWORKERS-002", "Invalid tool call", status: :unprocessable_content)
+        end
+
+        def session
+          args = params[:args].respond_to?(:to_unsafe_h) ? params[:args].to_unsafe_h : {}
+          result = ::Coworkers::Worker.session(id: params[:run_id], lease_id: params[:lease_id], op: params[:op], args: args)
+          render_ok({ result: result })
+        rescue ::Coworkers::Worker::StaleLease
+          render_error("R409-COWORKERS-001", "Worker lease or sequence is no longer valid", status: :conflict)
+        rescue ::Coworkers::Worker::InvalidEvent
+          render_error("R422-COWORKERS-004", "Invalid session call", status: :unprocessable_content)
+        end
+
         private
 
         def authenticate_worker

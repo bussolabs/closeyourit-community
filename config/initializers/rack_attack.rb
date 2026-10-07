@@ -137,8 +137,19 @@ class Rack::Attack
     req.ip if req.path.start_with?("/api/") && Rack::Attack.agent_ingest_key(req).nil?
   end
 
+  # CloseYourIt AI gateway (/v1/ on api.closeyour.it, CYRA-1046) — 60 / minute per presented key, or
+  # per IP when no Bearer is sent. Per key, not per IP: one install's requests all leave one gateway.
+  throttle("ai_gateway/key", limit: 60, period: 1.minute) do |req|
+    Rack::Attack.bearer_token_key(req) || req.ip if req.post? && req.path.start_with?("/v1/")
+  end
+
   # Throttle webhook Telegram — 60 / minuto per IP (generoso per Telegram, taglia gli scanner che
   # sondano /telegram/webhook con secret errato).
+  # CYRA-1019 — the Puckies' Slack app: signed by Slack, but nobody may hammer the endpoint.
+  throttle("slack_events/ip", limit: 120, period: 1.minute) do |req|
+    req.ip if req.post? && req.path == "/slack/events"
+  end
+
   throttle("telegram_webhook/ip", limit: 60, period: 1.minute) do |req|
     req.ip if req.post? && req.path.start_with?("/telegram/webhook")
   end

@@ -4,11 +4,36 @@
 
 # --- Area organizzazione (Fase C) ---
 namespace :member do
+  # Before the resources: "activity" must not be read as a Puck id (CYRA-1026).
+  get "coworkers/activity", to: "coworker_activity#index", as: :coworker_activity
   resources :coworkers, only: %i[index show create update] do
     resources :runs, only: %i[create update], controller: "coworker_runs" do
       post :approve, on: :member
       post :repeat, on: :member
+      # The person takes the task's browser and gives it back (CYRA-1016).
+      member do
+        %w[take give point type].each { |action| post "control/#{action}", to: "coworker_controls##{action}", as: "control_#{action}" }
+      end
     end
+    # Actions a Puck proposed and the rules that decide them (CYRA-1010, CYRA-1017).
+    resources :proposals, only: [], controller: "coworker_proposals" do
+      post :confirm, on: :member
+      post :discard, on: :member
+    end
+    resources :rules, only: :update, param: :action_kind, controller: "coworker_rules"
+    # Repeated tasks, watch checks, learned notes and the monthly budget (CYRA-1001, 1011, 1012, 1027).
+    resources :schedules, only: %i[create update destroy], controller: "coworker_schedules"
+    resource :watch, only: :update, controller: "coworker_watches"
+    resources :memory_notes, only: :update, path: "notes", controller: "coworker_memory_notes"
+    resource :budget, only: :update, controller: "coworker_budgets"
+    # Apps, sites, the screen of a task, procedures and connected computers (CYRA-1014, 1015, 1016, 1013, 1029).
+    resources :connections, only: %i[create update destroy], controller: "coworker_connections"
+    resources :sites, only: %i[create destroy], controller: "coworker_sites"
+    resources :procedures, only: %i[create destroy], controller: "coworker_procedures" do
+      post :start, on: :member
+      post :repeat, on: :member
+    end
+    resources :devices, only: :destroy, controller: "coworker_devices"
   end
   # Ricerca rapida cross-area della topbar (CYRA-634): risponde dentro un Turbo Frame e parte
   # sempre dagli scope visibili dell'account corrente.

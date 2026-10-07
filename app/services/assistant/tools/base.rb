@@ -29,8 +29,11 @@ module Assistant
 
       attr_reader :context
 
+      # The guidance rides in the result itself: a rule only in the system prompt did not stop the model
+      # from reading a look-alike project and answering about it instead.
       def not_visible(reference)
-        { error: "Nessun progetto visibile corrisponde a #{reference.presence || '(vuoto)'}." }
+        { error: "No visible project matches #{reference.presence || '(empty)'}. Do not read another project instead: " \
+                 "tell the person and ask which one they mean." }
       end
     end
   end

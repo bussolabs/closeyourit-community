@@ -1,0 +1,25 @@
+<% content_for :title, t("member.coworkers.activity_page.title") %>
+<div class="p-7 space-y-6">
+  <%= render Ui::PageHeaderComponent.new(title: t("member.coworkers.activity_page.title"), subtitle: t("member.coworkers.activity_page.subtitle", count: @pagination.total)) %>
+  <div class="rounded-lg border border-stone-200 bg-white dark:border-zinc-800 dark:bg-zinc-900" data-test="coworkers-activity">
+    <%= render Ui::TableToolbarComponent.new(framed: true, url: member_coworker_activity_path, query: params[:q], search_placeholder: t("member.coworkers.activity_page.search")) do |toolbar| %>
+      <% toolbar.with_filter(key: "status", label: t("member.coworkers.activity_page.status")) do %><div class="w-40"><%= render Ui::SelectComponent.new(name: "status", multiple: true, label: t("member.coworkers.activity_page.status"), selected: Array(params[:status]), options: Member::CoworkerActivityController::STATUSES.map { |status| [ t("member.coworkers.status.#{status}"), status ] }) %></div><% end %>
+      <% toolbar.with_filter(key: "kind", label: t("member.coworkers.activity_page.kind")) do %><div class="w-40"><%= render Ui::SelectComponent.new(name: "kind", multiple: true, label: t("member.coworkers.activity_page.kind"), selected: Array(params[:kind]), options: Member::CoworkerActivityController::KINDS.map { |kind| [ t("member.coworkers.activity_page.kinds.#{kind}"), kind ] }) %></div><% end %>
+      <% toolbar.with_filter(key: "puck_id", label: t("member.coworkers.activity_page.puck")) do %><div class="w-40"><%= render Ui::SelectComponent.new(name: "puck_id", multiple: true, label: t("member.coworkers.activity_page.puck"), selected: Array(params[:puck_id]), options: @puckies.map { |puck| [ puck.name, puck.id ] }) %></div><% end %>
+    <% end %>
+    <% if @runs.empty? %>
+      <%= render Ui::EmptyStateComponent.new(title: t("member.coworkers.activity_page.empty"), body: t("member.coworkers.activity_page.empty_body"), compact: true, test_id: "coworkers-activity-empty") %>
+    <% else %>
+      <%= render Ui::TableComponent.new(stacked: true, label: t("member.coworkers.activity_page.title")) do |table| %>
+        <% table.with_head do %>
+          <% %w[puck kind status created tokens].each do |key| %><%= render Ui::TableComponent::HeaderComponent.new(label: t("member.coworkers.activity_page.#{key}"), sort: key) %><% end %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.coworkers.activity_page.request")) %>
+        <% end %>
+        <% @runs.each do |run| %>
+          <%= render "member/coworker_activity/row", run: run, pending: @pending[run.id].to_i %>
+        <% end %>
+      <% end %>
+      <%= render Ui::PaginationComponent.new(pagination: @pagination) %>
+    <% end %>
+  </div>
+</div>

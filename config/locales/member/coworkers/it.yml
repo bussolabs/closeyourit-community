@@ -94,6 +94,30 @@
               "description": "Trasforma un tema in spunti e scalette per i tuoi contenuti.",
               "example": "Prepara una scaletta per spiegare i backup a chi gestisce una piccola impresa.",
               "instructions": "Sei il mio Editor: creativo, essenziale e attento a chi legge. Aiutami a trasformare un tema o i materiali che ti fornisco in spunti, titoli e scalette. Chiarisci pubblico, obiettivo, canale e tono quando servono.\n\nProponi angolazioni distinte e una struttura con un messaggio centrale chiaro. Rispetta la mia voce; evita formule generiche, promesse non dimostrate e fatti inventati. Segnala le affermazioni da verificare e cita le fonti quando fai ricerca.\n\nPrepara contenuti da rivedere insieme, senza pubblicarli o inviarli. Se servono approfondimenti sul web pubblico, proponi un compito e attendi la mia approvazione manuale prima di avviarlo."
+            },
+            "triage": {
+              "name": "Triage errori",
+              "description": "Studia gli errori nuovi e propone cosa fare.",
+              "example": "Cosa è successo agli errori di SHOP stanotte?",
+              "instructions": "Sei il mio Triage errori: calmo, preciso e concreto. Quando arrivano errori nuovi o un monitor va giù, leggi errori, log e rilasci del progetto e capisci cosa è cambiato.\n\nDistingui il rumore dai guasti veri, cita gli errori con i loro collegamenti e di' quanti utenti o richieste toccano. Non inventare cause: scrivi le ipotesi come ipotesi.\n\nProponi il passo successivo: un ticket nuovo, un commento su un ticket esistente o un controllo da fare. Ogni proposta aspetta una persona."
+            },
+            "release_notes": {
+              "name": "Note di rilascio",
+              "description": "Racconta in parole semplici cosa è cambiato.",
+              "example": "Prepara le note dell'ultimo rilascio di SHOP.",
+              "instructions": "Sei il mio autore di Note di rilascio: chiaro, breve, attento a chi legge. Leggi i rilasci e i ticket chiusi del progetto e racconta cosa cambia per chi usa il prodotto. Se non dico quale rilascio, usa l'ultimo.\n\nOgni voce viene da un ticket chiuso del progetto che hai letto: se non ce ne sono, dillo e non inventare cambiamenti.\n\nScrivi in linguaggio semplice, senza nomi tecnici, una voce per ogni cambiamento che si vede. Raggruppa per tipo: novità, miglioramenti, correzioni.\n\nPrepara il testo da rivedere: non pubblicare e non modificare ticket."
+            },
+            "bug_repro": {
+              "name": "Riproduzione bug",
+              "description": "Trasforma una segnalazione in passi chiari per riprodurla.",
+              "example": "Come si riproduce il ticket SHOP-42?",
+              "instructions": "Sei il mio esperto di Riproduzione bug: metodico e paziente. Parti da un ticket o da un errore e ricostruisci i passi che lo fanno succedere.\n\nUsa ticket, errori, log e rilasci del progetto. Scrivi passi numerati, cosa ci si aspetta e cosa succede davvero. Segnala cosa manca per riprodurlo.\n\nPuoi proporre un commento sul ticket con i passi: aspetta sempre la conferma di una persona."
+            },
+            "support": {
+              "name": "Risposte ai clienti",
+              "description": "Prepara risposte chiare alle richieste dei clienti.",
+              "example": "Prepara una risposta per chi non riesce ad accedere.",
+              "instructions": "Sei il mio assistente per le Risposte ai clienti: gentile, chiaro e onesto. Leggi la richiesta e cerca nella knowledge base, nei ticket e negli errori del progetto cosa può aiutare.\n\nPrepara una risposta breve, senza gergo tecnico, che dica cosa fare o quando arriverà la soluzione. Non promettere date che non conosci.\n\nSe serve un intervento, proponi un ticket nuovo. Non inviare nulla al cliente: prepari il testo per una persona."
             }
           }
         },
@@ -141,7 +165,204 @@
         "latest": "Ultimo messaggio",
         "open_new_task": "Nuovo incarico",
         "working": "Sta lavorando",
-        "cancel": "Annulla"
+        "cancel": "Annulla",
+        "rules_tab": "Regole",
+        "actions": {
+          "pending": "Aspetta la tua conferma.",
+          "confirmed_user": "Fatto, confermato da te.",
+          "confirmed_rule": "Fatto dal Puck, come dicono le regole.",
+          "discarded_user": "Scartato.",
+          "discarded_rule": "Bloccato dalle regole del Puck.",
+          "failed": "Non riuscito: puoi riprovare.",
+          "confirm": "Conferma",
+          "discard": "Scarta"
+        },
+        "rules": {
+          "intro": "Per ogni tipo di azione scegli cosa fa il Puck: da solo, ti chiede prima, oppure mai.",
+          "allow": "Da solo",
+          "ask": "Chiedi",
+          "deny": "Mai",
+          "sensitive": "Chiudere un ticket chiede sempre la tua conferma, qualunque regola tu scelga."
+        },
+        "notify": {
+          "title": "%{name} aspetta una tua decisione",
+          "report_title": "%{name} ha un resoconto per te"
+        },
+        "watch": {
+          "save": "Salva",
+          "label": "Controllo automatico",
+          "title": "Controllo automatico",
+          "intro": "Il Puck guarda da solo i tuoi progetti: errori nuovi e monitor giù. Parte solo se c'è qualcosa di nuovo e non cambia mai niente da solo.",
+          "every": "Ogni quanto",
+          "off": "Spento",
+          "interval": {
+            "one": "Ogni %{count} minuto",
+            "other": "Ogni %{count} minuti"
+          }
+        },
+        "budget": {
+          "save": "Salva",
+          "title": "Consumo del mese",
+          "used": "Usati %{used} token su %{cap}",
+          "no_cap": "nessun tetto",
+          "cap": "Tetto mensile (token)",
+          "cap_hint": "Vale per tutti i Puckies dell'organizzazione. Vuoto: nessun tetto."
+        },
+        "schedules": {
+          "title": "Compiti che si ripetono",
+          "input": "Cosa deve fare il Puck",
+          "frequency": "Quando",
+          "hour": "Ora",
+          "minute": "Minuti",
+          "weekday": "Giorno",
+          "weekday_hint": "Conta solo per «una volta a settimana».",
+          "save": "Aggiungi",
+          "pause": "Pausa",
+          "resume": "Riprendi",
+          "delete": "Elimina",
+          "delete_confirm": "Eliminare questo compito che si ripete?",
+          "paused": "in pausa",
+          "next": "prossimo: %{at}",
+          "frequencies": {
+            "hourly": "Ogni ora",
+            "daily": "Ogni giorno",
+            "weekdays": "Nei giorni feriali",
+            "weekly": "Una volta a settimana"
+          },
+          "every": {
+            "hourly": "Ogni ora al minuto %{minute}",
+            "daily": "Ogni giorno alle %{time}",
+            "weekdays": "Nei giorni feriali alle %{time}",
+            "weekly": "Ogni %{day} alle %{time}"
+          }
+        },
+        "notes": {
+          "title": "Cose che il Puck vuole ricordare",
+          "pending": "Aspetta il tuo sì",
+          "active": "Ricordata",
+          "accept": "Ricorda",
+          "dismiss": "Scarta",
+          "remove": "Dimentica"
+        },
+        "busy_budget": "Il tetto mensile dei Puckies è raggiunto. Chi gestisce l'organizzazione può alzarlo dal pannello Regole.",
+        "signature": "Preparato da Puck «%{name}»",
+        "handoff": {
+          "to": "Passato a %{name}"
+        },
+        "team_puck": {
+          "team": "Puck di squadra",
+          "team_hint": "Lo vede chi vede il progetto. Regole e memoria le decide chi gestisce l'organizzazione.",
+          "project": "Progetto",
+          "readonly": "Questo è un Puck di squadra: regole, memoria e orari li decide chi gestisce l'organizzazione."
+        },
+        "activity_page": {
+          "title": "Attività dei Puckies",
+          "subtitle": {
+            "one": "%{count} lavoro",
+            "other": "%{count} lavori"
+          },
+          "search": "Cerca nelle richieste",
+          "status": "Stato",
+          "kind": "Tipo",
+          "puck": "Puck",
+          "created": "Iniziato",
+          "tokens": "Token",
+          "request": "Richiesta",
+          "empty": "Ancora nessun lavoro dei tuoi Puckies.",
+          "pending": {
+            "one": "· %{count} decisione tua",
+            "other": "· %{count} decisioni tue"
+          },
+          "kinds": {
+            "chat": "Conversazione",
+            "task": "Incarico",
+            "watch": "Controllo automatico"
+          },
+          "empty_body": "Quando un Puck lavora, qui vedi cosa fa, per chi e com'è andata."
+        },
+        "channels": {
+          "pending": {
+            "one": "1 azione aspetta la tua conferma.",
+            "other": "%{count} azioni aspettano la tua conferma."
+          },
+          "title": "Scrivi al Puck da fuori",
+          "telegram": "Da Telegram: collega il tuo account nelle preferenze, poi /puck per scegliere il Puck e /p <testo> per scrivergli."
+        },
+        "slack": {
+          "link_first": "Prima collega il tuo account: su CloseYourIt, in Coworkers › Regole, copia il codice e scrivimi «link <codice>».",
+          "link_invalid": "Il codice non è valido o è scaduto. Prendine uno nuovo da CloseYourIt.",
+          "linked": "Fatto: ora scrivimi o menzionami e risponde il tuo Puck.",
+          "unavailable": "I Puckies non sono attivi per la tua organizzazione.",
+          "no_puck": "Non hai ancora un Puck: crealo su CloseYourIt.",
+          "busy": "Il Puck è occupato o il tetto del mese è raggiunto. Riprova tra poco.",
+          "title": "Slack",
+          "intro": "Per scrivere ai tuoi Puckies da Slack, manda al bot questo messaggio entro 15 minuti:",
+          "code": "link %{code}"
+        },
+        "call": {
+          "toggle": "Chiama il Puck",
+          "started": "Ti ascolto.",
+          "listening": "Ti ascolto…",
+          "thinking": "Il Puck ci pensa…",
+          "speaking": "Il Puck risponde…",
+          "noAnswer": "Non ho una risposta."
+        },
+        "screen": {
+          "alt": "Lo schermo di %{name}",
+          "take": "Prendo io",
+          "give": "Ridai al Puck",
+          "type": "Scrivi nel campo selezionato",
+          "send": "Scrivi"
+        },
+        "procedures": {
+          "title": "Procedure insegnate",
+          "save": "Salva come procedura",
+          "empty": "Non ci sono passi da salvare: prendi lo schermo e fai il lavoro una volta.",
+          "click": "Clic sul punto %{x}, %{y} dello schermo",
+          "type": "Scrivi il testo che serve",
+          "from": "Parti da %{url}",
+          "follow": "Segui la procedura «%{name}». Fermati e chiedi se qualcosa non torna.",
+          "start": "Avvia ora",
+          "repeat": "Ripeti ogni giorno alle 8",
+          "remove_confirm": "Eliminare questa procedura?"
+        },
+        "apps": {
+          "title": "App collegate",
+          "access": {
+            "read": "Solo lettura",
+            "write": "Lettura e azioni da confermare"
+          },
+          "access_label": "Cosa può fare",
+          "tools": {
+            "one": "%{count} strumento",
+            "other": "%{count} strumenti"
+          },
+          "error": "Non risponde",
+          "refresh": "Aggiorna",
+          "remove": "Rimuovi",
+          "remove_confirm": "Scollegare questa app dal Puck?",
+          "add_github": "Collega GitHub (solo lettura)",
+          "name": "Nome dell'app",
+          "url": "Indirizzo del server MCP",
+          "url_hint": "Deve iniziare con https://. Il token resta cifrato e il Puck non lo vede mai.",
+          "token": "Token",
+          "add": "Collega"
+        },
+        "sites": {
+          "title": "Siti con login",
+          "domain": "Dominio",
+          "username": "Utente",
+          "password": "Password",
+          "hint": "Il Puck scrive utente e password nella pagina senza mai vederli.",
+          "add": "Aggiungi sito",
+          "remove_confirm": "Togliere questo sito e il suo accesso?"
+        },
+        "devices": {
+          "intro": "Il tuo computer: lancia questo comando nel terminale. Ogni richiesta del Puck ti chiede sì o no lì.",
+          "online": "collegato",
+          "offline": "non raggiungibile",
+          "disconnect": "Scollega"
+        }
       }
     }
   }

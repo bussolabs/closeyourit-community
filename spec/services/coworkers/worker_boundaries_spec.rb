@@ -22,6 +22,13 @@ RSpec.describe Coworkers::Worker do
     expect(run.output).to eq("")
   end
 
+  it "clears the streamed text when the runtime takes back a made-up turn" do
+    described_class.apply(run, { "type" => "delta", "text" => "DASH has 30 tickets." })
+    described_class.apply(run, { "type" => "reset" })
+    described_class.apply(run, { "type" => "delta", "text" => "DASH has 4 tickets." })
+    expect(run.output).to eq("DASH has 4 tickets.")
+  end
+
   it "limits tool identifiers and prevents duplicate or unauthorized chat tools" do
     [ { "id" => "x", "name" => "browser_read" }, { "id" => nil, "name" => "propose_task" },
       { "id" => "x" * 129, "name" => "propose_task" } ].each do |event|

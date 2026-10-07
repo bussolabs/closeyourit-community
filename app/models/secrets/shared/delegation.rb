@@ -37,6 +37,7 @@ module Secrets
 
         errors.add(:local_name, :reserved_prefix) if local_name.start_with?(::Secrets::Variable::RESERVED_NAME_PREFIX)
         errors.add(:local_name, :reserved) if ::Secrets::Variable::DERIVED_NAMES.include?(local_name)
+        errors.add(:local_name, :reserved_runtime) if ::Secrets::Variable.reserved_runtime_name?(local_name)
       end
 
       def valid_target

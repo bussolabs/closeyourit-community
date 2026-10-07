@@ -69,6 +69,7 @@ module Secrets
       return if name.blank?
 
       errors.add(:name, :reserved_prefix) if name.start_with?(Secrets::Variable::RESERVED_NAME_PREFIX)
+      errors.add(:name, :reserved_runtime) if Secrets::Variable.reserved_runtime_name?(name)
     end
 
     def environment_matches_project_organization

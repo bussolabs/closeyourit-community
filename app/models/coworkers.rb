@@ -16,6 +16,13 @@ module Coworkers
   end
 
   def self.remote? = ENV.fetch("COWORKERS_RUNTIME", "local") == "remote"
+
+  # The runtime's own reason stays in the log: the run stores only the generic code the page translates.
+  def self.log_failure(run, event)
+    reason = event["reason"] || (event["code"] == 0 ? "empty_or_unresearched_answer" : event["code"])
+    detail = event["detail"].to_s[/\A[a-z_]{3,60}\z/]
+    Rails.logger.warn("[coworkers] run #{run.id} failed: #{[ reason, detail ].compact.join(' / ')}")
+  end
   def self.worker_token_digest = ENV.fetch("COWORKERS_WORKER_TOKEN_SHA256", "")
   def self.worker_organization_id = ENV.fetch("COWORKERS_ORGANIZATION_ID", "")
   def self.worker_account_ids = ENV.fetch("COWORKERS_ACCOUNT_IDS", "").split(",").map(&:strip).reject(&:empty?)
@@ -29,5 +36,15 @@ module Coworkers
     return true unless remote?
 
     organization&.id == worker_organization_id && worker_account_ids.include?(account&.id)
+  end
+
+  # Who unattended work runs as may still act for the Puck: a member on an allowed host and, for a team
+  # Puck, still a manager who sees its project (CYRA-1023).
+  def self.can_act?(account, puck)
+    return false unless account && available_to?(account: account, organization: puck.organization)
+    return false unless Connections::Membership.exists?(account_id: account.id, organization_id: puck.organization_id)
+    return true unless puck.team?
+
+    puck.managed_by?(account) && Coworkers::Scope.capture(account: account, organization: puck.organization, puck: puck)["project_ids"].include?(puck.project_id)
   end
 end

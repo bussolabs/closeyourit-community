@@ -18,7 +18,9 @@ module Telegram
                    { chat: [ :id, :username, :type, :title, :is_forum ] },
                    { from: [ :username ] },
                    { photo: [ :file_id ] },
-                   { document: [ :file_id, :file_name ] } ] }
+                   { document: [ :file_id, :file_name ] } ] },
+      # A tap on a Puck's Confirm/Discard button (CYRA-1018).
+      { callback_query: [ :id, :data, { message: [ { chat: [ :id ] } ] } ] }
     ].freeze
 
     # Campi che i comandi leggono con `dig`: devono essere OGGETTI. Il filtro qui sopra controlla i
@@ -45,7 +47,11 @@ module Telegram
     private
 
     def update_params
-      message = params.permit(*UPDATE_SCHEMA).to_h["message"]
+      permitted = params.permit(*UPDATE_SCHEMA).to_h
+      callback = permitted["callback_query"]
+      return { "callback_query" => callback } if callback.is_a?(Hash) && callback["message"].is_a?(Hash) && callback.dig("message", "chat").is_a?(Hash)
+
+      message = permitted["message"]
       return {} unless message.is_a?(Hash)
 
       { "message" => normalized_message(message) }

@@ -14,12 +14,12 @@ module Assistant
     class ProjectHealth < Base
       def self.declaration
         { name: "project_health",
-          description: "Riepilogo dello stato di salute di UN progetto: quanti ticket sono da fare, " \
-                       "in corso e conclusi, quanti errori non sono risolti, quali monitor sono giù. " \
-                       "Usalo per domande come 'come sta CYRA?' o 'come vanno i miei progetti?'.",
+          description: "Health summary of ONE project: how many tickets are to do, " \
+                       "in progress and done, how many errors are unresolved, which monitors are down. " \
+                       "Use it for questions like 'how is CYRA doing?' or 'how are my projects going?'.",
           parameters: {
             type: "OBJECT",
-            properties: { project: { type: "STRING", description: "Chiave del progetto, es. CYRA" } },
+            properties: { project: { type: "STRING", description: "Project key, e.g. CYRA" } },
             required: [ "project" ]
           } }
       end

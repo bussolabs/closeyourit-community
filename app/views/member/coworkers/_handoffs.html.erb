@@ -1,0 +1,13 @@
+<%# Work this run handed to other Puckies, with their status and answer (CYRA-1024). %>
+<% if run.child_runs.any? %>
+  <section class="mt-3 flex flex-col gap-2" data-test="coworkers-handoffs">
+    <% run.child_runs.each do |child| %>
+      <div class="rounded-lg border border-dashed border-stone-300 px-3 py-2 dark:border-zinc-700" data-test="coworkers-handoff" data-status="<%= child.status %>">
+        <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.handoff.to", name: child.puck.name) %> · <%= t("member.coworkers.status.#{child.status}") %></p>
+        <% if child.output.present? %>
+          <%= render Ui::MarkdownComponent.new(text: child.output.truncate(2000), short_links: true, class: "mt-1 text-[13px]! leading-[21px]! dark:prose-invert") %>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+<% end %>

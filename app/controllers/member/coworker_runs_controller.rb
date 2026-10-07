@@ -2,10 +2,13 @@ module Member
   class CoworkerRunsController < BaseController
     before_action :require_prototype
     permission_not_required "Local prototype: runs are scoped through the account-owned Puck in the current organization"
+    rescue_from Coworkers::Start::OverBudget do
+      redirect_to member_coworker_path(params[:coworker_id]), alert: t("member.coworkers.busy_budget"), status: :see_other
+    end
 
     def create
       puck = visible.coworker_puckies.find(params[:coworker_id])
-      run = Coworkers::Start.call(puck: puck, kind: params[:kind], input: params[:input])
+      run = Coworkers::Start.call(puck: puck, kind: params[:kind], input: params[:input], account: Current.account)
       redirect_to member_coworker_path(puck, panel: params[:kind] == "task" ? "tasks" : nil, anchor: "coworker_run_#{run.id}"), status: :see_other
     rescue Coworkers::Start::Busy
       redirect_to member_coworker_path(puck), alert: t("member.coworkers.busy")
@@ -16,7 +19,7 @@ module Member
     def approve
       puck = visible.coworker_puckies.find(params[:coworker_id])
       proposal = puck.runs.find(params[:id])
-      task = Coworkers::Start.call(puck: puck, kind: "task", proposal_run: proposal)
+      task = Coworkers::Start.call(puck: puck, kind: "task", proposal_run: proposal, account: Current.account)
       redirect_to member_coworker_path(puck, anchor: "coworker_task_progress_#{task.id}"), status: :see_other
     rescue Coworkers::Start::InvalidProposal
       redirect_to member_coworker_path(puck), alert: t("member.coworkers.proposal_expired")
@@ -29,7 +32,7 @@ module Member
       failed = puck.runs.find(params[:id])
       raise ActiveRecord::RecordNotFound unless failed.retryable?
 
-      run = Coworkers::Start.call(puck: puck, kind: failed.kind, input: failed.input)
+      run = Coworkers::Start.call(puck: puck, kind: failed.kind, input: failed.input, account: Current.account)
       redirect_to member_coworker_path(puck, anchor: "coworker_run_#{run.id}"), status: :see_other
     rescue Coworkers::Start::Busy
       redirect_to member_coworker_path(puck), alert: t("member.coworkers.busy")
@@ -38,7 +41,10 @@ module Member
     def update
       puck = visible.coworker_puckies.find(params[:coworker_id])
       run = puck.runs.find(params[:id])
-      run.update!(stop_requested: true) if run.active?
+      # Who asked for it, or who manages the Puck, may stop it (CYRA-1023, CYRA-1026).
+      raise ActiveRecord::RecordNotFound unless run.requester == Current.account || puck.managed_by?(Current.account)
+
+      run.request_stop!
       redirect_to member_coworker_path(puck), status: :see_other
     end
 

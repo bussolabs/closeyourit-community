@@ -9,12 +9,12 @@ module Assistant
 
       def self.declaration
         { name: "list_performance",
-          description: "Elenca le operazioni lente di UN progetto ancora da guardare, dalla più costosa: " \
-                       "cosa è lento, quanto dura in media e quante volte è successo. " \
-                       "Usalo per domande come 'cosa è lento in CYRA?'.",
+          description: "Lists the slow operations of ONE project still to look at, costliest first: " \
+                       "what is slow, how long it takes on average and how many times it happened. " \
+                       "Use it for questions like 'what is slow in CYRA?'.",
           parameters: {
             type: "OBJECT",
-            properties: { project: { type: "STRING", description: "Chiave del progetto, es. CYRA" } },
+            properties: { project: { type: "STRING", description: "Project key, e.g. CYRA" } },
             required: [ "project" ]
           } }
       end

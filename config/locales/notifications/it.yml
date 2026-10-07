@@ -37,3 +37,4 @@ it:
         ai: "vai ai servizi collegati"
         # CYRA-716: il token in scadenza si sostituisce dalla pagina dei token del progetto.
         project_token: "vai ai token del progetto"
+        puck: "vai al Puck"

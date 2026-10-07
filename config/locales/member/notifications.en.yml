@@ -244,6 +244,12 @@ en:
         cluster_workload_degraded:
           title: App running at half
           description: "An app of the cluster has had fewer working copies than expected for at least 5 minutes."
+        puck_decision_needed:
+          title: "A Puck needs a decision"
+          description: "A Puck prepared an action and waits for you to confirm it."
+        puck_report_ready:
+          title: "A Puck has a report"
+          description: "A Puck found something new in your projects on its own and tells you about it."
         server_disk_forecast:
           title: Data volume filling up
           description: At the current fill rate a server's data volume will be full within days.

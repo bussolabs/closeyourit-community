@@ -58,7 +58,7 @@ RSpec.describe Coworkers::ExecuteJob, "runtime stream boundaries" do
   it "bounds an unterminated output line without deadlocking the writer" do
     reader, writer = IO.pipe
     producer = Thread.new do
-      writer.write("x" * 1_000_001)
+      writer.write("x" * (Coworkers::ExecuteJob::MAX_LINE_BYTES + 1))
     rescue Errno::EPIPE, IOError
       nil
     ensure

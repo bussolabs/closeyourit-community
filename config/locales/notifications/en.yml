@@ -37,3 +37,4 @@ en:
         ai: "Open connected services"
         # CYRA-716: an expiring token is replaced from the project tokens page.
         project_token: "Open project tokens"
+        puck: "open the Puck"

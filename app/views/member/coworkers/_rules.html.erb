@@ -1,0 +1,19 @@
+<%# One row per kind of action: alone, ask first or never. Closing a ticket always asks (CYRA-1017). %>
+<% rules = puck.rules.index_by(&:action) %>
+<p class="mb-4 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.rules.intro") %></p>
+<div class="flex flex-col gap-3" data-test="coworkers-rules">
+  <% Assistant::Proposal.kinds.each_key do |action| %>
+    <% current = rules[action]&.decision || "ask" %>
+    <div class="flex flex-col gap-1.5" data-test="coworkers-rule" data-action-kind="<%= action %>" data-decision="<%= current %>">
+      <span class="text-[13px] font-medium"><%= t("member.assistant.proposals.kinds.#{action}") %></span>
+      <div class="flex flex-wrap gap-1" role="group" aria-label="<%= t("member.assistant.proposals.kinds.#{action}") %>">
+        <% Coworkers::Rule::DECISIONS.each do |decision| %>
+          <%= render Ui::ButtonComponent.new(label: t("member.coworkers.rules.#{decision}"), href: member_coworker_rule_path(puck, action, decision: decision),
+                method: :patch, authenticity_token: false, size: :sm, variant: current == decision ? :primary : :ghost,
+                aria: { pressed: current == decision }, class: "max-md:min-h-11", test_id: "coworkers-rule-#{decision}") %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+  <p class="text-[12px] text-amber-800 dark:text-amber-300"><%= t("member.coworkers.rules.sensitive") %></p>
+</div>

@@ -34,12 +34,22 @@ module Secrets
       validates :name, presence: true,
                 format: { with: NAME_FORMAT, message: ->(*) { I18n.t("member.review_fixes.secret_name_hint") } },
                 uniqueness: { scope: %i[account_id organization_id] }
+      # No GITHUB_ ban here (personal secrets never sync), but the runtime ban holds: `cyi run` loads them too.
+      validate :name_not_reserved_runtime
 
       scope :ordered, -> { order(:name) }
 
       # Secret dell'account nell'org (posseduti). Anti-BOLA per find/destroy.
       def self.for(account:, organization:)
         where(account_id: account.id, organization_id: organization.id)
+      end
+
+      private
+
+      def name_not_reserved_runtime
+        return if name.blank?
+
+        errors.add(:name, :reserved_runtime) if ::Secrets::Variable.reserved_runtime_name?(name)
       end
     end
   end

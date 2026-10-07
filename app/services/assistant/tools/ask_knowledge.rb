@@ -9,12 +9,12 @@ module Assistant
     class AskKnowledge < Base
       def self.declaration
         { name: "ask_knowledge",
-          description: "Cerca nella knowledge base (note, decisioni, guide) e risponde a domande su " \
-                       "come funziona qualcosa, perché è stata presa una decisione, o come si fa una " \
-                       "procedura. Per lo stato del lavoro usa invece gli attrezzi sui ticket.",
+          description: "Searches the knowledge base (notes, decisions, guides) and answers questions about " \
+                       "how something works, why a decision was taken, or how a procedure is done. " \
+                       "For the state of the work use the ticket tools instead.",
           parameters: {
             type: "OBJECT",
-            properties: { question: { type: "STRING", description: "La domanda, in linguaggio naturale" } },
+            properties: { question: { type: "STRING", description: "The question, in natural language" } },
             required: [ "question" ]
           } }
       end

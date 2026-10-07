@@ -13,16 +13,16 @@ module Assistant
 
       def self.declaration
         { name: "search_tickets",
-          description: "Elenca i ticket di un progetto, filtrati per stato o per assegnatario. " \
-                       "Usalo per domande su QUANTI o QUALI ticket (elenchi, conteggi). " \
-                       "Per domande sul CONTENUTO dei ticket usa invece ask_tickets.",
+          description: "Lists the tickets of a project, filtered by status or assignee. " \
+                       "Use it for questions about HOW MANY or WHICH tickets (lists, counts). " \
+                       "For questions about the CONTENT of tickets use ask_tickets instead.",
           parameters: {
             type: "OBJECT",
             properties: {
-              project: { type: "STRING", description: "Chiave del progetto, es. CYRA" },
+              project: { type: "STRING", description: "Project key, e.g. CYRA" },
               status: { type: "STRING", enum: CATEGORIES,
-                        description: "open = da fare, in_progress = in corso o in revisione, done = concluso" },
-              mine: { type: "BOOLEAN", description: "true per i soli ticket assegnati a chi sta chiedendo" }
+                        description: "open = to do, in_progress = in progress or in review, done = done" },
+              mine: { type: "BOOLEAN", description: "true for only the tickets assigned to the person asking" }
             },
             required: [ "project" ]
           } }

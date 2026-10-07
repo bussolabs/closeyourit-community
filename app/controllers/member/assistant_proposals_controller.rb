@@ -13,7 +13,9 @@ module Member
       "change_ticket_priority" => %w[priority_id],
       "assign_ticket" => %w[assignee_id],
       "create_todo" => %w[title list_id],
-      "create_idea" => %w[title problem project_id]
+      "create_idea" => %w[title problem project_id],
+      "start_agent_work" => %w[],
+      "external_tool" => %w[]
     }.freeze
 
     before_action :set_conversation

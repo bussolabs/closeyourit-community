@@ -183,7 +183,13 @@ module Alerting
       cluster_node_pressure: 77,
       cluster_workload_crashloop: 78,
       cluster_workload_degraded: 79,
-      measurement_threshold: 80
+      measurement_threshold: 80,
+      # CYRA-1020: a Puck waits for a person to confirm an action (subject = Coworkers::Run,
+      # rule_id nil, direct dispatch). Value APPENDED (80 is measurement_threshold).
+      puck_decision_needed: 81,
+      # CYRA-1011: a Puck reports on new signals it found alone (subject = Coworkers::Run, rule_id nil).
+      # Value APPENDED (81 is puck_decision_needed).
+      puck_report_ready: 82
     }, prefix: :event
     # Valori APPESI (mai riordinare): queued (4) = email/telegram trattenuta per il digest (cadenza
     # daily/weekly), raccolta e marcata :sent dal job digest (digest_bucket dice a quale ciclo appartiene).

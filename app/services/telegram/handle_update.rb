@@ -29,6 +29,8 @@ module Telegram
     end
 
     def call
+      return Telegram::ConfirmPuckAction.call(callback: @update[:callback_query]) if @update[:callback_query].present?
+
       message = @update[:message] || {}
       chat_id = message.dig(:chat, :id)
       # Il comando può arrivare come testo o come caption di una foto/documento.
@@ -82,6 +84,8 @@ module Telegram
         Telegram::ShowTicket.call(account: account, chat_id: chat_id, code: rest.split(/\s+/).first)
       when "commenta"
         Telegram::AddCommentFromMessage.call(account: account, chat_id: chat_id, args: rest, message: message)
+      when "puck", "p"
+        Telegram::AskPuck.call(account: account, chat_id: chat_id, command: command, args: rest)
       else
         unknown_command(account, chat_id)
       end
