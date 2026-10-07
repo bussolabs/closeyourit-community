@@ -165,4 +165,74 @@ RSpec.describe AgentTicketCandidateSerializer do
 
     expect(described_class.new(ticket).as_json.dig("workflow", :frozen_candidate)).to be_nil
   end
+  # CYAU-236 — a retry after a review that asked for changes must see what the review found. Without it
+  # the next attempt only had the approved plan, found its own open PR, declared the work "already
+  # delivered" and fixed nothing until the attempt limit stopped the workflow.
+  describe "rework after a rejected review" do
+    let(:ticket) { create(:ticket, with_agent_workflow: true) }
+    let(:workflow) { ticket.agent_workflow }
+
+    def review(findings)
+      { "depth" => "diff", "status" => "changes_requested", "findings" => findings }
+    end
+
+    before { workflow.update!(triaged_at: 1.hour.ago, planned_at: 1.hour.ago, approved_at: 1.hour.ago) }
+
+    it "carries the blocking findings of the latest rejected attempt of the ready phase" do
+      create(:agent_attempt, organization: ticket.project.organization, workflow:, phase: "autopilot",
+                             status: "review_failed", review_status: "changes_requested",
+                             review: review([
+                               { "severity" => "major", "title" => "Trailing newline accepted", "detail" => "Use \\z" },
+                               { "severity" => "info", "title" => "Naming nit", "detail" => "ignore" }
+                             ]))
+
+      rework = described_class.new(ticket.reload).as_json.dig("workflow", :rework)
+
+      expect(rework).to include(phase: "autopilot")
+      expect(rework[:findings]).to eq([ { severity: "major", title: "Trailing newline accepted", detail: "Use \\z" } ])
+    end
+
+    it "carries the findings of a rejected attempt whose review status is not changes_requested" do
+      create(:agent_attempt, organization: ticket.project.organization, workflow:, phase: "autopilot",
+                             status: "review_failed", review_status: "unavailable",
+                             review: review([ { "severity" => "major", "title" => "Bug", "detail" => "Fix it" } ]))
+
+      expect(described_class.new(ticket.reload).as_json.dig("workflow", :rework, :findings).size).to eq(1)
+    end
+
+    it "still carries the findings once the claim has opened the next attempt" do
+      org = ticket.project.organization
+      create(:agent_attempt, organization: org, workflow:, phase: "autopilot", status: "review_failed",
+                             review_status: "unavailable",
+                             review: review([ { "severity" => "major", "title" => "Bug", "detail" => "Fix it" } ]),
+                             created_at: 10.minutes.ago)
+      create(:agent_attempt, organization: org, workflow:, phase: "autopilot", status: "stale", created_at: 5.minutes.ago)
+      create(:agent_attempt, organization: org, workflow:, phase: "autopilot", status: "running")
+
+      expect(described_class.new(ticket.reload).as_json.dig("workflow", :rework, :findings).size).to eq(1)
+    end
+
+    it "carries nothing when the latest attempt of the phase was not rejected by its review" do
+      create(:agent_attempt, organization: ticket.project.organization, workflow:, phase: "autopilot",
+                             status: "running", review_status: nil, review: {})
+
+      expect(described_class.new(ticket.reload).as_json.fetch("workflow")).not_to have_key(:rework)
+    end
+  end
+
+  # CYAU-240 — the diff review rejected a choice the supporter had settled, because the work it
+  # reviews never carried the answers.
+  it "carries the answered questions with the answer that settled them, oldest first" do
+    ticket = create(:ticket, with_agent_workflow: true)
+    question = create(:ticket_question, :from_agent, ticket: ticket, body: "Short text: mask it or keep it?")
+    answer = create(:ticket_answer, question: question, body: "Keep it as it is.")
+    question.update_columns(answered_at: Time.current, resolved_answer_id: answer.id)
+    create(:ticket_question, ticket: ticket, body: "Still open?")
+
+    json = JSON.parse(described_class.new(ticket.reload).serialize)
+
+    expect(json["answered_questions"]).to eq([
+      { "question" => "Short text: mask it or keep it?", "answer" => "Keep it as it is." }
+    ])
+  end
 end

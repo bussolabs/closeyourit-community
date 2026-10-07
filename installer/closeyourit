@@ -8,7 +8,10 @@
 #   closeyourit backup
 #   closeyourit restore <file>
 #   closeyourit enable ingest | disable ingest
+#   closeyourit enable updates | disable updates
 #   closeyourit doctor
+#
+# apply-update-request is run every minute by cron once updates are on (CYRA-1035).
 set -euo pipefail
 
 HOME_DIR="${CLOSEYOURIT_HOME:-/opt/closeyourit}"
@@ -36,9 +39,13 @@ compose() {
   docker compose "${profiles[@]}" "$@"
 }
 
+# A mirror can stand in for GitHub: the installer writes these two into .env when it was given them.
+releases_api() { local url; url="$(env_get CLOSEYOURIT_RELEASES_API || true)"; printf '%s' "${url:-https://api.github.com/repos/$REPO}"; }
+releases_raw() { local url; url="$(env_get CLOSEYOURIT_RELEASES_RAW || true)"; printf '%s' "${url:-https://raw.githubusercontent.com/$REPO}"; }
+
 latest_version() {
   # Quiet on failure: doctor and update treat an empty answer as "no newer release".
-  curl -fsL "https://api.github.com/repos/$REPO/releases/latest" 2>/dev/null | sed -nE 's/.*"tag_name": *"v?([^"]+)".*/\1/p' | head -1
+  curl -fsL "$(releases_api)/releases/latest" 2>/dev/null | sed -nE 's/.*"tag_name": *"v?([^"]+)".*/\1/p' | head -1
 }
 
 wait_until_up() {
@@ -107,7 +114,8 @@ cmd_restore() {
 UPDATED_FILES=(compose.yml Caddyfile ingest/nats.conf)
 
 fetch_release_files() {
-  local raw="https://raw.githubusercontent.com/$REPO/v$1/installer" file
+  local raw file
+  raw="$(releases_raw)/v$1/installer"
   rm -rf .update && mkdir -p .update/ingest
   for file in "${UPDATED_FILES[@]}"; do
     curl -fsSL "$raw/$(basename "$file")" -o ".update/$file" || return 1
@@ -179,7 +187,7 @@ gateway_stable() {
 }
 
 cmd_enable() {
-  [ "${1:-}" = "ingest" ] || fail "usage: closeyourit enable ingest"
+  [ "${1:-}" = "ingest" ] || fail "usage: closeyourit enable ingest|updates"
   # The gateway image runs as uid 10001 and reads these two files itself.
   chown 10001:10001 ingest/nats_password ingest/envelope_key
   env_set INGEST_ENABLED true
@@ -195,7 +203,7 @@ cmd_enable() {
 }
 
 cmd_disable() {
-  [ "${1:-}" = "ingest" ] || fail "usage: closeyourit disable ingest"
+  [ "${1:-}" = "ingest" ] || fail "usage: closeyourit disable ingest|updates"
   env_set INGEST_UPSTREAM app:80
   compose up -d caddy
   # Give the gateway time to deliver what is still queued before stopping it.
@@ -203,6 +211,74 @@ cmd_disable() {
   env_set INGEST_ENABLED false
   docker compose --profile ingest stop gateway nats
   say "✔ ingest gateway off"
+}
+
+# Updates asked from the app (CYRA-1035). The app container (uid 1000) can only write
+# updates/inbox; the host writes updates/status, which the container mounts read-only, so nothing
+# the app leaves behind can make root write anywhere else.
+UPDATES_CRON=/etc/cron.d/closeyourit-updates
+
+cmd_enable_updates() {
+  install -d -m 755 -o root -g root updates updates/status
+  install -d -m 755 -o 1000 -g 1000 updates/inbox
+  cat > "$UPDATES_CRON" <<'EOF'
+* * * * * root /usr/local/bin/closeyourit apply-update-request >> /var/log/closeyourit-update.log 2>&1
+EOF
+  compose up -d --remove-orphans
+  write_heartbeat
+  say "✔ updates from the app on: Administration shows Update now when a new version is out"
+}
+
+cmd_disable_updates() {
+  rm -f "$UPDATES_CRON" updates/inbox/request updates/status/heartbeat
+  say "✔ updates from the app off"
+}
+
+write_heartbeat() {
+  date +%s > updates/status/.heartbeat && mv -f updates/status/.heartbeat updates/status/heartbeat
+}
+
+# state target from [backup]: written aside, then renamed, so the app never reads half of it.
+write_status() {
+  local tmp
+  tmp="$(mktemp updates/status/.status.XXXXXX)"
+  printf '{"state":"%s","target":"%s","from":"%s","backup":"%s","at":"%s"}\n' \
+    "$1" "$2" "$3" "${4:-}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$tmp"
+  chmod 644 "$tmp"
+  mv -f "$tmp" updates/status/status.json
+}
+
+version_newer() { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -1)" = "$1" ]; }
+
+latest_backup() { ls -1t backups/closeyourit-*.dump 2>/dev/null | head -1 | xargs -r basename; }
+
+cmd_apply_update_request() {
+  [ -d updates/status ] || return 0
+  write_heartbeat
+  local request=updates/inbox/request target current stamp
+  [ -e "$request" ] || [ -L "$request" ] || return 0
+  # One update at a time: while one runs, the next minutes find the lock taken and leave.
+  exec 9> updates/.lock
+  flock -n 9 || return 0
+  stamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  # Only a plain file, read with a time limit: the app could leave a link or a pipe instead.
+  if [ -L "$request" ] || [ ! -f "$request" ]; then
+    rm -f "$request"; say "$stamp refused: the request is not a plain file"; return 0
+  fi
+  target="$(timeout 5 head -c 32 "$request" | tr -d '[:space:]' || true)"
+  current="$(env_get CLOSEYOURIT_VERSION)"
+  if ! [[ "$target" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || ! version_newer "$target" "$current"; then
+    rm -f "$request"; say "$stamp refused: the request is not a version newer than $current"; return 0
+  fi
+  # Running is written before the request goes away: the app always sees one or the other.
+  write_status running "$target" "$current"
+  rm -f "$request"
+  say "$stamp update $current → $target asked from the app"
+  if "$0" update "$target"; then
+    write_status done "$target" "$current" "$(latest_backup)"
+  else
+    write_status failed "$target" "$current" "$(latest_backup)"
+  fi
 }
 
 cmd_doctor() {
@@ -252,8 +328,9 @@ case "${1:-}" in
   update)  shift; cmd_update "${1:-}" ;;
   backup)  cmd_backup ;;
   restore) shift; cmd_restore "${1:-}" ;;
-  enable)  shift; cmd_enable "${1:-}" ;;
-  disable) shift; cmd_disable "${1:-}" ;;
+  enable)  shift; if [ "${1:-}" = "updates" ]; then cmd_enable_updates; else cmd_enable "${1:-}"; fi ;;
+  disable) shift; if [ "${1:-}" = "updates" ]; then cmd_disable_updates; else cmd_disable "${1:-}"; fi ;;
   doctor)  cmd_doctor ;;
-  *) say "usage: closeyourit status|logs|restart|update [version]|backup|restore <file>|enable ingest|disable ingest|doctor"; exit 2 ;;
+  apply-update-request) cmd_apply_update_request ;;
+  *) say "usage: closeyourit status|logs|restart|update [version]|backup|restore <file>|enable ingest|updates|disable ingest|updates|doctor"; exit 2 ;;
 esac

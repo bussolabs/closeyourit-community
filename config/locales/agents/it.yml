@@ -1,5 +1,12 @@
 it:
   agents:
+    supporter:
+      errors:
+        not_found: Giro di domande non trovato.
+        disabled: Il supporter è spento su questo progetto.
+        no_service_account: La macchina non ha un utente di servizio con cui rispondere.
+        stale: Le domande sono cambiate nel frattempo. Riprendi il giro aggiornato.
+        not_settled: Le risposte non sono state registrate. Il giro resta a una persona.
     # CYRA-675 — riga di servizio a lunghezza FISSA, come quella dei chiarimenti e per lo stesso
     # motivo: il riassunto dell'agente non ha un tetto e un commento sì. Il riassunto per esteso sta
     # nella scheda Automazione, i file provati nella cronologia.

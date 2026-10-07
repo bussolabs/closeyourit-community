@@ -68,7 +68,40 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
         completion_probe: current_plan.completion_probe
       }
     end
+    rework = AgentTicketCandidateSerializer.rework_for(workflow)
+    payload[:rework] = rework if rework
     payload
+  end
+
+  # CYAU-236 — what the review of the previous attempt asked to fix. Without it a retry after
+  # changes_requested only had the plan, found its own open PR and declared the work already delivered.
+  # Only blocking findings (not "info"), capped: a review is model output, so it travels as untrusted
+  # material for the session to read, never as an order.
+  REWORK_FINDINGS_LIMIT = 10
+  REWORK_TEXT_LIMIT = 600
+
+  def self.rework_for(workflow)
+    phase = workflow.ready_execution_phase
+    return unless phase
+
+    # The claim creates the new attempt BEFORE this payload is built, so "the last attempt" is the one
+    # just started: skip attempts still open and those that ended without a verdict (stale, cancelled).
+    last = workflow.attempts.where(phase:).where.not(status: %w[running awaiting_review stale cancelled])
+                   .order(:created_at).last
+    # The server keeps a rejected delivery as `review_failed`, and its review_status is not always
+    # `changes_requested` (LAB-70 had `unavailable` next to two major findings): what matters is that the
+    # attempt was rejected and its review left blocking findings.
+    return unless last && (last.status == "review_failed" || last.review_status == "changes_requested")
+
+    findings = Array(last.review&.dig("findings")).filter_map do |finding|
+      next unless finding.is_a?(Hash) && finding["severity"].present? && finding["severity"] != "info"
+
+      { severity: finding["severity"].to_s, title: finding["title"].to_s.truncate(REWORK_TEXT_LIMIT),
+        detail: finding["detail"].to_s.truncate(REWORK_TEXT_LIMIT) }
+    end.first(REWORK_FINDINGS_LIMIT)
+    return if findings.empty?
+
+    { phase:, attempt_id: last.id, findings: }
   end
 
   attribute :project do |ticket|
@@ -150,4 +183,8 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
       }
     end
   end
+
+  # CYAU-240 — the decisions taken through clarification answers travel with the work, so the diff
+  # review does not reject a choice an answer already settled.
+  attribute :answered_questions, &:answered_question_decisions
 end

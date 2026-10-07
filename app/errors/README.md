@@ -37,6 +37,7 @@ Formato `R{HTTP_STATUS}-{DOMINIO}-{SEQ}` (rules/error-handling.md). Envelope API
 ### INGEST — ingest eventi (Fase 2, error monitoring)
 - `R422-INGEST-001` — envelope/evento malformato
 - `R413-INGEST-001` — payload troppo grande (limite compresso/decompresso)
+- `R413-INGEST-003` — body of any ingest channel without its own cap (logs, pageviews, replays, web vitals, help desk) over `Api::V1::IngestBaseController::MAX_BYTES`, checked on `content_length` before auth and parse — CYRA-1039
 - `R413-INGEST-002` — evento `POST /events` oltre `Errors::Constants::EVENTS_MAX_BYTES` (byte del singolo evento, gate su `content_length` in testa alla catena via `prepend_before_action` → precede auth e parse; distinto da INGEST-001 che è l'envelope Sentry compresso/decompresso del DSN pubblico) — CYRA-112
 - `R403-INGEST-002` — origine non consentita dall'allowlist del progetto sul public ingest (richiesta browser con header `Origin` non elencato; CYRA-109). Trasversale a tutti i canali di ingest (`IngestAuthentication#enforce_origin_allowlist!`). Difesa AGGIUNTIVA, non autenticazione: senza `Origin` (client non-browser) o con allowlist vuota → passa sempre.
 - (riservato: `R429-INGEST-001` — quota ingest per-progetto, via rack-attack throttle `ingest/project`)

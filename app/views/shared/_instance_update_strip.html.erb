@@ -1,0 +1,17 @@
+<%# locals: (update:) %>
+<%# CYRA-1035 — on every page for the god of a community install, while a newer release waits or runs. %>
+<% busy = %i[queued running].include?(update.state) %>
+<% if update.available || busy %>
+  <div class="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 bg-indigo-50 dark:bg-indigo-500/15 border-b border-indigo-200 dark:border-indigo-500/40" data-test="instance-update-strip">
+    <%= render Ui::IconComponent.new(name: (busy ? "loader-circle" : "circle-arrow-up"), class: "text-indigo-600 dark:text-indigo-400 text-[13px]") %>
+    <p class="text-[12.5px] text-indigo-800 dark:text-indigo-200">
+      <% if busy %>
+        <%= t("valhalla.instance_update.strip_running") %>
+      <% else %>
+        <%= t("valhalla.instance_update.strip_available", version: update.available.version, current: update.current_version) %>
+      <% end %>
+    </p>
+    <%= link_to t("valhalla.instance_update.strip_open"), valhalla_root_path(anchor: "instance-update"),
+          class: "ml-auto text-[12px] font-medium text-indigo-700 dark:text-indigo-300 underline underline-offset-2 hover:text-indigo-900 dark:hover:text-indigo-100", data: { test: "instance-update-strip-open" } %>
+  </div>
+<% end %>

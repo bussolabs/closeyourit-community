@@ -116,6 +116,28 @@ RSpec.describe Ui::TableComponent, type: :component do
       expect(page).to have_no_css("table[class*='ui-table--']")
     end
 
+    # C42 — a sticky <thead> sticks to the nearest overflow box, which is the table's own sideways
+    # scroller, so it scrolled away with the page. A controller on the table moves it instead.
+    it "keeps the header in view while the page scrolls (C42)" do
+      render_table
+      expect(page).to have_css("table[data-controller='ui--sticky-head']")
+    end
+
+    it "keeps a controller passed through table_data next to the sticky header one" do
+      render_inline(described_class.new(table_data: { controller: "x" })) do |t|
+        t.with_head { "<th>Nome</th>".html_safe }
+        ""
+      end
+      expect(page).to have_css("table[data-controller='ui--sticky-head x']")
+    end
+
+    it "leaves the header alone when there is none, or when the table scrolls on its own (scroll_y)" do
+      render_inline(described_class.new) { "" }
+      expect(page).to have_no_css("table[data-controller]")
+      render_table(scroll_y: true)
+      expect(page).to have_no_css("table[data-controller]")
+    end
+
     it "turns rows into cards below 768px only when stacked (C26, C73)" do
       render_table(stacked: true)
       expect(page).to have_css("table.ui-table.ui-table--stacked")

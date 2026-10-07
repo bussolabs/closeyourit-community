@@ -104,6 +104,11 @@ namespace :api do
       # The organization's Claude credential for the host's Claude sessions (CYAU-224).
       resource :claude_credential, only: :show
       resource :openrouter_credential, only: :show # CYAU-228 — the key OpenCode reviews with
+      # CYAU-235 — the next question round for the machine's supporter, and its answers to it.
+      resource :supporter_round, only: :show
+      resources :supporter_rounds, only: [] do
+        resource :answer, only: :create, controller: "supporter_answers"
+      end
     end
     # Coda agenti host-scoped (CYAU-84): appiattita, senza agent_id nell'URL. L'host è identificato dal token
     # cyi_ah_ (Current.agent_host); scope/capability/claim sono host-only (token host-bound + ProjectScope +

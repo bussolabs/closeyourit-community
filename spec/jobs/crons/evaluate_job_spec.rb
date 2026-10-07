@@ -40,18 +40,20 @@ RSpec.describe Crons::EvaluateJob, type: :job do
   describe "broadcast realtime" do
     let(:organization) { project.organization }
     let(:crons_stream) { Realtime::Streams.crons(organization) }
+    let(:project_stream) { Realtime::Streams.project_crons(project) }
 
     def overdue_monitor(proj = project)
       create(:cron_monitor, project: proj, expected_interval_minutes: 60, grace_minutes: 5,
                             status: :ok, last_check_in_at: now - 2.hours)
     end
 
-    it "2 monitor scaduti stessa org: una riga + labels per monitor, pill UNA sola volta (2+1 = 3 sul crons)" do
+    it "2 overdue monitors, same org: one row + labels per monitor on the project stream, one refresh on the org" do
       monitor_a = overdue_monitor
       monitor_b = overdue_monitor
 
       expect { described_class.perform_now(now:) }
-        .to have_broadcasted_to(crons_stream).exactly(3).times   # 2 righe + 1 refresh pill
+        .to have_broadcasted_to(project_stream).exactly(2).times # 2 rows (CYRA-1040)
+        .and have_broadcasted_to(crons_stream).once               # 1 refresh for the pills
         .and have_broadcasted_to(Realtime::Streams.cron_monitor(monitor_a)).once
         .and have_broadcasted_to(Realtime::Streams.cron_monitor(monitor_b)).once
     end
@@ -60,7 +62,7 @@ RSpec.describe Crons::EvaluateJob, type: :job do
       monitor = overdue_monitor
 
       expect { described_class.perform_now(now:) }
-        .to have_broadcasted_to(crons_stream).with(a_string_including("crons_monitor_#{monitor.id}"))
+        .to have_broadcasted_to(project_stream).with(a_string_including("crons_monitor_#{monitor.id}"))
         .and have_broadcasted_to(crons_stream).with(a_string_including(%(action="refresh")))
     end
 
@@ -70,8 +72,10 @@ RSpec.describe Crons::EvaluateJob, type: :job do
       overdue_monitor(other_project)
 
       expect { described_class.perform_now(now:) }
-        .to have_broadcasted_to(crons_stream).exactly(2).times                                     # 1 riga + 1 refresh
-        .and have_broadcasted_to(Realtime::Streams.crons(other_project.organization)).exactly(2).times
+        .to have_broadcasted_to(project_stream).once                                   # 1 row
+        .and have_broadcasted_to(crons_stream).once                                    # 1 refresh
+        .and have_broadcasted_to(Realtime::Streams.project_crons(other_project)).once
+        .and have_broadcasted_to(Realtime::Streams.crons(other_project.organization)).once
     end
 
     it "nessun monitor scaduto: nessun broadcast" do

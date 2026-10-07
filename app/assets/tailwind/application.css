@@ -281,6 +281,24 @@ pre.ui-scroll-left.ui-scroll-right {
   box-shadow: none;
 }
 
+/* C42 — header cells shifted down by ui--sticky-head: opaque and above the rows they cover. The
+   :where() keeps `position: relative` weaker than the sticky columns above. */
+:where(.ui-table[data-head-shifted]) > thead > tr > th {
+  position: relative;
+}
+
+.ui-table[data-head-shifted] > thead > tr > th {
+  translate: 0 var(--ui-head-shift);
+  z-index: 3;
+  background: var(--ui-table-soft);
+}
+
+/* The sticky corner stays above the other shifted header cells that slide under it sideways. */
+.ui-table--sticky-first[data-head-shifted] > thead > tr > :first-child,
+.ui-table--sticky-last[data-head-shifted] > thead > tr > :last-child {
+  z-index: 4;
+}
+
 @media (max-width: 767.98px) {
   .ui-table--stacked,
   .ui-table--stacked > tbody,

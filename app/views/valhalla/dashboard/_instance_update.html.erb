@@ -1,0 +1,53 @@
+<%# locals: (update:) %>
+<%# CYRA-1035 — the newer community release: its notes, then the button or what stands in for it. %>
+<% state = update.state %>
+<% release = update.available %>
+<%# A release newer than the one just installed is news: its badge wins over the previous "done". %>
+<% badge_state = release && (state.nil? || state == :done) ? :available : state %>
+<% badge = { available: [ :indigo, "available" ], queued: [ :amber, "queued" ], running: [ :amber, "running" ], done: [ :green, "done" ], failed: [ :red, "failed" ] }.fetch(badge_state) %>
+<%= render Ui::SectionComponent.new(heading_size: :md, test_id: "instance-update", id: "instance-update") do |section| %>
+  <% section.with_title do %>
+    <span class="flex items-center gap-2">
+      <%= release ? t("valhalla.instance_update.title", version: release.version) : t("valhalla.instance_update.title_current", version: update.current_version) %>
+      <%= render Ui::BadgeComponent.new(label: t("valhalla.instance_update.badge.#{badge.last}"), color: badge.first, size: :sm, test_id: "instance-update-badge") %>
+    </span>
+  <% end %>
+  <div class="space-y-4">
+    <% if %i[queued running].include?(state) %>
+      <div class="space-y-1" data-controller="instance-update" data-instance-update-url-value="<%= valhalla_instance_update_path(format: :json) %>" data-test="instance-update-running">
+        <p class="text-[13px] text-zinc-900 dark:text-zinc-100"><%= t("valhalla.instance_update.running_#{state}") %></p>
+        <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.instance_update.running_hint") %></p>
+      </div>
+    <% elsif state == :done %>
+      <p class="text-[13px] text-zinc-900 dark:text-zinc-100" data-test="instance-update-done"><%= t("valhalla.instance_update.done", version: update.current_version, backup: update.status.backup) %></p>
+    <% end %>
+    <% if state == :failed %>
+      <%= render Ui::AlertComponent.new(variant: :danger, title: t("valhalla.instance_update.failed_title", version: update.status.target), test_id: "instance-update-failed") do %>
+        <%= t("valhalla.instance_update.failed_body", current: update.current_version) %>
+      <% end %>
+      <%= render "member/secrets/usage_snippet", label: t("valhalla.instance_update.restore_label"), lines: [ "sudo closeyourit restore #{update.status.backup}" ] %>
+    <% end %>
+    <% if release && %i[queued running].exclude?(state) %>
+      <p class="text-[13px] text-gray-600 dark:text-zinc-300"><%= t("valhalla.instance_update.intro", current: update.current_version) %></p>
+      <% release.notes.each do |note| %>
+        <%= render Ui::ChangelogReleaseComponent.new(release: note) %>
+      <% end %>
+      <% if update.requestable? %>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.instance_update.downtime") %></p>
+          <%= render Ui::ConfirmDialogComponent.new(title: t("valhalla.instance_update.dialog_title", version: release.version),
+                url: valhalla_instance_update_path, method: :post, confirm_label: t("valhalla.instance_update.dialog_confirm"),
+                test_id: "instance-update-dialog") do |dialog| %>
+            <% dialog.with_body { t("valhalla.instance_update.dialog_body", current: update.current_version) } %>
+            <%= dialog.button_trigger(label: t("valhalla.instance_update.button"), icon: "circle-arrow-up", variant: :primary, test_id: "instance-update-button") %>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="space-y-2" data-test="instance-update-enable">
+          <p class="text-[12.5px] text-gray-600 dark:text-zinc-300"><%= t("valhalla.instance_update.enable_hint") %></p>
+          <%= render "member/secrets/usage_snippet", label: t("valhalla.instance_update.enable_label"), lines: [ "sudo closeyourit update && sudo closeyourit enable updates" ] %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

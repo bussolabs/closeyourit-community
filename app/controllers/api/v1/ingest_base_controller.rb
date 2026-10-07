@@ -20,6 +20,13 @@ module Api
       # del concern NON viene usato: qui l'autenticazione unifica bearer + public key.
       include IngestAuthentication
 
+      # Byte cap at the head of the chain for every ingest channel (CYRA-1039). Without a bearer or
+      # X-Sentry-Auth the credential lookup reads params[:sentry_key], which parses the whole body:
+      # the cap must run before authentication and before the parse. Events and metrics keep their
+      # own limit and error code by overriding byte_cap / byte_cap_error_code.
+      MAX_BYTES = 5.megabytes
+      prepend_before_action :enforce_byte_cap!
+
       skip_before_action :authenticate_token!
       before_action :authenticate_ingest_credential!
       before_action :enforce_origin_allowlist! # difesa browser aggiuntiva (CYRA-109), dopo l'auth
@@ -27,6 +34,20 @@ module Api
       before_action :mark_ingest_authorized!
 
       private
+
+      def enforce_byte_cap!
+        return if request.content_length.to_i <= byte_cap
+
+        render_error(byte_cap_error_code, "Payload too large", status: :content_too_large)
+      end
+
+      def byte_cap
+        MAX_BYTES
+      end
+
+      def byte_cap_error_code
+        "R413-INGEST-003"
+      end
 
       # Bearer segreto (se presente) altrimenti DSN public key. Nessuna credenziale valida → 401.
       # Poi enforce_project_scope! (TokenAuthentication): :project_id del path deve combaciare col

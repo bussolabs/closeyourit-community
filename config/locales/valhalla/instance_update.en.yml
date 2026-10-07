@@ -1,0 +1,31 @@
+en:
+  valhalla:
+    instance_update:
+      title: "Version %{version} is out"
+      title_current: "Version %{version}"
+      badge:
+        available: New version
+        queued: Starting
+        running: In progress
+        done: Done
+        failed: Did not work
+      intro: "You are on %{current}. What changes:"
+      downtime: "A database backup is made before updating. The app stops for a few minutes."
+      button: Update now
+      dialog_title: "Update to %{version}?"
+      dialog_body: "First a backup. Then the app stops for a few minutes and starts again on the new version. If it does not answer within 3 minutes, it goes back to %{current} by itself."
+      dialog_confirm: Yes, update
+      running_queued: "Update requested. The server starts within a minute."
+      running_running: "Update in progress: backup, new version, restart."
+      running_hint: "Nothing to do: the page reloads by itself when the app is back."
+      done: "Updated to %{version}. Backup made before starting: %{backup}"
+      failed_title: "Version %{version} did not start"
+      failed_body: "You are back on %{current} and it works. If something misbehaves, put back the backup made before starting with this command on the server:"
+      restore_label: Put the backup back
+      enable_hint: "To update from here, turn the button on once from the server terminal:"
+      enable_label: Turn on updates from the app
+      requested: "Update to %{version} requested. The server starts within a minute."
+      not_requestable: "You cannot update from here right now: the server does not answer or an update is already running."
+      strip_available: "Version %{version} is out. You are on %{current}."
+      strip_running: "Update in progress. The app may stop for a few minutes."
+      strip_open: Go to the update

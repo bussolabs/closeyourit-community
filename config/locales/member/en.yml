@@ -2312,6 +2312,18 @@ en:
           other: "%{count} from the automation"
         shared_label: Visible to the client too
         blocking: Blocks the work
+        supporter:
+          answer: Supporter answer
+          no_written_source: No written source
+          risk: "risk %{score}/10"
+          to_review: To review
+          mark_seen: Mark as seen
+          seen_done: Answer marked as seen.
+          why: Why
+          against: Reasons against
+          assumptions: Assumptions
+          undo: If it is wrong
+          sources: Sources
         from_work: From the automation
         shared: Shared
         withdrawn: Withdrawn

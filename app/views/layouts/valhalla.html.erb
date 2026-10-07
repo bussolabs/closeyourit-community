@@ -98,6 +98,7 @@
                   logout_test_id: "valhalla-logout") %>
           </div>
         </header>
+        <% if (instance_update = instance_update_notice) %><%= render "shared/instance_update_strip", update: instance_update %><% end %>
 
         <%= render "shared/flash" %>
         <%# T1 — from md up the page wrapper sheds its padding and reaches 1px past the frame, which

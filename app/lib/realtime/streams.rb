@@ -157,9 +157,16 @@ module Realtime
       "#{tenant(host.organization_id)}server_host:#{host.id}"
     end
 
-    # Lista cron monitor dell'organizzazione (righe + stats).
+    # Cron monitor list of the organization: page-refresh only (per-viewer re-fetch). Rendered rows
+    # never go here, see project_crons.
     def crons(organization)
       "#{tenant(organization)}crons"
+    end
+
+    # Monitor rows of ONE project: the replaced row (HTML) reaches only the viewers who see that
+    # project, like project_uptime and project_errors (CYRA-271, CYRA-1040).
+    def project_crons(project)
+      "#{tenant(project.organization_id)}crons:project:#{project.id}"
     end
 
     # Stream del singolo cron monitor (prepend check-in nella show, labels).

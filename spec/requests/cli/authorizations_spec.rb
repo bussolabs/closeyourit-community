@@ -188,4 +188,29 @@ RSpec.describe "Cli::Authorizations (approvazione device-flow)", type: :request 
     post cli_authorize_deny_path(user_code: "ZZZZ-ZZZZ")
     expect(response).to have_http_status(:ok)
   end
+
+  # CYRA-1044 — while impersonating, the approval would mint a 90-day token of the impersonated
+  # account that the impersonation log never records.
+  describe "during an impersonation" do
+    let(:god) { create(:account, god: true) }
+
+    before do
+      enable_two_factor!(god)
+      post login_path, params: { email: god.email, password: "Secret123!" }
+      complete_two_factor(god)
+      start_impersonation_as(god, account_id: account.id)
+    end
+
+    it "the authorization page is refused" do
+      get cli_authorize_path(user_code: live_grant.user_code)
+      expect(response).to redirect_to(root_path)
+    end
+
+    it "approving is refused and the grant stays untouched" do
+      grant = live_grant
+      post cli_authorize_approve_path(user_code: grant.user_code), params: { organization_id: organization.id }
+      expect(response).to redirect_to(root_path)
+      expect(grant.reload).not_to be_approved
+    end
+  end
 end

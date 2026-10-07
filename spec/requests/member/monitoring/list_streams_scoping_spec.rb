@@ -197,4 +197,26 @@ RSpec.describe "Sottoscrizioni delle liste di controllo", type: :request do
       expect(streams).not_to include(Realtime::Streams.project_errors(project_b))
     end
   end
+
+  # CYRA-1040 — the cron list used to receive every row on the org stream.
+  describe "rendered rows of the cron monitors" do
+    it "subscribes to the rows of every visible project" do
+      sign_in(owner)
+      get member_monitoring_cron_monitors_path
+
+      streams = subscribed_streams(response.body)
+      expect(streams).to include(Realtime::Streams.project_crons(project_a))
+      expect(streams).to include(Realtime::Streams.project_crons(project_b))
+    end
+
+    it "a member scoped to one project does not subscribe to the rows of the other" do
+      create(:project_membership, account: member, project: project_a)
+      sign_in(member)
+      get member_monitoring_cron_monitors_path
+
+      streams = subscribed_streams(response.body)
+      expect(streams).to include(Realtime::Streams.project_crons(project_a))
+      expect(streams).not_to include(Realtime::Streams.project_crons(project_b))
+    end
+  end
 end

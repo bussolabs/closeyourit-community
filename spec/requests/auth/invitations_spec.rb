@@ -53,10 +53,30 @@ RSpec.describe "Auth::Invitations", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
     end
 
-    it "email di un account già esistente → collega la membership e reindirizza al login, senza auto-login (CYRA-164)" do
+    # CYRA-1042 — the accept link is known to the inviter: an existing account joins only when its
+    # owner is signed in. Before, anyone with the link forced the membership (CYRA-164).
+    it "email of an existing account, nobody signed in → sent to the login, nothing accepted" do
       create(:account, email: "new@example.com")
       patch invitation_path(token), params: { name: "Bob", password: "Secret123!", password_confirmation: "Secret123!" }
-      expect(response).to redirect_to(login_path) # NON root_path: nessun auto-login coi dati dell'invito
+      expect(response).to redirect_to(login_path)
+      expect(invitation.reload).not_to be_accepted
+      expect(invitation.organization.accounts.exists?(email: "new@example.com")).to be(false)
+    end
+
+    it "email of an existing account, someone else signed in → sent to the login, nothing accepted" do
+      create(:account, email: "new@example.com")
+      other = create(:account, email: "other@example.com")
+      post login_path, params: { email: other.email, password: "Secret123!" }
+      patch invitation_path(token)
+      expect(response).to redirect_to(login_path)
+      expect(invitation.reload).not_to be_accepted
+    end
+
+    it "email of an existing account, its owner signed in → joins the organization" do
+      invitee = create(:account, email: "new@example.com")
+      post login_path, params: { email: invitee.email, password: "Secret123!" }
+      patch invitation_path(token)
+      expect(response).to redirect_to(root_path)
       expect(invitation.reload).to be_accepted
       expect(invitation.organization.accounts.exists?(email: "new@example.com")).to be(true)
     end

@@ -28,6 +28,8 @@ namespace :valhalla do
   # Cruscotto di salute tecnica del sistema (god): backlog/falliti SolidQueue, tabelle in
   # crescita sul primary, stato dei servizi esterni collegati.
   resource :health, only: :show, controller: "health"
+  # "Update now" of a community install (CYRA-1035); answers 404 anywhere else.
+  resource :instance_update, path: "update", only: %i[show create]
 end
 
 # Impersonation god → account (top-level: l'uscita deve funzionare mentre Current.account è il membro).

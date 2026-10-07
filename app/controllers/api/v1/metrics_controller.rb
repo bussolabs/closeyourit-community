@@ -6,12 +6,8 @@ module Api
     # campione o un array (volume alto). Il :project_id del path deve combaciare col progetto del
     # token (anti-BOLA). Persistenza async via Metrics::IngestJob. Envelope { data: { accepted } }.
     class MetricsController < Api::V1::IngestBaseController
-      # Cap byte in TESTA alla catena (CYRA-112): l'autenticazione ingest, senza bearer né X-Sentry-Auth,
-      # legge params[:sentry_key] e con ciò forza il parse del body. Un prepend precede auth e parse, così
-      # un batch enorme — anche anonimo o malformato — riceve 413 senza consumare risorse. Il cap sul
-      # NUMERO di campioni (R413-METRIC-004) resta in #create: contare gli item richiede comunque il parse.
-      prepend_before_action :enforce_byte_cap!
-
+      # The byte cap lives in IngestBaseController (CYRA-112, CYRA-1039); the cap on the NUMBER of
+      # samples (R413-METRIC-004) stays in #create: counting the items needs the parse anyway.
       rescue_from ActionDispatch::Http::Parameters::ParseError do
         render_error("R422-METRIC-001", "Metrica malformata", status: :unprocessable_content)
       end
@@ -30,10 +26,12 @@ module Api
 
       private
 
-      def enforce_byte_cap!
-        return if request.content_length.to_i <= Metrics::Constants::MAX_BYTES
+      def byte_cap
+        Metrics::Constants::MAX_BYTES
+      end
 
-        render_error("R413-METRIC-006", "Payload delle metriche troppo grande", status: :content_too_large)
+      def byte_cap_error_code
+        "R413-METRIC-006"
       end
 
       # Body = singolo oggetto JSON o array (Rails wrappa un array top-level in params["_json"]).

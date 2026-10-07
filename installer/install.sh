@@ -10,10 +10,14 @@
 #
 # Non-interactive use: set DOMAIN, ACME_EMAIL, ADMIN_EMAIL (and SMTP_* if wanted) beforehand.
 # CLOSEYOURIT_VERSION picks a version; the default is the latest release.
+# A mirror can stand in for GitHub: CLOSEYOURIT_RELEASES_API, CLOSEYOURIT_RELEASES_RAW and
+# CLOSEYOURIT_IMAGE, kept in .env for updates.
 set -euo pipefail
 
 REPO="bussolabs/closeyourit-community"
 HOME_DIR="${CLOSEYOURIT_HOME:-/opt/closeyourit}"
+RELEASES_API="${CLOSEYOURIT_RELEASES_API:-https://api.github.com/repos/$REPO}"
+RELEASES_RAW="${CLOSEYOURIT_RELEASES_RAW:-https://raw.githubusercontent.com/$REPO}"
 
 say() { printf '%s\n' "$*"; }
 fail() { printf '\nCloseYourIt installer: %s\n' "$*" >&2; exit 1; }
@@ -76,14 +80,17 @@ if [ -n "$server_ip" ] && [ "$server_ip" != "$domain_ip" ]; then
   say "The HTTPS certificate is issued only once the domain points here."
 fi
 
-VERSION="${CLOSEYOURIT_VERSION:-$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" | sed -nE 's/.*"tag_name": *"v?([^"]+)".*/\1/p' | head -1)}"
+VERSION="${CLOSEYOURIT_VERSION:-$(curl -fsSL "$RELEASES_API/releases/latest" | sed -nE 's/.*"tag_name": *"v?([^"]+)".*/\1/p' | head -1)}"
 VERSION="${VERSION#v}"
 [ -n "$VERSION" ] || fail "could not read the latest version from GitHub"
 
 say ""
 say "→ downloading CloseYourIt $VERSION files"
 mkdir -p "$HOME_DIR/backups" "$HOME_DIR/ingest"
-raw="https://raw.githubusercontent.com/$REPO/v$VERSION/installer"
+# Before the first start, or Docker creates them owned by root and the app cannot leave a request.
+install -d -m 755 "$HOME_DIR/updates" "$HOME_DIR/updates/status"
+install -d -m 755 -o 1000 -g 1000 "$HOME_DIR/updates/inbox"
+raw="$RELEASES_RAW/v$VERSION/installer"
 for file in compose.yml Caddyfile initdb.sql nats.conf closeyourit; do
   curl -fsSL "$raw/$file" -o "$HOME_DIR/$file.download"
 done
@@ -131,6 +138,9 @@ BACKUP_S3_BUCKET=
 INGEST_ENABLED=false
 INGEST_UPSTREAM=app:80
 EOF
+for key in CLOSEYOURIT_RELEASES_API CLOSEYOURIT_RELEASES_RAW CLOSEYOURIT_IMAGE; do
+  if [ -n "${!key:-}" ]; then printf '%s=%s\n' "$key" "${!key}" >> "$HOME_DIR/.env"; fi
+done
 printf '%s' "$nats_password" > "$HOME_DIR/ingest/nats_password"
 printf 'NATS_PASSWORD=%s\n' "$nats_password" > "$HOME_DIR/ingest/nats.env"
 openssl rand -base64 32 | tr -d '\n' > "$HOME_DIR/ingest/envelope_key"
@@ -156,6 +166,10 @@ say "→ nightly backup at 03:00 (the last 7 are kept)"
 cat > /etc/cron.d/closeyourit <<'EOF'
 0 3 * * * root /usr/local/bin/closeyourit backup >> /var/log/closeyourit-backup.log 2>&1
 EOF
+
+say "→ updates from the app (Administration, Update now)"
+# Releases older than CYRA-1035 lack the command: the install goes on without the button.
+/usr/local/bin/closeyourit enable updates > /dev/null 2>&1 || say "  not in this version: later, closeyourit update && closeyourit enable updates"
 
 say ""
 say "✔ CloseYourIt $VERSION is running"

@@ -787,6 +787,10 @@ namespace :member do
       resources :answers, only: :create, module: :questions
       resource :closure, only: :update, module: :questions
     end
+    # CYAU-235 — a person marks a decision the supporter took alone as seen; it leaves "To review".
+    resources :supporter_decisions, path: "decisions", only: [], module: :tickets do
+      patch :seen, on: :member
+    end
     # Collegamenti ticket↔ticket del gate duplicati: nascono SOLO dal flusso di confronto
     # (Ticketing::ResolveDuplicate); qui la sola rimozione (gate tickets.edit).
     resources :links, only: :destroy, module: :tickets

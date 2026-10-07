@@ -46,6 +46,38 @@
             <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= answer.created_at.strftime("%d/%m · %H:%M") %></span>
           </div>
           <%= render Ui::MarkdownComponent.new(text: answer.body, class: "mt-1 text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed") %>
+          <%# CYAU-235 — the supporter's answer says so, says why, and waits to be seen by a person. %>
+          <% if answer.origin_agent? && (decision = supporter_decision_for(question)) %>
+            <% evidence = decision.evidence %>
+            <div class="mt-2 flex flex-wrap items-center gap-1.5">
+              <%= render Ui::BadgeComponent.new(label: t("member.tickets.questions.supporter.answer"), color: :violet, icon: "life-buoy", size: :sm,
+                    test_id: "ticket-answer-supporter") %>
+              <% if evidence["source_status"] == "no_written_source" %>
+                <%= render Ui::BadgeComponent.new(label: t("member.tickets.questions.supporter.no_written_source"), color: :amber, icon: "triangle-alert", size: :sm,
+                      test_id: "ticket-answer-no-written-source") %>
+              <% end %>
+              <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.questions.supporter.risk", score: decision.risk_score) %></span>
+              <% if decision.seen_at.nil? %>
+                <%= render Ui::BadgeComponent.new(label: t("member.tickets.questions.supporter.to_review"), color: :amber, icon: "eye", size: :sm,
+                      test_id: "ticket-answer-to-review") %>
+                <% if can_manage %>
+                  <%= button_to t("member.tickets.questions.supporter.mark_seen"), seen_member_ticket_supporter_decision_path(ticket, decision),
+                        method: :patch, form_class: "inline",
+                        class: "text-[11.5px] font-medium text-indigo-700 dark:text-indigo-300 hover:underline",
+                        data: { test: "ticket-answer-mark-seen" } %>
+                <% end %>
+              <% end %>
+            </div>
+            <dl class="mt-2 space-y-1 text-[12px] text-gray-600 dark:text-zinc-400" data-test="ticket-answer-supporter-why">
+              <% { "rationale" => "why", "reasons_against" => "against", "assumptions" => "assumptions", "undo" => "undo" }.each do |key, label| %>
+                <% next if evidence[key].blank? %>
+                <div><dt class="inline font-medium text-zinc-700 dark:text-zinc-300"><%= t("member.tickets.questions.supporter.#{label}") %>:</dt> <dd class="inline"><%= evidence[key] %></dd></div>
+              <% end %>
+              <% if Array(evidence["sources"]).any? %>
+                <div><dt class="inline font-medium text-zinc-700 dark:text-zinc-300"><%= t("member.tickets.questions.supporter.sources") %>:</dt> <dd class="inline font-mono text-[11.5px]"><%= Array(evidence["sources"]).join(", ") %></dd></div>
+              <% end %>
+            </dl>
+          <% end %>
         </div>
       <% end %>
 

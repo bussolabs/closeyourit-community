@@ -401,6 +401,17 @@ module Ticketing
       events.where(action: "status_changed").maximum(:created_at) || created_at
     end
 
+    # Answered questions as decisions taken (CYAU-240), oldest first: the work under review and the
+    # review itself must see them, or a choice settled by an answer reads as a choice taken alone.
+    # A reader who is not internal passes `questions.readable_by(...)`, or reads the internal ones.
+    def answered_question_decisions(scope = questions)
+      scope.chronological.where.not(answered_at: nil).includes(:resolved_answer, :answers).filter_map do |question|
+        answer = question.resolved_answer || question.answers.last
+        { question: question.body, answer: answer.body } if answer
+      end
+    end
+
+
     private
 
     # Entra in uno status done → timbra l'istante (una sola volta: done→done conserva

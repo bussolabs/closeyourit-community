@@ -36,7 +36,8 @@ module Cli
         # Il dettaglio è il canale d'analisi: espone anche la guidance risolta del progetto (CYRA-74),
         # pre-calcolata qui e passata via params così la serializzazione non fa query extra.
         guidance = ::Guidance::Resolve.call(project: @ticket.project)
-        render_ok(TicketSerializer.new(@ticket, params: { guidance: guidance }))
+        answered = @ticket.questions.readable_by(Current.account, organization: Current.organization)
+        render_ok(TicketSerializer.new(@ticket, params: { guidance: guidance, answered_questions: answered }))
       end
 
       def create

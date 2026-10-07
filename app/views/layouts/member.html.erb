@@ -55,6 +55,7 @@
             <%= button_to t("impersonations.exit"), impersonation_path, method: :delete, class: "ml-auto inline-flex items-center h-7 px-2.5 rounded-md text-[12px] font-medium text-amber-800 dark:text-amber-200 bg-white dark:bg-zinc-900 border border-amber-300 dark:border-amber-500/50 hover:bg-amber-100 dark:hover:bg-amber-500/25", data: { test: "impersonation-exit" } %>
           </div>
         <% end %>
+        <% if (instance_update = instance_update_notice) %><%= render "shared/instance_update_strip", update: instance_update %><% end %>
 
         <%# CYRA-825 — una pagina che si ridisegna a pezzi si prende il contenitore dei messaggi:
             l'esito di un'azione deve arrivare col pezzo ridisegnato, e qui fuori resterebbe quello

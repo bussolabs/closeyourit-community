@@ -76,7 +76,15 @@ module Ui
     def table_options
       classes = [ "ui-table w-full text-left", ("ui-table--stacked" if @stacked), ("ui-table--compact" if @compact),
                   *STICKY_SIDES.fetch(@sticky, []) ].compact.join(" ")
-      { class: classes, "aria-label": @label, data: @table_data.presence }.compact
+      { class: classes, "aria-label": @label, data: table_data.presence }.compact
+    end
+
+    # C42 — a sticky <thead> sticks to the table's own overflow box, never to the page: the controller
+    # moves it while the page scrolls. A `scroll_y:` table scrolls itself, so its CSS sticky works.
+    def table_data
+      return @table_data unless head? && !@scroll_y
+
+      @table_data.merge(controller: [ "ui--sticky-head", @table_data[:controller] ].compact.join(" "))
     end
 
     def grouped? = @grouped

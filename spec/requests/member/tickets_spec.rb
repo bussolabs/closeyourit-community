@@ -1043,6 +1043,19 @@ RSpec.describe "Member::Tickets", type: :request do
       expect(response.body).not_to include("value=\"#{foreign.id}\"")
     end
 
+    # CYRA-1043 — same organization, but outside the member's scope: nothing of it may show up.
+    it "with ?project_id of a project of the same org the member cannot see → normal form, no leak" do
+      sign_in(member)
+      hidden = create(:project, name: "Hidden Same-Org Project", organization: org)
+      get new_member_ticket_path(project_id: hidden.id)
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('data-test="ticket-project"')
+      expect(response.body).not_to include('data-test="ticket-project-locked"')
+      expect(response.body).not_to include(ERB::Util.html_escape(hidden.name))
+      expect(response.body).not_to include(hidden.key)
+      expect(response.body).not_to include("value=\"#{hidden.id}\"")
+    end
+
     context "prefill piattaforma" do
       it "progetto con una sola piattaforma → la preseleziona (a prescindere dal profilo)" do
         platform = create(:platform, organization: org)
@@ -1053,6 +1066,18 @@ RSpec.describe "Member::Tickets", type: :request do
                  .at_css(%(select[data-test="ticket-platforms"] option[value="#{platform.id}"]))
         expect(option).to be_present
         expect(option["selected"]).to be_present
+      end
+
+      # CYRA-1043 — the single platform of a project the member cannot see must not be pre-checked.
+      it "hidden project of the same org with one platform → no preselection" do
+        hidden = create(:project, organization: org)
+        platform = create(:platform, organization: org)
+        hidden.project_platforms.create!(platform: platform)
+        sign_in(member)
+        get new_member_ticket_path(project_id: hidden.id)
+        option = Nokogiri::HTML(response.body)
+                 .at_css(%(select[data-test="ticket-platforms"] option[value="#{platform.id}"]))
+        expect(option["selected"]).to be_nil
       end
 
       it "progetto con più piattaforme e nessun platform_code → nessuna preselezione" do

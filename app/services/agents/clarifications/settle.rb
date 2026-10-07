@@ -15,8 +15,10 @@ module Agents
     class Settle < ApplicationService
       include Agents::Workflows::ConcludedTicketGate
 
-      def initialize(clarification:, author:, answers:, covers_round: false, response_comment: nil)
+      # `origin: :agent` marks the supporter's answers (CYAU-235): a person's answer stays :human.
+      def initialize(clarification:, author:, answers:, covers_round: false, response_comment: nil, origin: :human)
         @clarification = clarification
+        @origin = origin
         @author = author
         @answers = Array(answers)
         @covers_round = covers_round
@@ -68,7 +70,8 @@ module Agents
 
       def answer!(question, body, choice)
         Ticketing::Questions::Answer.call(
-          question: question, author: @author, body: body, covers_round: @covers_round, choice_index: choice
+          question: question, author: @author, body: body, covers_round: @covers_round, choice_index: choice,
+          origin: @origin
         )
       end
 

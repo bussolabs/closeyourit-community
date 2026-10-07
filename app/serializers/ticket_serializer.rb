@@ -58,4 +58,12 @@ class TicketSerializer < ApplicationSerializer
   attribute :guidance, if: proc { params[:guidance] } do |_ticket|
     Guidance::ResolutionSerializer.new(params[:guidance]).serializable_hash
   end
+
+  # Answered questions (CYAU-240): every answer is a decision taken on the ticket. Without them the diff
+  # review judged a choice settled by an answer as a choice the implementer took alone.
+  # Detail (show) only, like guidance: the index pays no query and keeps its shape. The param is the
+  # questions the reader may see (Ticketing::Question.readable_by), never all of them.
+  attribute :answered_questions, if: proc { params[:answered_questions] } do |ticket|
+    ticket.answered_question_decisions(params[:answered_questions])
+  end
 end

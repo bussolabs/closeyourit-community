@@ -57,10 +57,11 @@ it:
       # Ramo "account già registrato su questa email": la password del modulo verrebbe scartata
       # (AcceptInvitation collega l'account esistente), quindi non la si chiede nemmeno.
       existing_title: "Hai già un account con questa email"
-      existing_body: "Ti uniamo a %{organization} con l'account che hai già: entra con la password che usi di solito. Se non la ricordi, usa «Password dimenticata» dalla pagina di accesso."
-      existing_submit: "Unisciti e vai all'accesso"
+      existing_body: "Il tuo account esistente sarà aggiunto a %{organization}: accedi con quello per accettare. Se non ricordi la password, usa «Password dimenticata» dalla pagina di accesso."
+      existing_submit: "Unisciti a %{organization}"
+      existing_login: "Accedi per accettare"
       accepted: "Benvenuto a bordo."
-      linked_existing: "Sei stato aggiunto all'organizzazione. Accedi con le tue credenziali per continuare."
+      login_required: "Accedi come %{email} per accettare questo invito."
       invalid_token: "Questo invito non è valido o è scaduto."
     password_rules:
       legend: "La password deve contenere:"

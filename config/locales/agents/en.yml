@@ -1,5 +1,12 @@
 en:
   agents:
+    supporter:
+      errors:
+        not_found: Question round not found.
+        disabled: The supporter is switched off on this project.
+        no_service_account: The machine has no service account to answer with.
+        stale: The questions changed meanwhile. Take the updated round.
+        not_settled: The answers were not recorded. The round stays with a person.
     # CYRA-675 — fixed-length service line, same reason as the clarification one: a comment has a
     # character cap and the agent summary does not. The full summary is in the Automation panel.
     already_done:

@@ -12,29 +12,27 @@ RSpec.describe Crons::RecordCheckIn, "broadcasts", type: :service do
   let(:organization) { create(:organization) }
   let(:project) { create(:project, organization:) }
   let(:crons_stream) { Realtime::Streams.crons(organization) }
+  let(:project_stream) { Realtime::Streams.project_crons(project) }
 
   def record(slug: "nightly") = described_class.call(project:, slug:)
 
-  describe "stream crons (lista org)" do
-    it "esattamente 2 broadcast (riga monitor + pill header)" do
-      expect { record }.to have_broadcasted_to(crons_stream).twice
-    end
-
-    it "replace della riga monitor con target dom_id(monitor)" do
-      record   # crea il monitor al primo check-in
+  describe "list streams" do
+    it "replaces the monitor row on the PROJECT stream, with target dom_id(monitor)" do
+      record   # the monitor is born at the first check-in
       monitor = project.cron_monitors.sole
 
-      expect { record }.to have_broadcasted_to(crons_stream)
+      expect { record }.to have_broadcasted_to(project_stream).once
         .with(a_string_including("crons_monitor_#{monitor.id}"))
     end
 
-    # Le pill NON viaggiano più renderizzate: erano conteggi org-wide su un target presente in
-    # ogni pagina cron, quindi leggibili anche da chi vede solo alcuni progetti (CYRA-257).
-    it "per le pill manda un refresh, non i conteggi org-wide renderizzati" do
+    # The rendered row must not travel on the org stream: there it reached viewers who cannot see
+    # the project (CYRA-1040). The org stream carries only the refresh for the pills (CYRA-257).
+    it "sends only a refresh on the org stream, never rendered HTML" do
       seen = []
-      expect { record }.to have_broadcasted_to(crons_stream).twice.with { |html| seen << html }
+      expect { record }.to have_broadcasted_to(crons_stream).once.with { |html| seen << html }
 
       expect(seen).to include(a_string_including(%(action="refresh")))
+      expect(seen.join).not_to include("crons_monitor_")
       expect(seen.join).not_to include("crons_stats")
     end
   end
@@ -56,7 +54,7 @@ RSpec.describe Crons::RecordCheckIn, "broadcasts", type: :service do
       monitor = project.cron_monitors.sole
       monitor.update!(status: :missed, missed_alerted_at: Time.current)
 
-      expect { record }.to have_broadcasted_to(crons_stream)
+      expect { record }.to have_broadcasted_to(project_stream)
         .with(a_string_including("crons_monitor_#{monitor.id}"))
       expect(monitor.reload).to be_status_ok
     end
@@ -103,6 +101,11 @@ RSpec.describe Crons::RecordCheckIn, "broadcasts", type: :service do
   describe "isolamento tenant" do
     it "non broadcasta sullo stream crons di un'ALTRA organizzazione" do
       other = Realtime::Streams.crons(create(:organization))
+      expect { record }.not_to have_broadcasted_to(other)
+    end
+
+    it "does not broadcast the row on the stream of ANOTHER project of the same organization" do
+      other = Realtime::Streams.project_crons(create(:project, organization:))
       expect { record }.not_to have_broadcasted_to(other)
     end
   end

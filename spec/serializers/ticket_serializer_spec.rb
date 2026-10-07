@@ -44,4 +44,24 @@ RSpec.describe TicketSerializer do
     expect(json["scenarios"].first).to include("title", "step_given", "step_when", "step_then", "step_expected")
     expect(json["conditions"]).to eq([ { "text" => "la mail parte" } ])
   end
+
+  # CYAU-240 — the diff review judged a choice settled by an answer as a choice the implementer took
+  # alone, because the ticket detail never carried the answers.
+  describe "answered_questions (CYAU-240)" do
+    it "lists the answered questions with the answer that settled them, oldest first, only in the detail" do
+      ticket = create(:ticket)
+      first = create(:ticket_question, :from_agent, ticket: ticket, body: "Short text: mask it or keep it?")
+      answer = create(:ticket_answer, question: first, body: "Keep it as it is.")
+      first.update_columns(answered_at: Time.current, resolved_answer_id: answer.id)
+      create(:ticket_question, ticket: ticket, body: "Still open?")
+
+      detail = JSON.parse(TicketSerializer.new(ticket.reload, params: { answered_questions: ticket.questions }).serialize)
+      list = JSON.parse(TicketSerializer.new(ticket).serialize)
+
+      expect(detail["answered_questions"]).to eq([
+        { "question" => "Short text: mask it or keep it?", "answer" => "Keep it as it is." }
+      ])
+      expect(list).not_to have_key("answered_questions")
+    end
+  end
 end

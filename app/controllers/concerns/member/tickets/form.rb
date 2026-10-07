@@ -50,6 +50,8 @@ module Member
         # simplecov:disable @ticket è sempre assegnato (new/create) prima di questa chiamata → `@ticket&` else irraggiungibile
         project_id = @ticket&.project_id
         # simplecov:enable
+        # Only a visible project narrows the prefill: a hidden id must not pick its platform (CYRA-1043).
+        project_id = nil unless @projects.any? { |project| project.id == project_id }
         Ticketing::FormOptions.preselected_platform_ids(organization: Current.organization,
                                                         account: Current.account, project_id: project_id)
       end
@@ -59,7 +61,9 @@ module Member
       def lock_project(project_id)
         return if project_id.blank?
 
-        project = Current.organization.projects.find_by(id: project_id)
+        # Visible scope, not the whole organization: a scoped member must not learn a project
+        # it cannot see from its id (CYRA-1043).
+        project = visible.projects.find_by(id: project_id)
         return if project.nil?
 
         @platforms = project.platforms.active.ordered

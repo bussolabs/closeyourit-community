@@ -22,3 +22,4 @@ it:
       back: "Torna a CloseYourIt"
       errors:
         no_organization: "Scegli un'organizzazione da autorizzare."
+        impersonating: "Non puoi autorizzare una CLI mentre impersoni un altro account."

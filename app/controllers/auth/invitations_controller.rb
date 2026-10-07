@@ -7,9 +7,17 @@ module Auth
     def edit
       @errors = {}
       @existing_account = existing_account?
+      @signed_in_as_invitee = signed_in_as_invitee?
     end
 
     def update
+      # The accept link is known to whoever sent the invitation: an existing account joins only
+      # when its owner is the one signed in (CYRA-1042).
+      if existing_account? && !signed_in_as_invitee?
+        session[:return_to_after_authenticating] = edit_invitation_url(@token)
+        return redirect_to login_path, alert: t("auth.invitations.login_required", email: @invitation.email)
+      end
+
       result = Connections::AcceptInvitation.call(
         invitation: @invitation,
         name: params[:name],
@@ -23,8 +31,7 @@ module Auth
           start_new_session_for(accepted.account)
           redirect_to after_authentication_url, notice: t("auth.invitations.accepted")
         else
-          # Account preesistente: collegato all'org ma NON auto-loggato (sicurezza) → deve autenticarsi.
-          redirect_to login_path, notice: t("auth.invitations.linked_existing")
+          redirect_to after_authentication_url, notice: t("auth.invitations.accepted")
         end
       else
         @errors = result.error.details || {}
@@ -42,6 +49,11 @@ module Auth
     # funzionava. Non è una fuga di informazione: l'email invitata è già scritta in pagina.
     def existing_account?
       Accounts::Account.exists?(email: @invitation.email)
+    end
+
+    # true_account, not account: an impersonation must not accept on behalf of the invitee.
+    def signed_in_as_invitee?
+      authenticated? && Current.true_account.email == @invitation.email
     end
 
     def set_invitation_by_token

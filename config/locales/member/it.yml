@@ -2390,6 +2390,18 @@ it:
           other: "%{count} dalla lavorazione"
         shared_label: Visibile anche al cliente
         blocking: Blocca il lavoro
+        supporter:
+          answer: Risposta del supporter
+          no_written_source: Senza fonte scritta
+          risk: "rischio %{score}/10"
+          to_review: Da rivedere
+          mark_seen: Segna come vista
+          seen_done: Risposta segnata come vista.
+          why: Perché
+          against: Ragioni contro
+          assumptions: Ipotesi
+          undo: Se è sbagliata
+          sources: Fonti
         from_work: Dalla lavorazione
         shared: Condivisa
         withdrawn: Ritirata

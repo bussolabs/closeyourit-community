@@ -36,8 +36,11 @@ RSpec.describe "Ui::Select — the panel is not cut by a scrolling column", :js,
   it "opens the dependency picker whole on screen, above everything around it" do
     page.driver.browser.manage.window.resize_to(1400, 760)
     visit member_ticket_path(ticket)
+    # The related-knowledge card loads late and removes itself when empty: the page shrinks, the column
+    # scrolls to compensate, and that scroll closed the panel when it landed after the click.
+    expect(page).to have_no_css("[data-knowledge-related-target='loading']:not([hidden])", visible: :all, wait: 8)
 
-    trigger = find("select[data-test='dependency-blocker-select']", visible: :all)
+    trigger =find("select[data-test='dependency-blocker-select']", visible: :all)
               .find(:xpath, "..").find("button[aria-haspopup='listbox']")
     trigger.scroll_to(trigger, align: :center)
     trigger.click

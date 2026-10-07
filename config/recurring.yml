@@ -609,5 +609,11 @@ production: &schedule
     queue: batch
     schedule: every day at 3am
 
+  # CYRA-1035 — a community install asks for the latest release; elsewhere the job returns at once.
+  check_instance_release:
+    class: Instance::CheckReleaseJob
+    queue: maintenance
+    schedule: every 6 hours
+
 # Development runs the production schedule, so alerts and checks fire locally too (CYRA-932).
 development: *schedule

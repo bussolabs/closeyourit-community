@@ -8,6 +8,10 @@
       Monitor nuovi (nati al primo check-in) compaiono al reload, come negli altri index Monitor. %>
   <%= turbo_refreshes_with method: :morph, scroll: :preserve %>
   <%= turbo_stream_from Realtime::Streams.crons(current_organization) %>
+  <%# Rows travel on a stream per project, so they never reach who cannot see it (CYRA-1040). %>
+  <% @projects.each do |stream_project| %>
+    <%= turbo_stream_from Realtime::Streams.project_crons(stream_project) %>
+  <% end %>
   <%= render Ui::PageHeaderComponent.new(
         title: t("member.crons.title"),
         subtitle: t("member.crons.help_title"),

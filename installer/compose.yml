@@ -8,13 +8,15 @@ name: closeyourit
 x-environment: &environment
   RAILS_ENV: production
   APP_GIT_TAG: v${CLOSEYOURIT_VERSION:?set by install.sh}
+  # Turns on the update notice and the Update now button for the administrator (CYRA-1035).
+  CLOSEYOURIT_SELF_HOSTED: "true"
   DATABASE_URL: postgres://closeyourit:${POSTGRES_PASSWORD}@postgres:5432/closeyourit
   QUEUE_DATABASE_URL: postgres://closeyourit:${POSTGRES_PASSWORD}@postgres:5432/closeyourit_queue
   CACHE_DATABASE_URL: postgres://closeyourit:${POSTGRES_PASSWORD}@postgres:5432/closeyourit_cache
   CABLE_DATABASE_URL: postgres://closeyourit:${POSTGRES_PASSWORD}@postgres:5432/closeyourit_cable
 
 x-app: &app
-  image: ghcr.io/bussolabs/closeyourit:${CLOSEYOURIT_VERSION:?set by install.sh}
+  image: ${CLOSEYOURIT_IMAGE:-ghcr.io/bussolabs/closeyourit}:${CLOSEYOURIT_VERSION:?set by install.sh}
   restart: unless-stopped
   env_file: .env
   volumes:
@@ -26,6 +28,11 @@ services:
     environment:
       <<: *environment
       SOLID_QUEUE_IN_PUMA: "false"
+    # Update requests go out through inbox; the host answers in status, read-only here (CYRA-1035).
+    volumes:
+      - storage:/rails/storage
+      - ./updates/inbox:/rails/updates/inbox
+      - ./updates/status:/rails/updates/status:ro
     depends_on:
       postgres:
         condition: service_healthy

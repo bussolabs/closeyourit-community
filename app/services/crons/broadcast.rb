@@ -8,12 +8,13 @@ module Crons
   module Broadcast
     module_function
 
-    # Stream crons dell'org (lista): replace della riga monitor (target dom_id(monitor)). Solo
-    # replace (no append): i monitor nati al primo check-in compaiono al reload — convenzione
-    # condivisa con errors/metrics/servers.
+    # Project stream (list): replace of the monitor row (target dom_id(monitor)). Per project, not
+    # org-wide: on the org stream the HTML reached viewers who cannot see the project (CYRA-1040).
+    # Replace only (no append): monitors born at the first check-in appear on reload, the same
+    # convention as errors/metrics/servers.
     def row(monitor)
       Turbo::StreamsChannel.broadcast_replace_to(
-        Realtime::Streams.crons(monitor.project.organization_id),
+        Realtime::Streams.project_crons(monitor.project),
         target: ActionView::RecordIdentifier.dom_id(monitor),
         partial: "member/monitoring/cron_monitors/monitor_row", locals: { monitor: monitor }
       )

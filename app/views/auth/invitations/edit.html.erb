@@ -23,15 +23,21 @@
     <p class="mt-1.5 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("auth.invitations.invited_by", name: @invitation.invited_by.name) %></p>
   <% end %>
 
-  <%# Account già registrato su questa email: AcceptInvitation collega quello e scarta la password del
-      modulo, quindi qui non si chiede nulla — si conferma e si va all'accesso. %>
+  <%# An account already exists for this email: only its owner, signed in, can accept (CYRA-1042).
+      Without that session the page sends to the login and comes back here afterwards. %>
   <% if @existing_account %>
     <p class="mt-5 text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="invite-existing">
       <%= t("auth.invitations.existing_body", organization: @invitation.organization.name) %>
     </p>
 
-    <%= form_with url: invitation_path(@token), method: :patch, class: "mt-5", data: { test: "invite-form" } do %>
-      <%= render Ui::ButtonComponent.new(label: t("auth.invitations.existing_submit"), type: "submit", size: :lg, test_id: "invite-submit", class: "w-full") %>
+    <% if @signed_in_as_invitee %>
+      <%= form_with url: invitation_path(@token), method: :patch, class: "mt-5", data: { test: "invite-form" } do %>
+        <%= render Ui::ButtonComponent.new(label: t("auth.invitations.existing_submit", organization: @invitation.organization.name), type: "submit", size: :lg, test_id: "invite-submit", class: "w-full") %>
+      <% end %>
+    <% else %>
+      <%= form_with url: invitation_path(@token), method: :patch, class: "mt-5", data: { test: "invite-form" } do %>
+        <%= render Ui::ButtonComponent.new(label: t("auth.invitations.existing_login"), type: "submit", size: :lg, test_id: "invite-login", class: "w-full") %>
+      <% end %>
     <% end %>
   <% else %>
   <%= form_with url: invitation_path(@token), method: :patch, class: "mt-5 space-y-4", data: { test: "invite-form" } do %>

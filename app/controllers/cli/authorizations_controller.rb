@@ -9,6 +9,10 @@ module Cli
 
     layout "auth"
 
+    # A CLI token issued here lasts 90 days as the impersonated account and the impersonation log
+    # records only start and end: approving or denying while impersonating is refused (CYRA-1044).
+    before_action :reject_impersonation!
+
     def show
       @grant = find_live_grant(params[:user_code])
       @organizations = account_organizations
@@ -48,6 +52,12 @@ module Cli
     end
 
     private
+
+    def reject_impersonation!
+      return unless Current.session&.impersonating?
+
+      redirect_to root_path, alert: t("cli.authorize.errors.impersonating")
+    end
 
     def render_show(status)
       @organizations = account_organizations

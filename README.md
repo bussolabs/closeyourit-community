@@ -19,6 +19,7 @@ a nightly backup. Then:
 | Command | Does |
 |---|---|
 | `closeyourit update` | backs up, installs the new version, goes back by itself if it does not answer |
+| `closeyourit enable updates` | lets the administrator update from the app (**Update now**); on by default on new installs |
 | `closeyourit backup` / `restore <file>` | database copies (the last 7 are kept) |
 | `closeyourit enable ingest` | queues supported telemetry after the app has authorized it; clients retry when authorization is unavailable |
 | `closeyourit doctor` | checks disk, certificate, version and backups |

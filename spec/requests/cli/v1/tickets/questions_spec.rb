@@ -196,5 +196,19 @@ RSpec.describe "Cli::V1::Tickets::Questions", type: :request do
       expect(response).to have_http_status(:not_found)
       expect(riservata.answers.count).to eq(0)
     end
+
+    # CYAU-240 added the answered questions to the ticket detail without this rule: a customer read
+    # the internal ones, work plan included, through the detail instead of the questions channel.
+    it "sees only the shared answered questions in the ticket detail" do
+      internal = domanda(body: "Does the plan touch the secrets file?")
+      shared = domanda(body: "Is Thursday fine?", audience: :shared)
+      internal.update_columns(answered_at: Time.current, resolved_answer_id: Ticketing::Answer.create!(question: internal, author: account, body: "Yes.").id)
+      shared.update_columns(answered_at: Time.current, resolved_answer_id: Ticketing::Answer.create!(question: shared, author: account, body: "Yes.").id)
+
+      get "/cli/v1/projects/#{project.id}/tickets/#{ticket.id}", headers: headers
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.dig("data", "answered_questions").pluck("question")).to eq([ "Is Thursday fine?" ])
+    end
   end
 end

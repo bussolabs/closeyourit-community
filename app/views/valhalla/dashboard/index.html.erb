@@ -15,6 +15,7 @@
     <% end %>
   <% end %>
 
+  <% if (instance_update = instance_update_notice) %><%= render "valhalla/dashboard/instance_update", update: instance_update %><% end %>
   <%= render "valhalla/dashboard/attention", items: @signals.attention %>
   <%= render "valhalla/dashboard/totals" %>
 

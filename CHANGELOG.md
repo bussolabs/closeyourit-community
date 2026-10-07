@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+## [0.178.0] - 2026-10-07
+
+### Fixed
+
+- **Le novità della 0.177.0 arrivano ora.** La versione 0.177.0 non era stata pubblicata: le sue novità entrano con questa.
+
+### Security
+
+- **Invii troppo grandi rifiutati.** Ogni canale di raccolta dati (log, visite, replay, web vitals, help desk) rifiuta subito un invio oltre 5 MB, come già facevano eventi e metriche.
+- **Cron monitor solo dei progetti visibili.** Gli aggiornamenti in tempo reale dei cron monitor arrivano soltanto a chi vede quel progetto. [Cron monitor](/member/monitoring/cron)
+- **Inviti con consenso.** Se l'email invitata ha già un account, l'invito si accetta solo dopo aver fatto accesso con quell'account: nessuno può aggiungerti a un'organizzazione al posto tuo.
+- **Nuovo ticket senza fughe.** Aprendo il modulo del nuovo ticket con un progetto fuori dal proprio ambito, il modulo non ne mostra più i dati. [Ticket](/member/tickets)
+- **Niente accessi CLI durante un'impersonazione.** Mentre impersona un utente, l'amministratore non può approvare o rifiutare un accesso CLI a suo nome.
+
+## [0.177.0] - 2026-10-07
+
+### Added
+
+- **Aggiornare dall'app.** Su un server community l'amministratore vede quando esce una versione nuova e cosa cambia. Con «Aggiorna ora» il server fa il backup, installa la versione nuova e torna indietro da solo se non risponde.
+- **Il supporter risponde alle domande.** Una macchina con il supporter acceso propone le risposte alle domande di chiarimento; il server le accetta solo se superano i controlli, altrimenti restano a una persona. Le risposte del supporter restano «Da rivedere» finché qualcuno non le segna come viste. [Ticket](/member/tickets)
+
+### Fixed
+
+- **Intestazioni delle tabelle sempre visibili.** Scorrendo una tabella lunga, i nomi delle colonne restano in cima alla pagina e non coprono più le righe nelle colonne che scorrono da sole.
+
 ## [0.176.1] - 2026-10-06
 
 ### Fixed

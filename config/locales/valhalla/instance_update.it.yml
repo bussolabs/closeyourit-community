@@ -1,0 +1,31 @@
+it:
+  valhalla:
+    instance_update:
+      title: "È uscita la %{version}"
+      title_current: "Versione %{version}"
+      badge:
+        available: Nuova versione
+        queued: In partenza
+        running: In corso
+        done: Fatto
+        failed: Non riuscito
+      intro: "Sei sulla %{current}. Ecco cosa cambia:"
+      downtime: "Prima di aggiornare viene fatto un backup del database. L'app resta ferma qualche minuto."
+      button: Aggiorna ora
+      dialog_title: "Aggiornare alla %{version}?"
+      dialog_body: "Prima un backup. Poi l'app si spegne per qualche minuto e riparte con la versione nuova. Se non risponde entro 3 minuti, torna da sola alla %{current}."
+      dialog_confirm: Sì, aggiorna
+      running_queued: "Aggiornamento richiesto. Il server parte entro un minuto."
+      running_running: "Aggiornamento in corso: backup, versione nuova, riavvio."
+      running_hint: "Non serve fare niente: la pagina si ricarica da sola quando l'app torna."
+      done: "Aggiornato alla %{version}. Backup fatto prima di partire: %{backup}"
+      failed_title: "La %{version} non è partita"
+      failed_body: "Sei di nuovo sulla %{current} e funziona. Se qualcosa si comporta male, rimetti il backup fatto prima di partire con questo comando sul server:"
+      restore_label: Rimetti il backup
+      enable_hint: "Per aggiornare da qui, accendi il bottone una volta dal terminale del server:"
+      enable_label: Accendi gli aggiornamenti dall'app
+      requested: "Aggiornamento alla %{version} richiesto. Il server parte entro un minuto."
+      not_requestable: "Adesso non si può aggiornare da qui: il server non risponde o un aggiornamento è già in corso."
+      strip_available: "È uscita la %{version}. Sei sulla %{current}."
+      strip_running: "Aggiornamento in corso. L'app può fermarsi per qualche minuto."
+      strip_open: Vai all'aggiornamento
