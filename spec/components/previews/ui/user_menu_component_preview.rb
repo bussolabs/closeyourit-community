@@ -34,7 +34,7 @@ module Ui
     # Header valhalla (god): solo nome + Esci.
     def valhalla
       render(Ui::UserMenuComponent.new(
-               name: "god@closeyour.it",
+               name: "god@example.com",
                logout_path: "#",
                trigger_test_id: "valhalla-user-menu",
                logout_test_id: "valhalla-logout"

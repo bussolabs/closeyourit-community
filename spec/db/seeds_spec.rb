@@ -44,3 +44,43 @@ RSpec.describe "db/seeds.rb in development" do
     expect(demo_counts(demo)).to eq(first)
   end
 end
+
+# CYRA-1041 — the seed runs at every production boot. Production keeps the administrator address it was
+# created with until GOD_EMAIL is set there: a different default would create a second administrator.
+RSpec.describe "db/seeds.rb in production" do
+  around do |example|
+    saved = ENV.values_at("GOD_EMAIL", "GOD_PASSWORD")
+    ENV.delete("GOD_EMAIL")
+    ENV["GOD_PASSWORD"] = "Sup3r-Secret-Pass!"
+    example.run
+  ensure
+    ENV["GOD_EMAIL"], ENV["GOD_PASSWORD"] = saved
+  end
+
+  def seed_in(env)
+    allow(Rails).to receive(:env).and_return(ActiveSupport::EnvironmentInquirer.new(env))
+    expect { load Rails.root.join("db/seeds.rb") }.to output.to_stdout
+  end
+
+  it "reuses the existing administrator instead of creating a second one" do
+    existing = Accounts::Account.create!(email: "god@closeyour.it", name: "Admin", god: true, password: "Another-Pass-1!")
+
+    seed_in("production")
+
+    expect(Accounts::Account.where(god: true).pluck(:id)).to eq([ existing.id ])
+  end
+
+  it "uses an example address outside production" do
+    seed_in("development")
+
+    expect(Accounts::Account.where(god: true).pluck(:email)).to eq([ "god@example.com" ])
+  end
+
+  it "takes the address from GOD_EMAIL when it is set" do
+    ENV["GOD_EMAIL"] = "owner@my-company.test"
+
+    seed_in("production")
+
+    expect(Accounts::Account.where(god: true).pluck(:email)).to eq([ "owner@my-company.test" ])
+  end
+end

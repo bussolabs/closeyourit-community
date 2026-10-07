@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.describe "Stored artifact integrity" do
   [ [ Artifacts::NativeSymbols::Read, Artifacts::NativeSymbol, Artifacts::NativeSymbols::Processor::MAX_BINARY ],
-    [ Artifacts::ProguardMaps::Read, Artifacts::ProguardMap, Artifacts::MAX_MAP ] ].each do |reader, model, limit|
+    [ Artifacts::ProguardMaps::Read, Artifacts::ProguardMap, Artifacts::MAX_PROGUARD_MAP ] ].each do |reader, model, limit|
     context reader.name do
       let(:bytes) { model == Artifacts::NativeSymbol ? File.binread(RbConfig.ruby) : Rails.root.join("spec/fixtures/artifacts/r8-9.4.28-mapping.txt").binread }
       let(:blob) do

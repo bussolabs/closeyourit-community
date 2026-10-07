@@ -13,7 +13,7 @@ RSpec.describe Dev::Personas do
     personas = described_class.all
     expect(personas).to be_present
     expect(personas.first).to include(:email, :password, :label, :role)
-    expect(personas.map { |p| p[:email] }).to include("god@closeyour.it")
+    expect(personas.map { |p| p[:email] }).to include("god@example.com")
   end
 
   it "in development ma senza file YAML → [] (guard file mancante)" do

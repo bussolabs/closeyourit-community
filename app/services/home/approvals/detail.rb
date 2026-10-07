@@ -78,12 +78,22 @@ module Home
         def delivered_work? = kind == "review" || DELIVERED_PHASES.include?(phase)
       end
 
-      def initialize(account:, organization:, visible_projects:, visible_tickets:, key:)
+      # A whole selection with one read per family instead of one per key, through the same builders
+      # and scopes as #call. → { key => Card | nil }. CYRA-1048
+      def self.call_many(account:, organization:, visible_projects:, visible_tickets:, keys:)
+        preloaded = SelectionPreload.new(account:, organization:, visible_tickets:, keys:)
+        keys.index_with do |key|
+          new(account:, organization:, visible_projects:, visible_tickets:, key:, preloaded:).call
+        end
+      end
+
+      def initialize(account:, organization:, visible_projects:, visible_tickets:, key:, preloaded: nil)
         @account = account
         @organization = organization
         @visible_projects = visible_projects
         @visible_tickets = visible_tickets
         @kind, @id = key.to_s.split(":", 2)
+        @preloaded = preloaded
       end
 
       # Famiglia fuori vocabolario → `nil`, come prima (chiave inventata nell'indirizzo = 404, non un
@@ -100,11 +110,10 @@ module Home
       # review bloccata NON esiste ancora un piano, quindi approvarlo o farlo rifare fallirebbe
       # `stale` (vedi Agents::Workflows::Unblock) — lì si sblocca, o si annulla del tutto.
       def agent_plan_card
-        workflow = Agents::Workflow.where(ticket_id: @visible_tickets.select(:id), cancelled_at: nil, completed_at: nil)
-                                   .includes(ticket: [ :project, :status ]).find_by(id: @id)
+        workflow = preloaded.workflow(@id)
         return nil if workflow.blank?
 
-        phase = workflow.phase
+        phase = Agents::Workflows::PhaseResolver.phase(workflow, preloaded.failed_phases(workflow))
         return nil unless Queue::HUMAN_GATED_PHASES.include?(phase)
 
         ticket = workflow.ticket
@@ -112,7 +121,7 @@ module Home
         return nil unless ticket.project.effective_cto == @account
 
         card(kind: "agent_plan", record: workflow, ticket: ticket, phase: phase,
-             plan: workflow.plans.reorder(version: :desc).first,
+             plan: preloaded.latest_plan(workflow),
              attempt: (last_review_failure(workflow) if phase == "review_blocked"),
              report: (ticket.current_work_report if DELIVERED_PHASES.include?(phase)),
              delivery_attempt: (latest_delivery_attempt(workflow) if DELIVERED_PHASES.include?(phase)),
@@ -137,15 +146,15 @@ module Home
                       can_manage?(workflow.ticket.project) ? %i[approve reject ask] : %i[ask]
         else blocked_decisions(workflow)
         end
-        askable(workflow, reassessable(workflow, decisions))
+        askable(workflow, reassessable(workflow, phase, decisions))
       end
 
       # CYRA-675 — «Rivaluta» si offre dove la domanda ha ancora senso, e a dirlo è il dominio
       # (Agents::Workflow#reassessable?), non un elenco di fasi ricopiato qui: la stessa regola la
       # rilegge sotto lock Workflows::Reassess, e due copie divergono al primo stato nuovo. Passa da
       # qui anche `awaiting_autopilot_approval`, e infatti non la ottiene: lì il codice è già scritto.
-      def reassessable(workflow, decisions)
-        workflow.reassessable? ? decisions + %i[reassess] : decisions
+      def reassessable(workflow, phase, decisions)
+        workflow.reassessable?(phase) ? decisions + %i[reassess] : decisions
       end
 
       # `review_blocked` dice che UNA review è fallita, non che la lavorazione sia per forza ferma: se la
@@ -156,14 +165,16 @@ module Home
       # morta uguale. Chiudere è di admin/owner (gate di Agents::Workflows::Cancel).
       def blocked_decisions(workflow)
         decisions = []
-        decisions << :approve if workflow.blocked_at? || workflow.stalled_review_phase
+        decisions << :approve if workflow.blocked_at? ||
+                                 workflow.stalled_review_phase_from(preloaded.failed_phases(workflow),
+                                                                    preloaded.open_phases(workflow))
         decisions << :reject if can_cancel_workflow?
         decisions << :ask
       end
 
       # Ticket in uno status review-gate di cui sono il revisore designato.
       def review_card
-        ticket = @visible_tickets.includes(:project, :status).find_by(id: @id)
+        ticket = preloaded.ticket(@id)
         return nil if ticket.blank? || !ticket.status.review_gate? || ticket.reviewer_id != @account.id
         return nil if ticket.status.category_done? # CYRA-316: status finale (config non-default), decisione superata
 
@@ -190,7 +201,7 @@ module Home
       # (Ticketing::AddComment#capture_clarification_response), chiudendola con un testo che non le
       # risponde e rimettendo il ticket in coda al triage. Si risponde lì, non si chiede qui.
       def askable(workflow, decisions)
-        return decisions if workflow.blank? || !workflow.clarifications.where(answered_at: nil).exists?
+        return decisions if workflow.blank? || !preloaded.asking?(workflow)
 
         decisions - %i[ask]
       end
@@ -253,8 +264,7 @@ module Home
       def latest_delivery_attempt(workflow)
         return if workflow.nil?
 
-        workflow.attempts.where(phase: "autopilot", status: :approved)
-                .where("result ? 'work_report'").order(:finished_at, :created_at).last
+        preloaded.delivery_attempt(workflow)
       end
 
       def can_manage?(project)
@@ -264,11 +274,14 @@ module Home
       # Annullare l'automazione è riservato ad admin/owner (Agents::Workflows::Cancel): senza il
       # ruolo il pulsante non deve nemmeno comparire, altrimenti si offre una decisione che fallisce.
       def can_cancel_workflow?
-        @organization.memberships.find_by(account: @account)&.role.in?(%w[admin owner])
+        preloaded.role.in?(%w[admin owner])
       end
 
-      def resolver
-        @resolver ||= Authorization::Resolver.new(account: @account, organization: @organization)
+      def resolver = preloaded.resolver
+
+      def preloaded
+        @preloaded ||= SelectionPreload.new(account: @account, organization: @organization,
+                                            visible_tickets: @visible_tickets, keys: [ "#{@kind}:#{@id}" ])
       end
     end
   end

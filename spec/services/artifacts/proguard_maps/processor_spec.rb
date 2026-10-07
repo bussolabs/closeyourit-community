@@ -16,6 +16,14 @@ RSpec.describe Artifacts::ProguardMaps::Processor do
     expect { described_class.call(mapping: "example.Type -> a:\n", stacktrace: [ "a" ] * 501) }.to raise_error(Artifacts::Rejected)
   end
 
+  it "accepts eight MiB mappings and rejects the next byte before network access" do
+    mapping = "example.Type -> a:\n".ljust(8.megabytes, " ")
+    processor = described_class.new(mapping: mapping, stacktrace: [])
+    expect { processor.send(:validate_input!) }.not_to raise_error
+    oversized = described_class.new(mapping: mapping + " ", stacktrace: [])
+    expect { oversized.send(:validate_input!) }.to raise_error(Artifacts::Rejected, "invalid_mapping")
+  end
+
   it "requires integer protocol fields and coherent ambiguity" do
     processor = described_class.new(mapping: "example.Type -> a:\n", stacktrace: [ "a" ])
     group = { "index" => 0, "ambiguous" => false, "alternatives" => [ { "lines" => [ "a" ] } ] }

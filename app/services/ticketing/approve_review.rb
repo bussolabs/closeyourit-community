@@ -12,12 +12,19 @@ module Ticketing
     # `broadcast_dependents: false` quando l'approvazione è una di tante nella stessa richiesta
     # (Home::Approvals::BulkApprove): il refresh delle board dei dependents lo fa il chiamante sul lotto
     # intero con UNA query, invece di una per ticket dentro il loop. Vedi StatusBroadcasts.
-    def initialize(organization:, ticket:, actor: nil, true_actor: nil, broadcast_dependents: true)
+    # `target_status:` lets BulkApprove read the destination once for the whole selection. CYRA-1048
+    def initialize(organization:, ticket:, actor: nil, true_actor: nil, broadcast_dependents: true, target_status: nil)
       @organization = organization
       @ticket = ticket
       @actor = actor
       @true_actor = true_actor
       @broadcast_dependents = broadcast_dependents
+      @target_status = target_status
+    end
+
+    # Destinazione per semantica (category done), MAI per code hardcoded (lookup per-org).
+    def self.target_status_for(organization)
+      organization.ticket_statuses.active.category_done.ordered.first
     end
 
     def call
@@ -110,9 +117,8 @@ module Ticketing
                               code: "R403-TICKET-021", status: :forbidden))
     end
 
-    # Destinazione per semantica (category done), MAI per code hardcoded (lookup per-org).
     def target_status
-      @organization.ticket_statuses.active.category_done.ordered.first
+      @target_status || self.class.target_status_for(@organization)
     end
 
     # La stessa domanda la fa il sì automatico (CYRA-868), quindi la risposta vive in un posto solo:

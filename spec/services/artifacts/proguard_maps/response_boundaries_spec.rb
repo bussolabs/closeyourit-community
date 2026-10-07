@@ -34,7 +34,7 @@ RSpec.describe Artifacts::ProguardMaps::Processor do
   end
 
   it "validates encoding, line breaks and stack limits before transport" do
-    [ nil, "", "\xff".b, "a\0b", "x" * (Artifacts::MAX_MAP + 1) ].each do |mapping|
+    [ nil, "", "\xff".b, "a\0b", "x" * (Artifacts::MAX_PROGUARD_MAP + 1) ].each do |mapping|
       expect { described_class.new(mapping: mapping, stacktrace: []).send(:validate_input!) }.to raise_error(Artifacts::Rejected, "invalid_mapping")
     end
     mapping = Rails.root.join("spec/fixtures/artifacts/r8-9.4.28-mapping.txt").read

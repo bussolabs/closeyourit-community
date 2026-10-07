@@ -12,7 +12,7 @@ module Artifacts
         blob = @artifact.blob
         Timeout.timeout(10, Unavailable, "Artifact read deadline exceeded") do
           blob.service.download(blob.key) do |chunk|
-            raise Unavailable, "Stored artifact exceeds its budget" if bytes.bytesize + chunk.bytesize > MAX_MAP
+            raise Unavailable, "Stored artifact exceeds its budget" if bytes.bytesize + chunk.bytesize > MAX_PROGUARD_MAP
             bytes << chunk
           end
         end

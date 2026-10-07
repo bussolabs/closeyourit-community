@@ -17,7 +17,11 @@ god_password = lambda do
 end
 
 # GOD_EMAIL lets a self-hosted install pick its own administrator address (CYRA-916).
-god = Accounts::Account.find_or_create_by!(email: ENV.fetch("GOD_EMAIL", "god@closeyour.it")) do |account|
+# Outside production the address is an example. Production keeps the address its administrator was created
+# with until GOD_EMAIL is set there: this seed runs at every boot, so any other default would create a second
+# administrator. Delete the production branch once GOD_EMAIL is set (CYRA-1041).
+god_email = ENV.fetch("GOD_EMAIL") { Rails.env.production? ? "god@closeyour.it" : "god@example.com" }
+god = Accounts::Account.find_or_create_by!(email: god_email) do |account|
   account.name = "CloseYourIt Admin"
   account.god = true
   account.password = god_password.call

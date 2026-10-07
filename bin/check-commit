@@ -1,0 +1,104 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Pre-commit check, wired by bin/setup through `core.hooksPath=.githooks`.
+# It stops two mistakes that kept reaching review:
+# 1. a staged change uses a file that exists only untracked: specs pass locally,
+#    every clean checkout (CI, deploy) breaks;
+# 2. db/schema.rb adds or drops tables that no staged migration mentions, i.e. it
+#    was dumped from a local database carrying leftover tables.
+# Bypass consciously with `git commit --no-verify`.
+
+ENV["BUNDLE_GEMFILE"] ||= File.expand_path("../Gemfile", __dir__)
+require "bundler/setup"
+require "open3"
+require "set"
+require "active_support/inflector"
+require_relative "../config/initializers/inflections"
+
+module CheckCommit
+  module_function
+
+  def git(*args)
+    out, status = Open3.capture2("git", *args)
+    status.success? ? out : nil
+  end
+
+  # Added lines of the staged diff, grouped by file.
+  def staged_additions
+    additions = Hash.new { |hash, key| hash[key] = +"" }
+    file = nil
+    git("diff", "--cached", "-U0", "--diff-filter=ACMR", "--no-color").to_s.each_line do |line|
+      if line.start_with?("+++ ")
+        file = line.delete_prefix("+++ b/").chomp
+      elsif line.start_with?("+") && file
+        additions[file] << line[1..]
+      end
+    end
+    additions
+  end
+
+  # [pattern, directory the pattern is limited to (nil = anywhere)] for each way a file is referenced.
+  def references(path)
+    case path
+    when %r{\Aapp/views/(.+)/_([^/.]+)\.[^/]+\z}
+      dir, name = Regexp.last_match.captures
+      [ [ /["']#{Regexp.escape("#{dir}/#{name}")}["']/, nil ], [ /["']#{Regexp.escape(name)}["']/, "app/views/#{dir}/" ] ]
+    when %r{\Aapp/javascript/controllers/(.+)_controller\.js\z}
+      identifier = Regexp.last_match(1).tr("_", "-").gsub("/", "--")
+      [ [ /(?<![\w-])#{Regexp.escape(identifier)}(?![\w-])/, nil ] ]
+    when %r{\A(?:app/[^/]+/(?:concerns/)?|lib/)(.+)\.rb\z}
+      constant = Regexp.last_match(1).camelize
+      [ [ /(?<![\w:])#{Regexp.escape(constant)}\b/, nil ],
+       [ /(?<![\w:])#{Regexp.escape(constant.demodulize)}\b/, "#{File.dirname(path)}/" ] ]
+    else
+      []
+    end
+  end
+
+  def untracked_problems(untracked, additions)
+    untracked.filter_map do |path|
+      user = additions.find do |file, text|
+        references(path).any? { |pattern, dir| (dir.nil? || file.start_with?(dir)) && text.match?(pattern) }
+      end
+      "#{user.first} uses #{path}, which is untracked: `git add #{path}`" if user
+    end
+  end
+
+  def tables(schema)
+    schema.to_s.scan(/create_table "([^"]+)"/).flatten.to_set
+  end
+
+  def schema_problems(staged, untracked)
+    return [] unless staged.include?("db/schema.rb")
+
+    problems = untracked.grep(%r{\Adb/migrate/}).map { "db/schema.rb is staged but #{it} is untracked" }
+    migrations = staged.grep(%r{\Adb/migrate/}).filter_map { git("show", ":#{it}") }.join("\n")
+    if migrations.empty?
+      return problems << "db/schema.rb changed with no staged migration: regenerate it from a migration"
+    end
+
+    before = tables(git("show", "HEAD:db/schema.rb"))
+    after = tables(git("show", ":db/schema.rb"))
+    changed = (after - before).map { [ it, "adds" ] } + (before - after).map { [ it, "drops" ] }
+    problems + changed.filter_map do |table, verb|
+      next if migrations.match?(/\b#{Regexp.escape(table)}\b/)
+
+      "db/schema.rb #{verb} table #{table} but no staged migration mentions it (leftover local database?)"
+    end
+  end
+
+  def run
+    staged = git("diff", "--cached", "--name-only").to_s.split("\n")
+    untracked = git("ls-files", "--others", "--exclude-standard", "--", "app", "lib", "db/migrate").to_s.split("\n")
+    problems = untracked_problems(untracked, staged_additions) + schema_problems(staged, untracked)
+    return 0 if problems.empty?
+
+    warn "check-commit: commit blocked"
+    problems.each { warn "  - #{it}" }
+    warn "Fix it, or bypass consciously with `git commit --no-verify`."
+    1
+  end
+end
+
+exit CheckCommit.run if $PROGRAM_NAME == __FILE__

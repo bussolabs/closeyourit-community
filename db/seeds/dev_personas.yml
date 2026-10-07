@@ -3,7 +3,7 @@
 # Usati sia per il seed (db/seeds.rb) sia per il <select> dev nella pagina di login.
 - label: "Admin globale (god)"
   name: "CloseYourIt Admin"
-  email: "god@closeyour.it"
+  email: "god@example.com"
   password: "Password123!"
   role: owner
 - label: "Demo — Admin"

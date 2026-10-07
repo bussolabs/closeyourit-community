@@ -48,8 +48,9 @@ module Home
         skipped = 0
         failures = []
         approved_tickets = []
+        cards = resolve_all
         @keys.each do |key|
-          card = resolve(key)
+          card = cards[key]
           next skipped += 1 unless card&.bulk_approvable?
 
           result = safe_approve(card, key)
@@ -69,9 +70,10 @@ module Home
       # Chiave illeggibile, card che non mi compete, card non idonea al blocco: tutte SALTATE, mai un
       # errore. Detail risolve dagli scope visibili, quindi qui non si distingue "non esiste" da "non
       # è mia" — ed è esattamente ciò che si vuole (anti-BOLA).
-      def resolve(key)
-        Detail.call(account: @account, organization: @organization, visible_projects: @visible_projects,
-                    visible_tickets: @visible_tickets, key: key)
+      # One read per family for the whole selection, not one per key. CYRA-1048
+      def resolve_all
+        Detail.call_many(account: @account, organization: @organization, visible_projects: @visible_projects,
+                         visible_tickets: @visible_tickets, keys: @keys)
       end
 
       # Best-effort vuol dire anche questo: un service di dominio che SOLLEVA conta come una card
@@ -103,7 +105,15 @@ module Home
       def approve(card)
         Decide.call(account: @account, organization: @organization, visible_projects: @visible_projects,
                     visible_tickets: @visible_tickets, key: card.key, decision: :approve,
-                    true_actor: @true_actor, card: card, broadcast_dependents: false)
+                    true_actor: @true_actor, card: card, broadcast_dependents: false,
+                    target_status: target_status)
+      end
+
+      # Read once for the selection, and only when a card needs it. CYRA-1048
+      def target_status
+        return @target_status if defined?(@target_status)
+
+        @target_status = Ticketing::ApproveReview.target_status_for(@organization)
       end
 
       # Un refresh solo per tutte le board che ospitano dependents delle card accettate: UNA query,

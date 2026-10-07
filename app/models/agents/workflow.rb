@@ -216,10 +216,10 @@ module Agents
     # dall'autopilot in poi il codice l'ha scritto la macchina e la domanda giusta è «va bene?», che ha
     # già i suoi pulsanti. Il gate vive QUI e non nella pagina — Workflows::Reassess lo rilegge sotto
     # lock, così nessuna strada può offrire una decisione che il dominio poi rifiuta. CYRA-675
-    def reassessable?
+    def reassessable?(current_phase = phase)
       return false if cancelled_at? || completed_at?
 
-      case Agents::Workflows::PhaseResolver.stage(phase)
+      case Agents::Workflows::PhaseResolver.stage(current_phase)
       when "to_plan", "plan_to_approve" then true
       when "blocked"
         # Qui la domanda è DOVE si è fermata, non cosa riaprire, e non si risponde con

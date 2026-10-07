@@ -7,7 +7,7 @@
 # organization stays bare, for the empty states.
 
 org = Organizations::Organization.find_by!(slug: "demo")
-god = Accounts::Account.find_by!(email: "god@closeyour.it")
+god = Accounts::Account.find_by!(email: "god@example.com")
 admin = Accounts::Account.find_by(email: "admin@demo.test")
 member = Accounts::Account.find_by(email: "member@demo.test")
 production = org.environments.find_by!(code: "production")

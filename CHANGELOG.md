@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.179.3] - 2026-10-07
+
+### Changed
+
+- **L'indirizzo dell'amministratore non compare più negli esempi.** Seed di sviluppo, account di prova, mockup e test usano un indirizzo d'esempio. In produzione non cambia nulla finché non imposti `GOD_EMAIL`.
+
 ## [0.179.2] - 2026-10-07
 
 ### Changed

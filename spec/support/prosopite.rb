@@ -19,6 +19,12 @@ require "prosopite"
 
 Prosopite.raise = true
 Prosopite.rails_logger = true
+# A spec for a loop needs at least 3 records: on Rails 8.1.3 the first iteration ran on a different
+# call stack, so with 2 records the repetition went unseen (Rails 8.1.4 sees it). CYRA-1048
+# Bulk approval saves each card on its own on purpose (lock, validations, history, no shared
+# transaction), capped at Queue::PAGE_LIMIT keys. Only that step may repeat: resolving the cards
+# is one read per family and stays guarded. CYRA-1048
+Prosopite.allow_stack_paths = [ %r{app/services/home/approvals/bulk_approve\.rb:\d+:in 'Home::Approvals::BulkApprove#approve'} ]
 
 module ProsopiteHelpers
   # Eccezione puntuale e motivata (mai a tappeto): fixture bulk nel setup del request spec o secondo

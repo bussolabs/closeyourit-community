@@ -31,7 +31,7 @@ module Artifacts
 
       def validate_input!
         mapping = @mapping.is_a?(String) ? @mapping.dup.force_encoding(Encoding::UTF_8) : nil
-        raise Rejected, "invalid_mapping" unless mapping&.valid_encoding? && mapping.present? && mapping.bytesize <= MAX_MAP && !mapping.include?("\0")
+        raise Rejected, "invalid_mapping" unless mapping&.valid_encoding? && mapping.present? && mapping.bytesize <= MAX_PROGUARD_MAP && !mapping.include?("\0")
         @mapping = mapping
         raise Rejected, "invalid_stack" unless @stacktrace.is_a?(Array) && @stacktrace.size <= MAX_LINES
         @stacktrace.each do |line|

@@ -31,8 +31,9 @@ module Home
 
       # `broadcast_dependents: false` lo passa solo BulkApprove: con più card nella stessa richiesta il
       # refresh delle board dei dependents va fatto una volta sul lotto, non una per card (N+1).
+      # `target_status:` too: the review destination is read once for the whole selection. CYRA-1048
       def initialize(account:, organization:, visible_projects:, visible_tickets:, key:, decision:,
-                     text: nil, true_actor: nil, card: nil, broadcast_dependents: true)
+                     text: nil, true_actor: nil, card: nil, broadcast_dependents: true, target_status: nil)
         @account = account
         @organization = organization
         @visible_projects = visible_projects
@@ -43,6 +44,7 @@ module Home
         @true_actor = true_actor
         @card = card
         @broadcast_dependents = broadcast_dependents
+        @target_status = target_status
       end
 
       def call
@@ -76,14 +78,14 @@ module Home
         note = @text
         case card.kind
         when "agent_plan" then approve_plan(card, note)
-        when "review" then with_note(card, note) { Ticketing::ApproveReview.call(**review_args(card), broadcast_dependents: @broadcast_dependents) }
+        when "review" then with_note(card, note) { approve_review(card) }
         when "secret_change" then Secrets::ChangeRequests::Approve.call(change_request: card.record, actor: @account)
         end
       end
 
       # A review bloccata non c'è un piano da approvare: si rimette in coda la lavorazione.
       def approve_plan(card, note)
-        return with_note(card, note) { Ticketing::ApproveReview.call(**review_args(card), broadcast_dependents: @broadcast_dependents) } if
+        return with_note(card, note) { approve_review(card) } if
           card.phase == "awaiting_autopilot_approval"
         return with_note(card, note) { Agents::Workflows::Unblock.call(workflow: card.record, actor: @account) } if
           card.phase == "review_blocked"
@@ -168,6 +170,11 @@ module Home
           return comment if comment.err?
         end
         yield
+      end
+
+      def approve_review(card)
+        Ticketing::ApproveReview.call(**review_args(card), broadcast_dependents: @broadcast_dependents,
+                                                           target_status: @target_status)
       end
 
       def review_args(card)

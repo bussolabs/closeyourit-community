@@ -1041,6 +1041,43 @@ RSpec.describe "Member::Home::Approvals", type: :request do
       expect(altrui.reload.status.review_gate?).to be(true)
     end
 
+    # CYRA-1048 — the selection is resolved with one read per family, not one per card. Two cards were
+    # not enough to see the repetition (Rails 8.1.3 only reported it from the third card on), so these
+    # use more. Only the approval of each single card may repeat its queries: see spec/support/prosopite.rb.
+    [ 3, 5 ].each do |count|
+      it "approves #{count} review cards without reading each one again" do
+        create(:ticket_status, :done, organization: org)
+        tickets = allow_n_plus_one { Array.new(count) { review_ticket } }
+        sign_in(owner)
+
+        post member_home_approvals_bulk_path, params: { keys: tickets.map { |ticket| "review:#{ticket.id}" } }
+
+        expect(response).to redirect_to(member_home_approvals_path)
+        expect(flash[:notice]).to be_present
+        expect(Ticketing::Ticket.where(id: tickets).includes(:status).map { |ticket| ticket.status.category }.uniq)
+          .to eq([ "done" ])
+      end
+    end
+
+    it "approves 3 plans without reading each workflow again" do
+      workflows = allow_n_plus_one do
+        Array.new(3) do
+          create(:agent_workflow, ticket: create(:ticket, organization: org, project:), planned_at: Time.current).tap do |workflow|
+            attempt = create(:agent_attempt, workflow:, organization: org, phase: "planner")
+            Agents::Plan.create!(workflow:, attempt:, technical_analysis: "Plan", scenarios: [],
+                                 definition_of_done: [], notes: [], ticket_snapshot_digest: "snapshot")
+          end
+        end
+      end
+      sign_in(owner)
+
+      post member_home_approvals_bulk_path, params: { keys: workflows.map { |workflow| "agent_plan:#{workflow.id}" } }
+
+      expect(response).to redirect_to(member_home_approvals_path)
+      expect(flash[:notice]).to be_present
+      expect(Agents::Workflow.where(id: workflows).pluck(:approved_at)).to all(be_present)
+    end
+
     it "senza nessuna selezione avvisa e non fa nulla" do
       ticket = review_ticket
       sign_in(owner)
@@ -1063,13 +1100,7 @@ RSpec.describe "Member::Home::Approvals", type: :request do
                                                      .and_raise(ActiveRecord::StatementTimeout, "database is locked")
       sign_in(owner)
 
-      # La risoluzione per-card È il gate (BulkApprove#resolve → Detail, una per chiave): due query a
-      # card, per costruzione e già così in produzione. Negli altri esempi le query dell'approvazione
-      # si interpongono e Prosopite non le vede vicine; qui l'eccezione le toglie di mezzo e le due
-      # risoluzioni restano attaccate. Non è un N+1 nuovo introdotto da questo esempio.
-      allow_n_plus_one do
-        post member_home_approvals_bulk_path, params: { keys: [ "review:#{rotto.id}", "review:#{buono.id}" ] }
-      end
+      post member_home_approvals_bulk_path, params: { keys: [ "review:#{rotto.id}", "review:#{buono.id}" ] }
 
       expect(response).to redirect_to(member_home_approvals_path)
       expect(flash[:alert]).to be_present

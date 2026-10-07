@@ -5,6 +5,7 @@ module Artifacts
 
   MAX_REQUEST = 10.megabytes
   MAX_MAP = 5.megabytes
+  MAX_PROGUARD_MAP = 8.megabytes
   MAX_PROJECT_BYTES = 100.megabytes
   MAX_SEGMENTS = 100_000
   MAX_SOURCES = 10_000

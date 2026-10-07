@@ -393,7 +393,8 @@ RSpec.describe Agents::Leases::Acquire, "concorrenza PostgreSQL reale" do
     allow_select = Queue.new
     thread = nil
 
-    allow_any_instance_of(ActiveRecord::Relation).to receive(:find_by!).and_wrap_original do |original, *args|
+    # take!, not find_by!: Rails 8.1.4 reads the row back with take! after the failed insert, 8.1.3 got there through find_by!.
+    allow_any_instance_of(ActiveRecord::Relation).to receive(:take!).and_wrap_original do |original, *args|
       lease_lookup = original.receiver.klass == Agents::Lease
       if lease_lookup && Thread.current[:lease_operation] == :acquire && !Thread.current[:delete_select_intercepted]
         Thread.current[:delete_select_intercepted] = true
