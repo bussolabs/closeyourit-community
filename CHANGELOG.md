@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.185.0] - 2026-10-08
+
+### Added
+
+- **Versioni delle skill `cyi` seguite da GitHub.** Ogni installazione legge ogni ora le release pubbliche del pacchetto skill: una versione cancellata su GitHub viene ritirata da sola. La versione di un'organizzazione si fissa dalla CLI.
+
 ## [0.184.2] - 2026-10-08
 
 ### Fixed

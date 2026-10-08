@@ -62,8 +62,6 @@
                 <%= render Ui::NavLinkComponent.new(label: t("valhalla.nav.ai_gateway_keys"), path: valhalla_ai_gateway_keys_path, icon: "key-round",
                       active: controller_name == "ai_gateway_keys", test_id: "valhalla-nav-ai-keys") %>
               <% end %>
-              <%= render Ui::NavLinkComponent.new(label: t("valhalla.nav.skill_releases"), path: valhalla_skill_releases_path, icon: "package",
-                    active: controller_name == "skill_releases", test_id: "valhalla-nav-skill-releases") %>
               <%= render Ui::NavLinkComponent.new(label: t("valhalla.nav.support_requests"), path: valhalla_support_requests_path, icon: "life-buoy",
                     active: controller_name == "support_requests", test_id: "valhalla-nav-support") %>
               <%= render Ui::NavLinkComponent.new(label: t("valhalla.nav.health"), path: valhalla_health_path, icon: "heart-pulse",

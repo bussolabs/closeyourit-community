@@ -5,33 +5,54 @@ require "json"
 
 module Agents
   module SkillReleases
-    # Published releases of the public cyi skills package (CYRA-912). A release counts only when it
-    # has a vX.Y.Z tag, the cyi-X.Y.Z.tgz asset and a `sha256: <hex>` line written by the release CI.
-    # Net::HTTP raw like Instance::ReleaseFeed.
+    # Published releases of the public cyi skills package (CYRA-912). `entries` are the releases that can
+    # be recorded: vX.Y.Z tag, the cyi-X.Y.Z.tgz asset and a `sha256: <hex>` line written by the release
+    # CI. `listed` is every version GitHub still shows as published, readable or not: a version missing
+    # from it was withdrawn upstream. Net::HTTP raw like Instance::ReleaseFeed.
     class Feed < ApplicationService
       class Error < StandardError; end
 
       Entry = Data.define(:version, :url, :sha256, :git_sha, :published_at)
+      Listing = Data.define(:entries, :listed)
 
       TAG_FORMAT = /\Av(\d+\.\d+\.\d+)\z/
       SHA256_LINE = /^sha256:\s*([0-9a-fA-F]{64})\s*$/
       OPEN_TIMEOUT_SECONDS = 5
       READ_TIMEOUT_SECONDS = 10
+      PER_PAGE = 100
+      MAX_PAGES = 10
 
       def call
-        releases.filter_map { |release| safe_entry(release) }
+        all = releases
+        Listing.new(entries: all.filter_map { |release| safe_entry(release) },
+                    listed: all.filter_map { |release| listed_version(release) }.to_set)
       end
 
       private
 
+      # Every page: a version on page two must not look withdrawn just because it was not read.
       def releases
-        body = get("#{App::SkillsCatalog.releases_api}/releases?per_page=100")
-        list = JSON.parse(body)
+        (1..MAX_PAGES).each_with_object([]) do |page, all|
+          list = release_page(page)
+          all.concat(list)
+          break all if list.size < PER_PAGE
+        end
+      end
+
+      def release_page(page)
+        list = JSON.parse(get("#{App::SkillsCatalog.releases_api}/releases?per_page=#{PER_PAGE}&page=#{page}"))
         raise Error, "release list is not a list" unless list.is_a?(Array)
 
         list
       rescue JSON::ParserError => e
         raise Error, "release list unreadable: #{e.message}"
+      end
+
+      def listed_version(release)
+        return unless release.is_a?(Hash)
+        return if release["draft"] || release["prerelease"]
+
+        release["tag_name"].to_s[TAG_FORMAT, 1]
       end
 
       # One odd release must not hide the good ones: a malformed item is logged and skipped.

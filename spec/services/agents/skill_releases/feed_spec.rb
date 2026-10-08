@@ -15,13 +15,13 @@ RSpec.describe Agents::SkillReleases::Feed do
   end
 
   def stub_releases(*releases)
-    stub_request(:get, "#{api}/releases?per_page=100").to_return(status: 200, body: releases.to_json)
+    stub_request(:get, "#{api}/releases?per_page=100&page=1").to_return(status: 200, body: releases.to_json)
   end
 
   it "returns published releases with their package url and sha256" do
     stub_releases(release("v1.2.0"))
 
-    entry = described_class.call.sole
+    entry = described_class.call.entries.sole
     expect(entry).to have_attributes(version: "1.2.0", sha256: sha, git_sha: "b" * 40,
                                      url: "https://github.com/x/releases/download/v1.2.0/cyi-1.2.0.tgz")
     expect(entry.published_at).to eq(Time.zone.parse("2026-10-08T10:00:00Z"))
@@ -33,25 +33,25 @@ RSpec.describe Agents::SkillReleases::Feed do
       release("v1.3.0", assets: []), release("v1.4.0", body: "no hash here")
     )
 
-    expect(described_class.call).to be_empty
+    expect(described_class.call.entries).to be_empty
   end
 
   it "reads the mirror when one is configured" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("CLOSEYOURIT_SKILLS_RELEASES_API").and_return("https://mirror.example.com/skills")
-    stub_request(:get, "https://mirror.example.com/skills/releases?per_page=100").to_return(status: 200, body: "[]")
+    stub_request(:get, "https://mirror.example.com/skills/releases?per_page=100&page=1").to_return(status: 200, body: "[]")
 
-    expect(described_class.call).to eq([])
+    expect(described_class.call.entries).to eq([])
   end
 
   it "raises Feed::Error when GitHub is unreachable or answers badly" do
-    stub_request(:get, "#{api}/releases?per_page=100").to_timeout
+    stub_request(:get, "#{api}/releases?per_page=100&page=1").to_timeout
     expect { described_class.call }.to raise_error(described_class::Error)
 
-    stub_request(:get, "#{api}/releases?per_page=100").to_return(status: 500, body: "")
+    stub_request(:get, "#{api}/releases?per_page=100&page=1").to_return(status: 500, body: "")
     expect { described_class.call }.to raise_error(described_class::Error)
 
-    stub_request(:get, "#{api}/releases?per_page=100").to_return(status: 200, body: "not json")
+    stub_request(:get, "#{api}/releases?per_page=100&page=1").to_return(status: 200, body: "not json")
     expect { described_class.call }.to raise_error(described_class::Error)
   end
 
@@ -62,7 +62,7 @@ RSpec.describe Agents::SkillReleases::Feed do
       stub_releases(*bad, good)
       allow(Rails.logger).to receive(:warn)
 
-      expect(described_class.call.map(&:version)).to eq([ "1.0.0" ])
+      expect(described_class.call.entries.map(&:version)).to eq([ "1.0.0" ])
     end
 
     it "skips a non-Hash item" do
@@ -84,13 +84,31 @@ RSpec.describe Agents::SkillReleases::Feed do
   end
 
   it "raises Feed::Error when the connection is cut" do
-    stub_request(:get, "#{api}/releases?per_page=100").to_raise(EOFError)
+    stub_request(:get, "#{api}/releases?per_page=100&page=1").to_raise(EOFError)
     expect { described_class.call }.to raise_error(described_class::Error)
 
-    stub_request(:get, "#{api}/releases?per_page=100").to_raise(Net::HTTPBadResponse)
+    stub_request(:get, "#{api}/releases?per_page=100&page=1").to_raise(Net::HTTPBadResponse)
     expect { described_class.call }.to raise_error(described_class::Error)
 
-    stub_request(:get, "#{api}/releases?per_page=100").to_raise(Zlib::Error)
+    stub_request(:get, "#{api}/releases?per_page=100&page=1").to_raise(Zlib::Error)
     expect { described_class.call }.to raise_error(described_class::Error)
+  end
+
+  it "lists every published version, including one whose package cannot be read" do
+    stub_releases(release("v1.0.0"), release("v1.1.0", assets: []), release("v1.2.0", prerelease: true),
+                  release("v1.3.0", draft: true))
+    allow(Rails.logger).to receive(:warn)
+
+    listing = described_class.call
+    expect(listing.entries.map(&:version)).to eq([ "1.0.0" ])
+    expect(listing.listed).to contain_exactly("1.0.0", "1.1.0")
+  end
+
+  it "reads every page of releases" do
+    first = (0...100).map { |i| release("v0.0.#{i}") }
+    stub_request(:get, "#{api}/releases?per_page=100&page=1").to_return(status: 200, body: first.to_json)
+    stub_request(:get, "#{api}/releases?per_page=100&page=2").to_return(status: 200, body: [ release("v1.0.0") ].to_json)
+
+    expect(described_class.call.listed).to include("0.0.0", "0.0.99", "1.0.0")
   end
 end

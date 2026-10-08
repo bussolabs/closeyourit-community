@@ -28,14 +28,6 @@ namespace :valhalla do
   # Cruscotto di salute tecnica del sistema (god): backlog/falliti SolidQueue, tabelle in
   # crescita sul primary, stato dei servizi esterni collegati.
   resource :health, only: :show, controller: "health"
-  # Public cyi skills package versions: withdraw, restore, read GitHub now (CYRA-912).
-  resources :skill_releases, only: :index, path: "skills" do
-    post :sync, on: :collection
-    member do
-      patch :withdraw
-      patch :restore
-    end
-  end
   # "Update now" of a community install (CYRA-1035); answers 404 anywhere else.
   resource :instance_update, path: "update", only: %i[show create]
 end
