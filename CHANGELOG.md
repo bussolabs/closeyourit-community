@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.181.2] - 2026-10-08
+
+### Changed
+
+- **Il progetto si legge per nome.** Nella pagina di un'approvazione accanto alla sigla del progetto compare anche il suo nome. [Approvazioni](/member/home/approvals)
+
 ## [0.181.1] - 2026-10-08
 
 ### Changed

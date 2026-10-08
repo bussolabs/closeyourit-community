@@ -25,7 +25,7 @@
       <div class="flex items-center flex-wrap gap-1.5">
         <% if @card.project %>
           <%= render Ui::StatLabelComponent.new(label: t("member.approvals.project"),
-                value: @card.project.key || @card.project.name) %>
+                value: [@card.project.name, @card.project.key].compact_blank.uniq.join(" · ")) %>
         <% end %>
         <% if @card.phase.present? %>
           <%= render Ui::StatLabelComponent.new(label: t("member.approvals.state"),

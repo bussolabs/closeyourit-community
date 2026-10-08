@@ -8,7 +8,7 @@
       <%= card.ticket? ? "#{card.ticket.code} · #{card.ticket.title}" : card.record.name %>
     </h2>
     <p class="mt-0.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400">
-      <%= card.project&.key || card.project&.name %>
+      <%= [card.project&.name, card.project&.key].compact_blank.uniq.join(" · ") %>
       <% if card.phase.present? %> · <%= automation_phase_label(card.phase) %><% end %>
     </p>
     <%# CYRA-504 — quale build è già in giro: prima di autorizzare la produzione è la cosa da sapere,

@@ -73,6 +73,16 @@ RSpec.describe "Member::Home::Approvals#show", type: :request do
       expect(response.body).not_to include('data-test="approvals-stack"')
     end
 
+    it "names the project by its name and its key, not the key alone" do
+      project.update!(name: "Shop rails")
+      workflow = planned_workflow
+      sign_in(owner)
+
+      show_workflow(workflow)
+
+      expect(response.body).to include("Shop rails · #{project.key}")
+    end
+
     # Anti-BOLA. La risposta per «di un'altra organizzazione» dev'essere INDISTINGUIBILE da quella
     # per «già decisa da qualcun altro» e da «id inventato»: se le tre differissero, confrontarle
     # direbbe quali lavorazioni esistono altrove. Sono tutte lo stesso rimando alla coda, che spiega
