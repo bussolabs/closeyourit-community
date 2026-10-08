@@ -3,7 +3,8 @@
 
 <div class="p-7 space-y-6" data-test="claude-credential">
   <%= render "member/agents/lent_credential", name: "claude_credential", credential: @credential, error: @error,
-                                               path: member_agents_claude_credential_path %>
+                                               path: member_agents_claude_credential_path,
+                                               secret_options: @secret_options %>
 
   <%= render Ui::SectionComponent.new(title: t("#{scope}.kinds_title"), header_padding: :wide, body_class: "px-5 py-5", test_id: "claude-credential-kinds") do %>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 text-[12.5px] text-gray-600 dark:text-zinc-400">

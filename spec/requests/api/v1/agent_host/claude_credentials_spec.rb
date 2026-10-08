@@ -23,6 +23,36 @@ RSpec.describe "Api::V1::AgentHost::ClaudeCredentials", type: :request do
     )
   end
 
+  # CYRA-1052 — the machine's own credential comes first, the organization's is the fallback.
+  it "serves the machine's own credential before the organization's" do
+    create(:agent_claude_credential, organization:, token: "sk-ant-api03-organization")
+    create(:agent_claude_credential, :oauth, organization:, host:, token: "sk-ant-oat01-machine")
+
+    get path, headers: headers
+
+    expect(response.parsed_body["data"]["token"]).to eq("sk-ant-oat01-machine")
+  end
+
+  it "falls back to the organization's credential when the machine's one can no longer be served" do
+    lender = create(:membership, organization:).account
+    variable = create(:personal_secret_variable, organization:, account: lender, value: "sk-ant-oat01-lent")
+    create(:agent_claude_credential, organization:, host:, token: nil, personal_variable: variable, set_by: lender)
+    create(:agent_claude_credential, organization:, token: "sk-ant-api03-organization")
+    Connections::Membership.where(account: lender, organization:).delete_all
+
+    get path, headers: headers
+
+    expect(response.parsed_body["data"]["token"]).to eq("sk-ant-api03-organization")
+  end
+
+  it "never serves another machine's credential" do
+    create(:agent_claude_credential, organization:, host: create(:agent_host, organization:))
+
+    get path, headers: headers
+
+    expect(response).to have_http_status(:not_found)
+  end
+
   it "answers 404 when the organization has no credential" do
     get path, headers: headers
 

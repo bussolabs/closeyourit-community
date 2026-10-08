@@ -1002,6 +1002,8 @@ namespace :member do
       patch :engine     # CYRA-921 — who does the work: Claude or Codex
       patch :follow_organization, path: "follow" # CYAU-227 — drop the machine's own choice, follow the organization's
     end
+    # CYRA-1052 — this machine's own Claude credential (owner only, write-only).
+    resource :claude_credential, path: "claude", controller: "agents/host_claude_credentials", only: %i[update destroy]
   end
   # CYRA-593 — l'elenco di TUTTE le lavorazioni in volo, comprese quelle che l'agente sta ancora
   # facendo e che non chiedono niente a nessuno. CYRA-630 le ha riportate dentro le decisioni, come

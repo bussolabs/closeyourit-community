@@ -288,8 +288,8 @@ module Organizations
             foreign_key: :organization_id,
             inverse_of: :organization,
             dependent: :destroy
-    # The Claude credential lent to the automator machines (CYAU-224).
-    has_one :claude_credential,
+    # The Claude credential lent to the automator machines (CYAU-224); a machine's own one is not it (CYRA-1052).
+    has_one :claude_credential, -> { where(host_id: nil) },
             class_name: "Agents::ClaudeCredential",
             foreign_key: :organization_id,
             inverse_of: :organization,

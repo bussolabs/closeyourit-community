@@ -38,6 +38,9 @@ module Agents
     before_validation :complete_engine_choice
     validate :opencode_has_a_model
 
+    # CYRA-1052 — this machine's own Claude credential, served before the organization's.
+    has_one :claude_credential, class_name: "Agents::ClaudeCredential", foreign_key: :host_id, inverse_of: :host,
+                                dependent: :destroy
     has_many :host_tokens,
              class_name: "Agents::HostToken",
              foreign_key: :host_id,

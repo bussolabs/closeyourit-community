@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.181.0] - 2026-10-08
+
+### Added
+
+- **Una chiave Claude per ogni macchina.** Nella pagina di una macchina puoi darle una chiave Claude sua, incollata o presa da un segreto del vault. Anche la chiave dell'organizzazione ora si può collegare al vault. La macchina usa la sua, poi quella dell'organizzazione, poi il proprio accesso. [Agenti](/member/agents)
+
 ## [0.180.0] - 2026-10-08
 
 ### Added

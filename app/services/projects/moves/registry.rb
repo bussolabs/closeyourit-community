@@ -150,6 +150,8 @@ module Projects
       # the guard (CYRA-879).
       IGNORED = {
         "agents_leases" => "a move is blocked while a lease exists",
+        "agents_claude_credentials" => "a Claude credential stays with its organization and machine; " \
+                                       "it is only served from secrets of that same organization (CYRA-1052)",
         "alerting_rule_channels" => "deleted by cascade with their rule",
         "alerting_rule_host_exclusions" => "deleted with their rule in Execute",
         "assistant_messages" => "a message stays with its conversation in the source organization",

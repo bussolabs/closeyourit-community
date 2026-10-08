@@ -14,9 +14,7 @@ module Agents
 
       attr_readonly :organization_id
 
-      normalizes :token, with: ->(value) { value.to_s.strip }
-
-      validates :organization_id, uniqueness: true
+      normalizes :token, with: ->(value) { value.to_s.strip.presence }
     end
   end
 end

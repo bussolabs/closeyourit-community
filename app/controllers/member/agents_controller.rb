@@ -213,6 +213,11 @@ module Member
       @repository_projects = visible.projects.where(key: @host.repositories).index_by(&:key)
       @runtimes = sorted_rows(@host.runtimes, columns: RUNTIME_SORT_COLUMNS, param: :runtimes_sort)
       @runtime_versions = @runtimes.to_h { |runtime| [ runtime["name"], ::Agents::RuntimeVersions.status(runtime["name"], runtime["version"]) ] }
+      # CYRA-1052 — the machine's own Claude credential is the owner's, like the organization's.
+      return unless @can_manage && current_membership&.owner?
+
+      @claude_secret_options = ::Agents::ClaudeCredentials::SecretOptions.call(organization: current_organization,
+                                                                               account: Current.account)
     end
 
     def load_worked

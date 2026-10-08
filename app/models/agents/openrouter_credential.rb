@@ -8,6 +8,7 @@ module Agents
     # The variable the host gives OpenCode; OpenCode reads its OpenRouter key from it.
     ENV_NAME = "OPENROUTER_API_KEY"
 
+    validates :organization_id, uniqueness: true
     validates :token, presence: true, format: { with: /\Ask-or-[A-Za-z0-9_-]+\z/, allow_blank: true }
 
     def served = { env: ENV_NAME, token: token }

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_234000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -240,7 +240,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_234000) do
     t.string "work_engine", default: "claude", null: false
     t.index ["organization_id"], name: "index_agents_automator_settings_on_organization_id", unique: true
     t.check_constraint "reviewer::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text, 'opencode'::character varying::text])", name: "agents_automator_settings_reviewer_valid"
-    t.check_constraint "supporter::text = ANY (ARRAY['claude'::character varying, 'codex'::character varying, 'opencode'::character varying]::text[])", name: "agents_automator_settings_supporter_valid"
+    t.check_constraint "supporter::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text, 'opencode'::character varying::text])", name: "agents_automator_settings_supporter_valid"
     t.check_constraint "work_engine::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text])", name: "agents_automator_settings_work_engine_valid"
   end
 
@@ -261,13 +261,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_234000) do
 
   create_table "agents_claude_credentials", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.string "kind", null: false
+    t.string "kind"
     t.uuid "organization_id", null: false
     t.uuid "set_by_id"
-    t.text "token", null: false
+    t.text "token"
     t.datetime "updated_at", null: false
-    t.index ["organization_id"], name: "index_agents_claude_credentials_on_organization_id", unique: true
+    t.uuid "host_id"
+    t.uuid "personal_variable_id"
+    t.uuid "shared_value_id"
+    t.index ["host_id"], name: "index_agents_claude_credentials_on_host_id", unique: true
+    t.index ["organization_id"], name: "index_agents_claude_credentials_on_organization_id"
+    t.index ["organization_id"], name: "index_agents_claude_credentials_on_organization_id_org_level", unique: true, where: "(host_id IS NULL)"
+    t.index ["personal_variable_id"], name: "index_agents_claude_credentials_on_personal_variable_id"
     t.index ["set_by_id"], name: "index_agents_claude_credentials_on_set_by_id"
+    t.index ["shared_value_id"], name: "index_agents_claude_credentials_on_shared_value_id"
   end
 
   create_table "agents_delivery_candidates", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -352,7 +359,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_234000) do
     t.check_constraint "reviewer::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text, 'opencode'::character varying::text])", name: "agents_hosts_reviewer_valid"
     t.check_constraint "running >= 0", name: "agents_hosts_running_nonnegative"
     t.check_constraint "slots > 0", name: "agents_hosts_slots_positive"
-    t.check_constraint "supporter IS NULL OR (supporter::text = ANY (ARRAY['claude'::character varying, 'codex'::character varying, 'opencode'::character varying]::text[]))", name: "agents_hosts_supporter_valid"
+    t.check_constraint "supporter IS NULL OR (supporter::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text, 'opencode'::character varying::text]))", name: "agents_hosts_supporter_valid"
     t.check_constraint "work_engine::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text])", name: "agents_hosts_work_engine_valid"
   end
 
@@ -548,10 +555,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_234000) do
     t.index ["seen_by_id"], name: "index_agents_supporter_decisions_on_seen_by_id"
     t.index ["target_type", "target_id", "target_digest"], name: "index_agents_supporter_decisions_on_target", unique: true
     t.index ["workflow_id"], name: "index_agents_supporter_decisions_on_workflow_id"
-    t.check_constraint "engine::text = ANY (ARRAY['claude'::character varying, 'codex'::character varying, 'opencode'::character varying]::text[])", name: "agents_supporter_decisions_engine_valid"
-    t.check_constraint "outcome::text = ANY (ARRAY['answered'::character varying, 'approved'::character varying, 'escalated'::character varying]::text[])", name: "agents_supporter_decisions_outcome_valid"
+    t.check_constraint "engine::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text, 'opencode'::character varying::text])", name: "agents_supporter_decisions_engine_valid"
+    t.check_constraint "outcome::text = ANY (ARRAY['answered'::character varying::text, 'approved'::character varying::text, 'escalated'::character varying::text])", name: "agents_supporter_decisions_outcome_valid"
     t.check_constraint "risk_score >= 1 AND risk_score <= 10", name: "agents_supporter_decisions_risk_score_range"
-    t.check_constraint "target_type::text = ANY (ARRAY['question'::character varying, 'plan'::character varying]::text[])", name: "agents_supporter_decisions_target_type_valid"
+    t.check_constraint "target_type::text = ANY (ARRAY['question'::character varying::text, 'plan'::character varying::text])", name: "agents_supporter_decisions_target_type_valid"
   end
 
   create_table "agents_ticket_queue_deferrals", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1142,7 +1149,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_234000) do
     t.index ["message_id"], name: "index_assistant_proposals_on_message_id"
     t.index ["organization_id"], name: "index_assistant_proposals_on_organization_id"
     t.check_constraint "num_nonnulls(message_id, coworkers_run_id) = 1", name: "assistant_proposals_one_parent"
-    t.check_constraint "origin::text = ANY (ARRAY['user'::character varying, 'rule'::character varying]::text[])", name: "assistant_proposals_origin_valid"
+    t.check_constraint "origin::text = ANY (ARRAY['user'::character varying::text, 'rule'::character varying::text])", name: "assistant_proposals_origin_valid"
   end
 
   create_table "authorization_account_permissions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1651,8 +1658,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_234000) do
     t.datetime "updated_at", null: false
     t.string "url"
     t.index ["puck_id"], name: "index_coworkers_connections_on_puck_id"
-    t.check_constraint "access::text = ANY (ARRAY['read'::character varying, 'write'::character varying]::text[])", name: "coworkers_connections_access_valid"
-    t.check_constraint "provider::text = ANY (ARRAY['github'::character varying, 'mcp'::character varying]::text[])", name: "coworkers_connections_provider_valid"
+    t.check_constraint "access::text = ANY (ARRAY['read'::character varying::text, 'write'::character varying::text])", name: "coworkers_connections_access_valid"
+    t.check_constraint "provider::text = ANY (ARRAY['github'::character varying::text, 'mcp'::character varying::text])", name: "coworkers_connections_provider_valid"
   end
 
   create_table "coworkers_device_calls", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1666,7 +1673,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_234000) do
     t.datetime "updated_at", null: false
     t.index ["device_id"], name: "index_coworkers_device_calls_on_device_id"
     t.index ["run_id"], name: "index_coworkers_device_calls_on_run_id"
-    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'delivered'::character varying, 'done'::character varying, 'denied'::character varying, 'failed'::character varying, 'expired'::character varying]::text[])", name: "coworkers_device_calls_status_valid"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'delivered'::character varying::text, 'done'::character varying::text, 'denied'::character varying::text, 'failed'::character varying::text, 'expired'::character varying::text])", name: "coworkers_device_calls_status_valid"
   end
 
   create_table "coworkers_devices", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1693,7 +1700,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_234000) do
     t.datetime "updated_at", null: false
     t.index ["puck_id"], name: "index_coworkers_memory_notes_on_puck_id"
     t.index ["run_id"], name: "index_coworkers_memory_notes_on_run_id"
-    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'active'::character varying, 'dismissed'::character varying]::text[])", name: "coworkers_memory_notes_status_valid"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'active'::character varying::text, 'dismissed'::character varying::text])", name: "coworkers_memory_notes_status_valid"
   end
 
   create_table "coworkers_procedures", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1726,7 +1733,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_234000) do
     t.index ["organization_id"], name: "index_coworkers_puckies_on_organization_id"
     t.index ["project_id"], name: "index_coworkers_puckies_on_project_id"
     t.check_constraint "visibility::text = 'personal'::text OR project_id IS NOT NULL", name: "coworkers_puckies_team_has_project"
-    t.check_constraint "visibility::text = ANY (ARRAY['personal'::character varying, 'team'::character varying]::text[])", name: "coworkers_puckies_visibility_valid"
+    t.check_constraint "visibility::text = ANY (ARRAY['personal'::character varying::text, 'team'::character varying::text])", name: "coworkers_puckies_visibility_valid"
   end
 
   create_table "coworkers_rules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1737,7 +1744,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_234000) do
     t.datetime "updated_at", null: false
     t.index ["puck_id", "action"], name: "index_coworkers_rules_on_puck_id_and_action", unique: true
     t.index ["puck_id"], name: "index_coworkers_rules_on_puck_id"
-    t.check_constraint "decision::text = ANY (ARRAY['allow'::character varying, 'ask'::character varying, 'deny'::character varying]::text[])", name: "coworkers_rules_decision_valid"
+    t.check_constraint "decision::text = ANY (ARRAY['allow'::character varying::text, 'ask'::character varying::text, 'deny'::character varying::text])", name: "coworkers_rules_decision_valid"
   end
 
   create_table "coworkers_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1780,7 +1787,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_234000) do
     t.index ["puck_id", "kind"], name: "coworkers_active_lane", unique: true, where: "((status)::text = ANY (ARRAY[('queued'::character varying)::text, ('running'::character varying)::text]))"
     t.index ["puck_id"], name: "index_coworkers_runs_on_puck_id"
     t.index ["schedule_id", "slot_at"], name: "index_coworkers_runs_on_schedule_id_and_slot_at", unique: true, where: "(schedule_id IS NOT NULL)"
-    t.check_constraint "channel::text = ANY (ARRAY['web'::character varying, 'telegram'::character varying, 'slack'::character varying, 'app'::character varying]::text[])", name: "coworkers_runs_channel_valid"
+    t.check_constraint "channel::text = ANY (ARRAY['web'::character varying::text, 'telegram'::character varying::text, 'slack'::character varying::text, 'app'::character varying::text])", name: "coworkers_runs_channel_valid"
   end
 
   create_table "coworkers_schedules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1799,7 +1806,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_234000) do
     t.index ["created_by_id"], name: "index_coworkers_schedules_on_created_by_id"
     t.index ["next_run_at"], name: "index_coworkers_schedules_on_next_run_at"
     t.index ["puck_id"], name: "index_coworkers_schedules_on_puck_id"
-    t.check_constraint "frequency::text = ANY (ARRAY['hourly'::character varying, 'daily'::character varying, 'weekdays'::character varying, 'weekly'::character varying]::text[])", name: "coworkers_schedules_frequency_valid"
+    t.check_constraint "frequency::text = ANY (ARRAY['hourly'::character varying::text, 'daily'::character varying::text, 'weekdays'::character varying::text, 'weekly'::character varying::text])", name: "coworkers_schedules_frequency_valid"
   end
 
   create_table "coworkers_sites", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -4422,7 +4429,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_234000) do
   add_foreign_key "agents_clarifications", "ticketing_comments", column: "question_comment_id", on_delete: :nullify
   add_foreign_key "agents_clarifications", "ticketing_comments", column: "response_comment_id", on_delete: :nullify
   add_foreign_key "agents_claude_credentials", "accounts", column: "set_by_id", on_delete: :nullify
+  add_foreign_key "agents_claude_credentials", "agents_hosts", column: "host_id", on_delete: :cascade
   add_foreign_key "agents_claude_credentials", "organizations", on_delete: :cascade
+  add_foreign_key "agents_claude_credentials", "secrets_personal_variables", column: "personal_variable_id", on_delete: :cascade
+  add_foreign_key "agents_claude_credentials", "secrets_shared_values", column: "shared_value_id", on_delete: :cascade
   add_foreign_key "agents_delivery_candidates", "agents_attempts", column: "attempt_id"
   add_foreign_key "agents_delivery_candidates", "agents_workflows", column: "workflow_id"
   add_foreign_key "agents_delivery_candidates", "github_repositories", column: "repository_id"

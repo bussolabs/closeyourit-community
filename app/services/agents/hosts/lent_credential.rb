@@ -26,13 +26,19 @@ module Agents
       def call
         return refuse(:not_certified, :forbidden) unless @host.certified?
 
-        credential = @host.organization.public_send(@credential)
-        return refuse(:none, :not_found) if credential.nil?
+        served = candidates.lazy.filter_map(&:served).first
+        return refuse(:none, :not_found) if served.nil?
 
-        Result.ok(credential.served)
+        Result.ok(served)
       end
 
       private
+
+      # CYRA-1052 — the machine's own Claude credential first, then the organization's.
+      def candidates
+        own = @host.claude_credential if @credential == :claude_credential
+        [ own, @host.organization.public_send(@credential) ].compact
+      end
 
       def refuse(reason, status)
         message, code = REFUSALS.fetch(@credential).fetch(reason)

@@ -29,6 +29,7 @@
           host: @host, range: @range, filters: @work_filters %>
   <% when "details" %>
     <%= render "member/agents/facts", host: @host, can_manage: @can_manage, runtimes: @runtimes,
-          runtime_versions: @runtime_versions, repository_projects: @repository_projects %>
+          runtime_versions: @runtime_versions, repository_projects: @repository_projects,
+          claude_secret_options: @claude_secret_options %>
   <% end %>
 </div>

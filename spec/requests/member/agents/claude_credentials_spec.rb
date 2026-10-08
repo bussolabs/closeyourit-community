@@ -98,6 +98,51 @@ RSpec.describe "Member::Agents::ClaudeCredentials", type: :request do
       expect(org.reload.claude_credential).to be_nil
     end
 
+    # CYRA-1052 — instead of pasting, the owner links a secret already in a vault.
+    it "links the owner's personal secret and offers it on the page" do
+      variable = create(:personal_secret_variable, organization: org, account: owner, name: "CLAUDE_CODE_OAUTH_TOKEN",
+                                                   value: "sk-ant-oat01-personal")
+
+      get member_agents_claude_credential_path
+      expect(response.body).to include("CLAUDE_CODE_OAUTH_TOKEN")
+
+      patch member_agents_claude_credential_path, params: { token: "", secret: "personal:#{variable.id}", confirm: "1" }
+
+      expect(response).to redirect_to(member_agents_claude_credential_path)
+      credential = org.reload.claude_credential
+      expect(credential).to have_attributes(personal_variable: variable, token: nil, set_by: owner, kind: "oauth_token")
+      get member_agents_claude_credential_path
+      expect(response.body).not_to include("sk-ant-oat01-personal")
+    end
+
+    it "links a shared secret of the organization" do
+      environment = create(:environment, organization: org)
+      variable = Secrets::Shared::Variable.create!(organization: org, name: "ANTHROPIC_API_KEY")
+      value = Secrets::Shared::Value.create!(shared_variable: variable, environment:, value: "sk-ant-api03-shared")
+
+      patch member_agents_claude_credential_path, params: { secret: "shared:#{value.id}", confirm: "1" }
+
+      expect(org.reload.claude_credential.shared_value).to eq(value)
+    end
+
+    it "replaces a linked secret with a pasted key" do
+      variable = create(:personal_secret_variable, organization: org, account: owner, value: "sk-ant-oat01-linked")
+      create(:agent_claude_credential, organization: org, token: nil, personal_variable: variable, set_by: owner)
+
+      patch member_agents_claude_credential_path, params: { token: "sk-ant-api03-pasted", secret: "personal:#{variable.id}", confirm: "1" }
+
+      expect(org.reload.claude_credential).to have_attributes(token: "sk-ant-api03-pasted", personal_variable: nil)
+    end
+
+    it "never links another member's personal secret" do
+      other = create(:membership, organization: org).account
+      variable = create(:personal_secret_variable, organization: org, account: other, value: "sk-ant-oat01-notyours")
+
+      patch member_agents_claude_credential_path, params: { secret: "personal:#{variable.id}", confirm: "1" }
+
+      expect(org.reload.claude_credential).to be_nil
+    end
+
     it "links the page from the machines list" do
       get member_agents_path
 
