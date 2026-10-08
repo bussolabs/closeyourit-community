@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.181.1] - 2026-10-08
+
+### Changed
+
+- **La chiave Claude della macchina sta a sinistra.** Nella scheda «Dettagli e impostazioni» il riquadro è sotto i motori, nella colonna larga.
+
 ## [0.181.0] - 2026-10-08
 
 ### Added

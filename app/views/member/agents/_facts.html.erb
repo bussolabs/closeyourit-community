@@ -1,13 +1,14 @@
 <%# locals: (host:, can_manage:, runtimes:, runtime_versions:, repository_projects:, claude_secret_options: nil) %>
-<%# CYRA-1032 — the engines on the left (2/3), one column per role; the machine and its programs stacked
-    on the right (1/3), as the details of an object page (E1). One column on a phone. %>
+<%# CYRA-1032 — the engines on the left (2/3), one column per role, then the machine's own Claude key;
+    the machine and its programs stacked on the right (1/3), as the details of an object page (E1).
+    One column on a phone. %>
 <%= render Ui::GridComponent.new(cols: 1, lg: 3, gap: 6, test_id: "host-facts", class: "items-start") do %>
   <%= render Ui::StackComponent.new(gap: 6, class: "lg:col-span-2") do %>
     <%= render "member/agents/engines_panel", host:, can_manage: %>
+    <%= render "member/agents/claude_credential_panel", host:, secret_options: claude_secret_options if claude_secret_options %>
   <% end %>
   <%= render Ui::StackComponent.new(gap: 6) do %>
     <%= render "member/agents/machine_details", host:, repository_projects: %>
-    <%= render "member/agents/claude_credential_panel", host:, secret_options: claude_secret_options if claude_secret_options %>
     <%= render "member/agents/runtimes_panel", host:, runtimes:, runtime_versions: %>
   <% end %>
 <% end %>
