@@ -1,18 +1,20 @@
 <%# locals: (can_manage:) %>
 <%# CYRA-399 — lo stesso titolo su altri progetti: quasi sempre è un guasto solo, visto da più
-    applicazioni. Si dice, con i ticket accanto, invece di lasciarlo scoprire per caso. %>
+    applicazioni. Si dice, con i ticket accanto, in un avviso in basso a destra che si chiude. %>
 <% if @same_incident.present? %>
-  <%= render Ui::AlertComponent.new(variant: :warning,
-        title: t("member.tickets.same_incident.title", count: @same_incident.size),
-        test_id: "ticket-same-incident") do %>
-    <span><%= t("member.tickets.same_incident.body") %></span>
-    <span class="inline-flex items-center flex-wrap gap-2 mt-1.5">
-      <% @same_incident.each do |other| %>
-        <%= link_to member_ticket_path(other), class: "inline-flex items-center gap-1.5 h-[24px] px-2 rounded-md border border-amber-300 dark:border-amber-500/50 bg-white dark:bg-zinc-900 text-[11.5px] text-amber-900 dark:text-amber-200 hover:bg-amber-50 dark:hover:bg-amber-500/15", data: { test: "ticket-same-incident-link" } do %>
-          <span class="font-mono"><%= other.code %></span><span class="text-amber-700 dark:text-amber-300"><%= other.project.name %></span>
+  <% content_for :floating_notice do %>
+    <%= render Ui::FloatingNoticeComponent.new(key: "same_incident:#{@ticket.id}:#{@same_incident.size}", tone: :warning,
+          title: t("member.tickets.same_incident.title", count: @same_incident.size),
+          test_id: "ticket-same-incident") do %>
+      <p><%= t("member.tickets.same_incident.body") %></p>
+      <span class="inline-flex items-center flex-wrap gap-2 mt-1.5">
+        <% @same_incident.each do |other| %>
+          <%= link_to member_ticket_path(other), class: "inline-flex items-center gap-1.5 h-[24px] px-2 rounded-md border border-amber-300 dark:border-amber-500/50 bg-white dark:bg-zinc-900 text-[11.5px] text-amber-900 dark:text-amber-200 hover:bg-amber-50 dark:hover:bg-amber-500/15", data: { test: "ticket-same-incident-link" } do %>
+            <span class="font-mono"><%= other.code %></span><span class="text-amber-700 dark:text-amber-300"><%= other.project.name %></span>
+          <% end %>
         <% end %>
-      <% end %>
-    </span>
+      </span>
+    <% end %>
   <% end %>
 <% end %>
 

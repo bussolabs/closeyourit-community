@@ -164,17 +164,18 @@ module Agents
             add_error("repositories.#{index}")
           end
         end
-        validate_repository_scope(normalized) if @errors.none? { |key, _| key.start_with?("repositories") }
-        normalized
+        return normalized if @errors.any? { |key, _| key.start_with?("repositories") }
+
+        within_organization(normalized)
       end
 
-      # I project-key sono capacità dichiarate dall'host, non autorità: devono comunque esistere nella
-      # stessa organizzazione autenticata. Un'unica query bounded evita lookup per-riga/N+1.
-      def validate_repository_scope(repositories)
-        return if repositories.empty?
+      # Project keys are declared capabilities, not authority: only those of this organization are kept.
+      # Unknown keys are dropped, not rejected: a deleted project must not silence the host (CYRA-1056).
+      def within_organization(repositories)
+        return repositories if repositories.empty?
 
-        known = @project.organization.projects.where(key: repositories.uniq).pluck(:key)
-        add_error("repositories") unless known.sort == repositories.uniq.sort
+        known = @project.organization.projects.where(key: repositories.uniq).pluck(:key).to_set
+        repositories.select { |key| known.include?(key) }
       end
 
       def normalize_active_runs

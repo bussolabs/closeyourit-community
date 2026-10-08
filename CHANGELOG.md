@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.181.3] - 2026-10-08
+
+### Changed
+
+- **Avviso dei ticket gemelli in basso a destra.** Quando lo stesso titolo compare su altri progetti, l'avviso con i ticket ora sta in basso a destra e si può chiudere. Torna solo se il titolo spunta su un progetto in più. [Ticket](/member/tickets)
+
+### Fixed
+
+- **Macchine non più spente per sbaglio.** Un progetto cancellato faceva sembrare spenta una macchina che lavorava, e lei perdeva i suoi lavori. Ora la macchina resta accesa e il progetto sparito viene ignorato.
+
 ## [0.181.2] - 2026-10-08
 
 ### Changed

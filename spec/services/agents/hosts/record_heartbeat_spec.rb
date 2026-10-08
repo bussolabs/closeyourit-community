@@ -135,7 +135,7 @@ RSpec.describe Agents::Hosts::RecordHeartbeat, type: :service do
     expect(non_arrays.error.details.keys).to include("runtimes", "repositories", "active_runs")
   end
 
-  it "rifiuta repository fuori tenant e timestamp di run non stringa o non ISO8601" do
+  it "rejects run timestamps that are not ISO8601 strings" do
     base_run = {
       ticket: "CYRA-1", run_id: "run-1", phase: "implementing", runtime: "claude",
       updated_at: nil, lease_expires_at: nil, lease_health: "active", stalled: false
@@ -143,14 +143,24 @@ RSpec.describe Agents::Hosts::RecordHeartbeat, type: :service do
     result = described_class.call(
       project:,
       payload: payload(
-        repositories: [ "NOPE" ],
         active_runs: [ base_run.merge(started_at: 123), base_run.merge(run_id: "run-2", started_at: "nope") ]
       ),
       at: Time.current
     )
 
     expect(result).to be_err
-    expect(result.error.details.keys).to include("repositories", "active_runs.0", "active_runs.1")
+    expect(result.error.details.keys).to include("active_runs.0", "active_runs.1")
+  end
+
+  # CYRA-1056 — a deleted project left in the host map must not drop the whole heartbeat.
+  it "drops project keys unknown to the organization and still records the heartbeat" do
+    create(:project, key: "OTHR")
+    at = Time.current
+
+    result = described_class.call(project:, payload: payload(repositories: [ "CYRA", "NOPE", "OTHR" ]), at:)
+
+    expect(result).to be_ok
+    expect(host.reload).to have_attributes(repositories: [ "CYRA" ], last_heartbeat_at: be_within(1.second).of(at))
   end
 
   # CYRA-999 — the reasons the machine last stopped before taking work (Automator CYAU-116).

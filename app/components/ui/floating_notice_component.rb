@@ -8,7 +8,8 @@ module Ui
   # `lifted:` raises it over a page's sticky bottom bar. Member pages only: elsewhere it does not render.
   class FloatingNoticeComponent < BaseComponent
     # Every notice key matches one of these: the endpoint refuses any other. A project's next steps
-    # carry the project and the steps shown, so a step the person has not seen brings the notice back.
+    # carry the project and the steps shown, so a step the person has not seen brings the notice back;
+    # the same incident carries how many other projects share the title, so one more brings it back.
     # `release:` is the release the person last opened from the footer (Ui::ChangelogComponent).
     KEY_FORMATS = [
       /\Aalerting_hierarchy\z/,
@@ -19,6 +20,7 @@ module Ui
       /\Acoverage_(uptime|crons):(covered|uncovered-\d{1,6})\z/,
       /\Arelease:v?[\w.-]{1,40}\z/,
       /\Aticket_review:\h{8}-\h{4}-\h{4}-\h{4}-\h{12}\z/,
+      /\Asame_incident:\h{8}-\h{4}-\h{4}-\h{4}-\h{12}:\d{1,4}\z/,
       /\Aproject_next_steps:\h{8}-\h{4}-\h{4}-\h{4}-\h{12}:[a-z0-9,-]{1,200}\z/
     ].freeze
 

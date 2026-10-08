@@ -878,6 +878,26 @@ RSpec.describe "Member::Tickets", type: :request do
       expect(response.body).not_to include(nascosto.code)
       expect(response.body).not_to include("Progetto riservato")
     end
+
+    it "floats bottom-right, stays closed once dismissed and comes back with one more project" do
+      other = create(:project, organization: org, name: "Fourth project")
+      title = "The database does not answer"
+      mine = create(:ticket, organization: org, project:, status:, priority:, title:)
+      create(:ticket, organization: org, project: other, status:, priority:, title:)
+      sign_in(admin)
+
+      get member_ticket_path(mine)
+      notice = Nokogiri::HTML(response.body).at_css("aside[data-test='ticket-same-incident']")
+      expect(notice["data-ui--floating-notice-key-value"]).to eq("same_incident:#{mine.id}:1")
+
+      admin.update!(dismissed_notices: [ "same_incident:#{mine.id}:1" ])
+      get member_ticket_path(mine)
+      expect(response.body).not_to include('data-test="ticket-same-incident"')
+
+      create(:ticket, organization: org, project: create(:project, organization: org), status:, priority:, title:)
+      get member_ticket_path(mine)
+      expect(response.body).to include('data-test="ticket-same-incident"')
+    end
   end
 
   describe "GET new" do

@@ -207,7 +207,8 @@ RSpec.describe "Api::V1::CronCheckIns (ingest bearer)", type: :request do
       expect(host.reload.last_heartbeat_at).to be_nil
     end
 
-    it "repository non appartenente all'organizzazione → 422 con una sola validazione batch" do
+    # CYRA-1056 — a key outside the organization is dropped, not stored, and the beat still lands.
+    it "drops a repository outside the organization with a single batch lookup" do
       foreign_project = create(:project, key: "OTHR")
 
       queries = captured_sql do
@@ -215,9 +216,9 @@ RSpec.describe "Api::V1::CronCheckIns (ingest bearer)", type: :request do
              params: telemetry.merge(repositories: [ foreign_project.key ]), as: :json
       end
 
-      expect(response).to have_http_status(:unprocessable_content)
+      expect(response).to have_http_status(:accepted)
       expect(queries.grep(/SELECT "projects"\."key" FROM/i).size).to eq(1)
-      expect(host.reload.last_heartbeat_at).to be_nil
+      expect(host.reload).to have_attributes(repositories: [], last_heartbeat_at: be_present)
     end
   end
 end
