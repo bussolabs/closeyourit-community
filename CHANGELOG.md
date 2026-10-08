@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.182.1] - 2026-10-08
+
+### Fixed
+
+- **Legenda degli agenti allineata.** Sotto l'elenco dei ticket, la legenda delle icone degli agenti non sta più attaccata al bordo del riquadro. [Ticket](/member/tickets)
+
 ## [0.182.0] - 2026-10-08
 
 ### Added
