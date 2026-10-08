@@ -67,6 +67,24 @@ RSpec.describe Agents::Staging::VerifyMerge do
     expect(workflow.phase).to eq("closer_production_queued")
   end
 
+  # CYRA-1050 — the code is in staging now: the ticket reads «in review» until production proves it.
+  it "puts the ticket on the review status once the merge is verified" do
+    in_review = create(:ticket_status, :in_review, organization:)
+    dichiara
+
+    described_class.call(workflow:, client: client_che_risponde(true, true))
+
+    expect(ticket.reload.status).to eq(in_review)
+  end
+
+  it "still opens production when the organization has no review status" do
+    dichiara
+
+    described_class.call(workflow:, client: client_che_risponde(true, true))
+
+    expect(workflow.reload.phase).to eq("closer_production_queued")
+  end
+
   # A project whose proof of done is the merge itself has nothing to observe in production: the
   # production step used to refuse it ("no proof declared") and the work never became done.
   it "with the merge as proof of done, the verified merge completes the work" do

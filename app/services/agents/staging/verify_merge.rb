@@ -66,7 +66,8 @@ module Agents
       def verified!
         @workflow.update!(closer_staging_verified_at: @now, closer_staging_next_check_at: nil,
                           closer_staging_last_error_code: nil)
-        complete_on_merge! if merge_is_the_proof?
+        # CYRA-1050 — a missing review status does not stop the release: the merge was seen anyway.
+        merge_is_the_proof? ? complete_on_merge! : Agents::Workflows::StatusProjection.call(workflow: @workflow)
         Result.ok(@workflow)
       end
 

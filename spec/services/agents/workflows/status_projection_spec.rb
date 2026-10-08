@@ -67,6 +67,24 @@ RSpec.describe Agents::Workflows::StatusProjection do
       expect(ticket.reload.status).to eq(in_chiusura)
     end
 
+    # CYRA-1050 — code verified on the main line is in staging: a person reviews it before production.
+    it "moves the ticket back to the review status once the staging merge is verified" do
+      in_chiusura = create(:ticket_status, :in_progress, organization:, position: 5, label: "In chiusura")
+      ticket.update_columns(status_id: in_chiusura.id)
+      workflow.update!(autopilot_started_at: 3.minutes.ago, autopilot_completed_at: 2.minutes.ago,
+                       candidate_verified_at: 2.minutes.ago, autopilot_approved_at: 2.minutes.ago,
+                       closer_staging_started_at: 1.minute.ago, closer_staging_completed_at: 1.minute.ago,
+                       closer_staging_verified_at: Time.current)
+
+      expect(described_class.call(workflow:)).to be_ok
+      expect(ticket.reload.status).to eq(in_review)
+    end
+
+    it "asks the prerequisites question of the production run for staging-verified work" do
+      expect(described_class.prerequisites("closer_production_queued"))
+        .to eq(Ticketing::DependencyGuard.mode_for("closer_production"))
+    end
+
     # Una fase che non ha una parola sua non ne inventa una: il ticket resta dov'è. Il contrario
     # vorrebbe dire che ogni fase nuova sposta il ticket da qualche parte senza che nessuno l'abbia
     # deciso.

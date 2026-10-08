@@ -38,6 +38,11 @@ module Agents
         "closer_staging_queued" => Destination.new(
           category: :in_progress, execution_phase: "closer_staging",
           picker: ->(statuses) { statuses.active.where(review_gate: false).category_in_progress.ordered.last }
+        ),
+        # CYRA-1050 — the merge is verified: the code is in staging, and in review until production proves it.
+        "closer_production_queued" => Destination.new(
+          category: :in_progress, execution_phase: "closer_production",
+          picker: ->(statuses) { statuses.review_gates.active.ordered.first }
         )
       }.freeze
 

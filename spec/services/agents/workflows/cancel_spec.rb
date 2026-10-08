@@ -42,6 +42,39 @@ RSpec.describe Agents::Workflows::Cancel do
     expect(attempt.reload).to be_status_approved
   end
 
+  # CYRA-1050 — the status the run had put on the ticket must not outlive the run.
+  describe "ticket status" do
+    let!(:open_status) { create(:ticket_status, organization:, position: 0) }
+    let!(:in_progress) { create(:ticket_status, :in_progress, organization:, position: 1) }
+
+    it "gives an in-progress ticket back to the first open status when nothing reached staging" do
+      ticket.update_columns(status_id: in_progress.id)
+      workflow.update!(triage_started_at: 1.hour.ago, autopilot_started_at: 30.minutes.ago)
+
+      expect(described_class.call(workflow:, actor: owner, reason: "Stop")).to be_ok
+      expect(ticket.reload.status).to eq(open_status)
+    end
+
+    it "leaves the ticket alone once its code is verified on the main line" do
+      in_review = create(:ticket_status, :in_review, organization:, position: 2)
+      ticket.update_columns(status_id: in_review.id)
+      workflow.update!(closer_staging_completed_at: 10.minutes.ago, closer_staging_verified_at: 5.minutes.ago)
+
+      expect(described_class.call(workflow:, actor: owner, reason: "Stop")).to be_ok
+      expect(ticket.reload.status).to eq(in_review)
+    end
+
+    it "leaves the status alone while a person holds the ticket" do
+      ticket.update_columns(status_id: in_progress.id)
+      account = create(:membership, organization:).account
+      create(:agent_lease, organization:, ticket:, host: nil, agent: nil, account:,
+                           run_id: "web:#{SecureRandom.uuid}", expires_at: 2.hours.from_now)
+
+      expect(described_class.call(workflow:, actor: owner, reason: "Stop")).to be_ok
+      expect(ticket.reload.status).to eq(in_progress)
+    end
+  end
+
   it "richiede un gestore del progetto e una motivazione" do
     outsider = create(:account)
 

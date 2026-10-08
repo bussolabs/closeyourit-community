@@ -28,10 +28,25 @@ module Agents
                                                        finished_at: Time.current, updated_at: Time.current)
           @workflow.update!(cancelled_by: @actor, cancelled_at: Time.current, cancellation_reason: @reason)
         end
+        give_status_back
         Result.ok(@workflow)
       end
 
       private
+
+      # CYRA-1050 — the in-progress status the run put on the ticket goes back to open. Not once the code
+      # is verified on the main line (it is in staging: in review), nor while a person holds the ticket.
+      def give_status_back
+        ticket = @workflow.ticket
+        return if @workflow.closer_staging_verified_at? || ticket.agent_lease&.human?
+        return unless ticket.status&.category_in_progress?
+
+        open_status = @workflow.organization.ticket_statuses.active.category_open.ordered.first
+        return if open_status.nil?
+
+        Ticketing::ChangeStatus.call(organization: @workflow.organization, ticket:, status_id: open_status.id,
+                                     channel: :workflow, actor: @actor)
+      end
 
       def forbidden
         Result.err(AppError.new("Non puoi annullare questa automazione",

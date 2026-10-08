@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.179.4] - 2026-10-08
+
+### Changed
+
+- **Lo stato del ticket segue dove si trova il codice.** Quando il lavoro dell'automazione arriva in staging, il ticket passa in revisione; quando arriva in produzione, diventa risolto. Se annulli l'automazione prima dello staging, il ticket torna aperto.
+
 ## [0.179.3] - 2026-10-07
 
 ### Changed
