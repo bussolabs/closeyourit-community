@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.183.0] - 2026-10-08
+
+### Security
+
+- **Chiavi GitHub a tempo per le macchine.** Per consegnare un ticket, la macchina riceve una chiave GitHub che dura un'ora e apre solo il repository di quel ticket. Sulla macchina non serve più una chiave permanente. [Agenti](/member/agents)
+
 ## [0.182.1] - 2026-10-08
 
 ### Fixed

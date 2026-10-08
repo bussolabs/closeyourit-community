@@ -101,6 +101,14 @@ module Github
       token
     end
 
+    # Token valid ~1h for ONE repository with only the given permissions, handed to a machine (CYRA-1058).
+    # Never cached: the cached installation token opens every repository and may be almost expired.
+    def repository_token(installation_id, repository:, permissions:)
+      body = { repositories: [ repository ], permissions: }
+      data = app_request(Net::HTTP::Post, "/app/installations/#{installation_id}/access_tokens", body)
+      { token: data.fetch("token"), expires_at: data.fetch("expires_at") }
+    end
+
     # Metadati dell'installazione (JWT App) → account.login dell'org proprietaria. Per il callback di
     # connessione (GitHub non passa il login nel redirect).
     def installation(installation_id)

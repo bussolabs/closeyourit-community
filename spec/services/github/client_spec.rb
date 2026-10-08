@@ -94,6 +94,37 @@ RSpec.describe Github::Client do
     end
   end
 
+  describe "#repository_token" do
+    let(:permissions) { { contents: "write", pull_requests: "write" } }
+
+    def stub_scoped_token(token)
+      stub_request(:post, token_url)
+        .with(body: { repositories: [ "repo-a" ], permissions: }.to_json)
+        .to_return(status: 201, body: { token:, expires_at: "2026-10-08T20:00:00Z" }.to_json)
+    end
+
+    it "mints a token scoped to one repository and the given permissions" do
+      req = stub_scoped_token("ghs_scoped")
+
+      result = client.repository_token(installation_id, repository: "repo-a", permissions:)
+
+      expect(result).to eq(token: "ghs_scoped", expires_at: "2026-10-08T20:00:00Z")
+      expect(req).to have_been_requested
+    end
+
+    # The cached installation token opens every repository and may be 50 minutes old: a scoped token is
+    # minted fresh on every call and never stored.
+    it "mints a new token on every call and never touches the cache" do
+      allow(Rails.cache).to receive(:write)
+      stub_scoped_token("ghs_scoped")
+
+      2.times { client.repository_token(installation_id, repository: "repo-a", permissions:) }
+
+      expect(a_request(:post, token_url)).to have_been_made.twice
+      expect(Rails.cache).not_to have_received(:write)
+    end
+  end
+
   describe "#ref" do
     it "GET del ref e ritorna l'oggetto" do
       stub_token

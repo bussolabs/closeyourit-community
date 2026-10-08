@@ -428,6 +428,10 @@ Dal CYRA-766 **non esiste più la famiglia `*-CHAT-*` del trasporto AI**: quei c
 - `R403-AGENT-003` — credenziale Claude negata: l'host non è certificato (`Agents::Hosts::LentCredential`)
 - `R404-AGENT-006` — l'organizzazione non ha una chiave OpenRouter per le macchine: nessuna macchina rilegge con OpenCode (`Agents::Hosts::LentCredential`)
 - `R403-AGENT-008` — chiave OpenRouter negata: l'host non è certificato (`Agents::Hosts::LentCredential`)
+- `R403-AGENT-009` — token GitHub negato: l'host non tiene un lease attivo sul ticket (`Agents::Hosts::GithubToken`)
+- `R403-AGENT-010` — token GitHub negato: l'host non è certificato (`Agents::Hosts::GithubToken`)
+- `R404-AGENT-007` — token GitHub: ticket non trovato fra i progetti visibili all'host (anti-BOLA; `Agents::Hosts::GithubToken`)
+- `R404-AGENT-008` — token GitHub: il progetto del ticket non ha un repository GitHub collegato (`Agents::Hosts::GithubToken`)
 - `R422-AGENT-006` — pin dello skill bundle fallito (validazione repo/ref/version/digest; `Agents::SkillBundles::Pin`)
 - `R422-AGENT-007` — certificazione host fallita (validazione; `Agents::Hosts::Certify`)
 

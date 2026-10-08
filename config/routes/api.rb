@@ -106,6 +106,8 @@ namespace :api do
       # The organization's Claude credential for the host's Claude sessions (CYAU-224).
       resource :claude_credential, only: :show
       resource :openrouter_credential, only: :show # CYAU-228 — the key OpenCode reviews with
+      # CYRA-1058 — a GitHub token for the only repository of the ticket the host holds.
+      resource :github_token, only: :create
       # CYAU-235 — the next question round for the machine's supporter, and its answers to it.
       resource :supporter_round, only: :show
       resources :supporter_rounds, only: [] do
