@@ -114,6 +114,13 @@
           <%= render Ui::IconComponent.new(name: "check", class: "text-[10px]") %><%= t("member.approvals.board.approve") %>
         </button>
       <% end %>
+      <%# CYRA-1057 — a blocked row restarts from here: same unblock as the ticket, back to the board. %>
+      <% if row.state == "review_blocked" && row.ticket_id %>
+        <%= render Ui::ButtonComponent.new(label: t("member.approvals.board.retry"),
+              href: member_ticket_automation_unblock_path(row.ticket_id, return_to: "approvals"), method: :post,
+              form_id: "approvals-row-actions",
+              variant: :secondary, size: :sm, icon: "rotate-cw", test_id: "approvals-row-retry") %>
+      <% end %>
       <%= render Ui::ButtonComponent.new(label: t("member.approvals.board.decide"),
             href: member_home_approvals_path(item: row.key, state: batch.filter),
             variant: :secondary_muted, size: :sm, icon: "gavel", test_id: "approvals-board-decide") %>

@@ -844,6 +844,7 @@ it:
           other: "%{count} righe"
         no_project: Senza progetto
         decide: Valuta
+        retry: Riprova
         open_phase: "Apri il referto: %{phase}"
         cell:
           done: "%{phase}: passato"

@@ -21,6 +21,8 @@
                                                      phase: plan.phase),
                 method: :post, id: "approvals-approve-one", class: "hidden", data: { turbo_frame: local_assigns[:frame] } do %>
   <% end %>
+  <%# CYRA-1057 — retry from the row: same reason, a shared form outside the bulk one. %>
+  <%= render Ui::RowActionsFormComponent.new(id: "approvals-row-actions", test_id: "approvals-row-actions-form") %>
   <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden" data-test="approvals-board-panel">
     <%# CYRA-924 — the filter bar sits inside the panel (C61) but OUTSIDE the bulk form: it is a GET
         form, and HTML forbids nested forms (CYRA-651). %>

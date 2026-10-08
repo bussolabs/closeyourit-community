@@ -1542,6 +1542,27 @@ RSpec.describe "Member::Home::Approvals", type: :request do
       expect(stuck).to contain_exactly("true", "false")
     end
 
+    # CYRA-1057 — a blocked row restarts from the board, without opening its ticket.
+    it "offers retry only on blocked rows, posting to the ticket unblock" do
+      stopped = nil
+      allow_n_plus_one do
+        planned
+        stopped = blocked
+      end
+      sign_in(owner)
+
+      get member_home_approvals_path
+
+      retries = doc.css("[data-test='approvals-row-retry']")
+      expect(retries.size).to eq(1)
+      # The row sits inside the bulk form: without its own `form` the button would approve the ticked rows.
+      expect(retries.first["form"]).to eq("approvals-row-actions")
+      expect(doc.css("[data-test='approvals-board-row'] form")).to be_empty
+      expect(doc.at_css("form#approvals-row-actions")).to be_present
+      expect(retries.first["formaction"])
+        .to eq(member_ticket_automation_unblock_path(stopped.ticket, return_to: "approvals"))
+    end
+
     it "wires the keyboard shortcuts and lists them in the shortcut help" do
       review_ticket
       sign_in(owner)

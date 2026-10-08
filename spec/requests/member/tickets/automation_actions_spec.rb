@@ -75,6 +75,27 @@ RSpec.describe "Member ticket automation actions", type: :request do
     expect(workflow.reload.blocked_at).to be_nil
   end
 
+  # CYRA-1057 — the retry pressed on the approvals board goes back to the board.
+  it "returns to the approvals board when the retry came from there" do
+    workflow.update!(planned_at: nil, blocked_at: Time.current, blocked_phase: "planner", blocked_kind: "agent_blocked",
+                     blocked_reason: "Clarification state unreadable")
+
+    post member_ticket_automation_unblock_path(ticket, return_to: "approvals")
+
+    expect(response).to redirect_to(member_home_approvals_path)
+    expect(flash[:notice]).to eq(I18n.t("member.tickets.automation.blocked.retried"))
+    expect(workflow.reload.blocked_at).to be_nil
+  end
+
+  it "ignores any other return_to value" do
+    workflow.update!(planned_at: nil, blocked_at: Time.current, blocked_phase: "planner", blocked_kind: "agent_blocked",
+                     blocked_reason: "Clarification state unreadable")
+
+    post member_ticket_automation_unblock_path(ticket, return_to: "https://evil.example")
+
+    expect(response).to redirect_to(member_ticket_path(ticket, tab: "automation"))
+  end
+
   it "puts stop on the left and retry on the right of a blocked work" do
     workflow.update!(planned_at: nil, blocked_at: Time.current, blocked_phase: "planner", blocked_kind: "attempt_limit",
                      blocked_reason: "review_limit: planner rejected 2 times")

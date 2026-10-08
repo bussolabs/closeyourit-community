@@ -822,6 +822,7 @@ en:
           other: "%{count} rows"
         no_project: No project
         decide: Review
+        retry: Retry
         open_phase: "Open the report: %{phase}"
         cell:
           done: "%{phase}: passed"

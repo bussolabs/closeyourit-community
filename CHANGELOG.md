@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.182.0] - 2026-10-08
+
+### Added
+
+- **Riprova dalle Approvazioni.** Una lavorazione bloccata riparte con «Riprova» direttamente dalla sua riga, senza aprire il ticket. Resti sull'elenco. [Approvazioni](/member/home/approvals)
+
 ## [0.181.3] - 2026-10-08
 
 ### Changed
