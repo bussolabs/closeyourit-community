@@ -31,6 +31,42 @@ RSpec.describe "Cli::V1::Tickets", type: :request do
     expect(response.parsed_body["meta"]).to include("total")
   end
 
+  describe "GET index filters for the caller's own work" do
+    let(:done_status) { create(:ticket_status, organization:, category: :done) }
+
+    def listed_ids(params)
+      get "/cli/v1/projects/#{project.id}/tickets", params:, headers: headers
+      response.parsed_body["data"].map { |t| t["id"] }
+    end
+
+    it "assignee=me keeps only the tickets assigned to the token's account" do
+      mine = create(:ticket, project:, organization:, assignee: account)
+      unassigned = create(:ticket, project:, organization:)
+
+      ids = listed_ids(assignee: "me")
+
+      expect(ids).to include(mine.id)
+      expect(ids).not_to include(unassigned.id)
+    end
+
+    it "open=true leaves out the tickets whose status is done" do
+      open_ticket = create(:ticket, project:, organization:)
+      closed = create(:ticket, project:, organization:, status: done_status)
+
+      ids = listed_ids(open: "true")
+
+      expect(ids).to include(open_ticket.id)
+      expect(ids).not_to include(closed.id)
+    end
+
+    it "rejects an assignee other than me instead of listing everything" do
+      get "/cli/v1/projects/#{project.id}/tickets", params: { assignee: "someone" }, headers: headers
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body.dig("error", "code")).to eq("R422-TICKET-015")
+    end
+  end
+
   it "show → 200 con code e title" do
     ticket = create(:ticket, project:, organization:)
     get "/cli/v1/projects/#{project.id}/tickets/#{ticket.id}", headers: headers

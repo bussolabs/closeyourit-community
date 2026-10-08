@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.180.0] - 2026-10-08
+
+### Added
+
+- **Solo i tuoi ticket ancora aperti.** La riga di comando e le integrazioni possono chiedere i ticket assegnati a te e non ancora conclusi, senza scorrere tutto il progetto.
+
 ## [0.179.4] - 2026-10-08
 
 ### Changed

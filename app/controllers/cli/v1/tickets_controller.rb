@@ -26,6 +26,13 @@ module Cli
         if params[:agent_eligibility].present?
           scope = scope.where(agent_eligibility: Array(params[:agent_eligibility]))
         end
+        if params[:assignee].present?
+          return render_error("R422-TICKET-015", "Only assignee=me is supported", status: :unprocessable_content) unless params[:assignee] == "me"
+
+          scope = scope.where(assignee: Current.account)
+        end
+        # "Open" means not finished: the status category is anything but done.
+        scope = scope.where.not(status_id: ::Types::TicketStatus.category_done.select(:id)) if params[:open] == "true"
         records, meta = paginate(scope)
         # blocked/workable senza N+1: UN Set aggregato per l'intera pagina (mai un blocked? per riga).
         blocked_ids = Connections::TicketDependency.blocked_ids_among(records.map(&:id))
