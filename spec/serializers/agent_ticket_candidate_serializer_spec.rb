@@ -99,6 +99,17 @@ RSpec.describe AgentTicketCandidateSerializer do
     expect(json.dig("workflow", :frozen_plan_version)).to be_nil
   end
 
+  # CYAU-249 — when a person last restarted the attempt budget, so the machine restarts its own series too.
+  it "carries when a person last restarted the attempt budget" do
+    ticket = create(:ticket, with_agent_workflow: true)
+    restarted = Time.zone.parse("2026-10-08 19:30:00")
+    ticket.agent_workflow.update!(**Agents::Workflow.cleared_block(restarted))
+
+    json = described_class.new(ticket.reload).as_json
+
+    expect(Time.zone.parse(json.dig("workflow", :budget_from).to_s)).to eq(restarted)
+  end
+
   it "mantiene null i riferimenti opzionali e il repository assente" do
     ticket = create(:ticket, assignee: nil, reviewer: nil, milestone: nil, with_agent_workflow: true)
 

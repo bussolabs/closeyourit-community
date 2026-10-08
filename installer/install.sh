@@ -11,7 +11,8 @@
 # Non-interactive use: set DOMAIN, ACME_EMAIL, ADMIN_EMAIL (and SMTP_* if wanted) beforehand.
 # CLOSEYOURIT_VERSION picks a version; the default is the latest release.
 # A mirror can stand in for GitHub: CLOSEYOURIT_RELEASES_API, CLOSEYOURIT_RELEASES_RAW and
-# CLOSEYOURIT_IMAGE, kept in .env for updates.
+# CLOSEYOURIT_IMAGE, kept in .env for updates. CLOSEYOURIT_SKILLS_RELEASES_API does the same
+# for the cyi skills releases.
 set -euo pipefail
 
 REPO="bussolabs/closeyourit-community"
@@ -138,7 +139,7 @@ BACKUP_S3_BUCKET=
 INGEST_ENABLED=false
 INGEST_UPSTREAM=app:80
 EOF
-for key in CLOSEYOURIT_RELEASES_API CLOSEYOURIT_RELEASES_RAW CLOSEYOURIT_IMAGE; do
+for key in CLOSEYOURIT_RELEASES_API CLOSEYOURIT_RELEASES_RAW CLOSEYOURIT_IMAGE CLOSEYOURIT_SKILLS_RELEASES_API; do
   if [ -n "${!key:-}" ]; then printf '%s=%s\n' "$key" "${!key}" >> "$HOME_DIR/.env"; fi
 done
 printf '%s' "$nats_password" > "$HOME_DIR/ingest/nats_password"

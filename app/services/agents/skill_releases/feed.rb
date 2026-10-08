@@ -1,0 +1,82 @@
+# frozen_string_literal: true
+
+require "net/http"
+require "json"
+
+module Agents
+  module SkillReleases
+    # Published releases of the public cyi skills package (CYRA-912). A release counts only when it
+    # has a vX.Y.Z tag, the cyi-X.Y.Z.tgz asset and a `sha256: <hex>` line written by the release CI.
+    # Net::HTTP raw like Instance::ReleaseFeed.
+    class Feed < ApplicationService
+      class Error < StandardError; end
+
+      Entry = Data.define(:version, :url, :sha256, :git_sha, :published_at)
+
+      TAG_FORMAT = /\Av(\d+\.\d+\.\d+)\z/
+      SHA256_LINE = /^sha256:\s*([0-9a-fA-F]{64})\s*$/
+      OPEN_TIMEOUT_SECONDS = 5
+      READ_TIMEOUT_SECONDS = 10
+
+      def call
+        releases.filter_map { |release| safe_entry(release) }
+      end
+
+      private
+
+      def releases
+        body = get("#{App::SkillsCatalog.releases_api}/releases?per_page=100")
+        list = JSON.parse(body)
+        raise Error, "release list is not a list" unless list.is_a?(Array)
+
+        list
+      rescue JSON::ParserError => e
+        raise Error, "release list unreadable: #{e.message}"
+      end
+
+      # One odd release must not hide the good ones: a malformed item is logged and skipped.
+      def safe_entry(release)
+        entry(release)
+      rescue TypeError, NoMethodError, ArgumentError => e
+        Rails.logger.warn("[Agents::SkillReleases::Feed] release skipped: #{e.class}")
+        nil
+      end
+
+      def entry(release)
+        return if release["draft"] || release["prerelease"]
+
+        version = release["tag_name"].to_s[TAG_FORMAT, 1] or return
+        asset = Array(release["assets"]).find { |a| a["name"] == "cyi-#{version}.tgz" }
+        sha256 = release["body"].to_s[SHA256_LINE, 1]
+        unless asset && sha256
+          Rails.logger.warn("[Agents::SkillReleases::Feed] v#{version} skipped: missing package or sha256 line")
+          return
+        end
+
+        url = asset["browser_download_url"].to_s
+        published_at = Time.zone.parse(release["published_at"].to_s)
+        unless published_at && url.start_with?("https://")
+          Rails.logger.warn("[Agents::SkillReleases::Feed] v#{version} skipped: missing published_at or non-https package url")
+          return
+        end
+
+        Entry.new(version:, url:, sha256: sha256.downcase,
+                  git_sha: release["target_commitish"].to_s[/\A[0-9a-f]{40}\z/], published_at:)
+      end
+
+      def get(url)
+        uri = URI(url)
+        response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https",
+                                                       open_timeout: OPEN_TIMEOUT_SECONDS, read_timeout: READ_TIMEOUT_SECONDS) do |http|
+          http.get(uri.request_uri, "Accept" => "application/vnd.github+json", "User-Agent" => "closeyourit-skills")
+        end
+        raise Error, "#{uri.host} answered #{response.code}" unless response.is_a?(Net::HTTPSuccess)
+
+        response.body
+      rescue SystemCallError, Timeout::Error, SocketError, OpenSSL::SSL::SSLError, EOFError, IOError,
+             Net::HTTPBadResponse, Net::ProtocolError, Zlib::Error => e
+        raise Error, "#{uri.host} unreachable: #{e.class}"
+      end
+    end
+  end
+end

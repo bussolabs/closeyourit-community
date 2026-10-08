@@ -418,6 +418,9 @@ Dal CYRA-766 **non esiste più la famiglia `*-CHAT-*` del trasporto AI**: quei c
 - `R409-AGENT-002` — pin dello skill bundle rifiutato: la `version` è più vecchia di quella già pinnata (monotonico anti-downgrade; `force: true` per un rollback intenzionale; `Agents::SkillBundles::Pin`)
 - `R409-AGENT-003` — registrazione host rifiutata: il fingerprint è già legato a un ALTRO service account (un host = una macchina = un service account; `Agents::Hosts::Register`)
 - `R409-AGENT-004` — registrazione host rifiutata: il service account è già legato a un ALTRO host (relazione 1-1 host↔service account, indice unico `service_account_id`; `Agents::Hosts::Register`)
+- `R404-AGENT-009` — nessuna versione delle skill cyi disponibile per l'organizzazione: elenco vuoto o tutte ritirate (`Agents::SkillReleases::Resolve`)
+- `R422-AGENT-010` — versione delle skill da fissare inesistente o ritirata (`Agents::SkillReleases::Pin`)
+- `R502-AGENT-001` — release pubbliche delle skill cyi non leggibili: GitHub o il mirror non rispondono o rispondono male; l'elenco resta com'era (`Agents::SkillReleases::Sync`)
 - `R403-AGENT-001` — host automator revocato: la stessa identità non può ri-registrarsi
 - `R403-AGENT-002` — registrazione host negata: solo un service account (`account.service?`) può registrare un host, non una sessione utente umana (`Api::V1::HostsController`)
 - `R403-AGENT-007` — chiamata host-bound negata: l'host storico non usa Linux (`AutomatorAuthentication`, `Agents::Hosts::RecordHeartbeat`)

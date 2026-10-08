@@ -103,6 +103,7 @@ namespace :api do
       resource :workspace_manifest, only: :show
       # Bundle skill versionato pinnato (repo/ref/version/digest) servito all'host cyi_ah_ per il clone del plugin.
       resource :skill_manifest, only: :show
+      resource :skill_release, only: :show # CYRA-912: cyi skills version to run (replaces skill_manifest with CYAU-216)
       # The organization's Claude credential for the host's Claude sessions (CYAU-224).
       resource :claude_credential, only: :show
       resource :openrouter_credential, only: :show # CYAU-228 — the key OpenCode reviews with

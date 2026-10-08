@@ -620,5 +620,11 @@ production: &schedule
     queue: maintenance
     schedule: every 6 hours
 
+  # CYRA-912 — every install reads the public cyi skill releases.
+  sync_skill_releases:
+    class: Agents::SyncSkillReleasesJob
+    queue: maintenance
+    schedule: every hour
+
 # Development runs the production schedule, so alerts and checks fire locally too (CYRA-932).
 development: *schedule

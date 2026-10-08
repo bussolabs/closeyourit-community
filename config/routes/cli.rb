@@ -90,6 +90,10 @@ namespace :cli do
       resources :tokens, only: %i[index create destroy]
       # Pin del bundle skill (singleton org): lettura agents.view, upsert agents.manage. Origine update: CI closeyourit-skills.
       resource :skill_bundle, only: %i[show update]
+      # CYRA-912 — cyi skills package: versions (view), resolution (view), organization pin (manage).
+      resources :skill_releases, only: :index
+      resource :skill_release, only: :show, controller: "skill_release"
+      resource :skill_release_pin, only: %i[show update destroy]
     end
 
     # RBAC: ruoli (bundle di permessi) + team (persone con scope) — gated permissions.manage

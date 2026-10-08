@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.184.1] - 2026-10-08
+
+### Fixed
+
+- **«Riprova» fa ripartire davvero il lavoro.** Dopo «Riprova» la macchina non riblocca più subito il ticket per i tentativi falliti prima. La spesa già fatta resta registrata. [Approvazioni](/member/home/approvals)
+
 ## [0.184.0] - 2026-10-08
 
 ### Changed

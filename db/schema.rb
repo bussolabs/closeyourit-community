@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_191343) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -534,6 +534,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_120000) do
     t.datetime "updated_at", null: false
     t.string "version", null: false
     t.index ["organization_id"], name: "index_agents_skill_bundles_singleton", unique: true
+  end
+
+  create_table "agents_skill_release_pins", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "organization_id", null: false
+    t.uuid "skill_release_id", null: false
+    t.uuid "pinned_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_agents_skill_release_pins_on_organization_id", unique: true
+    t.index ["skill_release_id"], name: "index_agents_skill_release_pins_on_skill_release_id"
+  end
+
+  create_table "agents_skill_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "version", null: false
+    t.string "url", null: false
+    t.string "sha256", null: false
+    t.string "git_sha"
+    t.datetime "published_at", null: false
+    t.datetime "withdrawn_at"
+    t.uuid "withdrawn_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["version"], name: "index_agents_skill_releases_on_version", unique: true
   end
 
   create_table "agents_supporter_decisions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -4463,6 +4486,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_120000) do
   add_foreign_key "agents_release_assignments", "agents_workflows", column: "workflow_id"
   add_foreign_key "agents_release_assignments", "github_repositories"
   add_foreign_key "agents_skill_bundles", "organizations", on_delete: :cascade
+  add_foreign_key "agents_skill_release_pins", "agents_skill_releases", column: "skill_release_id"
+  add_foreign_key "agents_skill_release_pins", "organizations"
   add_foreign_key "agents_supporter_decisions", "accounts", column: "seen_by_id", on_delete: :nullify
   add_foreign_key "agents_supporter_decisions", "agents_workflows", column: "workflow_id", on_delete: :cascade
   add_foreign_key "agents_supporter_decisions", "organizations", on_delete: :cascade

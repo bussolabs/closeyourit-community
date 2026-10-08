@@ -1,0 +1,39 @@
+en:
+  valhalla:
+    nav:
+      skill_releases: "Skill versions"
+    skill_releases:
+      index:
+        title: "cyi skill versions"
+        lead: "Versions come from the public GitHub releases, every hour. Withdrawing a version takes it away from whoever received it: they go back to the previous available one."
+        panel_title: "Versions"
+        search: "Search a version"
+        count_versions:
+          one: "version"
+          other: "versions"
+        count_withdrawn:
+          one: "withdrawn"
+          other: "withdrawn"
+        sync: "Read GitHub now"
+        version: "Version"
+        published: "Published"
+        state: "State"
+        actions: "Actions"
+        available: "Available"
+        withdrawn: "Withdrawn"
+        withdraw: "Withdraw"
+        restore: "Restore"
+        withdraw_dialog:
+          title: "Withdraw version %{version}?"
+          body: "Whoever received it goes back to the previous available one. You can restore it any time."
+        empty_title: "No versions yet"
+        empty: "GitHub has no releases of the package, or it has not been read yet."
+      change_failed: "Version %{version}: the change did not go through"
+      sync:
+        added: "Added: %{versions}"
+        nothing_new: "No new versions"
+        failed: "GitHub did not answer: the list stays as it was"
+      withdraw:
+        withdrawn: "Version %{version} withdrawn"
+      restore:
+        restored: "Version %{version} available again"
