@@ -13,6 +13,7 @@ module Member
           workflow = workflow_for(params[:ticket_id])
           result = ::Agents::Workflows::Unblock.call(workflow:, actor: Current.account)
           return redirect_to_automation(workflow.ticket, result, "member.tickets.automation.blocked.retried") unless from_approvals?
+          return row_outcome(result) if request.format.turbo_stream?
 
           redirect_to member_home_approvals_path,
                       result.ok? ? { notice: t("member.tickets.automation.blocked.retried") } : { alert: result.error.message }
@@ -21,6 +22,15 @@ module Member
         private
 
         def from_approvals? = params[:return_to].to_s == APPROVALS_RETURN
+
+        # CYRA-1059 — the board retries without reloading: the answer removes the row it came from.
+        def row_outcome(result)
+          flash.now[:notice] = t("member.tickets.automation.blocked.retried") if result.ok?
+          flash.now[:alert] = result.error.message if result.err?
+          row = params[:row].to_s[Member::ApprovalsBoardHelper::ROW_KEY]
+          render "member/home/approvals/row_outcome", locals: { keys: (result.ok? && row ? [ row ] : []) },
+                                                      status: (result.ok? ? :ok : :unprocessable_content)
+        end
       end
     end
   end

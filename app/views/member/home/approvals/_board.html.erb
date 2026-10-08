@@ -12,7 +12,11 @@
     stesse righe idonee. Cambia solo dove stanno — la prima colonna invece del margine sinistro. %>
 <% selectable = plan.page.records.any? { |row| row.item.bulk_approvable } %>
 <%# CYRA-899 — the keyboard controller sits on the whole board: rows, their buttons and checkboxes. %>
-<div class="space-y-3" data-test="approvals-board" data-controller="approvals-board-keys"
+<%# CYRA-1059 — Approve and Retry on a row run without reloading (approvals-row-actions). %>
+<div class="space-y-3" data-test="approvals-board" data-controller="approvals-board-keys approvals-row-actions"
+     data-action="submit->approvals-row-actions#submit"
+     data-approvals-row-actions-forms-value='["approvals-approve-one","approvals-row-actions"]'
+     data-approvals-row-actions-counts-frame-value="<%= Member::Home::ApprovalsController::COUNTS_FRAME %>"
      data-keyboard-doc="<%= approvals_board_keyboard_docs.to_json %>">
   <%# CYRA-899 — approving from the row: one empty form OUTSIDE the bulk one, which each row button
       joins through its `form` attribute. The button sends only its own key; inside the bulk form it
@@ -20,6 +24,8 @@
   <%= form_with url: member_home_approvals_bulk_path(state: batch.filter, project: batch.project, agent_id: batch.agent,
                                                      phase: plan.phase),
                 method: :post, id: "approvals-approve-one", class: "hidden", data: { turbo_frame: local_assigns[:frame] } do %>
+    <%# CYRA-1059 — tells the row Approve from the bulk one: only the row answers with a stream. %>
+    <%= hidden_field_tag :from_row, "1", id: nil %>
   <% end %>
   <%# CYRA-1057 — retry from the row: same reason, a shared form outside the bulk one. %>
   <%= render Ui::RowActionsFormComponent.new(id: "approvals-row-actions", test_id: "approvals-row-actions-form") %>

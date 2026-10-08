@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.184.0] - 2026-10-08
+
+### Changed
+
+- **Accetta e Riprova senza attesa.** Nelle Approvazioni, «Accetta» e «Riprova» su una riga partono subito: la riga sparisce senza ricaricare la pagina e puoi passare alla successiva. [Approvazioni](/member/home/approvals)
+
 ## [0.183.0] - 2026-10-08
 
 ### Security

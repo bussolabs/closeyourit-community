@@ -87,6 +87,46 @@ RSpec.describe "Member ticket automation actions", type: :request do
     expect(workflow.reload.blocked_at).to be_nil
   end
 
+  # CYRA-1059 — the board retries without reloading: the answer removes the row it came from.
+  describe "retry from the board without reloading" do
+    let(:stream) { { "Accept" => "text/vnd.turbo-stream.html, text/html" } }
+
+    it "answers with a stream that removes the row and says so" do
+      workflow.update!(planned_at: nil, blocked_at: Time.current, blocked_phase: "planner", blocked_kind: "agent_blocked",
+                       blocked_reason: "Clarification state unreadable")
+
+      post member_ticket_automation_unblock_path(ticket, return_to: "approvals", row: "workflow:#{workflow.id}"),
+           headers: stream
+
+      expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+      expect(response.body).to include('action="remove" target="approvals-row-workflow-%s"' % workflow.id)
+      expect(response.body).to include(I18n.t("member.tickets.automation.blocked.retried"))
+      expect(workflow.reload.blocked_at).to be_nil
+    end
+
+    it "keeps the row and shows why when the retry is refused" do
+      allow(Agents::Workflows::Unblock).to receive(:call)
+        .and_return(Result.err(AppError.new("Not blocked", code: "R422-AGENT-999", status: :unprocessable_entity)))
+
+      post member_ticket_automation_unblock_path(ticket, return_to: "approvals", row: "workflow:#{workflow.id}"),
+           headers: stream
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).not_to include('action="remove"')
+      expect(response.body).to include('action="replace" target="flash-container"')
+    end
+
+    it "targets nothing when the row is not a row key" do
+      workflow.update!(planned_at: nil, blocked_at: Time.current, blocked_phase: "planner", blocked_kind: "agent_blocked",
+                       blocked_reason: "Clarification state unreadable")
+
+      post member_ticket_automation_unblock_path(ticket, return_to: "approvals", row: "<b>x</b>"), headers: stream
+
+      expect(response.body).not_to include('action="remove"')
+      expect(response.body).to include(I18n.t("member.tickets.automation.blocked.retried"))
+    end
+  end
+
   it "ignores any other return_to value" do
     workflow.update!(planned_at: nil, blocked_at: Time.current, blocked_phase: "planner", blocked_kind: "agent_blocked",
                      blocked_reason: "Clarification state unreadable")

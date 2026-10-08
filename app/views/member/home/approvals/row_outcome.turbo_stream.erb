@@ -1,0 +1,6 @@
+<%# locals: keys — CYRA-1059: the answer of a row action run without reloading. The rows go, the message comes. %>
+<% keys.each do |key| %>
+  <%= turbo_stream.remove approval_row_dom_id(key) %>
+  <%= turbo_stream.remove approval_row_dom_id(key, :preview) %>
+<% end %>
+<%= turbo_stream.replace "flash-container", partial: "shared/flash" %>

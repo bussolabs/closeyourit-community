@@ -46,6 +46,9 @@ module Member
       # parametro nell'indirizzo: il collegamento che si condivide resta quello della pagina intera.
       WORK_FRAME = "approvals-work"
 
+      # CYRA-1059 — the header counters alone: a row action that runs without reloading refreshes only these.
+      COUNTS_FRAME = "approvals-counts"
+
       # CYRA-694 — filtri ricordati (memoria per-indirizzo, vedi RememberableFilters).
       remembers_filters :state, :project, :agent_id, only: :index
 
@@ -144,6 +147,7 @@ module Member
       def bulk
         result = ::Home::Approvals::BulkApprove.call(**scope_args, keys: params[:keys],
                                                      true_actor: Current.true_account)
+        return row_approve_outcome(result) if params[:from_row].present? && request.format.turbo_stream?
         return redirect_to(bulk_return_path, alert: result.error.message) if result.err?
 
         redirect_to bulk_return_path, **bulk_flash(result.value)
@@ -171,7 +175,21 @@ module Member
       # laterale, menu, notifiche, presenze — e NON lavoro sul database: coda, plancia e conteggi si
       # costruiscono esattamente come prima, perché sono esattamente ciò che deve tornare aggiornato.
       def render_work_frame
-        render layout: false if turbo_frame_request_id == WORK_FRAME
+        render layout: false if turbo_frame_request_id.in?([ WORK_FRAME, COUNTS_FRAME ])
+      end
+
+      # CYRA-1059 — Approve on a row, run without reloading: the row goes only when its key went through.
+      def row_approve_outcome(result)
+        if result.err?
+          flash.now[:alert] = result.error.message
+          return render("member/home/approvals/row_outcome", locals: { keys: [] }, status: :unprocessable_content)
+        end
+
+        outcome = result.value
+        bulk_flash(outcome).each { |type, message| flash.now[type] = message }
+        done = outcome.skipped.zero? && outcome.failed.zero?
+        render "member/home/approvals/row_outcome", locals: { keys: (done ? Array(params[:keys]).map(&:to_s).grep(Member::ApprovalsBoardHelper::ROW_KEY) : []) },
+                                                    status: (outcome.failed.zero? ? :ok : :unprocessable_content)
       end
 
       # CYRA-290 — lo stato acceso nella riga dei filtri, validato una volta sola contro il vocabolario

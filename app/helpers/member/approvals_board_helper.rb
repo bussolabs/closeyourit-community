@@ -24,6 +24,12 @@ module Member
     # resta niente da tradurre a mente.
     def approval_phase_name(step) = t("member.tickets.automation.stage.#{step}")
 
+    # CYRA-1059 — a row key as the board writes it (`kind:id`); anything else targets no row.
+    ROW_KEY = /\A[a-z_]+:[\w-]+\z/
+
+    # CYRA-1059 — the id of a board row (and of its preview), targeted by the answer of a row action.
+    def approval_row_dom_id(key, part = nil) = [ "approvals-row", key.to_s.tr(":", "-"), part ].compact.join("-")
+
     # Cosa dice la cella a chi non vede i colori (title + lettori di schermo): il nome del passaggio
     # e il suo esito. Senza, una griglia di puntini è muta.
     def approval_cell_title(cell)

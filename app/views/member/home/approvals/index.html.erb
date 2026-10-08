@@ -61,6 +61,8 @@
       <% if @board %>
         <% busiest = @board.phase_counts.values.max.to_i %>
         <% header.with_counts do %>
+          <%# CYRA-1059 — a frame of its own: after a row action only the counters reload. %>
+          <%= turbo_frame_tag Member::Home::ApprovalsController::COUNTS_FRAME, target: "_top", class: "contents" do %>
           <% @board.phase_counts.each do |step, count| %>
             <% active = @board.phase == step %>
             <%= render Ui::StatLabelComponent.new(label: approval_phase_name(step), value: count,
@@ -70,6 +72,7 @@
                   active: active, test_id: "approvals-phase-counter-#{step}",
                   title: t(active ? "member.approvals.board.phase_counters.clear" : "member.approvals.board.phase_counters.filter",
                            phase: approval_phase_name(step))) %>
+          <% end %>
           <% end %>
         <% end %>
       <% else %>

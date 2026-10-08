@@ -1560,7 +1560,65 @@ RSpec.describe "Member::Home::Approvals", type: :request do
       expect(doc.css("[data-test='approvals-board-row'] form")).to be_empty
       expect(doc.at_css("form#approvals-row-actions")).to be_present
       expect(retries.first["formaction"])
-        .to eq(member_ticket_automation_unblock_path(stopped.ticket, return_to: "approvals"))
+        .to eq(member_ticket_automation_unblock_path(stopped.ticket, return_to: "approvals",
+                                                     row: "agent_plan:#{stopped.id}"))
+    end
+
+    # CYRA-1059 — row actions run without reloading the board: the answer removes the row by its id.
+    describe "row actions without reloading" do
+      let(:stream) { { "Accept" => "text/vnd.turbo-stream.html, text/html" } }
+
+      it "gives every row and its preview an id the answer can target" do
+        ticket = review_ticket
+        sign_in(owner)
+
+        get member_home_approvals_path
+
+        expect(doc.at_css("tr[data-test='approvals-board-row']")["id"]).to eq("approvals-row-review-#{ticket.id}")
+        expect(doc.at_css("tr[data-test='approvals-row-preview']")["id"]).to eq("approvals-row-review-#{ticket.id}-preview")
+        expect(doc.at_css("[data-controller~='approvals-row-actions']")).to be_present
+      end
+
+      it "approving from the row answers with a stream that removes the row and says so" do
+        create(:ticket_status, :done, organization: org)
+        ticket = review_ticket
+        sign_in(owner)
+
+        post member_home_approvals_bulk_path, params: { keys: [ "review:#{ticket.id}" ], from_row: "1" }, headers: stream
+
+        expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+        expect(response.body).to include('action="remove" target="approvals-row-review-%s"' % ticket.id)
+        expect(response.body).to include('action="remove" target="approvals-row-review-%s-preview"' % ticket.id)
+        expect(response.body).to include('action="replace" target="flash-container"')
+        expect(response.body).to include(I18n.t("member.approvals.bulk.done", count: 1))
+        expect(ticket.reload.status.category).to eq("done")
+      end
+
+      it "keeps the row and shows why when the approval is refused" do
+        sign_in(owner)
+
+        post member_home_approvals_bulk_path, params: { keys: [], from_row: "1" }, headers: stream
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).not_to include('action="remove"')
+        expect(response.body).to include('action="replace" target="flash-container"')
+      end
+
+      it "puts the header counters in a frame of their own that reloads alone" do
+        review_ticket
+        sign_in(owner)
+
+        get member_home_approvals_path
+
+        frame = doc.at_css("turbo-frame#approvals-counts")
+        expect(frame["target"]).to eq("_top")
+        expect(frame.at_css("[data-test='approvals-phase-counter-to_review']")).to be_present
+
+        get member_home_approvals_path, headers: { "Turbo-Frame" => "approvals-counts" }
+
+        expect(response.body).to include('id="approvals-counts"')
+        expect(response.body).not_to include("<body")
+      end
     end
 
     it "wires the keyboard shortcuts and lists them in the shortcut help" do

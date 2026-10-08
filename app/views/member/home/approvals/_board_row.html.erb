@@ -7,6 +7,7 @@
 <%# CYRA-904 — a click anywhere on the row opens its preview; links and buttons keep their own job. %>
 <% select = (row.item.bulk_approvable ? { name: "keys[]", value: row.key, test_id: "approvals-select-#{row.key}", data: { no_report: row.item.no_report } } : :none) if selectable %>
 <%= render Ui::TableComponent::RowComponent.new(group: group_key, select: select, test_id: "approvals-board-row", tabindex: -1,
+      id: approval_row_dom_id(row.key),
       class: "group cursor-pointer focus:outline-none focus:bg-indigo-50/60 dark:focus:bg-indigo-500/15#{" [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-red-500)]" if row.stuck?}",
       data: { stuck: row.stuck?, approvals_board_keys_target: "row", action: "click->approvals-board-keys#openFromRow" }) do %>
 
@@ -117,7 +118,7 @@
       <%# CYRA-1057 — a blocked row restarts from here: same unblock as the ticket, back to the board. %>
       <% if row.state == "review_blocked" && row.ticket_id %>
         <%= render Ui::ButtonComponent.new(label: t("member.approvals.board.retry"),
-              href: member_ticket_automation_unblock_path(row.ticket_id, return_to: "approvals"), method: :post,
+              href: member_ticket_automation_unblock_path(row.ticket_id, return_to: "approvals", row: row.key), method: :post,
               form_id: "approvals-row-actions",
               variant: :secondary, size: :sm, icon: "rotate-cw", test_id: "approvals-row-retry") %>
       <% end %>
@@ -130,7 +131,8 @@
 <%# CYRA-899 — the preview row: hidden until opened, then its frame loads the request. It also hides
     when its group closes, because it follows a hidden row. %>
 <% kind, id = row.key.split(":", 2) %>
-<%= render Ui::TableComponent::DetailRowComponent.new(colspan: columns, hidden: true, class: "[tr[hidden]+&]:hidden", test_id: "approvals-row-preview") do %>
+<%= render Ui::TableComponent::DetailRowComponent.new(colspan: columns, hidden: true, class: "[tr[hidden]+&]:hidden", test_id: "approvals-row-preview",
+      id: approval_row_dom_id(row.key, :preview)) do %>
     <%# CYRA-904 — who produced the work lives here, next to the work itself. %>
     <p class="px-4 pt-3 text-[12px] text-gray-500 dark:text-zinc-400">
       <%= t("member.approvals.board.agent_label") %>:
