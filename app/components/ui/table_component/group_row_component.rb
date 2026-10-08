@@ -6,7 +6,8 @@ module Ui
     # chevron, across every column. Rows join it with `RowComponent.new(group: key)`; the table
     # needs `grouped: true` for the toggle to work. Without JavaScript every group stays open.
     # `href:` adds a link to the group's own page next to the toggle; `with_actions` puts the group's
-    # own commands (a button, a row menu) at the right end of the row.
+    # own commands (a button, a row menu) at the right end of the row. The row and its count carry
+    # data markers so a script can lower the count when a row leaves (CYRA-1059).
     class GroupRowComponent < BaseComponent
       renders_one :actions
 
@@ -25,7 +26,7 @@ module Ui
       end
 
       def call
-        tag.tr(class: "ui-table-group", data: { test: @test_id }.compact) do
+        tag.tr(class: "ui-table-group", data: { test: @test_id, row_group_header: @key }.compact) do
           tag.td(colspan: @colspan) do
             toggle = tag.button(type: "button", class: button_class, "aria-expanded": (!@collapsed).to_s,
                                 data: { action: "ui--row-group#toggle", "ui--row-group-key-param": @key,
@@ -62,7 +63,7 @@ module Ui
       end
 
       def count
-        tag.span(@count, class: "font-mono text-[11px] font-medium text-gray-500 dark:text-zinc-400") unless @count.nil?
+        tag.span(@count, class: "font-mono text-[11px] font-medium text-gray-500 dark:text-zinc-400", data: { row_group_count: true }) unless @count.nil?
       end
     end
   end

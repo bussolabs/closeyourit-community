@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.184.2] - 2026-10-08
+
+### Fixed
+
+- **Numero delle righe aggiornato nelle Approvazioni.** Quando accetti o riprovi una riga, il numero accanto al gruppo scende subito. Il gruppo sparisce con la sua ultima riga. [Approvazioni](/member/home/approvals)
+
 ## [0.184.1] - 2026-10-08
 
 ### Fixed

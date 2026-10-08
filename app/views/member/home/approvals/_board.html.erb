@@ -17,6 +17,7 @@
      data-action="submit->approvals-row-actions#submit"
      data-approvals-row-actions-forms-value='["approvals-approve-one","approvals-row-actions"]'
      data-approvals-row-actions-counts-frame-value="<%= Member::Home::ApprovalsController::COUNTS_FRAME %>"
+     data-approvals-row-actions-count-labels-value="<%= t("member.approvals.board.group_count").to_json %>"
      data-keyboard-doc="<%= approvals_board_keyboard_docs.to_json %>">
   <%# CYRA-899 — approving from the row: one empty form OUTSIDE the bulk one, which each row button
       joins through its `form` attribute. The button sends only its own key; inside the bulk form it

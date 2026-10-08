@@ -1579,6 +1579,18 @@ RSpec.describe "Member::Home::Approvals", type: :request do
         expect(doc.at_css("[data-controller~='approvals-row-actions']")).to be_present
       end
 
+      it "hands the script both wordings of a group's count, so it can lower it after a row goes" do
+        review_ticket
+        sign_in(owner)
+
+        get member_home_approvals_path
+
+        board = doc.at_css("[data-controller~='approvals-row-actions']")
+        labels = JSON.parse(board["data-approvals-row-actions-count-labels-value"])
+        expect(labels).to eq("one" => "1 row", "other" => "%{count} rows")
+        expect(doc.at_css("tr[data-row-group-header] span[data-row-group-count]")).to be_present
+      end
+
       it "approving from the row answers with a stream that removes the row and says so" do
         create(:ticket_status, :done, organization: org)
         ticket = review_ticket

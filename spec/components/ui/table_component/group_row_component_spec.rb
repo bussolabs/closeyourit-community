@@ -29,6 +29,11 @@ RSpec.describe Ui::TableComponent::GroupRowComponent, type: :component do
     expect(page).to have_css("[data-row-group-chevron].-rotate-90")
   end
 
+  it "marks the count and the group's row as reachable by script (CYRA-1059)" do
+    render_inline(described_class.new(key: "closed", label: "Closed", count: "4 rows", colspan: 2))
+    expect(page).to have_css("tr.ui-table-group[data-row-group-header='closed'] span[data-row-group-count]", text: "4 rows")
+  end
+
   it "omits the count when none is given" do
     render_inline(described_class.new(key: "k", label: "Group", colspan: 2))
     expect(page).to have_no_css("span.font-mono")
