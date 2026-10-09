@@ -28,7 +28,9 @@ module Agents
         return Result.ok(nil) if repository.nil?
 
         existing = Agents::ReleaseAssignment.find_by(workflow: @workflow, execution_phase: @execution_phase)
-        return Result.ok(existing) if existing
+        return Result.ok(existing) if existing && !overtaken?(existing, repository)
+
+        existing&.destroy!
 
         # Sulla versione definitiva il punto da pubblicare non è negoziabile: è il commit che il
         # sistema ha VISTO atterrare. Senza, non si assegna niente e la fase non parte — pubblicare
@@ -79,6 +81,16 @@ module Agents
         major, minor, patch = pending.max
         fixes = parse(computed[:version])[2].positive?
         fixes ? "v#{major}.#{minor}.#{patch + 1}" : "v#{major}.#{minor + 1}.0"
+      end
+
+      # CYRA-1064 — a staging number nothing has published yet, which a newer release already reached:
+      # its heading is on main and the closer could never use it. Production keeps its own number.
+      def overtaken?(existing, repository)
+        return false unless @execution_phase == "closer_staging" && !@workflow.closer_staging_completed_at?
+
+        computed = Agents::Releases::NextVersion.call(repository:, tickets: [ @workflow.ticket ], client:)
+        baseline = computed.ok? && computed.value[:baseline_tag]
+        baseline.present? && (parse(existing.version.sub(/-beta\.\d+\z/, "")) <=> parse(baseline)) <= 0
       end
 
       def own_staging_version

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.186.3] - 2026-10-09
+
+### Fixed
+
+- **Il numero di versione si aggiorna se nel frattempo è uscito un rilascio.** Un lavoro approvato non resta più fermo perché il suo numero è già stato usato da un altro rilascio. [Automazione](/member/agents)
+
 ## [0.186.2] - 2026-10-09
 
 ### Fixed

@@ -40,6 +40,27 @@ RSpec.describe Agents::Releases::Assign do
     expect(assign("closer_staging").value.id).to eq(prima.id)
   end
 
+  # CYRA-1064 — a number assigned before someone else released the same version stayed forever: the
+  # closer found its heading already on main and stopped, with no way out but a person.
+  it "reassigns a staging number that a newer release has overtaken, while nothing is published" do
+    stale = assign("closer_staging").value
+    expect(stale.version).to eq("v1.4.3-beta.1")
+    versioni_uscite("v1.4.2", "v1.4.3")
+
+    fresh = assign("closer_staging").value
+
+    expect(fresh.version).to eq("v1.4.4-beta.1")
+    expect(Agents::ReleaseAssignment.exists?(stale.id)).to be(false)
+  end
+
+  it "keeps the staging number once its release is out, even if it is overtaken" do
+    first = assign("closer_staging").value
+    workflow.update!(closer_staging_completed_at: 1.minute.ago)
+    versioni_uscite("v1.4.2", "v1.4.3")
+
+    expect(assign("closer_staging").value.id).to eq(first.id)
+  end
+
   # CYRA-878 — a second workflow reaching staging before the first one reaches production used to
   # share its number as beta.2. Both CHANGELOG entries then sat under one heading, the first production
   # took the tag on its own older commit, and the second could never be released: no heading matched
