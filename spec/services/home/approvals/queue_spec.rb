@@ -678,6 +678,23 @@ RSpec.describe Home::Approvals::Queue do
       expect(batch.totals).not_to have_key("awaiting_approval")
     end
 
+    # CYRA-1066 — the closers own the ticket until production is up: a review row here would offer
+    # an Approve that marks it resolved before the release.
+    it "leaves out a review whose approved run is still closing" do
+      ticket = create_ticket(status: review_status, reviewer: account)
+      create(:agent_workflow, :closer_staging_completed, ticket:)
+
+      expect(batch.total).to eq(0)
+      expect(batch.totals).not_to have_key("review")
+    end
+
+    it "keeps a review whose closing run has completed" do
+      ticket = create_ticket(status: review_status, reviewer: account)
+      create(:agent_workflow, :closer_staging_completed, ticket:, completed_at: Time.current)
+
+      expect(batch.totals).to eq("review" => 1)
+    end
+
     it "esclude anche una review se il suo status è finale (config non-default)" do
       gate_done = create(:ticket_status, :done, organization:, review_gate: true)
       create_ticket(status: gate_done, reviewer: account)

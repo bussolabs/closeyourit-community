@@ -319,6 +319,12 @@ module Agents
     # in corso né finita, ed è la differenza che tiene aperta la strada di chi lavora a mano. CYRA-613
     def terminal? = cancelled_at? || completed_at?
 
+    # CYRA-1066 — a person approved the delivered work and the closers now own the ticket until
+    # production is up. Approving it again as a plain review would resolve it before the release.
+    scope :closing, -> { where.not(autopilot_approved_at: nil).where(completed_at: nil, cancelled_at: nil) }
+
+    def closing? = autopilot_approved_at? && !terminal?
+
     # «DAVVERO in corso»: avviata da una macchina, non finita e non abbandonata. È il predicato che
     # decide chi puo' spostare lo stato del ticket. NON e' «workflow non terminale» (ogni ticket nasce
     # con una lavorazione, li bloccherebbe quasi tutti) e non e' «avviata e mai conclusa», che non

@@ -240,6 +240,31 @@ RSpec.describe Ticketing::ApproveReview do
     end
   end
 
+  # CYRA-1066 — after the human approved the delivered work, the closers own the ticket until
+  # production is up: approving it again as a plain review would mark it resolved before the release.
+  describe "closing run still open" do
+    before do
+      ticket.agent_workflow.update!(triage_started_at: 5.hours.ago, autopilot_completed_at: 2.hours.ago,
+                                    candidate_verified_at: 2.hours.ago, autopilot_approved_at: 1.hour.ago,
+                                    closer_staging_started_at: 30.minutes.ago)
+    end
+
+    it "refuses with R409-TICKET-022 and leaves the ticket in review" do
+      result = nil
+      expect { result = approve }.to not_change { ticket.reload.status_id }.and not_change(Ticketing::Event, :count)
+
+      expect(result).to be_err
+      expect(result.error.code).to eq("R409-TICKET-022")
+    end
+
+    it "resolves again once the closing run has completed" do
+      ticket.agent_workflow.update!(completed_at: Time.current)
+
+      expect(approve).to be_ok
+      expect(ticket.reload.status).to eq(resolved)
+    end
+  end
+
   it "un ticket review-gate il cui workflow NON è post-autopilot va a resolved come prima" do
     expect(ticket.agent_workflow.phase).to eq("triage_queued")
 

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.187.0] - 2026-10-09
+
+### Fixed
+
+- **Un ticket ancora in rilascio non si può più approvare per sbaglio.** Finché la macchina lo sta portando in produzione non compare tra quelli da revisionare, e «Approva» non lo chiude prima del tempo. [Approvazioni](/member/home/approvals)
+
+### Changed
+
+- **Costi dell'automazione documentati nel README.** Il README spiega come lanciare il resoconto settimanale dei costi degli agenti, per la settimana scorsa o per una settimana precisa, e che cosa riporta.
+
 ## [0.186.4] - 2026-10-09
 
 ### Fixed

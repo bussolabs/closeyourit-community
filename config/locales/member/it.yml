@@ -1744,6 +1744,7 @@ it:
         project_not_found: Seleziona un progetto valido.
         invalid_status: Stato non valido.
         workflow_owns_status: Lo stato di questo ticket lo decide la lavorazione automatica finché non è conclusa. Per spostarlo a mano prendi in carico il ticket dalla sua pagina; se una macchina ci sta lavorando, annulla prima la lavorazione.
+        closing_run_owns_review: "La macchina sta ancora rilasciando questo ticket: si risolve da solo quando il rilascio è in piedi in produzione."
         invalid_milestone: Milestone non valida.
         not_in_review: Il ticket non è in revisione.
         approval_needs_a_person: "L'approvazione del lavoro la firma una persona. Stai usando l'identità %{account}, che è di una macchina: rifai l'approvazione col tuo accesso personale."

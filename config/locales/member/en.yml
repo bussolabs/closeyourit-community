@@ -1692,6 +1692,7 @@ en:
         project_not_found: Select a valid project.
         invalid_status: Invalid status.
         workflow_owns_status: The automated run owns this ticket's status until it finishes. To move it by hand, take the ticket over from its page; if a machine is working on it, cancel the run first.
+        closing_run_owns_review: "The machine is still releasing this ticket: it resolves itself once the release is up in production."
         invalid_milestone: Invalid milestone.
         not_in_review: The ticket is not in review.
         approval_needs_a_person: "A person signs off the delivered work. You are using the identity %{account}, which belongs to a machine: sign off again with your own account."

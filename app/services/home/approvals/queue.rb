@@ -260,6 +260,9 @@ module Home
       # domanda. CYRA-374
       def review_source
         base = @visible_tickets.awaiting_review_by(@account)
+        # CYRA-1066 — a ticket whose approved run is still closing is not a review to decide: the
+        # closers resolve it once production is up, and Approve here would resolve it first.
+        base = base.where.not(id: ::Agents::Workflow.closing.select(:ticket_id))
         # Perimetro pieno per le scelte, poi il filtro progetto; una review non porta il nome di una
         # macchina, quindi col filtro agente acceso la famiglia esce intera. CYRA-790
         project_ids = base.distinct.pluck(:project_id)

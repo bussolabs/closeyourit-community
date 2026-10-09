@@ -74,6 +74,8 @@ module Ticketing
         return Result.ok(@ticket)
       end
 
+      return closing_run if workflow&.closing?
+
       target = target_status
       if target.nil?
         return Result.err(AppError.new(I18n.t("member.tickets.errors.no_target_status"), code: "R422-TICKET-008"))
@@ -108,6 +110,11 @@ module Ticketing
     end
 
     private
+
+    def closing_run
+      Result.err(AppError.new(I18n.t("member.tickets.errors.closing_run_owns_review"),
+                              code: "R409-TICKET-022", status: :conflict))
+    end
 
     # Il messaggio nomina l'identità che sta chiamando: senza, chi si è collegato alla macchina e sta
     # usando la sua identità invece della propria vede un rifiuto e non capisce cosa rifare.
