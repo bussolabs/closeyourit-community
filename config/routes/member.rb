@@ -62,6 +62,8 @@ namespace :member do
     post "approvals/decision", to: "approvals#decide", as: :approvals_decision
     # CYRA-284: accettazione in blocco delle card selezionate nella coda (`keys[]`).
     post "approvals/bulk",     to: "approvals#bulk", as: :approvals_bulk
+    # CYRA-1060 — restarts the ticked blocked rows (`keys[]`).
+    post "approvals/retry", to: "approvals#bulk_retry", as: :approvals_bulk_retry
     # CYRA-867 — annulla tutte le lavorazioni aperte dell'organizzazione (owner e admin).
     post "approvals/cancel", to: "workflow_cancellations#create", as: :approvals_cancel_all
     # CYRA-903 — the sidebar badge, loaded lazily so the queue never slows down a page.

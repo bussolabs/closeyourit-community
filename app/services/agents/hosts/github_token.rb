@@ -6,8 +6,10 @@ module Agents
     # It replaces a permanent operator token on the machine: the agent may still read it, but it opens one
     # repository for one hour. Only the delivering phase may write.
     class GithubToken < ApplicationService
-      WRITE_PERMISSIONS = { contents: "write", pull_requests: "write" }.freeze
-      READ_PERMISSIONS = { contents: "read" }.freeze
+      # CI results are readable in every phase: a rework must see why the pull request's checks failed. CYRA-1061
+      CI_READ = { checks: "read", statuses: "read", actions: "read" }.freeze
+      WRITE_PERMISSIONS = { contents: "write", pull_requests: "write", **CI_READ }.freeze
+      READ_PERMISSIONS = { contents: "read", **CI_READ }.freeze
       WRITING_PHASES = %w[autopilot].freeze
 
       def initialize(host:, ticket_reference:, client: Github::Client.new)

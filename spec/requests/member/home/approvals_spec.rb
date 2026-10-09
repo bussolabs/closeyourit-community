@@ -1542,6 +1542,60 @@ RSpec.describe "Member::Home::Approvals", type: :request do
       expect(stuck).to contain_exactly("true", "false")
     end
 
+    # CYRA-1060 — blocked rows are ticked like the others and restarted together from the bar.
+    describe "retrying in bulk" do
+      it "gives blocked rows a checkbox and the bar a retry button" do
+        stopped = nil
+        allow_n_plus_one { stopped = blocked }
+        sign_in(owner)
+
+        get member_home_approvals_path
+
+        box = doc.at_css("input[name='keys[]'][value='agent_plan:#{stopped.id}']")
+        expect(box).to be_present
+        button = doc.at_css("[data-test='approvals-bulk-retry']")
+        expect(button["formaction"]).to start_with(member_home_approvals_bulk_retry_path)
+      end
+
+      it "restarts every ticked blocked row and skips the rest" do
+        stopped = first = nil
+        allow_n_plus_one do
+          first = blocked
+          stopped = blocked
+        end
+        waiting = planned
+        sign_in(owner)
+
+        post member_home_approvals_bulk_retry_path,
+             params: { keys: [ "agent_plan:#{first.id}", "agent_plan:#{stopped.id}", "agent_plan:#{waiting.id}" ] }
+
+        expect(response).to redirect_to(member_home_approvals_path)
+        expect(first.reload.blocked_at).to be_nil
+        expect(stopped.reload.blocked_at).to be_nil
+        expect(flash[:notice]).to include(I18n.t("member.approvals.bulk.retried", count: 2))
+        expect(flash[:notice]).to include(I18n.t("member.approvals.bulk.retry_skipped", count: 1))
+      end
+
+      it "touches nothing outside the account's organization" do
+        other = create(:organization)
+        foreign = create(:agent_workflow, ticket: create(:ticket, organization: other, project: create(:project, organization: other)),
+                                          blocked_at: 1.hour.ago, blocked_phase: "autopilot", blocked_kind: "attempt_limit")
+        sign_in(owner)
+
+        post member_home_approvals_bulk_retry_path, params: { keys: [ "agent_plan:#{foreign.id}" ] }
+
+        expect(foreign.reload.blocked_at).to be_present
+      end
+
+      it "refuses an empty selection" do
+        sign_in(owner)
+
+        post member_home_approvals_bulk_retry_path, params: { keys: [] }
+
+        expect(flash[:alert]).to eq(I18n.t("member.approvals.errors.no_selection"))
+      end
+    end
+
     # CYRA-1057 — a blocked row restarts from the board, without opening its ticket.
     it "offers retry only on blocked rows, posting to the ticket unblock" do
       stopped = nil

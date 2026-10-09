@@ -122,18 +122,10 @@ module Home
 
         card(kind: "agent_plan", record: workflow, ticket: ticket, phase: phase,
              plan: preloaded.latest_plan(workflow),
-             attempt: (last_review_failure(workflow) if phase == "review_blocked"),
+             attempt: (preloaded.last_review_failure(workflow) if phase == "review_blocked"),
              report: (ticket.current_work_report if DELIVERED_PHASES.include?(phase)),
              delivery_attempt: (latest_delivery_attempt(workflow) if DELIVERED_PHASES.include?(phase)),
              decisions: plan_decisions(workflow, phase), url: member_ticket_path(ticket, tab: "automation"))
-      end
-
-      # Il tentativo che la revisione ha respinto per ultimo: è ciò che spiega perché la lavorazione è
-      # ferma, o cosa sta riprovando (CYRA-317). Prima il pannello mostrava una frase e mezzo schermo
-      # bianco, e chi doveva decidere se chiuderla lo faceva alla cieca. Una query sola, sulla singola
-      # card aperta — la coda non passa mai di qui.
-      def last_review_failure(workflow)
-        workflow.attempts.status_review_failed.includes(:host).order(:started_at).last
       end
 
       # awaiting_approval → decido il piano. awaiting_autopilot_approval → è a tutti gli effetti una

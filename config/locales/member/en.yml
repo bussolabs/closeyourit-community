@@ -894,6 +894,14 @@ en:
       bulk:
         selected: selected
         approve: Accept
+        retry: Retry
+        retried:
+          zero: No work put back in the queue.
+          one: Work put back in the queue for 1 row.
+          other: "Work put back in the queue for %{count} rows."
+        retry_skipped:
+          one: 1 was not stopped and was left alone.
+          other: "%{count} were not stopped and were left alone."
         done:
           zero: No card accepted.
           one: 1 card accepted.

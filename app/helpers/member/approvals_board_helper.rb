@@ -24,6 +24,9 @@ module Member
     # resta niente da tradurre a mente.
     def approval_phase_name(step) = t("member.tickets.automation.stage.#{step}")
 
+    # CYRA-1057 — a stopped plan restarts from the board: its own Retry button and, CYRA-1060, a checkbox.
+    def approval_row_retryable?(row) = row.state == "review_blocked" && row.ticket_id.present?
+
     # CYRA-1059 — a row key as the board writes it (`kind:id`); anything else targets no row.
     ROW_KEY = /\A[a-z_]+:[\w-]+\z/
 

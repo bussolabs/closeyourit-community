@@ -10,7 +10,7 @@
 
     Le caselle di selezione (CYRA-284) restano quelle della pila: stesso form, stesso controller,
     stesse righe idonee. Cambia solo dove stanno — la prima colonna invece del margine sinistro. %>
-<% selectable = plan.page.records.any? { |row| row.item.bulk_approvable } %>
+<% selectable = plan.page.records.any? { |row| row.item.bulk_approvable || approval_row_retryable?(row) } %>
 <%# CYRA-899 — the keyboard controller sits on the whole board: rows, their buttons and checkboxes. %>
 <%# CYRA-1059 — Approve and Retry on a row run without reloading (approvals-row-actions). %>
 <div class="space-y-3" data-test="approvals-board" data-controller="approvals-board-keys approvals-row-actions"
@@ -48,7 +48,12 @@
           <span class="font-mono text-[11px] text-gray-600 dark:text-zinc-400 whitespace-nowrap">
             <span data-ui--bulk-select-target="count">0</span> <%= t("member.approvals.bulk.selected") %>
           </span>
-          <span class="ml-auto">
+          <span class="ml-auto flex items-center gap-1.5">
+            <%# CYRA-1060 — same ticked keys, another endpoint: rows it cannot restart are skipped. %>
+            <%= render Ui::ButtonComponent.new(label: t("member.approvals.bulk.retry"), type: "submit",
+                  formaction: member_home_approvals_bulk_retry_path(state: batch.filter, project: batch.project,
+                                                                     agent_id: batch.agent, phase: plan.phase),
+                  variant: :secondary, size: :sm, icon: "rotate-cw", test_id: "approvals-bulk-retry") %>
             <%= render Ui::ButtonComponent.new(label: t("member.approvals.bulk.approve"), type: "submit",
                   variant: :success, size: :sm, icon: "check", test_id: "approvals-bulk-approve") %>
           </span>

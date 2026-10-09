@@ -5,7 +5,8 @@
     leggerebbe più dall'alto in basso. %>
 <%# CYRA-899 — the row takes keyboard focus (j/k), and a stopped row carries a red left edge. %>
 <%# CYRA-904 — a click anywhere on the row opens its preview; links and buttons keep their own job. %>
-<% select = (row.item.bulk_approvable ? { name: "keys[]", value: row.key, test_id: "approvals-select-#{row.key}", data: { no_report: row.item.no_report } } : :none) if selectable %>
+<%# CYRA-1060 — blocked rows are ticked too: the bar restarts them together. %>
+<% select = ((row.item.bulk_approvable || approval_row_retryable?(row)) ? { name: "keys[]", value: row.key, test_id: "approvals-select-#{row.key}", data: { no_report: row.item.no_report } } : :none) if selectable %>
 <%= render Ui::TableComponent::RowComponent.new(group: group_key, select: select, test_id: "approvals-board-row", tabindex: -1,
       id: approval_row_dom_id(row.key),
       class: "group cursor-pointer focus:outline-none focus:bg-indigo-50/60 dark:focus:bg-indigo-500/15#{" [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-red-500)]" if row.stuck?}",
@@ -116,7 +117,7 @@
         </button>
       <% end %>
       <%# CYRA-1057 — a blocked row restarts from here: same unblock as the ticket, back to the board. %>
-      <% if row.state == "review_blocked" && row.ticket_id %>
+      <% if approval_row_retryable?(row) %>
         <%= render Ui::ButtonComponent.new(label: t("member.approvals.board.retry"),
               href: member_ticket_automation_unblock_path(row.ticket_id, return_to: "approvals", row: row.key), method: :post,
               form_id: "approvals-row-actions",

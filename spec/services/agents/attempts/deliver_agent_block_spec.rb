@@ -104,6 +104,39 @@ RSpec.describe Agents::Attempts::Deliver, "il blocco dichiarato dalla macchina" 
     end
   end
 
+  # CYRA-1062 — the plan the person approved does not fit the code: «Riprova» would rerun the same plan,
+  # and an approved plan could not be changed. The work goes back to planning with the reason.
+  describe "the machine says the approved plan does not apply" do
+    let!(:plan) do
+      Agents::Plan.create!(workflow:, attempt: create(:agent_attempt, organization:, workflow:), technical_analysis: "Plan",
+                           scenarios: [], definition_of_done: [ "RSpec" ], notes: [], ticket_snapshot_digest: "snapshot",
+                           approved_at: 1.hour.ago)
+    end
+
+    before do
+      workflow.update!(triage_started_at: 3.hours.ago, triaged_at: 3.hours.ago, planned_at: 2.hours.ago,
+                       approved_at: 1.hour.ago, autopilot_started_at: 1.minute.ago)
+    end
+
+    it "sends the work back to planning with the reason on the plan, without blocking it" do
+      result = consegna("autopilot", contract_version: 2, state: "blocked", security_findings: [],
+                                     failure: { category: "invalid_plan", summary: "1.1.19 is still vulnerable", retryable: false, human_action: "Replan." })
+
+      expect(result).to be_ok
+      expect(workflow.reload).to have_attributes(planned_at: nil, approved_at: nil, blocked_at: nil,
+                                                 autopilot_started_at: nil)
+      expect(plan.reload.change_request).to eq("1.1.19 is still vulnerable")
+      expect(workflow.phase).to eq("planning")
+    end
+
+    it "still blocks on any other reason" do
+      consegna("autopilot", contract_version: 2, state: "blocked", security_findings: [], failure: { category: "tooling", summary: "pnpm cannot run", retryable: false, human_action: "Fix pnpm." })
+
+      expect(workflow.reload).to have_attributes(blocked_phase: "autopilot", blocked_kind: "agent_blocked")
+      expect(plan.reload.change_request).to be_nil
+    end
+  end
+
   describe "il triage chiede aiuto" do
     before { workflow.update!(triage_started_at: 1.minute.ago) }
 

@@ -24,7 +24,9 @@ Prosopite.rails_logger = true
 # Bulk approval saves each card on its own on purpose (lock, validations, history, no shared
 # transaction), capped at Queue::PAGE_LIMIT keys. Only that step may repeat: resolving the cards
 # is one read per family and stays guarded. CYRA-1048
-Prosopite.allow_stack_paths = [ %r{app/services/home/approvals/bulk_approve\.rb:\d+:in 'Home::Approvals::BulkApprove#approve'} ]
+# Bulk retry restarts each row through the row's own unblock (lock, budget, queue), same cap. CYRA-1060
+Prosopite.allow_stack_paths = [ %r{app/services/home/approvals/bulk_approve\.rb:\d+:in 'Home::Approvals::BulkApprove#approve'},
+                                %r{app/services/home/approvals/bulk_retry\.rb:\d+:in 'Home::Approvals::BulkRetry#safe_unblock'} ]
 
 module ProsopiteHelpers
   # Eccezione puntuale e motivata (mai a tappeto): fixture bulk nel setup del request spec o secondo

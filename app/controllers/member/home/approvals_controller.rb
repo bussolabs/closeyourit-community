@@ -153,7 +153,24 @@ module Member
         redirect_to bulk_return_path, **bulk_flash(result.value)
       end
 
+      # CYRA-1060 — Retry on the ticked blocked rows, back to the same board.
+      def bulk_retry
+        result = ::Home::Approvals::BulkRetry.call(**scope_args, keys: params[:keys])
+        return redirect_to(bulk_return_path, alert: result.error.message) if result.err?
+
+        redirect_to bulk_return_path, **bulk_retry_flash(result.value)
+      end
+
       private
+
+      def bulk_retry_flash(outcome)
+        pieces = [ t("member.approvals.bulk.retried", count: outcome.retried) ]
+        pieces << t("member.approvals.bulk.retry_skipped", count: outcome.skipped) if outcome.skipped.positive?
+        return { notice: pieces.join(" ") } if outcome.failed.zero?
+
+        pieces << t("member.approvals.bulk.failed", count: outcome.failed, message: outcome.failures.first.message)
+        { alert: pieces.join(" ") }
+      end
 
       # CYRA-887 — answers picked among the agent's proposals come first, one line per question
       # position; the free text follows. Nothing picked and no text = blank, and Decide refuses it.

@@ -29,6 +29,7 @@ module Home
       def asking?(workflow) = @asking.include?(workflow.id)
       def delivery_attempt(workflow) = @deliveries[workflow.id]
       def latest_plan(workflow) = @plans[workflow.id]
+      def last_review_failure(workflow) = @review_failures[workflow.id]
 
       def role
         return @role if defined?(@role)
@@ -65,6 +66,16 @@ module Home
         @asking = Agents::Clarification.where(workflow_id: workflow_ids, answered_at: nil).distinct.pluck(:workflow_id).to_set
         @deliveries = latest_deliveries(workflow_ids)
         @plans = latest_plans(@workflows.keys)
+        @review_failures = last_review_failures(@workflows.keys)
+      end
+
+      # The attempt the review rejected last, per workflow: a stopped row's reason, read once for a
+      # selection of blocked rows. CYRA-1060
+      def last_review_failures(workflow_ids)
+        return {} if workflow_ids.empty?
+
+        Agents::Attempt.status_review_failed.includes(:host).where(workflow_id: workflow_ids)
+                       .order(:started_at).group_by(&:workflow_id).transform_values(&:last)
       end
 
       # strict_loading(false) for the same reason as the tickets: the page renders the plan's own

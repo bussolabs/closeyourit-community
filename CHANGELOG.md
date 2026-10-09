@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [0.186.1] - 2026-10-09
+
+### Fixed
+
+- **Un piano sbagliato torna da solo in pianificazione.** Se l'agente scopre che il piano approvato non funziona, il ticket viene ripianificato con il motivo, invece di fermarsi. Il nuovo piano aspetta comunque la tua approvazione. [Approvazioni](/member/home/approvals)
+- **L'agente vede l'esito dei controlli della sua PR.** Quando rifà un lavoro può leggere perché i controlli automatici sono falliti, invece di fermarsi. [Automazione](/member/agents)
+
+## [0.186.0] - 2026-10-09
+
+### Added
+
+- **Riprova più lavorazioni insieme.** Nelle Approvazioni ora puoi spuntare anche le righe bloccate e rimetterle tutte in coda con «Riprova». Le righe che non sono ferme restano come sono. [Approvazioni](/member/home/approvals)
+
 ## [0.185.0] - 2026-10-08
 
 ### Added

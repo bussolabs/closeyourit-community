@@ -20,6 +20,7 @@ module Agents
         private
 
         def apply!
+          return replan_from_agent! if result_state == "blocked" && failure_category == "invalid_plan"
           return block_from_agent! if result_state == "blocked"
           return unless result_state.in?(ADVANCING_STATES)
 
@@ -60,6 +61,18 @@ module Agents
             candidate.state = :pending
             candidate.next_check_at = Time.current
           end
+        end
+
+        def failure_category = @payload.dig("result", "failure", "category")
+
+        # CYRA-1062 — the approved plan does not fit the code: rerunning it would fail the same way, and
+        # an approved plan cannot be changed by hand. Planning starts again with the machine's reason as
+        # the change request, and the new plan waits for a person's approval as usual.
+        def replan_from_agent!
+          plan = workflow.plans.reorder(version: :desc).first
+          plan&.update!(change_request: @payload.dig("result", "failure", "summary").to_s.presence || "invalid_plan")
+          workflow.reopen_execution_phase!(@attempt.phase)
+          workflow.update!(planned_at: nil, approved_at: nil, approved_by: nil, **Agents::Workflow.cleared_block)
         end
       end
     end

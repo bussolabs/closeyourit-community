@@ -921,6 +921,14 @@ it:
       bulk:
         selected: selezionate
         approve: Approva
+        retry: Riprova
+        retried:
+          zero: Nessuna lavorazione rimessa in coda.
+          one: 1 lavorazione rimessa in coda.
+          other: "%{count} lavorazioni rimesse in coda."
+        retry_skipped:
+          one: 1 non era ferma e non è stata toccata.
+          other: "%{count} non erano ferme e non sono state toccate."
         done:
           zero: Nessuna card approvata.
           one: 1 card approvata.
