@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.186.2] - 2026-10-09
+
+### Fixed
+
+- **I lavori approvati arrivano di nuovo al rilascio.** La macchina può di nuovo unire la proposta e pubblicare il rilascio dopo la tua approvazione. [Automazione](/member/agents)
+
 ## [0.186.1] - 2026-10-09
 
 ### Fixed

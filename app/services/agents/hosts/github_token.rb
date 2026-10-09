@@ -4,13 +4,14 @@ module Agents
   module Hosts
     # A GitHub token valid one hour, scoped to the repository of a ticket the host holds right now (CYRA-1058).
     # It replaces a permanent operator token on the machine: the agent may still read it, but it opens one
-    # repository for one hour. Only the delivering phase may write.
+    # repository for one hour. Only the phases that push (autopilot and the closers) may write.
     class GithubToken < ApplicationService
       # CI results are readable in every phase: a rework must see why the pull request's checks failed. CYRA-1061
       CI_READ = { checks: "read", statuses: "read", actions: "read" }.freeze
       WRITE_PERMISSIONS = { contents: "write", pull_requests: "write", **CI_READ }.freeze
       READ_PERMISSIONS = { contents: "read", **CI_READ }.freeze
-      WRITING_PHASES = %w[autopilot].freeze
+      # The closers merge the pull request and push the release tag. CYRA-1063
+      WRITING_PHASES = %w[autopilot closer_staging closer_production].freeze
 
       def initialize(host:, ticket_reference:, client: Github::Client.new)
         @host = host

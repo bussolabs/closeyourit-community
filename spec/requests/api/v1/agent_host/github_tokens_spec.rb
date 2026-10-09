@@ -55,6 +55,19 @@ RSpec.describe "Api::V1::AgentHost::GithubTokens", type: :request do
     expect(req).to have_been_requested
   end
 
+  # CYRA-1063 — the closers merge the pull request and push the release tag: read-only stopped them.
+  %w[closer_staging closer_production].each do |phase|
+    it "gives #{phase} a token that can merge and push a tag" do
+      hold_lease(phase:)
+      req = stub_token(contents: "write", pull_requests: "write", checks: "read", statuses: "read", actions: "read")
+
+      post path, params: { ticket: ticket.code }, headers:, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(req).to have_been_requested
+    end
+  end
+
   it "gives the other phases a read-only token" do
     hold_lease(phase: "triage")
     req = stub_token(contents: "read", checks: "read", statuses: "read", actions: "read")
