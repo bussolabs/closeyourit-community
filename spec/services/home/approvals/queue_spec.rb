@@ -62,6 +62,7 @@ RSpec.describe Home::Approvals::Queue do
       ])
       expect(result.totals).to eq("clarification" => 1, "review" => 1,
                                   "awaiting_approval" => 1, "secret_change" => 1)
+      expect(result.items.find { |item| item.kind == :clarification }.subtitle).to eq("Quale ambiente?")
     end
 
     # CYRA-689 — la coda si fermava a pianificatore/autopilot e diceva «nessuno» dove l'elenco delle

@@ -237,14 +237,14 @@ module Home
         return EMPTY_SOURCE.merge(project_ids: project_ids) if agent_filter
 
         base = base.where(ticketing_tickets: { project_id: project_filter.id }) if project_filter
-        rows = base.order(:created_at).limit(@limit).preload(workflow: { ticket: [ :project, :status ] })
+        rows = base.order(:created_at).limit(@limit).preload(:questions, workflow: { ticket: [ :project, :status ] })
         items = rows.map do |clarification|
           ticket = clarification.workflow.ticket
           track_ticket("clarification:#{clarification.id}", ticket.id)
           item(
             kind: :clarification, icon: "circle-question-mark", tone: :amber,
             title: t("clarification.title", code: ticket.code),
-            subtitle: clarification.questions.first, code: ticket.code,
+            subtitle: clarification.questions.first&.body, code: ticket.code,
             meta: ticket.project.key, project: project_ref(ticket.project),
             url: member_ticket_path(ticket), sort_at: clarification.created_at,
             dom_id: "home_clarification_#{clarification.id}", key: "clarification:#{clarification.id}",

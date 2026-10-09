@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.187.1] - 2026-10-09
+
+### Fixed
+
+- **Le domande dell'automazione si leggono di nuovo nelle Approvazioni.** La riga mostra il testo della domanda invece di un codice incomprensibile. [Approvazioni](/member/home/approvals)
+
 ## [0.187.0] - 2026-10-09
 
 ### Fixed
