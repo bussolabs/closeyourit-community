@@ -88,9 +88,21 @@ module Agents
       def overtaken?(existing, repository)
         return false unless @execution_phase == "closer_staging" && !@workflow.closer_staging_completed_at?
 
+        mine = parse(existing.version.sub(/-beta\.\d+\z/, ""))
+        return true if released_sibling_versions(repository).any? { |version| (mine <=> version) <= 0 }
+
         computed = Agents::Releases::NextVersion.call(repository:, tickets: [ @workflow.ticket ], client:)
         baseline = computed.ok? && computed.value[:baseline_tag]
-        baseline.present? && (parse(existing.version.sub(/-beta\.\d+\z/, "")) <=> parse(baseline)) <= 0
+        baseline.present? && (mine <=> parse(baseline)) <= 0
+      end
+
+      # CYRA-1065 — staging numbers other workflows of this repository already merged to main: without a
+      # staging channel no tag records them, and only this tells that their heading is already there.
+      def released_sibling_versions(repository)
+        Agents::ReleaseAssignment.for_phase("closer_staging")
+                                 .where(github_repository: repository).where.not(workflow: @workflow)
+                                 .joins(:workflow).merge(Agents::Workflow.where.not(closer_staging_completed_at: nil))
+                                 .pluck(:version).map { |version| parse(version.sub(/-beta\.\d+\z/, "")) }
       end
 
       def own_staging_version

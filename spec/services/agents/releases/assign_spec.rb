@@ -53,6 +53,26 @@ RSpec.describe Agents::Releases::Assign do
     expect(Agents::ReleaseAssignment.exists?(stale.id)).to be(false)
   end
 
+  # CYRA-1065 — on a repository without a staging channel no tag marks a staging release, so the stable tag
+  # never moved: a sibling's higher number already merged to main left this one stuck below it (CYJS-43).
+  it "reassigns a staging number that a sibling workflow already released above it" do
+    stale = assign("closer_staging").value
+    expect(stale.version).to eq("v1.4.3-beta.1")
+    altro = create(:ticket, organization:, project:, kind: :bug, with_agent_workflow: true)
+    described_class.call(workflow: altro.agent_workflow, execution_phase: "closer_staging")
+    altro.agent_workflow.update!(closer_staging_completed_at: 1.minute.ago)
+
+    expect(assign("closer_staging").value.version).to eq("v1.4.5-beta.1")
+  end
+
+  it "keeps a lower staging number while the sibling above it is not released yet" do
+    first = assign("closer_staging").value
+    altro = create(:ticket, organization:, project:, kind: :bug, with_agent_workflow: true)
+    described_class.call(workflow: altro.agent_workflow, execution_phase: "closer_staging")
+
+    expect(assign("closer_staging").value.id).to eq(first.id)
+  end
+
   it "keeps the staging number once its release is out, even if it is overtaken" do
     first = assign("closer_staging").value
     workflow.update!(closer_staging_completed_at: 1.minute.ago)
