@@ -176,6 +176,40 @@ RSpec.describe Agents::Attempts::Deliver, "il blocco dichiarato dalla macchina" 
     expect(workflow.reload.blocked_reason).to eq("Clarification limit reached: escalated to the team")
   end
 
+  # CYRA-1069 — another ticket landed on main first and the approved branch no longer merges: the work
+  # goes back to the autopilot, which brings main in, and the new head waits for a person's approval.
+  describe "the closer finds the approved branch in conflict with main" do
+    before do
+      workflow.update!(triage_started_at: 5.minutes.ago, triaged_at: 4.minutes.ago,
+                       planned_at: 3.minutes.ago, approved_at: 2.minutes.ago,
+                       autopilot_started_at: 1.minute.ago, autopilot_completed_at: 1.minute.ago,
+                       autopilot_approved_at: 30.seconds.ago, closer_staging_started_at: 10.seconds.ago)
+    end
+
+    let(:conflict) do
+      { category: "merge_conflict", summary: "PR #24 conflicts with main.", retryable: false,
+        human_action: "Bring main into the ticket branch." }
+    end
+
+    it "sends the work back to the autopilot and asks for a new review, without blocking it" do
+      result = consegna("closer_staging", state: "blocked", tag: nil, reason: "PR #24 conflicts with main.",
+                                          failure: conflict)
+
+      expect(result).to be_ok
+      expect(workflow.reload).to have_attributes(blocked_at: nil, autopilot_started_at: nil,
+                                                 autopilot_completed_at: nil, autopilot_approved_at: nil,
+                                                 closer_staging_started_at: nil, approved_at: be_present)
+      expect(workflow.ready_execution_phase).to eq("autopilot")
+    end
+
+    it "still blocks on any other reason" do
+      consegna("closer_staging", state: "blocked", tag: nil, reason: "The CI is red.",
+                                 failure: conflict.merge(category: "quality_gate"))
+
+      expect(workflow.reload).to have_attributes(blocked_phase: "closer_staging", blocked_kind: "agent_blocked")
+    end
+  end
+
   describe "«non sono riuscito a guardare» non è «serve una persona»" do
     before do
       workflow.update!(triage_started_at: 5.minutes.ago, triaged_at: 4.minutes.ago,

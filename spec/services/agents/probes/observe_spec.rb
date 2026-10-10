@@ -72,6 +72,15 @@ RSpec.describe Agents::Probes::Observe do
       expect(probe.reload).to have_attributes(closed_at: be_present, next_check_at: nil)
     end
 
+    # CYRA-1068 — the Nuxt template names its smoke step smoke-production, the Rails one smoke-prod.
+    it "accepts the Nuxt template smoke-production step as the smoke check" do
+      jobs = [ { "name" => "ci / deploy-production", "conclusion" => "success" },
+               { "name" => "ci / smoke-production", "conclusion" => "success" } ]
+
+      expect(osserva(client_che(jobs:))).to be_ok
+      expect(ticket.reload.status).to eq(fatto)
+    end
+
     # O tutte e tre o nessuna: un ticket «Fatto» con la prova ancora agganciata verrebbe riguardato
     # per sempre; una prova chiusa col ticket non Fatto sparirebbe in silenzio.
     it "se una delle tre scritture non riesce non ne resta nessuna" do

@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.187.2] - 2026-10-10
+
+### Fixed
+
+- **I ticket in conflitto tornano in lavorazione da soli.** Se nel frattempo un altro ticket ha cambiato gli stessi file, l'automazione riallinea il lavoro e te lo ripropone da approvare, invece di fermarsi. [Approvazioni](/member/home/approvals)
+- **I rilasci dei siti si riconoscono meglio.** Il controllo finale ora riconosce il passo di verifica usato dai siti, oltre a quello delle applicazioni.
+
 ## [0.187.1] - 2026-10-09
 
 ### Fixed

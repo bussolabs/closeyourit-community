@@ -20,6 +20,8 @@ module Agents
       # Non basta che il giro nel suo insieme sia verde: un giro con questi passaggi SALTATI resta
       # verde, e saltato vuol dire che non è stato fatto niente.
       STEPS = %w[deploy-production smoke-prod].freeze
+      # CYRA-1068 — the Nuxt template names the smoke step smoke-production: same step, other name.
+      STEP_ALIASES = { "smoke-production" => "smoke-prod" }.freeze
       SUCCESS = "success"
       # Esiti che dicono «è andata male», non «non ancora». `nil` è ancora in corso e non sta qui.
       FAILED_CONCLUSIONS = %w[failure cancelled timed_out startup_failure].freeze
@@ -151,7 +153,10 @@ module Agents
         end
       end
 
-      def name_tail(name) = name.to_s.split("/").last.to_s.strip
+      def name_tail(name)
+        tail = name.to_s.split("/").last.to_s.strip
+        STEP_ALIASES.fetch(tail, tail)
+      end
 
       # La riga di rilascio con QUELLA versione, in produzione, con QUEL codice, e con l'istante di
       # prova scritto — che lo scrive solo il canale della CI dopo il controllo finale. Mai «l'ultimo

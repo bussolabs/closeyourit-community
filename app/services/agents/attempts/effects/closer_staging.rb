@@ -16,10 +16,21 @@ module Agents
         private
 
         def apply!
+          return rework_from_conflict! if result_state == "blocked" && failure_category == "merge_conflict"
           return block_from_agent! if result_state == "blocked"
           return unless result_state == "staging-released"
 
           workflow.update!(closer_staging_completed_at: Time.current)
+        end
+
+        def failure_category = @payload.dig("result", "failure", "category")
+
+        # CYRA-1069 — main moved and the approved branch no longer merges: the autopilot brings main in,
+        # and the new head goes back to a person's review like any other delivery.
+        def rework_from_conflict!
+          workflow.update!(autopilot_started_at: nil, autopilot_completed_at: nil, autopilot_approved_at: nil,
+                           autopilot_approved_by_id: nil, closer_staging_started_at: nil,
+                           **Agents::Workflow.cleared_block)
         end
       end
     end
