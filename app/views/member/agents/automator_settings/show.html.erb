@@ -74,7 +74,7 @@
         <% @own_choice_hosts.each do |host| %>
           <li class="flex flex-wrap items-center justify-between gap-2 py-2" data-test="automator-settings-own-host">
             <%= link_to host.hostname, member_agent_path(host), class: "font-medium text-indigo-700 dark:text-indigo-300 hover:underline" %>
-            <span class="text-gray-600 dark:text-zinc-400"><%= t("#{scope}.choice_line", work: t("member.agents.engine.engines.#{host.work_engine}"), review: t("member.agents.engine.engines.#{host.reviewer}")) %></span>
+            <span class="text-gray-600 dark:text-zinc-400"><%= t("#{scope}.choice_line", work: t("member.agents.engine.engines.#{host.effective_work_engine}"), review: t("member.agents.engine.engines.#{host.effective_reviewer}"), support: t("member.agents.engine.engines.#{host.effective_supporter}")) %></span>
           </li>
         <% end %>
       </ul>

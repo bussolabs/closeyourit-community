@@ -1,0 +1,7 @@
+<%# Ui::FloatingNoticeComponent — one stack over the bottom of the frame, so two notices on a page sit
+    one above the other instead of on top of each other. Above the bottom navigation on phones; a
+    lifted notice raises the whole stack over the page's sticky bottom bar. %>
+<% if content_for?(:floating_notice) %>
+  <div class="fixed md:absolute inset-x-4 bottom-20 md:bottom-4 has-[[data-lifted]]:bottom-36 md:has-[[data-lifted]]:bottom-20 z-30 md:left-auto md:right-4 md:w-[26rem] flex flex-col gap-2 pointer-events-none"
+       data-test="floating-notices"><%= yield :floating_notice %></div>
+<% end %>

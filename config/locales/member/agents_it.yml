@@ -200,6 +200,14 @@ it:
           other: Un motore diverso da chi lavora rilegge. Deve essere anche lui sulla macchina.
           same: Lo stesso motore che lavora rilegge, in una sessione nuova. Basta un motore solo.
           opencode: OpenCode rilegge e non può scrivere. Deve essere sulla macchina, con l'accesso fatto.
+      supporter:
+        title: Chi risponde alle domande
+        hint: Il supporter risponde alle domande della macchina e approva i piani a basso rischio. Lavora solo nei progetti dove è acceso. Meglio un motore diverso da chi lavora.
+        label: Supporter
+        save: Salva
+        updated: Supporter aggiornato. Vale dalla prossima domanda.
+        opencode_model_missing: OpenCode non può fare il supporter finché nella pagina Automator manca il modello OpenRouter.
+        invalid: Scelta non valida.
       engine:
         title: Chi fa il lavoro
         hint: Il motore che lavora i ticket su questa macchina. Deve essere installato e con l'accesso fatto.

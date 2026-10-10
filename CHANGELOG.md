@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.187.3] - 2026-10-10
+
+### Fixed
+
+- **Il lavoro riallineato torna davvero da approvare.** Dopo un conflitto risolto, il ticket passa di nuovo in revisione e il pulsante Approva funziona. [Approvazioni](/member/home/approvals)
+
+### Added
+
+- **Supporter scelto per ogni macchina.** Nella pagina della macchina, accanto a chi lavora e chi rilegge, scegli chi risponde alle sue domande. Se non scegli, vale il motore della pagina Automator. [Automator](/member/agents)
+
 ## [0.187.2] - 2026-10-10
 
 ### Fixed

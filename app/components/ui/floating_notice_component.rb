@@ -4,8 +4,8 @@ module Ui
   # A message that matters but belongs to no panel: it floats over the bottom of the content frame in
   # its own panel, with a title saying what it is, and the person can close it for good (saved on the
   # account through Member::DismissedNoticesController). Never loose text in the content (DESIGN.md T1).
-  # Render it inside `content_for :floating_notice`: the member layout places it in the frame.
-  # `lifted:` raises it over a page's sticky bottom bar. Member pages only: elsewhere it does not render.
+  # Render it inside `content_for :floating_notice`: the layout stacks it (shared/_floating_notices).
+  # `lifted:` raises the stack over a page's sticky bottom bar. Member pages only: elsewhere it does not render.
   class FloatingNoticeComponent < BaseComponent
     # Every notice key matches one of these: the endpoint refuses any other. A project's next steps
     # carry the project and the steps shown, so a step the person has not seen brings the notice back;
@@ -25,12 +25,6 @@ module Ui
     ].freeze
 
     def self.valid_key?(key) = KEY_FORMATS.any? { |format| format.match?(key.to_s) }
-
-    # Fixed above the bottom navigation on phones; from md up, anchored to the frame.
-    POSITION = {
-      false => "bottom-20 md:bottom-4",
-      true => "bottom-36 md:bottom-20"
-    }.freeze
 
     # `tone:` says what kind of message it is: `:info` explains, `:warning` asks to fix something,
     # `:success` confirms all is well.
@@ -59,11 +53,10 @@ module Ui
     private
 
     def html_options
-      base = "fixed md:absolute inset-x-4 #{POSITION[@lifted]} z-30 md:left-auto md:right-4 md:w-[26rem] " \
-             "flex items-start gap-3 rounded-lg border #{@tone[:box]} px-4 py-3"
+      base = "pointer-events-auto flex items-start gap-3 rounded-lg border #{@tone[:box]} px-4 py-3"
       merge_options(base_class: base, test_id: @test_id, options: @options).tap do |opts|
         opts[:role] = "status"
-        opts[:data] = (opts[:data] || {}).merge(controller: "ui--floating-notice",
+        opts[:data] = (opts[:data] || {}).merge(controller: "ui--floating-notice", lifted: (true if @lifted),
                                                 ui__floating_notice_url_value: helpers.member_dismissed_notices_path,
                                                 ui__floating_notice_key_value: @key)
       end

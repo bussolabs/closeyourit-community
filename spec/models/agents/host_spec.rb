@@ -275,5 +275,23 @@ RSpec.describe Agents::Host, type: :model do
       expect(host.effective_supporter).to eq("codex")
       expect(build(:agent_host, supporter: "nobody")).to be_invalid
     end
+
+    it "gives the machine its own choice once it picks a supporter of its own" do
+      host = create(:agent_host)
+
+      host.update!(supporter: "claude")
+
+      expect(host.reload).not_to be_follows_organization
+    end
+
+    # Saving the form a following machine is pre-filled with is not a choice.
+    it "keeps following the organization when the supporter saved is the one in force" do
+      host = create(:agent_host)
+      create(:agent_automator_setting, organization: host.organization, supporter: "claude")
+
+      host.reload.update!(supporter: "claude")
+
+      expect(host.reload).to have_attributes(supporter: nil, follows_organization?: true)
+    end
   end
 end

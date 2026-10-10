@@ -9,8 +9,8 @@ module Member
   # ombreggerebbe ::Agents di dominio) → model SEMPRE ::Agents::Host.
   class AgentsController < Member::BaseController
     before_action :require_view
-    before_action :set_host, only: %i[show certify decertify destroy review engine follow_organization]
-    before_action :require_manage, only: %i[certify decertify destroy review engine follow_organization]
+    before_action :set_host, only: %i[show certify decertify destroy review engine supporter follow_organization]
+    before_action :require_manage, only: %i[certify decertify destroy review engine supporter follow_organization]
 
     # CYRA-694 — filtri ricordati (memoria per-indirizzo, vedi RememberableFilters).
     remembers_filters :kind, :enabled, :q, :sort, only: :index
@@ -113,9 +113,19 @@ module Member
       end
     end
 
+    # CYAU-235 — which engine answers this machine's questions and approves its low-risk plans.
+    def supporter
+      if @host.update(supporter: params[:supporter])
+        redirect_to member_agent_path(@host, tab: "details"), notice: t("member.agents.supporter.updated")
+      else
+        reason = @host.errors.of_kind?(:supporter, :opencode_model_missing) ? "opencode_model_missing" : "invalid"
+        redirect_to member_agent_path(@host, tab: "details"), alert: t("member.agents.supporter.#{reason}")
+      end
+    end
+
     # CYAU-227 — the machine drops its own choice and follows the organization's from the next job.
     def follow_organization
-      @host.update!(work_engine: nil, reviewer: nil)
+      @host.update!(work_engine: nil, reviewer: nil, supporter: nil)
       redirect_to member_agent_path(@host, tab: "details"), notice: t("member.agents.choice.followed")
     end
 

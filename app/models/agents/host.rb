@@ -36,6 +36,7 @@ module Agents
     # CYAU-235: null means the machine follows the organization's supporter engine.
     validates :supporter, inclusion: { in: SUPPORTERS }, allow_nil: true
     before_validation :complete_engine_choice
+    before_validation :keep_following_supporter
     validate :opencode_has_a_model
 
     # CYRA-1052 — this machine's own Claude credential, served before the organization's.
@@ -86,7 +87,7 @@ module Agents
 
     def revoked? = revoked_at.present?
 
-    def follows_organization? = work_engine.nil?
+    def follows_organization? = work_engine.nil? && supporter.nil?
     def effective_work_engine = work_engine || organization_choice.work_engine
     def effective_reviewer = reviewer || organization_choice.reviewer
     def effective_supporter = supporter || organization_choice.supporter
@@ -180,13 +181,20 @@ module Agents
       self.reviewer = nil
     end
 
-    # CYAU-228 — OpenCode reviews with the organization's OpenRouter model: without one the machine would
-    # never take work and no page would say why.
+    # CYAU-235 — the supporter form of a following machine is pre-filled with the organization's engine:
+    # saving it unchanged is not a choice.
+    def keep_following_supporter
+      self.supporter = nil if supporter_in_database.nil? && supporter == organization_choice.supporter
+    end
+
+    # CYAU-228 — OpenCode reviews and supports with the organization's OpenRouter model: without one the
+    # machine would never take work, or never get an answer, and no page would say why.
     def opencode_has_a_model
-      return unless reviewer == "opencode" && will_save_change_to_reviewer?
       return if organization_choice.opencode_model.present?
 
-      errors.add(:reviewer, :opencode_model_missing)
+      %i[reviewer supporter].each do |role|
+        errors.add(role, :opencode_model_missing) if public_send(role) == "opencode" && will_save_change_to_attribute?(role)
+      end
     end
 
     def telemetry_snapshots_are_arrays

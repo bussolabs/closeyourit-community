@@ -70,8 +70,7 @@
               T1 — from md up the page wrapper sheds its padding and reaches 1px past the frame, which clips it:
               the panels touch the frame and its border is the only line on that side. %>
           <main id="main-content" tabindex="-1" data-panels="flush" data-controller="ui--panel-edges" class="relative h-full overflow-y-auto pb-20 md:pb-0 md:overflow-x-hidden md:[&>.p-7]:-m-px md:[&>.p-7]:max-w-none md:[&>.p-7]:p-0"><% if admin_area? %><%= render layout: "member/admin_shell" do %><%= yield %><% end %><% elsif guides_area? %><%= render layout: "member/guides_shell" do %><%= yield %><% end %><% else %><%= yield %><% end %></main>
-          <%# Ui::FloatingNoticeComponent — over the bottom of the frame, not of the window. %>
-          <%= yield :floating_notice %>
+          <%= render "shared/floating_notices" %>
         </div>
 
         <%= render "member/footer" %>

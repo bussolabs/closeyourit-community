@@ -29,6 +29,16 @@ RSpec.describe "Member::Agents::AutomatorSettings", type: :request do
       expect(response.body).not_to include(">follower<")
     end
 
+    # CYAU-235
+    it "lists a machine whose only own choice is the supporter, with the engines in force" do
+      create(:agent_host, organization:, hostname: "helper", supporter: "claude")
+
+      get member_agents_automator_setting_path
+
+      expect(response.body).to include("helper")
+      expect(response.body).to include(I18n.t("member.automator_settings.choice_line", work: "Claude", review: "Codex", support: "Claude"))
+    end
+
     it "saves the organization's choice after confirmation, and following machines use it" do
       host = create(:agent_host, organization:)
       own = create(:agent_host, organization:, work_engine: "claude", reviewer: "codex")

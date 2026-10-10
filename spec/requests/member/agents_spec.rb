@@ -850,6 +850,53 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       expect(host.reload.effective_work_engine).to eq("claude")
     end
 
+    # CYAU-235
+    it "lets the machine name its own supporter engine, after confirmation" do
+      sign_in(owner)
+      host = create(:agent_host, organization:)
+
+      get member_agent_path(host, tab: "details")
+      expect(response.body).to include('data-test="host-supporter"')
+
+      patch supporter_member_agent_path(host), params: { supporter: "claude" }
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(host.reload.supporter).to be_nil
+
+      patch supporter_member_agent_path(host), params: { supporter: "claude", confirm: "1" }
+
+      expect(response).to redirect_to(member_agent_path(host, tab: "details"))
+      expect(host.reload.effective_supporter).to eq("claude")
+    end
+
+    it "refuses an unknown supporter engine" do
+      sign_in(owner)
+      host = create(:agent_host, organization:)
+
+      patch supporter_member_agent_path(host), params: { supporter: "nobody", confirm: "1" }
+
+      expect(flash[:alert]).to eq(I18n.t("member.agents.supporter.invalid"))
+      expect(host.reload.supporter).to be_nil
+    end
+
+    it "says why OpenCode cannot be the supporter while the organization has no OpenRouter model" do
+      sign_in(owner)
+      host = create(:agent_host, organization:)
+
+      patch supporter_member_agent_path(host), params: { supporter: "opencode", confirm: "1" }
+
+      expect(flash[:alert]).to eq(I18n.t("member.agents.supporter.opencode_model_missing"))
+      expect(host.reload.supporter).to be_nil
+    end
+
+    it "drops the machine's own supporter when it goes back to following the organization" do
+      sign_in(owner)
+      host = create(:agent_host, organization:, supporter: "claude")
+
+      patch follow_organization_member_agent_path(host), params: { confirm: "1" }
+
+      expect(host.reload).to have_attributes(supporter: nil, follows_organization?: true)
+    end
+
     # CYAU-227
     it "shows that a machine follows the organization's choice" do
       sign_in(owner)

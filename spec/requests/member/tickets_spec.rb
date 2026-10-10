@@ -889,6 +889,8 @@ RSpec.describe "Member::Tickets", type: :request do
       get member_ticket_path(mine)
       notice = Nokogiri::HTML(response.body).at_css("aside[data-test='ticket-same-incident']")
       expect(notice["data-ui--floating-notice-key-value"]).to eq("same_incident:#{mine.id}:1")
+      # One stack holds every floating notice, so a second one on the page lines up above it.
+      expect(notice.parent["data-test"]).to eq("floating-notices")
 
       admin.update!(dismissed_notices: [ "same_incident:#{mine.id}:1" ])
       get member_ticket_path(mine)

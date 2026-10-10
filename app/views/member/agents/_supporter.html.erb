@@ -1,0 +1,18 @@
+<%# locals: (host:, can_manage:) %>
+<%# CYAU-235 — the engine that answers the machine's questions and approves its low-risk plans. It acts
+    only in projects that switched the supporter on. %>
+<% engines = Agents::Host::SUPPORTERS %>
+<div class="px-4 py-4 space-y-3" data-test="host-supporter">
+  <h3 class="text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.agents.supporter.title") %></h3>
+  <p class="text-[12.5px] text-gray-500 dark:text-zinc-400 max-w-[70ch]"><%= t("member.agents.supporter.hint") %></p>
+  <% if can_manage %>
+    <%= form_with url: supporter_member_agent_path(host), method: :patch, class: "flex flex-wrap items-end gap-3" do %>
+      <%= render Ui::SelectComponent.new(name: "supporter", label: t("member.agents.supporter.label"), test_id: "host-supporter-select",
+            options: engines.map { |engine| [ t("member.agents.engine.engines.#{engine}"), engine ] },
+            selected: host.effective_supporter, wrapper_class: "min-w-0 flex-1") %>
+      <%= render Ui::ButtonComponent.new(label: t("member.agents.supporter.save"), type: "submit", size: :sm, test_id: "host-supporter-save") %>
+    <% end %>
+  <% else %>
+    <p class="text-[13px] text-zinc-900 dark:text-zinc-100"><%= t("member.agents.engine.engines.#{host.effective_supporter}") %></p>
+  <% end %>
+</div>

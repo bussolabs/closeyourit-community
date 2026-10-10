@@ -196,6 +196,14 @@ en:
           other: An engine other than the one working reviews. It must be on the machine too.
           same: The engine doing the work reviews, in a new session. One engine is enough.
           opencode: OpenCode reviews and cannot write. It must be on the machine and signed in.
+      supporter:
+        title: Who answers the questions
+        hint: The supporter answers the machine's questions and approves low-risk plans. It acts only in projects where it is switched on. An engine other than the one working is better.
+        label: Supporter
+        save: Save
+        updated: Supporter updated. It applies from the next question.
+        opencode_model_missing: OpenCode cannot be the supporter until the Automator page names an OpenRouter model.
+        invalid: Not a valid choice.
       engine:
         title: Who does the work
         hint: The engine that works the tickets on this machine. It must be installed and signed in there.

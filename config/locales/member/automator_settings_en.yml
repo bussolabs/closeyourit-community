@@ -35,7 +35,7 @@ en:
       own_title: Machines with their own choice
       own_hint: These machines do not follow the choice above. From their page they can go back to following it.
       all_follow: Every machine follows this choice.
-      choice_line: "%{work} works, %{review} reviews"
+      choice_line: "%{work} works, %{review} reviews, %{support} answers"
       supporter_label: Supporter engine
       supporter_hint: The supporter answers the machines' questions. Better an engine other than the one that works, so it does not just agree with itself.
       reserved_topics_label: Organization reserved topics

@@ -183,7 +183,8 @@ RSpec.describe Agents::Attempts::Deliver, "il blocco dichiarato dalla macchina" 
       workflow.update!(triage_started_at: 5.minutes.ago, triaged_at: 4.minutes.ago,
                        planned_at: 3.minutes.ago, approved_at: 2.minutes.ago,
                        autopilot_started_at: 1.minute.ago, autopilot_completed_at: 1.minute.ago,
-                       autopilot_approved_at: 30.seconds.ago, closer_staging_started_at: 10.seconds.ago)
+                       autopilot_approved_at: 30.seconds.ago, closer_staging_started_at: 10.seconds.ago,
+                       candidate_verified_at: 40.seconds.ago)
     end
 
     let(:conflict) do
@@ -198,7 +199,8 @@ RSpec.describe Agents::Attempts::Deliver, "il blocco dichiarato dalla macchina" 
       expect(result).to be_ok
       expect(workflow.reload).to have_attributes(blocked_at: nil, autopilot_started_at: nil,
                                                  autopilot_completed_at: nil, autopilot_approved_at: nil,
-                                                 closer_staging_started_at: nil, approved_at: be_present)
+                                                 closer_staging_started_at: nil, approved_at: be_present,
+                                                 candidate_verified_at: nil)
       expect(workflow.ready_execution_phase).to eq("autopilot")
     end
 

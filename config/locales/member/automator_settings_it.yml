@@ -35,7 +35,7 @@ it:
       own_title: Macchine con una scelta propria
       own_hint: Queste macchine non seguono la scelta qui sopra. Dalla loro pagina possono tornare a seguirla.
       all_follow: Tutte le macchine seguono questa scelta.
-      choice_line: "Lavora %{work}, rilegge %{review}"
+      choice_line: "Lavora %{work}, rilegge %{review}, risponde %{support}"
       supporter_label: Motore del supporter
       supporter_hint: Il supporter risponde alle domande delle macchine. Meglio un motore diverso da chi lavora, così non gli dà ragione da solo.
       reserved_topics_label: Temi riservati dell'organizzazione
