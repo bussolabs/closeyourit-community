@@ -2125,10 +2125,13 @@ it:
         cancel_reason: Motivo dell'annullamento
         # CYRA-410 — annullare è definitivo: nessun gesto rimette in moto una lavorazione annullata.
         # Chi lo legge deve saperlo PRIMA di premere, non scoprirlo quando il ticket resta fermo.
-        cancel_effect: "La lavorazione si ferma qui e non riparte più su questo ticket: da lì in poi lo porta avanti una persona."
+        cancel_effect: "La lavorazione si ferma qui e non riparte da sola su questo ticket: da lì in poi lo porta avanti una persona."
         cancel_open: "Chiudi la lavorazione…"
         cancelled: "Automazione annullata: %{reason}"
         cancelled_notice: Automazione annullata.
+        restart: Riavvia la lavorazione
+        restart_effect: "Ne parte una nuova da capo: la macchina rilegge il ticket e propone un piano nuovo."
+        restarted_notice: Lavorazione riavviata.
         production_hold:
           held: Rilascio fermato prima della produzione.
         reassess:

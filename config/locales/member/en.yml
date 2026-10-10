@@ -2061,10 +2061,13 @@ en:
           mark: "Mark as released"
           marked: "Marked as released."
         cancel_reason: Reason for cancelling
-        cancel_effect: "The automated work stops here and never resumes on this ticket: from then on a person carries it forward."
+        cancel_effect: "The automated work stops here and does not resume by itself on this ticket: from then on a person carries it forward."
         cancel_open: "Close the work…"
         cancelled: "Automation cancelled: %{reason}"
         cancelled_notice: Automation cancelled.
+        restart: Restart the work
+        restart_effect: "A new one starts from scratch: the machine reads the ticket again and proposes a new plan."
+        restarted_notice: Work restarted.
         production_hold:
           held: Release stopped before production.
         reassess:

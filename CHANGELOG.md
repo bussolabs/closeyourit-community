@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.188.0] - 2026-10-10
+
+### Added
+
+- **Riavvia una lavorazione annullata.** Dalla scheda Automazione del ticket ora puoi farla ripartire da capo: la macchina rilegge il ticket e propone un piano nuovo. Prima un ticket annullato restava fermo per sempre. [Ticket](/member/tickets)
+
 ## [0.187.3] - 2026-10-10
 
 ### Fixed

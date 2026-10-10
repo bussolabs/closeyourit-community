@@ -6,7 +6,9 @@
 <%# Annulla: fuori dal banner quando la lavorazione NON è review_blocked (nel banner c'è già), in secondo
     piano (`secondary_muted`, CYRA-410) e con l'effetto dichiarato sotto. %>
 <% cancel = can_manage && workflow.phase != "review_blocked" && !workflow.cancelled_at? && !workflow.completed_at? %>
-<% if reassess || cancel %>
+<%# CYRA-1070 — a cancelled run can start again from scratch. %>
+<% restart = can_manage && workflow.cancelled_at? %>
+<% if reassess || cancel || restart %>
   <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3.5 space-y-1.5" data-test="automation-actions">
     <div class="flex items-start gap-2 flex-wrap">
       <% if reassess %>
@@ -14,6 +16,13 @@
           <%= render Ui::ButtonComponent.new(label: t("member.approvals.actions.reassess"),
                 href: member_ticket_automation_reassessment_path(ticket), method: :post,
                 variant: :secondary, size: :sm, icon: "rotate-cw", test_id: "automation-reassess-submit") %>
+        </div>
+      <% end %>
+      <% if restart %>
+        <div data-test="automation-restart">
+          <%= render Ui::ButtonComponent.new(label: t("member.tickets.automation.restart"),
+                href: member_ticket_automation_restart_path(ticket), method: :post,
+                variant: :secondary, size: :sm, icon: "rotate-cw", test_id: "automation-restart-submit") %>
         </div>
       <% end %>
       <% if cancel %>
@@ -32,6 +41,9 @@
     </div>
     <% if reassess %>
       <p class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="automation-reassess-effect"><%= t("member.approvals.reassess_hint") %></p>
+    <% end %>
+    <% if restart %>
+      <p class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="automation-restart-effect"><%= t("member.tickets.automation.restart_effect") %></p>
     <% end %>
     <% if cancel %>
       <p class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="automation-cancel-effect"><%= t("member.tickets.automation.cancel_effect") %></p>

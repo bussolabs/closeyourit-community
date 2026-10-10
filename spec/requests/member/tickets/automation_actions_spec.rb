@@ -64,6 +64,20 @@ RSpec.describe "Member ticket automation actions", type: :request do
 
   # CYRA-218: la via d'uscita quando la fase bocciata non ha prodotto un piano — cioè il caso normale,
   # visto che una fase bocciata non produce effetti. Senza, una lavorazione ferma si può solo annullare.
+  # CYRA-1070 — a cancelled run never came back on its own.
+  it "offers restart on a cancelled run and starts a new one from triage" do
+    workflow.update_columns(cancelled_at: 1.minute.ago, cancelled_by_id: cto.id, cancellation_reason: "Start over")
+
+    get member_ticket_path(ticket, tab: "automation")
+    expect(response.body).to include('data-test="automation-restart-submit"')
+
+    post member_ticket_automation_restart_path(ticket)
+
+    expect(response).to redirect_to(member_ticket_path(ticket, tab: "automation"))
+    expect(flash[:notice]).to eq(I18n.t("member.tickets.automation.restarted_notice"))
+    expect(ticket.reload.agent_workflow).to have_attributes(cancelled_at: nil, triage_requested_at: be_present)
+  end
+
   it "rimette in coda una lavorazione fermata dal tetto di revisione" do
     workflow.update!(planned_at: nil, blocked_at: Time.current, blocked_phase: "planner", blocked_kind: "attempt_limit",
                      blocked_reason: "review_limit: planner rejected 2 times")

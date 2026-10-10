@@ -157,6 +157,8 @@ Formato `R{HTTP_STATUS}-{DOMINIO}-{SEQ}` (rules/error-handling.md). Envelope API
 - `R409-WORKFLOW-012` — manca la credenziale di sola lettura per il registro delle immagini (`Agents::Probes::Bind`, CYRA-625): la prova non si arma e chiama subito una persona, invece di aspettare un'ora in silenzio
 - `R409-WORKFLOW-013` — su un ticket già concluso non si decide, da nessuna parte (`Agents::Workflows::ConcludedTicketGate`, CYRA-630): la guardia vive nei service, così nessuna pagina può aggirarla
 - `R409-WORKFLOW-015` — «Ferma» su una lavorazione che non sta aspettando la produzione (`Agents::Workflows::HoldProduction`, CYRA-871)
+- `R409-WORKFLOW-016` — «Riavvia» su una lavorazione che non è annullata (`Agents::Workflows::Restart`, CYRA-1070)
+- `R403-WORKFLOW-003` — solo admin e owner riavviano una lavorazione annullata (`Agents::Workflows::Restart`, CYRA-1070)
 - `R422-REGISTRY-001` — nome del pacchetto o versione fuori dall'alfabeto della loro famiglia (`Agents::Registries::Client`, CYRA-625): si rifiuta PRIMA che parta qualunque chiamata, perché un nome che è a sua volta un indirizzo cambierebbe lo scaffale interrogato
 - `R502-REGISTRY-001` — il registro pubblico non ha risposto o ha risposto con un errore suo (CYRA-625): linea storta, si riprova
 - `R502-REGISTRY-002` — il registro ha risposto con un corpo che non si legge (CYRA-625): è una linea storta, non una negazione

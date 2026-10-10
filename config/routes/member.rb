@@ -756,6 +756,8 @@ namespace :member do
       resource :approval, only: :create, module: :automation
       resource :change_request, path: "changes", only: :create, module: :automation
       resource :cancellation, only: :create, module: :automation
+      # CYRA-1070 — a cancelled run starts again from triage, as a new one.
+      resource :restart, only: :create, module: :automation
       # Riprova una lavorazione ferma per tetto di revisione (CYRA-218): è l'unica uscita quando la
       # fase bocciata non ha prodotto un piano, e approvazione/modifiche non hanno su cosa lavorare.
       resource :unblock, only: :create, module: :automation
