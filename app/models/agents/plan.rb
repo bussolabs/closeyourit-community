@@ -36,8 +36,9 @@ module Agents
     # Nessuna chiamata a GitHub: si leggono le colonne del collegamento progetto↔archivio, che una
     # persona ha compilato. Approvare un piano non deve poter restare appeso perché GitHub non
     # risponde — e sta dentro la transazione dell'approvazione.
-    def self.decision_for(ticket)
-      repository = ticket&.project&.github_repository
+    def self.decision_for(ticket) = decision_for_repository(ticket&.project&.github_repository)
+
+    def self.decision_for_repository(repository)
       return Decision.new(candidate_items: nil, completion_probe: nil, missing: :repository) if repository.nil?
       return Decision.new(candidate_items: nil, completion_probe: nil, missing: :probe) if repository.release_probe.blank?
 

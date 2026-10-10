@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.188.1] - 2026-10-10
+
+### Fixed
+
+- **I ticket ripartono quando imposti la prova di rilascio.** Se un piano era stato approvato prima che il progetto dichiarasse come si capisce che un rilascio è riuscito, ora riparte appena la imposti, come la pagina promette.
+
 ## [0.188.0] - 2026-10-10
 
 ### Added

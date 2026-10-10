@@ -31,6 +31,33 @@ RSpec.describe Github::Repositories::Save do
     expect(repository.staging_environment).to eq(staging)
   end
 
+  # CYRA-1072 — a plan approved before the project had a release proof stayed out of the queue for good,
+  # while the page promised it would restart by itself once the proof was set.
+  describe "plans approved without a release proof" do
+    let(:ticket) { create(:ticket, organization:, project:, with_agent_workflow: true) }
+    let(:workflow) { ticket.agent_workflow }
+    let!(:plan) do
+      Agents::Plan.create!(workflow:, attempt: create(:agent_attempt, organization:, workflow:), technical_analysis: "Plan",
+                           scenarios: [], definition_of_done: [ "RSpec" ], notes: [], ticket_snapshot_digest: "snapshot",
+                           approved_at: 1.hour.ago).tap { |p| workflow.update!(approved_at: 1.hour.ago, frozen_plan_id: p.id) }
+    end
+
+    it "freezes the decision they were missing once the proof is set" do
+      described_class.call(repository:, attributes: { release_probe: "merge" })
+
+      expect(plan.reload.candidate_items).to eq([ { "repo" => repository.full_name, "base" => repository.default_branch } ])
+      expect(plan.completion_probe).to include("kind" => "merge")
+    end
+
+    it "leaves a plan of a cancelled run alone" do
+      workflow.update!(cancelled_at: Time.current)
+
+      described_class.call(repository:, attributes: { release_probe: "merge" })
+
+      expect(plan.reload.candidate_items).to be_nil
+    end
+  end
+
   it "salva la prova di rilascio: senza, la scelta si perderebbe rispondendo «fatto»" do
     result = described_class.call(repository:, attributes: { release_probe: "deploy_smoke",
                                                              production_environment_id: production.id })
