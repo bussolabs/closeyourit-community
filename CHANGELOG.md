@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.188.2] - 2026-10-11
+
+### Fixed
+
+- **Una libreria, un ticket.** Se una libreria ha più falle, ora ricevi un solo ticket per progetto: le falle nuove vengono scritte su quello già aperto, invece di crearne altri da lavorare uno per uno.
+
 ## [0.188.1] - 2026-10-10
 
 ### Fixed

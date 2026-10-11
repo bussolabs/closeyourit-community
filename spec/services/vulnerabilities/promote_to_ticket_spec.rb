@@ -29,6 +29,27 @@ RSpec.describe Vulnerabilities::PromoteToTicket, type: :service do
 
   def promote(group: finding) = described_class.call(group:, reporter: owner)
 
+  # CYRA-1075 — three advisories on one package became three tickets, three plans and three runs for
+  # what is one change. A later advisory joins the open ticket of the same package instead.
+  describe "a second advisory on a package that already has an open ticket" do
+    let(:other_advisory) { create(:vulnerability_advisory, :high, osv_id: "GHSA-def", aliases: [ "CVE-2026-2" ]) }
+    let(:other_finding) { create(:vulnerability_finding, project:, package:, advisory: other_advisory) }
+
+    it "is named once on the open ticket instead of opening a twin" do
+      ticket = promote.value
+
+      expect { 2.times { promote(group: other_finding) } }.not_to change(Ticketing::Ticket, :count)
+      expect(ticket.comments.where("body LIKE ?", "%CVE-2026-2%").count).to eq(1)
+    end
+
+    it "opens a new ticket once the earlier one is done" do
+      ticket = promote.value
+      ticket.update_columns(status_id: create(:ticket_status, :done, organization:).id)
+
+      expect { promote(group: other_finding) }.to change(Ticketing::Ticket, :count).by(1)
+    end
+  end
+
   it "il titolo dice gravità, cosa e quale riferimento" do
     ticket = promote.value
 

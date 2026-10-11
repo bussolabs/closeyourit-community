@@ -8,7 +8,37 @@ module Vulnerabilities
   # La base chiama il parametro `group:`: qui il "gruppo" è il finding. Il nome resta quello per non
   # duplicare la base, che è il pezzo che garantisce il doppio-submit = un ticket solo.
   class PromoteToTicket < Observability::PromoteToTicket
+    # CYRA-1075 — one package, one open ticket: a later advisory is named on it instead of opening a
+    # twin. Not linked as its finding: the schema keeps one finding per ticket.
+    def call
+      return already_promoted if @group.promoted?
+
+      open_ticket = open_ticket_for_package
+      return super if open_ticket.nil?
+
+      unless open_ticket.comments.where("body LIKE ?", "%#{@group.advisory.display_id}%").exists?
+        Ticketing::AddComment.call(ticket: open_ticket, author: @reporter,
+                                   params: { body: joined_comment.truncate(Ticketing::Constants::COMMENT_MAX_CHARS) })
+      end
+      Result.ok(open_ticket)
+    end
+
     private
+
+    def open_ticket_for_package
+      Vulnerabilities::Finding.joins(:package, ticket: :status)
+                              .where(project_id: @group.project_id)
+                              .where(vulnerabilities_packages: { name: @group.package.name,
+                                                                 ecosystem: @group.package.ecosystem })
+                              .where.not(types_ticket_statuses: { category: Types::TicketStatus.categories.fetch("done") })
+                              .first&.ticket
+    end
+
+    def joined_comment
+      fix = @group.fixable? ? " Corretta in #{@group.fixed_version}." : ""
+      "Stessa libreria, nuova falla: #{@group.advisory.display_id} (#{@group.severity}).#{fix} " \
+        "Va chiusa con la stessa correzione di questo ticket."
+    end
 
     def already_promoted_code = "R422-VULN-001"
 
