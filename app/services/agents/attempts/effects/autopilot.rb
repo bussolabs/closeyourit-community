@@ -61,6 +61,10 @@ module Agents
             candidate.state = :pending
             candidate.next_check_at = Time.current
           end
+          # CYRA-1074 — a rejected row of the same pull request is checked again, not reused as it was.
+          return if @candidate.state.in?(Agents::DeliveryCandidate::RETRYABLE_STATES)
+
+          @candidate.update!(attempt:, state: :pending, next_check_at: Time.current, last_error_code: nil)
         end
 
         def failure_category = @payload.dig("result", "failure", "category")

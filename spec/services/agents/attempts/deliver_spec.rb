@@ -1414,6 +1414,19 @@ RSpec.describe Agents::Attempts::Deliver do
         .not_to change(Agents::DeliveryCandidate, :count)
     end
 
+    # CYRA-1074 — a rejected row of the same pull request was reused as it was: nothing checks a
+    # rejected row again, so the run sat in «verifying» forever.
+    it "a delivery onto a rejected row of the same pull request checks it again" do
+      consegna_pr("https://github.com/bussolabs/closeyourit-rails/pull/42")
+      Agents::DeliveryCandidate.sole.update!(state: :rejected, next_check_at: nil,
+                                             last_error_code: "pull_request_missing")
+
+      consegna_pr("https://github.com/bussolabs/closeyourit-rails/pull/42")
+
+      expect(Agents::DeliveryCandidate.sole).to have_attributes(state: "pending", next_check_at: be_present,
+                                                                last_error_code: nil)
+    end
+
     # Approvando il piano vengono fissati i progetti su cui quel lavoro può uscire: una proposta
     # altrove è respinta, e ne resta traccia.
     it "una proposta fuori dai progetti fissati viene respinta" do

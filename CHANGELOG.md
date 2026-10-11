@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.188.3] - 2026-10-11
+
+### Fixed
+
+- **Il lavoro riconsegnato viene ricontrollato.** Se una proposta era stata scartata e l'automazione la riconsegna, ora il sistema la riguarda invece di restare in attesa per sempre.
+
 ## [0.188.2] - 2026-10-11
 
 ### Fixed
