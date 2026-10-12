@@ -24,8 +24,6 @@ gem "turbo-rails"
 gem "stimulus-rails"
 # Use Tailwind CSS [https://github.com/rails/tailwindcss-rails]
 gem "tailwindcss-rails"
-# Build JSON APIs with ease [https://github.com/rails/jbuilder]
-gem "jbuilder"
 gem "msgpack", "~> 1.8", ">= 1.8.5"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
@@ -135,7 +133,6 @@ group :test do
   gem "capybara"
   gem "parallel_tests"
   gem "selenium-webdriver"
-  gem "vcr"
   gem "webmock"
   gem "simplecov", require: false
   gem "simplecov-lcov", require: false

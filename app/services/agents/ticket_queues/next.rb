@@ -16,6 +16,8 @@ module Agents
         # basta la certificazione dell'host (revoca già respinta dall'auth); l'Eligibility completa (heartbeat,
         # capacità, runtime, scope) resta l'autorità sotto lock nel Claim.
         return host_ineligible unless @host.supported_platform? && @host.certified?
+        # A paused machine is offered no work: the same answer as an empty queue.
+        return Result.ok(nil) if @host.paused?
 
         project = target_project
         return project_not_found unless project

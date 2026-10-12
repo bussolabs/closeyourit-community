@@ -1,0 +1,45 @@
+<%# locals: reading %>
+<%# Master-detail (E20): the graph of the open level on the left, the selected bubble on the right.
+    The map travels as a Stimulus value; the detail is filled from the templates below. %>
+<% document = reading.document %>
+<% labels = { kinds: t("member.blueprint.kinds"), detail: t("member.blueprint.detail").except(:level, :more),
+              level: t("member.blueprint.detail.level", level: "%{level}"), more: t("member.blueprint.detail.more", count: "%{count}") } %>
+<div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]" data-controller="blueprint"
+     data-blueprint-map-value="<%= JSON.generate(document.to_h) %>" data-blueprint-labels-value="<%= labels.to_json %>">
+  <section class="min-w-0 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="blueprint-graph">
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.blueprint.section_title") %></h2>
+      <div class="flex items-center flex-wrap gap-1.5" data-test="blueprint-counts">
+        <% %w[area flow page job data].each do |kind| %>
+          <%= render Ui::StatLabelComponent.new(label: t("member.blueprint.counts.#{kind}"), value: document.count(kind),
+                test_id: "blueprint-count-#{kind}") %>
+        <% end %>
+      </div>
+      <div class="ml-auto">
+        <%= render Ui::ButtonComponent.new(label: t("member.blueprint.open_source"), href: reading.source_url,
+              variant: :secondary_muted, size: :sm, icon: "github", target: "_blank", rel: "noopener", test_id: "blueprint-source") %>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3 px-4 py-2.5 border-b border-stone-200 dark:border-zinc-800">
+      <div class="relative w-full sm:w-72">
+        <%= render Ui::InputComponent.new(name: "q", type: "search", placeholder: t("member.blueprint.search_placeholder"),
+              autocomplete: "off", "aria-label": t("member.blueprint.search_label"), test_id: "blueprint-search",
+              data: { blueprint_target: "search", action: "input->blueprint#search" }) %>
+        <ul class="absolute z-20 inset-x-0 top-full mt-1 max-h-80 overflow-y-auto rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-1"
+            data-blueprint-target="hits" data-test="blueprint-hits" hidden></ul>
+      </div>
+      <nav class="ml-auto flex flex-wrap items-center gap-1 text-[12px] text-gray-500 dark:text-zinc-400"
+           aria-label="<%= t("member.blueprint.graph_label") %>" data-blueprint-target="path" data-test="blueprint-path"></nav>
+    </div>
+
+    <div class="h-[460px] md:h-[620px] rounded-b-lg bg-stone-50 dark:bg-zinc-950" role="img"
+         aria-label="<%= t("member.blueprint.graph_label") %>" data-blueprint-target="canvas" data-test="blueprint-canvas"></div>
+    <p class="px-4 py-2.5 border-t border-stone-200 dark:border-zinc-800 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.blueprint.legend") %></p>
+  </section>
+
+  <aside class="min-w-0 self-start rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+         aria-live="polite" data-blueprint-target="detail" data-test="blueprint-detail"></aside>
+
+  <%= render "member/project_blueprint/templates" %>
+</div>

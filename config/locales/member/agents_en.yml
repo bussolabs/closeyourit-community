@@ -34,6 +34,7 @@ en:
         waiting: Waiting
         recovery_required: Recovery required
         stale: Stale
+        paused: Paused
       phases:
         triage: triage
         planner: plan
@@ -219,6 +220,39 @@ en:
           claude: Claude Code works the tickets. The default.
           codex: Codex works the tickets, with the same limits on commands, files and network as Claude.
       decertify_confirm: Revoke certification? The host will become ineligible again.
+      pause:
+        open: Pause
+        open_all: Pause all
+        resume: Resume
+        resume_all: Resume all
+        dialog_title: "Pause %{hostname}?"
+        dialog_title_all: Pause every machine?
+        dialog_hint: It finishes the work it holds and takes no new one.
+        duration_label: How long
+        durations:
+          none: Until I resume it
+          1h: 1 hour
+          4h: 4 hours
+          1d: 1 day
+        reason_label: Reason
+        reason_placeholder: For example, updating the system
+        cancel: Cancel
+        submit: Pause
+        paused: Machine paused. It finishes the work in progress and takes no new one.
+        paused_all:
+          one: 1 machine paused.
+          other: "%{count} machines paused."
+        resumed: The machine takes work again.
+        resumed_all:
+          one: 1 machine takes work again.
+          other: "%{count} machines take work again."
+        invalid: Pause not saved. Pick a duration from the list and keep the reason under 240 characters.
+        idle: Takes no work
+        by: "Paused by %{name} %{since}."
+        since: "Paused %{since}."
+        until: "It resumes by itself on %{date}."
+        no_end: It resumes when someone presses Resume.
+        reason: "Reason: %{reason}"
       destroy: Delete machine
       destroy_confirm: "Delete %{hostname}? It leaves the list and loses its history for good: %{attempts} runs, %{plans} plans and %{clarifications} clarification rounds. The tickets stay, without this machine's history."
       destroy_ok: "%{hostname} deleted, along with %{attempts} runs, %{plans} plans and %{clarifications} clarification rounds."

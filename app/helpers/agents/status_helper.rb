@@ -19,12 +19,14 @@ module Agents
     # non distingueva un host a riposo da uno rotto. Lo stale prevale sull'activity_status (già "offline").
     def agent_host_status_color(host)
       return :red if agent_host_stale?(host)
+      return :amber if host.paused?
 
       HOST_STATUS_COLORS.fetch(host.activity_status, :gray)
     end
 
     def agent_host_status_label(host)
       return t("member.agents.status.stale") if agent_host_stale?(host)
+      return t("member.agents.status.paused") if host.paused?
 
       t("member.agents.status.#{host.activity_status}")
     end
@@ -55,12 +57,24 @@ module Agents
     def agent_host_activity_summary(host)
       runs = host.observable_active_runs
       return t("member.review_fixes.agent_unavailable") if runs.empty? && host.activity_status == "offline"
+      return t("member.agents.pause.idle") if runs.empty? && host.paused?
       return t("member.agents.activity.idle") if runs.empty?
 
       first = runs.first
       label = [ first["ticket"], first["phase"] ].reject(&:blank?).join(" · ")
       extra = runs.size - 1
       extra.positive? ? "#{label} +#{extra}" : label
+    end
+
+    # Who paused the machine, until when and why, in one line. Nil when it is not paused.
+    def agent_host_pause_summary(host)
+      return unless host.paused?
+
+      since = t("member.agents.time_ago", time: time_ago_in_words(host.paused_at))
+      parts = [ host.paused_by ? t("member.agents.pause.by", name: host.paused_by.name, since:) : t("member.agents.pause.since", since:) ]
+      parts << (host.paused_until ? t("member.agents.pause.until", date: l(host.paused_until, format: :short)) : t("member.agents.pause.no_end"))
+      parts << t("member.agents.pause.reason", reason: host.pause_reason) if host.pause_reason.present?
+      parts.join(" ")
     end
 
     # CYRA-999 — why the machine last stopped before taking work; the Automator lists stops oldest first.

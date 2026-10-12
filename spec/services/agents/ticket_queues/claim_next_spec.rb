@@ -23,6 +23,16 @@ RSpec.describe Agents::TicketQueues::ClaimNext do
     expect(Agents::LimitReservation).not_to exist
   end
 
+  it "gives no work to a paused machine and takes no lease" do
+    create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true)
+    host.update!(paused_at: Time.current)
+
+    expect(result).to be_ok
+    expect(result.value).to be_nil
+    expect(Agents::Lease).not_to exist
+    expect(Agents::LimitReservation).not_to exist
+  end
+
   it "consegna in un colpo solo lo snapshot del candidato, il lease e il tentativo" do
     candidate = create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true)
 

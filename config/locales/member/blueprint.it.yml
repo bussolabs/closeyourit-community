@@ -1,0 +1,54 @@
+it:
+  member:
+    projects:
+      show:
+        tab_blueprint: "Mappa"
+    blueprint:
+      title: "Mappa · %{project}"
+      section_title: "Mappa dell'app"
+      open_source: "Apri su GitHub"
+      search_placeholder: "Cerca una bolla o un file"
+      search_label: "Cerca nella mappa"
+      graph_label: "Grafo del livello aperto"
+      legend: "Clic: dettaglio · doppio clic: apri · bordo doppio: si apre · tratteggio: sta in un'altra area"
+      counts:
+        area: "aree"
+        flow: "flussi"
+        page: "pagine"
+        job: "lavori"
+        data: "dati"
+      kinds:
+        actor: "persone"
+        external: "fuori dall'app"
+        system: "sistema"
+        area: "area"
+        flow: "flusso"
+        page: "pagine"
+        job: "lavoro automatico"
+        data: "dati"
+        step: "passo"
+      detail:
+        level: "livello %{level}"
+        files: "File collegati"
+        no_files: "Nessuno."
+        outside: "Vive fuori da questo repository."
+        inside: "Dentro"
+        links: "Collegamenti"
+        more: "e altre %{count}: aprila per vederle tutte."
+        root: "Sistema"
+        root_summary: "Chi parla con l'app e cosa si scambiano."
+      states:
+        no_repository:
+          title: "Il progetto non ha un repository collegato"
+          body: "La mappa si legge dal repository GitHub del progetto. Collega il repository dalla scheda GitHub."
+          example: "Per esempio bussolabs/closeyourit-rails."
+        missing:
+          title: "Il repository non ha ancora una mappa"
+          body: "La mappa è il file blueprint.json alla radice del repository. Si scrive e si aggiorna insieme al codice."
+          example: "Un file blueprint.json con le aree dell'app, i loro flussi e i file che li realizzano."
+        invalid:
+          title: "La mappa nel repository non si legge"
+          body: "Il file blueprint.json c'è, ma è scritto male. Va corretto nel repository: %{problem}"
+        unreachable:
+          title: "GitHub non risponde"
+          body: "Non è stato possibile leggere la mappa adesso. Riprova tra poco."

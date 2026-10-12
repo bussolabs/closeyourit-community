@@ -73,9 +73,11 @@ RSpec.describe "Website::Status", type: :request do
       published_monitor(url: "https://secret-internal.test/healthz", interval_seconds: 137, current_status: :up)
       get path_for
       expect(response.body).not_to include("secret-internal.test")
-      # Sul TESTO della pagina, non sul body raw: i digest esadecimali degli asset
-      # (es. tailwind-7631374d.css) possono contenere per caso la tripla "137".
-      expect(Nokogiri::HTML(response.body).text).not_to include("137")
+      # On the visible text, without scripts: asset digests (tailwind-7631374d.css, or a controller
+      # in the importmap JSON) can hold "137" by chance.
+      page = Nokogiri::HTML(response.body)
+      page.css("script, style").remove
+      expect(page.text).not_to include("137")
     end
 
     it "stato onesto: un monitor in pausa NON viene mostrato come operational" do

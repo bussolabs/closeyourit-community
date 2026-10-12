@@ -27,6 +27,8 @@ module Agents
 
         initial_context = @snapshot.load(selection)
         return stale_selection unless @snapshot.eligible?(initial_context, selection) || idempotent_replay?(initial_context)
+        # A machine paused after the queue offered the ticket does not take it; a replay of work it already holds passes.
+        return stale_selection if @host.paused? && !idempotent_replay?(initial_context)
         return ttl_mismatch(initial_context) unless authoritative_ttl?(initial_context)
 
         claim_result = nil
@@ -52,6 +54,11 @@ module Agents
             raise ActiveRecord::Rollback
           end
           unless @snapshot.eligible?(context, selection) || idempotent_replay?(context)
+            claim_result = stale_selection
+            raise ActiveRecord::Rollback
+          end
+          # Read again under the host lock taken by the reservation: a pause saved since the preflight still counts.
+          if @host.reload.paused? && !idempotent_replay?(context)
             claim_result = stale_selection
             raise ActiveRecord::Rollback
           end

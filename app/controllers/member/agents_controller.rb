@@ -9,8 +9,9 @@ module Member
   # ombreggerebbe ::Agents di dominio) → model SEMPRE ::Agents::Host.
   class AgentsController < Member::BaseController
     before_action :require_view
-    before_action :set_host, only: %i[show certify decertify destroy review engine supporter follow_organization]
-    before_action :require_manage, only: %i[certify decertify destroy review engine supporter follow_organization]
+    before_action :set_host, only: %i[show certify decertify destroy review engine supporter follow_organization pause resume]
+    before_action :require_manage, only: %i[certify decertify destroy review engine supporter follow_organization
+                                            pause resume pause_all resume_all]
 
     # CYRA-694 — filtri ricordati (memoria per-indirizzo, vedi RememberableFilters).
     remembers_filters :kind, :enabled, :q, :sort, only: :index
@@ -19,13 +20,17 @@ module Member
       # La fleet host è piccola (una manciata di Mac): carico org-wide e valuto online/offline per riga
       # in Ruby (nessuno scope SQL online/offline — la soglia dipende dalle colonne interval+grace del
       # singolo host). Zero N+1: stato, slot, attività (active_runs jsonb) e heartbeat vivono sull'host.
-      all = current_organization.agent_hosts.order(last_heartbeat_at: :desc, hostname: :asc).to_a
+      all = current_organization.agent_hosts.includes(:paused_by).order(last_heartbeat_at: :desc, hostname: :asc).to_a
       @online_count = all.count(&:heartbeat_online?)
       @offline_count = all.size - @online_count
       # CYRA-450: i "fermi" sono un sottoinsieme degli offline (silenzio oltre la soglia di allarme) — il
       # conteggio distingue una macchina appena offline da una dimenticata accesa e ormai morta.
       @stale_count = all.count(&:heartbeat_stale?)
       @total_count = all.size
+      # Both counts leave revoked machines out: they take no work, paused or not.
+      pausable = all.reject(&:revoked?)
+      @pausable_count = pausable.size
+      @paused_count = pausable.count(&:paused?)
       # CYRA-924 — paged like every table (T7); the counts above still cover the whole fleet.
       @pagination = Pagination.from_array(sorted_rows(filter_by_query(all), columns: host_sort_columns),
                                           page: params[:page], per: requested_per(Pagination::DEFAULT_PER))
@@ -132,6 +137,37 @@ module Member
     def decertify
       ::Agents::Hosts::Decertify.call(host: @host)
       redirect_to member_agent_path(@host), notice: t("member.agents.decertify_ok")
+    end
+
+    # A paused machine finishes the work it holds and takes no new one, until resumed or until the pause ends.
+    def pause
+      result = pause_host(@host)
+      flash_message = result.ok? ? { notice: t("member.agents.pause.paused") } : { alert: t("member.agents.pause.invalid") }
+      redirect_to(member_agent_path(@host), **flash_message)
+    end
+
+    def resume
+      ::Agents::Hosts::Resume.call(host: @host)
+      redirect_to member_agent_path(@host), notice: t("member.agents.pause.resumed")
+    end
+
+    # One gesture for the whole fleet: all or none, so a refused reason leaves no machine half paused.
+    def pause_all
+      results = ::Agents::Host.transaction do
+        outcomes = current_organization.agent_hosts.active.order(:id).map { |host| pause_host(host) }
+        raise ActiveRecord::Rollback if outcomes.any?(&:err?)
+
+        outcomes
+      end
+      return redirect_to(member_agents_path, alert: t("member.agents.pause.invalid")) unless results
+
+      redirect_to member_agents_path, notice: t("member.agents.pause.paused_all", count: results.size)
+    end
+
+    def resume_all
+      hosts = current_organization.agent_hosts.where.not(paused_at: nil).order(:id).to_a
+      hosts.each { |host| ::Agents::Hosts::Resume.call(host:) }
+      redirect_to member_agents_path, notice: t("member.agents.pause.resumed_all", count: hosts.size)
     end
 
     # CYRA-516 — la macchina dismessa esce dall'elenco, e con lei il suo storico (le FK non lasciano
@@ -289,6 +325,10 @@ module Member
 
     def require_manage
       require_permission!("agents.manage")
+    end
+
+    def pause_host(host)
+      ::Agents::Hosts::Pause.call(host:, actor: Current.account, duration: params[:duration], reason: params[:reason])
     end
 
     def search_q = params[:q].to_s.strip

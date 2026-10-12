@@ -68,6 +68,7 @@ it:
           intro: "Una macchina appena collegata non lavora: prima una persona deve dire che può farlo. È una scelta reversibile, in qualsiasi momento."
           certify_body: Da qui in poi può prendere lavori dei progetti che le competono.
           revoke_body: "Smette subito di ricevere nuovi lavori. Resta collegata e continua a farsi vedere, ma nessun ticket le viene più affidato finché non le ridai il via libera."
+          pause_body: "Finisce il lavoro che ha in mano e non ne prende altri, finché non la riprendi o finché la pausa scade. Il via libera resta."
           note: "Togliere il via libera non cancella niente di quello che ha già fatto. Un lavoro già iniziato non le viene strappato di mano: se non lo consegna, prima o poi risulta interrotto."
         stopped_title: Quando una macchina si ferma
         stopped_intro: "Le macchine si spengono, perdono la rete, restano indietro. Sono tre situazioni diverse e la pagina le distingue, perché richiedono cose diverse."

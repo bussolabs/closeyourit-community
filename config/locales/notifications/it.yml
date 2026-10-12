@@ -29,6 +29,7 @@ it:
         secret: "vai al vault"
         agents: "vai agli agenti"
         analytics: "vai alle statistiche"
+        seo: "vai al rilievo SEO"
         idea: "vai all'idea"
         workload: "vai all'attività"
         dataset: "vai al dataset"

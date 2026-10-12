@@ -122,7 +122,7 @@
     <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.agents.certification_title") %></h2></div>
     <div class="px-4 py-4 space-y-3">
       <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.agents.certification.intro") %></p>
-      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[12.5px]">
+      <dl class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[12.5px]">
         <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
           <dt class="font-medium text-emerald-700 dark:text-emerald-300"><%= t("member.agents.certify") %></dt>
           <dd class="block text-gray-600 dark:text-zinc-400 mt-0.5 leading-relaxed"><%= t("member.guides.agents.certification.certify_body") %></dd>
@@ -130,6 +130,10 @@
         <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
           <dt class="font-medium text-amber-700 dark:text-amber-300"><%= t("member.agents.decertify") %></dt>
           <dd class="block text-gray-600 dark:text-zinc-400 mt-0.5 leading-relaxed"><%= t("member.guides.agents.certification.revoke_body") %></dd>
+        </div>
+        <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2.5">
+          <dt class="font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.agents.pause.open") %></dt>
+          <dd class="block text-gray-600 dark:text-zinc-400 mt-0.5 leading-relaxed"><%= t("member.guides.agents.certification.pause_body") %></dd>
         </div>
       </dl>
       <p class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.agents.certification.note") %></p>

@@ -4,6 +4,7 @@ require "spec_helper"
 require "tmpdir"
 require "fileutils"
 require "open3"
+require "json"
 
 RSpec.describe "bin/check-commit" do
   let(:script) { File.expand_path("../../bin/check-commit", __dir__) }
@@ -107,5 +108,42 @@ RSpec.describe "bin/check-commit" do
     stage("db/schema.rb", %(create_table "tickets" do |t|\nend\ncreate_table "notes" do |t|\nend\n))
 
     expect(check.last).to be_success
+  end
+
+  describe "blueprint.json (CYRA-1071)" do
+    def map_with(*nodes)
+      JSON.generate("nodes" => [ { "id" => "rails", "name" => "App", "level" => 0, "files" => [ "app/**" ] } ] + nodes)
+    end
+
+    before do
+      stage("blueprint.json", map_with(
+        { "id" => "area_errors", "name" => "Errors", "level" => 1, "files" => [ "app/services/errors/**" ] },
+        { "id" => "err_record", "name" => "Record and group", "level" => 2, "files" => [ "app/services/errors/record.rb" ] }
+      ))
+      sh("git", "commit", "-qm", "map")
+    end
+
+    it "warns about the deepest bubble whose files changed without the map, and still lets the commit through" do
+      stage("app/services/errors/record.rb", "class Record; end\n")
+
+      output, status = check
+
+      expect(status).to be_success
+      expect(output).to include("blueprint.json not updated").and include("Record and group")
+      expect(output).not_to include("Errors,")
+    end
+
+    it "stays quiet when the map changes in the same commit" do
+      stage("app/services/errors/record.rb", "class Record; end\n")
+      stage("blueprint.json", map_with({ "id" => "area_errors", "name" => "Errors", "level" => 1, "files" => [ "app/services/errors/**" ] }))
+
+      expect(check.first).not_to include("blueprint.json not updated")
+    end
+
+    it "stays quiet for files that only the whole-app bubble covers" do
+      stage("app/models/note.rb", "class Note; end\n")
+
+      expect(check.first).not_to include("blueprint.json not updated")
+    end
   end
 end

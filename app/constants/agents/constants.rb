@@ -68,5 +68,11 @@ module Agents
     # fermo. Indipendente dall'intervallo per-host, così anche una macchina con cadenza lenta viene comunque
     # segnalata quando muore per davvero.
     HOST_STALE_AFTER = 15.minutes
+
+    # How long a pause may last. A paused machine finishes the work it holds and takes no new one;
+    # without an end it waits for someone to resume it.
+    PAUSE_WITHOUT_END = "none"
+    PAUSE_DURATIONS = { "1h" => 1.hour, "4h" => 4.hours, "1d" => 1.day, PAUSE_WITHOUT_END => nil }.freeze
+    PAUSE_REASON_MAX = 240
   end
 end

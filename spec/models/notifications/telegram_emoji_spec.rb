@@ -44,6 +44,15 @@ RSpec.describe Notifications::TelegramEmoji do
       end
     end
 
+    %i[it en].each do |locale|
+      it "has a #{locale} link label for every domain" do
+        described_class::DOMAIN.values.uniq.each do |domain|
+          expect(I18n.exists?("notifications.telegram.link.#{domain}", locale)).to be(true),
+                                                                                    "missing #{locale} link label for #{domain}"
+        end
+      end
+    end
+
     it "resolves the domain from the prefix" do
       expect(described_class.domain_for(:ticket_commented)).to eq(:ticket)
       expect(described_class.domain_for(:chat_message)).to eq(:chat)

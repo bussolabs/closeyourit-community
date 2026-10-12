@@ -31,6 +31,8 @@ module Agents
         # Stesso gate di preflight di Next: certificazione host-side (la revoca è già respinta dall'auth),
         # mentre l'Eligibility completa resta l'autorità sotto lock dentro il Claim.
         return host_ineligible unless @host.supported_platform? && @host.certified?
+        # A paused machine takes no new work: the same answer as an empty queue.
+        return no_work if @host.paused?
 
         project = Candidates.project_for(organization: @organization, host: @host, key: @project_key)
         return project_not_found unless project

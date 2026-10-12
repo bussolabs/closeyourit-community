@@ -927,6 +927,160 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       expect(host.reload).to be_follows_organization
     end
 
+    describe "pause" do
+      before { sign_in(owner) }
+
+      it "shows the pause button and its dialog on a working machine" do
+        host = online_host
+
+        get member_agent_path(host)
+
+        expect(response.body).to include('data-test="pause-host"', 'data-test="pause-host-dialog"')
+        expect(response.body).not_to include('data-test="resume-host"')
+      end
+
+      it "pauses the machine with a duration and a reason" do
+        host = online_host
+
+        post pause_member_agent_path(host), params: { confirm: "1", duration: "4h", reason: "Updating the system" }
+
+        expect(response).to redirect_to(member_agent_path(host))
+        expect(host.reload).to be_paused
+        expect(host).to have_attributes(paused_by: owner, pause_reason: "Updating the system")
+        expect(host.paused_until).to be_within(5.seconds).of(4.hours.from_now)
+      end
+
+      it "refuses an unknown duration" do
+        host = online_host
+
+        post pause_member_agent_path(host), params: { confirm: "1", duration: "forever" }
+
+        expect(flash[:alert]).to eq(I18n.t("member.agents.pause.invalid"))
+        expect(host.reload).not_to be_paused
+      end
+
+      it "says who paused the machine, until when and why, and offers to resume" do
+        host = online_host(paused_at: 10.minutes.ago, paused_by: owner, paused_until: 2.hours.from_now, pause_reason: "Updating the system")
+
+        get member_agent_path(host)
+
+        note = Nokogiri::HTML(response.body).at_css('[data-test="host-paused-note"]').text
+        expect(note).to include(owner.name, "Updating the system")
+        expect(response.body).to include('data-test="resume-host"', I18n.t("member.agents.status.paused"))
+        expect(response.body).not_to include('data-test="pause-host"')
+      end
+
+      it "resumes a paused machine" do
+        host = online_host(paused_at: 10.minutes.ago, paused_by: owner)
+
+        post resume_member_agent_path(host), params: { confirm: "1" }
+
+        expect(response).to redirect_to(member_agent_path(host))
+        expect(host.reload).not_to be_paused
+      end
+
+      it "shows a paused machine as working again once the pause has expired" do
+        host = online_host(paused_at: 2.hours.ago, paused_until: 1.minute.ago)
+
+        get member_agent_path(host)
+
+        expect(response.body).to include('data-test="pause-host"')
+        expect(response.body).not_to include('data-test="host-paused-note"')
+      end
+
+      it "pauses every machine of the organization and no other" do
+        hosts = [ online_host, offline_host ]
+        foreign = create(:agent_host)
+
+        post pause_all_member_agents_path, params: { confirm: "1", duration: "1h", reason: "Network maintenance" }
+
+        expect(response).to redirect_to(member_agents_path)
+        paused = Agents::Host.where(id: hosts.map(&:id)).to_a
+        expect(paused.map(&:paused?)).to all(be(true))
+        expect(paused.map(&:pause_reason).uniq).to eq([ "Network maintenance" ])
+        expect(foreign.reload).not_to be_paused
+      end
+
+      it "pauses no machine when the request is refused" do
+        hosts = [ online_host, offline_host ]
+
+        post pause_all_member_agents_path, params: { confirm: "1", duration: "forever" }
+
+        expect(flash[:alert]).to eq(I18n.t("member.agents.pause.invalid"))
+        expect(Agents::Host.where(id: hosts.map(&:id)).map(&:paused?)).to all(be(false))
+      end
+
+      it "resumes every paused machine" do
+        hosts = [ online_host(paused_at: 1.hour.ago), offline_host(paused_at: 1.hour.ago) ]
+
+        post resume_all_member_agents_path, params: { confirm: "1" }
+
+        expect(response).to redirect_to(member_agents_path)
+        expect(Agents::Host.where(id: hosts.map(&:id)).map(&:paused?)).to all(be(false))
+      end
+
+      it "lists paused machines with the reason and offers both fleet buttons" do
+        online_host(hostname: "paused-mac", paused_at: 10.minutes.ago, paused_by: owner, pause_reason: "Updating the system")
+        online_host(hostname: "working-mac")
+
+        get member_agents_path
+
+        paused_row = Nokogiri::HTML(response.body).at_css('[data-test="agent-host-paused"]').text
+        expect(paused_row).to include(owner.name, "Updating the system")
+        expect(response.body).to include('data-test="agents-pause-all"', 'data-test="agents-resume-all"', 'data-test="pause-all-dialog"')
+      end
+
+      it "still offers to pause all when the only paused machine is a revoked one" do
+        online_host(paused_at: 1.hour.ago, revoked_at: 1.hour.ago)
+        online_host
+
+        get member_agents_path
+
+        expect(response.body).to include('data-test="agents-pause-all"')
+        expect(response.body).not_to include('data-test="agents-resume-all"')
+      end
+
+      it "asks for confirmation before pausing" do
+        host = online_host
+
+        post pause_member_agent_path(host)
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(host.reload).not_to be_paused
+      end
+
+      it "does not pause a machine of another organization" do
+        foreign = create(:agent_host)
+
+        post pause_member_agent_path(foreign), params: { confirm: "1" }
+
+        expect(response).to have_http_status(:not_found)
+        expect(foreign.reload).not_to be_paused
+      end
+
+      context "without agents.manage" do
+        let(:viewer) { create(:account) }
+
+        before do
+          create(:membership, account: viewer, organization:, role: :member)
+          sign_in(viewer)
+        end
+
+        it "can neither pause nor resume, one machine or all" do
+          host = online_host(paused_at: 1.hour.ago)
+          other = online_host
+
+          post pause_member_agent_path(other), params: { confirm: "1" }
+          post resume_member_agent_path(host), params: { confirm: "1" }
+          post pause_all_member_agents_path, params: { confirm: "1" }
+          post resume_all_member_agents_path, params: { confirm: "1" }
+
+          expect(host.reload).to be_paused
+          expect(other.reload).not_to be_paused
+        end
+      end
+    end
+
     it "revoca la certificazione" do
       sign_in(owner)
       host = create(:agent_host, organization:, certified_at: Time.current, certified_by: owner)

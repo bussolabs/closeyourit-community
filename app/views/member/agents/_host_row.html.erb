@@ -18,6 +18,9 @@
       <span class="font-mono"><%= agent_host_activity_summary(host) %></span>
       <% if agent_host_stalled?(host) %><%= render Ui::IconComponent.new(name: "triangle-alert", label: t("member.agents.activity.stalled"), class: "text-[11px] text-amber-500 dark:text-amber-400") %><% end %>
     </span>
+    <% if (pause_summary = agent_host_pause_summary(host)) %>
+      <span class="block text-[11.5px] text-amber-700 dark:text-amber-300 mt-0.5 truncate max-w-[320px]" title="<%= pause_summary %>" data-test="agent-host-paused"><%= pause_summary %></span>
+    <% end %>
     <% if (stop_reason = agent_host_last_stop_reason(host)) %>
       <span class="block text-[11.5px] text-amber-700 dark:text-amber-300 mt-0.5 truncate max-w-[320px]" title="<%= stop_reason %>" data-test="agent-host-last-stop"><%= t("member.agents.activity.last_stop", reason: stop_reason) %></span>
     <% end %>

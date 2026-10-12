@@ -1,0 +1,12 @@
+<% content_for :title, t("member.blueprint.title", project: @project.name) %>
+
+<%# CYRA-1071 — the app map from the repository's blueprint.json, read only. %>
+<div class="p-7 space-y-6" data-test="member-project-blueprint">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "blueprint" %>
+
+  <% if @reading.state == :ready %>
+    <%= render "member/project_blueprint/map", reading: @reading %>
+  <% else %>
+    <%= render "member/project_blueprint/state", reading: @reading %>
+  <% end %>
+</div>

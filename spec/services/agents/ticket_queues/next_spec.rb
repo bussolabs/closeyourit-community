@@ -18,6 +18,21 @@ RSpec.describe Agents::TicketQueues::Next do
     expect(result.value).to be_nil
   end
 
+  it "offers no work to a paused machine, like an empty queue" do
+    create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true)
+    host.update!(paused_at: Time.current)
+
+    expect(result).to be_ok
+    expect(result.value).to be_nil
+  end
+
+  it "offers work again once the pause has expired" do
+    ticket = create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true)
+    host.update!(paused_at: 2.hours.ago, paused_until: 1.minute.ago)
+
+    expect(result.value).to eq(ticket)
+  end
+
   it "rifiuta un host storico non Linux" do
     host.update_column(:platform, "darwin")
 

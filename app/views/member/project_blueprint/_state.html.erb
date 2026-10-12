@@ -1,0 +1,16 @@
+<%# locals: reading %>
+<%# Every state but :ready explains why there is no graph, and where to fix it. %>
+<% key = "member.blueprint.states.#{reading.state}" %>
+<%= render Ui::EmptyStateComponent.new(
+      title: t("#{key}.title"),
+      body: t("#{key}.body", problem: reading.problem),
+      example: t("#{key}.example", default: nil),
+      icon: "map", framed: true, test_id: "blueprint-#{reading.state.to_s.dasherize}") do |state| %>
+  <% if reading.source_url %>
+    <% state.with_action do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.blueprint.open_source"), href: reading.source_url,
+            variant: :secondary_muted, size: :sm, icon: "github", target: "_blank", rel: "noopener",
+            test_id: "blueprint-source") %>
+    <% end %>
+  <% end %>
+<% end %>

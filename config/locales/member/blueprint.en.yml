@@ -1,0 +1,54 @@
+en:
+  member:
+    projects:
+      show:
+        tab_blueprint: "Map"
+    blueprint:
+      title: "Map · %{project}"
+      section_title: "App map"
+      open_source: "Open on GitHub"
+      search_placeholder: "Search a bubble or a file"
+      search_label: "Search the map"
+      graph_label: "Graph of the open level"
+      legend: "Click: details · double click: open · double border: opens · dashed: lives in another area"
+      counts:
+        area: "areas"
+        flow: "flows"
+        page: "pages"
+        job: "jobs"
+        data: "data"
+      kinds:
+        actor: "people"
+        external: "outside the app"
+        system: "system"
+        area: "area"
+        flow: "flow"
+        page: "pages"
+        job: "background job"
+        data: "data"
+        step: "step"
+      detail:
+        level: "level %{level}"
+        files: "Linked files"
+        no_files: "None."
+        outside: "Lives outside this repository."
+        inside: "Inside"
+        links: "Links"
+        more: "and %{count} more: open it to see them all."
+        root: "System"
+        root_summary: "Who talks to the app and what they exchange."
+      states:
+        no_repository:
+          title: "The project has no linked repository"
+          body: "The map is read from the project's GitHub repository. Link the repository from the GitHub tab."
+          example: "For example bussolabs/closeyourit-rails."
+        missing:
+          title: "The repository has no map yet"
+          body: "The map is the blueprint.json file at the root of the repository. It is written and updated together with the code."
+          example: "A blueprint.json file with the app areas, their flows and the files that build them."
+        invalid:
+          title: "The map in the repository cannot be read"
+          body: "The blueprint.json file is there but malformed. Fix it in the repository: %{problem}"
+        unreachable:
+          title: "GitHub is not answering"
+          body: "The map could not be read right now. Try again shortly."

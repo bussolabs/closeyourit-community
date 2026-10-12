@@ -190,6 +190,37 @@ RSpec.describe Agents::TicketQueues::Claim do
       expect(claim.call.error.code).to eq("R409-QUEUE-001")
     end
 
+    it "refuses a ticket offered before the machine was paused" do
+      host.update!(paused_at: Time.current)
+
+      expect(claim.call.error.code).to eq("R409-QUEUE-001")
+      expect(Agents::LimitReservation).not_to exist
+    end
+
+    it "refuses the ticket when the pause is saved between the preflight and the lock" do
+      reservation = instance_double(Agents::LimitReservation)
+      allow(claim).to receive(:reserve_limit).and_return(Result.ok(Struct.new(:reservation).new(reservation)))
+      allow(snapshot).to receive(:lock) do
+        Agents::Host.where(id: host.id).update_all(paused_at: Time.current)
+        context
+      end
+
+      expect(claim.call.error.code).to eq("R409-QUEUE-001")
+      expect(Agents::Lease).not_to exist
+    end
+
+    it "lets a paused machine replay the claim of work it already holds" do
+      host.update!(paused_at: Time.current)
+      allow(claim).to receive(:idempotent_replay?).and_return(true)
+      allow(claim).to receive(:reserve_limit).and_return(
+        Result.err(AppError.new("stop here", code: "R503-TEST-001", status: :service_unavailable))
+      )
+
+      claim.call
+
+      expect(claim).to have_received(:reserve_limit)
+    end
+
     it "rifiuta un token host-bound presentato da un altro host" do
       other = create(:agent_host, organization:)
       foreign_claim = described_class.new(organization:, host: other,

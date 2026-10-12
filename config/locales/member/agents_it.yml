@@ -34,6 +34,7 @@ it:
         waiting: In attesa
         recovery_required: Recupero richiesto
         stale: Fermo
+        paused: In pausa
       phases:
         triage: triage
         planner: piano
@@ -223,6 +224,39 @@ it:
           claude: Claude Code lavora i ticket. È la scelta di partenza.
           codex: Codex lavora i ticket, con gli stessi limiti di Claude su comandi, file e rete.
       decertify_confirm: Revocare la certificazione? L'host tornerà ineleggibile.
+      pause:
+        open: Metti in pausa
+        open_all: Metti in pausa tutte
+        resume: Riprendi
+        resume_all: Riprendi tutte
+        dialog_title: "Mettere in pausa %{hostname}?"
+        dialog_title_all: Mettere in pausa tutte le macchine?
+        dialog_hint: Finisce il lavoro che ha in mano e non ne prende altri.
+        duration_label: Quanto dura
+        durations:
+          none: Finché non la riprendo
+          1h: 1 ora
+          4h: 4 ore
+          1d: 1 giorno
+        reason_label: Motivo
+        reason_placeholder: Per esempio, aggiorno il sistema
+        cancel: Annulla
+        submit: Metti in pausa
+        paused: Macchina in pausa. Finisce il lavoro in corso e non ne prende altri.
+        paused_all:
+          one: 1 macchina in pausa.
+          other: "%{count} macchine in pausa."
+        resumed: La macchina riprende a prendere lavori.
+        resumed_all:
+          one: 1 macchina riprende a prendere lavori.
+          other: "%{count} macchine riprendono a prendere lavori."
+        invalid: Pausa non salvata. Scegli una durata dell'elenco e tieni il motivo sotto i 240 caratteri.
+        idle: Non prende lavori
+        by: "Messa in pausa da %{name} %{since}."
+        since: "In pausa da %{since}."
+        until: "Riparte da sola il %{date}."
+        no_end: Riparte quando qualcuno preme Riprendi.
+        reason: "Motivo: %{reason}"
       destroy: Elimina macchina
       destroy_confirm: "Eliminare %{hostname}? Sparisce dall'elenco e perde per sempre il suo storico: %{attempts} lavorazioni, %{plans} piani e %{clarifications} richieste di chiarimento. I ticket restano, senza più la cronologia di questa macchina."
       destroy_ok: "%{hostname} eliminata, insieme a %{attempts} lavorazioni, %{plans} piani e %{clarifications} richieste di chiarimento."

@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## [0.189.1] - 2026-10-13
+
+### Fixed
+
+- **Le novità della 0.189.0 arrivano adesso.** La versione precedente si era fermata ai controlli automatici prima di essere pubblicata. Questa la completa: trovi la pausa delle macchine e le altre novità elencate sotto.
+
+## [0.189.0] - 2026-10-12
+
+### Added
+
+- **Pausa delle macchine.** Ora puoi mettere in pausa una macchina, o tutte insieme: finisce il lavoro che ha in mano e non ne prende altri. Scegli quanto dura e scrivi il motivo; con Riprendi riparte subito. [Agenti](/member/agents) ([guida](/member/guides/agents))
+
+### Changed
+
+- **Un'app più leggera.** Abbiamo tolto due componenti interni che non venivano più usati. Per te non cambia nulla: tutto funziona come prima.
+
+### Fixed
+
+- **Avvisi SEO su Telegram completi.** Il messaggio di un nuovo rilievo SEO ora mostra il collegamento "vai al rilievo SEO", invece di un testo tecnico di traduzione mancante.
+
 ## [0.188.4] - 2026-10-12
 
 ### Changed

@@ -1,0 +1,51 @@
+<%# The markup the blueprint controller clones: it only fills text and lists, the look stays here. %>
+<template data-blueprint-target="detailTemplate">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 space-y-1.5">
+    <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100" data-field="name"></h2>
+    <div class="flex flex-wrap gap-1.5">
+      <span class="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" data-field="kind"></span>
+      <span class="inline-flex items-center rounded-md px-2 py-0.5 font-mono text-[11px] font-medium bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400" data-field="level"></span>
+    </div>
+  </div>
+  <div class="px-4 py-4 space-y-5">
+    <p class="text-[14px] text-zinc-900 dark:text-zinc-100" data-field="summary"></p>
+    <div>
+      <p class="mb-1.5 font-mono text-[9.5px] uppercase tracking-[0.1em] text-gray-400 dark:text-zinc-500" data-field="files-title"></p>
+      <ul class="rounded-md border border-stone-200 dark:border-zinc-800 divide-y divide-stone-200 dark:divide-zinc-800" data-field="files"></ul>
+      <p class="text-[13px] text-gray-500 dark:text-zinc-400" data-field="no-files"></p>
+    </div>
+    <div data-field="children-box">
+      <p class="mb-1.5 font-mono text-[9.5px] uppercase tracking-[0.1em] text-gray-400 dark:text-zinc-500" data-field="children-title"></p>
+      <div class="rounded-md border border-stone-200 dark:border-zinc-800 divide-y divide-stone-200 dark:divide-zinc-800" data-field="children"></div>
+      <p class="mt-1.5 text-[12px] text-gray-500 dark:text-zinc-400" data-field="children-more"></p>
+    </div>
+    <div data-field="links-box">
+      <p class="mb-1.5 font-mono text-[9.5px] uppercase tracking-[0.1em] text-gray-400 dark:text-zinc-500" data-field="links-title"></p>
+      <div class="rounded-md border border-stone-200 dark:border-zinc-800 divide-y divide-stone-200 dark:divide-zinc-800" data-field="links"></div>
+    </div>
+  </div>
+</template>
+
+<template data-blueprint-target="fileTemplate">
+  <li class="px-2.5 py-1.5 font-mono text-[12px] text-zinc-900 dark:text-zinc-100 break-all"></li>
+</template>
+
+<template data-blueprint-target="rowTemplate">
+  <%= render Ui::ButtonComponent.new(variant: :ghost, size: :sm, class: "w-full justify-between! rounded-none!") do %>
+    <span class="truncate" data-field="label"></span>
+    <span class="shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-field="meta"></span>
+  <% end %>
+</template>
+
+<template data-blueprint-target="hitTemplate">
+  <li>
+    <%= render Ui::ButtonComponent.new(variant: :ghost, size: :sm, class: "w-full justify-between!") do %>
+      <span class="truncate" data-field="label"></span>
+      <span class="shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-field="meta"></span>
+    <% end %>
+  </li>
+</template>
+
+<template data-blueprint-target="crumbTemplate">
+  <%= render Ui::ButtonComponent.new(variant: :link, size: :md) do %><% end %>
+</template>

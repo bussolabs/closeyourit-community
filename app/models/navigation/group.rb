@@ -83,7 +83,7 @@ module Navigation
       # dettaglio sono molte e senza questa riga resterebbero senza area nella briciola.
       "projects" => %w[member/projects member/groups member/group_guidance
                        member/group_guidance_procedures member/group_guidance_references
-                       member/project_documents member/project_environments
+                       member/project_blueprint member/project_documents member/project_environments
                        member/project_environment_capabilities member/project_github
                        member/project_guidance member/project_guidance_procedures member/project_usage
                        member/project_guidance_references member/project_milestones

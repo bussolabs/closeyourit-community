@@ -9,3 +9,5 @@ pin_all_from "app/javascript/controllers", under: "controllers"
 pin_all_from "app/javascript/lib", under: "lib"
 # Loaded only by the dynamic import in the replay player: never modulepreloaded on every page (CYRA-888).
 pin "rrweb-player", preload: false # @2.1.1 (bundle esbuild locale, vedi header del file vendorizzato)
+# Loaded only by the dynamic import of the project Map tab (CYRA-1071).
+pin "cytoscape", preload: false # @3.30.2

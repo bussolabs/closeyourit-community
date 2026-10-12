@@ -1,0 +1,24 @@
+<%# locals: dialog_id:, url:, title: — how long the pause lasts and why (F6). Rendered outside the
+    activity frame: that frame reloads by itself and would close an open dialog. %>
+<div data-controller="ui--dialog">
+  <%= render Ui::ModalComponent.new(title: title, subtitle: t("member.agents.pause.dialog_hint"), size: :sm,
+        id: dialog_id, test_id: dialog_id,
+        form: { url: url, method: :post, data: { test: "#{dialog_id}-form" } },
+        data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+    <% modal.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.agents.pause.cancel"), variant: :secondary_muted, size: :sm,
+            data: { action: "ui--dialog#close" }) %>
+      <%= render Ui::ButtonComponent.new(label: t("member.agents.pause.submit"), type: "submit", variant: :primary, size: :sm,
+            icon: "pause", test_id: "#{dialog_id}-submit") %>
+    <% end %>
+    <%= hidden_field_tag :confirm, 1, id: nil %>
+    <div class="space-y-4">
+      <%= render Ui::SelectComponent.new(name: "duration", label: t("member.agents.pause.duration_label"),
+            options: ::Agents::Constants::PAUSE_DURATIONS.keys.map { |key| [ t("member.agents.pause.durations.#{key}"), key ] },
+            selected: ::Agents::Constants::PAUSE_WITHOUT_END, test_id: "#{dialog_id}-duration") %>
+      <%= render Ui::InputComponent.new(name: "reason", id: "#{dialog_id}-reason", label: t("member.agents.pause.reason_label"),
+            placeholder: t("member.agents.pause.reason_placeholder"), maxlength: ::Agents::Constants::PAUSE_REASON_MAX,
+            autocomplete: "off", test_id: "#{dialog_id}-reason") %>
+    </div>
+  <% end %>
+</div>

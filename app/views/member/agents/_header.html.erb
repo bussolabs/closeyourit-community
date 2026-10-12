@@ -38,6 +38,16 @@
     <% end %>
     <% if can_manage %>
       <% header.with_actions do %>
+        <%# The pause dialog lives outside this frame (show.html.erb): the trigger names it by id. %>
+        <% if host.paused? %>
+          <%= render Ui::ButtonComponent.new(label: t("member.agents.pause.resume"),
+                href: resume_member_agent_path(host, confirm: 1), method: :post,
+                variant: :secondary_muted, size: :sm, icon: "play", test_id: "resume-host") %>
+        <% elsif !host.revoked? %>
+          <%= render Ui::ButtonComponent.new(label: t("member.agents.pause.open"), variant: :secondary_muted, size: :sm,
+                icon: "pause", test_id: "pause-host",
+                data: { controller: "ui--dialog", action: "ui--dialog#open", ui__dialog_dialog_param: "pause-host-dialog" }) %>
+        <% end %>
         <% if host.certified? %>
           <%= render Ui::ButtonComponent.new(label: t("member.agents.decertify"),
                 href: decertify_member_agent_path(host, confirm: 1), method: :post,
@@ -55,6 +65,12 @@
               confirm: t("member.agents.destroy_confirm", hostname: host.hostname, **history_size),
               variant: :danger_outline, size: :sm, test_id: "destroy-host") %>
       <% end %>
+    <% end %>
+  <% end %>
+
+  <% if (pause_summary = agent_host_pause_summary(host)) %>
+    <%= render Ui::AlertComponent.new(variant: :warning, test_id: "host-paused-note") do %>
+      <%= pause_summary %>
     <% end %>
   <% end %>
 

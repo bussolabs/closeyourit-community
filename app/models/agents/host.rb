@@ -24,6 +24,9 @@ module Agents
     belongs_to :certified_by,
                class_name: "Accounts::Account",
                optional: true
+    belongs_to :paused_by,
+               class_name: "Accounts::Account",
+               optional: true
     # B.1 — 1 host ↔ 1 service account (l'agente che opera): identità unica dell'host, usata per lo scope
     # della coda (B.5) e l'attribuzione degli effetti (B.6). optional durante la transizione: gli host
     # storici senza identità restano validi finché un backfill/una ri-registrazione non la popolano.
@@ -72,11 +75,13 @@ module Agents
     normalizes :fingerprint, with: ->(value) { value.to_s.strip.downcase }
     normalizes :hostname, :platform, :arch, with: ->(value) { value.to_s.strip }
     normalizes :automator_version, with: ->(value) { value.to_s.strip.presence }
+    normalizes :pause_reason, with: ->(value) { value.to_s.strip.presence }
 
     validates :fingerprint, :hostname, :platform, :arch, presence: true
     validates :running, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
     validates :slots, numericality: { only_integer: true, greater_than: 0 }
     validates :host_status, inclusion: { in: HOST_STATUSES }
+    validates :pause_reason, length: { maximum: Agents::Constants::PAUSE_REASON_MAX }
     validates :heartbeat_expected_interval_minutes, numericality: { only_integer: true, greater_than: 0 }
     validates :heartbeat_grace_minutes, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
     validate :telemetry_snapshots_are_arrays
@@ -98,6 +103,12 @@ module Agents
     # Certificazione esplicita: un host resta ineleggibile finché un umano non lo abilita. Il gate
     # vive in Agents::Hosts::Eligibility, non nel model, per non intrecciarsi con revoca/heartbeat.
     def certified? = certified_at.present?
+
+    # A paused machine finishes the work it holds and takes no new one. The gate lives in the ticket queue
+    # (Next, ClaimNext, Claim), not in Eligibility: delivery re-checks Eligibility and must still pass.
+    def paused?(now: Time.current)
+      paused_at.present? && (paused_until.nil? || paused_until > now)
+    end
 
     # La connettività è server-side: il client dichiara solo l'attività. Lo stesso intervallo+grace del
     # monitor cron rende offline il singolo host anche quando più macchine condividono slug e token ingest.

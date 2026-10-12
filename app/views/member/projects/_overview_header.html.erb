@@ -59,6 +59,8 @@
   <% if can_edit %>
     <% h.with_tab(label: t("member.projects.show.tab_environments"), href: member_project_environments_path(project), active: active_tab.to_s == "environments", icon: "layers", test_id: "project-environments-link") %>
   <% end %>
+  <%# Map (CYRA-1071): reading = project visibility, like Documents. %>
+  <% h.with_tab(label: t("member.projects.show.tab_blueprint"), href: member_project_blueprint_path(project), active: active_tab.to_s == "blueprint", icon: "map", test_id: "project-blueprint-link") %>
   <% if can?("secrets.read", scope: project) || can?("secrets.manage", scope: project) %>
     <% h.with_more_tab(label: t("member.projects.show.tab_secrets"), href: member_project_secrets_path(project), active: active_tab.to_s == "secrets", icon: "lock", test_id: "project-secrets-link") %>
   <% end %>

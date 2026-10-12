@@ -15,6 +15,16 @@
     <% h.with_actions do %>
       <%# CYRA-453 — tolta dal menu, la pagina delle versioni si raggiunge da qui: è amministrazione,
           quindi il collegamento esiste solo per chi amministra le macchine. %>
+      <% if can_manage && @paused_count.positive? %>
+        <%= render Ui::ButtonComponent.new(label: t("member.agents.pause.resume_all"),
+              href: resume_all_member_agents_path(confirm: 1), method: :post,
+              variant: :secondary_muted, size: :sm, icon: "play", test_id: "agents-resume-all") %>
+      <% end %>
+      <% if can_manage && @pausable_count > @paused_count %>
+        <%= render Ui::ButtonComponent.new(label: t("member.agents.pause.open_all"), variant: :secondary_muted, size: :sm,
+              icon: "pause", test_id: "agents-pause-all",
+              data: { controller: "ui--dialog", action: "ui--dialog#open", ui__dialog_dialog_param: "pause-all-dialog" }) %>
+      <% end %>
       <% if can_manage %>
         <%= render Ui::ButtonComponent.new(label: t("member.agents.automator_settings_link"), href: member_agents_automator_setting_path, variant: :secondary_muted, size: :sm, icon: "settings", test_id: "agents-automator-settings-link") %>
         <%= render Ui::ButtonComponent.new(label: t("member.agents.skill_bundle_link"), href: member_skill_bundle_path, variant: :secondary_muted, size: :sm, icon: "box", test_id: "agents-skill-bundle-link") %>
@@ -25,6 +35,11 @@
         <%= render Ui::ButtonComponent.new(label: t("member.agents.openrouter_credential_link"), href: member_agents_openrouter_credential_path, variant: :secondary_muted, size: :sm, icon: "lock", test_id: "agents-openrouter-credential-link") %>
       <% end %>
     <% end %>
+  <% end %>
+
+  <% if can_manage && @pausable_count > @paused_count %>
+    <%= render "member/agents/pause_dialog", dialog_id: "pause-all-dialog", url: pause_all_member_agents_path,
+          title: t("member.agents.pause.dialog_title_all") %>
   <% end %>
 
   <% filtering = params[:q].present? %>

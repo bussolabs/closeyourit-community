@@ -68,6 +68,7 @@ en:
           intro: "A machine that has just connected does no work: first a person has to say it may. The choice can be undone at any time."
           certify_body: From then on it can pick up jobs from the projects it covers.
           revoke_body: "It stops receiving new jobs straight away. It stays connected and keeps checking in, but no ticket is handed to it until you clear it again."
+          pause_body: "It finishes the work it holds and takes no new one, until you resume it or the pause ends. The go-ahead stays."
           note: "Taking the clearance back erases nothing it has already done. A job already under way is not pulled out of its hands: if it never delivers it, sooner or later it shows up as interrupted."
         stopped_title: When a machine stops
         stopped_intro: "Machines shut down, lose the network, fall behind. These are three different situations and the page tells them apart, because each needs something different."

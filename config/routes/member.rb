@@ -365,6 +365,8 @@ namespace :member do
     # riceve. `resource` singolare come la guidance: è una lettura sola, senza un :id proprio.
     # Controller flat Member::ProjectUsageController (niente Member::Projects che ombreggia ::Projects).
     resource :usage, only: :show, controller: "project_usage"
+    # Map tab (CYRA-1071): blueprint.json read from the repository, read only.
+    resource :blueprint, only: :show, controller: "project_blueprint"
     # Guidance del progetto (tab Guidance, CYRA-75): references + procedures LOCALI + preview del
     # contesto effettivo (Guidance::Preview). Controller flat (niente Member::Projects che ombreggia
     # ::Projects, né Member::Guidance che ombreggia ::Guidance). Gate projects.edit.
@@ -998,10 +1000,14 @@ namespace :member do
   resources :agents, only: %i[index show destroy] do
     collection do
       get :compare    # CYRA-451 — due host affiancati sullo stesso periodo
+      post :pause_all, path: "pause" # every machine finishes the work it holds and takes no new one
+      post :resume_all, path: "resume"
     end
     member do
       post :certify     # B.1b — via libera umano all'esecuzione (setta certified_at/by)
       post :decertify   # revoca la certificazione (torna ineleggibile)
+      post :pause       # the machine finishes the work it holds and takes no new one
+      post :resume
       patch :review     # CYRA-921 — chi rilegge il lavoro: l'altro motore o lo stesso
       patch :engine     # CYRA-921 — who does the work: Claude or Codex
       patch :supporter  # CYAU-235 — who answers the machine's questions

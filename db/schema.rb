@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_191343) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_12_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -342,11 +342,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_191343) do
     t.string "supporter"
     t.datetime "updated_at", null: false
     t.string "work_engine"
+    t.datetime "paused_at"
+    t.datetime "paused_until"
+    t.string "pause_reason"
+    t.uuid "paused_by_id"
     t.index ["certified_by_id"], name: "index_agents_hosts_on_certified_by_id"
     t.index ["heartbeat_project_id"], name: "index_agents_hosts_on_heartbeat_project_id"
     t.index ["organization_id", "fingerprint"], name: "index_agents_hosts_on_organization_id_and_fingerprint", unique: true
     t.index ["organization_id", "last_heartbeat_at"], name: "index_agents_hosts_on_org_heartbeat"
     t.index ["organization_id"], name: "index_agents_hosts_on_organization_id"
+    t.index ["paused_by_id"], name: "index_agents_hosts_on_paused_by_id"
     t.index ["service_account_id"], name: "index_agents_hosts_on_service_account_id", unique: true
     t.check_constraint "(work_engine IS NULL) = (reviewer IS NULL)", name: "agents_hosts_engine_choice_complete"
     t.check_constraint "heartbeat_expected_interval_minutes > 0", name: "agents_hosts_heartbeat_interval_positive"
@@ -4461,6 +4466,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_191343) do
   add_foreign_key "agents_delivery_candidates", "github_repositories", column: "repository_id"
   add_foreign_key "agents_host_tokens", "agents_hosts", column: "host_id", on_delete: :cascade
   add_foreign_key "agents_hosts", "accounts", column: "certified_by_id", on_delete: :nullify
+  add_foreign_key "agents_hosts", "accounts", column: "paused_by_id", on_delete: :nullify
   add_foreign_key "agents_hosts", "accounts", column: "service_account_id", on_delete: :nullify
   add_foreign_key "agents_hosts", "organizations", on_delete: :cascade
   add_foreign_key "agents_hosts", "projects", column: "heartbeat_project_id", on_delete: :nullify
