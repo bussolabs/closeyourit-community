@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.188.4] - 2026-10-12
+
+### Changed
+
+- **Il numero di prova dopo Riprova è controllato da capo a fondo.** Quando riprendi una lavorazione ferma nel rilascio di prova, una prova automatica ora segue tutto il percorso e conferma che un numero superato viene sostituito e quello ancora valido resta uguale.
+
 ## [0.188.3] - 2026-10-11
 
 ### Fixed
