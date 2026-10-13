@@ -42,6 +42,19 @@ RSpec.describe "Member::ProjectBlueprint (CYRA-1071)", type: :request do
     expect(JSON.parse(page.at_css("[data-controller='blueprint']")["data-blueprint-map-value"])["nodes"].size).to eq(3)
   end
 
+  it "offers the full screen view with the index of the map" do
+    create(:github_repository, project:, full_name: "bussolabs/shop")
+    stub_file(map)
+    sign_in(owner)
+
+    get member_project_blueprint_path(project)
+
+    expect(page.at_css("[data-test='blueprint-full']")["data-action"]).to eq("blueprint#toggleFull")
+    expect(page.at_css("[data-test='blueprint-index'] [data-blueprint-target='tree']")).to be_present
+    expect(page.at_css("[data-test='blueprint-index-filter']")["data-action"]).to eq("input->blueprint#filter")
+    expect(page.at_css("template[data-blueprint-target='treeTemplate']")).to be_present
+  end
+
   {
     no_repository: nil,
     missing: nil,

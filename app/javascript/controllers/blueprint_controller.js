@@ -3,7 +3,8 @@ import { Controller } from "@hotwired/stimulus"
 // Map tab of a project (CYRA-1071): draws one level of blueprint.json at a time and fills the detail
 // panel from the templates in the view. Click selects, double click opens a bubble. Edges deeper than
 // the open level are lifted to the bubble that contains each end; an end outside the view becomes a
-// dashed "ghost" at the branch where it leaves the open level.
+// dashed "ghost" at the branch where it leaves the open level. Full screen adds the index: the whole
+// map as a tree, kept in step with the graph.
 
 // Canvas colours cannot be Tailwind classes: these are the hex values of the classes DESIGN.md names.
 const PALETTE = {
@@ -15,7 +16,8 @@ const DENSE_EDGES = 60
 const START = "rails"
 
 export default class extends Controller {
-  static targets = ["canvas", "detail", "path", "search", "hits", "detailTemplate", "fileTemplate", "rowTemplate", "hitTemplate", "crumbTemplate"]
+  static targets = ["canvas", "detail", "path", "search", "hits", "filter", "tree", "full",
+    "detailTemplate", "fileTemplate", "rowTemplate", "hitTemplate", "crumbTemplate", "treeTemplate"]
   static values = { map: Object, labels: Object }
 
   async connect() {
@@ -26,6 +28,7 @@ export default class extends Controller {
     nodes.forEach((node) => (this.children[node.parent] ||= []).push(node))
     this.focus = this.byId[START] ? START : null
     this.selected = null
+    this.expanded = new Set()
 
     const { default: cytoscape } = await import("cytoscape")
     this.cy = cytoscape({ container: this.canvasTarget, style: this.#style(), minZoom: 0.3, maxZoom: 2.5, wheelSensitivity: 0.3 })
@@ -64,6 +67,10 @@ export default class extends Controller {
     this.hitsTarget.hidden = found.length === 0
   }
 
+  toggleFull() { this.#full(!this.#isFull()) }
+  exitFull() { if (this.#isFull()) this.#full(false) }
+  filter() { this.#tree() }
+
   // Drawing ---------------------------------------------------------------------------------------
 
   #draw() {
@@ -77,6 +84,7 @@ export default class extends Controller {
       : { name: "cose", padding: 28, nodeDimensionsIncludeLabels: true, nodeRepulsion: 400000, nodeOverlap: 40, idealEdgeLength: 120, gravity: 0.2, numIter: 2000, animate, randomize: false }).run()
     this.#path()
     this.#detail()
+    this.#index()
   }
 
   #scope() {
@@ -155,6 +163,7 @@ export default class extends Controller {
       element.connectedEdges().addClass("hl")
     }
     this.#detail()
+    this.#index()
   }
 
   #open(id) {
@@ -243,6 +252,55 @@ export default class extends Controller {
     } else this.#field(view, "links-box").remove()
 
     this.detailTarget.replaceChildren(view)
+  }
+
+  // Full screen and index ------------------------------------------------------------------------
+
+  #isFull() { return this.element.hasAttribute("data-full") }
+
+  #full(on) {
+    this.element.toggleAttribute("data-full", on)
+    this.fullTarget.setAttribute("aria-pressed", String(on))
+    this.cy.resize()
+    this.cy.fit(undefined, 28)
+    this.#index()
+  }
+
+  // Opens the branch that holds the open level, so the current bubble is always in sight.
+  #index() {
+    for (let id = this.focus; id; id = this.byId[id].parent) this.expanded.add(id)
+    this.#tree()
+    this.treeTarget.querySelector("[aria-current='true']")?.scrollIntoView({ block: "nearest" })
+  }
+
+  #tree() {
+    if (!this.#isFull()) return
+    const query = this.filterTarget.value.trim().toLowerCase()
+    const keeps = (node) => node.name.toLowerCase().includes(query) || (this.children[node.id] || []).some(keeps)
+    const current = this.selected || this.focus
+    const rows = []
+    const walk = (node) => {
+      if (query && !keeps(node)) return
+      const inner = this.children[node.id] || []
+      const open = query ? inner.some(keeps) : this.expanded.has(node.id)
+      const row = this.#clone(this.treeTemplateTarget).firstElementChild
+      row.style.paddingLeft = `${node.level * 14}px`
+      const caret = this.#field(row, "caret")
+      if (inner.length) {
+        caret.setAttribute("aria-expanded", String(open))
+        caret.setAttribute("aria-label", this.labelsValue.toggle.replace("%{name}", node.name))
+        caret.addEventListener("click", () => { this.expanded.has(node.id) ? this.expanded.delete(node.id) : this.expanded.add(node.id); this.#tree() })
+      } else caret.classList.add("invisible")
+      this.#fill(row, "label", node.name)
+      this.#fill(row, "meta", inner.length || "")
+      const name = this.#field(row, "name")
+      if (node.id === current) name.setAttribute("aria-current", "true")
+      name.addEventListener("click", () => { if (inner.length) this.expanded.add(node.id); this.#reveal(node.id) })
+      rows.push(row)
+      if (open) inner.forEach(walk)
+    }
+    Object.values(this.byId).filter((node) => node.level === 0).forEach(walk)
+    this.treeTarget.replaceChildren(...rows)
   }
 
   // Helpers ---------------------------------------------------------------------------------------

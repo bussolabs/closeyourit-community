@@ -1,12 +1,28 @@
 <%# locals: reading %>
 <%# Master-detail (E20): the graph of the open level on the left, the selected bubble on the right.
-    The map travels as a Stimulus value; the detail is filled from the templates below. %>
+    The map travels as a Stimulus value; the detail is filled from the templates below.
+    Full screen (`data-full` on the root) covers the page and adds the index of the whole map. %>
 <% document = reading.document %>
 <% labels = { kinds: t("member.blueprint.kinds"), detail: t("member.blueprint.detail").except(:level, :more),
-              level: t("member.blueprint.detail.level", level: "%{level}"), more: t("member.blueprint.detail.more", count: "%{count}") } %>
-<div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]" data-controller="blueprint"
+              level: t("member.blueprint.detail.level", level: "%{level}"), more: t("member.blueprint.detail.more", count: "%{count}"),
+              toggle: t("member.blueprint.index.toggle", name: "%{name}") } %>
+<div class="group grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] data-[full]:fixed data-[full]:inset-0 data-[full]:z-50 data-[full]:gap-3 data-[full]:p-3
+            data-[full]:bg-stone-100 dark:data-[full]:bg-zinc-950 data-[full]:grid-rows-[minmax(0,34%)_minmax(0,1fr)] md:data-[full]:grid-rows-[minmax(0,1fr)]
+            md:data-[full]:grid-cols-[15rem_minmax(0,1fr)] xl:data-[full]:grid-cols-[17.5rem_minmax(0,1fr)_22rem]"
+     data-controller="blueprint" data-action="keydown.esc@window->blueprint#exitFull"
      data-blueprint-map-value="<%= JSON.generate(document.to_h) %>" data-blueprint-labels-value="<%= labels.to_json %>">
-  <section class="min-w-0 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="blueprint-graph">
+  <aside class="hidden group-data-[full]:flex min-h-0 min-w-0 flex-col rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+         aria-label="<%= t("member.blueprint.index.title") %>" data-test="blueprint-index">
+    <div class="space-y-2 px-3 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.blueprint.index.title") %></h2>
+      <%= render Ui::InputComponent.new(name: "index_q", type: "search", placeholder: t("member.blueprint.index.filter_placeholder"),
+            autocomplete: "off", "aria-label": t("member.blueprint.index.filter_label"), test_id: "blueprint-index-filter",
+            data: { blueprint_target: "filter", action: "input->blueprint#filter" }) %>
+    </div>
+    <div class="min-h-0 flex-1 overflow-y-auto p-1.5" data-blueprint-target="tree" data-test="blueprint-tree"></div>
+  </aside>
+
+  <section class="min-w-0 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 group-data-[full]:flex group-data-[full]:min-h-0 group-data-[full]:flex-col" data-test="blueprint-graph">
     <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
       <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.blueprint.section_title") %></h2>
       <div class="flex items-center flex-wrap gap-1.5" data-test="blueprint-counts">
@@ -31,14 +47,20 @@
       </div>
       <nav class="ml-auto flex flex-wrap items-center gap-1 text-[12px] text-gray-500 dark:text-zinc-400"
            aria-label="<%= t("member.blueprint.graph_label") %>" data-blueprint-target="path" data-test="blueprint-path"></nav>
+      <%= render Ui::ButtonComponent.new(variant: :secondary_muted, size: :sm, icon: "maximize-2", test_id: "blueprint-full",
+            aria: { pressed: "false" }, data: { blueprint_target: "full", action: "blueprint#toggleFull" }) do %>
+        <span class="group-data-[full]:hidden"><%= t("member.blueprint.full.enter") %></span>
+        <span class="hidden group-data-[full]:inline"><%= t("member.blueprint.full.exit") %></span>
+      <% end %>
     </div>
 
-    <div class="h-[460px] md:h-[620px] rounded-b-lg bg-stone-50 dark:bg-zinc-950" role="img"
+    <div class="h-[460px] md:h-[620px] group-data-[full]:h-auto group-data-[full]:min-h-0 group-data-[full]:flex-1 bg-stone-50 dark:bg-zinc-950" role="img"
          aria-label="<%= t("member.blueprint.graph_label") %>" data-blueprint-target="canvas" data-test="blueprint-canvas"></div>
     <p class="px-4 py-2.5 border-t border-stone-200 dark:border-zinc-800 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.blueprint.legend") %></p>
   </section>
 
-  <aside class="min-w-0 self-start rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+  <aside class="min-w-0 self-start rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900
+                max-xl:group-data-[full]:hidden group-data-[full]:self-stretch group-data-[full]:overflow-y-auto"
          aria-live="polite" data-blueprint-target="detail" data-test="blueprint-detail"></aside>
 
   <%= render "member/project_blueprint/templates" %>

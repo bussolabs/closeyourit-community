@@ -11,6 +11,14 @@ it:
       search_label: "Cerca nella mappa"
       graph_label: "Grafo del livello aperto"
       legend: "Clic: dettaglio · doppio clic: apri · bordo doppio: si apre · tratteggio: sta in un'altra area"
+      index:
+        title: "Indice"
+        filter_placeholder: "Filtra l'indice"
+        filter_label: "Filtra l'indice della mappa"
+        toggle: "Apri o chiudi %{name}"
+      full:
+        enter: "Schermo intero"
+        exit: "Esci · Esc"
       counts:
         area: "aree"
         flow: "flussi"

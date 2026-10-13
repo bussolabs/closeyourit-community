@@ -4548,7 +4548,7 @@
       "level": 2,
       "parent": "area_projects",
       "kind": "page",
-      "summary": "La scheda Mappa: legge blueprint.json dal repository GitHub del progetto e la mostra a livelli, in sola lettura. Se manca o è rotta lo dice.",
+      "summary": "La scheda Mappa: legge blueprint.json dal repository GitHub del progetto e la mostra a livelli, in sola lettura. A tutto schermo aggiunge l'indice ad albero di tutta la mappa. Se manca o è rotta lo dice.",
       "files": [
         "app/controllers/member/project_blueprint_controller.rb",
         "app/views/member/project_blueprint/**",

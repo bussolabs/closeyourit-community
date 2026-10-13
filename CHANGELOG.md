@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.190.0] - 2026-10-13
+
+### Added
+
+- **Mappa a tutto schermo con indice.** Nella scheda Mappa di un progetto il pulsante «Schermo intero» allarga il grafo a tutta la finestra. A sinistra compare l'indice: tutta la mappa come elenco ad albero, con un campo per filtrare. Un clic su una riga porta il grafo lì; con Esc torni alla pagina.
+
 ## [0.189.1] - 2026-10-13
 
 ### Fixed

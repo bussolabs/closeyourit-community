@@ -11,6 +11,14 @@ en:
       search_label: "Search the map"
       graph_label: "Graph of the open level"
       legend: "Click: details · double click: open · double border: opens · dashed: lives in another area"
+      index:
+        title: "Index"
+        filter_placeholder: "Filter the index"
+        filter_label: "Filter the map index"
+        toggle: "Open or close %{name}"
+      full:
+        enter: "Full screen"
+        exit: "Exit · Esc"
       counts:
         area: "areas"
         flow: "flows"
