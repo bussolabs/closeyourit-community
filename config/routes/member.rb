@@ -771,6 +771,8 @@ namespace :member do
       resource :release_mark, path: "released", only: :create, module: :automation
       # CYRA-871 — «Ferma» un rilascio prima della produzione: tiene occupata la fila del repository.
       resource :production_hold, path: "hold", only: :create, module: :automation
+      # CYRA-1030 — «Rimanda allo staging» un rilascio fermo in produzione: la prova rifà il codice.
+      resource :staging_send_back, path: "staging", only: :create, module: :automation
     end
     # Resoconto di lavorazione (CYRA-265), sola LETTURA: il corrente vive nella scheda `?tab=report`
     # della show, qui c'è solo la cronologia delle stesure. Specchio delle rotte CLI, meno il POST —

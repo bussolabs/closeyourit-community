@@ -1,0 +1,29 @@
+<%# locals: row: (Analytics::Overview::Row), range:
+    One site of the index: its numbers for the period, each with the change on the previous one. %>
+<% project = row.project %>
+<%= render Ui::TableComponent::RowComponent.new(href: member_monitoring_analytics_path(project_id: project.id, range: range),
+      link_label: project.name, test_id: "analytics-site-#{project.id}") do %>
+  <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+    <span class="inline-flex items-center gap-2">
+      <%= render Ui::EntityMarkComponent.new(record: project, size: :sm) %>
+      <span class="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= project.name %></span>
+      <% unless row.connected %>
+        <%= render Ui::BadgeComponent.new(label: t("member.monitoring.analytics.sites.not_connected"), color: :amber, size: :sm, test_id: "analytics-site-not-connected") %>
+      <% end %>
+    </span>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.analytics.sites.col_trend")) do %>
+    <%= render Ui::SparklineComponent.new(points: row.trend, label: t("member.monitoring.analytics.sites.col_trend")) %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.analytics.stats.pageviews"), mono: true, test_id: "analytics-site-pageviews") do %>
+    <%= number_with_delimiter(row.pageviews) %><%= analytics_trend_tag(row.pageviews, row.previous_pageviews) %>
+  <% end %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.analytics.stats.visitors"), mono: true, test_id: "analytics-site-visitors") do %>
+    <%= number_with_delimiter(row.visitors) %><%= analytics_trend_tag(row.visitors, row.previous_visitors) %>
+  <% end %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.analytics.sites.online"), mono: true,
+        class: row.online.positive? ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400 dark:text-zinc-500")) { number_with_delimiter(row.online) } %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.analytics.sites.col_last_visit"), mono: true, class: "text-gray-500 dark:text-zinc-400") do %>
+    <% if row.last_at %><span title="<%= l(row.last_at.in_time_zone, format: :long) %>"><%= error_time_ago(row.last_at) %></span><% else %>—<% end %>
+  <% end %>
+<% end %>

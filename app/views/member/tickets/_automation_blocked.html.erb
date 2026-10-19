@@ -58,6 +58,13 @@
               href: member_ticket_automation_unblock_path(ticket), method: :post,
               variant: :secondary, size: :md, icon: "rotate-cw", test_id: "automation-retry") %>
       <% end %>
+      <%# CYRA-1030 — fermo in produzione per un difetto nel codice preparato: «Riprova» ripubblicherebbe
+          lo stesso codice, qui la prova lo rifà. %>
+      <% if workflow.stopped_in_production? && decides %>
+        <%= render Ui::ButtonComponent.new(label: t("member.tickets.automation.blocked.send_back"),
+              href: member_ticket_automation_staging_send_back_path(ticket), method: :post,
+              variant: :secondary, size: :md, icon: "rotate-ccw", test_id: "automation-send-back") %>
+      <% end %>
       <% if workflow.blocked_at? && !decides && !can_manage %>
         <p class="text-[11.5px] text-amber-700 dark:text-amber-300"><%= t("member.tickets.automation.blocked.waiting_on_cto", name: cto&.name) %></p>
       <% end %>

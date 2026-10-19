@@ -146,7 +146,7 @@ module UiDarkPalette
     app/views/member/**/*.erb app/views/shared/**/*.erb app/views/home/**/*.erb
     app/views/valhalla/**/*.erb app/views/layouts/valhalla.html.erb
     app/views/layouts/member.html.erb app/views/layouts/account.html.erb app/views/account/**/*.erb
-    app/views/layouts/auth.html.erb app/views/auth/**/*.erb app/helpers/**/*.rb app/javascript/**/*.js
+    app/views/layouts/auth.html.erb app/views/auth/**/*.erb app/views/cli/**/*.erb app/helpers/**/*.rb app/javascript/**/*.js
     app/components/*_component.{rb,html.erb} app/constants/ui/**/*.rb
   ].freeze
 

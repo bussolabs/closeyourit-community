@@ -7,7 +7,7 @@ module Api
     # progetto del token (anti-BOLA). Body JSON (parsato da Rails); envelope API standard { data: { id } }.
     class EventsController < Api::V1::IngestBaseController
       rescue_from ActionDispatch::Http::Parameters::ParseError do
-        render_error("R422-INGEST-001", "Evento malformato", status: :unprocessable_content)
+        render_error("R422-INGEST-001", "Malformed event", status: :unprocessable_content)
       end
 
       def create

@@ -46,7 +46,8 @@ module Analytics
 
       result = Array.new(cfg[:count]) { |i| { at: since + (i * cfg[:seconds]), pageviews: 0, visitors: 0 } }
       rows.each do |bucket_time, pageviews, visitors|
-        idx = ((bucket_time.to_time - since) / cfg[:seconds]).floor
+        # round, not floor: `since` has nanoseconds and the bin comes back at microseconds, a hair early.
+        idx = ((bucket_time.to_time - since) / cfg[:seconds]).round
         # Guardia difensiva irraggiungibile via test: la query filtra occurred_at in [since, now)
         # con date_bin d'origine `since` → idx è sempre in [0, count-1].
         # simplecov:disable
@@ -130,7 +131,7 @@ module Analytics
                                        occurred_at: since...@now, created_at: ::Ingest::EpochTime.insert_floor(since)..))
       s = s.where(environment: @environment) if @environment.present?
       counts = s.group(Arel.sql(bin)).pluck(Arel.sql(bin), Arel.sql("COUNT(*)")).to_h do |time, count|
-        [ ((time.to_time - since) / 60).floor, count ]
+        [ ((time.to_time - since) / 60).round, count ]
       end
       Array.new(REALTIME_SERIES_MINUTES) { |i| counts[i].to_i }
     end

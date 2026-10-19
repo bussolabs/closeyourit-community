@@ -235,7 +235,7 @@ module Agents
 
       def invalid(record)
         Result.err(AppError.new(
-          "Reservation non valida", code: "R422-AGENT-005", status: :unprocessable_content,
+          "Invalid reservation", code: "R422-AGENT-005", status: :unprocessable_content,
           details: record.errors.as_json
         ))
       end

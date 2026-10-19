@@ -18,31 +18,31 @@ module Api
 
         def create
           if request.content_length.to_i > ::Servers::Constants::MAX_PAYLOAD_BYTES
-            return render_error("R413-SERVER-002", "Payload troppo grande", status: :content_too_large)
+            return render_error("R413-SERVER-002", "Payload too large", status: :content_too_large)
           end
 
           payload = parse_payload
           if payload == :too_large
-            return render_error("R413-SERVER-002", "Payload troppo grande", status: :content_too_large)
+            return render_error("R413-SERVER-002", "Payload too large", status: :content_too_large)
           end
           if payload.nil?
-            return render_error("R422-SERVER-004", "Payload malformato", status: :unprocessable_content)
+            return render_error("R422-SERVER-004", "Malformed payload", status: :unprocessable_content)
           end
 
           fingerprint = payload["fingerprint"].to_s.strip
           if fingerprint.blank?
-            return render_error("R422-SERVER-001", "Fingerprint mancante", status: :unprocessable_content)
+            return render_error("R422-SERVER-001", "Missing fingerprint", status: :unprocessable_content)
           end
 
           if Current.server_host && !ActiveSupport::SecurityUtils.secure_compare(Current.server_host.fingerprint, fingerprint)
-            return render_error("R403-SERVER-003", "Fingerprint non corrispondente", status: :forbidden)
+            return render_error("R403-SERVER-003", "Fingerprint mismatch", status: :forbidden)
           end
           host = Current.server_host || ::Servers::RegisterHost.call(
             organization: Current.organization, fingerprint:, hostname: payload.dig("host", "hostname"),
             enrollment_token: current_enrollment_token
           ).value
           if host.revoked?
-            return render_error("R403-SERVER-002", "Host revocato", status: :forbidden)
+            return render_error("R403-SERVER-002", "Host revoked", status: :forbidden)
           end
 
           # CYRA-649 — l'ora di arrivo si registra QUI, sincrona, prima di accodare qualsiasi cosa: è

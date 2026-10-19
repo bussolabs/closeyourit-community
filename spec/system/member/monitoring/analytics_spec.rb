@@ -38,6 +38,10 @@ RSpec.describe "Member analytics", type: :system do
     click_on_test "member-nav-seo-overview"
     click_on_test "member-nav-analytics"
 
+    # CYRA-1077 — the menu opens the index of sites; the row opens the dashboard.
+    expect_test "member-analytics-sites"
+    within_test("analytics-site-#{project.id}") { find("a[aria-label='#{project.name}']").click }
+
     expect_test "member-analytics"
     expect_test "analytics-counts"
     within_test("analytics-counts") { expect(page).to have_text("2") }

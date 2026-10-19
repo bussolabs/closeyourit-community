@@ -13,7 +13,7 @@ module Cli
 
         def create
           linkable = resolve_linkable
-          return render_error("R422-LOG-003", "Target non collegabile", status: :unprocessable_content) if linkable.nil?
+          return render_error("R422-LOG-003", "Target cannot be linked", status: :unprocessable_content) if linkable.nil?
 
           result = Logs::Links::Attach.call(log_entry: @entry, linkable: linkable, actor: Current.account)
           if result.ok?

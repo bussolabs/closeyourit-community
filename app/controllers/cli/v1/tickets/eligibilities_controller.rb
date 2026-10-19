@@ -40,7 +40,7 @@ module Cli
         private
 
         def invalid_decision
-          render_error("R422-TICKET-014", "eligibility deve essere allowed, blocked o auto",
+          render_error("R422-TICKET-014", "eligibility must be allowed, blocked or auto",
                        status: :unprocessable_content)
         end
 

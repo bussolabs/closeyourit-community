@@ -47,7 +47,7 @@ RSpec.describe "Contratto delle risposte di errore dei canali macchina", type: :
 
       expect(foreign).to eq(missing)
       expect(foreign.first).to eq(404)
-      expect(foreign.last).to eq("error" => { "code" => "R404-SYSTEM-001", "message" => "Risorsa non trovata" })
+      expect(foreign.last).to eq("error" => { "code" => "R404-SYSTEM-001", "message" => "Resource not found" })
     end
   end
 
@@ -110,7 +110,7 @@ RSpec.describe "Contratto delle risposte di errore dei canali macchina", type: :
       missing = [ response.status, response.parsed_body ]
 
       expect(foreign).to eq(missing)
-      expect(foreign.last).to eq("error" => { "code" => "R404-SYSTEM-001", "message" => "Risorsa non trovata" })
+      expect(foreign.last).to eq("error" => { "code" => "R404-SYSTEM-001", "message" => "Resource not found" })
     end
 
     it "corpo illeggibile → lo stesso envelope della riga di comando" do

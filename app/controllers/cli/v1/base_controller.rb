@@ -24,7 +24,7 @@ module Cli
       # visibile dà 404 prima del 403.
       def require_permission!(key, scope: nil)
         unless authorization.can?(key, scope: scope)
-          render_error("R403-CLIAUTH-002", "Permesso negato", status: :forbidden)
+          render_error("R403-CLIAUTH-002", "Permission denied", status: :forbidden)
           return false
         end
 
@@ -38,7 +38,7 @@ module Cli
       def deny_unconfirmed_dangerous_action(key)
         render_error(
           MISSING_CONFIRMATION_CODE,
-          "Azione pericolosa: ripeti il comando confermando (--yes)",
+          "Dangerous action: run the command again with --yes",
           status: :unprocessable_content,
           details: { permission: key }
         )
@@ -47,7 +47,7 @@ module Cli
       # Gate "solo owner o god", org-level: serve alle cancellazioni DEFINITIVE dei file segreti, dove
       # il manage non basta perché l'operazione distrugge ciphertext e storico e non è recuperabile.
       # Ritorna true/false come require_permission! (usabile inline con `return unless`).
-      def require_owner!(message = "Solo owner o god può eliminare definitivamente un asset")
+      def require_owner!(message = "Only an owner or god can delete an asset permanently")
         return true if Current.account&.god? ||
                        Current.organization.memberships.exists?(account_id: Current.account&.id, role: :owner)
 

@@ -28,11 +28,11 @@ RSpec.describe "Cli — rami edge", type: :request do
       post login_path, params: { email: acc.email, password: "Secret123!" }
     end
 
-    it "show senza user_code → 404" do
+    it "show with a blank user_code asks for the code (CYRA-1080)" do
       sign_in_as(account)
-      get cli_authorize_path
-      expect(response).to have_http_status(:not_found)
-      expect(response.body).to include('data-test="cli-authorize-unknown"')
+      get cli_authorize_path(user_code: " ")
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('data-test="cli-authorize-enter"')
     end
 
     it "approve con user_code sconosciuto → 404" do

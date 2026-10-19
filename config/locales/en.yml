@@ -76,6 +76,7 @@ en:
       uptime_disabled: "Uptime is disabled for this environment on this project"
       secrets_disabled: "Secrets are disabled for this environment on this project"
       shared_secret_conflict: "is already delegated to this project by an organization secret"
+      production_hold_hours: "must be a whole number of hours from 0 to 72, or empty to inherit"
       local_secret_conflict: "the project already has its own secret with this name in this environment"
       delegation_conflict: "the project already receives another organization secret with this name in this environment"
       length_budget_exceeded: "is over the %{count} character limit (currently %{actual}): shorten it or split it up"

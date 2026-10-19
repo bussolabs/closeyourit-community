@@ -284,7 +284,7 @@ module Agents
 
       def unsupported_host_result
         Result.err(
-          AppError.new("Host automator non supportato: è richiesto Linux", code: "R403-AGENT-007", status: :forbidden)
+          AppError.new("Unsupported automator host: Linux is required", code: "R403-AGENT-007", status: :forbidden)
         )
       end
     end

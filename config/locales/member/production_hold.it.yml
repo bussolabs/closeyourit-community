@@ -1,0 +1,21 @@
+# CYRA-1000 — l'attesa prima della produzione, scelta su progetto, organizzazione o piattaforma.
+it:
+  member:
+    project_settings:
+      production_hold_section: Attesa prima della produzione
+      production_hold_hours_label: Ore di prova in staging prima della produzione
+      production_hold_hours_placeholder: eredita dall'organizzazione
+      production_hold_hours_hint: Da 0 a 72 ore intere. Con 0 il rilascio non aspetta, ma un errore nuovo comparso in staging lo ferma comunque. Lascia vuoto per ereditare.
+      production_hold_effective:
+        one: "In vigore: %{count} ora di prova in staging"
+        other: "In vigore: %{count} ore di prova in staging"
+        zero: "In vigore: nessuna attesa, resta il controllo sugli errori nuovi in staging"
+    organization:
+      sections:
+        production: Attesa prima della produzione
+      production_hold_hours_label: Ore di prova in staging prima della produzione
+      production_hold_hours_placeholder:
+        one: "eredita dalla piattaforma (%{count} ora)"
+        other: "eredita dalla piattaforma (%{count} ore)"
+        zero: "eredita dalla piattaforma (nessuna attesa)"
+      production_hold_hours_hint: Vale per i progetti di questa organizzazione che non scelgono da soli. Da 0 a 72 ore intere; con 0 il rilascio non aspetta, ma un errore nuovo comparso in staging lo ferma comunque. Lascia vuoto per ereditare.

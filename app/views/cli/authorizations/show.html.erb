@@ -1,37 +1,46 @@
 <% content_for :title, t("cli.authorize.title") %>
 
-<% if @grant.nil? %>
-  <div class="rounded-lg border border-stone-200 bg-white p-6 text-center" data-test="cli-authorize-unknown">
-    <div class="mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-red-50 text-red-600"><%= render Ui::IconComponent.new(name: "circle-alert", class: "text-[15px]") %></div>
-    <h1 class="font-display text-[16px] font-semibold text-zinc-900"><%= t("cli.authorize.no_grant_title") %></h1>
-    <p class="mt-1.5 text-[13px] leading-relaxed text-zinc-600"><%= t("cli.authorize.no_grant_lead") %></p>
-    <%= link_to t("cli.authorize.back"), root_path, class: "mt-4 inline-flex items-center h-[34px] px-3 rounded-md text-[13px] font-medium text-gray-600 bg-white border border-stone-200 hover:bg-stone-50", data: { test: "cli-authorize-back" } %>
+<% if @grant.nil? && params[:user_code].blank? %>
+  <%= render Ui::CardComponent.new(test_id: "cli-authorize-enter") do %>
+    <h1 class="font-display text-[16px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("cli.authorize.title") %></h1>
+    <p class="mt-1.5 text-[13px] leading-relaxed text-zinc-600 dark:text-zinc-400"><%= t("cli.authorize.enter_lead") %></p>
+    <%= form_with url: cli_authorize_path, method: :get, class: "mt-4 space-y-4", data: { turbo: false } do %>
+      <%= render Ui::InputComponent.new(name: "user_code", label: t("cli.authorize.enter_label"), required: true, placeholder: "ABCD-EFGH", autocomplete: "off", autocapitalize: "characters", spellcheck: false, test_id: "cli-authorize-code", class: "font-mono uppercase") %>
+      <button type="submit" data-test="cli-authorize-continue" class="w-full inline-flex items-center justify-center h-[38px] px-4 rounded-md text-[13px] font-medium text-white bg-indigo-600 hover:bg-indigo-700"><%= t("cli.authorize.enter_submit") %></button>
+    <% end %>
+  <% end %>
+<% elsif @grant.nil? %>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 text-center" data-test="cli-authorize-unknown">
+    <div class="mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400"><%= render Ui::IconComponent.new(name: "circle-alert", class: "text-[15px]") %></div>
+    <h1 class="font-display text-[16px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("cli.authorize.no_grant_title") %></h1>
+    <p class="mt-1.5 text-[13px] leading-relaxed text-zinc-600 dark:text-zinc-400"><%= t("cli.authorize.no_grant_lead") %></p>
+    <%= link_to t("cli.authorize.back"), root_path, class: "mt-4 inline-flex items-center h-[34px] px-3 rounded-md text-[13px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "cli-authorize-back" } %>
   </div>
 <% else %>
-  <div class="rounded-lg border border-stone-200 bg-white" data-test="cli-authorize">
-    <div class="px-6 py-5 border-b border-stone-200">
-      <h1 class="font-display text-[16px] font-semibold text-zinc-900"><%= t("cli.authorize.title") %></h1>
-      <p class="mt-1 text-[13px] leading-relaxed text-zinc-600"><%= t("cli.authorize.lead") %></p>
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="cli-authorize">
+    <div class="px-6 py-5 border-b border-stone-200 dark:border-zinc-800">
+      <h1 class="font-display text-[16px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("cli.authorize.title") %></h1>
+      <p class="mt-1 text-[13px] leading-relaxed text-zinc-600 dark:text-zinc-400"><%= t("cli.authorize.lead") %></p>
     </div>
 
     <div class="px-6 py-5 space-y-5">
       <div>
-        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500"><%= t("cli.authorize.client_label") %></p>
-        <p class="mt-1 font-mono text-[13px] text-zinc-800" data-test="cli-authorize-client"><%= @grant.client_name.presence || t("cli.authorize.unknown_client") %></p>
+        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("cli.authorize.client_label") %></p>
+        <p class="mt-1 font-mono text-[13px] text-zinc-800 dark:text-zinc-200" data-test="cli-authorize-client"><%= @grant.client_name.presence || t("cli.authorize.unknown_client") %></p>
       </div>
 
       <%= form_with url: cli_authorize_approve_path(user_code: @grant.user_code), method: :post, data: { test: "cli-authorize-form" } do %>
         <fieldset class="border-0 p-0 m-0">
-          <legend class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 mb-2"><%= t("cli.authorize.organization_label") %> <span class="text-red-500">*</span></legend>
+          <legend class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-2"><%= t("cli.authorize.organization_label") %> <span class="text-red-500 dark:text-red-400">*</span></legend>
           <div class="space-y-2">
             <% @organizations.each_with_index do |org, i| %>
-              <label class="flex items-center gap-2.5 rounded-md border border-stone-200 px-3 py-2 cursor-pointer hover:bg-stone-50" data-test="cli-authorize-org-<%= org.id %>">
-                <input type="radio" name="organization_id" value="<%= org.id %>" <%= "checked" if i.zero? %> class="text-indigo-600 focus:ring-indigo-200">
-                <span class="text-[13px] text-zinc-900"><%= org.name %></span>
+              <label class="flex items-center gap-2.5 rounded-md border border-stone-200 dark:border-zinc-800 px-3 py-2 cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-800" data-test="cli-authorize-org-<%= org.id %>">
+                <input type="radio" name="organization_id" value="<%= org.id %>" <%= "checked" if i.zero? %> class="text-indigo-600 dark:text-indigo-400 focus:ring-indigo-200 dark:focus:ring-indigo-500/40">
+                <span class="text-[13px] text-zinc-900 dark:text-zinc-100"><%= org.name %></span>
               </label>
             <% end %>
           </div>
-          <p class="mt-2 text-[11.5px] text-gray-500"><%= t("cli.authorize.organization_hint") %></p>
+          <p class="mt-2 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("cli.authorize.organization_hint") %></p>
         </fieldset>
 
         <div class="mt-5">
@@ -39,7 +48,7 @@
         </div>
       <% end %>
 
-      <%= button_to t("cli.authorize.deny"), cli_authorize_deny_path(user_code: @grant.user_code), method: :post, class: "w-full inline-flex items-center justify-center h-[34px] px-3 rounded-md text-[13px] font-medium text-gray-600 bg-white border border-stone-200 hover:bg-stone-50", data: { test: "cli-authorize-deny" } %>
+      <%= button_to t("cli.authorize.deny"), cli_authorize_deny_path(user_code: @grant.user_code), method: :post, class: "w-full inline-flex items-center justify-center h-[34px] px-3 rounded-md text-[13px] font-medium text-gray-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800", data: { test: "cli-authorize-deny" } %>
     </div>
   </div>
 <% end %>

@@ -76,7 +76,7 @@ module Api
       end
 
       def unauthorized_ingest
-        render_error("R401-AUTH-001", "Credenziale di ingest mancante o non valida", status: :unauthorized)
+        render_error("R401-AUTH-001", "Missing or invalid ingest credential", status: :unauthorized)
       end
     end
   end

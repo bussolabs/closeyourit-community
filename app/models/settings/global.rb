@@ -65,6 +65,13 @@ module Settings
               presence: { if: -> { ai_provider == "custom" && ai_embedding_model.present? } },
               allow_nil: true
 
+    # Wait before production in whole hours (Agents::Workflows::ProductionHold, CYRA-1000). Unlike
+    # retention it is OPTIONAL: empty means the system value of 2 hours.
+    validates :production_hold_hours,
+              numericality: { only_integer: true, in: Agents::Workflows::ProductionHold::HOURS_RANGE,
+                              message: :production_hold_hours },
+              allow_nil: true
+
     # Monthly AI chat tokens per organization (CYRA-914); empty = no cap.
     validates :ai_org_monthly_token_cap, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
 

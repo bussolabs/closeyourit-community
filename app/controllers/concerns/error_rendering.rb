@@ -7,7 +7,7 @@ module ErrorRendering
   included do
     # Risorsa non trovata (anche anti-BOLA: id di un'altra org/progetto → find solleva qui).
     rescue_from ActiveRecord::RecordNotFound do
-      render_error("R404-SYSTEM-001", "Risorsa non trovata", status: :not_found)
+      render_error("R404-SYSTEM-001", "Resource not found", status: :not_found)
     end
 
     # CYRA-718 — le tre eccezioni che il framework solleva PRIMA che il codice di dominio possa dire
@@ -22,18 +22,18 @@ module ErrorRendering
     # obbligherebbe chi legge la risposta a sapere PRIMA quale dei due percorsi l'ha prodotta.
     rescue_from ActiveRecord::RecordInvalid do |exception|
       errors = exception.record&.errors
-      render_error("R422-SYSTEM-001", errors&.full_messages.to_a.to_sentence.presence || "Validazione fallita",
+      render_error("R422-SYSTEM-001", errors&.full_messages.to_a.to_sentence.presence || "Validation failed",
                    status: :unprocessable_content, details: errors&.to_hash || {})
     end
 
     rescue_from ActionController::ParameterMissing do |exception|
-      render_error("R422-SYSTEM-002", "Parametro mancante", status: :unprocessable_content,
+      render_error("R422-SYSTEM-002", "Missing parameter", status: :unprocessable_content,
                    details: { param: exception.param.to_s })
     end
 
     # Il corpo non è JSON valido: nessun parametro è leggibile, quindi non c'è nulla da validare.
     rescue_from ActionDispatch::Http::Parameters::ParseError do
-      render_error("R400-SYSTEM-001", "Corpo della richiesta non leggibile", status: :bad_request)
+      render_error("R400-SYSTEM-001", "Unreadable request body", status: :bad_request)
     end
   end
 

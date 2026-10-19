@@ -9,7 +9,7 @@ module Api
 
       def create
         version = params[:version].to_s.strip
-        return render_error("R422-RELEASE-002", "version obbligatoria", status: :unprocessable_content) if version.blank?
+        return render_error("R422-RELEASE-002", "version is required", status: :unprocessable_content) if version.blank?
 
         result = ::Projects::Releases::ReportDeployFailure.call(project: Current.project, version:,
                                                                 reason: params[:reason], run_url: params[:run_url])

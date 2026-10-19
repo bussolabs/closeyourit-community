@@ -9,7 +9,7 @@ module Api
     # ActiveStorage nel job. Gli eventi rrweb sono opachi (masking PII già applicato dal client).
     class ReplaysController < Api::V1::IngestBaseController
       rescue_from ActionDispatch::Http::Parameters::ParseError do
-        render_error("R422-REPLAY-001", "Chunk di replay malformato", status: :unprocessable_content)
+        render_error("R422-REPLAY-001", "Malformed replay chunk", status: :unprocessable_content)
       end
 
       def create
@@ -21,12 +21,12 @@ module Api
 
         list = chunks
         if list.size > Replays::Constants::MAX_BATCH
-          return render_error("R413-REPLAY-002", "Batch di chunk troppo grande", status: :content_too_large)
+          return render_error("R413-REPLAY-002", "Chunk batch too large", status: :content_too_large)
         end
 
         accepted = list.count { |chunk| valid_chunk?(chunk) }
         if list.any? && accepted.zero?
-          return render_error("R422-REPLAY-004", "Nessun chunk valido nel batch", status: :unprocessable_content)
+          return render_error("R422-REPLAY-004", "No valid chunk in the batch", status: :unprocessable_content)
         end
 
         Replays::IngestJob.perform_later(project_id: Current.project.id, payload: list)
@@ -37,7 +37,7 @@ module Api
 
       # Override del guard anti-BOLA centralizzato (TokenAuthentication): codice di dominio.
       def render_project_scope_mismatch
-        render_error("R404-REPLAY-001", "Progetto non trovato", status: :not_found)
+        render_error("R404-REPLAY-001", "Project not found", status: :not_found)
       end
 
       # Body = singolo chunk o array (Rails wrappa un array top-level in params["_json"]).

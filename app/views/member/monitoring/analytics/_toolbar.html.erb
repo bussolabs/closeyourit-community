@@ -1,5 +1,5 @@
 <%# locals: projects:, project:, environments:, environment:, range:, show_ranges:, include_automated:,
-    share_link:
+    share_link:, filters:
     Toolbar dashboard: progetto + environment (GET form), range (link che preservano il resto) e
     condivisione pubblica.
     CYRA-449 — resa anche sopra la schermata di collegamento: senza, chi capitava su un progetto mai
@@ -65,4 +65,18 @@
       <% end %>
     </div>
   </div>
+  <%# CYRA-1077 — the active click-to-filter chips live in the toolbar panel, not on the page ground. %>
+  <% if filters.any? %>
+    <div class="flex items-center flex-wrap gap-2 px-4 py-2.5 border-t border-stone-200 dark:border-zinc-800" data-test="analytics-active-filters">
+      <span class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.filters.active") %>:</span>
+      <% filters.each do |column, value| %>
+        <%= link_to analytics_unfilter_url(column),
+              class: "inline-flex items-center gap-1.5 h-[26px] px-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-[12px] text-zinc-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800",
+              data: { test: "analytics-filter-chip" } do %>
+          <span><span class="text-gray-500 dark:text-zinc-400"><%= analytics_filter_label(column) %>:</span> <%= value %></span>
+          <%= render Ui::IconComponent.new(name: "x", class: "text-[10px] text-gray-400 dark:text-zinc-500") %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
 </div>

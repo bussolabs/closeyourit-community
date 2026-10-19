@@ -9,13 +9,13 @@ module Api
       # The byte cap lives in IngestBaseController (CYRA-112, CYRA-1039); the cap on the NUMBER of
       # samples (R413-METRIC-004) stays in #create: counting the items needs the parse anyway.
       rescue_from ActionDispatch::Http::Parameters::ParseError do
-        render_error("R422-METRIC-001", "Metrica malformata", status: :unprocessable_content)
+        render_error("R422-METRIC-001", "Malformed metric", status: :unprocessable_content)
       end
 
       def create
         list = samples
         if list.size > Metrics::Constants::MAX_BATCH
-          return render_error("R413-METRIC-004", "Batch di metriche troppo grande", status: :content_too_large)
+          return render_error("R413-METRIC-004", "Metric batch too large", status: :content_too_large)
         end
 
         # UN solo job per richiesta (CYRA-43): il batch raggruppa per fingerprint e applica gli

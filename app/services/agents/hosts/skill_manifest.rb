@@ -16,7 +16,7 @@ module Agents
         bundle = @organization.skill_bundle
         if bundle.nil?
           return Result.err(AppError.new(
-            "Nessuno skill bundle pinnato per l'organizzazione",
+            "No skill bundle pinned for the organization",
             code: "R404-AGENT-004", status: :not_found
           ))
         end

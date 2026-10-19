@@ -1,32 +1,31 @@
 <% content_for :title, t("member.monitoring.analytics.title") %>
 
-<% if @project %>
-  <%# Realtime via cable: al nuovo pageview Analytics::Broadcast fa broadcast_refresh_to sullo stream
-      del progetto → ogni viewer ri-fetcha la PROPRIA show (range/environment/filtri) e morpha il DOM,
-      così header/grafico/tabelle/chip diventano live. Sostituisce il polling turbo-frame a 30s. %>
-  <%= turbo_refreshes_with method: :morph, scroll: :preserve %>
-  <%= turbo_stream_from Realtime::Streams.analytics(@project) %>
-<% end %>
+<%# Live: on a new pageview Analytics::Broadcast refreshes the project's stream and every viewer
+    morphs its own page (range, environment, filters). %>
+<%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+<%= turbo_stream_from Realtime::Streams.analytics(@project) %>
 
 <div class="p-7 space-y-6" data-test="member-analytics">
   <%= render Ui::PageHeaderComponent.new(
-        title: t("member.monitoring.analytics.title"),
-        breadcrumb: [ { label: t("member.monitoring.analytics.title") } ],
+        title: @project.name,
+        breadcrumb: [ { label: t("member.monitoring.analytics.title"), href: member_monitoring_analytics_path(range: @range) },
+                      { label: @project.name } ],
         counts_test_id: "analytics-counts") do |h| %>
-    <% if @project %>
-      <% h.with_counts do %>
-        <%# CYRA-500 — ogni numero porta la variazione sul periodo precedente: «come va il mio sito» è
-            una domanda comparativa, e prima la pagina rispondeva solo «quanto». %>
-        <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.pageviews"), value: @pageviews_count,
-              trend: analytics_trend(@pageviews_count, @previous&.dig(:pageviews)), test_id: "analytics-count-pageviews") %>
-        <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.visitors"), value: @visitors_count, value_color: :indigo,
-              trend: analytics_trend(@visitors_count, @previous&.dig(:visitors)), test_id: "analytics-count-visitors") %>
-        <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.bounce"), value: analytics_bounce_label(@bounce_rate),
-              trend: analytics_trend(@bounce_rate, @previous&.dig(:bounce_rate), lower_is_better: true), test_id: "analytics-count-bounce") %>
-        <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.duration"), value: analytics_duration_label(@visit_duration),
-              trend: analytics_trend(@visit_duration, @previous&.dig(:visit_duration), lower_is_better: false), test_id: "analytics-count-duration") %>
-        <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.views_per_visit"), value: @views_per_visit,
-              trend: analytics_trend(@views_per_visit, @previous&.dig(:views_per_visit), lower_is_better: false), test_id: "analytics-count-vpv") %>
+    <% h.with_counts do %>
+      <%# CYRA-500 — each number carries its change on the previous period; the caption saying which
+          period closes the row, so it stays with the numbers in a collapsed header too (CYRA-1077). %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.pageviews"), value: @pageviews_count,
+            trend: analytics_trend(@pageviews_count, @previous&.dig(:pageviews)), test_id: "analytics-count-pageviews") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.visitors"), value: @visitors_count, value_color: :indigo,
+            trend: analytics_trend(@visitors_count, @previous&.dig(:visitors)), test_id: "analytics-count-visitors") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.bounce"), value: analytics_bounce_label(@bounce_rate),
+            trend: analytics_trend(@bounce_rate, @previous&.dig(:bounce_rate), lower_is_better: true), test_id: "analytics-count-bounce") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.duration"), value: analytics_duration_label(@visit_duration),
+            trend: analytics_trend(@visit_duration, @previous&.dig(:visit_duration), lower_is_better: false), test_id: "analytics-count-duration") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.views_per_visit"), value: @views_per_visit,
+            trend: analytics_trend(@views_per_visit, @previous&.dig(:views_per_visit), lower_is_better: false), test_id: "analytics-count-vpv") %>
+      <% if @previous.present? %>
+        <span class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="analytics-comparison"><%= t("member.monitoring.analytics.comparison.vs_previous") %></span>
       <% end %>
     <% end %>
     <%# CYRA-584 — questa pagina dice QUANTE visite e su quali pagine; le registrazioni dicono cosa ha
@@ -36,20 +35,18 @@
         Il nome è quello della voce del menu — un nome solo — e porta con sé il progetto aperto. %>
     <% h.with_actions do %>
       <%= render Ui::ButtonComponent.new(label: t("member.nav.replays"),
-            href: member_monitoring_replays_path(@project ? { project_id: @project.id } : {}),
+            href: member_monitoring_replays_path(project_id: @project.id),
             variant: :secondary, size: :sm, icon: "film", test_id: "analytics-replays-link") %>
     <% end %>
   <% end %>
 
-  <% if @project.nil? %>
-    <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.analytics.empty"), body: t("member.monitoring.analytics.empty_body"), icon: "chart-line", framed: true, test_id: "analytics-empty") %>
   <%# CYRA-449 — il sito non ha MAI mandato una visita: al posto di quattordici riquadri vuoti, come
       si collega. È l'altra faccia di «Nessun dato nel periodo», e confonderle faceva concludere che
       la funzione fosse rotta. %>
-  <% elsif !@ever_received %>
+  <% if !@ever_received %>
     <%= render "toolbar", projects: @projects, project: @project, environments: @environments,
           environment: @environment, range: @range, show_ranges: false,
-          include_automated: @include_automated, share_link: @share_link %>
+          include_automated: @include_automated, share_link: @share_link, filters: {} %>
 
     <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="analytics-onboarding"
          data-controller="clipboard" data-clipboard-copied-value="<%= t("member.monitoring.analytics.onboarding.copied") %>">
@@ -121,35 +118,13 @@
   <% else %>
     <%= render "toolbar", projects: @projects, project: @project, environments: @environments,
           environment: @environment, range: @range, show_ranges: true,
-          include_automated: @include_automated, share_link: @share_link %>
-
-    <% if @filters.any? %>
-      <div class="flex items-center flex-wrap gap-2" data-test="analytics-active-filters">
-        <span class="text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.filters.active") %>:</span>
-        <% @filters.each do |column, value| %>
-          <%= link_to analytics_unfilter_url(column),
-                class: "inline-flex items-center gap-1.5 h-[26px] px-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 text-[12px] text-zinc-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800",
-                data: { test: "analytics-filter-chip" } do %>
-            <span><span class="text-gray-500 dark:text-zinc-400"><%= analytics_filter_label(column) %>:</span> <%= value %></span>
-            <%= render Ui::IconComponent.new(name: "x", class: "text-[10px] text-gray-400 dark:text-zinc-500") %>
-          <% end %>
-        <% end %>
-      </div>
-    <% end %>
+          include_automated: @include_automated, share_link: @share_link, filters: @filters %>
 
     <%# Blocco realtime (visitatori online + sparkline 30min): reso inline e aggiornato dal
         page-refresh Turbo su nuovo pageview — non più turbo-frame in polling a 30s. %>
     <div data-test="analytics-realtime">
       <%= render "realtime", count: @realtime_count, series: @realtime_series %>
     </div>
-
-    <%# Le variazioni stanno accanto ai numeri, in cima: una riga a parte le allontanava proprio da
-        ciò che descrivono. Qui resta la didascalia che dice rispetto a quale periodo. %>
-    <% if @previous.present? %>
-      <p class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="analytics-comparison">
-        <%= t("member.monitoring.analytics.comparison.vs_previous") %>
-      </p>
-    <% end %>
 
     <%= render "chart", buckets: @buckets, range: @range %>
 

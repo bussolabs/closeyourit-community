@@ -2,38 +2,68 @@
 
 module Agents
   module Workflows
-    # Il freno prima della produzione (CYRA-871): un rilascio parte solo dopo WINDOW dalla prova dello
-    # staging, e non parte se nel frattempo è comparso in staging un errore nuovo ancora aperto.
-    # Risolvere o ignorare quell'errore toglie il freno: è la leva di chi decide.
+    # The hold before production (CYRA-871): a release starts only once the wait after the staging check
+    # is over, and never while a new, still open staging error appeared since. Resolving or ignoring
+    # that error lifts the hold.
     #
-    # Come ProductionLock, il predicato è scritto in SQL per la coda e in Ruby per la presa in carico,
-    # sulla stessa relazione di errori: una copia sola di cosa vuol dire «errore nuovo in staging».
+    # The wait (CYRA-1000) is whole hours, picked on project, organization or platform: the closest
+    # level wins, as for retention, else DEFAULT_HOURS. 0 skips the wait, never the error check. It is
+    # read at check time and never stored, so a change applies at once to releases already waiting.
+    #
+    # Like ProductionLock, the predicate is SQL for the queue and Ruby for the claim, over one relation.
     class ProductionHold
-      WINDOW = 2.hours
+      DEFAULT_HOURS = 2
+      HOURS_RANGE = 0..72
       STAGING = "staging"
 
-      # Vero quando il freno è libero, per la riga esterna di agents_workflows + ticketing_tickets.
-      def self.released_sql(now:)
-        errors = new_staging_errors(project: Ticketing::Ticket.arel_table[:project_id],
-                                    since: Agents::Workflow.arel_table[:closer_staging_verified_at])
-        ActiveRecord::Base.sanitize_sql_array([ <<~SQL.squish, now - WINDOW ])
-          agents_workflows.closer_staging_verified_at <= ?
-          AND NOT EXISTS (#{errors.select(1).to_sql})
-        SQL
+      # The project's wait in hours: nil inherits, 0 is a choice. Callers rendering many rows pass the
+      # organization and the platform settings already loaded.
+      def self.hours(project, organization: project.organization, global: Settings::Global.instance)
+        [ project.production_hold_hours, organization&.production_hold_hours ].compact.first || platform_hours(global)
       end
 
-      # Perché la produzione aspetta, o nil a freno libero.
+      # What a blank organization inherits: the platform's choice, else the system value.
+      def self.platform_hours(global = Settings::Global.instance) = global.production_hold_hours || DEFAULT_HOURS
+
+      def self.window(...) = hours(...).hours
+
+      # True when the hold is released, for the outer agents_workflows + ticketing_tickets row.
+      # `window` is the project's: the queue runs on one project at a time.
+      def self.released_sql(now:, window:)
+        verified = if window.positive?
+          ActiveRecord::Base.sanitize_sql_array([ "agents_workflows.closer_staging_verified_at <= ?", now - window ])
+        else
+          "agents_workflows.closer_staging_verified_at IS NOT NULL"
+        end
+        "#{verified} AND NOT #{staging_errors_sql}"
+      end
+
+      # True when a new, still open staging error appeared after the staging check.
+      def self.staging_errors_sql
+        errors = new_staging_errors(project: Ticketing::Ticket.arel_table[:project_id],
+                                    since: Agents::Workflow.arel_table[:closer_staging_verified_at])
+        "EXISTS (#{errors.select(1).to_sql})"
+      end
+
+      # Why production waits, or nil when the hold is released.
       def self.reason(workflow, now:)
         verified_at = workflow.closer_staging_verified_at
         return if verified_at.nil?
-        return { reason: "staging_soak", until: verified_at + WINDOW } if now < verified_at + WINDOW
+
+        wait = window(workflow.ticket.project)
+        return { reason: "staging_soak", until: verified_at + wait } if soaking?(verified_at, now:, window: wait)
 
         group_id = new_staging_errors(project: workflow.ticket.project_id, since: verified_at)
                    .order(:first_seen_at).pick(:id)
         { reason: "staging_errors", error_group_id: group_id } if group_id
       end
 
-      # `project` e `since` sono una colonna della riga esterna (coda) o un valore (presa in carico).
+      # With 0 hours there is no wait and no time to show: only the error check remains.
+      def self.soaking?(verified_at, now:, window:)
+        window.positive? && now < verified_at + window
+      end
+
+      # `project` and `since` are a column of the outer row (queue) or a value (claim).
       def self.new_staging_errors(project:, since:)
         groups = Errors::Group.arel_table
         events = Errors::Event.arel_table

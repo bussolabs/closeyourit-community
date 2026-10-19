@@ -80,7 +80,7 @@ module Cli
         return unless require_owner!
 
         asset = assets.find(params[:id])
-        return render_error("R422-SECRETFILE-007", "Archiviare l'asset prima del purge", status: :unprocessable_content) unless asset.archived?
+        return render_error("R422-SECRETFILE-007", "Archive the asset before purging it", status: :unprocessable_content) unless asset.archived?
 
         ::Secrets::Assets::RecordEvent.call(action: "purged", asset:, actor: Current.account,
                                              metadata: { name: asset.name, versions: asset.versions.count })
@@ -99,7 +99,7 @@ module Cli
         return nil if params[:environment].blank?
         env = Current.organization.environments.find_by(id: params[:environment]) || Current.organization.environments.find_by(code: params[:environment].to_s.downcase)
         return env if env
-        render_error("R422-SECRETFILE-006", "Environment non appartenente all'organizzazione", status: :unprocessable_content)
+        render_error("R422-SECRETFILE-006", "Environment does not belong to the organization", status: :unprocessable_content)
         nil
       end
 

@@ -10,6 +10,9 @@ it:
       approve: "Autorizza"
       authorizing: "Autorizzazione…"
       deny: "Nega"
+      enter_lead: "Scrivi il codice che vedi nel terminale."
+      enter_label: "Codice"
+      enter_submit: "Continua"
       no_grant_title: "Codice non valido"
       no_grant_lead: "Questo codice di autorizzazione è sconosciuto o scaduto. Rilancia il login dal terminale."
       approved_title: "Dispositivo autorizzato"
@@ -23,3 +26,5 @@ it:
       errors:
         no_organization: "Scegli un'organizzazione da autorizzare."
         impersonating: "Non puoi autorizzare una CLI mentre impersoni un altro account."
+        invalid_organization: "Non fai parte di questa organizzazione."
+        grant_expired: "Questa richiesta è scaduta o ha già avuto risposta. Rifai il login dal terminale."

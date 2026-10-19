@@ -177,6 +177,59 @@ RSpec.describe "Member ticket automation actions", type: :request do
     expect(response.body).to include(I18n.t("member.tickets.automation.blocked.body_held", name: "Ada Rossi"))
   end
 
+  # CYRA-1030 — «Rimanda allo staging»: solo su una lavorazione ferma in produzione, solo per il CTO.
+  describe "rimanda allo staging" do
+    before do
+      create(:github_repository, project:)
+      pronta_per!(workflow, "closer_production")
+      workflow.update!(closer_production_started_at: Time.current)
+    end
+
+    def ferma!(phase)
+      Agents::Workflows::Block.call(workflow:, phase:, kind: "agent_blocked", reason: "agent_blocked: rotto")
+    end
+
+    # Scenario 1 — DOD-1, DOD-2.
+    it "il pulsante c'è sulla lavorazione ferma in produzione e la rimanda alla prova" do
+      ferma!("closer_production")
+
+      get member_ticket_path(ticket, tab: "automation")
+      expect(response.body).to include('data-test="automation-send-back"')
+
+      post member_ticket_automation_staging_send_back_path(ticket)
+
+      expect(response).to redirect_to(member_ticket_path(ticket, tab: "automation"))
+      expect(flash[:notice]).to eq(I18n.t("member.tickets.automation.blocked.sent_back"))
+      expect(workflow.reload).to have_attributes(blocked_at: nil, ready_execution_phase: "closer_staging")
+    end
+
+    # Scenario 5 — DOD-1, DOD-6.
+    it "non c'è su una lavorazione ferma altrove, e la richiesta è rifiutata" do
+      ferma!("closer_staging")
+
+      get member_ticket_path(ticket, tab: "automation")
+      expect(response.body).to include('data-test="automation-retry"')
+      expect(response.body).not_to include('data-test="automation-send-back"')
+
+      post member_ticket_automation_staging_send_back_path(ticket)
+      expect(flash[:alert]).to eq("La lavorazione non è ferma in produzione")
+      expect(workflow.reload.blocked_phase).to eq("closer_staging")
+    end
+
+    # Scenario 4 — DOD-1, DOD-6.
+    it "non c'è per chi non è il CTO, e la richiesta è rifiutata" do
+      ferma!("closer_production")
+      organization.update!(cto: create(:account).tap { |account| create(:membership, account:, organization:) })
+
+      get member_ticket_path(ticket, tab: "automation")
+      expect(response.body).not_to include('data-test="automation-send-back"')
+
+      post member_ticket_automation_staging_send_back_path(ticket)
+      expect(flash[:alert]).to be_present
+      expect(workflow.reload.blocked_phase).to eq("closer_production")
+    end
+  end
+
   # CYRA-675 — la stessa decisione della home, presa dalla scheda: chi apre il ticket per capire non
   # deve tornare in prima pagina per chiedere se quel lavoro serve ancora.
   describe "rivalutazione" do

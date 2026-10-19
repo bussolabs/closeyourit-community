@@ -93,6 +93,14 @@ module AnalyticsHelper
     { label: analytics_trend_label(delta), color: analytics_trend_color(delta, lower_is_better) }
   end
 
+  # The same change as a small tag beside a number in a table cell (index of sites, CYRA-1077).
+  def analytics_trend_tag(current, previous)
+    trend = analytics_trend(current, previous)
+    return if trend.nil?
+
+    tag.span(trend[:label], class: "ml-1 text-[10.5px] #{Ui::StatLabelComponent::VALUE_COLORS.fetch(trend[:color])}")
+  end
+
   def analytics_trend_label(delta)
     return t("member.monitoring.analytics.comparison.flat") if delta.zero?
 

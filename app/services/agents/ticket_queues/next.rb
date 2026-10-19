@@ -44,7 +44,7 @@ module Agents
       end
 
       def project_not_found
-        Result.err(AppError.new("Progetto non trovato", code: "R404-AGENT-002", status: :not_found))
+        Result.err(AppError.new("Project not found", code: "R404-AGENT-002", status: :not_found))
       end
     end
   end

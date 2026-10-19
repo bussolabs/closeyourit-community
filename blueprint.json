@@ -3400,10 +3400,11 @@
       "level": 2,
       "parent": "area_analytics",
       "kind": "page",
-      "summary": "Un progetto per volta: visite, visitatori, grafico, pagine, provenienze, canali, paesi, dispositivi, obiettivi e visitatori online.",
+      "summary": "Si apre sull'elenco dei siti con i loro numeri (visite, visitatori, online, andamento); un sito apre il suo cruscotto: grafico, pagine, provenienze, canali, paesi, dispositivi, obiettivi e visitatori online.",
       "files": [
         "app/controllers/member/monitoring/analytics_controller.rb",
         "app/views/member/monitoring/analytics/**",
+        "app/services/analytics/overview.rb",
         "app/services/analytics/query.rb",
         "app/services/analytics/channel.rb"
       ]
@@ -5664,7 +5665,7 @@
       "level": 3,
       "parent": "agt_flow_claim",
       "kind": "step",
-      "summary": "La macchina deve essere viva, certificata e adatta alla fase. In produzione va un rilascio alla volta per repository, e un ticket rimandato resta fermo fino alla sua ora.",
+      "summary": "La macchina deve essere viva, certificata e adatta alla fase. In produzione va un rilascio alla volta per repository, dopo l'attesa in staging scelta su progetto, organizzazione o piattaforma e senza errori nuovi; un ticket rimandato resta fermo fino alla sua ora.",
       "files": [
         "app/services/agents/hosts/eligibility.rb",
         "app/services/agents/hosts/project_scope.rb",
@@ -9542,7 +9543,7 @@
       "level": 3,
       "parent": "acc_flow_cli_login",
       "kind": "step",
-      "summary": "Chi è loggato vede la richiesta, sceglie una sua organizzazione e approva o rifiuta. Mentre si impersona qualcuno l'approvazione è vietata.",
+      "summary": "Chi è loggato vede la richiesta, sceglie una sua organizzazione e approva o rifiuta. Se l'indirizzo non ha il codice, la pagina lo chiede. Mentre si impersona qualcuno l'approvazione è vietata.",
       "files": [
         "app/controllers/cli/authorizations_controller.rb",
         "app/services/accounts/devices/approve.rb",

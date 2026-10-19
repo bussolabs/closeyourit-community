@@ -13,7 +13,7 @@ module Cli
 
         def show
           bundle = Current.organization.skill_bundle
-          return render_error("R404-AGENT-004", "Nessuno skill bundle pinnato", status: :not_found) if bundle.nil?
+          return render_error("R404-AGENT-004", "No skill bundle pinned", status: :not_found) if bundle.nil?
 
           render_ok(serialize(bundle))
         end
@@ -40,7 +40,7 @@ module Cli
         def require_view
           return true if authorization.can?("agents.view") || authorization.can?("agents.manage")
 
-          render_error("R403-CLIAUTH-002", "Permesso negato", status: :forbidden)
+          render_error("R403-CLIAUTH-002", "Permission denied", status: :forbidden)
           false
         end
 

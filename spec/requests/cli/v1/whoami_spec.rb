@@ -77,7 +77,7 @@ RSpec.describe "Cli::V1::Whoami", type: :request do
 
     expect(response).to have_http_status(:unauthorized)
     expect(response.parsed_body["error"]["code"]).to eq("R401-CLIAUTH-002")
-    expect(response.parsed_body["error"]["message"]).to include("scaduto")
+    expect(response.parsed_body["error"]["message"]).to include("expired")
     expect(response.parsed_body["error"]["details"]["expired_at"]).to be_present
   end
 

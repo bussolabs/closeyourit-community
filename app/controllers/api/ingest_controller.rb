@@ -57,7 +57,7 @@ module Api
       payload = parse_json(raw)
       return payload_too_large if payload == :too_large
       # un body JSON valido ma non-oggetto (es. `42`, `[..]`) non è un evento: R422, non un 500 da TypeError.
-      return render_error("R422-INGEST-001", "Evento malformato", status: :unprocessable_content) unless Errors::Ingest::EventPayload.valid?(payload)
+      return render_error("R422-INGEST-001", "Malformed event", status: :unprocessable_content) unless Errors::Ingest::EventPayload.valid?(payload)
 
       enqueue(payload)
       render json: { id: payload["event_id"] }
@@ -164,7 +164,7 @@ module Api
     end
 
     def payload_too_large
-      render_error("R413-INGEST-001", "Payload troppo grande", status: :content_too_large)
+      render_error("R413-INGEST-001", "Payload too large", status: :content_too_large)
     end
   end
 end

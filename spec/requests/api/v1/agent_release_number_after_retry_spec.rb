@@ -181,4 +181,67 @@ RSpec.describe "CYRA-1047 — il numero di prova dopo Riprova", type: :request d
     expect(incarico.fetch("release")).to eq("version" => "v0.89.0", "sha" => sha)
     expect(provato.reload.version).to eq("v0.89.0-beta.1")
   end
+
+  # CYRA-1030 — «Rimanda allo staging»: fermo in produzione per un difetto nel codice preparato, la
+  # prova riparte col numero di prova successivo e la produzione pubblica il codice della nuova prova.
+  it "rimandata allo staging, la prova prende il numero successivo e la produzione il codice nuovo" do
+    pronta_per!(workflow, "closer_production")
+    vecchio_sha = commit_verificato!(workflow)
+    assigned_version(workflow, "closer_staging", version: "v0.89.0-beta.1")
+    prima = ferma!("run-1", "closer_production")
+    expect(prima.fetch("release")).to eq("version" => "v0.89.0", "sha" => vecchio_sha)
+
+    allow_n_plus_one { post member_ticket_automation_staging_send_back_path(ticket) }
+    expect(flash[:notice]).to eq(I18n.t("member.tickets.automation.blocked.sent_back"))
+    expect(Agents::Workflows::ProductionLock.locked?(project:)).to be(false)
+
+    # Scenario 3 — DOD-4: stesso numero definitivo, numero di prova successivo.
+    prova = presa_in_carico("run-2")
+    expect(prova.fetch("execution_phase")).to eq("closer_staging")
+    expect(prova.fetch("release")).to eq("version" => "v0.89.0-beta.2", "sha" => nil)
+
+    nuovo_sha = "b" * 40
+    esito = consegna(prova, state: "staging-released", tag: "v0.89.0-beta.2", commit: nuovo_sha)
+    expect(esito).to have_http_status(:ok)
+    rilascia(prova)
+
+    # R-1 — DOD-2: finché la nuova prova non è verificata la produzione non è proposta.
+    expect(workflow.reload.ready_execution_phase).to be_nil
+
+    # La verifica dell'unione (Staging::VerifyMerge) la dà per vista, oltre l'attesa prima della produzione.
+    workflow.update!(closer_staging_verified_at: (Agents::Workflows::ProductionHold::DEFAULT_HOURS + 1).hours.ago)
+
+    # DOD-5: la produzione pubblica il punto di codice della nuova prova, con lo stesso numero.
+    produzione = presa_in_carico("run-3")
+    expect(produzione.fetch("execution_phase")).to eq("closer_production")
+    expect(produzione.fetch("release")).to eq("version" => "v0.89.0", "sha" => nuovo_sha)
+  end
+
+  # CYRA-1030 — DOD-4 anche quando la fila liberata fa uscire prima un rilascio più alto: l'intestazione
+  # v0.89.0 è già sulla linea principale, quindi il numero definitivo non si rinumera.
+  it "rimandata allo staging, tiene il numero definitivo anche se nel frattempo esce un rilascio più alto" do
+    pronta_per!(workflow, "closer_production")
+    commit_verificato!(workflow)
+    assigned_version(workflow, "closer_staging", version: "v0.89.0-beta.1")
+    ferma!("run-1", "closer_production")
+
+    allow_n_plus_one { post member_ticket_automation_staging_send_back_path(ticket) }
+    expect(flash[:notice]).to eq(I18n.t("member.tickets.automation.blocked.sent_back"))
+
+    # Scenario 2: un'altra lavorazione passa avanti, unita e pubblicata come versione stabile.
+    rilasciata!("v0.90.0-beta.1")
+    versioni_uscite("v0.88.0", "v0.90.0")
+
+    prova = presa_in_carico("run-2")
+    expect(prova.fetch("release")).to eq("version" => "v0.89.0-beta.2", "sha" => nil)
+
+    nuovo_sha = "d" * 40
+    expect(consegna(prova, state: "staging-released", tag: "v0.89.0-beta.2", commit: nuovo_sha))
+      .to have_http_status(:ok)
+    rilascia(prova)
+    workflow.update!(closer_staging_verified_at: (Agents::Workflows::ProductionHold::DEFAULT_HOURS + 1).hours.ago)
+
+    produzione = presa_in_carico("run-3")
+    expect(produzione.fetch("release")).to eq("version" => "v0.89.0", "sha" => nuovo_sha)
+  end
 end

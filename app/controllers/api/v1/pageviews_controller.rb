@@ -11,7 +11,7 @@ module Api
     # Richieste da bot → 202 { accepted: 0 } senza enqueue (non è un errore del client).
     class PageviewsController < Api::V1::IngestBaseController
       rescue_from ActionDispatch::Http::Parameters::ParseError do
-        render_error("R422-PAGEVIEW-001", "Pageview malformato", status: :unprocessable_content)
+        render_error("R422-PAGEVIEW-001", "Malformed pageview", status: :unprocessable_content)
       end
 
       def create
@@ -23,12 +23,12 @@ module Api
 
         list = pageviews
         if list.size > Analytics::Constants::MAX_BATCH
-          return render_error("R413-PAGEVIEW-002", "Batch di pageview troppo grande", status: :content_too_large)
+          return render_error("R413-PAGEVIEW-002", "Pageview batch too large", status: :content_too_large)
         end
 
         accepted = list.count { |item| Analytics::Ingest::Record.acceptable?(item) }
         if list.any? && accepted.zero?
-          return render_error("R422-PAGEVIEW-004", "Nessun pageview valido nel batch", status: :unprocessable_content)
+          return render_error("R422-PAGEVIEW-004", "No valid pageview in the batch", status: :unprocessable_content)
         end
 
         identity = Analytics::Anonymize.call(
@@ -57,7 +57,7 @@ module Api
       # Override del guard anti-BOLA centralizzato (TokenAuthentication): codice di dominio
       # documentato R404-PAGEVIEW-001 invece del bare 404 di default.
       def render_project_scope_mismatch
-        render_error("R404-PAGEVIEW-001", "Progetto non trovato", status: :not_found)
+        render_error("R404-PAGEVIEW-001", "Project not found", status: :not_found)
       end
 
       # Body = singolo oggetto JSON o array (Rails wrappa un array top-level in params["_json"]).

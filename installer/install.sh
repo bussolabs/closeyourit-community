@@ -167,6 +167,9 @@ say "→ nightly backup at 03:00 (the last 7 are kept)"
 cat > /etc/cron.d/closeyourit <<'EOF'
 0 3 * * * root /usr/local/bin/closeyourit backup >> /var/log/closeyourit-backup.log 2>&1
 EOF
+# The first one now, so doctor is green from day one. A failure must not stop here: the password
+# below is printed only once.
+/usr/local/bin/closeyourit backup > /dev/null 2>&1 || say "  the first backup failed: run closeyourit backup to see why"
 
 say "→ updates from the app (Administration, Update now)"
 # Releases older than CYRA-1035 lack the command: the install goes on without the button.

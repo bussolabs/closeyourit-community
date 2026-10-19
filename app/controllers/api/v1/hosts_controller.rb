@@ -34,7 +34,7 @@ module Api
       def require_service_account!
         return if Current.account&.service?
 
-        render_error("R403-AGENT-002", "Solo un service account può registrare un host", status: :forbidden)
+        render_error("R403-AGENT-002", "Only a service account can register a host", status: :forbidden)
       end
 
       def host_params

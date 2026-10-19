@@ -17,7 +17,7 @@ module Cli
           snapshot = @ticket.work_context_snapshot
           # Nessuno snapshot finché il ticket non è mai stato preso in carico: 404, non una riga vuota.
           if snapshot.nil?
-            return render_error("R404-TICKET-004", "Il ticket non ha ancora uno snapshot del contesto di lavoro",
+            return render_error("R404-TICKET-004", "The ticket has no work context snapshot yet",
                                 status: :not_found)
           end
 

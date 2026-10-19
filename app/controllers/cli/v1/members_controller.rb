@@ -60,7 +60,7 @@ module Cli
           "Protected member edit denied (CLI) — account=#{Current.account&.id} " \
           "org=#{Current.organization&.id} target=#{@membership.id}"
         )
-        render_error("R403-CLIAUTH-002", "Permesso negato", status: :forbidden)
+        render_error("R403-CLIAUTH-002", "Permission denied", status: :forbidden)
       end
 
       # Privilegiato = owner dell'org o god (stessa nozione di VisibleScope.unscoped?).

@@ -151,13 +151,14 @@ Formato `R{HTTP_STATUS}-{DOMINIO}-{SEQ}` (rules/error-handling.md). Envelope API
 - `R409-ATTEMPT-006` — lavoro dichiarato «già consegnato» e riletto sul solo resoconto, ma nessun tentativo precedente della stessa lavorazione aveva fatto rileggere sul diff quel commit (`Agents::Attempts::DeliveryContract`, CYRA-1004). Senza questo controllo, un codice la cui rilettura era fallita tornava al giro dopo come «già consegnato» e andava avanti senza che nessuno lo avesse letto
 - `R409-ATTEMPT-005` — rilascio consegnato con un numero di versione (o un punto di codice) diverso da quello che il server aveva assegnato prima che la fase partisse (`Agents::Attempts::Deliver`, CYRA-621). Il numero non è un'etichetta qualsiasi: è il nome con cui una versione viene chiamata per sempre. Vale solo sui rami che hanno davvero pubblicato: uno stato che non rilascia niente non ha un numero da confrontare
 - `R409-WORKFLOW-008` — non è stato possibile leggere le versioni già uscite sul deposito, quindi non si sa da dove partire per calcolare la prossima (`Agents::Releases::NextVersion`, CYRA-621). Inventarne una rischierebbe di riusare un nome già pubblicato
-- `R409-WORKFLOW-009` — il numero calcolato è stato assegnato a un'altra lavorazione nel frattempo, due volte di fila (`Agents::Releases::Assign`, CYRA-621). La corsa la perde il database invece di GitHub a pubblicazione avvenuta
+- `R409-WORKFLOW-009` — il numero calcolato è stato assegnato a un'altra lavorazione nel frattempo, due volte di fila (`Agents::Releases::Assign`, CYRA-621; anche il numero di prova successivo di `Agents::Workflows::SendBackToStaging`, CYRA-1030). La corsa la perde il database invece di GitHub a pubblicazione avvenuta
 - `R409-WORKFLOW-010` — la versione definitiva non ha un punto di codice verificato da pubblicare (`Agents::Releases::Assign`, CYRA-621): senza, si pubblicherebbe «da qualche parte»
 - `R409-WORKFLOW-011` — il progetto non dichiara come si prova che un rilascio è vivo (`Agents::Probes::Bind`, CYRA-624): la lavorazione si ferma subito invece di aspettare un'ora per una prova che nessuno andrà mai a guardare
 - `R409-WORKFLOW-012` — manca la credenziale di sola lettura per il registro delle immagini (`Agents::Probes::Bind`, CYRA-625): la prova non si arma e chiama subito una persona, invece di aspettare un'ora in silenzio
 - `R409-WORKFLOW-013` — su un ticket già concluso non si decide, da nessuna parte (`Agents::Workflows::ConcludedTicketGate`, CYRA-630): la guardia vive nei service, così nessuna pagina può aggirarla
 - `R409-WORKFLOW-015` — «Ferma» su una lavorazione che non sta aspettando la produzione (`Agents::Workflows::HoldProduction`, CYRA-871)
 - `R409-WORKFLOW-016` — «Riavvia» su una lavorazione che non è annullata (`Agents::Workflows::Restart`, CYRA-1070)
+- `R409-WORKFLOW-017` — «Rimanda allo staging» su una lavorazione che non è ferma in produzione (`Agents::Workflows::SendBackToStaging`, CYRA-1030): ferma nella prova, già conclusa, o già rimandata da un clic precedente
 - `R403-WORKFLOW-003` — solo admin e owner riavviano una lavorazione annullata (`Agents::Workflows::Restart`, CYRA-1070)
 - `R422-REGISTRY-001` — nome del pacchetto o versione fuori dall'alfabeto della loro famiglia (`Agents::Registries::Client`, CYRA-625): si rifiuta PRIMA che parta qualunque chiamata, perché un nome che è a sua volta un indirizzo cambierebbe lo scaffale interrogato
 - `R502-REGISTRY-001` — il registro pubblico non ha risposto o ha risposto con un errore suo (CYRA-625): linea storta, si riprova
@@ -470,7 +471,7 @@ ogni aggiornamento successivo, e un claim che vi ricadesse riceve `R409-QUEUE-00
 - `R409-QUEUE-003` — claim escluso da un defer attivo per lo stesso agente (include reason/retry_at)
 - `R409-QUEUE-004` — defer rifiutato perché un lease attivo ha già reclamato il ticket
 - `R409-QUEUE-005` — TTL del claim diverso dal `timeout_seconds` autoritativo dell'agente
-- `R409-QUEUE-007` — il rilascio in produzione aspetta il freno (`Agents::Workflows::ProductionHold`, CYRA-871): 2 ore di prova dello staging, poi nessun errore nuovo aperto in staging. Il motivo è nei details (`staging_soak` con `until`, oppure `staging_errors` con `error_group_id`)
+- `R409-QUEUE-007` — il rilascio in produzione aspetta il freno (`Agents::Workflows::ProductionHold`, CYRA-871): l'attesa di prova dello staging scelta su progetto, organizzazione o piattaforma (CYRA-1000: da 0 a 72 ore, 2 se nessuno sceglie; con 0 non c'è attesa), poi nessun errore nuovo aperto in staging, controllo che resta anche a 0 ore. Il motivo è nei details (`staging_soak` con `until`, oppure `staging_errors` con `error_group_id`)
 - `R422-QUEUE-001` — selezione firmata mancante, malformata, alterata o scaduta
 - `R422-QUEUE-002` — claim senza una stima server-side mentre è attivo `max_daily_cost`
 - `R422-QUEUE-003` — ragione di defer assente o fuori dalla policy server-side

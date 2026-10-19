@@ -13,7 +13,7 @@ module UserTokenAuthentication
   def authenticate_user_token!
     token = resolve_user_bearer_token
     if token.nil?
-      return render_error("R401-CLIAUTH-001", "Token CLI mancante o non valido", status: :unauthorized)
+      return render_error("R401-CLIAUTH-001", "Missing or invalid CLI token", status: :unauthorized)
     end
 
     # Revocato PRIMA di scaduto: un token revocato e poi arrivato a scadenza è stato chiuso da
@@ -21,14 +21,14 @@ module UserTokenAuthentication
     # decisione dietro un fatto del calendario. Esito identico al token sconosciuto: chi revoca vuole
     # che quel segreto non dica più niente, nemmeno "esistevo".
     if token.revoked?
-      return render_error("R401-CLIAUTH-001", "Token CLI mancante o non valido", status: :unauthorized)
+      return render_error("R401-CLIAUTH-001", "Missing or invalid CLI token", status: :unauthorized)
     end
     # CYRA-717: scaduto e "non lo conosco" sono due notizie diverse per chi sta al terminale. Chi
     # presenta un segreto valido ma scaduto deve leggere che l'accesso è finito e va rifatto, non
     # andare a cercare un errore di copia-incolla che non c'è. Nessun leak: per arrivare qui bisogna
     # già possedere il segreto.
     if token.expired?
-      return render_error("R401-CLIAUTH-002", "Token CLI scaduto: esegui di nuovo l'accesso",
+      return render_error("R401-CLIAUTH-002", "CLI token expired: sign in again",
                           status: :unauthorized, details: { expired_at: token.expires_at.iso8601 })
     end
 

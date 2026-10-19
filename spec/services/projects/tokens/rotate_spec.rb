@@ -30,12 +30,14 @@ RSpec.describe Projects::Tokens::Rotate, type: :service do
   # CYRA-716 — ruotare non deve trasformare in silenzio una credenziale a termine in una perpetua.
   describe "scadenza (CYRA-716)" do
     it "il nuovo token eredita la DURATA del vecchio, non la sua data" do
-      a_termine = create(:project_token, project:, expires_at: 90.days.from_now)
+      # Exact seconds, not calendar days: across a daylight saving change 90.days is 90 days +/- 1 hour.
+      duration = 90 * 86_400
+      a_termine = create(:project_token, project:, expires_at: Time.current + duration)
 
       travel 10.days do
         nuovo = described_class.call(token: a_termine, host:).value[:new][:token]
 
-        expect(nuovo.expires_at).to be_within(1.minute).of(90.days.from_now)
+        expect(nuovo.expires_at).to be_within(1.minute).of(Time.current + duration)
       end
     end
 

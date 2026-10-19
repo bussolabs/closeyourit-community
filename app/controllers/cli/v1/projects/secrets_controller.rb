@@ -69,7 +69,7 @@ module Cli
           bundle = ::Secrets::Bundle.call(project: @project, environment: env, account: Current.account)
           plaintext = bundle.value[name]
           if plaintext.nil?
-            return render_error("R404-SECRET-001", "Secret inesistente", status: :not_found)
+            return render_error("R404-SECRET-001", "Secret not found", status: :not_found)
           end
 
           ::Secrets::RecordEvent.call(action: "read", project: @project, environment: env,
@@ -140,7 +140,7 @@ module Cli
           return unless require_unrestricted_environments
 
           repository = @project.github_repository
-          return render_error("R404-GITHUB-002", "Nessun repo GitHub agganciato al progetto", status: :not_found) if repository.nil?
+          return render_error("R404-GITHUB-002", "No GitHub repository linked to the project", status: :not_found) if repository.nil?
 
           preflight = ::Secrets::Github::Preflight.call(repository:)
           if preflight.err?
@@ -198,14 +198,14 @@ module Cli
           return true if authorization.can?("secrets.read", scope: @project) ||
                          authorization.can?("secrets.manage", scope: @project)
 
-          render_error("R403-CLIAUTH-002", "Permesso negato", status: :forbidden)
+          render_error("R403-CLIAUTH-002", "Permission denied", status: :forbidden)
           false
         end
 
         def require_secrets_read
           return true if authorization.can?("secrets.read", scope: @project)
 
-          render_error("R403-CLIAUTH-002", "Permesso negato", status: :forbidden)
+          render_error("R403-CLIAUTH-002", "Permission denied", status: :forbidden)
           false
         end
 
@@ -231,7 +231,7 @@ module Cli
         def render_environment_forbidden(environment = nil, name: nil)
           ::Secrets::RecordEvent.call(action: "denied", project: @project, environment: environment,
                                       actor: Current.account, name: name, channel: "cli")
-          render_error("R403-SECRET-001", "environment non consentito per questo account", status: :forbidden)
+          render_error("R403-SECRET-001", "environment not allowed for this account", status: :forbidden)
           nil
         end
 
@@ -251,7 +251,7 @@ module Cli
         def resolve_environment!
           env = resolve_environment(environment_ref)
           unless env
-            render_error("R422-SECRET-001", "environment richiesto o non dichiarato dal progetto",
+            render_error("R422-SECRET-001", "environment missing or not declared by the project",
                          status: :unprocessable_content)
             return nil
           end

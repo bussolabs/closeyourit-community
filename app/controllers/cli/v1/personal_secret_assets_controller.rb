@@ -65,7 +65,7 @@ module Cli
       def purge
         asset = find_asset!
         unless asset.archived?
-          return render_error("R422-PERSONALSECRETFILE-007", "Archiviare il file prima della cancellazione definitiva",
+          return render_error("R422-PERSONALSECRETFILE-007", "Archive the file before deleting it permanently",
                               status: :unprocessable_content)
         end
 

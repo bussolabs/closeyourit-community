@@ -202,6 +202,13 @@ module Agents
       affected.positive?
     end
 
+    # CYRA-1030 — ferma sulla produzione: è la condizione di «Rimanda allo staging», e la leggono il
+    # service (sotto lock) e la scheda del ticket. Scritta una volta: due copie offrirebbero un
+    # pulsante che il dominio poi rifiuta.
+    def stopped_in_production?
+      !terminal? && blocked_at? && blocked_phase == "closer_production"
+    end
+
     # La fase di ESECUZIONE su cui la lavorazione si è fermata, o nil. Le due sorgenti non sono
     # intercambiabili: se a fermare è stata la macchina vale la fase SCRITTA NEL BLOCCO (un blocco
     # dichiarato dall'agente non produce attempt bocciati), sui blocchi da tetto dei tentativi vale

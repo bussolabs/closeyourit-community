@@ -30,7 +30,7 @@ RSpec.describe "Member::Monitoring::Analytics", type: :request do
       create(:pageview, project:, path: "/pricing")
       sign_in(owner)
 
-      get member_monitoring_analytics_path
+      get member_monitoring_analytics_path(project_id: project.id)
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("data-test=\"analytics-counts\"")
       expect(response.body).to include("/pricing")
@@ -381,6 +381,132 @@ RSpec.describe "Member::Monitoring::Analytics", type: :request do
     end
   end
 
+  # CYRA-1077 — the menu entry opens the list of sites with their numbers; a row opens its dashboard.
+  describe "GET index of sites" do
+    let(:second) { create(:project, organization: org, name: "Zeta site", analytics_enabled: true).tap { |p| p.platforms << web } }
+
+    def site_rows = Nokogiri::HTML(response.body).css('tr[data-test^="analytics-site-"]')
+
+    it "lists every site with its numbers and links each row to its dashboard" do
+      create(:pageview, project:, visitor_hash: "a")
+      create(:pageview, project:, visitor_hash: "b")
+      create(:pageview, project: second, visitor_hash: "c")
+      sign_in(owner)
+
+      get member_monitoring_analytics_path
+
+      expect(response).to have_http_status(:ok)
+      row = Nokogiri::HTML(response.body).at_css("[data-test='analytics-site-#{project.id}']")
+      expect(row.at_css('[data-test="analytics-site-pageviews"]').text).to include("2")
+      expect(row.at_css('[data-test="analytics-site-visitors"]').text).to include("2")
+      expect(row.css("a").map { |a| a["href"] }).to include(member_monitoring_analytics_path(project_id: project.id, range: "7d"))
+      expect(response.body).to include('data-test="analytics-sites-counts"')
+      expect(response.body).not_to include('data-test="analytics-chart"')
+    end
+
+    it "sums the numbers of all sites in the header" do
+      create(:pageview, project:)
+      create(:pageview, project: second)
+      sign_in(owner)
+
+      get member_monitoring_analytics_path
+
+      counts = Nokogiri::HTML(response.body).at_css('[data-test="analytics-sites-count-pageviews"]')
+      expect(counts.text).to include("2")
+    end
+
+    it "sorts the sites by visitors" do
+      create(:pageview, project: second, visitor_hash: "c")
+      create(:pageview, project: second, visitor_hash: "d")
+      create(:pageview, project:, visitor_hash: "a")
+      sign_in(owner)
+
+      get member_monitoring_analytics_path(sort: "-visitors")
+
+      expect(site_rows.map { |r| r["data-test"] }).to eq([ "analytics-site-#{second.id}", "analytics-site-#{project.id}" ])
+    end
+
+    it "narrows the list to the chosen sites" do
+      project
+      second
+      sign_in(owner)
+
+      get member_monitoring_analytics_path(project_ids: [ second.id ])
+
+      expect(site_rows.map { |r| r["data-test"] }).to eq([ "analytics-site-#{second.id}" ])
+    end
+
+    it "offers the default period as the blank first option, so removing the chip goes back to it" do
+      project
+      sign_in(owner)
+
+      get member_monitoring_analytics_path(range: "30d")
+
+      options = Nokogiri::HTML(response.body).css('[data-test="filter-range"] option')
+      expect(options.first["value"]).to eq("")
+      expect(options.map { |o| o["value"] }).not_to include(Analytics::Pageview::DEFAULT_RANGE)
+    end
+
+    it "answers 406 to a non-HTML request, as the dashboard does" do
+      project
+      sign_in(owner)
+
+      get member_monitoring_analytics_path(format: :json)
+
+      expect(response).to have_http_status(:not_acceptable)
+    end
+
+    it "follows each listed site, so the numbers refresh on their own" do
+      project
+      sign_in(owner)
+
+      get member_monitoring_analytics_path
+
+      expect(response.body).to include("turbo-cable-stream-source")
+      expect(response.body).to include('name="turbo-refresh-method" content="morph"')
+    end
+
+    it "writes big numbers with the thousands separator, like the header" do
+      project
+      allow_any_instance_of(Analytics::Overview).to receive(:rows).and_wrap_original do |original|
+        original.call.map { |row| row.with(pageviews: 12_345) }
+      end
+      sign_in(owner)
+
+      get member_monitoring_analytics_path
+
+      cell = Nokogiri::HTML(response.body).at_css('[data-test="analytics-site-pageviews"]')
+      expect(cell.text).to include("12,345")
+    end
+
+    it "sends an old dashboard address with filters but no site to the first site's dashboard" do
+      project
+      sign_in(owner)
+
+      get member_monitoring_analytics_path(path: "/pricing", range: "30d")
+
+      expect(response).to redirect_to(member_monitoring_analytics_path(path: "/pricing", range: "30d", project_id: project.id))
+    end
+
+    it "does not mark as waiting a site that sends only custom events" do
+      create(:pageview, project:, name: "Signup")
+      sign_in(owner)
+
+      get member_monitoring_analytics_path
+
+      expect(response.body).not_to include('data-test="analytics-site-not-connected"')
+    end
+
+    it "marks a site that never received a visit as waiting to be connected" do
+      project
+      sign_in(owner)
+
+      get member_monitoring_analytics_path
+
+      expect(response.body).to include('data-test="analytics-site-not-connected"')
+    end
+  end
+
   # CYRA-500 — la pagina rispondeva solo «quanto», mai «come va»; fra le pagine più viste compariva
   # l'indirizzo che serve a controllare che il sito sia acceso, e il riquadro della provenienza
   # geografica restava vuoto in mezzo a riquadri pieni.
@@ -419,6 +545,17 @@ RSpec.describe "Member::Monitoring::Analytics", type: :request do
       pagina = Nokogiri::HTML(response.body)
       expect(pagina.at_css("[data-test='analytics-count-pageviews-trend']").text).to include("100%")
       expect(pagina.at_css("[data-test='analytics-comparison']")).to be_present
+    end
+
+    # The meta slot hides when the header is collapsed; the counts row does not.
+    it "keeps the comparison caption with the numbers, visible in a collapsed header too" do
+      create(:pageview, project:, occurred_at: 1.hour.ago)
+      create(:pageview, project:, occurred_at: 30.hours.ago)
+
+      get member_monitoring_analytics_path(project_id: project.id, range: "24h")
+
+      counts = Nokogiri::HTML(response.body).at_css("[data-test='analytics-counts']")
+      expect(counts.at_css("[data-test='analytics-comparison']")).to be_present
     end
 
     it "senza un periodo precedente non inventa nessuna variazione" do

@@ -7,20 +7,20 @@ module Api
     # col progetto del token (anti-BOLA). Envelope { data: { accepted } }; batch oversize → R413.
     class LogsController < Api::V1::IngestBaseController
       rescue_from ActionDispatch::Http::Parameters::ParseError do
-        render_error("R422-LOG-001", "Log malformato", status: :unprocessable_content)
+        render_error("R422-LOG-001", "Malformed log", status: :unprocessable_content)
       end
 
       def create
         list = entries
         if list.size > Logs::Constants::MAX_BATCH
-          return render_error("R413-LOG-002", "Batch di log troppo grande", status: :content_too_large)
+          return render_error("R413-LOG-002", "Log batch too large", status: :content_too_large)
         end
 
         # Conta gli item davvero accettabili (Hash + message non vuoto): un batch non vuoto in cui
         # TUTTI vengono scartati è un errore del client, non un 202 silenzioso. Batch parziale → 202.
         accepted = list.count { |item| Logs::Ingest::Record.acceptable?(item) }
         if list.any? && accepted.zero?
-          return render_error("R422-LOG-004", "Nessun log valido nel batch", status: :unprocessable_content)
+          return render_error("R422-LOG-004", "No valid log in the batch", status: :unprocessable_content)
         end
 
         Logs::IngestJob.perform_later(project_id: Current.project.id, payload: list)
@@ -32,7 +32,7 @@ module Api
       # Override del guard anti-BOLA centralizzato (TokenAuthentication): i log usano il codice
       # envelope di dominio documentato R404-LOG-001 invece del bare 404 di default.
       def render_project_scope_mismatch
-        render_error("R404-LOG-001", "Progetto non trovato", status: :not_found)
+        render_error("R404-LOG-001", "Project not found", status: :not_found)
       end
 
       # Body = singolo oggetto JSON o array (Rails wrappa un array top-level in params["_json"]).

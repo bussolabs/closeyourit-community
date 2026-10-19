@@ -81,6 +81,29 @@ RSpec.describe Agents::Releases::Assign do
     expect(assign("closer_staging").value.id).to eq(first.id)
   end
 
+  # CYRA-1030 — sent back to staging, its heading is already on main: neither a sibling released above
+  # it nor a newer stable tag may renumber it.
+  it "keeps a staging number sent back to staging, even when overtaken" do
+    first = assign("closer_staging").value
+    first.update!(version: "v1.4.3-beta.2", landed_at: 1.hour.ago)
+    altro = create(:ticket, organization:, project:, kind: :bug, with_agent_workflow: true)
+    assigned_version(altro.agent_workflow, "closer_staging", version: "v1.4.4-beta.1")
+    altro.agent_workflow.update!(closer_staging_completed_at: 1.minute.ago)
+    versioni_uscite("v1.4.2", "v1.4.4")
+
+    expect(assign("closer_staging").value).to have_attributes(id: first.id, version: "v1.4.3-beta.2")
+  end
+
+  it "counts a number sent back to staging as released for the siblings below it" do
+    sent_back = create(:ticket, organization:, project:, kind: :bug, with_agent_workflow: true)
+    assigned_version(sent_back.agent_workflow, "closer_staging", version: "v1.4.4-beta.2")
+      .update!(landed_at: 1.hour.ago)
+    stale = assigned_version(workflow, "closer_staging", version: "v1.4.3-beta.1")
+
+    expect(assign("closer_staging").value.version).to eq("v1.4.5-beta.1")
+    expect(Agents::ReleaseAssignment.exists?(stale.id)).to be(false)
+  end
+
   # CYRA-878 — a second workflow reaching staging before the first one reaches production used to
   # share its number as beta.2. Both CHANGELOG entries then sat under one heading, the first production
   # took the tag on its own older commit, and the second could never be released: no heading matched

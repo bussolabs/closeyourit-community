@@ -2079,6 +2079,8 @@ en:
           body_held: "%{name} stopped the release before production. The code is already on main: while it stays stopped, no release of this repository goes to production."
           retry: Unblock and retry
           retried: Work put back in the queue.
+          send_back: Send back to staging
+          sent_back: "Sent back to staging: the staging step redoes the code with a new staging number, and the release queue is free."
           waiting_on_cto: "Only %{name} can decide."
           retrying_title: In review — retrying on its own
           retrying_body: "%{phase} was rejected and is already retrying. No action needed."

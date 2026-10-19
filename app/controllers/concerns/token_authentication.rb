@@ -14,7 +14,7 @@ module TokenAuthentication
     # come difesa in profondità, così un domani in cui .active cambiasse non riaprirebbe l'ingest a
     # una credenziale revocata o scaduta senza che nessuno se ne accorga (CYRA-716).
     if token.nil? || token.revoked? || token.expired?
-      return render_error("R401-AUTH-001", "Token API mancante o non valido", status: :unauthorized)
+      return render_error("R401-AUTH-001", "Missing or invalid API token", status: :unauthorized)
     end
 
     Current.api_token = token
@@ -68,6 +68,6 @@ module TokenAuthentication
   def require_scope!(scope)
     return if Current.api_token&.scope?(scope)
 
-    render_error("R403-AUTH-002", "Il token non dispone dello scope richiesto (#{scope})", status: :forbidden)
+    render_error("R403-AUTH-002", "The token lacks the required scope (#{scope})", status: :forbidden)
   end
 end

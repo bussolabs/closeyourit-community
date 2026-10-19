@@ -81,11 +81,11 @@ module Cli
         end
 
         def render_forbidden_environment
-          render_error("R403-PROVISION-001", "Environment non consentito per questo account", status: :forbidden)
+          render_error("R403-PROVISION-001", "Environment not allowed for this account", status: :forbidden)
         end
 
         def render_production_confirmation
-          render_error("R422-PROVISION-003", "Conferma production richiesta", status: :unprocessable_content)
+          render_error("R422-PROVISION-003", "Production confirmation required", status: :unprocessable_content)
         end
 
         def render_payload(provision, status: :ok)

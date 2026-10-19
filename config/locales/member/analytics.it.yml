@@ -92,6 +92,14 @@ it:
         utm_empty: "Nessuna visita arrivata da un link di campagna nel periodo."
         col_pageviews: pageview
         col_visitors: visitatori
+        sites:
+          subtitle: "Le visite di ogni sito nell'ambiente production, a colpo d'occhio. Apri un sito per il dettaglio."
+          online: online ora
+          range: Periodo
+          col_site: Sito
+          col_trend: Andamento
+          col_last_visit: Ultima visita
+          not_connected: Da collegare
         stats:
           pageviews: Pageview
           visitors: Visitatori

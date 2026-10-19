@@ -16,7 +16,7 @@ module Accounts
         return not_approvable unless @grant.approvable?
 
         unless Connections::Membership.exists?(account_id: @account.id, organization_id: @organization.id)
-          return Result.err(AppError.new("Organizzazione non valida",
+          return Result.err(AppError.new(I18n.t("cli.authorize.errors.invalid_organization"),
                                          code: "R404-SYSTEM-001", status: :not_found))
         end
 
@@ -40,7 +40,8 @@ module Accounts
       end
 
       def not_approvable
-        Result.err(AppError.new("Concessione scaduta o non valida",
+        # Shown on the authorization page, in its language (CYRA-1081).
+        Result.err(AppError.new(I18n.t("cli.authorize.errors.grant_expired"),
                                 code: "R400-CLIAUTH-005", status: :bad_request))
       end
     end

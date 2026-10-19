@@ -22,8 +22,9 @@ module AgentReadyPhases
       { triage_requested_at: now, triage_started_at: now, triaged_at: now, planned_at: now, approved_at: now,
         autopilot_started_at: now, autopilot_completed_at: now, candidate_verified_at: now,
         autopilot_approved_at: now, closer_staging_started_at: now, closer_staging_completed_at: now,
-        # CYRA-871 — pronta vuol dire anche freno libero: la prova dello staging ha più di 2 ore.
-        closer_staging_verified_at: now - ::Agents::Workflows::ProductionHold::WINDOW,
+        # Ready also means the hold is released: the staging check is older than the fallback wait,
+        # which applies while no level picks one (CYRA-871, CYRA-1000).
+        closer_staging_verified_at: now - ::Agents::Workflows::ProductionHold::DEFAULT_HOURS.hours,
         closer_production_approved_at: now }
     else raise ArgumentError, "fase non prevista: #{fase}"
     end

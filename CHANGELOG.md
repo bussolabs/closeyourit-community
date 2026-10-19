@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+## [0.192.1] - 2026-10-19
+
+### Fixed
+
+- **Le novità della 0.192.0 arrivano adesso.** La versione precedente si era fermata ai controlli automatici prima di essere pubblicata. Questa la completa: trovi l'elenco dei siti e le altre novità elencate sotto.
+
+## [0.192.0] - 2026-10-19
+
+### Added
+
+- **Tutti i siti in una pagina.** La voce Statistiche del sito ora apre l'elenco dei tuoi siti, ciascuno con visite, visitatori, chi è online, una piccola curva e l'ultima visita. I numeri si aggiornano da soli; un clic su una riga apre il cruscotto di quel sito. [Statistiche del sito](/member/monitoring/analytics)
+
+### Fixed
+
+- **Accesso da terminale col tema scuro.** La pagina dove confermi l'accesso da terminale ora si legge anche col tema scuro. Il codice si accetta anche scritto senza trattino o con uno spazio.
+- **Curve delle visite al posto giusto.** Nel grafico delle visite ogni visita cadeva un blocco prima del suo orario. Ora ogni punto mostra l'orario giusto.
+- **Messaggi in inglese per chi installa CloseYourIt.** Gli errori che ricevono i programmi collegati sono in inglese, come il resto di un'installazione nuova. Chi installa CloseYourIt sul suo server ha già il primo backup appena finita l'installazione.
+
+## [0.191.1] - 2026-10-15
+
+### Added
+
+- **Rimanda allo staging.** Quando un rilascio si ferma in produzione per un difetto nel codice preparato, ora puoi rimandarlo allo staging dalla scheda del ticket. La prova rifà il codice con un nuovo numero di prova, e gli altri rilasci del progetto possono intanto andare in produzione. [Ticket](/member/tickets)
+
+## [0.191.0] - 2026-10-14
+
+### Added
+
+- **Scegli quanto aspettare prima della produzione.** Un rilascio resta in prova in staging per 2 ore prima della produzione. Ora puoi cambiare questa attesa, da 0 a 72 ore, nelle impostazioni del progetto o dell'organizzazione: vale prima quella del progetto. Con 0 il rilascio non aspetta, ma si ferma lo stesso se in staging compare un errore nuovo. [Organizzazione](/member/organization/edit)
+
 ## [0.190.0] - 2026-10-13
 
 ### Added

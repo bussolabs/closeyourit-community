@@ -18,13 +18,15 @@ RSpec.describe "Member::Organizations", type: :request do
       expect(response).to have_http_status(:ok)
     end
 
-    # T3 — the long form is split in three named parts, in the order the fields already had.
-    it "splits the form into identity, retention and people" do
+    # T3 — the long form is split in named parts, in the order the fields already had; CYRA-1000
+    # adds the wait before production after retention.
+    it "splits the form into identity, retention, production and people" do
       sign_in(owner)
       get edit_member_organization_path
 
       sections = Capybara.string(response.body).all("[data-test^='organization-section-']").map { |node| node["data-test"] }
-      expect(sections).to eq(%w[organization-section-identity organization-section-retention organization-section-people])
+      expect(sections).to eq(%w[organization-section-identity organization-section-retention
+                                organization-section-production organization-section-people])
     end
 
     # O7 — the CTO field was written in Italian inside the page: it reads from the translation files.
@@ -115,6 +117,28 @@ RSpec.describe "Member::Organizations", type: :request do
       sign_in(owner)
       patch member_organization_path, params: { name: "Acme", slug: "acme", servers_retention_days: 999 }
       expect(response).to have_http_status(:unprocessable_content)
+    end
+
+    # CYRA-1000 — the organization's wait before production.
+    it "saves the organization's wait before production, blank inherits" do
+      sign_in(owner)
+      patch member_organization_path, params: { confirm: "1", name: "Acme", slug: "acme", production_hold_hours: "24" }
+      expect(response).to redirect_to(edit_member_organization_path)
+      expect(org.reload.production_hold_hours).to eq(24)
+
+      patch member_organization_path, params: { confirm: "1", name: "Acme", slug: "acme", production_hold_hours: "" }
+      expect(org.reload.production_hold_hours).to be_nil
+    end
+
+    # One request per example: Prosopite reads a second request in the same example as an N+1.
+    %w[73 1.5].each do |value|
+      it "refuses #{value} hours with a clear message" do
+        sign_in(owner)
+        patch member_organization_path, params: { confirm: "1", name: "Acme", slug: "acme", production_hold_hours: value }
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include(CGI.escapeHTML(I18n.t("errors.messages.production_hold_hours")))
+        expect(org.reload.production_hold_hours).to be_nil
+      end
     end
 
     it "owner imposta l'assegnatario di default dei ticket dell'org" do

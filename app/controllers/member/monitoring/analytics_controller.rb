@@ -2,28 +2,33 @@
 
 module Member
   module Monitoring
-    # Dashboard web analytics (pageview cookieless) di UN progetto per volta. Lettura per chiunque
-    # veda il progetto (scoping visible.projects.analytics_collecting, anti-BOLA 404 — nessuna
-    # chiave RBAC: read = visibilità di scope, come logs/errors/metrics). Un progetto compare solo se ha
-    # piattaforma web (analytics_capable) E il toggle "Raccogli analytics" attivo (tab Settings, opt-in).
+    # Web analytics (cookieless pageviews): the index of sites, or the dashboard of one site. Read
+    # by whoever sees the project (visible.projects.analytics_collecting, anti-BOLA 404, no RBAC key).
+    # A project shows up only with a web platform and "Collect analytics" on. CYRA-1077
     class AnalyticsController < Member::BaseController
-      # CYRA-737 — la base condivisa dell'area di controllo. Questa pagina non è un elenco paginato,
-      # ma la tendina dei progetti e il periodo li prende dalla stessa base delle altre.
+      # CYRA-737 — the shared base of the monitoring area: project filter, sorting and pagination.
       include Indexable
 
       permission_not_required "Traffico di un progetto visibile: sola lettura, il confine è la visibilità del " \
                               "progetto.",
                               only: %i[show]
 
+      # CYRA-1077 — without a site in the address the page is the index of sites with their numbers.
       def show
         load_filter_projects(visible.projects.analytics_collecting)
-        @project = find_project
         @range = ::Analytics::Pageview::BUCKETS.key?(params[:range]) ? params[:range] : ::Analytics::Pageview::DEFAULT_RANGE
+        if params[:project_id].blank?
+          # Old dashboard links carried filters but no site: they opened the first one. CYRA-1077
+          return redirect_to(member_monitoring_analytics_path(request.query_parameters.merge(project_id: @projects.first.id))) if dashboard_params? && @projects.any?
+
+          return load_sites
+        end
+
+        @project = @projects.find(params[:project_id])
         @environment = params[:environment].presence || "production"
         # CYRA-500 — le visite di controllo («il sito è acceso?») restano escluse salvo richiesta:
         # sono visite vere ma non sono persone, e gonfiano ogni totale della pagina.
         @include_automated = ActiveModel::Type::Boolean.new.cast(params[:automated]).present?
-        return if @project.nil?
 
         @environments = @project.environments.order(:position).pluck(:code)
         @filters = current_filters
@@ -67,12 +72,23 @@ module Member
         params.slice(*::Analytics::Query::FILTERABLE).to_unsafe_h.reject { |_, v| v.to_s.blank? }
       end
 
-      # Progetto esplicito (find sullo scope visibile+capable → 404 cross-tenant o non-web) oppure
-      # il primo visibile; nil = nessun progetto analytics-capable → empty state.
-      def find_project
-        return @projects.find(params[:project_id]) if params[:project_id].present?
+      SITE_SORT_COLUMNS = {
+        "site" => ->(row) { row.project.name.downcase }, "pageviews" => :pageviews.to_proc,
+        "visitors" => :visitors.to_proc, "online" => :online.to_proc, "last_visit" => :last_at.to_proc
+      }.freeze
 
-        @projects.first
+      DASHBOARD_PARAMS = (::Analytics::Query::FILTERABLE + %w[environment automated goals_sort]).freeze
+
+      def dashboard_params? = params.keys.intersect?(DASHBOARD_PARAMS)
+
+      def load_sites
+        chosen = filter_ids(:project_ids)
+        projects = chosen.any? ? @projects.where(id: chosen) : @projects
+        rows = ::Analytics::Overview.new(projects: projects.with_attached_icon_image, range: @range).rows
+        @totals = %i[pageviews visitors online].index_with { |key| rows.sum(&key) }
+        @sites = paginated_rows(sorted_rows(rows, columns: SITE_SORT_COLUMNS))
+        # An explicit render skips the format check: without respond_to a JSON request is a 500.
+        respond_to { |format| format.html { render :index } }
       end
 
       def load_dashboard

@@ -95,7 +95,7 @@ module Cli
         def require_secrets_read
           return true if authorization.can?("secrets.read", scope: @project)
 
-          render_error("R403-CLIAUTH-002", "Permesso negato", status: :forbidden)
+          render_error("R403-CLIAUTH-002", "Permission denied", status: :forbidden)
           false
         end
 
@@ -104,7 +104,7 @@ module Cli
         def require_unrestricted_environments
           return true unless secret_access.restricted?
 
-          render_error("R403-SECRET-001", "environment non consentito per questo account", status: :forbidden)
+          render_error("R403-SECRET-001", "environment not allowed for this account", status: :forbidden)
           false
         end
 

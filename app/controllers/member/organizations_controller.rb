@@ -26,7 +26,7 @@ module Member
     def organization_params
       params.permit(:name, :slug, :default_projects_view, :logs_retention_days, :analytics_retention_days,
                     :errors_retention_days, :performance_retention_days, :servers_retention_days,
-                    :uptime_retention_days, :traces_retention_days, :artifacts_retention_days, :crashes_retention_days, :session_health_retention_days, :measurements_retention_days, :default_assignee_id, :cto_id)
+                    :uptime_retention_days, :traces_retention_days, :artifacts_retention_days, :crashes_retention_days, :session_health_retention_days, :measurements_retention_days, :production_hold_hours, :default_assignee_id, :cto_id)
     end
 
     # Membri dell'org candidabili come assegnatario di default (l'assignee dev'essere membro dell'org).

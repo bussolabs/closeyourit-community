@@ -196,8 +196,8 @@ module Member
       t("stopped.production_busy", code: code)
     end
 
-    # CYRA-871 — il freno prima della produzione: due ore di prova dello staging, poi niente errori
-    # nuovi ancora aperti. Il titolo dell'errore solo a chi decide, come il codice del ticket qui sopra.
+    # The hold before production: the project's staging soak (none at 0 hours), then no new open errors.
+    # The error title only to whoever decides, like the ticket code above (CYRA-871, CYRA-1000).
     def production_hold_line(hold)
       if hold[:reason] == "staging_soak"
         return t("stopped.production_soak", at: I18n.l(hold[:until], format: :short))

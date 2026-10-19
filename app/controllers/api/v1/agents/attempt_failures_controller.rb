@@ -21,7 +21,7 @@ module Api
 
           render_ok(AgentAttemptSerializer.new(result.value))
         rescue ActiveRecord::RecordNotFound
-          render_error("R404-ATTEMPT-001", "Tentativo non trovato", status: :not_found)
+          render_error("R404-ATTEMPT-001", "Attempt not found", status: :not_found)
         end
       end
     end

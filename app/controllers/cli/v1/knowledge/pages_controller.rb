@@ -251,7 +251,7 @@ module Cli
         # effettivi (org-wide, nessuno scope → solo full-access).
         def authored_or_permitted!(key)
           unless full_scope_access?
-            render_error("R403-CLIAUTH-002", "Permesso negato", status: :forbidden)
+            render_error("R403-CLIAUTH-002", "Permission denied", status: :forbidden)
             return false
           end
           return true if @page.authored_by?(Current.account)
@@ -260,7 +260,7 @@ module Cli
           allowed = projects.empty? ? full_access? : projects.all? { |project| authorization.can?(key, scope: project) }
           return true if allowed
 
-          render_error("R403-CLIAUTH-002", "Permesso negato", status: :forbidden)
+          render_error("R403-CLIAUTH-002", "Permission denied", status: :forbidden)
           false
         end
 

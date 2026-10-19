@@ -17,6 +17,11 @@ it:
       servers_retention_hint: Default globale per i campioni server. Le organizzazioni possono sovrascriverlo (nessun livello progetto).
       uptime_retention_label: Retention disponibilità (giorni)
       uptime_retention_hint: Default globale per lo storico giornaliero di uptime. Organizzazioni e progetti possono sovrascriverlo.
+      production_hold_hours_label: Ore di prova in staging prima della produzione
+      production_hold_hours_placeholder:
+        one: "valore di sistema (%{count} ora)"
+        other: "valore di sistema (%{count} ore)"
+      production_hold_hours_hint: Default globale, da 0 a 72 ore intere. Organizzazioni e progetti possono sovrascriverlo. Con 0 il rilascio non aspetta, ma un errore nuovo comparso in staging lo ferma comunque. Lascia vuoto per il valore di sistema.
       ai:
         title: Funzioni AI
         hint: Spegni una funzione per fermare subito le chiamate al provider, senza rilascio. Vale per tutte le organizzazioni e ha effetto al clic.

@@ -1,0 +1,21 @@
+<%# CYRA-1000 — the wait before production: blank inherits, 0 skips the wait but never the check for new
+    staging errors. The line below shows the wait in force, from the same resolver as the queue. %>
+<%= render Ui::SectionComponent.new(title: t("member.project_settings.production_hold_section"), id: "production",
+      class: "scroll-mt-20", body_class: "px-4 py-4 space-y-4", test_id: "project-production-hold-section") do |section| %>
+  <% section.with_actions do %><%= render "member/project_settings/save_action", anchor: "production" %><% end %>
+  <%= render Ui::GridComponent.new(cols: 1, md: 2, gap: 5) do %>
+    <%= render Ui::InputComponent.new(
+          name: "production_hold_hours", type: "number", min: Agents::Workflows::ProductionHold::HOURS_RANGE.min,
+          max: Agents::Workflows::ProductionHold::HOURS_RANGE.max, step: 1,
+          label: t("member.project_settings.production_hold_hours_label"),
+          test_id: "production-hold-hours", value: @project.production_hold_hours,
+          placeholder: t("member.project_settings.production_hold_hours_placeholder"),
+          hint: t("member.project_settings.production_hold_hours_hint"),
+          error: @errors&.dig(:production_hold_hours)&.first) %>
+  <% end %>
+
+  <div class="flex items-center gap-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2" data-test="project-settings-production-hold-effective">
+    <%= render Ui::IconComponent.new(name: "hourglass", class: "text-[12px] text-gray-400 dark:text-zinc-500") %>
+    <span class="text-[12.5px] text-zinc-700 dark:text-zinc-300"><%= t("member.project_settings.production_hold_effective", count: Agents::Workflows::ProductionHold.hours(@project)) %></span>
+  </div>
+<% end %>

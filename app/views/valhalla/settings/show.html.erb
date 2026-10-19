@@ -50,6 +50,15 @@
                 test_id: "uptime-retention-days", value: @settings.uptime_retention_days,
                 hint: t("valhalla.settings.uptime_retention_hint"),
                 error: @errors&.dig(:uptime_retention_days)&.first) %>
+          <%# CYRA-1000 — optional, unlike retention: blank keeps the system wait. %>
+          <%= render Ui::InputComponent.new(
+                name: "production_hold_hours", type: "number", step: 1,
+                min: Agents::Workflows::ProductionHold::HOURS_RANGE.min, max: Agents::Workflows::ProductionHold::HOURS_RANGE.max,
+                label: t("valhalla.settings.production_hold_hours_label"),
+                test_id: "production-hold-hours", value: @settings.production_hold_hours_before_type_cast,
+                placeholder: t("valhalla.settings.production_hold_hours_placeholder", count: Agents::Workflows::ProductionHold::DEFAULT_HOURS),
+                hint: t("valhalla.settings.production_hold_hours_hint"),
+                error: @errors&.dig(:production_hold_hours)&.first) %>
         </div>
       </div>
     </div>

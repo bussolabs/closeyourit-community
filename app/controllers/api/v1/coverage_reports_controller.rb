@@ -18,7 +18,7 @@ module Api
 
       def create
         branch = params[:branch].to_s.strip
-        return render_error("R422-COVERAGE-001", "branch obbligatorio", status: :unprocessable_content) if branch.blank?
+        return render_error("R422-COVERAGE-001", "branch is required", status: :unprocessable_content) if branch.blank?
 
         captured_at = parse_time(params[:captured_at]) || Time.current
         report = Current.project.coverage_reports.find_or_initialize_by(branch: branch)

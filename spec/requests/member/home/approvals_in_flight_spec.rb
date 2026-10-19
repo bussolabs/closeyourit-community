@@ -58,10 +58,37 @@ RSpec.describe "Member::Home::Approvals — ciò che va avanti da solo", type: :
 
       get in_flight_path
 
-      at = I18n.l(workflow.closer_staging_verified_at + Agents::Workflows::ProductionHold::WINDOW, format: :short)
+      at = I18n.l(workflow.closer_staging_verified_at + Agents::Workflows::ProductionHold::DEFAULT_HOURS.hours, format: :short)
       expect(response).to have_http_status(:ok)
       expect(response.body).to include(CGI.escapeHTML(I18n.t("member.approvals.in_flight.production_soak", at:)))
       expect(response.body.scan('data-test="approvals-in-flight-production-hold"').size).to eq(2)
+    end
+
+    # CYRA-1000 — with a 0-hour wait the row shows no time: it still offers «Ferma», and only a new
+    # staging error would explain a wait.
+    it "shows no waiting time with a 0-hour wait" do
+      project.update!(production_hold_hours: 0)
+      in_attesa_della_produzione(verificato_da: 1.minute.ago)
+      sign_in(owner)
+
+      get in_flight_path
+
+      soak = I18n.t("member.approvals.in_flight.production_soak").split("%{at}").first
+      expect(response).to have_http_status(:ok)
+      expect(response.body).not_to include(CGI.escapeHTML(soak))
+      expect(response.body).to include('data-test="approvals-in-flight-production-hold"')
+    end
+
+    it "names a new staging error with a 0-hour wait" do
+      project.update!(production_hold_hours: 0)
+      in_attesa_della_produzione(verificato_da: 1.minute.ago)
+      create(:error_event, group: create(:error_group, project:, first_seen_at: 30.seconds.ago),
+                           environment: "staging", occurred_at: 30.seconds.ago)
+      sign_in(owner)
+
+      get in_flight_path
+
+      expect(response.body).to include(CGI.escapeHTML(I18n.t("member.approvals.in_flight.production_staging_errors")))
     end
   end
 

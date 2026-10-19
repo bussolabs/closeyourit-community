@@ -156,7 +156,7 @@ RSpec.describe "Member::ProjectSettings tokens section", type: :request do
       get member_project_settings_path(project)
 
       links = doc.css("[data-test='project-settings-nav'] a").map { |a| a["href"] }
-      expect(links).to eq(%w[#tokens #ingest #tickets #retention #thresholds #features #supporter #danger])
+      expect(links).to eq(%w[#tokens #ingest #tickets #retention #thresholds #production #features #supporter #danger])
       links.each { |anchor| expect(doc.at_css(anchor)).to be_present }
     end
 
@@ -166,7 +166,8 @@ RSpec.describe "Member::ProjectSettings tokens section", type: :request do
 
       order = doc.css("[data-test^='project-settings-form-'] [data-test$='-section']").map { |node| node["data-test"] }
       expect(order).to eq(%w[project-ingest-section project-default-assignee-section
-                             project-retention-section project-thresholds-section])
+                             project-retention-section project-thresholds-section
+                             project-production-hold-section])
     end
 
     it "says the inherit rule once for the retention fields and keeps each effective value" do

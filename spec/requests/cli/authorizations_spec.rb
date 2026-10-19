@@ -33,6 +33,58 @@ RSpec.describe "Cli::Authorizations (approvazione device-flow)", type: :request 
     expect(response.body).to include("cli-authorize-org-#{organization.id}")
   end
 
+  # CYRA-1080: the CLI prints the bare address and asks the person to type the code there.
+  it "without a user_code shows a field to type the code, which reopens the page with it" do
+    sign_in_as(account)
+    get cli_authorize_path
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include('data-test="cli-authorize-enter"')
+    expect(response.body).not_to include('data-test="cli-authorize-unknown"')
+    expect(response.body).to match(%r{<form[^>]*action="/cli/authorize"[^>]*method="get"})
+    expect(response.body).to include('name="user_code"')
+  end
+
+  it "the typed code is accepted in lower case and with spaces" do
+    sign_in_as(account)
+    grant = live_grant
+
+    get cli_authorize_path(user_code: " wdjb-mzhn ")
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include('data-test="cli-authorize"')
+    expect(response.body).to include(cli_authorize_approve_path(user_code: grant.user_code))
+  end
+
+  # RFC 8628 §6.1: dashes and spaces typed by the person are not part of the code (CYRA-1080).
+  [ "wdjbmzhn", "WDJB MZHN" ].each do |typed|
+    it "the typed code #{typed.inspect} finds the grant WDJB-MZHN" do
+      sign_in_as(account)
+      grant = live_grant
+
+      get cli_authorize_path(user_code: typed)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include(cli_authorize_approve_path(user_code: grant.user_code))
+    end
+  end
+
+  it "the code field sits on a card that follows the dark theme" do
+    sign_in_as(account)
+    get cli_authorize_path
+
+    card = Nokogiri::HTML(response.body).at_css('[data-test="cli-authorize-enter"]')
+    expect(card["class"]).to include("dark:bg-zinc-900")
+  end
+
+  it "after the login it lands back on the page with the code" do
+    grant = live_grant
+    get cli_authorize_path(user_code: grant.user_code)
+    sign_in_as(account)
+
+    expect(response).to redirect_to(cli_authorize_url(user_code: grant.user_code))
+  end
+
   it "user_code sconosciuto → 404 con schermata 'codice non valido'" do
     sign_in_as(account)
     get cli_authorize_path(user_code: "ZZZZ-ZZZZ")

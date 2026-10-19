@@ -17,6 +17,11 @@ en:
       servers_retention_hint: Global default for server samples. Organizations can override it (no project level).
       uptime_retention_label: Uptime retention (days)
       uptime_retention_hint: Global default for daily uptime history. Organizations and projects can override it.
+      production_hold_hours_label: Hours of staging trial before production
+      production_hold_hours_placeholder:
+        one: "system value (%{count} hour)"
+        other: "system value (%{count} hours)"
+      production_hold_hours_hint: Global default, from 0 to 72 whole hours. Organizations and projects can override it. With 0 the release does not wait, but a new error showing up on staging still stops it. Leave blank for the system value.
       ai:
         title: AI features
         hint: Switch a feature off to stop provider calls immediately, with no release. It applies to every organization and takes effect on click.

@@ -22,7 +22,7 @@ module OrganizationSuspension
   def reject_suspended_organization!
     return false unless suspended_organization?
 
-    render_error(SUSPENDED_ERROR_CODE, "Organizzazione sospesa", status: :forbidden)
+    render_error(SUSPENDED_ERROR_CODE, "Organization suspended", status: :forbidden)
     true
   end
 end

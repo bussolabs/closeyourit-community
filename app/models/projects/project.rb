@@ -359,7 +359,7 @@ module Projects
     store_accessor :preferences, :artifacts_retention_days, :crashes_retention_days, :session_health_retention_days, :measurements_retention_days, :traces_retention_days, :logs_retention_days, :analytics_retention_days, :performance_alert_threshold, :replay_retention_days,
                    :errors_retention_days, :performance_retention_days, :uptime_retention_days,
                    :performance_fast_ms, :performance_slow_ms,
-                   :workspace_path, :vulnerability_auto_ticket
+                   :workspace_path, :vulnerability_auto_ticket, :production_hold_hours
 
     # Ticket automatico per le vulnerabilità gravi (CYRA-506): acceso salvo scelta contraria. Vive
     # nelle preferenze e non in una colonna perché è un interruttore, non un dato del progetto — e
@@ -390,6 +390,12 @@ module Projects
 
     def uptime_retention_days=(value)
       super(value.presence&.to_i)
+    end
+
+    # Wait before production in whole hours (Agents::Workflows::ProductionHold, CYRA-1000). Blank → nil,
+    # inherit; 0 stays 0. A non-integer is kept as is so validation rejects it instead of rounding it.
+    def production_hold_hours=(value)
+      super(value.presence && (Integer(value.to_s, 10, exception: false) || value))
     end
 
     # CYRA-341 — soglie (ms) che decidono il colore di una durata: sotto `fast` è verde, fino a
@@ -483,6 +489,8 @@ module Projects
     validates :performance_alert_threshold, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
     validates :performance_fast_ms, numericality: { only_integer: true, in: 1..600_000 }, allow_nil: true
     validates :performance_slow_ms, numericality: { only_integer: true, in: 1..600_000 }, allow_nil: true
+    validates :production_hold_hours, numericality: { only_integer: true, in: Agents::Workflows::ProductionHold::HOURS_RANGE,
+                                                      message: :production_hold_hours }, allow_nil: true
     validate :duration_thresholds_ordered
     validate :group_must_match_organization
     validate :default_assignee_belongs_to_organization

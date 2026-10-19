@@ -16,7 +16,7 @@ module Servers
         # cui `interrupted` non è un esito definitivo: il posto era già libero, qui si sostituisce un
         # punto interrogativo con un fatto.
         unless %w[succeeded failed].include?(@status) && (@action.status_running? || @action.status_interrupted?)
-          return Result.err(AppError.new("Transizione azione non valida", code: "R422-SERVER-006"))
+          return Result.err(AppError.new("Invalid action transition", code: "R422-SERVER-006"))
         end
 
         @action.update!(status: @status, exit_code: @exit_code, output: @output.presence,

@@ -46,6 +46,26 @@ RSpec.describe Accounts::Devices::Approve, type: :service do
       expect(result.error.code).to eq("R400-CLIAUTH-005")
     end
 
+    # The message lands on the authorization page, which speaks the reader's language (CYRA-1081).
+    it "words its errors in the page language" do
+      grant = create(:device_grant, expires_at: 1.minute.ago)
+
+      english = I18n.with_locale(:en) { described_class.call(grant:, account:, organization:) }
+      italian = I18n.with_locale(:it) { described_class.call(grant:, account:, organization:) }
+
+      expect(english.error.message).to eq(I18n.t("cli.authorize.errors.grant_expired", locale: :en))
+      expect(italian.error.message).to eq(I18n.t("cli.authorize.errors.grant_expired", locale: :it))
+      expect(english.error.message).not_to eq(italian.error.message)
+    end
+
+    it "words the foreign organization error in the page language" do
+      grant = create(:device_grant)
+
+      result = I18n.with_locale(:en) { described_class.call(grant:, account:, organization: create(:organization)) }
+
+      expect(result.error.message).to eq(I18n.t("cli.authorize.errors.invalid_organization", locale: :en))
+    end
+
     # CYRA-806 — la guardia legge uno snapshot: fra la lettura e la scrittura la concessione può
     # essere stata negata da un'altra richiesta, e un'approvazione cieca trasformerebbe il rifiuto
     # dell'umano in una credenziale.

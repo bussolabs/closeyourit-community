@@ -1,0 +1,70 @@
+<% content_for :title, t("member.monitoring.analytics.title") %>
+
+<%# CYRA-1077 — every site with its numbers at a glance; a row opens that site's dashboard. Each site
+    on the page refreshes it on a new visit and every minute, like its dashboard. %>
+<%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+<% @sites.each do |row| %>
+  <%= turbo_stream_from Realtime::Streams.analytics(row.project) %>
+<% end %>
+<div class="p-7 space-y-6" data-test="member-analytics-sites">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.monitoring.analytics.title"),
+        subtitle: t("member.monitoring.analytics.sites.subtitle"),
+        breadcrumb: [ { label: t("member.monitoring.analytics.title") } ],
+        counts_test_id: "analytics-sites-counts") do |h| %>
+    <% if @projects.any? %>
+      <% h.with_counts do %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.pageviews"), value: @totals[:pageviews], test_id: "analytics-sites-count-pageviews") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.stats.visitors"), value: @totals[:visitors], value_color: :indigo, test_id: "analytics-sites-count-visitors") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.sites.online"), value: @totals[:online], value_color: :emerald, test_id: "analytics-sites-count-online") %>
+      <% end %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.nav.replays"), href: member_monitoring_replays_path,
+            variant: :secondary, size: :sm, icon: "film", test_id: "analytics-replays-link") %>
+    <% end %>
+  <% end %>
+
+  <% if @projects.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.analytics.empty"), body: t("member.monitoring.analytics.empty_body"), icon: "chart-line", framed: true, test_id: "analytics-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="analytics-sites">
+      <%= render(Ui::TableToolbarComponent.new(framed: true, url: member_monitoring_analytics_path,
+            apply_test_id: "analytics-sites-filter", test_id: "analytics-sites-toolbar")) do |toolbar| %>
+        <%# C61 — the default is the blank first option: a removed chip submits "" and falls back to it. %>
+        <% toolbar.with_filter(key: "range", label: t("member.monitoring.analytics.sites.range"),
+             active: @range != ::Analytics::Pageview::DEFAULT_RANGE) do %>
+          <div class="w-28"><%= render Ui::SelectComponent.new(name: "range", multiple: false,
+                options: [ [ ::Analytics::Pageview::DEFAULT_RANGE, "" ] ] +
+                         (::Analytics::Pageview::BUCKETS.keys - [ ::Analytics::Pageview::DEFAULT_RANGE ]).map { |r| [ r, r ] },
+                selected: (@range unless @range == ::Analytics::Pageview::DEFAULT_RANGE),
+                placeholder: t("member.monitoring.analytics.sites.range"), test_id: "filter-range") %></div>
+        <% end %>
+        <% toolbar.with_filter(key: "project_ids", label: t("member.monitoring.analytics.filter_project")) do %>
+          <div class="w-40"><%= render Ui::SelectComponent.new(name: "project_ids", multiple: true, summary: true,
+                options: @projects.map { |p| [ p.name, p.id, p.color ] }, selected: params[:project_ids],
+                placeholder: t("member.monitoring.analytics.filter_project"), test_id: "filter-project") %></div>
+        <% end %>
+      <% end %>
+
+      <% if @sites.empty? %>
+        <%= render Ui::NoResultsComponent.new(reset_href: member_monitoring_analytics_path,
+              icon: "chart-line", test_id: "analytics-sites-no-results", reset_test_id: "analytics-sites-reset") %>
+      <% else %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.monitoring.analytics.title"))) do |t| %>
+          <% t.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.sites.col_site"), sort: "site") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.sites.col_trend"), classes: "w-32") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.stats.pageviews"), sort: "pageviews", initial: :desc, classes: "w-32") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.stats.visitors"), sort: "visitors", initial: :desc, classes: "w-32") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.sites.online"), sort: "online", initial: :desc, classes: "w-24") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.sites.col_last_visit"), sort: "last_visit", initial: :desc, classes: "w-36") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+          <% end %>
+          <%= render partial: "site", collection: @sites, as: :row, locals: { range: @range } %>
+        <% end %>
+      <% end %>
+      <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "analytics-sites-pagination") %>
+    </div>
+  <% end %>
+</div>

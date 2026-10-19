@@ -17,7 +17,7 @@ module AgentAuthentication
     presented = presented_agent_token
     host_token = Servers::HostToken.active.includes(:host).find_by(token_digest: digest(presented))
     if host_token
-      return render_error("R403-SERVER-002", "Host revocato", status: :forbidden) if host_token.host.revoked?
+      return render_error("R403-SERVER-002", "Host revoked", status: :forbidden) if host_token.host.revoked?
 
       Current.organization = host_token.host.organization
       Current.server_host = host_token.host
@@ -36,11 +36,11 @@ module AgentAuthentication
       # Il digest esiste soltanto se la credenziale è stata emessa a quella macchina: nessuna
       # informazione nuova a chi non ce l'ha già.
       if Servers::HostToken.exists?(token_digest: digest(presented))
-        return render_error("R401-SERVER-002", "Credenziale della macchina non più valida: ripresentati con l'enrollment token",
+        return render_error("R401-SERVER-002", "Machine credential no longer valid: enroll again with the enrollment token",
                             status: :unauthorized)
       end
 
-      return render_error("R401-SERVER-001", "Enrollment token mancante o non valido", status: :unauthorized)
+      return render_error("R401-SERVER-001", "Missing or invalid enrollment token", status: :unauthorized)
     end
 
     Current.organization = token.organization

@@ -17,7 +17,7 @@ module Cli
           host = Current.organization.server_hosts.active.find_by(id: params[:host_id])
           environment = @project.environments.find_by(id: params[:environment_id])
           if host.nil? || environment.nil?
-            return render_error("R422-SERVER-006", "Host o environment non collegabile",
+            return render_error("R422-SERVER-006", "Host or environment cannot be linked",
                                 status: :unprocessable_content)
           end
 

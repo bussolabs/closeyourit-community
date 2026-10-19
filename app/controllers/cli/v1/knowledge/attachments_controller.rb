@@ -72,7 +72,7 @@ module Cli
         # TUTTI i progetti effettivi (pagina org-wide → solo accesso pieno).
         def page_manageable!
           unless full_scope_access?
-            render_error("R403-CLIAUTH-002", "Permesso negato", status: :forbidden)
+            render_error("R403-CLIAUTH-002", "Permission denied", status: :forbidden)
             return false
           end
           return true if @page.authored_by?(Current.account)
@@ -86,7 +86,7 @@ module Cli
           end
           return true if allowed
 
-          render_error("R403-CLIAUTH-002", "Permesso negato", status: :forbidden)
+          render_error("R403-CLIAUTH-002", "Permission denied", status: :forbidden)
           false
         end
 

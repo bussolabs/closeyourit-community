@@ -75,7 +75,7 @@ module Cli
       def require_view
         return true if authorization.can?("servers.view") || authorization.can?("servers.manage")
 
-        render_error("R403-CLIAUTH-002", "Permesso negato", status: :forbidden)
+        render_error("R403-CLIAUTH-002", "Permission denied", status: :forbidden)
         false
       end
 

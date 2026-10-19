@@ -210,20 +210,28 @@ module Agents
         rows.sort_by { |row| row.last_at || row.workflow.updated_at }.reverse
       end
 
-      # CYRA-871 — il freno per le righe in attesa della produzione: l'attesa delle 2 ore si legge dalla
-      # riga, gli errori nuovi in staging con UNA query per la pagina, sullo stesso predicato della coda.
+      # The hold of rows waiting for production: each project's wait from the queue's own resolver, read
+      # once per page, and new staging errors in ONE query on the queue's predicate. A 0-hour wait shows
+      # no time (CYRA-871, CYRA-1000).
       def production_holds(waiting)
         return {} if waiting.empty?
 
         now = Time.current
-        soaking, past = waiting.partition { |workflow| now < workflow.closer_staging_verified_at + ProductionHold::WINDOW }
+        global = Settings::Global.instance
+        windows = waiting.map { |workflow| workflow.ticket.project }.uniq.to_h do |project|
+          [ project.id, ProductionHold.window(project, organization: @organization, global:) ]
+        end
+        soaking, past = waiting.partition do |workflow|
+          ProductionHold.soaking?(workflow.closer_staging_verified_at, now:, window: windows[workflow.ticket.project_id])
+        end
         holds = soaking.to_h do |workflow|
-          [ workflow.id, { reason: "staging_soak", until: workflow.closer_staging_verified_at + ProductionHold::WINDOW } ]
+          [ workflow.id, { reason: "staging_soak",
+                           until: workflow.closer_staging_verified_at + windows[workflow.ticket.project_id] } ]
         end
         return holds if past.empty?
 
         ::Agents::Workflow.joins(:ticket).where(id: past.map(&:id))
-                          .where.not(ProductionHold.released_sql(now:)).pluck(:id)
+                          .where(ProductionHold.staging_errors_sql).pluck(:id)
                           .each { |id| holds[id] = { reason: "staging_errors" } }
         holds
       end

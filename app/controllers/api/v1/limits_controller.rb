@@ -28,12 +28,12 @@ module Api
         Current.organization.projects.joins(:github_repository)
                .find_by!(github_repositories: { full_name: repository })
       rescue ActiveRecord::RecordNotFound
-        render_error("R404-AGENT-002", "Progetto non trovato", status: :not_found)
+        render_error("R404-AGENT-002", "Project not found", status: :not_found)
         nil
       end
 
       def invalid_runtime
-        render_error("R422-AGENT-005", "Runtime non valido", status: :unprocessable_content)
+        render_error("R422-AGENT-005", "Invalid runtime", status: :unprocessable_content)
       end
     end
   end

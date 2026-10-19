@@ -84,7 +84,7 @@ module Cli
         env = find_environment(ref) if ref.present?
         return env if env
 
-        render_error("R422-SHARED-001", "environment richiesto o inesistente nell'organizzazione",
+        render_error("R422-SHARED-001", "environment missing or not found in the organization",
                      status: :unprocessable_content)
         nil
       end

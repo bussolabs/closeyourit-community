@@ -27,7 +27,7 @@ module Api
       def create
         symbols = Array(params[:symbols]).map { |raw| raw.respond_to?(:to_unsafe_h) ? raw.to_unsafe_h : raw }
         if symbols.size > MAX_SYMBOLS_PER_FLUSH
-          return render_error("R413-USAGE-001", "Flush di usage troppo grande", status: :content_too_large)
+          return render_error("R413-USAGE-001", "Usage flush too large", status: :content_too_large)
         end
 
         accepted = symbols.select { |item| acceptable?(item) }

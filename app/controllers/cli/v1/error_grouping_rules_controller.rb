@@ -58,7 +58,7 @@ module Cli
         bad << "operator" if params.key?(:operator) && !Errors::GroupingRule.operators.key?(params[:operator].to_s)
         return if bad.empty?
 
-        render_error("R422-ERRGROUPRULE-002", "Valore non ammesso per: #{bad.join(', ')}",
+        render_error("R422-ERRGROUPRULE-002", "Value not allowed for: #{bad.join(', ')}",
                      status: :unprocessable_content)
       end
 

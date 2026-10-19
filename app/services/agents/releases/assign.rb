@@ -85,8 +85,10 @@ module Agents
 
       # CYRA-1064 — a staging number nothing has published yet, which a newer release already reached:
       # its heading is on main and the closer could never use it. Production keeps its own number.
+      # CYRA-1030 — a number sent back to staging already has its own heading on main: never overtaken.
       def overtaken?(existing, repository)
         return false unless @execution_phase == "closer_staging" && !@workflow.closer_staging_completed_at?
+        return false if existing.landed_at?
 
         mine = parse(existing.version.sub(/-beta\.\d+\z/, ""))
         return true if released_sibling_versions(repository).any? { |version| (mine <=> version) <= 0 }
@@ -98,10 +100,13 @@ module Agents
 
       # CYRA-1065 — staging numbers other workflows of this repository already merged to main: without a
       # staging channel no tag records them, and only this tells that their heading is already there.
+      # CYRA-1030 — a number sent back to staging stays merged while its new staging runs.
       def released_sibling_versions(repository)
         Agents::ReleaseAssignment.for_phase("closer_staging")
                                  .where(github_repository: repository).where.not(workflow: @workflow)
-                                 .joins(:workflow).merge(Agents::Workflow.where.not(closer_staging_completed_at: nil))
+                                 .joins(:workflow)
+                                 .where("agents_workflows.closer_staging_completed_at IS NOT NULL " \
+                                        "OR agents_release_assignments.landed_at IS NOT NULL")
                                  .pluck(:version).map { |version| parse(version.sub(/-beta\.\d+\z/, "")) }
       end
 

@@ -8,7 +8,8 @@ module Organizations
     # intermedio god → org → progetto); blank → eredita dal god. servers_retention_days = STESSO
     # livello ma è l'UNICO livello intermedio per i server (CYRA-159, org-scoped, niente progetto).
     store_accessor :preferences, :artifacts_retention_days, :crashes_retention_days, :session_health_retention_days, :measurements_retention_days, :traces_retention_days, :default_projects_view, :logs_retention_days, :analytics_retention_days,
-                   :errors_retention_days, :performance_retention_days, :servers_retention_days, :uptime_retention_days
+                   :errors_retention_days, :performance_retention_days, :servers_retention_days, :uptime_retention_days,
+                   :production_hold_hours
 
     # Normalizza la retention a Integer o nil (un form vuoto "" → nil = eredita).
     def logs_retention_days=(value)
@@ -33,6 +34,12 @@ module Organizations
 
     def uptime_retention_days=(value)
       super(value.presence&.to_i)
+    end
+
+    # Wait before production in whole hours, same rule as the project's (CYRA-1000): blank inherits
+    # from the platform, 0 stays 0, a non-integer reaches validation.
+    def production_hold_hours=(value)
+      super(value.presence && (Integer(value.to_s, 10, exception: false) || value))
     end
 
     belongs_to :created_by,
@@ -417,6 +424,8 @@ module Organizations
     validates :performance_retention_days, numericality: { only_integer: true, in: 1..365 }, allow_nil: true
     validates :servers_retention_days, numericality: { only_integer: true, in: 1..365 }, allow_nil: true
     validates :uptime_retention_days, numericality: { only_integer: true, in: 1..730 }, allow_nil: true
+    validates :production_hold_hours, numericality: { only_integer: true, in: Agents::Workflows::ProductionHold::HOURS_RANGE,
+                                                      message: :production_hold_hours }, allow_nil: true
     validate :default_assignee_belongs_to_organization
     validate :cto_is_human_member
 

@@ -57,6 +57,18 @@ RSpec.describe Analytics::Query, type: :service do
     end
   end
 
+  context "when the clock has nanoseconds" do
+    let(:now) { Time.at(Time.current.to_i, 123_456_789, :nsec).in_time_zone }
+
+    it "keeps the chart and the realtime line on the right bucket" do
+      pv(occurred_at: now - 1.minute)
+      q = described_class.new(project_id: pid, range: "24h", environment: "production", now: now)
+
+      expect(q.timeseries.last[:pageviews]).to eq(1)
+      expect(q.realtime_series.last).to eq(1)
+    end
+  end
+
   describe "#top_paths / #top_referrers" do
     it "ordina le pagine per volume con conteggio visitatori" do
       2.times { |i| pv(path: "/a", visitor_hash: "v#{i}") }

@@ -19,7 +19,7 @@ module Api
 
       def create
         version = params[:version].to_s.strip
-        return render_error("R422-RELEASE-001", "version obbligatoria", status: :unprocessable_content) if version.blank?
+        return render_error("R422-RELEASE-001", "version is required", status: :unprocessable_content) if version.blank?
 
         # L'environment è quello DEL TOKEN (già environment-specific), non del body: non falsificabile
         # dal chiamante. La CI usa il token dell'environment giusto (staging vs production).

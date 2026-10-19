@@ -86,7 +86,7 @@ module Cli
 
           asset = project_assets.find(params[:id])
           return unless enforce_environment!(asset)
-          return render_error("R422-SECRETFILE-007", "Archiviare l'asset prima del purge", status: :unprocessable_content) unless asset.archived?
+          return render_error("R422-SECRETFILE-007", "Archive the asset before purging it", status: :unprocessable_content) unless asset.archived?
           ::Secrets::Assets::RecordEvent.call(action: "purged", asset:, actor: Current.account,
                                                metadata: { name: asset.name, versions: asset.versions.count })
           versions = asset.versions.load
@@ -106,13 +106,13 @@ module Cli
           return nil if params[:environment].blank?
           env = @project.environments.find_by(id: params[:environment]) || @project.environments.find_by(code: params[:environment].to_s.downcase)
           return env if env
-          render_error("R422-SECRETFILE-006", "Environment non dichiarato dal progetto", status: :unprocessable_content)
+          render_error("R422-SECRETFILE-006", "Environment not declared by the project", status: :unprocessable_content)
           nil
         end
 
         def require_read
           return true if authorization.can?("secret_files.read", scope: @project) || authorization.can?("secret_files.manage", scope: @project)
-          render_error("R403-CLIAUTH-002", "Permesso negato", status: :forbidden)
+          render_error("R403-CLIAUTH-002", "Permission denied", status: :forbidden)
           false
         end
 
@@ -136,7 +136,7 @@ module Cli
                                               project: @project, environment: environment || asset&.environment,
                                               organization: @project.organization,
                                               metadata: { channel: "cli", name: name.presence || asset&.name }.compact)
-          render_error("R403-SECRETFILE-001", "environment non consentito per questo account", status: :forbidden)
+          render_error("R403-SECRETFILE-001", "environment not allowed for this account", status: :forbidden)
           false
         end
 

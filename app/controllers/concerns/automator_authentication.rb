@@ -70,10 +70,10 @@ module AutomatorAuthentication
   end
 
   def invalid_automator_token
-    render_error("R401-AGENT-001", "Token automator mancante o non valido", status: :unauthorized)
+    render_error("R401-AGENT-001", "Missing or invalid automator token", status: :unauthorized)
   end
 
   def unsupported_automator_host
-    render_error("R403-AGENT-007", "Host automator non supportato: è richiesto Linux", status: :forbidden)
+    render_error("R403-AGENT-007", "Unsupported automator host: Linux is required", status: :forbidden)
   end
 end

@@ -2143,6 +2143,8 @@ it:
           body_held: "%{name} ha fermato il rilascio prima della produzione. Il codice è già su main: finché resta ferma, nessun rilascio di questo repository va in produzione."
           retry: Sblocca e riprova
           retried: Lavorazione rimessa in coda.
+          send_back: Rimanda allo staging
+          sent_back: "Rimandata allo staging: la prova rifà il codice con un nuovo numero di prova, e la fila dei rilasci è libera."
           waiting_on_cto: "Può decidere solo %{name}."
           retrying_title: In revisione — riprova da sola
           retrying_body: "La fase %{phase} è stata respinta ed è già in un nuovo tentativo. Nessuna azione necessaria."

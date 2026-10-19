@@ -168,12 +168,13 @@ module Agents
         SQL
       end
 
-      # CYRA-871 — la produzione aspetta 2 ore di staging senza errori nuovi. Fuori dal CASE per la
-      # stessa ragione dello slot qui sopra: la fase è pronta, è il freno a trattenerla.
+      # Production waits for a staging soak with no new errors, outside the CASE like the slot above:
+      # the phase is ready, the hold keeps it. The wait is this project's, read once (CYRA-871, CYRA-1000).
       def production_hold_released_sql
+        window = Agents::Workflows::ProductionHold.window(@project)
         <<~SQL.squish
           (#{ready_phase_sql}) <> 'closer_production'
-          OR (#{Agents::Workflows::ProductionHold.released_sql(now: @now)})
+          OR (#{Agents::Workflows::ProductionHold.released_sql(now: @now, window:)})
         SQL
       end
 

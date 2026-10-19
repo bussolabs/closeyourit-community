@@ -99,7 +99,7 @@ module Cli
       # simplecov:enable
 
       def render_group_not_found
-        render_error("R422-PROJECT-002", "Gruppo non trovato nell'organizzazione", status: :unprocessable_content)
+        render_error("R422-PROJECT-002", "Group not found in the organization", status: :unprocessable_content)
       end
     end
   end

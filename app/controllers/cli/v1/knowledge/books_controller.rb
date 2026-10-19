@@ -63,7 +63,7 @@ module Cli
         def authorize_add_page!
           return true if book_manageable?(@book)
 
-          render_error("R403-CLIAUTH-002", "Permesso negato", status: :forbidden)
+          render_error("R403-CLIAUTH-002", "Permission denied", status: :forbidden)
           false
         end
 

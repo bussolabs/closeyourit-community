@@ -234,7 +234,46 @@ RSpec.describe Agents::Workflows::InFlight do
       row = board.page.records.find { |record| record.workflow == workflow }
 
       expect(row.production_hold).to eq(reason: "staging_soak",
-                                        until: workflow.closer_staging_verified_at + Agents::Workflows::ProductionHold::WINDOW)
+                                        until: workflow.closer_staging_verified_at + Agents::Workflows::ProductionHold::DEFAULT_HOURS.hours)
+    end
+
+    # CYRA-1000 — the time shown is the project's own wait, from the same resolver as the queue.
+    it "uses each project's wait, not the fallback" do
+      project.update!(production_hold_hours: 5)
+      workflow = in_attesa_della_produzione(verificato_da: 3.hours.ago).reload
+
+      row = board.page.records.find { |record| record.workflow == workflow }
+
+      expect(row.production_hold).to eq(reason: "staging_soak", until: workflow.closer_staging_verified_at + 5.hours)
+    end
+
+    it "uses the organization's wait when the project picks none" do
+      organization.update!(production_hold_hours: 4)
+      workflow = in_attesa_della_produzione(verificato_da: 3.hours.ago).reload
+
+      row = board.page.records.find { |record| record.workflow == workflow }
+
+      expect(row.production_hold).to eq(reason: "staging_soak", until: workflow.closer_staging_verified_at + 4.hours)
+    end
+
+    it "shows no time with a 0-hour wait, only a new staging error" do
+      project.update!(production_hold_hours: 0)
+      workflow = in_attesa_della_produzione(verificato_da: 1.minute.ago)
+      create(:error_event, group: create(:error_group, project:, first_seen_at: 30.seconds.ago),
+                           environment: "staging", occurred_at: 30.seconds.ago)
+
+      row = board.page.records.find { |record| record.workflow == workflow }
+
+      expect(row.production_hold).to eq(reason: "staging_errors")
+    end
+
+    it "shows nothing with a 0-hour wait and no new staging error" do
+      project.update!(production_hold_hours: 0)
+      workflow = in_attesa_della_produzione(verificato_da: 1.minute.ago)
+
+      row = board.page.records.find { |record| record.workflow == workflow }
+
+      expect(row.production_hold).to be_nil
     end
 
     it "con un errore nuovo in staging lo dice" do

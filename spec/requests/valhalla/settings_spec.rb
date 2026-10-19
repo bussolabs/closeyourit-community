@@ -70,6 +70,26 @@ RSpec.describe "Valhalla::Settings", type: :request do
       patch valhalla_settings_path, params: { uptime_retention_days: 999 }
       expect(response).to have_http_status(:unprocessable_content)
     end
+
+    # CYRA-1000 — the platform's wait before production is optional: blank keeps the system value.
+    it "saves the platform's wait before production, blank clears it" do
+      patch valhalla_settings_path, params: { production_hold_hours: "1" }
+      expect(response).to redirect_to(valhalla_settings_path)
+      expect(Settings::Global.instance.production_hold_hours).to eq(1)
+
+      patch valhalla_settings_path, params: { production_hold_hours: "" }
+      expect(Settings::Global.instance.production_hold_hours).to be_nil
+    end
+
+    # One request per example: Prosopite reads a second request in the same example as an N+1.
+    %w[73 1.5].each do |value|
+      it "refuses #{value} hours with a clear message" do
+        patch valhalla_settings_path, params: { production_hold_hours: value }
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include(CGI.escapeHTML(I18n.t("errors.messages.production_hold_hours")))
+        expect(Settings::Global.instance.production_hold_hours).to be_nil
+      end
+    end
   end
 
   # Gli switch AI arrivano in JSON dallo Stimulus ui--switch: rack_test non esegue JS, quindi la

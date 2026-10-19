@@ -14,7 +14,7 @@ module IngestAuthentication
     # expired? è ridondante col filtro .active di resolve_dsn_token (difesa in profondità, CYRA-716):
     # una DSN scaduta non autentica, esattamente come una revocata.
     if token.nil? || token.expired? || !ingest_project_matches?(token)
-      return render_error("R401-AUTH-001", "DSN mancante o non valida", status: :unauthorized)
+      return render_error("R401-AUTH-001", "Missing or invalid DSN", status: :unauthorized)
     end
 
     Current.api_token = token
@@ -45,7 +45,7 @@ module IngestAuthentication
     return if Current.project.blank?
     return if Current.project.origin_allowed?(origin)
 
-    render_error("R403-INGEST-002", "Origine non consentita per questo progetto", status: :forbidden)
+    render_error("R403-INGEST-002", "Origin not allowed for this project", status: :forbidden)
   end
 
   # Emitted only after all admission callbacks succeed; never trust a request-side copy.

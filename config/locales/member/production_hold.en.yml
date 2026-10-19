@@ -1,0 +1,21 @@
+# CYRA-1000 — the wait before production, picked on project, organization or platform.
+en:
+  member:
+    project_settings:
+      production_hold_section: Wait before production
+      production_hold_hours_label: Hours of staging trial before production
+      production_hold_hours_placeholder: inherit from the organization
+      production_hold_hours_hint: From 0 to 72 whole hours. With 0 the release does not wait, but a new error showing up on staging still stops it. Leave blank to inherit.
+      production_hold_effective:
+        one: "In force: %{count} hour of staging trial"
+        other: "In force: %{count} hours of staging trial"
+        zero: "In force: no wait, the check for new staging errors stays"
+    organization:
+      sections:
+        production: Wait before production
+      production_hold_hours_label: Hours of staging trial before production
+      production_hold_hours_placeholder:
+        one: "inherit from the platform (%{count} hour)"
+        other: "inherit from the platform (%{count} hours)"
+        zero: "inherit from the platform (no wait)"
+      production_hold_hours_hint: Applies to this organization's projects that do not pick their own. From 0 to 72 whole hours; with 0 the release does not wait, but a new error showing up on staging still stops it. Leave blank to inherit.

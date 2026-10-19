@@ -16,7 +16,8 @@ module Cli
     def show
       @grant = find_live_grant(params[:user_code])
       @organizations = account_organizations
-      render status: (@grant ? :ok : :not_found)
+      # No code in the address: the page asks for it, as the CLI tells the person to (CYRA-1080).
+      render status: (@grant || params[:user_code].blank? ? :ok : :not_found)
     end
 
     def approve
@@ -76,13 +77,20 @@ module Cli
     def find_live_grant(user_code)
       return nil if user_code.blank?
 
-      Accounts::DeviceGrant.live.find_by(user_code: user_code.to_s.strip.upcase)
+      Accounts::DeviceGrant.live.find_by(user_code: normalize_user_code(user_code))
     end
 
     def find_grant(user_code)
       return nil if user_code.blank?
 
-      Accounts::DeviceGrant.find_by(user_code: user_code.to_s.strip.upcase)
+      Accounts::DeviceGrant.find_by(user_code: normalize_user_code(user_code))
+    end
+
+    # People type "wdjbmzhn" or "WDJB MZHN" for "WDJB-MZHN": dashes and spaces are not part of the
+    # code (RFC 8628 §6.1). CYRA-1080
+    def normalize_user_code(user_code)
+      code = user_code.to_s.upcase.gsub(/[^A-Z0-9]/, "")
+      code.length == 8 ? "#{code[0, 4]}-#{code[4, 4]}" : code
     end
 
     def already_authorized_for?(organization)

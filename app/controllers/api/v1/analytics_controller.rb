@@ -21,7 +21,7 @@ module Api
       private
 
       def render_project_scope_mismatch
-        render_error("R404-ANALYTICS-001", "Progetto non trovato", status: :not_found)
+        render_error("R404-ANALYTICS-001", "Project not found", status: :not_found)
       end
     end
   end

@@ -182,6 +182,26 @@ RSpec.describe "Member::ProjectSettings", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
     end
 
+    # CYRA-1000 — the wait before production: 0..72 whole hours, blank inherits, 0 stays 0.
+    it "saves the wait before production, including 0" do
+      patch member_project_settings_path(project), params: { production_hold_hours: "0", section: "production" }
+      expect(response).to redirect_to(member_project_settings_path(project, section: "production"))
+      expect(project.reload.production_hold_hours).to eq(0)
+
+      patch member_project_settings_path(project), params: { production_hold_hours: "" }
+      expect(project.reload.production_hold_hours).to be_nil
+    end
+
+    # One request per example: Prosopite reads a second request in the same example as an N+1.
+    %w[73 1.5].each do |value|
+      it "refuses #{value} hours with a clear message" do
+        patch member_project_settings_path(project), params: { production_hold_hours: value, section: "production" }
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include(CGI.escapeHTML(I18n.t("errors.messages.production_hold_hours")))
+        expect(project.reload.production_hold_hours).to be_nil
+      end
+    end
+
     it "BOLA: progetto di un'altra org → 404" do
       foreign = create(:project)
       patch member_project_settings_path(foreign), params: { logs_retention_days: 7 }

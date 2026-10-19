@@ -14,7 +14,7 @@ module Api
     # job arrivano solo il tipo di dispositivo, il browser, il sistema e il paese.
     class WebVitalsController < Api::V1::IngestBaseController
       rescue_from ActionDispatch::Http::Parameters::ParseError do
-        render_error("R422-WEBVITAL-001", "Misura malformata", status: :unprocessable_content)
+        render_error("R422-WEBVITAL-001", "Malformed measurement", status: :unprocessable_content)
       end
 
       def create
@@ -25,12 +25,12 @@ module Api
 
         list = measurements
         if list.size > Analytics::Constants::WEB_VITALS_MAX_BATCH
-          return render_error("R413-WEBVITAL-002", "Batch di misure troppo grande", status: :content_too_large)
+          return render_error("R413-WEBVITAL-002", "Measurement batch too large", status: :content_too_large)
         end
 
         accepted = list.count { |item| Analytics::WebVitals::Record.acceptable?(item) }
         if list.any? && accepted.zero?
-          return render_error("R422-WEBVITAL-004", "Nessuna misura valida nel batch", status: :unprocessable_content)
+          return render_error("R422-WEBVITAL-004", "No valid measurement in the batch", status: :unprocessable_content)
         end
 
         identity = Analytics::Anonymize.call(
@@ -52,7 +52,7 @@ module Api
       private
 
       def render_project_scope_mismatch
-        render_error("R404-WEBVITAL-001", "Progetto non trovato", status: :not_found)
+        render_error("R404-WEBVITAL-001", "Project not found", status: :not_found)
       end
 
       def measurements

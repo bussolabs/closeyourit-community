@@ -45,7 +45,7 @@ module Valhalla
     def settings_params
       params.permit(:logs_retention_days, :analytics_retention_days, :errors_retention_days,
                     :performance_retention_days, :servers_retention_days, :uptime_retention_days, :traces_retention_days, :artifacts_retention_days, :crashes_retention_days, :session_health_retention_days, :measurements_retention_days,
-                    *Settings::Global::AI_SWITCH_COLUMNS)
+                    :production_hold_hours, *Settings::Global::AI_SWITCH_COLUMNS)
     end
   end
 end

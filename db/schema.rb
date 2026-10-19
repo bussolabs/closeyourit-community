@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_12_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_14_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -518,6 +518,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_100000) do
     t.datetime "created_at", null: false
     t.string "execution_phase", null: false
     t.uuid "github_repository_id", null: false
+    t.datetime "landed_at"
     t.string "sha"
     t.datetime "updated_at", null: false
     t.string "version", null: false
@@ -3747,6 +3748,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_100000) do
     t.integer "logs_retention_days"
     t.integer "measurements_retention_days", default: 14, null: false
     t.integer "performance_retention_days"
+    t.integer "production_hold_hours"
     t.integer "servers_retention_days"
     t.integer "session_health_retention_days", default: 30, null: false
     t.text "telegram_bot_token"

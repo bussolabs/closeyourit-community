@@ -10,6 +10,9 @@ en:
       approve: "Authorize"
       authorizing: "Authorizing…"
       deny: "Deny"
+      enter_lead: "Type the code shown in your terminal."
+      enter_label: "Code"
+      enter_submit: "Continue"
       no_grant_title: "Code not valid"
       no_grant_lead: "This authorization code is unknown or has expired. Start the login again from your terminal."
       approved_title: "Device authorized"
@@ -23,3 +26,5 @@ en:
       errors:
         no_organization: "Choose an organization to authorize."
         impersonating: "You cannot authorize a CLI while impersonating another account."
+        invalid_organization: "You are not a member of that organization."
+        grant_expired: "This request has expired or was already answered. Start the login again from your terminal."

@@ -91,6 +91,14 @@ en:
         utm_empty: "No visits from a campaign link in this range."
         col_pageviews: pageviews
         col_visitors: visitors
+        sites:
+          subtitle: "Visits to every site in the production environment, at a glance. Open a site for the detail."
+          online: online now
+          range: Period
+          col_site: Site
+          col_trend: Trend
+          col_last_visit: Last visit
+          not_connected: Not connected
         stats:
           pageviews: Pageviews
           visitors: Visitors

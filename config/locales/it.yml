@@ -155,6 +155,7 @@ it:
       uptime_disabled: "L'uptime è disabilitato per questo ambiente su questo progetto"
       secrets_disabled: "I secret sono disabilitati per questo ambiente su questo progetto"
       shared_secret_conflict: "è già delegato a questo progetto da un secret dell'organizzazione"
+      production_hold_hours: "dev'essere un numero intero di ore da 0 a 72, oppure vuoto per ereditare"
       local_secret_conflict: "il progetto ha già un secret suo con questo nome in questo ambiente"
       delegation_conflict: "il progetto riceve già un altro secret dell'organizzazione con questo nome in questo ambiente"
       length_budget_exceeded: "supera il limite di %{count} caratteri (adesso sono %{actual}): accorcia il testo o spezzalo in più parti"
