@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.193.2] - 2026-10-20
+
+### Security
+
+- **Utenza demo protetta.** Su un'installazione con una demo pubblica, l'utenza condivisa dei visitatori non può attivare il 2FA né chiudere gli accessi degli altri. Così nessun visitatore può chiudere fuori tutti gli altri.
+
 ## [0.193.1] - 2026-10-20
 
 ### Fixed

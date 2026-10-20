@@ -386,6 +386,12 @@ module Accounts
       App::Constants::LOCALES.include?(locale.to_s) ? locale : I18n.default_locale
     end
 
+    # The public demo prints this account's password on the website, so nobody may lock it (CYRA-1085).
+    def shared_demo?
+      demo_email = ENV.fetch("DEMO_ACCOUNT_EMAIL", "")
+      demo_email.present? && email.to_s.casecmp?(demo_email)
+    end
+
     # --- 2FA TOTP (CYRA-170) ---
 
     # Il 2FA è attivo? È la sorgente di verità per il gate di login e per il gate god di Valhalla.

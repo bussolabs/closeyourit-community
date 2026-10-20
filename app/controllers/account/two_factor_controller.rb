@@ -16,6 +16,7 @@ module Account
     # il secondo fattore. Fuori dall'impersonation true_account coincide con Current.account. @account è
     # letto anche dalle view (show/setup).
     before_action :set_two_factor_account
+    before_action :refuse_shared_demo, only: %i[setup enable]
 
     def show
     end
@@ -68,6 +69,11 @@ module Account
 
     def set_two_factor_account
       @account = Current.true_account
+    end
+
+    # A visitor turning on 2FA would sign everyone else out of the public demo (CYRA-1085).
+    def refuse_shared_demo
+      redirect_to account_two_factor_path, alert: t("account.shared_demo.locked") if @account.shared_demo?
     end
 
     # Password corrente valida, oppure un codice TOTP/recupero valido. Il `||` corto-circuita: con una

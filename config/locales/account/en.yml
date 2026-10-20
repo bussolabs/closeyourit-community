@@ -36,6 +36,8 @@ en:
         created: "Created"
         status: "Status"
         actions: "Actions"
+    shared_demo:
+      locked: "This is the shared demo account: you can't turn on 2FA or close other visitors' sessions."
     sessions:
       title: "Active sign-ins"
       lead: "The devices you signed in from with this email. If you do not recognise one, close it: whoever was using it will have to sign in again with the password."

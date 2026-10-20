@@ -36,6 +36,8 @@ it:
         created: "Creato"
         status: "Stato"
         actions: "Azioni"
+    shared_demo:
+      locked: "Questa è l'utenza condivisa della demo: non si può attivare il 2FA né chiudere gli accessi degli altri visitatori."
     sessions:
       title: "Accessi attivi"
       lead: "I dispositivi da cui sei entrato con questa email. Se non riconosci un accesso, chiudilo: chi lo stava usando dovrà rientrare con la password."

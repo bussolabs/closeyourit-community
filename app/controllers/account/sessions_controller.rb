@@ -20,6 +20,7 @@ module Account
     # e ne chiuderebbe — gli accessi mentre il god crede di guardare i propri. Fuori
     # dall'impersonation i due coincidono. Stesso principio di Account::TwoFactorController.
     before_action :set_owner
+    before_action :refuse_shared_demo, only: %i[destroy destroy_others]
 
     # CYRA-924 — every column but the actions sorts (C9); a person has a handful of sessions.
     SORT_COLUMNS = {
@@ -61,6 +62,11 @@ module Account
 
     def set_owner
       @owner = Current.true_account
+    end
+
+    # On the public demo every visitor shares this account: closing sessions would sign the others out (CYRA-1085).
+    def refuse_shared_demo
+      redirect_to account_sessions_path, alert: t("account.shared_demo.locked") if @owner.shared_demo?
     end
   end
 end
