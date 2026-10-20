@@ -24,6 +24,8 @@ module Ticketing
       - `answer`: la risposta, basata ESCLUSIVAMENTE sui ticket forniti. Cita i ticket rilevanti
         nel testo col loro codice tra parentesi quadre, es. [ABC-12]. Se il contesto non basta
         per rispondere, dillo esplicitamente.
+        Scrivila in testo semplice, senza Markdown: niente asterischi, cancelletti o backtick;
+        per un elenco usa righe che iniziano con un numero o un trattino.
       - `cited_ids`: gli id (presi dalla lista) dei ticket su cui si fonda la risposta.
       #{Text::ItalianOrthography::PROMPT_RULE}
     PROMPT

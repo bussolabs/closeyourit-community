@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.193.1] - 2026-10-20
+
+### Fixed
+
+- **Risposte AI senza asterischi.** In «Chiedi ai ticket» e nella domanda alla knowledge base la risposta arriva in testo semplice: niente più `**` e backtick in mezzo alle frasi.
+
 ## [0.193.0] - 2026-10-20
 
 ### Added

@@ -29,6 +29,8 @@ module Knowledge
       - `answer`: la risposta, basata ESCLUSIVAMENTE sulle pagine fornite. Cita le pagine
         rilevanti nel testo col loro titolo tra parentesi quadre, es. [Scelta database].
         Se il contesto non basta per rispondere, dillo esplicitamente.
+        Scrivila in testo semplice, senza Markdown: niente asterischi, cancelletti o backtick;
+        per un elenco usa righe che iniziano con un numero o un trattino.
       - `cited_ids`: gli id (presi dalla lista) delle pagine su cui si fonda la risposta.
       #{Text::ItalianOrthography::PROMPT_RULE}
     PROMPT

@@ -3,6 +3,11 @@
 require "rails_helper"
 
 RSpec.describe Knowledge::AskPages do
+  # The page prints the answer as plain text, so Markdown marks would show up as literal asterisks.
+  it "asks the model for a plain-text answer without Markdown" do
+    expect(described_class::SYSTEM_PROMPT).to include("testo semplice, senza Markdown")
+  end
+
   let(:embed_client) { instance_double(Ai::Embedding::Client) }
   let(:chat_client) { instance_double(Ai::Llm::Client) }
   let(:org) { create(:organization) }
