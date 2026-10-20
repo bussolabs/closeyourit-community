@@ -46,6 +46,7 @@ it:
     notifications:
       content:
         created: "Nuovo ticket %{code}"
+        opened_for_you: "Nuovo ticket aperto per te: %{code}"
         assigned: "%{code} assegnato a %{name}"
         unassigned: "%{code} senza assegnatario"
         status_changed: "%{code}: %{from} → %{to}"

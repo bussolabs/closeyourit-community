@@ -1,0 +1,15 @@
+<%# locals: (can_manage:)
+    Reporter menu (CYRA-1086): lists only the people who see the project. %>
+<% if can_manage %>
+  <span id="<%= dom_id(@ticket) %>_reporter" class="inline-flex">
+    <%= render Ui::RowMenuComponent.new(width: :lg, label: @ticket.reporter.name, icon: "chevron-down",
+          test_id: "ticket-reporter", aria_label: t("member.tickets.show.reporter")) do %>
+      <% @reporter_options.each do |account| %>
+        <%= button_to account.name, reporter_member_ticket_path(@ticket, reporter_id: account.id), method: :patch,
+              class: Ui::RowMenuComponent.item_class, data: { test: "ticket-reporter-#{account.id}" } %>
+      <% end %>
+    <% end %>
+  </span>
+<% else %>
+  <%= render "member/tickets/reporter", ticket: @ticket %>
+<% end %>

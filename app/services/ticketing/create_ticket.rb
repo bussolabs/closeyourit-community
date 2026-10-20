@@ -2,20 +2,27 @@
 
 module Ticketing
   # Crea un ticket nell'org corrente. Risolve project/status/priority/assignee SCOPED all'org
-  # (anti-BOLA); le validazioni tenant finali restano nel model. reporter = chi crea. Result pattern.
+  # (anti-BOLA); le validazioni tenant finali restano nel model. Result pattern.
+  # `reporter:` is whoever creates the ticket. The ticket names as reporter `params[:reporter_id]`,
+  # else the project owner when `use_project_owner` (channels where a person types the ticket), else
+  # the creator (CYRA-1086).
   class CreateTicket < ApplicationService
-    def initialize(organization:, reporter:, params:, true_actor: nil)
+    def initialize(organization:, reporter:, params:, true_actor: nil, use_project_owner: false)
       @organization = organization
       @reporter = reporter
       @params = params
       @true_actor = true_actor
+      @use_project_owner = use_project_owner
     end
 
     def call
       @project = visible_projects.find_by(id: @params[:project_id])
       return err("R404-TICKET-001", :project_not_found) if @project.nil?
 
-      ticket = @project.tickets.new(attributes.merge(reporter: @reporter))
+      named_reporter = resolve_reporter
+      return err("R422-TICKET-023", :reporter_not_allowed) if named_reporter.nil?
+
+      ticket = @project.tickets.new(attributes.merge(reporter: named_reporter))
       event = nil
       ApplicationRecord.transaction do
         ticket.save!
@@ -25,7 +32,7 @@ module Ticketing
                                     action: "created",
                                     # simplecov:disable status/priority obbligatorie (null:false) → dopo save! sempre
                                     # presenti; l'arm `&.label` con ricevente nil è difesa irraggiungibile.
-                                    data: { status: ticket.status&.label, priority: ticket.priority&.label })
+                                    data: created_data(ticket))
         # simplecov:enable
       end
       # Notifiche al team (fuori dalla transazione, evento committato). Vedi Ticketing::NotifyJob.
@@ -53,6 +60,27 @@ module Ticketing
     # link personali + dei team). SOLO owner (+god) vedono tutti; gli altri solo i collegati (strict).
     def visible_projects
       Authorization::VisibleScope.new(account: @reporter, organization: @organization).projects
+    end
+
+    def resolve_reporter
+      return explicit_reporter if @params[:reporter_id].present?
+
+      owner = @project.owner if @use_project_owner
+      @project.reporter_candidate?(owner) ? owner : @reporter
+    end
+
+    # The creator can always name themselves; anyone else must see the project.
+    def explicit_reporter
+      account = @organization.accounts.find_by(id: @params[:reporter_id])
+      return account if account == @reporter
+
+      account if @project.reporter_candidate?(account)
+    end
+
+    def created_data(ticket)
+      data = { status: ticket.status&.label, priority: ticket.priority&.label }
+      data[:on_behalf_of] = ticket.reporter.name if ticket.reporter_id != @reporter.id
+      data
     end
 
     def attributes

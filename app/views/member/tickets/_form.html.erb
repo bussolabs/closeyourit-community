@@ -18,6 +18,10 @@
      ticket_duplicates_url_value: duplicates_member_tickets_path,
      ticket_duplicates_min_chars_value: 8
    } %>
+<%# CYRA-1086 — project → owner, so the reporter follows the chosen project. %>
+<% reporter_data = ticket.persisted? ? {} : {
+     ticket_reporter_owners_value: @projects.to_h { |project| [ project.id, project.owner_id ] }.to_json
+   } %>
 <% compose_data = {
      ticket_compose_compose_url_value: compose_member_tickets_path,
      ticket_compose_poll_url_value: member_ai_request_path(":id"),
@@ -43,9 +47,9 @@
        knowledge_used_other: t("member.tickets.compose.knowledge_used.other", count: "%{count}")
      }.to_json } %>
 <div class="p-7">
-  <%= form_with url: url, method: method, class: "space-y-6 group/ticket", data: { test: "ticket-form", controller: "ticket-milestone ticket-parent ticket-error-group ticket-metric-group ticket-platforms ticket-compose ticket-entry#{" ticket-duplicates" unless ticket.persisted?}", action: "change->ticket-milestone#refresh change->ticket-parent#refresh change->ticket-error-group#refresh change->ticket-metric-group#refresh change->ticket-platforms#refresh change->ticket-compose#projectSynced#{" change->ticket-duplicates#projectChanged focusout->ticket-duplicates#queue" unless ticket.persisted?}", ticket_platforms_map_value: @project_platforms_map.to_json, ticket_milestone_map_value: @milestones_project_map.to_json, ticket_parent_map_value: @epics_project_map.to_json,
+  <%= form_with url: url, method: method, class: "space-y-6 group/ticket", data: { test: "ticket-form", controller: "ticket-milestone ticket-parent ticket-error-group ticket-metric-group ticket-platforms ticket-compose ticket-entry#{" ticket-duplicates ticket-reporter" unless ticket.persisted?}", action: "change->ticket-milestone#refresh change->ticket-parent#refresh change->ticket-error-group#refresh change->ticket-metric-group#refresh change->ticket-platforms#refresh change->ticket-compose#projectSynced#{" change->ticket-duplicates#projectChanged change->ticket-reporter#sync focusout->ticket-duplicates#queue" unless ticket.persisted?}", ticket_platforms_map_value: @project_platforms_map.to_json, ticket_milestone_map_value: @milestones_project_map.to_json, ticket_parent_map_value: @epics_project_map.to_json,
         ticket_error_group_map_value: @error_groups_project_map.to_json, ticket_metric_group_map_value: @metric_groups_project_map.to_json,
-        ticket_entry_active_value: Ui::PageHeaderComponent::TabComponent::CLASSES[true], ticket_entry_inactive_value: Ui::PageHeaderComponent::TabComponent::CLASSES[false], **compose_data, **duplicates_data } do %>
+        ticket_entry_active_value: Ui::PageHeaderComponent::TabComponent::CLASSES[true], ticket_entry_inactive_value: Ui::PageHeaderComponent::TabComponent::CLASSES[false], **compose_data, **duplicates_data, **reporter_data } do %>
     <%= render Ui::PageHeaderComponent.new(title: title, breadcrumb: ticket_breadcrumb) do |h| %>
       <% h.with_actions do %>
         <%= render Ui::ButtonComponent.new(label: t("member.tickets.form.cancel"), href: back_path, variant: :secondary_muted, size: :sm) %>

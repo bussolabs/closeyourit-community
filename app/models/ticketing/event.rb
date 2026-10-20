@@ -27,7 +27,7 @@ module Ticketing
     # nessuno ha preso va poter rimessa in discussione da chi la legge. Nasce SENZA actor, col solo
     # `actor_name` di sistema: dietro non c'era una persona.
     ACTIONS = %w[
-      created updated status_changed assigned unassigned reviewer_changed milestone_changed
+      created updated status_changed assigned unassigned reviewer_changed reporter_changed milestone_changed
       comment_deleted attached attachment_removed review_rejected review_approved linked
       branch_created pull_request_opened pull_request_merged pull_request_closed
       agent_eligibility_evaluated agent_eligibility_overridden clarification_requested

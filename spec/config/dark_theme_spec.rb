@@ -10,6 +10,8 @@ RSpec.describe "Dark theme of the rewritten components" do
       .to eq([ [ "[&_code]:", "bg-stone-100" ] ])
     expect("dark:[&_a]:text-indigo-500".scan(UiDarkPalette::LIGHT_CLASS))
       .to eq([ [ "dark:[&_a]:", "text-indigo-500" ] ])
+    expect("[&>:not([hidden])~:not([hidden])]:border-stone-200".scan(UiDarkPalette::LIGHT_CLASS))
+      .to eq([ [ "[&>:not([hidden])~:not([hidden])]:", "border-stone-200" ] ])
   end
 
   it "covers the files of every rewritten component" do
@@ -74,6 +76,14 @@ RSpec.describe "Dark theme of the rewritten components" do
     allowed = (UiDarkPalette.files + [ Rails.root.join("app/views/layouts/component_preview.html.erb").to_s ]).to_set
     sources = Dir[Rails.root.join("app/views/**/*.erb")] + Dir[Rails.root.join("app/components/**/*.{erb,rb}")]
     offenders = sources.reject { allowed.include?(it) }.select { File.read(it).match?(/(?<![\w-])dark:[a-z]/) }
+
+    expect(offenders.map { it.delete_prefix("#{Rails.root}/") }).to be_empty
+  end
+
+  # A broken prefix such as "dark:]:" is silently dropped by Tailwind, so the light colour stays.
+  it "never writes a dark variant with a broken selector" do
+    sources = Dir[Rails.root.join("app/{views,components,helpers}/**/*.{erb,rb}")]
+    offenders = sources.select { File.read(it).include?("dark:]") }
 
     expect(offenders.map { it.delete_prefix("#{Rails.root}/") }).to be_empty
   end

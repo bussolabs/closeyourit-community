@@ -89,6 +89,9 @@ it:
       cto_none: Nessun CTO configurato
       cto_inherit: "Eredita %{name}"
       cto_hint: Se vuoto usa il CTO dell'organizzazione. Quello del progetto ha la precedenza.
+      owner_label: Referente del progetto
+      owner_placeholder: Nessuno
+      owner_hint: Il cliente. I ticket che apri a mano qui lo indicano come segnalatore, così risposte e domande arrivano a lui.
       # CYRA-883 — the side index and the ingest tokens section.
       nav_label: Sezioni delle impostazioni
       retention_hint: Valori solo per questo progetto. Lascia vuoto un campo per ereditare quello dell'organizzazione.

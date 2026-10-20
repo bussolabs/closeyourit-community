@@ -10,9 +10,10 @@ module Ticketing
   class ResolveDuplicate < ApplicationService
     LINK_KINDS = %w[duplicate related].freeze
 
-    def initialize(organization:, reporter:, params:, ack:, true_actor: nil,
+    def initialize(organization:, reporter:, params:, ack:, true_actor: nil, use_project_owner: false,
                    link_ticket_ids: nil, link_kind: nil, link_comment: nil, reason: nil)
       @organization = organization
+      @use_project_owner = use_project_owner
       @reporter = reporter
       @params = params
       @ack = ack.to_s
@@ -62,6 +63,7 @@ module Ticketing
 
       result = CreateTicket.call(
         organization: @organization, reporter: @reporter, true_actor: @true_actor,
+        use_project_owner: @use_project_owner,
         params: @params.to_h.symbolize_keys.merge(description: description)
       )
       return result if fits || result.err?
@@ -99,8 +101,8 @@ module Ticketing
                                        code: "R404-TICKET-003", status: :not_found))
       end
 
-      result = CreateTicket.call(organization: @organization, reporter: @reporter,
-                                 true_actor: @true_actor, params: @params)
+      result = CreateTicket.call(organization: @organization, reporter: @reporter, true_actor: @true_actor,
+                                 use_project_owner: @use_project_owner, params: @params)
       return result if result.err?
 
       ticket = result.value

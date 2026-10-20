@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_20_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_20_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -2737,12 +2737,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_120000) do
     t.boolean "supporter_enabled", default: false, null: false
     t.text "supporter_reserved_topics"
     t.datetime "updated_at", null: false
+    t.uuid "owner_id"
     t.index ["created_by_id"], name: "index_projects_on_created_by_id"
     t.index ["cto_id"], name: "index_projects_on_cto_id"
     t.index ["default_assignee_id"], name: "index_projects_on_default_assignee_id"
     t.index ["group_id"], name: "index_projects_on_group_id"
     t.index ["organization_id", "key"], name: "index_projects_on_organization_id_and_key", unique: true
     t.index ["organization_id"], name: "index_projects_on_organization_id"
+    t.index ["owner_id"], name: "index_projects_on_owner_id"
     t.index ["sentry_project_id"], name: "index_projects_on_sentry_project_id", unique: true
     t.check_constraint "sentry_project_id > 0 AND sentry_project_id <= '9007199254740991'::bigint", name: "projects_sentry_id_safe_integer"
   end
@@ -4791,6 +4793,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_120000) do
   add_foreign_key "projects", "accounts", column: "created_by_id", on_delete: :nullify
   add_foreign_key "projects", "accounts", column: "cto_id", on_delete: :nullify
   add_foreign_key "projects", "accounts", column: "default_assignee_id", on_delete: :nullify
+  add_foreign_key "projects", "accounts", column: "owner_id", on_delete: :nullify
   add_foreign_key "projects", "organizations"
   add_foreign_key "projects", "projects_groups", column: "group_id"
   add_foreign_key "projects_coverage_reports", "projects", on_delete: :cascade

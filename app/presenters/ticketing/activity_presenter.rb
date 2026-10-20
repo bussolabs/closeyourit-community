@@ -12,6 +12,7 @@ module Ticketing
       "assigned" => "user-check",
       "unassigned" => "user-x",
       "reviewer_changed" => "user-pen",
+      "reporter_changed" => "user-round-pen",
       "milestone_changed" => "flag",
       "comment_deleted" => "message-circle-off",
       "attached" => "paperclip",
@@ -88,6 +89,8 @@ module Ticketing
       return updated_sentence if @event.action == "updated"
       return reviewer_sentence if @event.action == "reviewer_changed"
       return linked_sentence if @event.action == "linked"
+      return reporter_sentence if @event.action == "reporter_changed"
+      return created_on_behalf_sentence if @event.action == "created" && @event.data["on_behalf_of"].present?
       return agent_eligibility_sentence if @event.action.start_with?("agent_eligibility_")
 
       I18n.t("member.tickets.activity.#{@event.action}", **interpolations)
@@ -171,6 +174,15 @@ module Ticketing
       to = dig("reviewer", "to")
       key = to.present? ? "reviewer_changed" : "reviewer_removed"
       I18n.t("member.tickets.activity.#{key}", actor: actor_name, to: to)
+    end
+
+    # CYRA-1086 — a ticket opened for the project's client names who it was opened for.
+    def created_on_behalf_sentence
+      I18n.t("member.tickets.activity.created_on_behalf", actor: actor_name, reporter: @event.data["on_behalf_of"])
+    end
+
+    def reporter_sentence
+      I18n.t("member.tickets.activity.reporter_changed", actor: actor_name, to: dig("reporter", "to"))
     end
 
     # Solo i placeholder usati dalla chiave dell'action (gli extra verrebbero comunque ignorati

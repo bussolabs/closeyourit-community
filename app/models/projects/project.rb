@@ -2,6 +2,8 @@ module Projects
   class Project < ApplicationRecord
     attr_readonly :sentry_project_id
     belongs_to :cto, class_name: "Accounts::Account", optional: true
+    # The client contact: tickets opened by hand in this project name them as reporter (CYRA-1086).
+    belongs_to :owner, class_name: "Accounts::Account", optional: true, inverse_of: false
 
     def effective_cto = cto || organization.cto
     include Iconable
@@ -495,6 +497,7 @@ module Projects
     validate :group_must_match_organization
     validate :default_assignee_belongs_to_organization
     validate :cto_is_visible_human_member
+    validate :owner_can_report
     validate :allowed_origins_well_formed
 
     # Un'origine valida = schema http(s) + host (lettere/cifre/punto/trattino) + porta opzionale.
@@ -513,6 +516,12 @@ module Projects
     # Conteggio dei ticket per categoria (Da fare / In corso / Concluso / Non chiusi), definizione
     # unica riusata da header progetto, KPI card e lista — identica tra overview e tab (CYRA-358).
     def ticket_tally = Ticketing::Tally.for(tickets)
+
+    # A person of this organization who sees the project, so the links in their notifications open.
+    def reporter_candidate?(account)
+      account.present? && account.human? && account.member_of_organization?(organization_id) &&
+        Authorization::VisibleScope.new(account:, organization:).projects.exists?(id)
+    end
 
     private
 
@@ -565,6 +574,12 @@ module Projects
       visible = cto.human? && cto.member_of_organization?(organization_id) &&
                 Authorization::VisibleScope.new(account: cto, organization:).projects.exists?(id)
       errors.add(:cto, :invalid) unless visible
+    end
+
+    def owner_can_report
+      return if owner.blank?
+
+      errors.add(:owner, :invalid) unless reporter_candidate?(owner)
     end
   end
 end

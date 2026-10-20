@@ -64,6 +64,18 @@
             placeholder: t("member.tickets.form.unassigned"), test_id: "ticket-assignee") %>
     </div>
 
+    <%# CYRA-1086 — reporter, pre-filled with the project owner (ticket-reporter). Blank = the server
+        picks the owner, else whoever saves. Only on new tickets: later it changes from the ticket page. %>
+    <% unless ticket.persisted? %>
+      <div class="px-4 py-3.5">
+        <%= render Ui::SelectComponent.new(name: "reporter_id", label: t("member.tickets.form.reporter"),
+              options: @assignees.select(&:human?).map { |a| [ a.name, a.id ] },
+              selected: params[:reporter_id].presence || ticket.project&.owner_id, include_blank: true,
+              placeholder: t("member.tickets.form.reporter_auto"), hint: t("member.tickets.form.reporter_hint"),
+              test_id: "ticket-reporter", error: @errors&.dig(:reporter)&.first) %>
+      </div>
+    <% end %>
+
     <%= render "member/tickets/form_signals" unless ticket.persisted? %>
 
     <%# §5 Pianificazione — Epic padre + Milestone (dipendenti dal progetto, Stimulus) + Weight (punti rollup roadmap). %>

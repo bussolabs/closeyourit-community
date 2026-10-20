@@ -312,4 +312,41 @@ RSpec.describe "Member::Tickets — gate duplicati con pagina di confronto", typ
       expect(response).to have_http_status(:not_found)
     end
   end
+
+  # CYRA-1086 — the comparison page must keep the reporter the form chose, or the project owner.
+  describe "reporter through the comparison page" do
+    let!(:twin) { seeded_ticket(0, title: "Crash al login") }
+    let(:client) do
+      create(:account).tap do |account|
+        create(:membership, account: account, organization: org, role: :member)
+        create(:project_membership, account: account, project: project)
+      end
+    end
+
+    before do
+      stub_embed(basis_vector(0))
+      sign_in(member)
+    end
+
+    it "names the project owner when the ticket is created anyway" do
+      project.update!(owner: client)
+
+      post member_tickets_path, params: create_params(dedup_ack: "create", dedup_reason: "Other endpoint")
+
+      expect(Ticketing::Ticket.order(:created_at).last.reporter).to eq(client)
+    end
+
+    it "keeps the reporter picked in the form when the ticket is created and linked" do
+      post member_tickets_path, params: create_params(reporter_id: client.id, dedup_ack: "link",
+                                                      link_ticket_ids: [ twin.id ], link_kind: "related")
+
+      expect(Ticketing::Ticket.order(:created_at).last.reporter).to eq(client)
+    end
+
+    it "carries the reporter picked in the form on the comparison page" do
+      post member_tickets_path, params: create_params(reporter_id: client.id)
+
+      expect(response.body).to include(%(name="reporter_id" value="#{client.id}"))
+    end
+  end
 end

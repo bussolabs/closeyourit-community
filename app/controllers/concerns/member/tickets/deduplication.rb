@@ -46,7 +46,7 @@ module Member
 
         result = Ticketing::ResolveDuplicate.call(
           organization: Current.organization, reporter: Current.account,
-          true_actor: Current.true_account, params: ticket_params,
+          true_actor: Current.true_account, params: create_params, use_project_owner: true,
           ack: params[:dedup_ack], link_ticket_ids: submitted_link_ids,
           link_kind: params[:link_kind], link_comment: params[:link_comment],
           reason: params[:dedup_reason]
@@ -91,7 +91,7 @@ module Member
         @draft = dedup.draft
         @comparison = Ticketing::ComparisonPresenter.new(existing: @match, draft: @draft)
         # Round-trip del draft negli hidden della pagina di confronto (vedi _draft_fields).
-        @draft_params = ticket_params
+        @draft_params = create_params
       end
 
       def render_draft_form

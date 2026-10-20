@@ -35,6 +35,7 @@ it:
       analytics_enabled: statistiche del sito
       helpdesk_enabled: richieste di assistenza dai siti
       cto_id: CTO del progetto
+      owner_id: referente del progetto
       default_assignee_id: assegnatario di default
       preferences: impostazioni
       quick_bug_report_enabled: segnalazione rapida di un problema

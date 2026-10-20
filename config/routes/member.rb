@@ -807,6 +807,7 @@ namespace :member do
       patch :status
       patch :assignee
       patch :reviewer
+      patch :reporter
       # Pagine Knowledge semanticamente correlate al ticket (pannello lazy nella show).
       post  :knowledge
     end

@@ -43,6 +43,7 @@ it:
           assigned: Assegnato
           unassigned: Assegnazione tolta
           reviewer_changed: Revisore cambiato
+          reporter_changed: Segnalatore cambiato
           milestone_changed: Traguardo cambiato
           comment_deleted: Commento eliminato
           attached: Allegato aggiunto

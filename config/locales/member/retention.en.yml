@@ -87,6 +87,9 @@ en:
       cto_none: No CTO set
       cto_inherit: "Inherits %{name}"
       cto_hint: When empty, the organization's CTO is used. The project's own CTO takes precedence.
+      owner_label: Project owner
+      owner_placeholder: None
+      owner_hint: The client. Tickets you open by hand here name them as reporter, so replies and questions reach them.
       # CYRA-883 — the side index and the ingest tokens section.
       nav_label: Settings sections
       retention_hint: Values for this project only. Leave a field empty to inherit the organization's.

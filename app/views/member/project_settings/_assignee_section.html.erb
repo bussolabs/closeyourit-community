@@ -19,5 +19,11 @@
           placeholder: cto ? t("member.project_settings.cto_inherit", name: cto.name) : t("member.project_settings.cto_none"),
           hint: t("member.project_settings.cto_hint"),
           error: @errors&.dig(:cto)&.first) %>
+    <%= render Ui::SelectComponent.new(name: "owner_id", label: t("member.project_settings.owner_label"),
+          options: @owner_options.map { |account| [ account.name, account.id ] },
+          selected: @project.owner_id, include_blank: true,
+          placeholder: t("member.project_settings.owner_placeholder"),
+          hint: t("member.project_settings.owner_hint"), test_id: "project-owner",
+          error: @errors&.dig(:owner)&.first) %>
   <% end %>
 <% end %>

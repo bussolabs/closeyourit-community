@@ -134,6 +134,32 @@ RSpec.describe Ticketing::Notifications::DispatchEvent do
     end
   end
 
+  # CYRA-1086 — a ticket typed in for the project's client tells the client it exists.
+  describe "created event on behalf of the reporter" do
+    let(:client) do
+      create(:account).tap { |a| create(:membership, account: a, organization: organization, role: :member) }
+    end
+    let(:creator) { actor }
+    let(:event) do
+      ticket.update!(reporter: client)
+      create(:ticket_event, ticket: ticket, actor: creator, action: "created", data: { "on_behalf_of" => client.name })
+    end
+
+    it "tells the reporter the ticket was opened for them, and not the creator" do
+      dispatch(event)
+
+      notification = Alerting::Notification.find_by(account: client, via: :in_app, event_type: :ticket_created)
+      expect(notification.title).to eq(I18n.t("ticketing.notifications.content.opened_for_you", code: ticket.code))
+      expect(Alerting::Notification.where(account: creator)).not_to exist
+    end
+
+    it "notifies the reporter once even when they are also the assignee" do
+      ticket.update!(assignee: client)
+
+      expect { dispatch(event) }.to change { Alerting::Notification.where(account: client, via: :in_app).count }.by(1)
+    end
+  end
+
   describe "evento assigned" do
     let(:assignee) do
       create(:account).tap { |a| create(:membership, account: a, organization: organization, role: :member) }

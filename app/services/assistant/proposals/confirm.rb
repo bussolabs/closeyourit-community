@@ -71,7 +71,7 @@ module Assistant
         return err("R404-PROPOSAL-001", :not_visible) if ceiling_excludes?(payload["project_id"])
 
         not_visible_if(Ticketing::CreateTicket.call(
-          organization: @organization, reporter: @account, true_actor: @true_actor,
+          organization: @organization, reporter: @account, true_actor: @true_actor, use_project_owner: true,
           params: { project_id: payload["project_id"], title: payload["title"], description: signed(payload["description"]),
                     kind: payload["ticket_kind"], status_id: Ticketing::FormOptions.default_status_id(@organization),
                     priority_id: payload["priority_id"].presence || Ticketing::FormOptions.default_priority_id(@organization) }

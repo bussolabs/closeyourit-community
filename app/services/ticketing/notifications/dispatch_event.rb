@@ -52,11 +52,14 @@ module Ticketing
         delivered += deliver_review(reviewer, ticket, organization) if reviewer
         rejected_assignee = rejection_recipient(ticket)
         delivered += deliver_rejection(rejected_assignee, ticket, organization) if rejected_assignee
+        reporter = opened_for_recipient(ticket)
+        delivered += deliver_opened_for(reporter, ticket, organization) if reporter
 
         recipients(ticket).each do |account|
           next if account.id == @event.actor_id
           next if reviewer && account.id == reviewer.id
           next if rejected_assignee && account.id == rejected_assignee.id
+          next if reporter && account.id == reporter.id
 
           delivered += deliver_to(account, ticket, organization, event_type, content_for[account.effective_locale])
         end
@@ -175,6 +178,19 @@ module Ticketing
         return nil if assignee.nil? || assignee.id == @event.actor_id
 
         assignee
+      end
+
+      # Reporter of a ticket someone else opened for them (CYRA-1086): non-nil only on "created".
+      def opened_for_recipient(ticket)
+        return nil unless @event.action == "created"
+        return nil if ticket.reporter_id == @event.actor_id
+
+        ticket.reporter
+      end
+
+      def deliver_opened_for(reporter, ticket, organization)
+        content = I18n.with_locale(reporter.effective_locale) { Content.opened_for_you(event: @event) }
+        deliver_ping(reporter, ticket, organization, event_type: :ticket_created, content: content, segment: "opened_for")
       end
 
       # Ping "pronto per la revisione" al reviewer (event_type ticket_review_requested). Content nella

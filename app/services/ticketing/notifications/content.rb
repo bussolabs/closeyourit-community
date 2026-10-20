@@ -26,6 +26,16 @@ module Ticketing
         )
       end
 
+      # CYRA-1086 — ping to the reporter a ticket was opened for by someone else.
+      def self.opened_for_you(event:)
+        ticket = event.ticket
+        new(
+          title: I18n.t("ticketing.notifications.content.opened_for_you", code: ticket.code),
+          body: ticket.title,
+          url: Rails.application.routes.url_helpers.member_ticket_path(ticket)
+        )
+      end
+
       # Snapshot dedicato del ping "review respinta" all'assignee: il body È il motivo del rifiuto
       # (l'informazione azionabile per chi deve sistemare), non il titolo del ticket.
       def self.review_rejected(event:)

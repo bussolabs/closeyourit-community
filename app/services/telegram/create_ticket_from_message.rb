@@ -54,7 +54,7 @@ module Telegram
     def create(project)
       organization = project.organization
       result = Ticketing::CreateTicket.call(
-        organization: organization, reporter: @account, true_actor: @account,
+        organization: organization, reporter: @account, true_actor: @account, use_project_owner: true,
         params: {
           project_id: project.id, kind: :bug,
           title: title, description: description,

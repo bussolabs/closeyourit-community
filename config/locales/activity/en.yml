@@ -35,6 +35,7 @@ en:
       analytics_enabled: site analytics
       helpdesk_enabled: help desk requests from the sites
       cto_id: project CTO
+      owner_id: project owner
       default_assignee_id: default assignee
       preferences: settings
       quick_bug_report_enabled: quick problem report

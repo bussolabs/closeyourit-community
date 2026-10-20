@@ -42,6 +42,7 @@ en:
           assigned: Assigned
           unassigned: Unassigned
           reviewer_changed: Reviewer changed
+          reporter_changed: Reporter changed
           milestone_changed: Milestone changed
           comment_deleted: Comment deleted
           attached: Attachment added

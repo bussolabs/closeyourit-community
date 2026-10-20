@@ -29,6 +29,8 @@ module Member
       @can_manage_tokens = can?("tokens.manage", scope: @project)
       # Default assignee candidates: the assignee must be a member of the organization.
       @accounts = @project.organization.accounts.order(:name) if @can_edit_settings
+      # CYRA-1086 — only people who see the project can be its owner.
+      @owner_options = ::Alerting::Recipients.for(project: @project).order(:name) if @can_edit_settings
       load_tokens if @can_manage_tokens
     end
 

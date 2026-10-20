@@ -138,7 +138,7 @@ module UiDarkPalette
   }.freeze
 
   # A mapped light class with its variants (`hover:`, `group-hover/card:`, `aria-[current=true]:`).
-  LIGHT_CLASS = /(?<![\w:\/\[\]=&-])((?:[a-z0-9\[\]=\/_&-]+:)*)(#{MAP.keys.sort_by { -it.size }.map { Regexp.escape(it) }.join("|")})(?![\w\/-])/
+  LIGHT_CLASS = /(?<![\w:\/\[\]=&)-])((?:(?:\[(?:[^\[\]\s"']|\[[^\[\]\s"']*\])*\]|[a-z0-9\[\]=\/_&-]+):)*)(#{MAP.keys.sort_by { -it.size }.map { Regexp.escape(it) }.join("|")})(?![\w\/-])/
 
   # The member and auth pages (A32): their views, their layouts, and the helpers and Stimulus controllers
   # that hand them classes.

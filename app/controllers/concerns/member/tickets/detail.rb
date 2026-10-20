@@ -73,6 +73,8 @@ module Member
         @same_incident = same_incident_tickets(@ticket)
         @dependencies = @ticket.dependencies.includes(blocker: [ :project, :status ]).order(:created_at)
         @dependency_candidates = dependency_candidates(@ticket)
+        # CYRA-1086 — only people who see the project can be named reporter.
+        @reporter_options = ::Alerting::Recipients.for(project: @ticket.project).order(:name)
         # Anti-BOLA in lettura: un blocker cross-project (ammesso dal model) può stare in un progetto NON
         # visibile a chi guarda A. Il Set dei blocker visibili permette al partial di oscurare code/title/
         # link di quelli fuori scope — resta lo stato (bloccato o no), sparisce l'identità: niente leak

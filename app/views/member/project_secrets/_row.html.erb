@@ -36,7 +36,7 @@
   <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
     <% revealable = can_read && by_env.any? %>
     <% if revealable || editable %>
-      <%= render Ui::ButtonGroupComponent.new(class: "border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 [&>:not([hidden])~:not([hidden])]:border-l [&>:not([hidden])~:not([hidden])]:border-stone-200 dark:]:border-zinc-800",
+      <%= render Ui::ButtonGroupComponent.new(class: "border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 [&>:not([hidden])~:not([hidden])]:border-l [&>:not([hidden])~:not([hidden])]:border-stone-200 dark:[&>:not([hidden])~:not([hidden])]:border-zinc-800",
             test_id: "secret-actions-#{row_slug}") do |group| %>
         <% if revealable %>
           <% group.with_button(label: t("member.secrets.reveal_row"), icon: "eye", icon_only: true, variant: :ghost, size: :sm,

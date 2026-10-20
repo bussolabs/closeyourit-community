@@ -1,0 +1,3 @@
+<%# locals: (ticket:)
+    Read-only reporter, also the realtime replace target of Ticketing::SetReporter (CYRA-1086). %>
+<span id="<%= dom_id(ticket) %>_reporter" data-test="member-ticket-reporter-display" class="inline-flex items-center gap-2 text-[12.5px] text-zinc-900 dark:text-zinc-100"><span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 text-[9px] font-semibold"><%= avatar_initials(ticket.reporter.name) %></span><%= ticket.reporter.name %></span>

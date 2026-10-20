@@ -40,6 +40,7 @@ en:
     notifications:
       content:
         created: "New ticket %{code}"
+        opened_for_you: "New ticket opened for you: %{code}"
         assigned: "%{code} assigned to %{name}"
         unassigned: "%{code} unassigned"
         status_changed: "%{code}: %{from} → %{to}"

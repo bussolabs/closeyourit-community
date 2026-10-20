@@ -3684,17 +3684,18 @@
     },
     {
       "id": "tkt_detail_fields",
-      "name": "Allegati, milestone, assegnatario, revisore",
+      "name": "Allegati, milestone, assegnatario, revisore, segnalatore",
       "level": 3,
       "parent": "tkt_page_detail",
       "kind": "step",
-      "summary": "Si aggiungono file controllati prima per tipo e dimensione. Si cambiano milestone, assegnatario e revisore; chi è coinvolto riceve un avviso.",
+      "summary": "Si aggiungono file controllati prima per tipo e dimensione. Si cambiano milestone, assegnatario, revisore e segnalatore (solo chi vede il progetto); chi è coinvolto riceve un avviso.",
       "files": [
         "app/services/ticketing/attach_to_ticket.rb",
         "app/services/ticketing/remove_attachment.rb",
         "app/services/ticketing/change_milestone.rb",
         "app/services/ticketing/assign_ticket.rb",
         "app/services/ticketing/set_reviewer.rb",
+        "app/services/ticketing/set_reporter.rb",
         "app/services/ticketing/update_ticket.rb"
       ]
     },
@@ -3758,7 +3759,7 @@
       "level": 3,
       "parent": "tkt_flow_create",
       "kind": "step",
-      "summary": "Il ticket nasce solo su un progetto visibile. L'assegnatario di default arriva da progetto, team o organizzazione; il revisore è chi lo apre.",
+      "summary": "Il ticket nasce solo su un progetto visibile. L'assegnatario di default arriva da progetto, team o organizzazione; il revisore è chi lo apre. Se una persona lo scrive a mano, il segnalatore è il referente del progetto, che riceve un avviso.",
       "files": [
         "app/services/ticketing/create_ticket.rb",
         "app/controllers/cli/v1/tickets_controller.rb"

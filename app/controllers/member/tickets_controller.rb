@@ -15,8 +15,8 @@ module Member
     # `set_ticket` PRIMA delle parti che seguono: le opzioni del modulo escludono dagli epic
     # selezionabili il ticket in modifica, e senza il ticket già caricato un epic si ritroverebbe fra
     # i propri padri possibili.
-    before_action :set_ticket, only: %i[edit update destroy status assignee reviewer knowledge]
-    before_action :require_ticket_permission, only: %i[edit update destroy status assignee reviewer]
+    before_action :set_ticket, only: %i[edit update destroy status assignee reviewer reporter knowledge]
+    before_action :require_ticket_permission, only: %i[edit update destroy status assignee reviewer reporter]
 
     # CYRA-739 — le parti della pagina, una per compito. Erano milletrecento righe in questo file:
     # ricerca, bacheca, doppioni e opzioni del modulo si toccavano a vicenda e ogni correzione
@@ -67,7 +67,8 @@ module Member
 
       result = Ticketing::CreateTicket.call(
         organization: Current.organization, reporter: Current.account,
-        true_actor: Current.true_account, params: ticket_params
+        true_actor: Current.true_account, params: create_params,
+        use_project_owner: true
       )
       if result.ok?
         linked = link_selected(result.value, targets)
@@ -139,6 +140,15 @@ module Member
       respond_change(result, t("member.tickets.reviewer_changed"))
     end
 
+    # CYRA-1086 — names another reporter, e.g. the client a ticket was typed in for.
+    def reporter
+      result = Ticketing::SetReporter.call(
+        organization: Current.organization, ticket: @ticket, reporter_id: params[:reporter_id],
+        actor: Current.account, true_actor: Current.true_account
+      )
+      respond_change(result, t("member.tickets.reporter_changed"))
+    end
+
     private
 
     # Anti-BOLA + scoping: ticket di un'altra org o su un progetto non visibile → RecordNotFound.
@@ -152,6 +162,9 @@ module Member
                     scenarios_attributes: %i[id title position step_given step_when step_then step_expected _destroy],
                     conditions_attributes: %i[id text position _destroy])
     end
+
+    # CYRA-1086 — the reporter is picked only when the ticket is created; later it has its own action.
+    def create_params = ticket_params.merge(params.permit(:reporter_id))
 
     # Record di cui cercare la conoscenza vicina (contratto Member::KnowledgeRelatedPanel).
     def knowledge_related_record = @ticket
@@ -176,7 +189,7 @@ module Member
     def require_ticket_permission
       key = case action_name
       when "destroy" then "tickets.delete"
-      when "assignee", "reviewer" then "tickets.assign"
+      when "assignee", "reviewer", "reporter" then "tickets.assign"
       else "tickets.edit"
       end
       require_permission!(key, scope: @ticket.project)

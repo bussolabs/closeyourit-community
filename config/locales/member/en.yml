@@ -1641,6 +1641,7 @@ en:
       status_changed: Status updated.
       assignee_changed: Assignee updated.
       reviewer_changed: Reviewer updated.
+      reporter_changed: Reporter updated.
       review_rejected: Review rejected, ticket sent back to work.
       review_approved: Review approved.
       watch:
@@ -1690,6 +1691,7 @@ en:
       delete_confirm: Delete this ticket? This cannot be undone.
       errors:
         project_not_found: Select a valid project.
+        reporter_not_allowed: The reporter must be a person in the organization who can see this project.
         invalid_status: Invalid status.
         workflow_owns_status: The automated run owns this ticket's status until it finishes. To move it by hand, take the ticket over from its page; if a machine is working on it, cancel the run first.
         closing_run_owns_review: "The machine is still releasing this ticket: it resolves itself once the release is up in production."
@@ -1825,6 +1827,9 @@ en:
         triage_notice: "Saved tickets wait for the automation eligibility decision. Once approved for automated work, an available agent can take them. You can assign a person at any time."
         assignee: Assignee
         unassigned: Unassigned
+        reporter: Reporter
+        reporter_auto: Automatic
+        reporter_hint: Gets the replies and questions. Usually the project owner; with no owner, it is you.
         platforms: Affected platforms
         platforms_hint: Pre-filled from your profile. Only the project's platforms can be selected — leave empty if platform-agnostic.
         milestone: Milestone
@@ -2396,6 +2401,7 @@ en:
           review_approved: "The automation approved the review and moved the ticket to %{to}"
           review_rejected: "The automation rejected the review and moved the ticket back to %{to}"
         created: "%{actor} created the ticket"
+        created_on_behalf: "%{actor} created the ticket on behalf of %{reporter}"
         updated: "%{actor} updated: %{fields}"
         updated_generic: "%{actor} updated the ticket"
         status_changed: "%{actor} changed status from %{from} to %{to}"
@@ -2403,6 +2409,7 @@ en:
         unassigned: "%{actor} unassigned the ticket"
         reviewer_changed: "%{actor} set the reviewer to %{to}"
         reviewer_removed: "%{actor} removed the reviewer"
+        reporter_changed: "%{actor} set the reporter to %{to}"
         milestone_changed: "%{actor} changed the milestone"
         comment_deleted: "%{actor} deleted a comment by %{author}"
         attached: "%{actor} attached %{filenames}"

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.193.3] - 2026-10-20
+
+### Added
+
+- **Referente del progetto.** Nelle impostazioni del progetto scegli il cliente. I ticket che apri a mano lo indicano come segnalatore: riceve un avviso, poi risposte e domande. Il segnalatore si può anche cambiare dalla pagina del ticket. [Ticket](/member/tickets)
+
+### Fixed
+
+- **Segreti in tema scuro.** Nella tabella dei segreti di un progetto, tra i bottoni per mostrare e modificare un valore non c'è più una riga chiara in tema scuro.
+
 ## [0.193.2] - 2026-10-20
 
 ### Security

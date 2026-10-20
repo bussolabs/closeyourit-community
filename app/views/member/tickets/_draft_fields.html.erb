@@ -2,7 +2,7 @@
 <%# Round-trip del draft: la pagina di confronto ri-submette gli STESSI campi del form new
     (più dedup_ack/motivazione/link dai dialog). Niente id (draft = ticket nuovo). %>
 <% %i[project_id title kind description technical_analysis weight milestone_id due_at
-      status_id priority_id assignee_id].each do |field| %>
+      status_id priority_id assignee_id reporter_id].each do |field| %>
   <%= hidden_field_tag field, draft_params[field], id: nil %>
 <% end %>
 <% Array(draft_params[:scenarios_attributes]).each_with_index do |scenario, i| %>

@@ -30,7 +30,7 @@
     <%= render "member/tickets/reviewer_picker", can_manage: can_manage %>
   <% end %>
   <%= render "member/tickets/detail_row", label: t("member.tickets.show.reporter"), test_id: "detail-reporter" do %>
-    <span class="inline-flex items-center gap-2 text-[12.5px] text-zinc-900 dark:text-zinc-100"><span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 text-[9px] font-semibold"><%= avatar_initials(@ticket.reporter.name) %></span><%= @ticket.reporter.name %></span>
+    <%= render "member/tickets/reporter_picker", can_manage: can_manage %>
   <% end %>
   <%# CYRA-883 — il progetto non si ripete qui: sta sotto il titolo, accanto al codice. %>
 

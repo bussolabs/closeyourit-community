@@ -1689,6 +1689,7 @@ it:
       status_changed: Stato aggiornato.
       assignee_changed: Assegnatario aggiornato.
       reviewer_changed: Revisore aggiornato.
+      reporter_changed: Segnalatore aggiornato.
       review_rejected: Revisione respinta, il ticket torna in lavorazione.
       review_approved: Revisione approvata.
       watch:
@@ -1742,6 +1743,7 @@ it:
       delete_confirm: Eliminare questo ticket? L'azione è irreversibile.
       errors:
         project_not_found: Seleziona un progetto valido.
+        reporter_not_allowed: Il segnalatore deve essere una persona dell'organizzazione che vede questo progetto.
         invalid_status: Stato non valido.
         workflow_owns_status: Lo stato di questo ticket lo decide la lavorazione automatica finché non è conclusa. Per spostarlo a mano prendi in carico il ticket dalla sua pagina; se una macchina ci sta lavorando, annulla prima la lavorazione.
         closing_run_owns_review: "La macchina sta ancora rilasciando questo ticket: si risolve da solo quando il rilascio è in piedi in produzione."
@@ -1879,6 +1881,9 @@ it:
         triage_notice: "I ticket salvati aspettano la decisione sulla lavorazione automatica. Dopo l’approvazione, un agente disponibile può prenderli in carico. Puoi assegnarli a una persona in qualsiasi momento."
         assignee: Assegnatario
         unassigned: Non assegnato
+        reporter: Segnalatore
+        reporter_auto: Automatico
+        reporter_hint: Riceve risposte e domande. Di solito è il referente del progetto; senza referente sei tu.
         platforms: Piattaforme colpite
         platforms_hint: Pre-compilate dal tuo profilo. Solo le piattaforme del progetto sono selezionabili — lascia vuoto
           se platform-agnostico.
@@ -2474,6 +2479,7 @@ it:
           review_approved: "L'automazione ha approvato la revisione e portato il ticket in %{to}"
           review_rejected: "L'automazione ha respinto la revisione e riportato il ticket in %{to}"
         created: "%{actor} ha creato il ticket"
+        created_on_behalf: "%{actor} ha creato il ticket per conto di %{reporter}"
         updated: "%{actor} ha modificato: %{fields}"
         updated_generic: "%{actor} ha modificato il ticket"
         status_changed: "%{actor} ha cambiato lo stato da %{from} a %{to}"
@@ -2481,6 +2487,7 @@ it:
         unassigned: "%{actor} ha rimosso l'assegnatario"
         reviewer_changed: "%{actor} ha impostato il revisore su %{to}"
         reviewer_removed: "%{actor} ha rimosso il revisore"
+        reporter_changed: "%{actor} ha impostato il segnalatore su %{to}"
         milestone_changed: "%{actor} ha cambiato la milestone"
         comment_deleted: "%{actor} ha eliminato un commento di %{author}"
         attached: "%{actor} ha allegato %{filenames}"
