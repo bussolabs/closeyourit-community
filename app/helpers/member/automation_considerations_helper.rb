@@ -28,6 +28,18 @@ module Member
       end
     end
 
+    # The approval card's line on what stopped the attempt: the agent's plain words when it wrote
+    # them, the technical reason otherwise. CYRA-1082
+    def blocked_attempt_text(attempt)
+      plain = attempt.result["plain_reason"] if attempt.result.is_a?(Hash)
+      plain.is_a?(String) && plain.present? ? plain : automation_considerations(attempt)[:text]
+    end
+
+    # A release stopped by its review: the plan section then tells what the release carries. CYRA-1082
+    def blocked_release?(card)
+      card.phase == "review_blocked" && card.attempt&.phase.to_s.start_with?("closer_")
+    end
+
     private
     # Il motivo del guasto riportato dalla macchina (CYRA-282). Un fallback quando manca: `failed` senza
     # motivo non dovrebbe mai arrivare (il canale lo pretende), ma i record storici e un payload monco non

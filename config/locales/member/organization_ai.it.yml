@@ -21,6 +21,14 @@ it:
           platform: Modelli, chiavi e tetto sono quelli della piattaforma.
           variation: Stesso provider e stessa chiave della piattaforma, con i modelli e il tetto che scegli qui.
           own: Tutte le richieste vanno al tuo provider compatibile OpenAI, con la tua chiave.
+      language:
+        title: Lingua delle risposte
+        hint: La lingua in cui l'AI scrive ogni risposta, per tutti nell'organizzazione.
+        label: Lingua
+        options:
+          interface: La lingua dell'interfaccia di ognuno
+          en: English
+          it: Italiano
       models:
         title: Modelli
         hint: Un campo vuoto usa il valore della piattaforma. Con un provider proprio, un campo vuoto spegne quella funzione.

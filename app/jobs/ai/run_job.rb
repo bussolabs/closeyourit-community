@@ -14,7 +14,8 @@ module Ai
 
     def perform(request)
       Current.organization = request.organization # runs with this organization's AI settings (CYRA-914)
-      run(request)
+      # In the asker's interface language: it decides the AI answer language by default (CYRA-1083).
+      I18n.with_locale(request.account.effective_locale) { run(request) }
     rescue StandardError => e
       Rails.logger.error("Ai::RunJob failed request=#{request.id} kind=#{request.kind}: #{e.class} #{e.message}")
       request.finish_err!(code: "R500-SYSTEM-001", message: I18n.t("member.ai.errors.internal"))

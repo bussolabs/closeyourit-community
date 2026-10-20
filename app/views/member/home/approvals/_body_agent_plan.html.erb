@@ -19,26 +19,13 @@
   <%= render "member/home/approvals/delivered_work", report: card.report %>
 <% end %>
 
-<%# Fase review_blocked: la revisione ha bocciato un tentativo. Il riaccodo sta QUI, sotto la frase che
-    lo annuncia — è la decisione più frequente su una lavorazione ferma e non deve costare uno scroll
-    fino al pannello (dove resta, con la nota facoltativa, per chi vuole scrivere prima di riavviare).
-    Compare solo se rimetterebbe davvero in coda qualcosa: quando la fase bocciata riparte da sé il testo
-    lo dice, invece di raccontare una lavorazione ferma che sta già riprovando. %>
-<% if card.phase == "review_blocked" %>
-  <div class="px-4 py-3.5 flex flex-wrap items-center justify-between gap-3" data-test="approvals-detail-blocked">
-    <% if card.plan.blank? %>
-      <p class="text-[13px] text-gray-500 dark:text-zinc-400" data-test="approvals-detail-no-plan">
-        <%= t(card.can?(:approve) ? "member.approvals.no_plan" : "member.approvals.no_plan_retrying") %>
-      </p>
-    <% end %>
-    <% if card.can?(:approve) %>
-      <%= form_with url: member_home_approvals_decision_path, method: :post, class: "shrink-0" do %>
-        <%= hidden_field_tag :item, card.key %>
-        <%= hidden_field_tag :decision, "approve" %>
-        <%= render Ui::ButtonComponent.new(label: t("member.approvals.requeue"), type: "submit",
-              variant: :secondary, size: :sm, icon: "rotate-cw", test_id: "approvals-requeue") %>
-      <% end %>
-    <% end %>
+<%# A blocked workflow with no plan says so. The requeue button sits under the attempt's reason
+    below, and only where requeuing would reopen something. CYRA-1082 %>
+<% if card.phase == "review_blocked" && card.plan.blank? %>
+  <div class="px-4 py-3.5" data-test="approvals-detail-blocked">
+    <p class="text-[13px] text-gray-500 dark:text-zinc-400" data-test="approvals-detail-no-plan">
+      <%= t(card.can?(:approve) ? "member.approvals.no_plan" : "member.approvals.no_plan_retrying") %>
+    </p>
   </div>
 <% end %>
 
@@ -56,7 +43,7 @@
       </div>
       <%# Le considerazioni della macchina: cosa aveva concluso il tentativo poi respinto. Solo il
           testo — chip e conteggi appartengono alla scheda Automazione, qui servirebbero a nulla. %>
-      <% if (considerations = automation_considerations(card.attempt)[:text]).present? %>
+      <% if (considerations = blocked_attempt_text(card.attempt)).present? %>
         <%= render Ui::MarkdownComponent.new(text: considerations,
               class: "text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-[70ch]",
               test_id: "approvals-detail-attempt-text") %>
@@ -76,6 +63,8 @@
     <% else %>
       <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="approvals-detail-attempt-none"><%= t("member.approvals.attempt.none") %></p>
     <% end %>
+    <%# Requeue after the reason: read what happened, then decide. CYRA-1082 %>
+    <%= render("member/home/approvals/requeue_button", card: card) if card.can?(:approve) %>
   </div>
 <% end %>
 

@@ -7209,6 +7209,7 @@
       "summary": "Assistente, smistamento, bozze e doppioni passano tutti da un solo cliente verso il server AI.",
       "files": [
         "app/services/ai/llm/client.rb",
+        "app/services/ai/answer_language.rb",
         "app/services/ai/llm/messages.rb"
       ]
     },
@@ -7242,7 +7243,7 @@
       "level": 3,
       "parent": "ai_flow_llm",
       "kind": "step",
-      "summary": "Il cliente traduce la richiesta nel formato del server AI. Un indirizzo scritto da un'organizzazione deve puntare a un server pubblico.",
+      "summary": "Il cliente traduce la richiesta nel formato del server AI e aggiunge la lingua in cui rispondere. Un indirizzo scritto da un'organizzazione deve puntare a un server pubblico.",
       "files": [
         "app/services/ai/llm/client.rb",
         "app/services/ai/llm/messages.rb",
@@ -7360,7 +7361,7 @@
       "level": 2,
       "parent": "area_ai",
       "kind": "flow",
-      "summary": "In Valhalla o nelle impostazioni dell'organizzazione si provano e si salvano i modelli. Se cambia il modello di ricerca, i vettori si rifanno.",
+      "summary": "In Valhalla o nelle impostazioni dell'organizzazione si provano e si salvano i modelli. L'organizzazione sceglie anche la lingua delle risposte. Se cambia il modello di ricerca, i vettori si rifanno.",
       "files": [
         "app/controllers/valhalla/ai_settings_controller.rb",
         "app/controllers/member/organization_ai_controller.rb"

@@ -21,6 +21,14 @@ en:
           platform: Models, keys and cap are the platform's.
           variation: Same provider and key as the platform, with the models and cap you choose here.
           own: Every request goes to your OpenAI-compatible provider, with your key.
+      language:
+        title: Language of the answers
+        hint: The language every AI answer is written in, for everyone in the organization.
+        label: Language
+        options:
+          interface: Each person's interface language
+          en: English
+          it: Italiano
       models:
         title: Models
         hint: An empty field uses the platform value. With an own provider, an empty field turns that feature off.

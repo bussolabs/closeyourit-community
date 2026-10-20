@@ -30,7 +30,6 @@ module Knowledge
         rilevanti nel testo col loro titolo tra parentesi quadre, es. [Scelta database].
         Se il contesto non basta per rispondere, dillo esplicitamente.
       - `cited_ids`: gli id (presi dalla lista) delle pagine su cui si fonda la risposta.
-      Rispondi nella stessa lingua della domanda.
       #{Text::ItalianOrthography::PROMPT_RULE}
     PROMPT
 

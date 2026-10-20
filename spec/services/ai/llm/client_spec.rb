@@ -81,11 +81,21 @@ RSpec.describe Ai::Llm::Client do
                  body.dig("response_format", "type") == "json_schema" &&
                  body.dig("response_format", "json_schema", "strict") == true &&
                  body.dig("response_format", "json_schema", "schema", "required") == [ "ok" ] &&
-                 body["messages"] == [ { "role" => "system", "content" => "s" }, { "role" => "user", "content" => "u" } ]
+                 body["messages"].first["content"].start_with?("s\n\n") &&
+                 body["messages"].drop(1) == [ { "role" => "user", "content" => "u" } ]
              }
              .to_return(status: 200, body: sse(chunk("{\"ok\":"), chunk(" true}", finish: "stop"), :done))
 
       expect(call(response_schema: schema)).to eq({ "ok" => true })
+      expect(post).to have_been_requested
+    end
+
+    it "tells the model which language to answer in, after the caller's instructions (CYRA-1083)" do
+      post = stub_request(:post, url).with { |req|
+        JSON.parse(req.body)["messages"].first["content"].end_with?(Ai::AnswerLanguage.instruction)
+      }.to_return(status: 200, body: sse(chunk("ok", finish: "stop"), :done))
+
+      I18n.with_locale(:en) { call }
       expect(post).to have_been_requested
     end
 

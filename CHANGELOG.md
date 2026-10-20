@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.193.0] - 2026-10-20
+
+### Added
+
+- **Lingua delle risposte AI.** Nelle impostazioni AI dell'organizzazione scegli in che lingua l'AI scrive le risposte: inglese, italiano o la lingua dell'interfaccia di ognuno. Prima a volte rispondeva in italiano a chi usa l'app in inglese.
+
+### Changed
+
+- **Rilasci fermi più chiari.** Nella scheda di un rilascio fermo leggi prima perché si è fermato, in parole semplici, e subito sotto trovi «Rimetti in coda». Il rischio sta accanto al titolo della sezione, che ora si chiama «Cosa contiene il rilascio». [Home](/member/home)
+
 ## [0.192.1] - 2026-10-19
 
 ### Fixed

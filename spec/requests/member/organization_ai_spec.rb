@@ -73,6 +73,15 @@ RSpec.describe "Member::OrganizationAi", type: :request do
       expect(org.reload.ai_setting).to have_attributes(mode: "variation", chat_model: "big-chat")
     end
 
+    it "saves the language every AI answer is written in (CYRA-1083)" do
+      sign_in(manager)
+      patch member_organization_ai_path, params: { confirm: "1", mode: "platform", answer_language: "en" }
+      expect(org.reload.ai_setting.answer_language).to eq("en")
+
+      patch member_organization_ai_path, params: { confirm: "1", mode: "platform", answer_language: "" }
+      expect(org.reload.ai_setting.answer_language).to be_nil
+    end
+
     it "keeps the stored key when the key field is left empty" do
       org.create_ai_setting!(**own_params)
       sign_in(owner)

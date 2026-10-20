@@ -1,0 +1,7 @@
+<%# locals: (card:) %>
+<%= form_with url: member_home_approvals_decision_path, method: :post do %>
+  <%= hidden_field_tag :item, card.key %>
+  <%= hidden_field_tag :decision, "approve" %>
+  <%= render Ui::ButtonComponent.new(label: t("member.approvals.requeue"), type: "submit",
+        variant: :secondary, size: :sm, icon: "rotate-cw", test_id: "approvals-requeue") %>
+<% end %>

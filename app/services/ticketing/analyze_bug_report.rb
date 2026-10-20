@@ -62,7 +62,6 @@ module Ticketing
         fornisci da 2 a 4 domande mirate (in `questions`) per ottenere le informazioni mancanti.
       - technical_analysis: eventuali dettagli tecnici (stack, componenti, ipotesi di causa) — SOLO qui,
         fuori dagli scenari. Vuoto se non presenti.
-      Rispondi nella stessa lingua del testo della segnalazione.
       #{Text::ItalianOrthography::PROMPT_RULE}
     PROMPT
 

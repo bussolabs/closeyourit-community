@@ -31,7 +31,6 @@ module Ideas
         cosa fare e perché (il valore per l'utente), le decisioni e precisazioni emerse dai
         commenti, requisiti e casi limite citati. Non inventare requisiti non presenti nel
         testo; non citare i nomi degli autori dei commenti.
-      Rispondi nella stessa lingua dell'idea.
       #{Text::ItalianOrthography::PROMPT_RULE}
     PROMPT
 

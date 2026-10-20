@@ -25,7 +25,6 @@ module Ticketing
         nel testo col loro codice tra parentesi quadre, es. [ABC-12]. Se il contesto non basta
         per rispondere, dillo esplicitamente.
       - `cited_ids`: gli id (presi dalla lista) dei ticket su cui si fonda la risposta.
-      Rispondi nella stessa lingua della domanda.
       #{Text::ItalianOrthography::PROMPT_RULE}
     PROMPT
 

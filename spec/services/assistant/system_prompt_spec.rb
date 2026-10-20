@@ -21,9 +21,10 @@ RSpec.describe Assistant::SystemPrompt do
     expect(prompt).to match(/\bsolo\b/i)
   end
 
-  it "istruisce a rispondere nella lingua dell'utente, in modo semplice e senza gergo" do
-    expect(prompt.downcase).to match(/lingua.*utente|stessa lingua/)
+  # The answer language is added by Ai::Llm::Client from the organization's setting (CYRA-1083).
+  it "asks for plain answers without jargon and leaves the language to the organization's setting" do
     expect(prompt.downcase).to include("semplice")
+    expect(prompt.downcase).not_to match(/stessa lingua/)
   end
 
   it "dichiara che l'assistente non esegue azioni ma spiega soltanto" do

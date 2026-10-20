@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_14_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_20_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -2660,6 +2660,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_120000) do
     t.string "rerank_model"
     t.string "transcription_model"
     t.datetime "updated_at", null: false
+    t.string "answer_language"
     t.index ["organization_id"], name: "index_organization_ai_settings_on_organization_id", unique: true
   end
 

@@ -528,6 +528,10 @@
         "reason": {
           "type": "string"
         },
+        "plain_reason": {
+          "description": "Il motivo del blocco detto a chi decide: una o due frasi in italiano semplice, senza sigle di commit, nomi di file o di comandi. Facoltativo: `reason` resta il testo tecnico per chi indaga, e quando questo campo manca la scheda mostra `reason`. Nessun limite di lunghezza di proposito: un testo troppo lungo non deve far rifiutare il rapporto e perdere il motivo (CYRA-1082).",
+          "type": "string"
+        },
         "commit": {
           "description": "La sigla esatta della fotografia di codice su cui l'etichetta e' stata messa: 40 caratteri esadecimali minuscoli, sempre la stessa per la stessa fotografia. Fra il momento in cui il lavoro viene approvato e quello in cui parte il rilascio possono passare ore, e nel frattempo il codice puo' cambiare: senza questa riga nessuno puo' tornare indietro a controllare che cio' che e' uscito sia cio' che era stato guardato, e resta la parola della macchina. Qui NON si verifica che la sigla sia vera — si rende possibile verificarla.",
           "type": "string",
@@ -618,6 +622,10 @@
           "type": "boolean"
         },
         "reason": {
+          "type": "string"
+        },
+        "plain_reason": {
+          "description": "Il motivo del blocco detto a chi decide: una o due frasi in italiano semplice, senza sigle di commit, nomi di file o di comandi. Facoltativo: `reason` resta il testo tecnico per chi indaga, e quando questo campo manca la scheda mostra `reason`. Nessun limite di lunghezza di proposito: un testo troppo lungo non deve far rifiutare il rapporto e perdere il motivo (CYRA-1082).",
           "type": "string"
         },
         "commit": {

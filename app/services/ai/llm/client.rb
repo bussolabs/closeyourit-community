@@ -166,6 +166,8 @@ module Ai
       private
 
       def base_body(system, contents, model, max_output_tokens, temperature)
+        # The answer language is the organization's, never the prompt's (CYRA-1083).
+        system = [ system.presence, Ai::AnswerLanguage.instruction ].compact.join("\n\n")
         body = { model: model, messages: Messages.build(system:, contents:),
                  max_tokens: max_output_tokens, temperature: temperature }
         # Senza questo il modello ragiona ad alta voce prima di rispondere: triplica tempo e token,

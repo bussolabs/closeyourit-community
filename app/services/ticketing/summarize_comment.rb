@@ -20,7 +20,7 @@ module Ticketing
       Riscrivilo in un riassunto di AL MASSIMO 200 caratteri, che dovrà stare in un commento da 240.
 
       Regole:
-      - Italiano, stessa lingua e stesso registro dell'originale.
+      - Stesso registro dell'originale.
       - Dì che cosa è stato fatto e con quale esito. Niente preamboli, niente "in questo commento".
       - Nessun dettaglio che non sia nell'originale: se non ci sta, taglia, non riassumere a vanvera.
       - Niente nomi di file, classi, comandi o codici: il dettaglio resta nel resoconto completo.

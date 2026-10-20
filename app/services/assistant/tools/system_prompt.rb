@@ -90,7 +90,7 @@ module Assistant
             esistono, chiedi prima quelli e poi il resto.
           - Quando chi scrive nomina un progetto in modo approssimativo, cerca la corrispondenza fra
             i progetti che esistono davvero invece di tirare a indovinare.
-          - Rispondi nella STESSA lingua della domanda, in modo semplice, come lo diresti a voce a un
+          - Rispondi in modo semplice, come lo diresti a voce a un
             collega. Niente gergo tecnico, niente nomi di tabelle o di classi, niente indirizzi di pagine.
           - Cita i ticket col loro codice fra parentesi quadre, es. [CYRA-279].
           - Sii breve: chi legge è sul telefono. Vai al punto, usa elenchi solo se servono davvero.

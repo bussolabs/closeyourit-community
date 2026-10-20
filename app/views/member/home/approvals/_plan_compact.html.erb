@@ -7,12 +7,17 @@
 <% decision_card = document.decision_card %>
 <div class="divide-y divide-stone-100 dark:divide-zinc-800" data-test="approvals-detail-plan">
   <div class="px-4 py-3.5">
-    <div class="flex items-baseline justify-between gap-3 mb-1.5">
-      <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400"><%= t(decision_card ? "member.approvals.compact.if_approved" : "member.approvals.compact.in_brief") %></p>
+    <%# The risk level sits on the section row, so the headline opens the section. CYRA-1082 %>
+    <% title_key = if blocked_release?(card) then "release_contents" elsif decision_card then "if_approved" else "in_brief" end %>
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+      <div class="flex items-center gap-2" data-test="approvals-plan-section-title">
+        <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400"><%= t("member.approvals.compact.#{title_key}") %></p>
+        <%= render("member/home/approvals/decision_card_level", decision_card:) if decision_card %>
+      </div>
       <p class="text-[11px] text-gray-500 dark:text-zinc-400" data-test="automation-plan-signature"><%= t("member.tickets.automation.plan.written", version: card.plan.version, date: l(card.plan.created_at, format: :long)) %></p>
     </div>
     <% if decision_card %>
-      <%= render "member/home/approvals/decision_card", decision_card: %>
+      <%= render "member/home/approvals/decision_card", decision_card:, show_level: false %>
     <% elsif document.decision_brief %>
       <%= render Ui::MarkdownComponent.new(text: document.decision_brief,
             class: "text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-[70ch]",

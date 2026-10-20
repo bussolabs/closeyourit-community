@@ -177,6 +177,23 @@ RSpec.describe Ai::RunJob, type: :job do
   end
 
   describe "ticket_ask" do
+    it "runs in the interface language of whoever asked, so the AI answers in it (CYRA-1083)" do
+      account.update!(locale: "en")
+      project = create(:project, organization: org)
+      sees!(project)
+      request = create(:ai_request, account:, organization: org, kind: "ticket_ask",
+                                    args: { "question" => "login problems?", "project_ids" => [ project.id ] })
+      seen = nil
+      allow(Ticketing::AskTickets).to receive(:call) do |**|
+        seen = I18n.locale
+        Result.ok(Ticketing::AskTickets::Answer.new(answer: "No", tickets: [], insufficient: true))
+      end
+
+      I18n.with_locale(:it) { described_class.perform_now(request) }
+
+      expect(seen).to eq(:en)
+    end
+
     it "esegue AskTickets sullo scope dei project_ids e scrive answer/insufficient/tickets nel payload" do
       project = create(:project, organization: org)
       sees!(project)

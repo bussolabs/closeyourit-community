@@ -250,7 +250,7 @@ module Ticketing
           (criteri verificabili). Lascia vuoto se non ricavabili dal testo.
         - technical_analysis: QUI e solo qui i dettagli tecnici (stack, componenti coinvolti, ipotesi di
           causa, file/endpoint). Tienili FUORI da description/scenari/conditions. Vuoto se non pertinenti.
-        Non inventare requisiti non presenti nel testo. Rispondi nella stessa lingua della richiesta.
+        Non inventare requisiti non presenti nel testo.
         #{length_rule}#{knowledge_rule}#{correction_rule}#{shorter ? SHORTER_RULE : ''}#{Text::ItalianOrthography::PROMPT_RULE}
       PROMPT
     end

@@ -8,6 +8,7 @@ en:
     approvals:
       compact:
         if_approved: If you approve
+        release_contents: What the release contains
         show_all_warnings:
           one: "+1 more"
           other: "+%{count} more"

@@ -16,6 +16,19 @@ RSpec.describe Organizations::AiSetting do
     expect(setting(mode: "everything")).not_to be_valid
   end
 
+  describe "answer language (CYRA-1083)" do
+    it "follows each person's interface language when left empty" do
+      expect(setting.answer_language).to be_nil
+      expect(setting).to be_valid
+    end
+
+    it "accepts a language the app speaks and refuses any other" do
+      expect(setting(answer_language: "en")).to be_valid
+      expect(setting(answer_language: "it")).to be_valid
+      expect(setting(answer_language: "fr")).not_to be_valid
+    end
+  end
+
   it "keeps one row per organization" do
     setting.save!
 

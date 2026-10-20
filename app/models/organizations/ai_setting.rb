@@ -21,6 +21,7 @@ module Organizations
     validates :base_url, :api_key, :chat_model, presence: true, if: :own?
     validates :base_url, :api_key, absence: true, unless: :own?
     validates :base_url, :rerank_base_url, format: { with: URL_FORMAT }, allow_blank: true
+    validates :answer_language, inclusion: { in: App::Constants::LOCALES }, allow_nil: true
     validates :monthly_token_cap, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
     validate :addresses_outside_internal_network
     validate :keys_reentered_for_new_addresses

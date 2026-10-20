@@ -15,6 +15,15 @@
     <%= input.call(:monthly_token_cap, type: "number", min: 1, inputmode: "numeric", value: setting.monthly_token_cap) %>
   </div>
 <% end %>
+<%= render Ui::SectionComponent.new(title: t("#{scope}.language.title"), test_id: "org-ai-language") do |section| %>
+  <% section.with_subtitle do %><p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("#{scope}.language.hint") %></p><% end %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+    <%= render Ui::SelectComponent.new(name: "answer_language", label: t("#{scope}.language.label"), test_id: "org-ai-answer-language",
+          options: [ [ t("#{scope}.language.options.interface"), "" ] ] +
+                   App::Constants::LOCALES.map { |code| [ t("#{scope}.language.options.#{code}"), code ] },
+          selected: setting.answer_language.to_s) %>
+  </div>
+<% end %>
 <%= render Ui::SectionComponent.new(title: t("#{scope}.models.title"), test_id: "org-ai-models") do |section| %>
   <% section.with_subtitle do %><p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("#{scope}.models.hint") %></p><% end %>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">

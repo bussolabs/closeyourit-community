@@ -6,7 +6,7 @@ module Member
   # always Current.organization, never an id from the request. Keys are never shown back.
   class OrganizationAiController < Member::BaseController
     FIELDS = %i[mode base_url api_key chat_model embedding_model transcription_model
-                rerank_base_url rerank_api_key rerank_model monthly_token_cap].freeze
+                rerank_base_url rerank_api_key rerank_model monthly_token_cap answer_language].freeze
     KEY_FIELDS = %i[api_key rerank_api_key].freeze
     # Keys typed before the reindex confirmation ride along encrypted, never in clear (as Valhalla, P9).
     PENDING_KEYS_TTL = 10.minutes
