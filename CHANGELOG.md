@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.193.4] - 2026-10-21
+
+### Fixed
+
+- **Installazione dell'agente.** La pagina «Agent tokens» usa l'immagine pubblica dell'agente con versione fissa, senza credenziali. Per le macchine senza Docker mostra i comandi completi, al posto di istruzioni che non funzionavano.
+- **Token di ingest in tema scuro.** Nella spiegazione dei token di un progetto, il nome della gem e «una sola volta» ora si leggono anche in tema scuro.
+
 ## [0.193.3] - 2026-10-20
 
 ### Added

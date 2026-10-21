@@ -10,8 +10,13 @@ module Servers
     # una schermata sola (l'utente vedeva "solo 10 server" con 14 host in flotta).
     PER_PAGE = 50
 
+    # Agent release the install snippets pin, so a customer installs a known version (CYRA-1087).
+    AGENT_VERSION = "0.11.3"
     # Agent image in the docker-compose snippet: the public one unless the install points elsewhere (CYRA-916).
-    AGENT_IMAGE = ENV.fetch("AGENT_IMAGE", "ghcr.io/bussolabs/closeyourit-agent:latest")
+    AGENT_IMAGE = ENV.fetch("AGENT_IMAGE", "ghcr.io/bussolabs/closeyourit-agent:v#{AGENT_VERSION}")
+    # Public release with the Linux binaries for the hosts without Docker (CYRA-1087).
+    AGENT_RELEASE_URL = "https://github.com/bussolabs/closeyourit-agent-community/releases/download/v#{AGENT_VERSION}"
+    AGENT_SOURCE_URL = "https://raw.githubusercontent.com/bussolabs/closeyourit-agent-community/v#{AGENT_VERSION}"
 
     # Inventario database: una macchina ne ospita decine (un progetto = database + coda), quindi la
     # densità standard spezzerebbe in più pagine l'elenco di un solo server. Sotto PER_PAGE

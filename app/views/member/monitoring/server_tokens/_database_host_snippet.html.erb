@@ -1,0 +1,17 @@
+<%# Hosts without Docker (database machines) get their own block with the full commands (CYRA-459, CYRA-1087). %>
+<div class="mt-4 pt-4 border-t border-stone-100 dark:border-zinc-800" data-test="server-tokens-database-host">
+  <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.tokens.snippet_binary") %></p>
+  <p class="mt-1 text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.servers.tokens.snippet_binary_lead") %></p>
+  <pre class="mt-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-4 py-3 font-mono text-[11.5px] leading-relaxed text-zinc-800 dark:text-zinc-200 overflow-x-auto"><code>ARCH=amd64   # arm64 on ARM machines
+CYI_TOKEN='&lt;<%= t("member.servers.tokens.token_placeholder") %>&gt;'
+sudo apt-get install -y smartmontools   # disk health (SMART)
+sudo mkdir -p /opt/closeyourit-agent
+curl -fsSL <%= Servers::Constants::AGENT_RELEASE_URL %>/closeyourit-agent_linux_${ARCH}.tar.gz \
+  | sudo tar -xz --no-same-owner -C /opt/closeyourit-agent closeyourit-agent
+sudo curl -fsSL -o /etc/systemd/system/closeyourit-agent.service \
+  <%= Servers::Constants::AGENT_SOURCE_URL %>/examples/closeyourit-agent.service
+sudo install -m 600 /dev/null /etc/closeyourit-agent.env
+printf 'CYI_ENDPOINT=%s\nCYI_TOKEN=%s\n' <%= request.base_url %> "$CYI_TOKEN" \
+  | sudo tee /etc/closeyourit-agent.env &gt; /dev/null
+sudo systemctl daemon-reload &amp;&amp; sudo systemctl enable --now closeyourit-agent</code></pre>
+</div>

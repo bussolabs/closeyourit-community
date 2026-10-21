@@ -3047,8 +3047,8 @@ it:
       help_ingest: Il bearer secret autentica CI e API (mostrato una sola volta); la DSN public key serve all'ingest degli SDK e non è segreta.
       section_lead_html: >-
         Credenziali per inviare errori e segnali a questo progetto, per ambiente. Punta la gem <span class="font-mono text-[12px]
-        text-zinc-800">closeyourit-ruby</span> al bearer token e al Project ID qui sotto. Il segreto è mostrato
-        <span class="font-medium text-zinc-800">una sola volta</span> alla creazione.
+        text-zinc-800 dark:text-zinc-200">closeyourit-ruby</span> al bearer token e al Project ID qui sotto. Il segreto è mostrato
+        <span class="font-medium text-zinc-800 dark:text-zinc-200">una sola volta</span> alla creazione.
       no_environments: Questo progetto non ha ancora ambienti dichiarati — un token deve legarsi a uno.
       declare_environments: Dichiara ambienti →
       empty: Ancora nessun token

@@ -38,6 +38,23 @@ RSpec.describe "Member::Monitoring — collegare una macchina (CYRA-459)", type:
     expect(doc.at_css("[data-test='server-tokens-database-host']")).to be_present
   end
 
+  it "installs a pinned public agent and points nowhere private (CYRA-1087)" do
+    get member_monitoring_server_tokens_path
+
+    doc = Nokogiri::HTML(response.body)
+    snippets = doc.css("[data-test='server-tokens-snippet'] pre").map(&:text).join("\n")
+    version = Servers::Constants::AGENT_VERSION
+    expect(snippets).to include("image: ghcr.io/bussolabs/closeyourit-agent:v#{version}")
+    expect(snippets).to include("closeyourit-agent-community/releases/download/v#{version}/closeyourit-agent_linux_")
+    expect(snippets).to include("systemctl enable --now closeyourit-agent")
+    expect(snippets).to include("tar -xz --no-same-owner")
+    expect(snippets.index("install -m 600 /dev/null /etc/closeyourit-agent.env"))
+      .to be < snippets.index("tee /etc/closeyourit-agent.env")
+    expect(snippets).not_to include("install.sh")
+    expect(snippets.scan(/image: (\S+)/).flatten).to all(start_with("ghcr.io/"))
+    expect(snippets).not_to include(":latest")
+  end
+
   it "dalla pagina si raggiunge la guida dedicata" do
     get member_monitoring_server_tokens_path
 
