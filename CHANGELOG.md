@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.193.5] - 2026-10-22
+
+### Changed
+
+- **Agente per chi installa CloseYourIt sui propri server.** Anche il programma per le macchine senza Docker si può scaricare da un indirizzo proprio, come già l'immagine Docker. Utile sulle reti chiuse a internet.
+
 ## [0.193.4] - 2026-10-21
 
 ### Fixed
