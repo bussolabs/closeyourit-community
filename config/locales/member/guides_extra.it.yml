@@ -76,6 +76,7 @@ it:
         token_where: "La chiave nel codice è quella del progetto scelto."
         token_link: "Gestisci i codici del progetto"
         token_locked: "Al posto della chiave vera trovi un segnaposto: la chiave la vede chi gestisce i codici di quel progetto. Chiedigliela e sostituiscila prima di pubblicare."
+        npm_hint: "Il sito usa un bundler (Vite, webpack)? Installa il pacchetto da npm e chiama init con gli stessi valori:"
         cta: "Apri le statistiche"
         cta_no_project: "Scegli un progetto"
       secrets:

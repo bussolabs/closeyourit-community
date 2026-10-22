@@ -683,6 +683,7 @@ it:
         token_where: La chiave nel codice è quella del progetto scelto.
         token_link: Gestisci i codici del progetto
         token_locked: "Al posto della chiave vera trovi un segnaposto: la chiave la vede chi gestisce i codici di quel progetto. Chiedigliela e sostituiscila prima di pubblicare."
+        npm_hint: "Il sito usa un bundler (Vite, webpack)? Installa il pacchetto da npm e chiama init con gli stessi valori:"
         token_missing: "Questo progetto non ha ancora nessun codice attivo, quindi nel riquadro c'è un segnaposto: creane uno e mettilo al suo posto."
         snippet_note: "La prima riga carica la parte che registra davvero la navigazione: senza, il resto continua a funzionare e le registrazioni no, in silenzio. Tienila prima delle altre."
         errors_title: Dall'errore alla registrazione

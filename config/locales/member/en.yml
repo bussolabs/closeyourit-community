@@ -673,6 +673,7 @@ en:
         token_where: The key in the code is the one for the project you picked.
         token_link: Manage the project keys
         token_locked: "You get a placeholder instead of the real key: the key is visible to whoever manages that project's keys. Ask them for it and swap it in before you publish."
+        npm_hint: "Does your site use a bundler (Vite, webpack)? Install the package from npm and call init with the same values:"
         token_missing: "This project has no active key yet, so the box shows a placeholder: create one and put it in its place."
         snippet_note: "The first line loads the part that actually records the browsing: without it everything else keeps working and the recordings do not, silently. Keep it before the others."
         errors_title: From the error to the recording

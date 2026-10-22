@@ -47,6 +47,16 @@ RSpec.describe "Member — guide di automazione e statistiche (CYRA-501)", type:
       expect(page.at_css("[data-test='guide-analytics-copy']")).to be_present
     end
 
+    it "shows the exact npm package name for bundled apps (CYRA-1091)" do
+      sign_in(owner)
+
+      get member_guides_analytics_path
+
+      hint = page.at_css("[data-test='guide-analytics-npm']")
+      expect(hint).to be_present
+      expect(hint.text).to include("npm install @bussolabs/closeyourit-js")
+    end
+
     it "si sceglie il progetto, e la scelta cambia il codice mostrato" do
       altro = create(:project, organization: org, name: "Blog", analytics_enabled: true).tap { |p| p.platforms << web }
       create(:project_token, project: altro, public_key: "b" * 32)

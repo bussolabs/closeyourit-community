@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.195.1] - 2026-10-22
+
+### Changed
+
+- **Statistiche: installazione con npm.** La guida mostra il nome esatto del pacchetto da installare per i siti costruiti con Vite o webpack. ([guida](/member/guides/analytics))
+
 ## [0.195.0] - 2026-10-22
 
 ### Added
