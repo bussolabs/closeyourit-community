@@ -105,6 +105,43 @@ RSpec.describe Seo::RecordAudit, type: :service do
     expect(ignorata).to be_status_open
   end
 
+  describe "when the site moves to another address (CYRA-1093)" do
+    let(:site) { create(:seo_site, base_url: "https://www.sito.test") }
+
+    def www_page = crawled_page(url: "https://www.sito.test/old", path: "/old")
+
+    before do
+      record(pages: [ www_page ], candidates: [
+               candidate("missing_h1", url: "https://www.sito.test/old", evidence: { "url" => "https://www.sito.test/old" })
+             ])
+      site.update!(base_url: "https://sito.test")
+    end
+
+    it "resolves the open issues of pages outside the new address" do
+      report = record(pages: [ crawled_page ], candidates: [])
+
+      old_issue = site.issues.joins(:page).find_by(seo_pages: { url: "https://www.sito.test/old" })
+      expect(old_issue).to be_status_resolved
+      expect(old_issue.resolved_at).to eq(now)
+      expect(report.resolved).to include(old_issue)
+      expect(report.open_count).to eq(0)
+    end
+
+    it "leaves an ignored issue of the old address ignored" do
+      site.issues.sole.update!(status: :ignored)
+
+      record(pages: [ crawled_page ], candidates: [])
+
+      expect(site.issues.sole).to be_status_ignored
+    end
+
+    it "closes nothing when the round read no page of the new address" do
+      record(pages: [], candidates: [])
+
+      expect(site.issues.sole).to be_status_open
+    end
+  end
+
   it "un giro senza pagine non chiude niente: non si è guardato da nessuna parte" do
     record(pages: [ crawled_page ], candidates: [ candidate("missing_h1") ])
 

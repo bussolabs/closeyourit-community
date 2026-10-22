@@ -38,6 +38,7 @@ module Seo
       # fallita per ogni suo sito. Le altre organizzazioni non ne sanno niente: pagano con un'altra
       # chiave e la loro quota è intatta.
       raise_quota_flag if e.reason == "quota_exceeded"
+      log_failure(e)
       fail_run(run, e.reason)
     rescue StandardError => e
       fail_run(run, e.class.name.demodulize.underscore)
@@ -69,6 +70,12 @@ module Seo
       @site.update!(last_lab_run_at: @now, next_lab_run_at: @site.next_lab_run_after(@now),
                     last_lab_error: last_error)
       Seo::Broadcast.state(@site)
+    end
+
+    # Keeps Google's message, which the short reason code drops (CYRA-1095).
+    def log_failure(error)
+      Rails.logger.warn("[seo] PageSpeed measurement failed url=#{@site.base_url} strategy=#{@strategy} " \
+                        "reason=#{error.reason} message=#{error.message}")
     end
 
     def raise_quota_flag

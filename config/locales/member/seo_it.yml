@@ -107,7 +107,7 @@ it:
           unconfigured_hint: "Finché manca il collegamento questo sito non viene misurato: non è lento, è che nessuno lo ha ancora misurato. Chi amministra l'organizzazione può collegare Google PageSpeed dalle Integrazioni."
           empty: Nessuna misura ancora
           empty_hint: La prima misura arriva col prossimo controllo, oppure premi «Controlla ora» qui sopra.
-          stale: "L'ultima misura non è riuscita (%{error}). I numeri qui sotto sono del giro precedente."
+          stale: "L'ultima misura di %{url} non è riuscita (%{error}). I numeri qui sotto sono del giro precedente."
           no_field: Google non ha ancora abbastanza visite di questo sito per dire com'è andata alle persone.
           origin_fallback: Questi numeri riguardano tutto il sito, non solo questa pagina, perché Google non ne ha abbastanza su di lei.
           no_lab: Nessun giro di prova riuscito per questo dispositivo.

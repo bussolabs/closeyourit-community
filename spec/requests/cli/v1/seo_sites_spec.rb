@@ -123,6 +123,7 @@ RSpec.describe "Cli::V1::SeoSites", type: :request do
       expect(response).to have_http_status(:ok)
       performance = response.parsed_body.dig("data", "performance")
       expect(performance["last_error"]).to eq("quota_exceeded")
+      expect(performance["url"]).to eq(site.base_url) # the address the error refers to (CYRA-1095)
       expect(performance["last_run_at"]).to be_present
       expect(performance).not_to have_key("mobile")
     end

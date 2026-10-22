@@ -35,6 +35,11 @@ RSpec.describe Seo::Site, type: :model do
     expect(build(:seo_site, max_pages: 50)).to be_valid
   end
 
+  it "allows sites of up to 2,000 pages (CYRA-1094)" do
+    expect(build(:seo_site, max_pages: 2_000)).to be_valid
+    expect(build(:seo_site, max_pages: 2_001)).not_to be_valid
+  end
+
   it "un solo sito per progetto e ambiente" do
     site = create(:seo_site)
     duplicate = build(:seo_site, project: site.project, environment: site.environment)

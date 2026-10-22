@@ -16,17 +16,15 @@ module Seo
       # Le categorie che chiediamo. `pwa` no: non misura niente che riguardi il farsi trovare.
       CATEGORIES = %w[performance accessibility best-practices seo].freeze
 
-      # La maschera dei campi è ciò che rende sostenibile l'integrazione: una risposta completa è
-      # mezzo megabyte di report Lighthouse, con la maschera scende a pochi KB. Il client NON deve
-      # troncare il body come fa il crawler: un JSON troncato è illeggibile, non è un JSON più corto.
+      # Fields mask: whole audits, because Google answers 400 to a mask that picks single audits
+      # (CYRA-1095); the answer is about 850 KB. The client must not truncate the body like the
+      # crawler does: a truncated JSON is unreadable, not a shorter JSON.
       FIELDS = [
         "id",
         "analysisUTCTimestamp",
         "loadingExperience",
         "originLoadingExperience",
-        "lighthouseResult(lighthouseVersion,categories,audits/largest-contentful-paint," \
-        "audits/first-contentful-paint,audits/cumulative-layout-shift,audits/total-blocking-time," \
-        "audits/speed-index,audits/server-response-time)"
+        "lighthouseResult(lighthouseVersion,categories,audits)"
       ].join(",").freeze
 
       # I nomi degli audit Lighthouse da cui leggiamo le misure, con la colonna che li accoglie.

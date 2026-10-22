@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.194.0] - 2026-10-22
+
+### Changed
+
+- **Controllo SEO fino a 2.000 pagine.** Il limite di pagine per sito sale da 1.000 a 2.000.
+
+### Fixed
+
+- **Misura della velocità dei siti.** La misura con PageSpeed falliva sempre per una richiesta sbagliata verso Google. Ora riesce, e quando non riesce dice quale indirizzo ha provato a misurare.
+- **Rilievi SEO dopo un cambio di indirizzo.** Se cambi l'indirizzo del sito, per esempio togliendo il www, i rilievi delle pagine del vecchio indirizzo si chiudono da soli al giro successivo.
+
 ## [0.193.5] - 2026-10-22
 
 ### Changed

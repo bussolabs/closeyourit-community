@@ -68,6 +68,15 @@ RSpec.describe Seo::PageSpeed::Client do
       expect(query).to include("locale=it")
     end
 
+    # Google answers 400 "Request contains an invalid argument" to a mask that picks single audits
+    # (audits/largest-contentful-paint): every measurement failed that way until CYRA-1095.
+    it "asks for the audits as a whole, the only audit mask Google accepts" do
+      mask = Seo::PageSpeed::Constants::FIELDS
+
+      expect(mask).to include("lighthouseResult(lighthouseVersion,categories,audits)")
+      expect(mask).not_to match(%r{audits[/.]})
+    end
+
     it "restituisce la risposta già decodificata" do
       stub_request(:get, endpoint).to_return(status: 200, body: fixture("pagespeed_success"))
 

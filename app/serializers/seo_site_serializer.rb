@@ -58,7 +58,7 @@ class SeoSiteSerializer < ApplicationSerializer
   # cui l'ultima misura è fallita — tacere quel motivo sarebbe il degrado silenzioso, cioè far sembrare
   # un guasto una misura che non è ancora arrivata.
   attribute :performance, if: proc { |site| SeoSiteSerializer.performance?(site, params) } do |site|
-    { last_run_at: site.last_lab_run_at, last_error: site.last_lab_error }
+    { url: site.base_url, last_run_at: site.last_lab_run_at, last_error: site.last_lab_error }
       .merge(params[:lab_runs].transform_values { |run| SeoSiteSerializer.lab_payload(run) })
   end
 

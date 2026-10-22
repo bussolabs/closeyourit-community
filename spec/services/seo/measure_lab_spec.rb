@@ -103,6 +103,17 @@ RSpec.describe Seo::MeasureLab do
       expect(site.reload.last_lab_error).to eq("upstream_error")
     end
 
+    # The reason code alone hid that Google rejected our request, not the site (CYRA-1095).
+    it "logs Google's own message with the measured address" do
+      allow(Rails.logger).to receive(:warn)
+
+      described_class.call(site:, strategy: "mobile", client: client_che(errore))
+
+      expect(Rails.logger).to have_received(:warn)
+        .with("[seo] PageSpeed measurement failed url=https://acme.example strategy=mobile " \
+              "reason=upstream_error message=giù")
+    end
+
     # Senza questo, un sito che Google non raggiunge verrebbe ritentato a ogni giro del dispatcher —
     # cioè ogni ora, per sempre, bruciando quota per tutti gli altri.
     it "la prossima scadenza si scrive comunque" do

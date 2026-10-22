@@ -30,7 +30,7 @@
         <div class="rounded-lg border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 px-5 py-3" data-test="seo-performance-stale">
           <p class="text-[12.5px] text-amber-900 dark:text-amber-200">
             <%= render Ui::IconComponent.new(name: "triangle-alert", class: "mr-1.5") %>
-            <%= t("member.monitoring.seo_sites.performance.stale", error: @site.last_lab_error) %>
+            <%= t("member.monitoring.seo_sites.performance.stale", url: @site.base_url, error: @site.last_lab_error) %>
           </p>
         </div>
       <% end %>

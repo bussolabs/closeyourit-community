@@ -31,7 +31,7 @@ module Seo
       ActiveRecord::Base.transaction do
         pages_by_url = upsert_pages
         opened, reconfirmed = sync_issues(pages_by_url)
-        resolved = close_disappeared(opened + reconfirmed, pages_by_url)
+        resolved = close_disappeared(opened + reconfirmed, pages_by_url) + close_out_of_scope(pages_by_url)
         open_count = @site.issues.status_open.count
         unverified_count = unread_pages.size
 
@@ -141,6 +141,17 @@ module Seo
                    .where(page_id: levels.keys)
                    .reject { |issue| seen_ids.include?(issue.id) }
                    .select { |issue| verified?(issue, levels) }
+      stale.each { |issue| issue.update!(status: :resolved, resolved_at: @now) }
+    end
+
+    # Pages on another host than the site's address are never crawled again (the crawl stays on one
+    # host), so after an address change their open issues would stay open forever (CYRA-1093).
+    def close_out_of_scope(pages_by_url)
+      return [] if pages_by_url.empty?
+
+      host = URI.parse(@site.base_url).host
+      stale = @site.issues.status_open.where.not(page_id: nil).includes(:page)
+                   .reject { |issue| URI.parse(issue.page.url).host == host }
       stale.each { |issue| issue.update!(status: :resolved, resolved_at: @now) }
     end
 
