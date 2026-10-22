@@ -9,6 +9,8 @@ en:
         not_settled: The answers were not recorded. The round stays with a person.
     # CYRA-675 — fixed-length service line, same reason as the clarification one: a comment has a
     # character cap and the agent summary does not. The full summary is in the Automation panel.
+    closer_staging:
+      already_merged: "The approved PR #%{number} is already merged: the work must not be redone. Check whether it is already in a release, then close the work."
     already_done:
       service_line: "Whoever was to plan this found the work already done in the code: the ticket closes without planning. What was looked at is in the Automation panel."
     clarifications:

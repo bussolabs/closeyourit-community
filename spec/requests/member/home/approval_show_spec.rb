@@ -59,6 +59,23 @@ RSpec.describe "Member::Home::Approvals#show", type: :request do
     get member_home_approvals_item_path(kind: "agent_plan", id: workflow.id)
   end
 
+  # CYRA-1098 — a stop from the pull request checks rejects no attempt: the page must name the check.
+  describe "a workflow stopped by the pull request checks" do
+    it "shows the check that stopped it, not a missing attempt" do
+      workflow = delivered_workflow
+      workflow.update!(blocked_at: Time.current, blocked_phase: "autopilot", blocked_kind: "candidate_check",
+                       blocked_reason: "CI checks failed on the pull request")
+      sign_in(owner)
+
+      show_workflow(workflow)
+
+      expected = I18n.t("member.tickets.automation.blocked.body_candidate_check",
+                        reason: "CI checks failed on the pull request")
+      expect(response.body).to include(CGI.escapeHTML(expected))
+      expect(response.body).not_to include(CGI.escapeHTML(I18n.t("member.approvals.attempt.none")))
+    end
+  end
+
   describe "la pagina esiste ed è sua" do
     it "una lavorazione si apre su una pagina propria, non dentro la coda" do
       workflow = planned_workflow(title: "Col piano pronto")

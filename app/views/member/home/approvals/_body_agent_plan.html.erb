@@ -60,6 +60,9 @@
           <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="approvals-detail-attempt-no-review"><%= t("member.approvals.attempt.no_review") %></p>
         <% end %>
       </div>
+    <% elsif (check_stop = automation_check_stop_text(card.workflow)) %>
+      <%# A stop from the pull request or release checks has no rejected attempt: name the check. CYRA-1098 %>
+      <p class="text-[12.5px] text-zinc-700 dark:text-zinc-300" data-test="approvals-detail-check-stop"><%= check_stop %></p>
     <% else %>
       <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="approvals-detail-attempt-none"><%= t("member.approvals.attempt.none") %></p>
     <% end %>

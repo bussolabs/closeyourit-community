@@ -20,6 +20,8 @@
               <%= t("member.tickets.automation.blocked.body_agent",
                     phase: automation_execution_phase_label(workflow.blocked_phase),
                     reason: automation_agent_block_reason(workflow)) %>
+            <% elsif (check_stop = automation_check_stop_text(workflow)) %>
+              <%= check_stop %>
             <% else %>
               <%= t("member.tickets.automation.blocked.body",
                     phase: automation_execution_phase_label(workflow.blocked_phase), count: blocked_failures) %>

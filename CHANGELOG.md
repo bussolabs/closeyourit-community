@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.195.2] - 2026-10-22
+
+### Fixed
+
+- **Lavorazioni ferme sui controlli della proposta.** Quando una lavorazione si ferma perché i controlli della proposta o del rilascio non passano, la scheda lo dice con il motivo. Prima scriveva «nessun tentativo» o «fermata 0 volte di fila». ([Approvazioni](/member/home/approvals))
+- **Lavoro già unito non si rifà più.** Se la proposta approvata è già unita e il rilascio in staging si ferma, la macchina non riparte da capo su quel lavoro. La lavorazione si ferma e chiede di controllare il rilascio e chiuderla.
+
 ## [0.195.1] - 2026-10-22
 
 ### Changed

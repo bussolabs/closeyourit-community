@@ -2146,6 +2146,8 @@ it:
           title: Ferma — serve una decisione
           body: "Si è fermata su %{phase} %{count} volte di fila. La lavorazione non riprova da sola."
           body_agent: "La macchina si è fermata da sola su %{phase}: «%{reason}» La lavorazione non riprova da sola."
+          body_candidate_check: "Si è fermata sul controllo della proposta: «%{reason}» La lavorazione non riprova da sola."
+          body_release_probe: "Si è fermata sul controllo del rilascio: «%{reason}» La lavorazione non riprova da sola."
           body_held: "%{name} ha fermato il rilascio prima della produzione. Il codice è già su main: finché resta ferma, nessun rilascio di questo repository va in produzione."
           retry: Sblocca e riprova
           retried: Lavorazione rimessa in coda.

@@ -2082,6 +2082,8 @@ en:
           title: Stopped — a decision is needed
           body: "It stopped on %{phase} %{count} times in a row. The work will not retry on its own."
           body_agent: "The machine stopped by itself on %{phase}: «%{reason}» The work will not retry on its own."
+          body_candidate_check: "It stopped while checking the pull request: «%{reason}» The work will not retry on its own."
+          body_release_probe: "It stopped while checking the release: «%{reason}» The work will not retry on its own."
           body_held: "%{name} stopped the release before production. The code is already on main: while it stays stopped, no release of this repository goes to production."
           retry: Unblock and retry
           retried: Work put back in the queue.

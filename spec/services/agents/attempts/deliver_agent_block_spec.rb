@@ -204,6 +204,22 @@ RSpec.describe Agents::Attempts::Deliver, "il blocco dichiarato dalla macchina" 
       expect(workflow.ready_execution_phase).to eq("autopilot")
     end
 
+    # CYRA-1097 — the approved pull request is already merged: the autopilot would redo merged code.
+    it "blocks instead of sending already merged work back to the autopilot" do
+      candidate = create(:agent_delivery_candidate, organization:, workflow:, repository:, number: 24,
+                                                    repository_full_name: repository.full_name)
+      workflow.update!(review_candidate: candidate)
+      create(:github_pull_request, repository:, ticket:, number: 24, state: :merged)
+
+      consegna("closer_staging", state: "blocked", tag: nil, reason: "PR #24 conflicts with main.",
+                                 failure: conflict)
+
+      expect(workflow.reload).to have_attributes(blocked_phase: "closer_staging", blocked_kind: "agent_blocked",
+                                                 autopilot_approved_at: be_present)
+      expect(workflow.blocked_reason).to include("#24")
+      expect(workflow.ready_execution_phase).to be_nil
+    end
+
     it "still blocks on any other reason" do
       consegna("closer_staging", state: "blocked", tag: nil, reason: "The CI is red.",
                                  failure: conflict.merge(category: "quality_gate"))

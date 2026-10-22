@@ -28,10 +28,24 @@ module Agents
         # CYRA-1069 — main moved and the approved branch no longer merges: the autopilot brings main in,
         # and the new head goes back to a person's review like any other delivery.
         def rework_from_conflict!
+          # CYRA-1097 — an already merged pull request has nothing left to merge: redoing it rebuilds merged code.
+          return block!(already_merged_reason) if approved_pull_request_merged?
+
           workflow.update!(autopilot_started_at: nil, autopilot_completed_at: nil, autopilot_approved_at: nil,
                            autopilot_approved_by_id: nil, closer_staging_started_at: nil,
                            candidate_verified_at: nil, review_candidate_id: nil,
                            **Agents::Workflow.cleared_block)
+        end
+
+        def approved_pull_request_merged?
+          candidate = workflow.review_candidate
+          return false if candidate&.repository_id.nil?
+
+          Github::PullRequest.state_merged.exists?(repository_id: candidate.repository_id, number: candidate.number)
+        end
+
+        def already_merged_reason
+          I18n.t("agents.closer_staging.already_merged", number: workflow.review_candidate.number)
         end
       end
     end

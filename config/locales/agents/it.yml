@@ -10,6 +10,8 @@ it:
     # CYRA-675 — riga di servizio a lunghezza FISSA, come quella dei chiarimenti e per lo stesso
     # motivo: il riassunto dell'agente non ha un tetto e un commento sì. Il riassunto per esteso sta
     # nella scheda Automazione, i file provati nella cronologia.
+    closer_staging:
+      already_merged: "La PR #%{number} approvata risulta già unita: il lavoro non va rifatto. Controlla se è già in un rilascio, poi chiudi la lavorazione."
     already_done:
       service_line: "Chi doveva pianificare ha trovato questo lavoro già fatto nel codice: il ticket si chiude senza pianificare. Cosa ha guardato è nella scheda Automazione."
     clarifications:

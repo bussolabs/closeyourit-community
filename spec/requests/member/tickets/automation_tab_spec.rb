@@ -265,6 +265,22 @@ RSpec.describe "Member ticket automation tab", type: :request do
       expect(response.body).not_to include(CGI.escapeHTML(falsa))
     end
 
+    # CYRA-1098 — a stop from the server's own checks rejects no attempt, so the cap sentence said 0.
+    { "candidate_check" => "body_candidate_check", "release_probe" => "body_release_probe" }.each do |kind, key|
+      it "names the #{kind} stop instead of a zero rejection count" do
+        workflow.update!(blocked_kind: kind, blocked_phase: "autopilot",
+                         blocked_reason: "CI checks failed on the pull request")
+
+        get member_ticket_path(ticket, tab: "automation")
+
+        expected = I18n.t("member.tickets.automation.blocked.#{key}", reason: "CI checks failed on the pull request")
+        expect(response.body).to include(CGI.escapeHTML(expected))
+        zero = I18n.t("member.tickets.automation.blocked.body",
+                      phase: I18n.t("member.tickets.automation.execution_phase.autopilot"), count: 0)
+        expect(response.body).not_to include(CGI.escapeHTML(zero))
+      end
+    end
+
     it "e la frase del tetto resta quella di prima quando a fermarla è stato il tetto" do
       get member_ticket_path(ticket, tab: "automation")
 
