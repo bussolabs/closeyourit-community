@@ -87,7 +87,7 @@ module Guides
     # vede — riceve il percorso, non la query. Una regola non potrebbe mai distinguerla da
     # `/member/tickets`, che ha già la sua guida. Si raggiunge dall'indice delle guide e dal link
     # nella voce di changelog.
-    STANDALONE = %w[overview ticket_lifecycle questions assistant].freeze
+    STANDALONE = %w[overview ticket_lifecycle questions assistant coverage].freeze
 
     class << self
       # Slug della guida che spiega la pagina, o nil se quella pagina non ne ha una.

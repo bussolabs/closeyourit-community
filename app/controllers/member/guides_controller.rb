@@ -87,6 +87,9 @@ module Member
     # non l'aveva già configurata da fuori.
     def crons; end
 
+    # CYRA-1096 — sending test coverage from CI; no product page shows it, so the guide is standalone.
+    def coverage; end
+
     def servers; end
 
     # CYRA-501 — il passo che conta («inserisci il codice nel tuo sito») nominava lo snippet senza

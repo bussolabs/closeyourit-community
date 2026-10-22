@@ -11,7 +11,7 @@ module Member
     GUIDE_SECTIONS = {
       "start" => %w[overview installation ticket_lifecycle structure assistant],
       "product" => %w[tickets questions helpdesk approvals feature_matrix guidance knowledge knowledge_review],
-      "observability" => %w[errors performance logs traces measurements session_health replays uptime crons analytics reports],
+      "observability" => %w[errors performance logs traces measurements session_health replays uptime crons coverage analytics reports],
       "security" => %w[vulnerabilities seo],
       "infrastructure" => %w[servers],
       "vault" => %w[vault secrets secret_overrides shared_values],
@@ -24,7 +24,7 @@ module Member
       "guidance" => "compass", "knowledge" => "book", "knowledge_review" => "inbox", "errors" => "bug",
       "measurements" => "chart-no-axes-combined", "session_health" => "heart-pulse",
       "traces" => "git-branch", "performance" => "gauge", "logs" => "align-left", "replays" => "film", "uptime" => "heart-pulse",
-      "crons" => "history", "analytics" => "chart-column", "reports" => "mail-open",
+      "crons" => "history", "coverage" => "flask-conical", "analytics" => "chart-column", "reports" => "mail-open",
       "vulnerabilities" => "shield-half", "seo" => "file-search", "servers" => "server", "vault" => "vault",
       "secrets" => "key", "secret_overrides" => "user-pen", "shared_values" => "group", "agents" => "bot",
       "skill_bundles" => "boxes", "datasets" => "wand-sparkles", "permissions" => "shield-half",

@@ -19,6 +19,23 @@ RSpec.describe "Member::Guides", type: :request do
       expect(response).to have_http_status(:ok)
     end
 
+    # CYRA-1096 — how a customer CI sends its test coverage: endpoint, token, branch, parallel parts.
+    it "GET guides/coverage shows the push command, the endpoint and the parallel parts rule" do
+      get member_guides_coverage_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('data-test="member-guide-coverage"')
+      expect(response.body).to include("cyi coverage push")
+      expect(response.body).to include("/api/v1/projects/")
+      expect(response.body).to include("--file")
+    end
+
+    it "lists the coverage guide in the guides index on the left" do
+      get member_guides_path
+
+      expect(response.body).to include('data-test="member-guides-card-coverage"')
+    end
+
     # CYRA-435 — le due guide d'insieme: la mappa del prodotto e il percorso di un ticket.
     it "GET guides/overview → 200 con i gruppi del menu, come si aprono e il primo giorno" do
       get member_guides_overview_path

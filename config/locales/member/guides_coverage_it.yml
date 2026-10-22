@@ -1,0 +1,24 @@
+it:
+  member:
+    guides:
+      index:
+        coverage:
+          title: "Copertura dei test"
+      coverage:
+        title: "Copertura dei test"
+        subtitle: "Manda dalla tua CI quanta parte del codice è provata dai test."
+        what_title: "Come funziona"
+        what_intro: "Dopo i test, la tua CI manda la copertura misurata da SimpleCov. Qui resta come riferimento: dice quanto del codice è davvero provato."
+        what_b1: "Per ogni ramo si tiene solo l'ultima fotografia: un nuovo invio sostituisce il precedente."
+        what_b2: "Basta il token di ingest del progetto, lo stesso che usi per gli errori. Il token e l'ID del progetto sono nella sezione dei token del progetto."
+        what_b3: "Se i test girano in più parti, uniscile in un invio solo: inviate separate, l'ultima cancellerebbe le altre."
+        setup_title: "Come si manda"
+        step_install: "1. Installa la CLI nella CI."
+        step_push: "2. Dopo i test, manda il file di SimpleCov. Di solito sta in coverage/.resultset.json."
+        step_parallel: "3. Se i test girano in parti parallele, raccogli i file di ogni parte e passali tutti: vengono uniti prima dell'invio."
+        step_tag: "Se la tua CI gira solo sui tag di rilascio, va bene lo stesso: con --branch scegli tu il ramo, per esempio main."
+        token_placeholder: "token di ingest"
+        project_placeholder: "ID del progetto"
+        api_title: "Senza la CLI"
+        api_intro: "Il comando manda la copertura a questo indirizzo, con il token di ingest:"
+        api_formats: "L'indirizzo accetta solo il riassunto che costruisce il comando, non il file di SimpleCov né LCOV così come sono. Per questo conviene usare la CLI."

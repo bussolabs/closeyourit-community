@@ -491,6 +491,7 @@ namespace :member do
   get "guides/replays",     to: "guides#replays",     as: :guides_replays
   # CYRA-485 — i lavori programmati non avevano una guida: fra tredici, nessuna li nominava.
   get "guides/crons",       to: "guides#crons",       as: :guides_crons
+  get "guides/coverage",    to: "guides#coverage",    as: :guides_coverage
   get "guides/servers",     to: "guides#servers",     as: :guides_servers
   get "guides/analytics",   to: "guides#analytics",   as: :guides_analytics
   get "guides/secrets",     to: "guides#secrets",     as: :guides_secrets

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.195.0] - 2026-10-22
+
+### Added
+
+- **Copertura dei test dalla tua CI.** Una guida spiega come mandare la copertura misurata da SimpleCov, anche da una CI che gira solo sui tag o con i test divisi in più parti. ([guida](/member/guides/coverage))
+
 ## [0.194.0] - 2026-10-22
 
 ### Changed

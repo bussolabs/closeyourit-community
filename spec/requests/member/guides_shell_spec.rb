@@ -34,7 +34,7 @@ RSpec.describe "Member guides shell", type: :request do
     tests = nav_links.map { |link| link["data-test"] }
     expect(tests.first(2)).to eq(%w[member-guides-card-catalog member-guides-card-overview])
     expect(tests.uniq.size).to eq(tests.size)
-    expect(tests.size).to eq(39)
+    expect(tests.size).to eq(40)
     expect(tests).to include("member-guides-card-installation", "member-guides-card-traces")
   end
 

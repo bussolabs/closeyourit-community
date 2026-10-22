@@ -1,0 +1,24 @@
+en:
+  member:
+    guides:
+      index:
+        coverage:
+          title: "Test coverage"
+      coverage:
+        title: "Test coverage"
+        subtitle: "Send from your CI how much of the code your tests exercise."
+        what_title: "How it works"
+        what_intro: "After the tests, your CI sends the coverage SimpleCov measured. It stays here as a reference: it tells how much of the code is really tested."
+        what_b1: "Each branch keeps only its latest snapshot: a new push replaces the previous one."
+        what_b2: "The project ingest token is enough, the same one you use for errors. The token and the project ID are in the project tokens section."
+        what_b3: "If the tests run in several parts, merge them into one push: sent separately, the last one would replace the others."
+        setup_title: "How to send it"
+        step_install: "1. Install the CLI in your CI."
+        step_push: "2. After the tests, send the SimpleCov file. It usually lives in coverage/.resultset.json."
+        step_parallel: "3. If the tests run in parallel parts, collect the file of each part and pass them all: they are merged before sending."
+        step_tag: "If your CI only runs on release tags, that works too: --branch sets the branch, for example main."
+        token_placeholder: "ingest token"
+        project_placeholder: "project ID"
+        api_title: "Without the CLI"
+        api_intro: "The command sends the coverage to this address, with the ingest token:"
+        api_formats: "The address only accepts the summary the command builds, not the SimpleCov file or LCOV as they are. That is why the CLI is the way to go."

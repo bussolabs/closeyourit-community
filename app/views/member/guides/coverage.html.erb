@@ -1,0 +1,57 @@
+<% content_for :title, t("member.guides.coverage.title") %>
+<% code_class = "mt-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-4 py-3 font-mono text-[11.5px] leading-relaxed text-zinc-800 dark:text-zinc-200 overflow-x-auto" %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-coverage">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "flask-conical", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-sky-50 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.coverage.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.coverage.title") } ]) do |h| %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.coverage.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.coverage.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.coverage.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "camera", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.coverage.what_b1") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "key", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.coverage.what_b2") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "circle-alert", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.coverage.what_b3") %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.coverage.setup_title") %></h2></div>
+    <div class="px-4 py-4 space-y-4 text-[12.5px] text-gray-600 dark:text-zinc-400">
+      <div>
+        <p><%= t("member.guides.coverage.step_install") %></p>
+        <pre class="<%= code_class %>"><code>npm install -g @bussolabs/closeyourit-cli</code></pre>
+      </div>
+      <div>
+        <p><%= t("member.guides.coverage.step_push") %></p>
+        <pre class="<%= code_class %>"><code>CLOSEYOURIT_TOKEN=&lt;<%= t("member.guides.coverage.token_placeholder") %>&gt; \
+  cyi coverage push -p &lt;<%= t("member.guides.coverage.project_placeholder") %>&gt; --branch main</code></pre>
+      </div>
+      <div>
+        <p><%= t("member.guides.coverage.step_parallel") %></p>
+        <pre class="<%= code_class %>"><code>cyi coverage push -p &lt;<%= t("member.guides.coverage.project_placeholder") %>&gt; --branch main \
+  --file part1/.resultset.json --file part2/.resultset.json --file part3/.resultset.json</code></pre>
+      </div>
+      <p><%= t("member.guides.coverage.step_tag") %></p>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.coverage.api_title") %></h2></div>
+    <div class="px-4 py-4 space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+      <p><%= t("member.guides.coverage.api_intro") %></p>
+      <pre class="<%= code_class %>"><code>POST <%= request.base_url %>/api/v1/projects/&lt;<%= t("member.guides.coverage.project_placeholder") %>&gt;/coverage
+Authorization: Bearer &lt;<%= t("member.guides.coverage.token_placeholder") %>&gt;</code></pre>
+      <p><%= t("member.guides.coverage.api_formats") %></p>
+    </div>
+  </div>
+</div>
