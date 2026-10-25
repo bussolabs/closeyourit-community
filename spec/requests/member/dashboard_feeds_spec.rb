@@ -217,6 +217,18 @@ RSpec.describe "Member::DashboardFeeds", type: :request do
       expect(page.at_css("[data-test='dashboard-read-failed']")).to be_nil
     end
 
+    it "gives every group its own panel, with the numbers split by hairlines and no panel inside a panel (A12)" do
+      feed = connected(name: "Shop")
+      sign_in(owner)
+
+      get member_dashboard_feed_path(feed)
+
+      numbers = page.at_css("[data-test='dashboard-numbers']")
+      expect(numbers.css("[data-test='dashboard-group']").size).to eq(3)
+      expect(numbers.css("[data-test='dashboard-group'] [class*='rounded']")).to be_empty
+      expect(numbers.css("[data-test^='dashboard-metric-']").map { _1[:class] }).to all(satisfy { |klass| !klass.include?("rounded-[10px]") })
+    end
+
     it "says why the last read failed and still shows the last good numbers" do
       feed = connected(name: "Shop", last_error: "timeout")
       sign_in(owner)

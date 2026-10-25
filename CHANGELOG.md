@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.197.0] - 2026-10-25
+
+### Fixed
+
+- **Numeri dei servizi più leggibili.** Nella pagina di un servizio ogni gruppo resta un pannello a sé, e i numeri al suo interno sono divisi solo da linee sottili. ([Dashboard](/member/dashboards))
+
+- **Guide che dicono come funziona davvero.** Le guide su approvazioni, registrazioni, controllo dei siti ed errori ora raccontano cosa fa il prodotto: per esempio, il rilascio in produzione parte da solo dopo la prova. Anche le pagine dei membri dicono che solo il proprietario vede tutti i progetti. ([guida](/member/guides/approvals))
+
 ## [0.196.0] - 2026-10-25
 
 ### Added

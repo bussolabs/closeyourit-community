@@ -547,7 +547,7 @@ en:
         title: Errors
         subtitle: Collect the errors from your applications, whatever language they are written in.
         what_title: What it is
-        what_intro: CloseYourIt captures exceptions from your app and groups them into deduplicated issues. Every occurrence rolls up into one issue by fingerprint, so a thousand identical crashes stay one row with counters — not noise.
+        what_intro: "CloseYourIt captures exceptions from your app and rolls the occurrences of the same failure into one issue, so a thousand identical crashes stay one row with counters — not noise. To tell whether two occurrences are the same failure it looks, in this order, at: the grouping key your app's SDK set, if any; otherwise the error type together with the place in the code where it started; otherwise the message, stripped of numbers and identifiers; failing that too, the name of the request."
         what_levels: Levels — debug, info, warning, error, fatal.
         what_status: Status — unresolved, resolved, ignored. A resolved issue that recurs reopens automatically.
         what_promote: Promote to ticket — turn any issue into a bug ticket in one click.
@@ -616,7 +616,7 @@ en:
         field_type: What to check
         field_type_desc: a website, a port on a server, a domain name (DNS) or whether a machine answers (ping)
         field_url: URL
-        field_url_desc: the endpoint to ping (https only, public)
+        field_url_desc: the endpoint to ping (http or https, as long as it is public)
         field_environment: Environment
         field_environment_desc: one declared environment of the project
         field_method: Method
@@ -643,7 +643,7 @@ en:
         alert_title: Get alerted when it goes down
         alert_intro: "A monitor records outages, but it doesn't alert anyone on its own: the last step is saying who gets alerted if the site goes down."
         alert_step1: "Open %{page} and create a new rule."
-        alert_step2: Pick the "Site unreachable" event — leave the project empty to cover them all, or choose one.
+        alert_step2: Pick the "Uptime down" event — leave the project empty to cover them all, or choose one.
         alert_step3: Link the channels (email, Telegram, webhook) where you want to receive the alert.
         alert_cta: Go to Alert rules
         cta: Go to Uptime
@@ -684,7 +684,7 @@ en:
         errors_cta: Go to Errors
         privacy_title: What never makes it into the recording
         privacy_intro: "A recording is sensitive data: the product treats it as such, and the choices are already made on the cautious side."
-        privacy_masked: Sensitive values (passwords, payment data, fields marked as private) are masked by the kit on your site, before they leave. They arrive here already hidden and are never inspected.
+        privacy_masked: By default the kit on your site masks all the text on the page and everything typed into fields, before it leaves. To see part of the page in clear you have to say so yourself, in the kit configuration. It arrives here already hidden and is never inspected.
         privacy_user: Of the person browsing only an anonymous fingerprint is kept, not their name or email. It tells you two sessions belong to the same person, not who they are.
         privacy_retention: Recordings are kept for 30 days, or as many as you set on the project. After that they are really deleted, videos included.
         cta: Go to Session replay
@@ -1046,7 +1046,7 @@ en:
       access:
         title: Project access
         back: Back to members
-        all_access_notice: Admins and owners see every project — access assignment doesn't apply to them.
+        all_access_notice: Only the owner sees every project and can do everything — access assignment doesn't apply to them. Admins and members see the projects assigned to them and do what their roles allow.
         groups: Groups
         groups_hint: Access to a group grants all its projects — now and in the future.
         projects: Projects
@@ -1072,7 +1072,7 @@ en:
       org_label: Organization
       email: Email
       role: Role
-      role_hint_html: "<b>member</b> can work on tickets · <b>admin</b> can also manage members."
+      role_hint_html: "<b>Member</b> and <b>Admin</b> see the projects assigned to them and do what their roles allow · only the <b>Owner</b> sees and does everything."
       submit: Send invitation
       cancel: Cancel
       sent: Invitation sent.

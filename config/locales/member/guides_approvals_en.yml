@@ -19,7 +19,6 @@ en:
         what_b2: Tickets that reached review where you are the one who has to look at them.
         what_b3: Questions agents asked you and are waiting an answer for.
         what_b4: Change requests on confidential data, which by rule need a second person to approve.
-        what_b5: Production releases, which wait for your go-ahead before they start.
         how_title: How to use it
         how_step1: Open Approvals from the left menu, or press "g" then "a" from any page.
         how_step2: "Look at the list: every row is a piece of work, grouped under its project, with whatever has been stuck the longest on top. Press a project name to close it and get what you do not care about out of the way."
@@ -46,21 +45,21 @@ en:
             title: Re-assess
             body: "For old tickets: it asks the agent to re-read today's code and say whether that work is still needed. If it finds it already done it closes the ticket and writes down which files it found it in; if it is still needed, the plan is rewritten from scratch. It shows up while the work is still to plan or the plan is waiting for your yes — after that the agent has already written the code, and the question becomes a different one."
         filters_title: Seeing one kind at a time
-        filters_intro: "Above the queue there is a bar with three drop-down menus: kind of request, project and agent. The kind menu holds plans to approve, delivered work, releases to authorize, stalled work, tickets in review, questions, sensitive data and the ones awaiting a reply, each with how many are waiting. Pick one and only those stay in the queue."
+        filters_intro: "Above the queue there is a bar with three drop-down menus: kind of request, project and agent. The kind menu holds plans to approve, delivered work, stalled work, tickets in review, questions, sensitive data and the ones awaiting a reply, each with how many are waiting. Pick one and only those stay in the queue."
         filters_b1: One kind at a time. Pick «All» to see the whole queue back. The project and agent menus only show up when the queue holds more than one of them.
         filters_b2: Only the kinds that actually have something to do show up in the menu, so every entry leads to real work. The one you picked stays in place even once you empty it.
         filters_b3: "The chosen kind stays on while you decide: as soon as you are done with a request the next one of the same kind opens, and the page address carries it along if you reload or share it."
         bulk_title: Accepting several at once
-        bulk_intro: "When the queue is long and every request is a green light, there is no need to open them one by one: each row you can accept as it is has a checkbox on the left. Tick the ones you want — or all of them from the checkbox at the top — and press \"Accept selected\"."
+        bulk_intro: "When the queue is long and every request is a green light, there is no need to open them one by one: each row you can accept as it is has a checkbox on the left. Tick the ones you want — or all of them from the checkbox at the top — and press \"Accept\" in the bar that shows up on top."
         bulk_b1: The checkbox is there on analyses awaiting approval, on delivered work, on tickets in review you can manage and on change requests for confidential data.
-        bulk_b2: It is not there on agent questions, which want a written answer, nor on stalled work, where that button does not accept but puts the work back in the queue, nor on production releases, which are authorized one at a time.
+        bulk_b2: It is not there on agent questions, which want a written answer, nor on stalled work, where that button does not accept but puts the work back in the queue.
         bulk_b3: "In bulk you cannot add notes and you cannot reject: for those, open the request and decide one at a time."
         bulk_b4: At the end a message tells you how many were accepted and whether any stayed in the queue.
-        production_title: The go-ahead to production
-        production_intro: "When an assistant is done and the staging run went well, the move to production does not start on its own: it stops and asks you. The request says which version was tried out, so you know what you are about to ship."
-        production_b1: "Press «Ship to production» and the work resumes from there and the release is made. Until you press, nothing goes out."
-        production_b2: "There is no reject button. If you do not want to release, do not press: the run stays where it is and you can come back to it whenever you want."
-        production_b3: It is the only request you cannot accept together with the others in bulk. You give it one at a time, looking at it.
+        production_title: The release to production
+        production_intro: "When the staging run went well, the release to production starts on its own: it does not ask for a go-ahead and it is not among the things to decide. First it stays on trial for a wait: 2 hours by default, which you change in the project or organization settings."
+        production_b1: "If a new error shows up on staging during the trial, the release holds and waits: it resumes once that error is resolved or ignored."
+        production_b2: "You follow it from the «Running, nothing for you to do» list: the row says from what time it goes to production, or that it is held by a new error."
+        production_b3: "The only thing you can do is «Stop», on the same row. While that release stays stopped, no release of the same repository goes to production."
         retrying_title: The ones retrying on their own
         retrying_intro: "When the review rejects an attempt, the run sometimes starts over by itself: it is not waiting on you. Those stay out of the queue and out of the number at the top, in a separate list you open from the «Running, nothing for you to do» button, with how many there are."
         retrying_b1: They are already moving. There is nothing for you to do, and indeed they are not counted among the things to decide.

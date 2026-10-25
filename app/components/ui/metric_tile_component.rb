@@ -15,8 +15,12 @@ module Ui
   #
   # caption/delta sono in flow verticale normale (mt-1), renderizzati solo se presenti: aggiungerli
   # non copre né sposta il valore (niente layout shift), estende solo la tile verso il basso.
+  #
+  # `framed: false` drops border, radius and background: inside a panel the tiles are split by the
+  # parent's hairlines instead, never a panel inside a panel (DESIGN.md A12, T3).
   class MetricTileComponent < BaseComponent
     STATIC = "rounded-[10px] border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-[18px] py-[15px]"
+    UNFRAMED = "px-[18px] py-[15px]"
     LINK   = "block #{STATIC} transition-colors hover:border-stone-300 dark:hover:border-zinc-700 hover:bg-stone-50 dark:hover:bg-zinc-800 " \
              "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:focus-visible:ring-indigo-400/40"
 
@@ -44,8 +48,9 @@ module Ui
     def initialize(label:, value:, icon: nil, value_color: DEFAULT_VALUE_COLOR,
                    href: nil, aria_label: nil, tooltip: nil,
                    caption: nil, delta: nil, delta_color: DEFAULT_VALUE_COLOR,
-                   value_test_id: nil, test_id: nil, **options)
+                   value_test_id: nil, framed: true, test_id: nil, **options)
       @label = label
+      @framed = framed
       @value = value
       @icon = icon
       @value_color = normalize_color(value_color)
@@ -89,7 +94,7 @@ module Ui
     end
 
     def div_html_options
-      wrapper_options(STATIC)
+      wrapper_options(@framed ? STATIC : UNFRAMED)
     end
 
     def value_options

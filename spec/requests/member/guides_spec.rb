@@ -185,13 +185,24 @@ RSpec.describe "Member::Guides", type: :request do
       expect(response.body).to include('data-test="member-guide-approvals"')
     end
 
-    # CYRA-504 — chi non sa che il rilascio in produzione aspetta il suo via libera lo aspetta e basta:
-    # la guida lo dice, insieme al fatto che non si respinge e non si approva in blocco.
-    it "GET guides/approvals spiega il via libera alla produzione" do
+    # CYRA-1038 — il rilascio in produzione parte da solo dopo l'attesa in prova (CYRA-871): la guida
+    # non promette un via libera che non esiste, e nomina il solo gesto vero con la parola della riga.
+    it "GET guides/approvals spiega che la produzione parte da sola e si può solo fermare" do
       get member_guides_approvals_path
 
-      expect(response.body).to include('data-test="member-guide-approvals-production"')
-      expect(response.body).to include(I18n.t("member.guides.approvals.production_title"))
+      sezione = Nokogiri::HTML(response.body).at_css("[data-test='member-guide-approvals-production']")
+      expect(sezione.text).to include(I18n.t("member.guides.approvals.production_title"))
+      expect(sezione.text).to include(I18n.t("member.approvals.in_flight.title"))
+      expect(sezione.text).to include("«#{I18n.t('member.approvals.in_flight.production_hold')}»")
+      expect(sezione.text).not_to include("Vai in produzione")
+    end
+
+    # CYRA-1038 — la guida chiama il pulsante della selezione multipla col nome che ha sulla barra.
+    it "la guida delle approvazioni nomina il pulsante della selezione come lo scrive la barra" do
+      { it: "«%s»", en: "\"%s\"" }.each do |lingua, virgolette|
+        pulsante = I18n.t("member.approvals.bulk.approve", locale: lingua)
+        expect(I18n.t("member.guides.approvals.bulk_intro", locale: lingua)).to include(format(virgolette, pulsante))
+      end
     end
 
     it "GET guides/errors → 200" do

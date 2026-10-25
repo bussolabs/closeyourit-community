@@ -556,7 +556,7 @@ it:
         title: Errori
         subtitle: Raccogli gli errori delle tue applicazioni, da qualunque linguaggio siano scritte.
         what_title: Cos'è
-        what_intro: CloseYourIt cattura le eccezioni della tua app e le raggruppa per messaggio, così lo stesso guasto è una riga sola. Occorrenze uguali confluiscono nella stessa riga, così mille blocchi identici restano un errore solo, con i suoi contatori — non rumore.
+        what_intro: "CloseYourIt cattura le eccezioni della tua app e riunisce in una riga sola le occorrenze dello stesso guasto, così mille blocchi identici restano un errore solo, con i suoi contatori — non rumore. Per capire se due occorrenze sono lo stesso guasto guarda, in quest'ordine: il codice di raggruppamento scelto dal kit della tua app, se c'è; altrimenti il tipo di errore insieme al punto del codice in cui è nato; altrimenti il messaggio, ripulito da numeri e identificativi; se manca anche quello, il nome della richiesta."
         what_levels: Livelli — debug, info, warning, error, fatal.
         what_status: Stato — non risolto, risolto, messo da parte. Un errore risolto che si ripresenta viene riaperto in automatico.
         what_promote: Promuovi a ticket — trasforma un errore in un ticket di bug con un clic.
@@ -626,7 +626,7 @@ it:
         field_type_desc: un sito web, una porta di un server, il nome di un dominio (DNS) o se una macchina
           risponde (ping)
         field_url: URL
-        field_url_desc: l'indirizzo da controllare (solo https, raggiungibile da fuori)
+        field_url_desc: l'indirizzo da controllare (http o https, purché raggiungibile da fuori)
         field_environment: Ambiente
         field_environment_desc: un ambiente dichiarato del progetto
         field_method: Metodo
@@ -653,7 +653,7 @@ it:
         alert_title: Fatti avvisare quando cade
         alert_intro: "Un monitor registra i guasti, ma non avvisa nessuno da solo: l'ultimo passo è dire chi va avvisato se il sito cade."
         alert_step1: "Apri %{page} e crea una nuova regola."
-        alert_step2: Scegli l'evento «Sito non raggiungibile» — lascia il progetto vuoto per coprirli tutti, oppure scegline uno.
+        alert_step2: Scegli l'evento «Uptime down» — lascia il progetto vuoto per coprirli tutti, oppure scegline uno.
         alert_step3: Collega i canali (email, Telegram, webhook) dove vuoi ricevere l'avviso.
         alert_cta: Vai alle Regole di avviso
         cta: Vai a Uptime
@@ -694,7 +694,7 @@ it:
         errors_cta: Vai agli Errori
         privacy_title: Cosa non finisce nella registrazione
         privacy_intro: "Una registrazione è un dato delicato: il prodotto la tratta come tale, e le scelte sono già prese dalla parte prudente."
-        privacy_masked: I valori delicati (password, dati di pagamento, campi marcati come riservati) vengono oscurati dal kit sul sito, prima di partire. Qui dentro arrivano già nascosti e non vengono mai ispezionati.
+        privacy_masked: Di base il kit sul sito oscura tutto il testo della pagina e tutto quello che si scrive nei campi, prima che parta. Se vuoi vedere in chiaro una parte della pagina devi dirlo tu, nella configurazione del kit. Qui dentro arriva già nascosto e non viene mai ispezionato.
         privacy_user: Di chi ha navigato resta solo un'impronta anonima, non il nome né l'indirizzo email. Serve a riconoscere che due sessioni sono della stessa persona, non a sapere chi è.
         privacy_retention: Le registrazioni si conservano 30 giorni, o quanti ne imposti sul progetto. Passato quel tempo vengono cancellate davvero, video compresi.
         cta: Vai al Session replay
@@ -1087,7 +1087,7 @@ it:
       access:
         title: Accesso ai progetti
         back: Torna ai membri
-        all_access_notice: Admin e owner vedono tutti i progetti — l'assegnazione degli accessi non si applica a loro.
+        all_access_notice: Solo il proprietario vede tutti i progetti e può fare tutto — l'assegnazione degli accessi non si applica a lui. Amministratori e membri vedono i progetti assegnati e fanno ciò che permettono i loro ruoli.
         groups: Gruppi
         groups_hint: L'accesso a un gruppo concede tutti i suoi progetti — presenti e futuri.
         projects: Progetti
@@ -1113,7 +1113,7 @@ it:
       org_label: Organizzazione
       email: Email
       role: Ruolo
-      role_hint_html: "<b>member</b> lavora sui ticket · <b>admin</b> gestisce anche i membri."
+      role_hint_html: "<b>Membro</b> e <b>Amministratore</b> vedono i progetti assegnati e fanno ciò che permettono i loro ruoli · solo il <b>Proprietario</b> vede e fa tutto."
       submit: Invia invito
       cancel: Annulla
       sent: Invito inviato.

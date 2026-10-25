@@ -1,17 +1,21 @@
 <%# locals: (title:, metrics:) %>
-<%# One group of numbers, as the service declares it (D24): a tile per number, the change colored by whether
-    it is good, the period it compares with; a missing number says so instead of showing a zero (D12). %>
-<%= render Ui::SectionComponent.new(title: title, heading_size: :sm, test_id: "dashboard-group") do %>
-  <%= render Ui::GridComponent.new(cols: 1, sm: 2, xl: 4, gap: 3) do %>
-    <% metrics.each do |metric| %>
-      <% delta = metric.delta_text && tag.span([ dashboard_arrow(metric.direction), metric.delta_text ].compact.join(" "), data: { tone: metric.tone }) %>
-      <% caption = if delta then t("member.dashboards.show.compared_with", period: dashboard_period(metric.period))
-                   elsif metric.unavailable? then t("member.dashboards.show.not_available")
-                   else t("member.dashboards.show.no_comparison") end %>
-      <%= render Ui::MetricTileComponent.new(label: metric.label, value: metric.value_text,
-            value_color: metric.unavailable? ? :gray : :neutral, delta: delta,
-            delta_color: Member::DashboardFeedsHelper::TONE_COLORS.fetch(metric.tone), caption: caption,
-            test_id: "dashboard-metric-#{metric.key}") %>
-    <% end %>
-  <% end %>
+<%# One group of numbers, as the service declares it: one panel, and inside it the numbers split only by
+    hairlines, never a panel inside a panel (A12). The -ml-px/-mt-px offset hides the outer lines, so only
+    the ones between numbers show, also when a row wraps. A missing number says so instead of a zero (D12). %>
+<%= render Ui::SectionComponent.new(title: title, heading_size: :sm, body_class: nil, test_id: "dashboard-group") do %>
+  <div class="overflow-hidden">
+    <div class="-ml-px -mt-px grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <% metrics.each do |metric| %>
+        <% delta = metric.delta_text && tag.span([ dashboard_arrow(metric.direction), metric.delta_text ].compact.join(" "), data: { tone: metric.tone }) %>
+        <% caption = if delta then t("member.dashboards.show.compared_with", period: dashboard_period(metric.period))
+                     elsif metric.unavailable? then t("member.dashboards.show.not_available")
+                     else t("member.dashboards.show.no_comparison") end %>
+        <%= render Ui::MetricTileComponent.new(label: metric.label, value: metric.value_text, framed: false,
+              value_color: metric.unavailable? ? :gray : :neutral, delta: delta,
+              delta_color: Member::DashboardFeedsHelper::TONE_COLORS.fetch(metric.tone), caption: caption,
+              class: "border-l border-t border-stone-200 dark:border-zinc-800",
+              test_id: "dashboard-metric-#{metric.key}") %>
+      <% end %>
+    </div>
+  </div>
 <% end %>

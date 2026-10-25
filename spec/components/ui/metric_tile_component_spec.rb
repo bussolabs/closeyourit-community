@@ -128,4 +128,11 @@ RSpec.describe Ui::MetricTileComponent, type: :component do
     render_inline(described_class.new(label: "Errori", value: 3, class: "col-span-2"))
     expect(page).to have_css("div.col-span-2.rounded-\\[10px\\]")
   end
+
+  it "drops its own frame when framed: false, so a parent panel can split tiles with hairlines" do
+    render_inline(described_class.new(label: "Users", value: 244, framed: false, test_id: "m"))
+    tile = page.find("[data-test='m']")
+    expect(tile[:class]).not_to include("rounded-[10px]", "border", "bg-white")
+    expect(tile).to have_text("244")
+  end
 end
