@@ -143,6 +143,19 @@ RSpec.describe "Member::HelpdeskRequests replies and similar requests", type: :r
       expect(twin.reload).to have_attributes(status: "linked", ticket: ticket)
     end
 
+    # Twins with the same words could not be told apart: each row now says when it arrived. CYRA-1104
+    it "says when each similar request arrived" do
+      twin = create(:helpdesk_request, project: project, body: "Card payment fails 6621", created_at: Time.zone.parse("2026-10-21 10:31"))
+      embed(request_record, basis_vector(0))
+      embed(twin, basis_vector(0))
+      sign_in(owner)
+
+      get member_helpdesk_request_path(request_record)
+
+      row = Nokogiri::HTML(response.body).at_css("[data-test='helpdesk-similar-row']")
+      expect(row.at_css("[data-test='helpdesk-similar-at']").text).to include(I18n.l(twin.created_at, format: :long))
+    end
+
     it "leaves out other projects and discarded requests" do
       elsewhere = create(:helpdesk_request, project: create(:project, organization: org), body: "Elsewhere 6631")
       spam = create(:helpdesk_request, :discarded, project: project, body: "Spam 6632")

@@ -360,6 +360,10 @@ namespace :member do
     resources :documents, only: %i[index create edit update destroy], controller: "project_documents"
     # Impostazioni del progetto (tab Settings): override retention log. Controller flat (stesso motivo dei tokens).
     resource :settings, only: %i[show update], controller: "project_settings"
+    # CYRA-1112 — the Dashboard section of the settings: connect / new key, pause, read now, disconnect.
+    resource :dashboard_feed, only: %i[create update destroy], path: "dashboard", controller: "project_dashboard_feed" do
+      post :refresh
+    end
     # Uso del prodotto (tab Uso, CYRA-733): quali funzioni e quali pagine di questo progetto sono
     # state aperte davvero — la rilettura dentro il prodotto di ciò che il canale d'uso (CYSK-29)
     # riceve. `resource` singolare come la guidance: è una lettura sola, senza un :id proprio.
@@ -857,6 +861,8 @@ namespace :member do
       end
     end
   end
+  # CYRA-1112 — Products › Dashboard: one card per connected service, then one page per service.
+  resources :dashboard_feeds, only: %i[index show], path: "dashboards"
   # Idee di progetto: proposte votabili/commentabili, promuovibili a ticket (sintesi AI della
   # discussione + preview editabile). Vedere/creare/votare/commentare = baseline dello scope;
   # gestione idee altrui gated (ideas.*). Controller Member::Ideas::*.

@@ -1,13 +1,14 @@
 <%= tag.div(**html_options) do %>
   <%= toolbar %>
-  <div class="relative min-h-0 flex-1 overflow-hidden" data-controller="ui--scroll-hint">
-    <div class="h-full overflow-x-auto p-2" data-ui--scroll-hint-target="scroller">
+  <%# The hint sits below the columns, never over a card (CYRA-1105). %>
+  <div class="relative min-h-0 flex-1 overflow-hidden flex flex-col" data-controller="ui--scroll-hint">
+    <div class="min-h-0 flex-1 overflow-x-auto p-2" data-ui--scroll-hint-target="scroller">
       <div class="flex h-full gap-2">
         <% columns.each do |column| %><%= column %><% end %>
       </div>
     </div>
     <div hidden data-ui--scroll-hint-target="horizontal" aria-hidden="true"
-         class="pointer-events-none absolute bottom-4 right-3 z-20 inline-flex items-center gap-1.5 rounded-md bg-zinc-900/90 px-2.5 py-1.5 text-xs font-medium text-white">
+         class="flex items-center justify-end gap-1.5 px-3 py-1.5 border-t border-stone-100 dark:border-zinc-800 text-[11px] font-medium text-gray-500 dark:text-zinc-400">
       <%= t("shared.scroll_horizontal") %><%= render Ui::IconComponent.new(name: "arrow-right", class: "text-[9px]") %>
     </div>
   </div>

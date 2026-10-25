@@ -79,6 +79,20 @@ RSpec.describe "Member::Monitoring::Analytics::Goals", type: :request do
     end
   end
 
+  # The errors only showed in a toast that went away, naming «Display name» for the «Name» field. CYRA-1109
+  describe "POST create with missing fields" do
+    it "keeps each error next to its field, named as the page names it" do
+      post member_monitoring_analytics_goals_path(project_id: project.id),
+           params: { analytics_goal: { kind: "pageview_path", path_pattern: "", display_name: "" } }
+
+      html = Nokogiri::HTML(response.body)
+      expect(html.at_css("[data-test='analytics-goal-display-name-error']").text).to include("Name")
+      expect(html.at_css("[data-test='analytics-goal-display-name-error']").text).not_to include("Display name")
+      expect(html.at_css("[data-test='analytics-goal-path-error']")).to be_present
+      expect(html.at_css("[data-test='analytics-goal-display-name']")["aria-invalid"]).to eq("true")
+    end
+  end
+
   describe "DELETE destroy" do
     it "elimina il goal e reindirizza" do
       goal = create(:analytics_goal, project:)

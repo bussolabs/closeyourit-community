@@ -33,13 +33,13 @@
               url: member_project_secret_events_path(@project), framed: true,
               apply_test_id: "secret-audit-filter", test_id: "secret-audit-toolbar")) do |toolbar| %>
           <% toolbar.with_filter(key: "event_action", label: t("member.secret_audit.filter_action")) do %>
-            <div class="w-44"><%= render Ui::SelectComponent.new(name: "event_action", summary: true,
+            <div class="w-44"><%= render Ui::SelectComponent.new(name: "event_action", summary: true, include_blank: true,
                   options: Secrets::Event::ACTIONS.map { |a| [ secret_action_label(a), a ] },
                   selected: params[:event_action], placeholder: t("member.secret_audit.filter_action"),
                   test_id: "secret-audit-filter-action") %></div>
           <% end %>
           <% toolbar.with_filter(key: "environment_id", label: t("member.secret_audit.filter_environment")) do %>
-            <div class="w-44"><%= render Ui::SelectComponent.new(name: "environment_id", summary: true,
+            <div class="w-44"><%= render Ui::SelectComponent.new(name: "environment_id", summary: true, include_blank: true,
                   options: @environments.map { |e| [ e.label, e.id ] },
                   selected: params[:environment_id], placeholder: t("member.secret_audit.filter_environment"),
                   test_id: "secret-audit-filter-environment") %></div>

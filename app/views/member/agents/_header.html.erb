@@ -19,8 +19,10 @@
         counts_test_id: "host-labels") do |header| %>
     <% header.with_counts do %>
       <%= render Ui::StatLabelComponent.new(label: t("member.agents.show.status_label"), value: agent_host_status_label(host), value_color: agent_host_status_color(host), test_id: "host-status") %>
-      <%= render Ui::StatLabelComponent.new(label: t("member.agents.show.slots_label"), value: "#{active_runs.size}/#{host.slots}", test_id: "host-slots") %>
-      <%= render Ui::StatLabelComponent.new(label: t("member.agents.show.running_label"), value: active_runs.size, test_id: "host-running") %>
+      <%# Stopped runs (silent machine) stay listed below but are not running. CYRA-1104 %>
+      <% running = active_runs.count { |run| !run["stalled"] } %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.agents.show.slots_label"), value: "#{running}/#{host.slots}", test_id: "host-slots") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.agents.show.running_label"), value: running, test_id: "host-running") %>
       <%# CYRA-448 — quante decisioni questa macchina sta aspettando da chi legge, col link alla coda
           già filtrata su di lei: prima dalla scheda non si arrivava a ciò che aveva lasciato in
           sospeso. Zero compreso: "non aspetta niente" è una risposta, non un vuoto. %>

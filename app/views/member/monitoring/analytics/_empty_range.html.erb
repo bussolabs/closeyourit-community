@@ -7,7 +7,11 @@
     <div class="space-y-1.5">
       <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.analytics.range_empty.title") %></h3>
       <p class="text-[12.5px] text-gray-600 dark:text-zinc-400" data-test="analytics-range-empty-last">
-        <%= t("member.monitoring.analytics.range_empty.last_visit", at: l(last_at.in_time_zone, format: :long)) %>
+        <% if last_at %>
+          <%= t("member.monitoring.analytics.range_empty.last_visit", at: l(last_at.in_time_zone, format: :long)) %>
+        <% else %>
+          <%= t("member.monitoring.analytics.range_empty.never_in_environment", environment: environment) %>
+        <% end %>
       </p>
       <% if suggested.present? %>
         <p class="text-[12.5px]">

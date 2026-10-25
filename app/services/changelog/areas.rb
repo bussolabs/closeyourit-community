@@ -51,6 +51,8 @@ module Changelog
       "changelog" => [ "shared.changelog.page_title", %w[/member/changelog] ],
       "conversations" => [ "member.nav.conversations", %w[/member/chat] ],
       "crons" => [ "member.nav.crons", %w[/member/monitoring/cron] ],
+      # CYRA-1112 — the services' numbers, a «Prodotti» menu entry of their own.
+      "dashboards" => [ "member.nav.dashboards", %w[/member/dashboards] ],
       "databases" => [ "member.nav.databases", %w[/member/monitoring/databases] ],
       "datasets" => [ "member.nav.datasets", %w[/member/datasets] ],
       # CYRA-441 — piattaforme e ambienti sono due voci dell'Amministrazione, e una voce del

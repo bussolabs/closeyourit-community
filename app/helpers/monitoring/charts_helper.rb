@@ -22,6 +22,8 @@ module Monitoring
 
       step = chart_nice_step(max)
       values = (step..max).step(step).to_a
+      # A line less than half a step under the peak would print its label over the peak's. CYRA-1106
+      values.pop if values.size > 1 && values.last != max && max - values.last < step / 2.0
       values << max unless values.include?(max)
       values.uniq.map { |v| { value: v, pct: v * 100.0 / max } }
     end
@@ -64,6 +66,8 @@ module Monitoring
       return "" if at.blank?
 
       fmt = chart_time_format(range)
+      # A block shorter than a day on a day-scale chart says its hours too. CYRA-1106
+      fmt = :chart_day_time if seconds < 1.day && fmt != :chart_time
       "#{l(at, format: fmt)}–#{l(at + seconds, format: fmt)}"
     end
 

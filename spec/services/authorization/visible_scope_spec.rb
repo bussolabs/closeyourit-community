@@ -78,4 +78,17 @@ RSpec.describe Authorization::VisibleScope do
       expect(visible_ids).to contain_exactly(personal.id, via_team.id)
     end
   end
+
+  describe "#dashboard_feeds" do
+    it "lists only the feeds of the projects the member sees" do
+      member!(:member)
+      seen = create(:project, organization: org)
+      hidden = create(:project, organization: org)
+      create(:project_membership, account: account, project: seen)
+      feed = create(:dashboards_feed, project: seen)
+      create(:dashboards_feed, project: hidden)
+
+      expect(described_class.new(account: account, organization: org).dashboard_feeds).to contain_exactly(feed)
+    end
+  end
 end

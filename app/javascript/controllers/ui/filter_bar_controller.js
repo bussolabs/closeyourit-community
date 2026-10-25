@@ -26,10 +26,19 @@ export default class extends Controller {
       if (this.hasMenuPanelTarget && !this.menuButtonTarget.contains(e.target) && !this.menuPanelTarget.contains(e.target)) this.closeMenu()
     }
     document.addEventListener("click", this.outside)
+    // Escape closes the Filters menu and gives the focus back to its button. CYRA-1103
+    this.escape = (e) => {
+      if (e.key !== "Escape" || !this.hasMenuPanelTarget || this.menuPanelTarget.classList.contains("hidden")) return
+      e.preventDefault()
+      this.closeMenu()
+      this.menuButtonTarget.focus()
+    }
+    document.addEventListener("keydown", this.escape)
   }
 
   disconnect() {
     document.removeEventListener("click", this.outside)
+    document.removeEventListener("keydown", this.escape)
   }
 
   toggleMenu() {

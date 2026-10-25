@@ -96,7 +96,6 @@ it:
         empty_title: Nessun canale esterno
         empty_body: Gli avvisi arrivano nell'app e via email. Aggiungi un webhook per portarli altrove.
         empty_telegram: Collega Telegram dalle tue preferenze
-        stat_total: Canali
         stat_enabled: Attivi
         col_name: Nome
         col_kind: Tipo

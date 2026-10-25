@@ -61,7 +61,8 @@ en:
       color: Color
       permissions: Permissions
       selected_count: "%{selected} / %{total} selected"
-      legend: "project applies on linked projects · org applies organization-wide."
+      legend_project: applies on linked projects
+      legend_org: applies organization-wide
       select_all: Select all
       propagate_note: Saving updates every team and member that has this role, immediately.
       delegates: delegates control

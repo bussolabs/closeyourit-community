@@ -9,7 +9,7 @@
         test_id: "product-matrix-header",
         counts_test_id: "product-matrix-counts") do |h| %>
     <% h.with_counts do %>
-      <%= render Ui::StatLabelComponent.new(label: t("member.product.matrices.counts.categories"), value: @categories.size, test_id: "product-matrix-count-categories") %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.categories", count: @categories.size), value: @categories.size, test_id: "product-matrix-count-categories") %>
       <%= render Ui::StatLabelComponent.new(label: t("member.product.matrices.counts.features"), value: @features.size, test_id: "product-matrix-count-features") %>
       <%= render Ui::StatLabelComponent.new(label: t("member.product.matrices.counts.platforms"), value: @platforms.size, test_id: "product-matrix-count-platforms") %>
       <%# Celle che dicono "disponibile" senza indicare da quale versione: dato incompleto, mostrato

@@ -20,6 +20,13 @@ RSpec.describe Ui::ModalComponent, type: :component do
     expect(dialog).to have_css("[data-test='resolve-panel']", text: "Body text", visible: :all)
   end
 
+  # Screen readers announced a nameless dialog. Its visible title is now its name. CYRA-1107
+  it "names the dialog after its title" do
+    render_inline(described_class.new(title: "What's new", test_id: "changelog")) { "Body" }
+
+    expect(dialog["aria-label"]).to eq("What's new")
+  end
+
   # A page has one page header: a dialog header must not reuse its page-header-* hooks, or a
   # dialog that opens by itself (the changelog) makes every page-header lookup ambiguous.
   # A page has one h1: a dialog title is an h2, even in a dialog rendered closed on every page.

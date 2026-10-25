@@ -89,8 +89,8 @@ module Navigation
                        member/project_guidance_references member/project_milestones
                        member/project_helpdesk_requests
                        member/project_servers member/project_settings member/project_source_versions
-                       member/project_tokens member/project_moves],
-      "product" => %w[member/tickets member/ideas member/workload member/helpdesk_requests],
+                       member/project_tokens member/project_moves member/project_dashboard_feed],
+      "product" => %w[member/tickets member/ideas member/workload member/helpdesk_requests member/dashboard_feeds],
       # Knowledge + Book + matrice funzionalità: era lo space "product", che si chiamava quasi come il
       # gruppo "Prodotto" qui accanto e conteneva l'esatto contrario di quel che il nome prometteva
       # (CYRA-330). Ora il nome dice il contenuto.

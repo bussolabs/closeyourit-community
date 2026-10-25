@@ -9,9 +9,15 @@
   <%= tag.div(class: "relative", data: wrapper_data) do %>
     <%= tag.select(**select_html_options) do %>
       <% if @include_blank %><option value=""><%= @placeholder %></option><% end %>
-      <% @options.each do |label, value, color| %>
-        <% desc = option_description(value) %>
-        <option value="<%= value %>" data-color="<%= color %>"<% if desc %> data-description="<%= desc %>" title="<%= desc %>"<% end %> <%= "disabled" if option_disabled?(value) %> <%= "selected" if selected?(value) %>><%= label %></option>
+      <% option_groups.each do |heading, group_options| %>
+        <% rows = capture do %>
+          <% group_options.each do |label, value, color| %>
+            <% desc = option_description(value) %>
+            <%= tag.option(label, value: value, selected: selected?(value), disabled: option_disabled?(value), title: desc,
+                  data: option_data_for(value).merge(color: color, description: desc)) %>
+          <% end %>
+        <% end %>
+        <% if heading %><%= tag.optgroup(rows, label: heading) %><% else %><%= rows %><% end %>
       <% end %>
     <% end %>
   <% end %>

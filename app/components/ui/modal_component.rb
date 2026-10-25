@@ -33,7 +33,13 @@ module Ui
 
     private
 
-    def dialog_options = merge_options(base_class: "#{SHELL} #{SIZES.fetch(@size)}", test_id: @test_id, options: @options)
+    # The visible title is the dialog's name for screen readers, unless the caller names it. CYRA-1107
+    def dialog_options
+      merge_options(base_class: "#{SHELL} #{SIZES.fetch(@size)}", test_id: @test_id, options: @options).tap do |opts|
+        aria = opts[:aria] || {}
+        opts[:aria] = aria.merge(label: @title) unless aria.key?(:label) || aria.key?(:labelledby) || opts.key?(:"aria-label")
+      end
+    end
 
     def panel_class = [ PANEL, ("p-4 text-[12.5px] leading-relaxed text-gray-600 dark:text-zinc-400" if @padded) ].compact.join(" ")
 

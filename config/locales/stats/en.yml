@@ -1,5 +1,21 @@
 en:
   stats:
+    # CYRA-1110 — counts that read «1 channels» and the like.
+    channels:
+      one: Channel
+      other: Channels
+    inputs:
+      one: Input
+      other: Inputs
+    targets:
+      one: Target
+      other: Targets
+    linked_repositories:
+      one: Linked repository
+      other: Linked repositories
+    categories:
+      one: Category
+      other: Categories
     pending_agent_eligibility: To assess
     # CYRA-374 — decisions waiting on the signed-in person, on top of the ticket board and list.
     awaiting_me: Waiting on you

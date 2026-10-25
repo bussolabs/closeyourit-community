@@ -13,9 +13,10 @@ module Ui
   # "show me only these", and opening the filters panel for something already written there is
   # wasted work. `active` marks it as a filter that is on.
   class StatLabelComponent < BaseComponent
-    # The dot before every count but the first keeps a row of counts one line of text (T12).
+    # The dot before every count but the first keeps a row of counts one line of text (T12). Only from
+    # tablet up: on a phone the row wraps and a dot would open the new line (CYRA-1105).
     BASE = "inline-flex items-baseline gap-1 text-[12px] text-gray-500 dark:text-zinc-400 whitespace-nowrap " \
-           "not-first:before:mr-0.5 not-first:before:text-stone-300 dark:not-first:before:text-zinc-600 not-first:before:content-['·']"
+           "md:not-first:before:mr-0.5 md:not-first:before:text-stone-300 dark:md:not-first:before:text-zinc-600 md:not-first:before:content-['·']"
 
     VALUE_COLORS = {
       neutral: "text-zinc-900 dark:text-zinc-100",

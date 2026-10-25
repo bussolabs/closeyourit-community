@@ -80,6 +80,39 @@ RSpec.describe "Member::Monitoring SEO", type: :request do
 
       expect(response.body).to include("seo-empty")
     end
+
+    # The page link searched the address as text: the site root matched every child page. CYRA-1101
+    describe "findings of one page" do
+      let(:site) { site_in(project) }
+      let!(:root) { create(:seo_page, site:, url: "#{site.base_url}/") }
+      let!(:cart) { create(:seo_page, site:, url: "#{site.base_url}/carrello") }
+
+      before do
+        create(:seo_issue, site:, page: cart, check_key: "missing_h1")
+        sign_in(owner)
+      end
+
+      it "the page link lists only the findings of that page" do
+        get pages_member_monitoring_seo_index_path
+        link = Nokogiri::HTML(response.body).css("[data-test='seo-page-findings']").map { |a| a["href"] }
+                       .find { |href| href.include?(root.id) }
+
+        get link
+
+        expect(response.body).not_to include("/carrello")
+        expect(Nokogiri::HTML(response.body).at_css("[data-test='seo-page-filter']").text).to include(root.url)
+      end
+
+      it "ignores a page the reader cannot see" do
+        hidden = create(:seo_page, site: site_in(create(:project)), url: "https://hidden.example/")
+
+        get member_monitoring_seo_index_path(ft: 1, page_id: hidden.id)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("/carrello")
+        expect(response.body).not_to include("seo-page-filter")
+      end
+    end
   end
 
   describe "GET pages" do

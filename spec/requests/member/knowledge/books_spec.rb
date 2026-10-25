@@ -75,6 +75,34 @@ RSpec.describe "Member::Knowledge::Books", type: :request do
       expect(active["aria-current"]).to eq("page")
     end
 
+    # On a phone the index took the whole width and the chosen page never showed. CYRA-1102
+    describe "on a phone (master-detail)" do
+      let(:book) { create(:knowledge_book, organization: org, project: project) }
+      let!(:first) { create(:knowledge_page, organization: org, project: project, book: book, position: 0, title: "Prima", body: "uno") }
+      let!(:second) { create(:knowledge_page, organization: org, project: project, book: book, position: 1, title: "Seconda", body: "due") }
+
+      def classes(test_id) = Nokogiri::HTML(response.body).at_css("[data-test='#{test_id}']")["class"].split
+
+      before { sign_in(member) }
+
+      it "without a chosen page shows the index and keeps the text for wide screens" do
+        get member_knowledge_book_path(book)
+
+        expect(classes("knowledge-book-toc")).not_to include("hidden")
+        expect(classes("knowledge-book-content")).to include("hidden", "md:flex")
+      end
+
+      it "with a chosen page shows its text and a way back to the index" do
+        get member_knowledge_book_path(book, page_id: second.id)
+
+        expect(classes("knowledge-book-toc")).to include("hidden", "md:flex")
+        expect(classes("knowledge-book-content")).not_to include("hidden")
+        back = Nokogiri::HTML(response.body).at_css("[data-test='knowledge-book-back']")
+        expect(back["href"]).to eq(member_knowledge_book_path(book))
+        expect(back["class"].split).to include("md:hidden")
+      end
+    end
+
     it "un page_id di una pagina non nel book ricade sulla prima pagina" do
       book = create(:knowledge_book, organization: org, project: project)
       first = create(:knowledge_page, organization: org, project: project, book: book, position: 0, title: "Prima", body: "## Uno\n\ntesto")

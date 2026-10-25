@@ -1,0 +1,25 @@
+<%# Products › Dashboard (CYRA-1112): one card per connected service, its first numbers on the card. %>
+<% content_for :title, t("member.dashboards.title") %>
+
+<div class="p-7 space-y-6" data-test="member-dashboards">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.dashboards.title"),
+        subtitle: t("member.dashboards.subtitle"),
+        breadcrumb: [ { label: t("member.dashboards.title") } ]) %>
+
+  <% filtering = params[:q].present? || params[:state].present? %>
+  <% if @feeds.empty? && !filtering %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.dashboards.empty"), body: t("member.dashboards.empty_body"),
+          example: t("member.dashboards.empty_example"), icon: "gauge", framed: true, test_id: "dashboards-empty") do |empty| %>
+      <% if @setup_projects.any? %>
+        <% empty.with_action do %>
+          <%= render Ui::ButtonComponent.new(label: t("member.dashboards.empty_action"),
+                href: member_project_settings_path(@setup_projects.first, section: "dashboard"),
+                variant: :primary, size: :sm, icon: "plug", test_id: "dashboards-empty-connect") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= render "cards" %>
+  <% end %>
+</div>

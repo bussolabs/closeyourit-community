@@ -24,6 +24,18 @@ RSpec.describe "Member::Activity", type: :request do
   end
 
   describe "GET index" do
+    # A single-choice filter without a blank option sent its first value with every search. CYRA-1100
+    it "starts every single-choice filter on a blank option" do
+      create(:activity_event, subject: project, organization: org, action: "created")
+      sign_in(owner)
+      get member_activity_path
+
+      %w[source event_action actor_id].each do |name|
+        select = Nokogiri::HTML(response.body).at_css("select[name='#{name}']")
+        expect(select.css("option").first["value"]).to eq(""), name
+      end
+    end
+
     it "non autenticato → redirect login" do
       get member_activity_path
       expect(response).to redirect_to(login_path)

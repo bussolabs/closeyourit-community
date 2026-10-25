@@ -104,6 +104,8 @@ export default class extends Controller {
     // usa a modale chiusa deve ritrovarsi la scelta qui dentro.
     if (this.hasProjectSelectTarget && this.projectSelectTarget.value !== this.projectId) {
       this.projectSelectTarget.value = this.projectId
+      // The mirror is a design system dropdown: it redraws its trigger on this event. CYRA-1108
+      this.projectSelectTarget.dispatchEvent(new Event("ui--select:refresh"))
     }
     if (this.hasProjectNoticeTarget) this.projectNoticeTarget.hidden = usable
     if (this.hasButtonTarget) this.buttonTarget.disabled = !usable

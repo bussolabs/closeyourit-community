@@ -47,7 +47,10 @@ module Member
       def show
         @pages = @book.pages.where(id: visible.pages.select(:id)).includes(:projects)
         # Pagina attiva = quella indicata da page_id (se nel book), altrimenti la prima del TOC.
-        @active_page = @pages.detect { |page| page.id == params[:page_id] } || @pages.first
+        chosen = @pages.detect { |page| page.id == params[:page_id] }
+        # On a phone a chosen page shows its text; without one, the index. CYRA-1102
+        @page_chosen = chosen.present?
+        @active_page = chosen || @pages.first
         # Wikilink cliccabili SOLO verso pagine che il lettore può aprire (vedi Links::Render).
         @active_page_links = @active_page&.links
                                          &.where(related_id: visible_pages.select(:id))

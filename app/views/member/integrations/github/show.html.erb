@@ -17,7 +17,7 @@
       <%= render Ui::StatLabelComponent.new(label: t("member.integrations.github.status_label"),
             value: t("member.integrations.github.#{@installation ? 'status_installed' : 'status_missing'}"),
             value_color: (@installation ? :emerald : :gray), test_id: "github-stat-status") %>
-      <%= render Ui::StatLabelComponent.new(label: t("member.integrations.github.repositories_label"),
+      <%= render Ui::StatLabelComponent.new(label: t("stats.linked_repositories", count: @repositories_count),
             value: @repositories_count, value_color: (:indigo if @repositories_count.positive?),
             test_id: "github-stat-repositories") %>
     <% end %>

@@ -17,12 +17,14 @@
          data-errors--replay-player-url-value="<%= player_member_monitoring_replay_path(@session) %>"
          data-errors--replay-player-loading-value="<%= t("member.monitoring.replay.loading") %>"
          data-errors--replay-player-error-value="<%= t("member.monitoring.replay.error") %>"
-         data-errors--replay-player-empty-value="<%= t("member.monitoring.replay.empty") %>">
+         data-errors--replay-player-empty-value="<%= t("member.monitoring.replay.empty") %>"
+         data-errors--replay-player-play-label-value="<%= t("member.monitoring.replay.play_label") %>" data-errors--replay-player-fullscreen-label-value="<%= t("member.monitoring.replay.fullscreen_label") %>">
       <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
         <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.replay.title") %></h2>
         <span class="text-[12px] text-stone-500 dark:text-zinc-400" data-errors--replay-player-target="status"></span>
       </div>
-      <div class="p-4"><div class="flex justify-center" data-errors--replay-player-target="mount"></div></div>
+      <%# rrweb-player paints a fixed white panel: its text stays dark in both themes. CYRA-1099 %>
+      <div class="p-4"><div class="flex justify-center text-stone-900" data-errors--replay-player-target="mount"></div></div>
     </div>
 
     <%# Dettagli sessione (1/3). %>

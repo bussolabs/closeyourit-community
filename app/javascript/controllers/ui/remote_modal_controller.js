@@ -133,6 +133,10 @@ export default class extends Controller {
       this.drafting = true
       this.frame.style.visibility = ""
     })
+    // Named after the form it shows, not the generic label it starts with. CYRA-1107
+    this.defaultLabel ??= this.element.getAttribute("aria-label")
+    const heading = this.frame.querySelector("h1, h2")?.textContent.trim()
+    this.element.setAttribute("aria-label", heading || this.defaultLabel)
     this.element.dataset.size = this.frame.querySelector("[data-modal-size]")?.dataset.modalSize || ""
     sizes.set(this.draftKey, this.element.dataset.size)
     if (!this.element.open) this.element.showModal()

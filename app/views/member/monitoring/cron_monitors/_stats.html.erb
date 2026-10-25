@@ -12,4 +12,8 @@
   <%# CYRA-696 — «mancato» e «fallito» sono due guasti diversi: il primo non e' partito, il secondo e'
       partito ed e' finito male. Contarli insieme li nasconderebbe l'uno dietro l'altro. %>
   <%= render Ui::StatLabelComponent.new(label: t("member.crons.stat_failing"), value: failing_count, value_color: :rose, test_id: "stat-crons-failing") %>
+  <% paused_count = local_assigns.fetch(:paused_count, 0) %>
+  <% if paused_count.positive? %>
+    <%= render Ui::StatLabelComponent.new(label: t("member.crons.stat_paused"), value: paused_count, test_id: "stat-crons-paused") %>
+  <% end %>
 </div>

@@ -63,7 +63,8 @@ it:
       color: Colore
       permissions: Permessi
       selected_count: "%{selected} / %{total} selezionati"
-      legend: "progetto vale sui progetti collegati · org vale a livello organizzazione."
+      legend_project: vale sui progetti collegati
+      legend_org: vale a livello organizzazione
       select_all: Seleziona tutti
       propagate_note: Salvando, ogni team e membro con questo ruolo si aggiorna subito.
       delegates: delega il controllo

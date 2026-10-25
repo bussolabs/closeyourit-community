@@ -75,6 +75,7 @@ en:
           severity: Severity
           advisory: Reference
           fixed_version: Fixed in
+          status: Status
           project: Project
           manifest: File
           last_seen: Seen

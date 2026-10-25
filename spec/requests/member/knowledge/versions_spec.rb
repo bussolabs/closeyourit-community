@@ -68,6 +68,16 @@ RSpec.describe "Member::Knowledge::Versions", type: :request do
       expect(response.body).to include('data-test="knowledge-version-historical"')
     end
 
+    # The page said «Historical version» without saying which one. CYRA-1104
+    it "names the version number among the page facts" do
+      build_history!
+      sign_in(member)
+
+      get member_knowledge_page_version_path(page, 1)
+
+      expect(Nokogiri::HTML(response.body).at_css("[data-test='knowledge-version-number']").text).to include("v1")
+    end
+
     it "marca la versione più recente come live" do
       build_history!
       sign_in(member)

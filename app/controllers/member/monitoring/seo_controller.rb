@@ -44,6 +44,10 @@ module Member
         # sotto un progetto. Il filtro passa dai siti visibili di quel progetto, non da filter_by_project.
         scope = scope.where(site_id: sites_for_projects) if filter_ids(:project_id).any?
         scope = filter_by_search(scope, "seo_pages.url", joins: :page)
+        # One page exactly, from the pages list: a text search on the root address matched every
+        # child page. Only a page the reader can see. CYRA-1101
+        @page_filter = visible.seo_pages.find_by(id: params[:page_id]) if params[:page_id].present?
+        scope = scope.where(page_id: @page_filter.id) if @page_filter
 
         @issues = paginated(scope.by_severity, columns: SORT_COLUMNS)
         load_filter_projects

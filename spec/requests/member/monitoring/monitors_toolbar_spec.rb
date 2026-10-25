@@ -39,6 +39,34 @@ RSpec.describe "Member — uptime monitors toolbar", type: :request do
     expect(html.css("[data-test='monitors-toolbar'] form[method='get'] [name='range']").size).to eq(1)
   end
 
+  # The search box remembered q but the list ignored it: every monitor stayed on screen. CYRA-1100
+  describe "search" do
+    before do
+      create(:uptime_monitor, project:, name: "Billing API", url: "https://billing.example.com")
+      create(:uptime_monitor, project:, name: "Checkout", url: "https://shop.example.com/checkout")
+    end
+
+    %w[table grouped].each do |view|
+      it "#{view}: keeps only the monitors whose name or address matches" do
+        get member_monitoring_monitors_path(view:, ft: 1, q: "billing")
+
+        rows = html.css("tr[id^='uptime_monitor_']").map(&:text).join
+        expect(rows).to include("billing.example")
+        expect(rows).not_to include("shop.example")
+      end
+    end
+
+    it "matches the address too, and nothing for an unknown term" do
+      get member_monitoring_monitors_path(view: "table", ft: 1, q: "shop.example")
+      rows = html.css("tr[id^='uptime_monitor_']").map(&:text).join
+      expect(rows).to include("shop.example")
+      expect(rows).not_to include("billing.example")
+
+      get member_monitoring_monitors_path(view: "table", ft: 1, q: "qa-no-match")
+      expect(html.css("tr[id^='uptime_monitor_']")).to be_empty
+    end
+  end
+
   # CYRA-924 — uptime and response sort too (C9), in both views; they are computed, so in memory.
   describe "sort on computed columns" do
     let!(:steady) { create(:uptime_monitor, project: create(:project, organization:, name: "Steady site")) }

@@ -34,16 +34,18 @@ module Member
 
       def index
         scope = visible.cron_monitors.includes(:project, :environment).recent
-        scope = scope.where(status: status_filter) if status_filter.any?
+        # A paused job keeps its last state: it is not OK, missed or failing. CYRA-1104
+        scope = scope.enabled.where(status: status_filter) if status_filter.any?
         scope = filter_by_project(scope)
         scope = filter_by_search(scope, "crons_monitors.name", "crons_monitors.slug")
         @monitors = paginated(scope, columns: SORT_COLUMNS)
         load_filter_projects
 
         monitors = visible.cron_monitors
-        @ok_count = monitors.status_ok.count
-        @missed_count = monitors.status_missed.count
-        @failing_count = monitors.status_failing.count
+        @ok_count = monitors.enabled.status_ok.count
+        @missed_count = monitors.enabled.status_missed.count
+        @failing_count = monitors.enabled.status_failing.count
+        @paused_count = monitors.where(enabled: false).count
         # CYRA-477: quanti cron sono coperti da una regola "Cron mancato" e quanti no. Senza copertura
         # un job che si ferma non avvisa nessuno — la pagina lo dichiara e offre di creare la regola.
         @alert_coverage = Alerting::Coverage.for(organization: current_organization,

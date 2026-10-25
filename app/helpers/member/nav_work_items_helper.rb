@@ -29,7 +29,9 @@ module Member
           test: "member-nav-helpdesk", visible: helpdesk_nav_visible?,
           active: cp.start_with?("member/helpdesk_requests") },
         { label: "member.nav.workload", path: member_workload_actions_path, icon: "clipboard-list",
-          test: "member-nav-workload", visible: workload_nav_visible?, active: cp.start_with?("member/workload") }
+          test: "member-nav-workload", visible: workload_nav_visible?, active: cp.start_with?("member/workload") },
+        { label: "member.nav.dashboards", path: member_dashboard_feeds_path, icon: "gauge",
+          test: "member-nav-dashboards", visible: true, active: cp == "member/dashboard_feeds" }
       ]
     end
 

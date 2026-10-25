@@ -49,9 +49,16 @@ RSpec.describe MonitoringHelper, type: :helper do
     end
 
     it("aggiunge la riga di picco quando non cade sul passo (max 47)") do
-      values = helper.chart_gridlines(47).map { |g| g[:value] }
-      expect(values).to eq([ 20, 40, 47 ])
-      expect(values.last).to eq(47)
+      values = helper.chart_gridlines(57).map { |g| g[:value] }
+      expect(values).to eq([ 20, 40, 57 ])
+      expect(values.last).to eq(57)
+    end
+
+    # A peak less than half a step above the last line drew both labels on top of each other
+    # (Logs: 2000 and 2470). The line next to the peak gives way. CYRA-1106
+    it "drops the line too close to the peak" do
+      expect(helper.chart_gridlines(2470).map { |g| g[:value] }).to eq([ 1000, 2470 ])
+      expect(helper.chart_gridlines(47).map { |g| g[:value] }).to eq([ 20, 47 ])
     end
   end
 
@@ -75,6 +82,13 @@ RSpec.describe MonitoringHelper, type: :helper do
     it("inizio–fine col formato del range") do
       at = Time.zone.local(2026, 6, 1, 9, 0, 0)
       expect(helper.chart_bucket_window(at, 60, "30m")).to eq("09:00–09:01")
+    end
+
+    # Three-hour blocks of a 7 day chart all read «21/10–21/10». A block shorter than a day says the hours. CYRA-1106
+    it "adds the hours to a block shorter than a day on a day-scale chart" do
+      at = Time.zone.local(2026, 10, 21, 9, 0, 0)
+      expect(helper.chart_bucket_window(at, 3.hours.to_i, "7d")).to eq("21/10 09:00–21/10 12:00")
+      expect(helper.chart_bucket_window(at, 1.day.to_i, "30d")).to eq("21/10–22/10")
     end
   end
 

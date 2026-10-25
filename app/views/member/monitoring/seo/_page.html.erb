@@ -15,7 +15,7 @@
     <% else %>
       <span class="font-mono text-[11.5px] text-zinc-900 dark:text-zinc-100 break-all"><%= truncate(shown_url, length: 60) %></span>
     <% end %>
-    <%= link_to t("member.review_fixes.page_findings"), member_monitoring_seo_index_path(ft: 1, q: page.url),
+    <%= link_to t("member.review_fixes.page_findings"), member_monitoring_seo_index_path(ft: 1, page_id: page.id),
           class: "block text-[12px] text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "seo-page-findings" } %>
     <% if show_project %><span class="ml-1.5 text-[11px] text-gray-400 dark:text-zinc-500"><%= page.site.project.key %></span><% end %>
   <% end %>

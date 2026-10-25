@@ -75,6 +75,7 @@ module Authorization
     def traces = of_visible_projects(Traces::Trace)
     def replay_sessions = of_visible_projects(Replays::Session)
     def monitors = of_visible_projects(Uptime::Monitor)
+    def dashboard_feeds = of_visible_projects(Dashboards::Feed)
     def metric_groups = of_visible_projects(Metrics::Group)
     def cron_monitors = of_visible_projects(Crons::Monitor)
     def logs = of_visible_projects(Logs::Entry)

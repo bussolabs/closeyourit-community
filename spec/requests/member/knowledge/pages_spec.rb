@@ -369,6 +369,16 @@ RSpec.describe "Member::Knowledge::Pages", type: :request do
     end
   end
 
+  # The filter-style summary put the placeholder before the choice: «Choose projects…: Payments API». CYRA-1110
+  it "shows the chosen projects without the placeholder in front" do
+    sign_in(member)
+
+    get new_member_knowledge_page_path
+
+    select = Nokogiri::HTML(response.body).at_css("select[name='project_ids[]']")
+    expect(select.ancestors("[data-controller='ui--select']").first["data-ui--select-summary-value"]).to eq("false")
+  end
+
   describe "GET /member/knowledge/pages/ask — rimbalzo da zero risultati (CYRA-412)" do
     it "pre-popola la domanda dal parametro q" do
       sign_in(member)

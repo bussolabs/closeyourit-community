@@ -293,6 +293,12 @@ production: &schedule
     queue: uptime
     schedule: every minute
 
+  # Open Dashboard (CYRA-1112): read every connected service. Production only: staging services sleep.
+  dispatch_dashboard_feeds:
+    class: Dashboards::DispatchFeedsJob
+    queue: uptime
+    schedule: every 15 minutes
+
   # Avvisi uptime scritti e mai affidati alla coda (CYRA-792): il disservizio si registra prima che
   # l'avviso parta, e se l'accodamento salta in quel varco nessun controllo successivo lo ripropone —
   # la transizione non si ripete su un incident già aperto. Ogni minuto perché il ritardo qui è un

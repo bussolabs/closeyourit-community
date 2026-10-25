@@ -64,6 +64,23 @@ RSpec.describe Chat::Participant, type: :model do
       end
     end
 
+    # The sidebar badge counts chat notifications: reading the conversation must clear them too. CYRA-1104
+    it "marks the reader's chat notifications of that conversation as read" do
+      participant = create(:chat_participant)
+      conversation = participant.conversation
+      message = create(:chat_message, conversation:)
+      other = create(:chat_message, conversation: create(:chat_conversation, organization: conversation.organization))
+      mine = create(:alerting_notification, organization: conversation.organization, account: participant.account,
+                                            subject: message, event_type: :chat_message)
+      elsewhere = create(:alerting_notification, organization: conversation.organization, account: participant.account,
+                                                 subject: other, event_type: :chat_message)
+
+      participant.mark_read!
+
+      expect(mine.reload.read_at).to be_present
+      expect(elsewhere.reload.read_at).to be_nil
+    end
+
     it "muted? riflette muted_at" do
       expect(build(:chat_participant, muted_at: nil).muted?).to be(false)
       expect(build(:chat_participant, muted_at: Time.current).muted?).to be(true)

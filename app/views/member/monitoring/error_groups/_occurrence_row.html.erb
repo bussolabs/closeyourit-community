@@ -32,5 +32,8 @@
   <%= render Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_environment"), visible: !constants.key?(:environment)) do %><% if event.environment.present? %><%= render Ui::BadgeComponent.new(label: event.environment, color: :sky, dot: true) %><% else %><span class="text-[12px] text-gray-500 dark:text-zinc-400">—</span><% end %><% end %>
   <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_release"), mono: true, class: "text-gray-600 dark:text-zinc-400", visible: !constants.key?(:release))) { event.release.presence || "—" } %>
   <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_level"), visible: !constants.key?(:level))) { tag.span(error_level_label(event.level), class: "font-mono text-[12px] font-semibold text-#{error_level_color(event.level)}-600") } %>
-  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_event"), align: :right, mono: true, class: "text-[11px] text-indigo-600 dark:text-indigo-400")) { event.event_id.truncate(12) } %>
+  <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.col_event"), align: :right, mono: true, class: "text-[11px] text-indigo-600 dark:text-indigo-400")) do %>
+    <%# The end of the id tells occurrences apart; the whole id stays in the title. CYRA-1104 %>
+    <%= tag.span("…#{event.event_id.last(8)}", title: event.event_id, data: { test: "occurrence-event-id" }) %>
+  <% end %>
 <% end %>

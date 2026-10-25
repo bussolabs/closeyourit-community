@@ -1,0 +1,58 @@
+<%# Products › Dashboard › one service (CYRA-1112): who it is, how its last read went, then its numbers
+    group by group in the order the service declares them. %>
+<% project = @feed.project %>
+<% state = @report.state %>
+<% service = @report.service %>
+<% period = @report.metrics.filter_map(&:period).first %>
+<% content_for :title, project.name %>
+
+<div class="p-7 space-y-6" data-test="member-dashboard">
+  <%= render Ui::PageHeaderComponent.new(
+        title: project.name,
+        subtitle: t("member.dashboards.show.subtitle"),
+        breadcrumb: [ { label: t("member.dashboards.title"), href: member_dashboard_feeds_path }, { label: project.name } ],
+        test_id: "dashboard-header", counts_test_id: "dashboard-counts") do |h| %>
+    <% h.with_mark { render Ui::EntityMarkComponent.new(record: project) } %>
+    <% h.with_badges do %>
+      <span class="rounded border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-1.5 py-0.5 font-mono text-[11px] font-medium text-gray-600 dark:text-zinc-400"
+            data-test="dashboard-project-key"><%= project.key %></span>
+    <% end %>
+    <% if @can_edit %>
+      <% h.with_actions do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.dashboards.settings.refresh"), variant: :secondary_muted, size: :sm,
+              href: refresh_member_project_dashboard_feed_path(project), method: :post, icon: "refresh-cw", test_id: "dashboard-refresh") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.dashboards.show.settings"), variant: :secondary_muted, size: :sm,
+              href: member_project_settings_path(project, section: "dashboard"), icon: "sliders", test_id: "dashboard-settings") %>
+      <% end %>
+    <% end %>
+    <% h.with_counts do %>
+      <% if service %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.dashboards.show.version"), value: service[:version], test_id: "dashboard-version") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.dashboards.show.environment"), value: service[:environment], test_id: "dashboard-environment") %>
+      <% end %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.dashboards.show.state"), value: dashboard_read_label(@feed, state),
+            value_color: { ok: :emerald, failed: :red, never: :gray }.fetch(state), test_id: "dashboard-state") %>
+      <% if period %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.dashboards.show.comparison"), value: dashboard_period(period), test_id: "dashboard-comparison") %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if state == :never %>
+    <%= render Ui::SectionComponent.new(body_class: nil, test_id: "dashboard-numbers") do %>
+      <%= render Ui::EmptyNoteComponent.new(text: t("member.dashboards.show.never"), hint: t("member.dashboards.show.never_hint"),
+            inset: true, test_id: "dashboard-never-read") %>
+    <% end %>
+  <% else %>
+    <% if state == :failed %>
+      <%= render Ui::AlertComponent.new(variant: :danger, title: dashboard_error_text(@feed), test_id: "dashboard-read-failed") do %>
+        <%= t("member.dashboards.show.last_good", time: time_ago_in_words(@feed.fetched_at || @feed.checked_at)) %>
+      <% end %>
+    <% end %>
+    <%= render Ui::StackComponent.new(gap: 6, class: ("opacity-55" if state == :failed), test_id: "dashboard-numbers") do %>
+      <% @report.groups.each do |group, metrics| %>
+        <%= render "metric_group", title: group, metrics: metrics %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

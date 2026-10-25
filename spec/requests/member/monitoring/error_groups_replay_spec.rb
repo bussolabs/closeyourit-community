@@ -184,4 +184,27 @@ RSpec.describe "Member::Monitoring::ErrorGroups replay", type: :request do
       expect(pagina.at_css('[data-test="error-replay-none"]')).to be_nil
     end
   end
+
+  # Coming from a replay or a help desk request, the page showed the latest occurrence of another
+  # visit. The rid now selects the occurrence of that visit. CYRA-1101
+  describe "occurrence of the visit in the address" do
+    let!(:own) { create(:error_event, group:, replay_session_id: "visit-a", occurred_at: 2.hours.ago) }
+    let!(:latest) { create(:error_event, group:, replay_session_id: "visit-b", occurred_at: 1.minute.ago) }
+
+    def shown_panel = Nokogiri::HTML(response.body).css("[data-test='occurrence-panel']").reject { |p| p["class"].include?("hidden") }
+
+    it "shows the occurrence of that visit instead of the latest one" do
+      sign_in(owner)
+      get member_monitoring_error_group_path(group, rid: "visit-a")
+
+      expect(shown_panel.map { |p| p["data-panel-id"] }).to eq([ own.id ])
+    end
+
+    it "falls back to the latest occurrence when the visit has none in this group" do
+      sign_in(owner)
+      get member_monitoring_error_group_path(group, rid: "visit-zzz")
+
+      expect(shown_panel.map { |p| p["data-panel-id"] }).to eq([ latest.id ])
+    end
+  end
 end

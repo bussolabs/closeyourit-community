@@ -78,8 +78,9 @@
   </div>
 </div>
 </div>
+<%# Below the chart, never over its bars (CYRA-1105). %>
 <div hidden data-ui--scroll-hint-target="horizontal" aria-hidden="true"
-     class="pointer-events-none absolute bottom-3 right-3 z-20 inline-flex items-center gap-1.5 rounded-md bg-zinc-900/90 px-2 py-1 text-xs font-medium text-white">
+     class="flex items-center justify-end gap-1.5 px-3 py-1.5 text-[11px] font-medium text-gray-500 dark:text-zinc-400">
   <%= t("shared.scroll_horizontal") %><%= render Ui::IconComponent.new(name: "arrow-right", class: "text-[9px]") %>
 </div>
 </div>

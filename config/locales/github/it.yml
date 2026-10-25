@@ -122,7 +122,6 @@ it:
         status_label: Stato
         status_installed: Installata
         status_missing: Non installata
-        repositories_label: Repo agganciati
         installed_on: "Installata su: %{login}"
         install: Installa la GitHub App
         not_configured: "GitHub non è ancora collegato a questa installazione di CloseYourIt. Chi amministra il server crea una GitHub App e ne imposta i dati (GH_APP_ID, GH_APP_PRIVATE_KEY, GH_APP_SLUG): la guida è nella documentazione."

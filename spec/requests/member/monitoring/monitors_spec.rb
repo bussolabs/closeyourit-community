@@ -412,6 +412,19 @@ RSpec.describe "Member::Monitoring::Monitors", type: :request do
       expect(response.body).to include(I18n.t("member.uptime.last_checks", count: 3))
     end
 
+    # The dialog opened with the focus on «Delete incident», its first control. The message field
+    # asks for it now. CYRA-1107
+    it "opens the incident dialog on the message field, not on Delete" do
+      sign_in(owner)
+      monitor = declared_monitor(url: "https://store.test/up")
+      incident = create(:uptime_incident, monitor:, started_at: 3.hours.ago, resolved_at: 2.hours.ago)
+
+      get member_monitoring_monitor_path(monitor)
+
+      dialog = Nokogiri::HTML(response.body).at_css(%([data-test="incident-manage-dialog-#{incident.id}"]))
+      expect(dialog.css("[autofocus]").map { |el| el["data-test"] }).to eq([ "incident-manage-body-#{incident.id}" ])
+    end
+
     # CYRA-495 — chi naviga a lettore di schermo deve poter distinguere una riga dall'altra: la casella
     # di selezione non aveva nome proprio (il lettore ripiega sul value, cioè l'UUID) e il comando di
     # gestione si ripeteva identico su ogni riga. Ora entrambi nominano l'inizio della finestra.

@@ -80,7 +80,8 @@
           </div>
 
           <%# Il modulo che collega e quello che scollega sono FRATELLI, mai annidati: `button_to`
-              genera un form suo, e un form dentro un form non è markup valido. %>
+              genera un form suo, e un form dentro un form non è markup valido. The hint sits under the
+              row, so the buttons line up with the field itself (CYRA-1111). %>
           <div class="flex items-end gap-2 flex-wrap">
             <%= form_with url: member_integration_path(provider.key), method: :patch,
                           class: "flex items-end gap-2 flex-wrap",
@@ -89,8 +90,7 @@
                     label: t("member.integrations.key_label"), autocomplete: "new-password",
                     wrapper_class: "w-full sm:w-96",
                     placeholder: t("member.integrations.key_placeholder_#{credential ? 'connected' : 'missing'}"),
-                    hint: t("member.integrations.key_hint"),
-                    test_id: "integration-key-#{provider.key}") %>
+                    "aria-describedby": "integration-key-hint-#{provider.key}", test_id: "integration-key-#{provider.key}") %>
               <%= render Ui::ButtonComponent.new(
                     label: t("member.integrations.#{credential ? 'replace' : 'connect'}"),
                     type: "submit", icon: (credential ? "rotate-cw" : "plug"), size: :sm,
@@ -106,6 +106,7 @@
                     test_id: "integration-disconnect-#{provider.key}") %>
             <% end %>
           </div>
+          <p id="integration-key-hint-<%= provider.key %>" class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400" data-test="integration-key-hint-<%= provider.key %>"><%= t("member.integrations.key_hint") %></p>
         </div>
       </section>
     <% end %>

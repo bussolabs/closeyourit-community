@@ -35,13 +35,17 @@ RSpec.describe Ui::TableComponent, type: :component do
     render_table(scrollable: true)
 
     expect(page).to have_css("[data-ui--scroll-hint-target='scroller'].overflow-x-auto")
-    # CYRA-663 — lo spazio sotto non e' piu' scritto nel markup: serve solo a non far coprire
-    # l'ultima riga dall'indicatore, quindi lo accende il controller quando l'indicatore compare.
-    # Sempre acceso lasciava una fascia vuota sotto OGNI tabella su telefono.
-    expect(page).not_to have_css("[data-controller='ui--scroll-hint'][class~='max-md:pb-8']")
-    expect(page).to have_css("[data-ui--scroll-hint-spazio-class='max-md:pb-8']")
     expect(page).to have_css("[data-ui--scroll-hint-target='horizontal'][data-test='table-scroll-hint'][hidden]",
                              text: I18n.t("shared.scroll_horizontal"), visible: :all)
+  end
+
+  # Laid over the table, the hint covered the last row on every screen. It now sits below it. CYRA-1105
+  it "keeps the scroll hint below the table instead of over its rows" do
+    render_table(scrollable: true)
+
+    hint = page.find("[data-test='table-scroll-hint']", visible: :all)
+    expect(hint[:class].split).not_to include("absolute")
+    expect(page).to have_css("[data-ui--scroll-hint-target='scroller'] + [data-test='table-scroll-hint']", visible: :all)
   end
 
   it "non aggiunge l'indicazione di scorrimento alle tabelle in opt-out" do

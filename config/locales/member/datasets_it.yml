@@ -34,8 +34,6 @@ it:
         total: Totale
         draft: Bozza
         trained: Pronto
-        inputs: Input
-        targets: Target
         samples: Righe
       status:
         draft: Bozza
@@ -114,6 +112,7 @@ it:
         options_placeholder: Valori separati da virgola (es. positivo, negativo)
         add_column: Aggiungi colonna
         remove_column: Rimuovi colonna
+        column_kind: Tipo di colonna
         no_columns: Ancora nessuna colonna. Aggiungi almeno un Input (es. una foto) e un Target.
         column_label_placeholder: Nome colonna…
         role_input: Input

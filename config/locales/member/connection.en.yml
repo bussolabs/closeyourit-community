@@ -2,5 +2,6 @@ en:
   member:
     connection:
       connected: Connected
+      connecting: Connecting…
       reconnecting: Reconnecting…
       offline: Offline

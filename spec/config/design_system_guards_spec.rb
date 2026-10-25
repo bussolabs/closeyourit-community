@@ -29,15 +29,8 @@ RSpec.describe "Design system guards" do
     app/views/member/tickets/_question.html.erb
   ].freeze
 
-  NATIVE_SELECT_LEGACY = %w[
-    app/views/member/alerting_rules/_form.html.erb
-    app/views/member/datasets/_column_row.html.erb
-    app/views/member/monitoring/monitors/_announcement_form.html.erb
-    app/views/member/monitoring/monitors/_incident_manage_modal.html.erb
-    app/views/member/monitoring/monitors/_incidents.html.erb
-    app/views/member/shared_secrets/_cell.html.erb
-    app/views/member/tickets/_compose_panel.html.erb
-  ].freeze
+  # Empty since CYRA-1108: every member view uses the design system dropdown.
+  NATIVE_SELECT_LEGACY = %w[].freeze
 
   HAND_WRITTEN_BUTTON_LEGACY = %w[
     app/views/cli/authorizations/show.html.erb

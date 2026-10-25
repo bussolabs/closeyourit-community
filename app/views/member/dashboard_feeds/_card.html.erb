@@ -1,0 +1,32 @@
+<%# One service (D24, D25): project identity, the state of the last read as a badge (D22), the first four numbers
+    in a 2×2 footer with an arrow colored by whether the change is good. A failed read fades the numbers. %>
+<% report = Dashboards::ReportView.new(feed) %>
+<% state = report.state %>
+<% service = report.service %>
+<%= render Ui::EntityCardComponent.new(href: member_dashboard_feed_path(feed), title: feed.project.name, key: feed.project.key,
+      description: (service && "#{service[:version]} · #{service[:environment]}"), open_label: t("member.dashboards.open"),
+      test_id: "dashboard-card-#{feed.id}") do |card| %>
+  <% card.with_mark { render Ui::EntityMarkComponent.new(record: feed.project, size: :xs) } %>
+  <% card.with_badges do %>
+    <%= render Ui::BadgeComponent.new(label: dashboard_read_label(feed, state), color: { ok: :green, failed: :red, never: :gray }.fetch(state),
+          dot: true, test_id: "dashboard-card-state") %>
+  <% end %>
+  <% if report.headline.any? %>
+    <% card.with_footer do %>
+      <div class="grid grid-cols-2 gap-x-3 gap-y-2 flex-1 min-w-0<%= " opacity-55" if state == :failed %>" data-test="dashboard-card-numbers">
+        <% report.headline.each do |metric| %>
+          <div class="min-w-0">
+            <div class="font-sans text-[11px] truncate" title="<%= metric.label %>"><%= metric.label %></div>
+            <div class="flex flex-wrap items-baseline gap-x-1.5">
+              <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= metric.value_text %></span>
+              <% if metric.delta_text %>
+                <span class="<%= { good: "text-emerald-600 dark:text-emerald-400", bad: "text-red-600 dark:text-red-400",
+                                   neutral: "text-gray-500 dark:text-zinc-400" }.fetch(metric.tone) %>" data-tone="<%= metric.tone %>"><%= dashboard_arrow(metric.direction) %> <%= metric.delta_text %></span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

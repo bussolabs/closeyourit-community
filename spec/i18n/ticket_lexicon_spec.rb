@@ -216,4 +216,11 @@ RSpec.describe "Lessico ticket in italiano (CYRA-392)", type: :model do
       end
     end
   end
+
+  # The technical analysis labels stay in Italian in every language: the English hint says why. CYRA-1110
+  it "tells English readers why the analysis labels are Italian" do
+    placeholder = I18n.t("member.tickets.form.technical_analysis_placeholder", locale: :en)
+    expect(placeholder.lines.first).to include("Italian")
+    expect(placeholder).to include("Approccio:", "Perché:", "Rischi:", "Aperto:")
+  end
 end

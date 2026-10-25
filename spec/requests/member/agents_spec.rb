@@ -358,6 +358,19 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
         expect(pagina.at_css("[data-test='host-activity-none']")).to be_nil
       end
 
+      # A silent machine marks its runs as stopped: the header said «2/1, 2 running» while the list said 0/1. CYRA-1104
+      it "does not count stopped runs as running" do
+        ticket = create(:ticket, organization:, with_agent_workflow: true)
+        host = stale_host(hostname: "mac-silent", running: 0, slots: 1, active_runs: [ { "ticket" => ticket.code } ])
+
+        get member_agent_path(host)
+
+        pagina = Nokogiri::HTML(response.body)
+        expect(pagina.at_css("[data-test='host-running']").text).to include("0")
+        expect(pagina.at_css("[data-test='host-slots']").text).to match(%r{\b0/1})
+        expect(pagina.css("[data-test='host-run']").size).to eq(1)
+      end
+
       it "i lavori aperti che la macchina non segnala diventano un avviso, non un numero che smentisce" do
         ticket = create(:ticket, organization:, with_agent_workflow: true)
         workflow = ticket.agent_workflow || create(:agent_workflow, organization:, ticket:)

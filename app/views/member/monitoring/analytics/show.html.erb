@@ -129,7 +129,7 @@
     <%= render "chart", buckets: @buckets, range: @range %>
 
     <% if @range_empty %>
-      <%= render "empty_range", last_at: @last_pageview_at, suggested: @suggested_range,
+      <%= render "empty_range", last_at: @environment_last_pageview_at, suggested: @suggested_range,
             project: @project, environment: @environment,
             panels: %w[pages referrers channels entry_exit locations devices device_types utm] %>
     <% else %>

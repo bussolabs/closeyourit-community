@@ -4353,9 +4353,10 @@
       "level": 2,
       "parent": "area_projects",
       "kind": "page",
-      "summary": "Conservazione dei dati, assegnatario di default, funzioni attive, ambienti, piattaforme e documenti allegati.",
+      "summary": "Conservazione dei dati, assegnatario di default, funzioni attive, ambienti, piattaforme e documenti allegati. Nella sezione Dashboard si collega il servizio: indirizzo, chiave mostrata una volta, ultima lettura, pausa, leggi adesso, scollega.",
       "files": [
         "app/controllers/member/project_settings_controller.rb",
+        "app/controllers/member/project_dashboard_feed_controller.rb",
         "app/controllers/member/project_environments_controller.rb",
         "app/controllers/member/project_documents_controller.rb",
         "app/services/projects/documents/**",
@@ -4565,9 +4566,12 @@
       "level": 3,
       "parent": "prj_data",
       "kind": "data",
-      "summary": "Un'app dell'organizzazione, con gruppo opzionale, responsabile tecnico e assegnatario di default. Possiede ticket, idee, segreti, documenti e pagine di conoscenza.",
+      "summary": "Un'app dell'organizzazione, con gruppo opzionale, responsabile tecnico e assegnatario di default. Possiede ticket, idee, segreti, documenti e pagine di conoscenza, e l'indirizzo da cui leggere i numeri del suo servizio (Open Dashboard), letti ogni 15 minuti.",
       "files": [
-        "app/models/projects/project.rb"
+        "app/models/projects/project.rb",
+        "app/models/dashboards/feed.rb",
+        "app/jobs/dashboards/dispatch_feeds_job.rb",
+        "app/jobs/dashboards/fetch_feed_job.rb"
       ]
     },
     {
@@ -4633,7 +4637,7 @@
       "level": 1,
       "parent": "rails",
       "kind": "area",
-      "summary": "Le proposte del team che maturano fino a diventare ticket, la matrice delle funzionalità del prodotto e il riepilogo periodico via email.",
+      "summary": "Le proposte del team che maturano fino a diventare ticket, la matrice delle funzionalità del prodotto, i numeri dei servizi collegati e il riepilogo periodico via email.",
       "files": [
         "app/services/ideas/**",
         "app/services/product/**",
@@ -4793,6 +4797,19 @@
       "files": [
         "app/services/product/matrix_coverage.rb",
         "app/services/product/matrix_columns.rb"
+      ]
+    },
+    {
+      "id": "ide_page_dashboards",
+      "name": "Dashboard dei servizi",
+      "level": 2,
+      "parent": "area_ideas",
+      "kind": "page",
+      "summary": "In Prodotti, una scheda per ogni servizio collegato con i suoi numeri principali e quanto sono cambiati rispetto a prima. Dalla scheda si apre la pagina del servizio, con tutti i numeri raggruppati come li dichiara.",
+      "files": [
+        "app/controllers/member/dashboard_feeds_controller.rb",
+        "app/presenters/dashboards/**",
+        "app/views/member/dashboard_feeds"
       ]
     },
     {

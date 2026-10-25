@@ -1,0 +1,17 @@
+<%# locals: (title:, metrics:) %>
+<%# One group of numbers, as the service declares it (D24): a tile per number, the change colored by whether
+    it is good, the period it compares with; a missing number says so instead of showing a zero (D12). %>
+<%= render Ui::SectionComponent.new(title: title, heading_size: :sm, test_id: "dashboard-group") do %>
+  <%= render Ui::GridComponent.new(cols: 1, sm: 2, xl: 4, gap: 3) do %>
+    <% metrics.each do |metric| %>
+      <% delta = metric.delta_text && tag.span([ dashboard_arrow(metric.direction), metric.delta_text ].compact.join(" "), data: { tone: metric.tone }) %>
+      <% caption = if delta then t("member.dashboards.show.compared_with", period: dashboard_period(metric.period))
+                   elsif metric.unavailable? then t("member.dashboards.show.not_available")
+                   else t("member.dashboards.show.no_comparison") end %>
+      <%= render Ui::MetricTileComponent.new(label: metric.label, value: metric.value_text,
+            value_color: metric.unavailable? ? :gray : :neutral, delta: delta,
+            delta_color: Member::DashboardFeedsHelper::TONE_COLORS.fetch(metric.tone), caption: caption,
+            test_id: "dashboard-metric-#{metric.key}") %>
+    <% end %>
+  <% end %>
+<% end %>

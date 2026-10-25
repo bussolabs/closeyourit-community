@@ -11,7 +11,16 @@
     <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
       <%= render "toolbar" %>
       <% if @traces.empty? %>
-        <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_monitoring_traces_path, test_id: "traces-no-results") %>
+        <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_monitoring_traces_path,
+              body: t("shared.time_range.empty_window"), test_id: "traces-no-results") do |empty| %>
+          <% if trace_window.key != "30d" %>
+            <% empty.with_action do %>
+              <%= render Ui::ButtonComponent.new(label: t("shared.time_range.widen"), variant: :secondary_muted, size: :sm,
+                    href: member_monitoring_traces_path(request.query_parameters.except("range", "from", "to", "page").merge("range" => "30d")),
+                    icon: "history", test_id: "traces-widen") %>
+            <% end %>
+          <% end %>
+        <% end %>
       <% else %>
         <%= render Ui::TableComponent.new(stacked: true, label: t("member.traces.title"), test_id: "traces-table") do |table| %>
           <% table.with_head do %>

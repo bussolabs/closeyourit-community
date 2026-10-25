@@ -1,5 +1,6 @@
 <%# locals: (release:, test_id:) %>
-<div class="flex items-center gap-2.5 px-4 py-2.5" data-test="<%= test_id %>">
+<%# Wraps in a narrow column instead of cutting the time off (CYRA-1105). %>
+<div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 px-4 py-2.5" data-test="<%= test_id %>">
   <span class="font-mono text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= release.display_version %></span>
   <%= render Ui::BadgeComponent.new(label: release.environment, color: environment_badge_color(release.environment), size: :sm, dot: true, test_id: "project-release-environment") %>
   <% if release.current? %>

@@ -25,7 +25,7 @@
       </div>
 
       <div>
-        <%= render Ui::SelectComponent.new(name: "project_ids", label: t("member.knowledge.books.form.projects"), multiple: true, summary: true,
+        <%= render Ui::SelectComponent.new(name: "project_ids", label: t("member.knowledge.books.form.projects"), multiple: true,
               options: @projects.map { |project| [ project.name, project.id ] },
               selected: book.projects.map(&:id), placeholder: t("member.knowledge.books.form.projects_placeholder"),
               test_id: "knowledge-book-form-projects",
@@ -33,7 +33,7 @@
       </div>
 
       <div>
-        <%= render Ui::SelectComponent.new(name: "group_ids", label: t("member.knowledge.books.form.groups"), multiple: true, summary: true,
+        <%= render Ui::SelectComponent.new(name: "group_ids", label: t("member.knowledge.books.form.groups"), multiple: true,
               options: @groups.map { |group| [ group.name, group.id ] },
               selected: book.groups.map(&:id), placeholder: t("member.knowledge.books.form.groups_placeholder"),
               test_id: "knowledge-book-form-groups") %>
@@ -51,7 +51,7 @@
         <div class="md:col-span-2">
           <label class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.knowledge.books.form.pages") %></label>
           <% if @book_pages.any? %>
-            <%= render Ui::SelectComponent.new(name: "page_ids", multiple: true, summary: true,
+            <%= render Ui::SelectComponent.new(name: "page_ids", multiple: true,
                   options: @book_pages.map { |page| [ "#{page.projects.find { |project| @visible_project_ids.include?(project.id) }&.name} · #{page.title}", page.id ] },
                   selected: book.pages.map(&:id),
                   placeholder: t("member.knowledge.books.form.pages_placeholder"),

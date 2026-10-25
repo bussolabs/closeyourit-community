@@ -176,7 +176,7 @@ it:
       group_todos: Da fare
       group_guides: Guide
       group_projects: Progetti
-      group_product: Prodotto
+      group_product: Prodotti
       group_knowledge: Conoscenza
       group_observability: Osservabilità
       group_infrastructure: Infrastruttura
@@ -449,6 +449,8 @@ it:
       stat_ok: OK
       stat_missed: Mancati
       stat_failing: Falliti
+      stat_paused: In pausa
+      status_paused: In pausa
       empty: Nessun lavoro programmato sotto controllo
       empty_body: Aggiungi un lavoro, poi fallo segnalare ogni volta che gira. Quando tace o fallisce, vieni avvisato.
       no_match: Nessun cron corrisponde ai filtri.
@@ -2855,6 +2857,7 @@ it:
         col_projects: Progetti
         col_pages: Pagine
         open_page: Apri pagina
+        all_pages: Tutte le pagine
         add_pages: Aggiungi pagine
         empty_content_title: Raccolta vuota
         empty_content_body: Questa raccolta non contiene ancora pagine. Aggiungile dalla base di conoscenza.
@@ -3440,6 +3443,8 @@ it:
         loading: Caricamento replay…
         error: Replay non disponibile
         empty: Nessun replay per questa occorrenza
+        play_label: Avvia o metti in pausa
+        fullscreen_label: Schermo intero
         none: Nessuna sessione registrata per questa occorrenza. Quando c'è, qui la riguardi come un video.
         none_off: "Su questo progetto le sessioni non vengono registrate: accendendole, qui trovi cosa ha fatto la persona nei momenti prima dell'errore."
         none_cta: Attiva le registrazioni

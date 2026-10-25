@@ -11,11 +11,11 @@
 <% end %>
 
 <% if scrollable? %>
-  <div class="relative" data-controller="ui--scroll-hint<%= " ui--row-group" if grouped? %>"
-       data-ui--scroll-hint-spazio-class="max-md:pb-8">
+  <%# The hint sits below the table, never over its last row (CYRA-1105). %>
+  <div class="relative" data-controller="ui--scroll-hint<%= " ui--row-group" if grouped? %>">
     <%= tag.div(table_markup, **scroller_options) %>
     <div hidden data-ui--scroll-hint-target="horizontal" data-test="<%= scroll_hint_test_id %>" aria-hidden="true"
-         class="pointer-events-none absolute bottom-1 right-2 z-20 inline-flex items-center gap-1.5 rounded-md bg-zinc-900/90 px-2 py-1 text-xs font-medium text-white md:bottom-2">
+         class="flex items-center justify-end gap-1.5 px-3 py-1.5 border-t border-stone-100 dark:border-zinc-800 text-[11px] font-medium text-gray-500 dark:text-zinc-400">
       <%= t("shared.scroll_horizontal") %><%= render Ui::IconComponent.new(name: "arrow-right", class: "text-[9px]") %>
     </div>
   </div>

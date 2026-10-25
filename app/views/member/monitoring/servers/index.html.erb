@@ -83,10 +83,11 @@
             options: ::Servers::Host.statuses.keys.map { |s| [ t("member.servers.status.#{s}"), s ] },
             selected: params[:status], placeholder: t("member.servers.filter_status"), test_id: "filter-status") %></div>
         <% end %>
-        <%# CYRA-470 — the fleet groups filter the list: each option says how many machines it holds. %>
+        <%# CYRA-470 — the fleet groups filter the list: each option says how many machines it holds.
+            Blank first, or the browser sends the first group with every search (CYRA-1100). %>
         <% if @group_counts.any? %>
           <% toolbar.with_filter(key: "group", label: t("member.servers.filter_group")) do %>
-            <div class="w-40"><%= render Ui::SelectComponent.new(name: "group", summary: true,
+            <div class="w-40"><%= render Ui::SelectComponent.new(name: "group", summary: true, include_blank: true,
               options: @group_counts.map { |name, count| [ "#{name} (#{count})", name ] },
               selected: @group_filter, placeholder: t("member.servers.filter_group"), test_id: "filter-group") %></div>
           <% end %>

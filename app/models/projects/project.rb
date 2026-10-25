@@ -232,6 +232,12 @@ module Projects
              foreign_key: :project_id,
              inverse_of: :project,
              dependent: :destroy
+    # Open Dashboard (CYRA-1112): where CloseYourIt reads this project's service numbers.
+    has_one :dashboard_feed,
+            class_name: "Dashboards::Feed",
+            foreign_key: :project_id,
+            inverse_of: :project,
+            dependent: :destroy
     # Vulnerabilità delle dipendenze (CYRA-506): i lockfile scoperti nel repository, le occorrenze
     # trovate su OSV.dev e lo stato di supporto dei runtime dichiarati.
     has_many :vulnerability_manifests,

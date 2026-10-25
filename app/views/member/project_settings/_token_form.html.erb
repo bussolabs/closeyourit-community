@@ -3,7 +3,7 @@
 <details class="group border-b border-stone-200 dark:border-zinc-800" data-test="token-form-disclosure" <%= "open" if @token_errors %>>
   <summary class="list-none cursor-pointer px-4 py-3 [&::-webkit-details-marker]:hidden" data-test="token-form-toggle">
     <span class="inline-flex h-7 items-center gap-1.5 rounded-md bg-indigo-600 px-2.5 text-[12px] font-semibold text-white hover:bg-indigo-700">
-      <%= render Ui::IconComponent.new(name: "plus", class: "text-[11px] group-open:hidden") %><%= render Ui::IconComponent.new(name: "minus", class: "hidden text-[11px] group-open:inline") %><%= t("member.tokens.form.title") %>
+      <span class="inline-flex group-open:hidden"><%= render Ui::IconComponent.new(name: "plus", class: "text-[11px]") %></span><span class="hidden group-open:inline-flex"><%= render Ui::IconComponent.new(name: "minus", class: "text-[11px]") %></span><%= t("member.tokens.form.title") %>
     </span>
   </summary>
   <%= form_with url: member_project_tokens_path(@project), method: :post, class: "px-4 pb-4 grid grid-cols-1 sm:grid-cols-12 gap-4 items-end", data: { test: "token-form" } do %>

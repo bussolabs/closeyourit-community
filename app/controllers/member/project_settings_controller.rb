@@ -13,7 +13,7 @@ module Member
                        session_replay_enabled helpdesk_enabled supporter_enabled].freeze
     # The panels that save with their own form: a save returns to the panel it came from. It travels as
     # `?section=`, not `#anchor`: a fragment in a redirect is lost by the fetch that follows it.
-    FORM_SECTIONS = %w[ingest tickets retention thresholds production supporter].freeze
+    FORM_SECTIONS = %w[ingest tickets retention thresholds production supporter dashboard].freeze
 
     before_action :set_project
     # CYRA-883 — the page also holds the ingest tokens: whoever manages them (the default Maintainer,

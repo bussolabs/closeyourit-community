@@ -31,7 +31,7 @@ module Ui
     # ogni <code>. Su una pagina di documentazione è una scelta; qui il testo arriva da chi ha scritto
     # `foo.rb` in markdown, e vedersi tornare indietro i backtick è esattamente il difetto che questo
     # lavoro elimina. Il codice si segna col fondino, come nella variante inline.
-    BLOCK = "prose prose-stone prose-sm max-w-none prose-headings:font-display prose-code:font-mono " \
+    BLOCK = "prose prose-stone dark:prose-invert prose-sm max-w-none prose-headings:font-display prose-code:font-mono " \
             "prose-code:before:content-none prose-code:after:content-none prose-code:font-normal " \
             "prose-code:bg-stone-100 dark:prose-code:bg-zinc-800 dark:prose-code:text-zinc-100 prose-code:rounded prose-code:px-1 prose-code:py-px " \
             "[&_pre_code]:bg-transparent [&_pre_code]:px-0 " \

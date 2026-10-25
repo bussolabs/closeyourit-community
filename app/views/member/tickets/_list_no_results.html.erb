@@ -14,9 +14,10 @@
   <%# "Azzera" ricaricherebbe solo il frame lasciando piena la barra di ricerca (che gli sta %>
   <%# sopra, fuori dal frame) e "Chiedi ai ticket" caricherebbe una pagina priva di quel frame %>
   <%# → Turbo scarterebbe la risposta (frame vuoto). CYRA-387. %>
+  <%# The ft marker makes the reset forget the remembered search instead of restoring it. CYRA-1100 %>
   <div class="mt-4 flex items-center gap-2">
     <%= render Ui::ButtonComponent.new(label: t("member.tickets.no_results.reset"),
-          href: list_member_tickets_path, variant: :primary, size: :sm,
+          href: list_member_tickets_path(RememberableFilters::MARKER_PARAM => 1), variant: :primary, size: :sm,
           icon: "x", test_id: "tickets-reset-search", data: { turbo_frame: "_top" }) %>
     <%= render Ui::ButtonComponent.new(label: t("member.tickets.no_results.ask"),
           href: ask_member_tickets_path(q: @search_query.presence), variant: :secondary_muted, size: :sm,

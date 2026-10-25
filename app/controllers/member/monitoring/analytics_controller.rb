@@ -55,7 +55,12 @@ module Member
         # Range vuoto ma dati esistenti: invece di stampare quattordici riquadri a zero, un messaggio
         # con la data dell'ultima visita e il periodo più stretto che la contiene.
         @range_empty = @pageviews_count.zero?
-        @suggested_range = ::Analytics::Pageview.range_covering(@last_pageview_at) if @range_empty
+        return unless @range_empty
+
+        # The hint looks at the chosen environment only: another one's visit pointed to an empty range. CYRA-1104
+        @environment_last_pageview_at = ::Analytics::Pageview.where(project_id: @project.id, environment: @environment)
+                                                             .maximum(:occurred_at)
+        @suggested_range = ::Analytics::Pageview.range_covering(@environment_last_pageview_at) if @environment_last_pageview_at
       end
 
       private

@@ -19,14 +19,9 @@
     <% end %>
 
     <%= form_with url: member_monitoring_monitor_announcement_path(monitor), method: announcement ? :patch : :post, class: "space-y-3" do %>
-      <div>
-        <label class="<%= label %>"><%= t("member.uptime.announcement.level") %></label>
-        <select name="level" data-test="announcement-level" class="<%= field %>">
-          <% Uptime::Announcement.levels.keys.each do |level| %>
-            <option value="<%= level %>" <%= "selected" if announcement&.level == level %>><%= t("member.uptime.announcement.levels.#{level}") %></option>
-          <% end %>
-        </select>
-      </div>
+      <%= render Ui::SelectComponent.new(name: "level", label: t("member.uptime.announcement.level"), id: "announcement-level-#{monitor.id}",
+            options: Uptime::Announcement.levels.keys.map { |level| [ t("member.uptime.announcement.levels.#{level}"), level ] },
+            selected: announcement&.level, test_id: "announcement-level") %>
 
       <div>
         <label class="<%= label %>"><%= t("member.uptime.announcement.message") %><span class="text-red-500 dark:text-red-400 ml-0.5">*</span></label>

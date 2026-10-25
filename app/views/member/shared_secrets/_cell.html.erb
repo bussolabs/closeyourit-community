@@ -36,7 +36,9 @@
       <% if can_manage %>
         <%= form_with url: member_shared_secret_delegations_path(variable), class: "flex gap-1" do |f| %>
           <%= hidden_field_tag :value_id, value.id %>
-          <%= select_tag :project_id, options_from_collection_for_select(projects, :id, :name), include_blank: t("member.shared_secrets.choose_project"), class: "h-7 min-w-0 flex-1 rounded border border-stone-200 dark:border-zinc-800 text-[11px]" %>
+          <%= render Ui::SelectComponent.new(name: "project_id", id: "shared-secret-project-#{value.id}", size: :sm, include_blank: true,
+                options: projects.map { |project| [ project.name, project.id ] }, placeholder: t("member.shared_secrets.choose_project"),
+                aria_label: t("member.shared_secrets.choose_project"), wrapper_class: "min-w-0 flex-1", test_id: "shared-secret-project-#{value.id}") %>
           <%# CYRA-777 — l'alias: vuoto = il progetto legge il valore col nome che ha qui. Serve quando
               il progetto chiama quella cosa in un altro modo e non si vuole toccare il suo codice. %>
           <%= text_field_tag :local_name, nil, placeholder: variable.name, class: "h-7 w-24 min-w-0 rounded border border-stone-200 dark:border-zinc-800 px-1 font-mono text-[11px]", data: { test: "shared-secret-local-name-#{value.id}" } %>

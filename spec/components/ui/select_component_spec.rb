@@ -162,4 +162,36 @@ RSpec.describe Ui::SelectComponent, type: :component do
       expect(page.find("[data-controller='ui--select']")["data-ui--select-prefix-value"]).to be_nil
     end
   end
+
+  # The last native selects had needs the component did not cover: groups of options, data the
+  # page's own controllers read, a field without a name, and its own id. CYRA-1108
+  describe "what the last native selects needed" do
+    it "groups options under their headings" do
+      render_inline(described_class.new(name: "event_type", grouped: true,
+                                        options: [ [ "Errors", [ [ "New error", "error_new" ] ] ], [ "Uptime", [ [ "Site down", "uptime_down" ] ] ] ],
+                                        selected: "uptime_down"))
+
+      expect(page).to have_css("select optgroup[label='Errors'] option[value='error_new']", visible: :all)
+      expect(page).to have_css("select optgroup[label='Uptime'] option[value='uptime_down'][selected]", visible: :all)
+    end
+
+    it "hands extra data to the native select and to each option" do
+      render_inline(described_class.new(name: "phase", options: [ [ "Detected", "detected" ] ],
+                                        select_data: { "incident-update-target": "phase", action: "change->incident-update#fill" },
+                                        option_data: { "detected" => { body: "We are looking into it." } }))
+
+      select = page.find("select", visible: :all)
+      expect(select["data-incident-update-target"]).to eq("phase")
+      expect(select["data-action"]).to eq("change->incident-update#fill")
+      expect(page.find("option[value='detected']", visible: :all)["data-body"]).to eq("We are looking into it.")
+    end
+
+    it "renders a field without a name, with the id it is given" do
+      render_inline(described_class.new(name: nil, id: "ticket-compose-project", options: [ [ "API", "1" ] ]))
+
+      select = page.find("select", visible: :all)
+      expect(select["name"]).to be_nil
+      expect(select["id"]).to eq("ticket-compose-project")
+    end
+  end
 end

@@ -14,6 +14,9 @@ RSpec.describe "New forms in the member modal", :js, type: :system do
     find("[data-test='groups-new']").click
     within("dialog[data-test='member-modal'][open]") { expect(page).to have_css("[data-test='group-form']") }
     expect(page).to have_current_path(member_groups_path)
+    # Named after the form it shows, not a generic «Form». CYRA-1107
+    modal = find("dialog[data-test='member-modal'][open]")
+    expect(modal["aria-label"]).to eq(modal.find("h1, h2", match: :first).text)
 
     within("dialog[data-test='member-modal']") { click_on I18n.t("member.groups.form.cancel") }
     expect(page).to have_no_css("dialog[data-test='member-modal'][open]")

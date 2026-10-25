@@ -303,6 +303,29 @@ RSpec.describe "Member::Monitoring::Analytics", type: :request do
         expect(response.body).not_to include("data-test=\"analytics-locations\"")
       end
 
+      # The last visit came from another environment: the hint pointed to a range that stayed empty. CYRA-1104
+      it "takes the last visit and the suggested range from the chosen environment only" do
+        create(:pageview, project:, occurred_at: 3.days.ago, environment: "production")
+        create(:pageview, project:, occurred_at: 1.hour.ago, environment: "lab")
+        sign_in(owner)
+
+        get member_monitoring_analytics_path(project_id: project.id, range: "24h")
+
+        link = Nokogiri::HTML(response.body).at_css("[data-test='analytics-range-empty-link']")
+        expect(link["href"]).to eq(member_monitoring_analytics_path(project_id: project.id, environment: "production", range: "7d"))
+      end
+
+      it "says when the chosen environment never received a visit" do
+        create(:pageview, project:, occurred_at: 1.hour.ago, environment: "lab")
+        sign_in(owner)
+
+        get member_monitoring_analytics_path(project_id: project.id, range: "24h")
+
+        html = Nokogiri::HTML(response.body)
+        expect(html.at_css("[data-test='analytics-range-empty-last']").text).to include("production")
+        expect(html.at_css("[data-test='analytics-range-empty-link']")).to be_nil
+      end
+
       it "con dati nel periodo lascia i riquadri al loro posto" do
         create(:pageview, project:, occurred_at: 1.hour.ago)
         sign_in(owner)

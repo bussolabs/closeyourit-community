@@ -42,6 +42,22 @@ RSpec.describe "Member::Monitoring::CronMonitors", type: :request do
       expect(response.body).not_to include(">OkJob<")
     end
 
+    # A paused job kept its last state: the list said OK and counted it with the running ones. CYRA-1104
+    it "marks a paused job as paused and keeps it out of the state counters" do
+      create(:cron_monitor, project:, status: :ok, name: "RunningJob")
+      paused = create(:cron_monitor, project:, status: :ok, name: "SleepingJob", enabled: false)
+
+      get member_monitoring_cron_monitors_path(ft: 1)
+
+      html = Nokogiri::HTML(response.body)
+      expect(html.at_css("[data-test='cron-monitor-row-#{paused.id}']").text).to include("Paused")
+      expect(html.at_css("[data-test='stat-crons-ok']").text).to include("1")
+      expect(html.at_css("[data-test='stat-crons-paused']").text).to include("1")
+
+      get member_monitoring_cron_monitors_path(ft: 1, status: [ "ok" ])
+      expect(response.body).not_to include("SleepingJob")
+    end
+
     it "show con i check-in recenti" do
       monitor = create(:cron_monitor, project:)
       monitor.check_ins.create!(status: :ok, checked_in_at: Time.current)

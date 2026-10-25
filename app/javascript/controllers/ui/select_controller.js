@@ -215,7 +215,12 @@ export default class extends Controller {
 
   renderList() {
     this.list.replaceChildren()
+    let group = null
     this.options.forEach((opt, i) => {
+      // CYRA-1108 — options inside an <optgroup> get its heading once, above the first of them.
+      const parent = opt.parentElement?.tagName === "OPTGROUP" ? opt.parentElement : null
+      if (parent && parent !== group) this.list.appendChild(this.groupHeading(parent.label))
+      group = parent
       const row = document.createElement("button")
       row.type = "button"
       row.id = `${this.uid}-opt-${i}`
@@ -284,6 +289,8 @@ export default class extends Controller {
     this.renderTrigger()
     if (this.multipleValue) {
       this.applyActive() // panel resta aperto: ripristina l'evidenza dopo il re-render
+      // A mouse pick moved the focus off the panel, so Escape stopped closing it. CYRA-1103
+      this.search.focus({ preventScroll: true })
     } else {
       this.close()
       this.trigger.focus() // single: torna al trigger (contratto tastiera)
@@ -333,6 +340,15 @@ export default class extends Controller {
       const searchHidden = q !== "" && !row.dataset.label.includes(q)
       row.hidden = !!opt.hidden || searchHidden
     })
+    this.list.querySelectorAll("[data-group-heading]").forEach((heading) => {
+      let next = heading.nextElementSibling
+      let visible = false
+      while (next && !next.hasAttribute("data-group-heading")) {
+        if (!next.hidden) { visible = true; break }
+        next = next.nextElementSibling
+      }
+      heading.hidden = !visible
+    })
   }
 
   // Da input di ricerca (nuova query dell'utente) o apertura pannello: ricalcola le righe nascoste
@@ -371,7 +387,18 @@ export default class extends Controller {
 
   // --- Opzione attiva (aria-activedescendant) --------------------------------
 
-  rows() { return Array.from(this.list.children) }
+  rows() { return Array.from(this.list.querySelectorAll("[role='option']")) }
+
+  // A group heading: not an option, so the keyboard and the indexes skip it. Hidden by
+  // applyHiddenState when none of its options is left on screen.
+  groupHeading(label) {
+    const heading = document.createElement("div")
+    heading.setAttribute("role", "presentation")
+    heading.dataset.groupHeading = ""
+    heading.className = "px-3 pt-2 pb-1 font-mono uppercase text-[10px] tracking-[1px] text-gray-500 dark:text-zinc-400"
+    heading.textContent = label
+    return heading
+  }
   activeRow() { const r = this.rows()[this.activeIndex]; return r && !r.hidden && !r.disabled ? r : null }
 
   // disabled esclusa al pari di hidden: come un <option disabled> nativo, non è raggiungibile da

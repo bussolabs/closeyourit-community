@@ -374,6 +374,10 @@ pre.ui-scroll-left.ui-scroll-right {
   [data-panels="flush"] :is(.gap-4, .gap-5, .gap-6, .gap-8, .sm\:gap-4, .sm\:gap-5, .sm\:gap-6, .md\:gap-8, .lg\:gap-4, .gap-x-4, .gap-x-5, .gap-x-6, .gap-y-4, .gap-y-5, .gap-y-6):not(:is(.rounded-lg, .rounded-xl).border, :is(.rounded-lg, .rounded-xl).border *, dialog *, .fixed *) {
     gap: var(--panel-gap);
   }
+  /* CYRA-1111 — a panel spaced by its own top margin follows the same 8px. */
+  [data-panels="flush"] :is(.mt-4, .mt-5, .mt-6, .mt-8):is(.rounded-lg, .rounded-xl).border:not(:is(.rounded-lg, .rounded-xl).border *, dialog *, .fixed *) {
+    margin-top: var(--panel-gap);
+  }
 }
 [data-flush~="top"] { border-top-left-radius: 0; border-top-right-radius: 0; }
 [data-flush~="right"] { border-top-right-radius: 0; border-bottom-right-radius: 0; }

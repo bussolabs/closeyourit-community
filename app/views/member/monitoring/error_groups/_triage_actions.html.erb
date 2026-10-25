@@ -1,4 +1,5 @@
-<div class="flex items-center gap-2" data-test="triage-actions">
+<%# Wraps on a phone instead of pushing «Promote» past the panel edge (CYRA-1105). %>
+<div class="flex flex-wrap items-center gap-2" data-test="triage-actions">
 <% if @group.status_unresolved? %>
   <%# CYRA-192 — «Risolvi» non chiude più al buio: apre i due campi in cui si scrive perché
       l'errore c'era e cosa l'ha chiuso. Restano facoltativi (si conferma anche vuoti), ma

@@ -92,7 +92,6 @@ en:
         empty_title: No external channels
         empty_body: Alerts arrive in the app and via email. Add a webhook to bring them elsewhere.
         empty_telegram: Connect Telegram in your preferences
-        stat_total: Channels
         stat_enabled: Enabled
         col_name: Name
         col_kind: Kind

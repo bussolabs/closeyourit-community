@@ -28,8 +28,15 @@ module Chat
 
     def muted? = muted_at.present?
 
+    # The sidebar badge counts unread chat notifications: reading the conversation clears its own. CYRA-1104
     def mark_read!(at: Time.current)
-      update!(last_read_at: at)
+      transaction do
+        update!(last_read_at: at)
+        Alerting::Notification.unread
+                              .where(account_id: account_id, event_type: %i[chat_message chat_mentioned],
+                                     subject_type: "Chat::Message", subject_id: conversation.messages.reorder(nil).select(:id))
+                              .update_all(read_at: at)
+      end
     end
 
     private

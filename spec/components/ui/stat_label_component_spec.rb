@@ -10,6 +10,16 @@ RSpec.describe Ui::StatLabelComponent, type: :component do
     expect(page.text.squish).to eq("12 tickets")
   end
 
+  # On a phone the row of counts wraps, and the dot of a count landed alone at the start of a line.
+  # The dot now separates counts only on wider screens. CYRA-1105
+  it "draws the separating dot only from tablet width up" do
+    render_inline(described_class.new(label: "Tickets", value: 12))
+
+    classes = page.find("span", match: :first)[:class].split
+    expect(classes).to include("md:not-first:before:content-['·']")
+    expect(classes).not_to include("not-first:before:content-['·']")
+  end
+
   it "keeps an acronym label as written" do
     render_inline(described_class.new(label: "CPU", value: 23))
 

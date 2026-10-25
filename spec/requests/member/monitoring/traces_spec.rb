@@ -37,6 +37,19 @@ RSpec.describe "Member trace inspection", type: :request do
     expect(response.body.bytesize).to be < 1.megabyte
   end
 
+  # The 24 hour window was hidden: an older trace made the list look empty for no visible reason. CYRA-1103
+  it "always shows the period and offers a wider one when nothing falls in it" do
+    admit
+    travel 3.days do
+      get member_monitoring_traces_path(ft: 1)
+
+      html = Nokogiri::HTML(response.body)
+      expect(html.at_css("[data-ui--filter-bar-target='chip'][data-filter-key='range']")["hidden"]).to be_nil
+      expect(html.at_css("[data-test='traces-no-results']").text).to include(I18n.t("shared.time_range.empty_window"))
+      expect(html.at_css("[data-test='traces-widen']")["href"]).to include("range=30d")
+    end
+  end
+
   it "keeps same external identities in hidden projects inaccessible" do
     own = admit
     foreign = admit(create(:project, organization: project.organization))

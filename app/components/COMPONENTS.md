@@ -386,6 +386,9 @@ con ricerca, sincronizzando la selezione sul `<select>`.
   alla chiusura del menu, come i filtri.
 - **multiple** → filtri (param array). **single** → picker di form (valore scalare).
 - `wrapper_class:` → classe sul `<div>` wrapper esterno (es. `"md:col-span-2"` nei form a griglia 2 colonne).
+- `grouped: true` (CYRA-1108): `options` è `[[titolo, [[label, value], …]], …]` → `<optgroup>`, e il dropdown mostra i titoli.
+- `select_data:` / `option_data: { value => { chiave: valore } }`: attributi `data-` per i controller della pagina (target, action, testi per voce).
+- `name: nil` + `id:`: un campo copia che non deve finire nel submit (es. lo specchio del progetto nel compositore ticket).
 
 ### `Ui::SwitchComponent`
 Toggle **auto-save senza reload**. Renderizza una riga (icona opzionale + label + hint, esito e switch

@@ -43,6 +43,7 @@ module Member
         # mostrato "unknown", quindi va sotto quel filtro e non sotto up/down (CYRA-209).
         scope = scope.for_display_statuses(status_filter) if status_filter.any?
         scope = filter_by_project(scope)
+        scope = filter_by_search(scope, "uptime_monitors.name", "uptime_monitors.url", "uptime_monitors.host") # CYRA-1100
         # Default (CYRA-492): i non sani in cima, poi per nome — con sessanta monitor il caduto non si
         # trova a occhio. `sorted` (reorder) subentra SOLO con un sort esplicito di colonna, così
         # l'ordinamento manuale resta intatto. @health_sorted = il default è in vigore → lo dichiara l'header.

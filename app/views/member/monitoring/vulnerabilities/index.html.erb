@@ -31,10 +31,10 @@
             options: Vulnerabilities::Advisory.severities.keys.reverse.map { |s| [ t("member.monitoring.vulnerabilities.severity.#{s}"), s ] },
             selected: params[:severity], placeholder: t("member.monitoring.vulnerabilities.columns.severity"), test_id: "filter-severity") %></div>
         <% end %>
-        <% toolbar.with_filter(key: "status", label: t("member.monitoring.vulnerabilities.status.open")) do %>
+        <% toolbar.with_filter(key: "status", label: t("member.monitoring.vulnerabilities.columns.status")) do %>
           <div class="w-32"><%= render Ui::SelectComponent.new(name: "status", multiple: true, summary: true,
             options: Vulnerabilities::Finding.statuses.keys.map { |s| [ t("member.monitoring.vulnerabilities.status.#{s}"), s ] },
-            selected: params[:status], placeholder: t("member.monitoring.vulnerabilities.status.open"), test_id: "filter-status") %></div>
+            selected: params[:status], placeholder: t("member.monitoring.vulnerabilities.columns.status"), test_id: "filter-status") %></div>
         <% end %>
         <% toolbar.with_filter(key: "project_id", label: t("member.monitoring.vulnerabilities.columns.project")) do %>
           <div class="w-40"><%= render Ui::SelectComponent.new(name: "project_id", multiple: true, summary: true,

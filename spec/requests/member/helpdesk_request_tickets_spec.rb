@@ -196,6 +196,19 @@ RSpec.describe "Member::HelpdeskRequests tickets", type: :request do
       expect(response.body).not_to include("RangeError: elsewhere 7791")
     end
 
+    # Without the visit the error page opened the latest occurrence, from another visit. CYRA-1101
+    it "links each error to the occurrence of the request's visit" do
+      request_record.update!(session_id: "visit4411")
+      group = create(:error_group, project: project, title: "TypeError: card is undefined")
+      create(:error_event, group: group, project: project, replay_session_id: "visit4411")
+      sign_in(owner)
+
+      get member_helpdesk_request_path(request_record)
+
+      link = Nokogiri::HTML(response.body).at_css("[data-test='helpdesk-visit-error']")
+      expect(link["href"]).to eq(member_monitoring_error_group_path(group, rid: "visit4411"))
+    end
+
     it "shows nothing when the request has no visit id" do
       request_record.update!(session_id: nil)
       sign_in(owner)

@@ -179,4 +179,17 @@ RSpec.describe "Member::Monitoring::ErrorGroups occorrenze", type: :request do
       expect(doc.at_css("[data-test='occurrences-toolbar']").text).not_to include(label)
     end
   end
+
+  # Ids sharing their first characters all read the same once cut. The row shows the end, which
+  # tells them apart, and keeps the whole id at hand. CYRA-1104
+  it "tells apart occurrences whose ids share the same beginning" do
+    create(:error_event, group:, project:, event_id: "6fa0fafb66a903d7aaaaaaaa11111111", occurred_at: 2.minutes.ago)
+    create(:error_event, group:, project:, event_id: "6fa0fafb66a903d7bbbbbbbb22222222", occurred_at: 1.minute.ago)
+
+    get member_monitoring_error_group_path(group)
+
+    cells = doc.css("[data-test='occurrence-event-id']")
+    expect(cells.map { |cell| cell.text.strip }.uniq.size).to eq(2)
+    expect(cells.map { |cell| cell["title"] }).to contain_exactly("6fa0fafb66a903d7aaaaaaaa11111111", "6fa0fafb66a903d7bbbbbbbb22222222")
+  end
 end

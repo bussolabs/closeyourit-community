@@ -12,7 +12,7 @@ const META_EVENT = 4
 
 export default class extends Controller {
   static targets = ["status", "mount"]
-  static values = { url: String, loading: String, error: String, empty: String }
+  static values = { url: String, loading: String, error: String, empty: String, playLabel: String, fullscreenLabel: String }
 
   connect() {
     this.loaded = false
@@ -68,6 +68,16 @@ export default class extends Controller {
         height: FRAME_HEIGHT,
       },
     })
+    this.#nameIconButtons()
+  }
+
+  // rrweb-player draws play and full screen as bare icons: screen readers met nameless buttons.
+  // They are the first and the last control without text. CYRA-1107
+  #nameIconButtons() {
+    const icons = [...this.mountTarget.querySelectorAll(".rr-controller__btns button")].filter((button) => !button.textContent.trim())
+    if (icons.length === 0) return
+    icons[0].setAttribute("aria-label", this.playLabelValue)
+    if (icons.length > 1) icons[icons.length - 1].setAttribute("aria-label", this.fullscreenLabelValue)
   }
 
   // The recorded viewport (rrweb Meta event) gives the proportions; the panel caps the width.

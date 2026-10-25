@@ -20,6 +20,19 @@ RSpec.describe "Member::Monitoring vulnerabilities", type: :request do
                                    advisory: create(:vulnerability_advisory, severity: severity), **attrs)
   end
 
+  # The status field was labelled with one of its values: «Open: Ignored», «Open: Open». CYRA-1110
+  it "labels the status field «Status» in the filter and on the detail" do
+    finding = finding_in(project)
+    sign_in(owner)
+
+    get member_monitoring_vulnerabilities_path
+    html = Nokogiri::HTML(response.body)
+    expect(html.at_css("[data-test='filter-menu-status']").text.strip).to eq("Status")
+
+    get member_monitoring_vulnerability_path(finding)
+    expect(Nokogiri::HTML(response.body).at_css("[data-test='vulnerability-stat-status']").text).to include("Status")
+  end
+
   describe "GET index" do
     it "elenca le vulnerabilità dei progetti visibili" do
       finding = finding_in(project)

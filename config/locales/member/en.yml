@@ -170,7 +170,7 @@ en:
       group_todos: Tasks
       group_guides: Guides
       group_projects: Projects
-      group_product: Product
+      group_product: Products
       group_knowledge: Knowledge
       group_observability: Observability
       group_infrastructure: Infrastructure
@@ -440,6 +440,8 @@ en:
       stat_ok: OK
       stat_missed: Missed
       stat_failing: Failing
+      stat_paused: Paused
+      status_paused: Paused
       empty: No scheduled job is being watched
       empty_body: Add a job, then make it report in every time it runs. When it goes quiet or fails, you are warned.
       no_match: No cron matches the filters.
@@ -1818,6 +1820,7 @@ en:
         # The labels themselves stay in Italian: they are the literal strings written into the
         # ticket, read by Italian-speaking humans and parsed downstream. Only the hints translate.
         technical_analysis_placeholder: |-
+          Keep the labels below as written, in Italian: the app reads them.
           Approccio: the files to touch, with path and line.
           Perché: the choice made and the alternative rejected.
           Rischi: what can break.
@@ -2775,6 +2778,7 @@ en:
         col_projects: Projects
         col_pages: Pages
         open_page: Open page
+        all_pages: All pages
         add_pages: Add pages
         empty_content_title: Empty collection
         empty_content_body: This collection has no pages yet. Edit it to add pages from the project's knowledge base.
@@ -3355,6 +3359,8 @@ en:
         loading: Loading replay…
         error: Replay unavailable
         empty: No replay for this occurrence
+        play_label: Play or pause
+        fullscreen_label: Full screen
         none: No session recorded for this occurrence. When there is one, you watch it back here like a video.
         none_off: "Sessions are not recorded on this project: turn recording on and you will find here what the person did in the moments before the error."
         none_cta: Turn on recording

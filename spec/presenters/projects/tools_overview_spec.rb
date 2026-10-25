@@ -40,14 +40,14 @@ RSpec.describe Projects::ToolsOverview do
 
     it "confine STALE inferiore: a 7g esatti è ancora :stale" do
       freeze_time do
-        create(:project_source, project:, tool_code: "closeyourit-ruby", last_seen_at: 7.days.ago)
+        create(:project_source, project:, tool_code: "closeyourit-ruby", last_seen_at: Time.current - 7.days.to_i)
         expect(status_of("closeyourit-ruby")).to eq(:stale)
       end
     end
 
     it "confine STALE superiore: a 7g+1s diventa :missing (dismessa)" do
       freeze_time do
-        create(:project_source, project:, tool_code: "closeyourit-ruby", last_seen_at: (7.days + 1.second).ago)
+        create(:project_source, project:, tool_code: "closeyourit-ruby", last_seen_at: Time.current - (7.days.to_i + 1))
         expect(status_of("closeyourit-ruby")).to eq(:missing)
       end
     end

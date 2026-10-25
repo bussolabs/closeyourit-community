@@ -12,7 +12,12 @@
     <%= cron_interval_label(monitor.expected_interval_minutes) %>
   <% end %>
   <%= render Ui::TableComponent::CellComponent.new(label: t("member.crons.col_status")) do %>
-    <%= render Ui::BadgeComponent.new(label: t("member.crons.status.#{monitor.status}"), color: cron_status_color(monitor.status)) %>
+    <%# A paused job is not checked: its last state would read as current. CYRA-1104 %>
+    <% if monitor.enabled? %>
+      <%= render Ui::BadgeComponent.new(label: t("member.crons.status.#{monitor.status}"), color: cron_status_color(monitor.status)) %>
+    <% else %>
+      <%= render Ui::BadgeComponent.new(label: t("member.crons.status_paused"), color: "gray", test_id: "cron-paused-badge") %>
+    <% end %>
   <% end %>
   <%= render Ui::TableComponent::CellComponent.new(label: t("member.crons.col_last_check_in"), align: :right, mono: true, class: "text-gray-500 dark:text-zinc-400") do %>
     <%= monitor.last_check_in_at ? l(monitor.last_check_in_at, format: :short) : "—" %>

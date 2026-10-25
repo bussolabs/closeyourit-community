@@ -97,8 +97,9 @@ RSpec.describe "Dataset form — ruolo colonna searchable, bloccato su Input per
 
     rows = all("[data-column-row]")
     row1_kind = rows[0].find("[data-test='datasets-column-kind']")
-    row1_role_combo = rows[0].find("div[data-controller='ui--select']").find(:xpath, "..")
-    row2_role_combo = rows[1].find("div[data-controller='ui--select']").find(:xpath, "..")
+    # The kind is a design system dropdown too (CYRA-1108): each row has two, so the role is found by its select.
+    row1_role_combo = rows[0].find("select[data-test='datasets-column-role']", visible: :all).find(:xpath, "..")
+    row2_role_combo = rows[1].find("select[data-test='datasets-column-role']", visible: :all).find(:xpath, "..")
 
     row1_kind.select(I18n.t("member.datasets.kinds.photo"))
 

@@ -27,17 +27,17 @@
               url: member_activity_path,
               apply_test_id: "activity-filter", test_id: "activity-toolbar")) do |toolbar| %>
           <% toolbar.with_filter(key: "source", label: t("member.activity.filter_source")) do %>
-            <div class="w-40"><%= render Ui::SelectComponent.new(name: "source", summary: true,
+            <div class="w-40"><%= render Ui::SelectComponent.new(name: "source", summary: true, include_blank: true,
               options: Activity::AuditQuery::SOURCES.map { |s| [ activity_source_label(s), s.to_s ] },
               selected: params[:source], placeholder: t("member.activity.filter_source"), test_id: "filter-source") %></div>
           <% end %>
           <% toolbar.with_filter(key: "event_action", label: t("member.activity.filter_action")) do %>
-            <div class="w-52"><%= render Ui::SelectComponent.new(name: "event_action", summary: true,
+            <div class="w-52"><%= render Ui::SelectComponent.new(name: "event_action", summary: true, include_blank: true,
               options: activity_action_options, selected: params[:event_action],
               placeholder: t("member.activity.filter_action"), test_id: "filter-action") %></div>
           <% end %>
           <% toolbar.with_filter(key: "actor_id", label: t("member.activity.filter_actor")) do %>
-            <div class="w-52"><%= render Ui::SelectComponent.new(name: "actor_id", summary: true,
+            <div class="w-52"><%= render Ui::SelectComponent.new(name: "actor_id", summary: true, include_blank: true,
               options: @actors.map { |a| [ a.name.presence || a.email, a.id ] }, selected: params[:actor_id],
               placeholder: t("member.activity.filter_actor"), test_id: "filter-actor") %></div>
           <% end %>

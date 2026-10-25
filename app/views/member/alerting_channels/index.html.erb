@@ -7,7 +7,7 @@
         breadcrumb: [ { label: t("member.alerting.channels.title") } ],
         counts_test_id: "alerting-channels-counts") do |h| %>
     <% h.with_counts do %>
-      <%= render Ui::StatLabelComponent.new(label: t("member.alerting.channels.stat_total"), value: @channels.size, test_id: "alerting-channels-count-total") %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.channels", count: @channels.size), value: @channels.size, test_id: "alerting-channels-count-total") %>
       <%= render Ui::StatLabelComponent.new(label: t("member.alerting.channels.stat_enabled"), value: @channels.count(&:enabled?), value_color: :emerald, test_id: "alerting-channels-count-enabled") %>
     <% end %>
     <% h.with_actions do %>

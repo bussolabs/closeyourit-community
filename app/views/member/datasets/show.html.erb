@@ -7,8 +7,8 @@
         counts_test_id: "dataset-counts") do |h| %>
     <% h.with_counts do %>
       <%= render Ui::StatLabelComponent.new(label: t("member.datasets.status_label"), value: t("member.datasets.status.#{@dataset.status}"), test_id: "dataset-status") %>
-      <%= render Ui::StatLabelComponent.new(label: t("member.datasets.counts.inputs"), value: @input_columns.size, test_id: "dataset-inputs") %>
-      <%= render Ui::StatLabelComponent.new(label: t("member.datasets.counts.targets"), value: @target_columns.size, value_color: :indigo, test_id: "dataset-targets") %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.inputs", count: @input_columns.size), value: @input_columns.size, test_id: "dataset-inputs") %>
+      <%= render Ui::StatLabelComponent.new(label: t("stats.targets", count: @target_columns.size), value: @target_columns.size, value_color: :indigo, test_id: "dataset-targets") %>
       <%= render Ui::StatLabelComponent.new(label: t("member.datasets.counts.samples"), value: @rows_count, test_id: "dataset-samples") %>
     <% end %>
     <% h.with_actions do %>
@@ -36,8 +36,9 @@
     <div class="divide-y divide-stone-100 dark:divide-zinc-800">
       <%# Colonne del dataset: Input (dato fornito, es. foto) e Target (attributi da predire). %>
       <% @display_columns.each do |column| %>
-        <div class="flex items-center justify-between px-4 py-3" data-test="dataset-schema-column">
-          <div class="flex items-center gap-2.5">
+        <%# The two halves keep a gap and wrap on a phone, never touching (CYRA-1105). %>
+        <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-3" data-test="dataset-schema-column">
+          <div class="flex min-w-0 flex-wrap items-center gap-2.5">
             <%= render Ui::BadgeComponent.new(label: t("member.datasets.form.role_#{column.role}"), color: column.role_target? ? :indigo : :gray) %>
             <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= column.label %><% if column.required? %><span class="text-red-500 dark:text-red-400 ml-0.5">*</span><% end %></span>
             <span class="font-mono text-[10.5px] text-gray-500 dark:text-zinc-400"><%= column.code %></span>

@@ -90,6 +90,7 @@ it:
           version: In uso
           latest: Ultima
           eol_on: Fine supporto
+          status: Stato
         seen_ago: "%{time} fa"
         fixed_version_none: Nessuna versione risolutiva
         no_fix_hint: "Nessuna versione la corregge ancora: ignorala finché non esce, oppure apri un ticket per sostituire la libreria."

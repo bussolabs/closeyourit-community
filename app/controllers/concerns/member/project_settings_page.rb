@@ -31,6 +31,7 @@ module Member
       @accounts = @project.organization.accounts.order(:name) if @can_edit_settings
       # CYRA-1086 — only people who see the project can be its owner.
       @owner_options = ::Alerting::Recipients.for(project: @project).order(:name) if @can_edit_settings
+      @dashboard_feed = @project.dashboard_feed if @can_edit_settings # CYRA-1112
       load_tokens if @can_manage_tokens
     end
 

@@ -17,6 +17,13 @@ RSpec.describe Ui::MarkdownComponent, type: :component do
     expect(page).to have_css("div.prose[class~='dark:prose-code:text-zinc-100']")
   end
 
+  # Without the inverted palette, headings and links stayed stone-900 on the dark page (1.01:1). CYRA-1099
+  it "inverts the prose palette in the dark theme" do
+    render_inline(described_class.new(text: "## Title\n\nA [link](https://example.com)"))
+
+    expect(page).to have_css("div.prose[class~='dark:prose-invert']")
+  end
+
   it "uses only well-formed dark variants in the inline variant" do
     render_inline(described_class.new(text: "a `code` and [link](https://example.com)", inline: true))
 

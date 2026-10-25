@@ -33,7 +33,7 @@
         <%# hidden: project_ids/group_ids viaggiano sempre, così deselezionare tutto rende la pagina
             "generale" (org-wide, visibile solo a chi ha accesso pieno). %>
         <input type="hidden" name="project_ids[]" value="">
-        <%= render Ui::SelectComponent.new(name: "project_ids", label: t("member.knowledge.form.projects"), multiple: true, summary: true,
+        <%= render Ui::SelectComponent.new(name: "project_ids", label: t("member.knowledge.form.projects"), multiple: true,
               options: @projects.map { |project| [ project.name, project.id ] },
               selected: page.projects.map(&:id), placeholder: t("member.knowledge.form.projects_placeholder"),
               test_id: "knowledge-form-projects",

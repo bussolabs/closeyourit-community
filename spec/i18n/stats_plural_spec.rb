@@ -7,7 +7,7 @@ require "rails_helper"
 RSpec.describe "Shared count words (stats.*)" do
   counted = %w[projects groups tickets roles workload_actions teams open_questions members warnings
                versions variables service_accounts platforms organizations logs lists files exceptions
-               errors environments conversations accounts]
+               errors environments conversations accounts channels inputs targets linked_repositories categories]
 
   %i[en it].each do |locale|
     counted.each do |key|

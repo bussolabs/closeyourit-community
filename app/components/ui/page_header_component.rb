@@ -150,7 +150,7 @@ module Ui
 
     # Without tabs the counts still sit at the right end of the row (T2).
     def counts_options
-      base = "flex flex-wrap items-center gap-x-1.5 gap-y-1 py-2.5 text-[12px] text-gray-500 dark:text-zinc-400"
+      base = "flex flex-wrap items-center gap-x-3 md:gap-x-1.5 gap-y-1 py-2.5 text-[12px] text-gray-500 dark:text-zinc-400"
       { class: any_tabs? ? base : "#{base} ml-auto" }.tap do |o|
         o[:data] = { test: @counts_test_id } if @counts_test_id
       end

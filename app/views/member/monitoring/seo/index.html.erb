@@ -5,7 +5,7 @@
         total_count: @total_count, critical_count: @critical_count, high_count: @high_count,
         ignored_count: @ignored_count, pages_count: @pages_count, sites_count: @sites_count %>
 
-  <% filtering = params[:q].present? || params[:severity].present? || params[:status].present? || params[:project_id].present? || params[:area].present? %>
+  <% filtering = params[:q].present? || params[:severity].present? || params[:status].present? || params[:project_id].present? || params[:area].present? || @page_filter.present? %>
   <% if @issues.empty? && !filtering %>
     <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.seo.empty"), body: t("member.monitoring.seo.empty_hint"), icon: "file-search", framed: true, test_id: "seo-empty") do |empty| %>
       <% empty.with_action do %>
@@ -14,6 +14,13 @@
       <% end %>
     <% end %>
   <% else %>
+    <% if @page_filter %>
+      <div class="flex items-center justify-between gap-3 rounded-lg border border-indigo-200 dark:border-indigo-500/40 bg-indigo-50/50 dark:bg-indigo-500/10 px-4 py-2.5" data-test="seo-page-filter">
+        <p class="min-w-0 truncate text-[12.5px] text-indigo-900 dark:text-indigo-200"><%= t("member.monitoring.seo.page_filter", url: @page_filter.url) %></p>
+        <%= link_to t("member.monitoring.seo.page_filter_clear"), member_monitoring_seo_index_path(ft: 1),
+              class: "shrink-0 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "seo-page-filter-clear" } %>
+      </div>
+    <% end %>
     <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="seo-table">
       <%= render(Ui::TableToolbarComponent.new(framed: true,
             url: member_monitoring_seo_index_path, query: params[:q],

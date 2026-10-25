@@ -152,6 +152,7 @@ module Member
         @occurrences_expanded = params[:occurrences] == "all"
         @visible_events = @occurrences_expanded ? @events : @events.first(::Monitoring::Constants::OCCURRENCES_COLLAPSED)
         @selected = @latest = @visible_events.first
+        select_visit_occurrence
         load_symbolications
         load_native_reports
 
@@ -283,6 +284,18 @@ module Member
 
       # Quali occorrenze hanno effettivamente un replay registrato: una sola query per l'intera lista
       # (no N+1), restituisce l'insieme dei replay_session_id con una Replays::Session nel progetto.
+      # A link from a replay or a help desk request carries the visit (rid): show that visit's
+      # occurrence, kept on screen even when it is older than the visible ones. CYRA-1101
+      def select_visit_occurrence
+        return if params[:rid].blank?
+
+        event = @group.events.where(replay_session_id: params[:rid]).order(occurred_at: :desc).first
+        return if event.nil?
+
+        @visible_events = [ event ] + @visible_events.to_a.reject { |visible| visible.id == event.id }
+        @selected = event
+      end
+
       def replay_session_ids_for(events)
         ids = events.filter_map(&:replay_session_id).uniq
         return Set.new if ids.empty?

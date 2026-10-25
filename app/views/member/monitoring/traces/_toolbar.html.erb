@@ -14,7 +14,8 @@
   <% toolbar.with_filter(key: "status", label: t("member.traces.status")) do %>
     <%= render Ui::SelectComponent.new(name: "status", options: [[t("member.traces.all_statuses"), ""]] + %w[error ok unset mixed unknown].map { |value| [t("member.traces.statuses.#{value}"), value] }, selected: params[:status]) %>
   <% end %>
-  <% toolbar.with_filter(key: "range", label: t("shared.time_range.label"), active: range.custom? || range.key != "24h") do %>
+  <%# The period is always on screen: a hidden 24 hour default made older traces look missing. CYRA-1103 %>
+  <% toolbar.with_filter(key: "range", label: t("shared.time_range.label"), active: true) do %>
     <%= render "member/monitoring/range_filter", range: range, range_set: range.custom? || range.key != "24h", test_prefix: "traces-range" %>
   <% end %>
   <% toolbar.with_views do %><%= render Ui::SavedViewsComponent.new(resource_type: "traces", views: @saved_views, index_helper: :member_monitoring_traces_path, current_filters: params) %><% end %>

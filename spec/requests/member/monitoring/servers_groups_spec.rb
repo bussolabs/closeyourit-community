@@ -42,6 +42,17 @@ RSpec.describe "Member::Monitoring::Servers — gruppi e filtri operativi (CYRA-
       expect(group_filter).to be_present
       expect(group_filter.text).to include("produzione (1)")
     end
+
+    # Without a blank option the browser submitted the first group with every search. CYRA-1100
+    it "starts the group filter on a blank choice, so a search adds no group" do
+      create(:server_host, organization: org, name: "db-prod", groups: [ "database" ])
+
+      get member_monitoring_servers_path
+
+      select = Nokogiri::HTML(response.body).at_css("[data-test='servers-toolbar'] select[name='group']")
+      expect(select.css("option").first["value"]).to eq("")
+      expect(select.at_css("option[selected]")).to be_nil
+    end
   end
 
   describe "guardare solo un gruppo (Scenario 1)" do

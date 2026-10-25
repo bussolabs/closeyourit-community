@@ -123,6 +123,19 @@ RSpec.describe "Member::Tickets — ricerca testuale ed empty state", type: :req
       expect(html).to have_css("[data-test='tickets-no-results-ask'][data-turbo-frame='_top']")
     end
 
+    # The bare list address restored the remembered search, so the reset showed «no results» again. CYRA-1100
+    it "clears the remembered search when the reset is followed" do
+      create(:ticket, organization: org, project: project, status: status, title: "A visible ticket")
+      get list_member_tickets_path, params: { ft: 1, q: "parolachenonesistemai" }
+
+      reset = Capybara.string(response.body).find("[data-test='tickets-reset-search']")[:href]
+      get reset
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("A visible ticket")
+      expect(response.body).not_to include("parolachenonesistemai")
+    end
+
     it "senza ricerca né ticket mostra l'empty «ancora nessun ticket»" do
       get list_member_tickets_path
 

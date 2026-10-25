@@ -51,6 +51,15 @@ RSpec.describe "Member::Roles", type: :request do
   end
 
   describe "GET new" do
+    # The legend read «project project applies on linked projects», with no mark for org. CYRA-1110
+    it "explains each scope once, next to its mark" do
+      sign_in(owner)
+      get new_member_role_path
+
+      legend = Nokogiri::HTML(response.body).at_css("[data-test='role-scope-legend']").text.squish
+      expect(legend).to eq("project applies on linked projects · org applies organization-wide")
+    end
+
     it "owner → 200" do
       sign_in(owner)
       get new_member_role_path

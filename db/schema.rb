@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_20_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_25_134858) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -1951,6 +1951,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_150000) do
     t.index ["project_id", "slug"], name: "index_crons_monitors_on_project_id_and_slug", unique: true
     t.index ["project_id"], name: "index_crons_monitors_on_project_id"
     t.index ["status", "enabled"], name: "index_crons_monitors_on_status_and_enabled"
+  end
+
+  create_table "dashboards_feeds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "project_id", null: false
+    t.string "url", null: false
+    t.text "token", null: false
+    t.boolean "enabled", default: true, null: false
+    t.jsonb "payload"
+    t.datetime "fetched_at"
+    t.datetime "checked_at"
+    t.string "last_error"
+    t.index ["project_id"], name: "index_dashboards_feeds_on_project_id", unique: true
   end
 
   create_table "datasets_cells", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -4702,6 +4716,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_150000) do
   add_foreign_key "crons_check_ins", "crons_monitors", column: "monitor_id", on_delete: :cascade
   add_foreign_key "crons_monitors", "projects", on_delete: :cascade
   add_foreign_key "crons_monitors", "types_environments", column: "environment_id", on_delete: :nullify
+  add_foreign_key "dashboards_feeds", "projects", on_delete: :cascade
   add_foreign_key "datasets_cells", "datasets_columns", column: "column_id", on_delete: :cascade
   add_foreign_key "datasets_cells", "datasets_rows", column: "row_id", on_delete: :cascade
   add_foreign_key "datasets_columns", "datasets_datasets", column: "dataset_id", on_delete: :cascade

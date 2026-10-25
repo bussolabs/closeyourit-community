@@ -1,0 +1,8 @@
+it:
+  # The goal form names its fields this way: errors use the same words (CYRA-1109).
+  activerecord:
+    attributes:
+      analytics/goal:
+        display_name: Nome
+        path_pattern: Pattern del path
+        event_name: Nome evento

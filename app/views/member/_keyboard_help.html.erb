@@ -3,11 +3,11 @@
     gli altri modali (pattern CYRA-27: la preflight Tailwind v4 azzera il margin:auto dello UA).
     Sezioni universale/navigazione: server-side dallo stesso helper della logica (in sync). Sezione
     "questa pagina": popolata a runtime dal controller raccogliendo i [data-keyboard-doc] presenti. %>
-<dialog data-keyboard-target="help" data-action="click->keyboard#backdrop"
+<dialog data-keyboard-target="help" data-action="click->keyboard#backdrop" aria-labelledby="keyboard-help-title"
         class="m-auto w-full max-w-sm rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-0 backdrop:bg-zinc-900/30"
         data-test="keyboard-help-dialog">
   <div class="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
-    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.keyboard.title") %></h2>
+    <h2 id="keyboard-help-title" class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.keyboard.title") %></h2>
     <form method="dialog">
       <button class="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-stone-100 dark:hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" aria-label="<%= t("member.keyboard.close") %>" data-test="keyboard-help-close">
         <%= render Ui::IconComponent.new(name: "x", class: "text-[13px]") %>

@@ -1,0 +1,17 @@
+<%# Search on the project name, filter on the last read, grouping as a View choice (C50, C62, D20). %>
+<% group_by = [ [ "group", nil ], [ "none", "none" ] ].map { |key, grouped|
+     { label: t("member.dashboards.group_by_#{key}"),
+       href: member_dashboard_feeds_path(request.query_parameters.except("limit").merge("grouped" => grouped).compact),
+       active: params[:grouped].presence == grouped, test_id: "dashboards-group-by-#{key}" } } %>
+<%= render(Ui::TableToolbarComponent.new(framed: true,
+      url: member_dashboard_feeds_path, query: params[:q],
+      search_placeholder: t("member.dashboards.search"),
+      hidden: { grouped: params[:grouped] }, group_by: group_by,
+      search_test_id: "dashboards-search", apply_test_id: "dashboards-filter",
+      test_id: "dashboards-toolbar")) do |toolbar| %>
+  <% toolbar.with_filter(key: "state", label: t("member.dashboards.filter_state")) do %>
+    <div class="w-44"><%= render Ui::SelectComponent.new(name: "state",
+      options: %w[ok failed].map { |state| [ t("member.dashboards.state_#{state}"), state ] }, selected: params[:state],
+      include_blank: true, placeholder: t("member.dashboards.filter_state"), test_id: "dashboards-filter-state") %></div>
+  <% end %>
+<% end %>

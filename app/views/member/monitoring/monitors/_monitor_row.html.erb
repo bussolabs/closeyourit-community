@@ -34,9 +34,10 @@
     <%= render Ui::BadgeComponent.new(label: uptime_status_label(monitor), color: uptime_status_color(monitor), dot: true) %>
   <% end %>
   <%= render Ui::TableComponent::CellComponent.new(label: t("member.uptime.col_uptime", range: range)) do %>
-    <div class="flex items-center justify-end gap-2">
+    <%# The strip shrinks to the card on a phone instead of running past its edge (CYRA-1105). %>
+    <div class="flex min-w-0 items-center justify-end gap-2">
       <span class="font-mono text-[12px] <%= uptime_percent_color(uptime) %> w-12 text-right shrink-0"><%= uptime_percent_text(uptime) %></span>
-      <span class="inline-flex items-stretch gap-px h-4 w-36" title="<%= range %>" data-test="monitor-strip">
+      <span class="inline-flex min-w-0 shrink items-stretch gap-px h-4 w-36" title="<%= range %>" data-test="monitor-strip">
         <% buckets.each do |bucket| %><span class="flex-1 rounded-sm <%= uptime_bucket_class(bucket[:status]) %>"></span><% end %>
       </span>
     </div>

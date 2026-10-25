@@ -20,7 +20,7 @@
     <% h.with_counts do %>
       <%= render "member/monitoring/cron_monitors/stats",
             total: @pagination.total, ok_count: @ok_count, missed_count: @missed_count,
-            failing_count: @failing_count %>
+            failing_count: @failing_count, paused_count: @paused_count %>
     <% end %>
     <%# CYRA-485 — il comando per aggiungerne uno, visibile anche a lista piena: non essendoci una
         creazione da qui, senza questo pulsante la funzione restava invisibile a chi non aveva già

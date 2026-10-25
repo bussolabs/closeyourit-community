@@ -35,9 +35,12 @@
             <p class="text-[12px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.roles.permissions") %></p>
             <p class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.roles.selected_count", selected: selected_keys.size, total: Authorization::Catalog.keys.size) %></p>
           </div>
-          <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400">
+          <%# Each scope mark once, followed by what it means (CYRA-1110). %>
+          <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="role-scope-legend">
             <span class="inline-flex items-center rounded px-1.5 py-px font-mono text-[10px] bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400"><%= t("authorization.scopes.project") %></span>
-            <%= t("member.roles.legend") %>
+            <%= t("member.roles.legend_project") %> ·
+            <span class="inline-flex items-center rounded px-1.5 py-px font-mono text-[10px] bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300"><%= t("authorization.scopes.org") %></span>
+            <%= t("member.roles.legend_org") %>
           </p>
         </div>
 

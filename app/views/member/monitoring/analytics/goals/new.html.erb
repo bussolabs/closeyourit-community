@@ -14,13 +14,17 @@
     <% end %>
   <% end %>
 
+  <%# Each error stays under its field; the toast alone went away before it was read (CYRA-1109). %>
   <%= form_with model: @goal, url: member_monitoring_analytics_goals_path(project_id: @project.id),
         method: :post, id: "analytics-goal-form", data: { test: "analytics-goal-form" } do |f| %>
     <%= hidden_field_tag :project_id, @project.id %>
     <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
       <div class="md:col-span-2">
         <label class="block text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.monitoring.analytics.goals.form.display_name") %><span class="text-red-500 dark:text-red-400 ml-0.5">*</span></label>
-        <%= f.text_field :display_name, class: "w-full h-[36px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400", data: { test: "analytics-goal-display-name" } %>
+        <%= f.text_field :display_name, "aria-invalid": (true if @goal.errors[:display_name].any?), class: "w-full h-[36px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400", data: { test: "analytics-goal-display-name" } %>
+        <% if (message = @goal.errors.full_messages_for(:display_name).first) %>
+          <p class="mt-1 text-[11.5px] text-red-600 dark:text-red-400" data-test="analytics-goal-display-name-error"><%= message %></p>
+        <% end %>
       </div>
 
       <div>
@@ -34,13 +38,19 @@
 
       <div>
         <label class="block text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.monitoring.analytics.goals.form.path_pattern") %></label>
-        <%= f.text_field :path_pattern, placeholder: "/pricing  ·  /blog/*", class: "w-full h-[36px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400", data: { test: "analytics-goal-path" } %>
+        <%= f.text_field :path_pattern, placeholder: "/pricing  ·  /blog/*", "aria-invalid": (true if @goal.errors[:path_pattern].any?), class: "w-full h-[36px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400", data: { test: "analytics-goal-path" } %>
+        <% if (message = @goal.errors.full_messages_for(:path_pattern).first) %>
+          <p class="mt-1 text-[11.5px] text-red-600 dark:text-red-400" data-test="analytics-goal-path-error"><%= message %></p>
+        <% end %>
         <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.goals.form.path_hint") %></p>
       </div>
 
       <div>
         <label class="block text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.monitoring.analytics.goals.form.event_name") %></label>
-        <%= f.text_field :event_name, placeholder: "Signup", class: "w-full h-[36px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400", data: { test: "analytics-goal-event-name" } %>
+        <%= f.text_field :event_name, placeholder: "Signup", "aria-invalid": (true if @goal.errors[:event_name].any?), class: "w-full h-[36px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400", data: { test: "analytics-goal-event-name" } %>
+        <% if (message = @goal.errors.full_messages_for(:event_name).first) %>
+          <p class="mt-1 text-[11.5px] text-red-600 dark:text-red-400" data-test="analytics-goal-event-name-error"><%= message %></p>
+        <% end %>
         <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.goals.form.event_hint") %></p>
       </div>
     </div>

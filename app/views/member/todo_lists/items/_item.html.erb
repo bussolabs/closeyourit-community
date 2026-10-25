@@ -16,9 +16,9 @@
 
   <% title_class = item.done? ? "text-gray-500 dark:text-zinc-400 line-through" : "text-zinc-900 dark:text-zinc-100" %>
   <% if can_edit %>
-    <%# A click on the text opens the rename field in place. %>
-    <details class="group/rename min-w-0" data-test="todo-item-rename">
-      <summary class="list-none cursor-text truncate text-[13px] <%= title_class %> group-open/rename:hidden" title="<%= t("member.todo_lists.item.rename") %>"
+    <%# A click on the text opens the rename field in place, ready to type; hovering shows the whole title (CYRA-1107). %>
+    <details class="group/rename min-w-0" data-test="todo-item-rename" data-controller="ui--details-focus" data-action="toggle->ui--details-focus#toggle">
+      <summary class="list-none cursor-text truncate text-[13px] <%= title_class %> group-open/rename:hidden" title="<%= item.title %>"
                data-test="todo-item-title"><%= item.title %></summary>
       <%= form_with url: member_todo_list_item_path(list, item), method: :patch, class: "flex items-center gap-2" do %>
         <input type="text" name="title" value="<%= item.title %>" required aria-label="<%= t("member.todo_lists.item.rename") %>"

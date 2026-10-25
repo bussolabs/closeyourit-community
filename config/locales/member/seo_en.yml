@@ -10,6 +10,8 @@ en:
         title: SEO
         help_title: "Problems found on your sites' pages, with evidence."
         pages_help_title: "The pages visited during the checks, with what was read on each."
+        page_filter: "Only the findings of %{url}."
+        page_filter_clear: Show all
         titles:
           issues: Findings
           pages: Analysed pages

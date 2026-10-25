@@ -1,0 +1,25 @@
+<%# CYRA-1112 — the service key, shown once right after it is created: rendered directly, never in flash or session. %>
+<div data-test="dashboard-reveal" class="border-b border-indigo-200 dark:border-indigo-500/40 bg-indigo-50/40 dark:bg-indigo-500/10">
+  <div class="flex flex-wrap items-center gap-2 border-b border-indigo-200 dark:border-indigo-500/40 px-4 py-3">
+    <%= render Ui::IconComponent.new(name: "circle-check", class: "text-[13px] text-indigo-600 dark:text-indigo-400") %>
+    <h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.dashboards.settings.key_title") %></h3>
+    <span class="ml-auto"><%= render Ui::BadgeComponent.new(label: t("member.dashboards.settings.key_once"), color: :amber, icon: "triangle-alert") %></span>
+  </div>
+  <div class="space-y-3 px-4 py-4">
+    <div data-controller="clipboard" data-clipboard-copied-value="<%= t("member.dashboards.settings.copied") %>">
+      <p class="font-mono text-[9.5px] uppercase tracking-[1.2px] text-gray-500 dark:text-zinc-400"><%= t("member.dashboards.settings.key_label") %></p>
+      <%= render Ui::StackComponent.new(direction: :row, gap: 2, align: :start, class: "mt-1.5") do %>
+        <code data-clipboard-target="source" data-test="dashboard-key" class="min-w-0 flex-1 truncate rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 font-mono text-[12px] text-zinc-800 dark:text-zinc-200"><%= @dashboard_revealed %></code>
+        <%= render Ui::ButtonComponent.new(variant: :secondary, size: :md, icon: "copy", test_id: "dashboard-key-copy",
+              data: { action: "clipboard#copy" }) do %>
+          <span data-clipboard-target="label"><%= t("member.dashboards.settings.copy") %></span>
+        <% end %>
+      <% end %>
+      <p class="mt-1.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.dashboards.settings.key_hint") %></p>
+    </div>
+    <div class="flex justify-end">
+      <%= render Ui::ButtonComponent.new(label: t("member.dashboards.settings.close"), variant: :ghost, size: :sm,
+            href: member_project_settings_path(@project, section: "dashboard"), test_id: "dashboard-reveal-close") %>
+    </div>
+  </div>
+</div>

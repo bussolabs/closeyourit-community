@@ -6,7 +6,8 @@
   <aside class="shrink-0 bg-white dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800 lg:w-60 lg:border-b-0 lg:border-r lg:overflow-y-auto scrollbar-none"
          data-controller="ui--keep-scroll" data-ui--keep-scroll-key-value="<%= name %>"
          data-action="scroll->ui--keep-scroll#save">
-    <div class="hidden lg:block px-5 pt-5 pb-3">
+    <%# The title stays pinned while the kept scroll position moves the list under it (CYRA-1105). %>
+    <div class="hidden lg:block lg:sticky lg:top-0 lg:z-10 bg-white dark:bg-zinc-900 px-5 pt-5 pb-3">
       <p class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= title %></p>
       <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400"><%= subtitle %></p>
     </div>

@@ -25,6 +25,7 @@ en:
         range_empty:
           title: No visit in this range
           last_visit: "The last visit was on %{at}."
+          never_in_environment: "No visit has ever arrived in the %{environment} environment: choose another one above."
           go_to: "Go to the %{range} range"
           panels_label: Panels with no data in this range
         filter_project: Project

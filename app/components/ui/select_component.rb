@@ -20,8 +20,16 @@ module Ui
     def initialize(name:, options:, label: nil, selected: nil, multiple: false, required: false,
                    placeholder: nil, summary: false, include_blank: false, error: nil, hint: nil,
                    wrapper_class: nil, test_id: nil, aria_label: nil, size: :md, descriptions: nil,
-                   disabled_values: nil, remote: nil, prefix: nil)
+                   disabled_values: nil, remote: nil, prefix: nil, grouped: false, select_data: nil,
+                   option_data: nil, id: nil)
       @name = name
+      # CYRA-1108 — what the last native selects needed: `grouped:` takes [[heading, options], …];
+      # `select_data:` and `option_data:` ({ value => { key: v } }) feed the page's own controllers;
+      # `id:` names a field rendered without a `name` (a copy that must not be submitted).
+      @grouped = grouped
+      @select_data = select_data || {}
+      @option_data = (option_data || {}).transform_keys(&:to_s)
+      @id = id
       # prefix (CYRA-883): { text:, icon: } shown inside the trigger before the value, e.g. "Sort: Most
       # errors" in one control. Only the enhanced trigger shows it; the native fallback stays plain.
       @prefix = prefix&.symbolize_keys
@@ -70,9 +78,13 @@ module Ui
       [ FIELD, SIZES.fetch(@size), border ].join(" ")
     end
 
-    def field_name = @multiple ? "#{@name}[]" : @name
+    def field_name = @name && (@multiple ? "#{@name}[]" : @name)
 
-    def dom_id = @name.to_s.delete("[]")
+    def dom_id = @id || @name.to_s.delete("[]")
+
+    def option_groups = @grouped ? @options : [ [ nil, @options ] ]
+
+    def option_data_for(value) = @option_data[value.to_s] || {}
 
     def selected?(value) = @selected.include?(value.to_s)
 
@@ -88,7 +100,7 @@ module Ui
     # un nome accessibile ridondante/doppio annuncio quando il componente renderizza già il label).
     def select_html_options
       opts = { name: field_name, id: dom_id, multiple: @multiple, required: @required,
-               class: field_klass, data: { test: @test_id, "ui--select-target": "select" } }
+               class: field_klass, data: @select_data.merge(test: @test_id, "ui--select-target": "select") }
       opts[:data]["ui--remote-options-target"] = "select" if remote?
       opts[:aria] = { label: @aria_label } if @aria_label.present? && @label.blank?
       opts

@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## [0.196.0] - 2026-10-25
+
+### Added
+
+- **Dashboard dei servizi**: in Prodotti trovi i numeri principali di ogni servizio collegato, come utenti e abbonamenti, e quanto sono cambiati rispetto a prima. Li leggiamo ogni 15 minuti. Colleghi un servizio dalle impostazioni del progetto. ([Dashboard](/member/dashboards))
+
+## [0.195.3] - 2026-10-25
+
+### Fixed
+
+- **Testo leggibile in tema scuro.** Titoli, grassetti e link delle pagine della Conoscenza e dei ticket ora si leggono anche in tema scuro. Anche i comandi del player delle registrazioni restano visibili. ([Conoscenza](/member/knowledge))
+- **Ricerche che trovano davvero.** La ricerca dei monitor ora filtra la lista, quella dei server non aggiunge più un gruppo da sola e «Azzera la ricerca» nei ticket la cancella davvero. ([Ticket](/member/tickets))
+- **Dall'errore alla visita giusta.** Dalle registrazioni e dall'Help desk si apre l'errore proprio di quella visita. Nella SEO, i problemi di una pagina sono solo quelli di quella pagina.
+- **Raccolte leggibili su telefono.** Su telefono, toccando una pagina di una raccolta se ne legge il testo, con un link per tornare all'indice. ([Conoscenza](/member/knowledge))
+- **Filtri più chiari.** Esc chiude i menu dei filtri. Nelle Tracce il periodo scelto è sempre visibile e, se non c'è nulla, puoi allargarlo con un clic.
+- **Numeri che tornano.** I lavori in pausa non contano più come riusciti, il numerino delle conversazioni si azzera dopo la lettura e le statistiche suggeriscono il periodo giusto per l'ambiente scelto.
+- **Niente più contenuti coperti.** Gli avvisi flottanti lasciano spazio per scorrere fino all'ultima riga, e scritte, date e pulsanti non escono più dai bordi su telefono.
+- **Grafici più ordinati.** I numeri sugli assi non si sovrappongono più e le barre del grafico delle prestazioni mostrano anche l'ora.
+- **Menu e finestre più accessibili.** Tutti i menu a tendina usano quelli dell'app, le finestre hanno un nome per chi usa un lettore di schermo e alla chiusura il cursore torna dov'era.
+- **Errori accanto ai campi.** Nel modulo degli obiettivi delle statistiche gli errori compaiono sotto il campo da correggere, con il suo nome.
+- **Testi e spaziature corretti.** Sistemati etichette sbagliate, plurali come «1 canali» e spazi irregolari in Canali, Ruoli e Team.
+
 ## [0.195.2] - 2026-10-22
 
 ### Fixed

@@ -34,8 +34,6 @@ en:
         total: Total
         draft: Draft
         trained: Ready
-        inputs: Inputs
-        targets: Targets
         samples: Rows
       status:
         draft: Draft
@@ -114,6 +112,7 @@ en:
         options_placeholder: Comma-separated values (e.g. positive, negative)
         add_column: Add column
         remove_column: Remove column
+        column_kind: Column type
         no_columns: No columns yet. Add at least one Input (e.g. a photo) and one Target.
         column_label_placeholder: Column name…
         role_input: Input

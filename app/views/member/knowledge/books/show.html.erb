@@ -23,10 +23,11 @@
   </div>
 
   <%# Layout Outline: indice delle pagine a sinistra (w-72, aria-current sull'attiva), contenuto
-      markdown della pagina attiva a destra. Pattern master-detail della chat. %>
+      markdown della pagina attiva a destra. Pattern master-detail della chat. On a phone only one
+      of the two shows: the index, or the chosen page with a link back to it (CYRA-1102). %>
   <div class="flex rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden min-h-[60vh]" data-test="knowledge-book-outline">
     <% if @pages.any? %>
-      <aside class="w-full md:w-72 shrink-0 md:border-r border-stone-200 dark:border-zinc-800 flex flex-col" data-test="knowledge-book-toc">
+      <aside class="w-full md:w-72 shrink-0 md:border-r border-stone-200 dark:border-zinc-800 flex-col <%= @page_chosen ? "hidden md:flex" : "flex" %>" data-test="knowledge-book-toc">
         <div class="flex-1 overflow-y-auto divide-y divide-stone-100 dark:divide-zinc-800">
           <% @pages.each do |page| %>
             <%= link_to member_knowledge_book_path(@book, page_id: page.id),
@@ -41,8 +42,12 @@
       </aside>
     <% end %>
 
-    <section class="flex-1 min-w-0 flex flex-col" data-test="knowledge-book-content">
+    <section class="flex-1 min-w-0 flex-col <%= @page_chosen || @pages.empty? ? "flex" : "hidden md:flex" %>" data-test="knowledge-book-content">
       <% if @active_page %>
+        <%= link_to member_knowledge_book_path(@book), class: "md:hidden flex items-center gap-1.5 border-b border-stone-200 dark:border-zinc-800 px-5 py-2.5 text-[12px] font-medium text-indigo-600 dark:text-indigo-400",
+              data: { test: "knowledge-book-back" } do %>
+          <%= render Ui::IconComponent.new(name: "arrow-left", class: "text-[13px]") %><%= t("member.knowledge.books.all_pages") %>
+        <% end %>
         <header class="border-b border-stone-200 dark:border-zinc-800 px-5 py-3 flex items-center justify-between gap-3">
           <h2 class="truncate font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= @active_page.title %></h2>
           <%= link_to t("member.knowledge.books.open_page"), member_knowledge_page_path(@active_page),

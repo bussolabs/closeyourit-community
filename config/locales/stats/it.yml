@@ -1,5 +1,21 @@
 it:
   stats:
+    # CYRA-1110 — conteggi che dicevano «1 channels» e simili.
+    channels:
+      one: Canale
+      other: Canali
+    inputs:
+      one: Input
+      other: Input
+    targets:
+      one: Target
+      other: Target
+    linked_repositories:
+      one: Repo agganciato
+      other: Repo agganciati
+    categories:
+      one: Categoria
+      other: Categorie
     pending_agent_eligibility: Da valutare
     # CYRA-374 — le decisioni che aspettano la persona collegata, in testa a board e lista ticket.
     awaiting_me: Aspettano te

@@ -25,6 +25,7 @@ it:
         range_empty:
           title: Nessuna visita in questo periodo
           last_visit: "L'ultima visita risale al %{at}."
+          never_in_environment: "Nell'ambiente %{environment} non è mai arrivata una visita: scegline un altro qui sopra."
           go_to: "Vai al periodo %{range}"
           panels_label: Riquadri senza dati in questo periodo
         filter_project: Progetto

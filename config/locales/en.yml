@@ -33,6 +33,7 @@ en:
     formats:
       chart_time: "%H:%M"
       chart_day: "%d/%m"
+      chart_day_time: "%d/%m %H:%M"
       chart_year: "%d/%m/%y"
   # CYRA-324 — short form with the weekday for the cards ("Mon 5 Aug"): past a few days it says when
   # something happened without making you do the arithmetic. Rails' English defaults cover the names.

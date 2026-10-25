@@ -14,16 +14,23 @@ import { cable } from "@hotwired/turbo-rails"
 //
 // Visual states (CYRA-898):
 //   connected               -> green dot, label for screen readers only
-//   connecting/disconnected -> amber pulsing dot (motion-safe), visible label
+//   connecting (first time)  -> grey dot, label for screen readers only
+//   reconnecting            -> amber pulsing dot (motion-safe), visible label
 //   offline                 -> grey dot, visible label
 const PULSE = "motion-safe:animate-pulse"
 
+// CYRA-1110 — the first connection of the page is not a reconnection: until the socket has opened
+// once, a closed state reads as quiet «connecting» (grey dot, label for screen readers only).
+// Kept at module level so it survives Turbo visits, which reuse the same consumer.
+let everOpened = false
+
 const DOT_COLOR = {
   connected: "bg-green-500",
+  connecting: "bg-gray-300 dark:bg-zinc-600",
   reconnecting: "bg-amber-500",
   offline: "bg-gray-400"
 }
-const ALL_DOT_COLORS = Object.values(DOT_COLOR)
+const ALL_DOT_COLORS = Object.values(DOT_COLOR).flatMap((c) => c.split(" "))
 
 const LABEL_COLOR = {
   reconnecting: "text-amber-700 dark:text-amber-300",
@@ -35,6 +42,7 @@ export default class extends Controller {
   static targets = ["icon", "text"]
   static values = {
     connectedLabel: String,
+    connectingLabel: String,
     reconnectingLabel: String,
     offlineLabel: String,
     debug: { type: Boolean, default: false },
@@ -82,7 +90,8 @@ export default class extends Controller {
       next = "offline"
     } else {
       const cableState = this.consumer?.connection?.getState?.() ?? null
-      next = cableState === "open" ? "connected" : "reconnecting"
+      if (cableState === "open") everOpened = true
+      next = cableState === "open" ? "connected" : (everOpened ? "reconnecting" : "connecting")
     }
 
     this.apply(next)
@@ -100,19 +109,20 @@ export default class extends Controller {
 
   renderIcon(icon, state) {
     icon.classList.remove(...ALL_DOT_COLORS, PULSE)
-    icon.classList.add(DOT_COLOR[state])
+    icon.classList.add(...DOT_COLOR[state].split(" "))
     if (state === "reconnecting") icon.classList.add(PULSE)
   }
 
   renderText(text, state) {
     text.textContent = this.labelFor(state)
     text.classList.remove(...ALL_LABEL_COLORS)
-    text.classList.toggle("sr-only", state === "connected")
+    text.classList.toggle("sr-only", state === "connected" || state === "connecting")
     if (LABEL_COLOR[state]) text.classList.add(...LABEL_COLOR[state].split(" "))
   }
 
   labelFor(state) {
     if (state === "connected") return this.connectedLabelValue
+    if (state === "connecting") return this.connectingLabelValue
     if (state === "offline") return this.offlineLabelValue
     return this.reconnectingLabelValue
   }

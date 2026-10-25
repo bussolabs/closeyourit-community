@@ -1,0 +1,40 @@
+<%# The cards panel (D19–D23): toolbar, the cards by group or in one block, the projects to connect (D11), "Show more". %>
+<%= render Ui::CardGridComponent.new(test_id: "dashboards-cards", setup_test_id: "dashboards-setup") do |grid| %>
+  <% grid.with_toolbar { render "toolbar" } %>
+  <% if @feeds.empty? %>
+    <% grid.with_no_results do %>
+      <%= render Ui::NoResultsComponent.new(title: t("member.dashboards.no_match"), query: params[:q].presence,
+            body: t("member.dashboards.no_match_body", count: @feeds_total), reset_href: member_dashboard_feeds_path,
+            icon: "gauge", test_id: "dashboards-no-match", reset_test_id: "dashboards-reset-filters") %>
+    <% end %>
+  <% elsif @cards_grouped %>
+    <% @feeds.group_by { |feed| feed.project.group }.each do |group, feeds| %>
+      <% grid.with_group(title: group ? group.name : t("member.dashboards.group_ungrouped"), muted: group.nil?,
+           count_label: t("member.dashboards.services_count", count: feeds.size),
+           test_id: group ? "dashboards-group-#{group.id}" : "dashboards-ungrouped") do |section| %>
+        <% section.with_mark do %>
+          <% if group %>
+            <%= render Ui::EntityMarkComponent.new(record: group, size: :xs) %>
+          <% else %>
+            <span class="w-2.5 h-2.5 rounded-[3px] border border-dashed border-gray-400 shrink-0"></span>
+          <% end %>
+        <% end %>
+        <%= render partial: "card", collection: feeds, as: :feed %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <% grid.with_group(test_id: "dashboards-all") do %>
+      <%= render partial: "card", collection: @feeds, as: :feed %>
+    <% end %>
+  <% end %>
+  <% @setup_projects.each do |project| %>
+    <% grid.with_setup_item(label: t("member.dashboards.setup_item", project: project.name),
+         href: member_project_settings_path(project, section: "dashboard"), test_id: "dashboards-setup-#{project.id}") do %>
+      <%= render Ui::EntityMarkComponent.new(record: project, size: :xs) %>
+    <% end %>
+  <% end %>
+  <% if @more_cards %>
+    <% grid.with_more(href: member_dashboard_feeds_path(request.query_parameters.merge("limit" => @card_limit + 12)),
+         test_id: "dashboards-more") %>
+  <% end %>
+<% end %>

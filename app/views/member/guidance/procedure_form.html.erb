@@ -6,7 +6,7 @@
 <% content_for :title, "#{@guidance_scope_name} · #{title}" %>
 
 <div class="p-7">
-  <%= form_with url: @form_url, method: (@procedure.persisted? ? :patch : :post), class: "space-y-6 max-w-2xl", data: { test: "guidance-procedure-form" } do %>
+  <%= form_with url: @form_url, method: (@procedure.persisted? ? :patch : :post), class: "space-y-6", data: { test: "guidance-procedure-form" } do %>
     <%= render Ui::PageHeaderComponent.new(title: title,
           subtitle: t("member.guidance.applies_to.#{@guidance_level}", name: @guidance_scope_name),
           breadcrumb: [ { label: t("member.guidance.home.#{@guidance_level}", name: @guidance_scope_name), href: @back_url }, { label: title } ]) do |h| %>

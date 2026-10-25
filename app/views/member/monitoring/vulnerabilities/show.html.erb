@@ -13,7 +13,7 @@
       <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.vulnerabilities.columns.severity"),
             value: t("member.monitoring.vulnerabilities.severity.#{@finding.severity}"),
             value_color: (@finding.promotable? ? :rose : nil), test_id: "vulnerability-stat-severity") %>
-      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.vulnerabilities.status.open"),
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.vulnerabilities.columns.status"),
             value: t("member.monitoring.vulnerabilities.status.#{@finding.status}"), test_id: "vulnerability-stat-status") %>
       <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.vulnerabilities.columns.fixed_version"),
             value: @finding.fixed_version.presence || t("member.monitoring.vulnerabilities.fixed_version_none"),

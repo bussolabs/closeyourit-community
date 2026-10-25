@@ -14,6 +14,8 @@ it:
         title: SEO
         help_title: "I problemi trovati sulle pagine dei tuoi siti, con la prova."
         pages_help_title: "Le pagine visitate durante i controlli, con quello che è stato letto su ciascuna."
+        page_filter: "Solo i rilievi di %{url}."
+        page_filter_clear: Mostra tutti
         titles:
           issues: Rilievi
           pages: Pagine analizzate

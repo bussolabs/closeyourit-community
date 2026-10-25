@@ -197,6 +197,25 @@ RSpec.describe "Member::Monitoring::Replays", type: :request do
       expect(response.body).to include("/dashboard")
     end
 
+    # The player panel is always white, so its controls need dark text in the dark theme too. CYRA-1099
+    it "keeps the player controls dark on their white panel" do
+      sign_in(owner)
+      get member_monitoring_replay_path(session!)
+
+      mount = Nokogiri::HTML(response.body).at_css("[data-errors--replay-player-target='mount']")
+      expect(mount["class"].split).to include("text-stone-900")
+    end
+
+    # The player's icon buttons get their names from these labels once mounted. CYRA-1107
+    it "hands the player the names of its icon buttons" do
+      sign_in(owner)
+      get member_monitoring_replay_path(session!)
+
+      player = Nokogiri::HTML(response.body).at_css("[data-test='replay-player']")
+      expect(player["data-errors--replay-player-play-label-value"]).to eq(I18n.t("member.monitoring.replay.play_label"))
+      expect(player["data-errors--replay-player-fullscreen-label-value"]).to eq(I18n.t("member.monitoring.replay.fullscreen_label"))
+    end
+
     it "player ritorna gli eventi rrweb uniti (JSON)" do
       s = session!
       attach_chunk(s, [ { "type" => 2 }, { "type" => 3 } ])

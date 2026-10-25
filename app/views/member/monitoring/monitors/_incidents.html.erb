@@ -93,15 +93,10 @@
             <%# contenitore hidden: bulk-select vi inietta gli incident_ids[] selezionati %>
             <div data-ui--bulk-select-target="ids"></div>
 
-            <div>
-              <label class="block font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.uptime.incident.phase") %></label>
-              <select name="phase" required data-incident-update-target="phase" data-action="change->incident-update#fill" data-test="incident-phase"
-                      class="w-full h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
-                <% Uptime::IncidentUpdate.phases.keys.each do |phase| %>
-                  <option value="<%= phase %>" data-body="<%= t("member.uptime.incident.default_body.#{phase}") %>"><%= uptime_phase_label(phase) %></option>
-                <% end %>
-              </select>
-            </div>
+            <%= render Ui::SelectComponent.new(name: "phase", label: t("member.uptime.incident.phase"), required: true, id: "incident-phase-#{monitor.id}",
+                  options: Uptime::IncidentUpdate.phases.keys.map { |phase| [ uptime_phase_label(phase), phase ] },
+                  option_data: Uptime::IncidentUpdate.phases.keys.index_with { |phase| { body: t("member.uptime.incident.default_body.#{phase}") } },
+                  select_data: { "incident-update-target": "phase", action: "change->incident-update#fill" }, test_id: "incident-phase") %>
 
             <div>
               <label class="block font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.uptime.incident.message") %></label>

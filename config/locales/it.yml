@@ -13,6 +13,7 @@ it:
       long: "%d/%m/%Y %H:%M"
       chart_time: "%H:%M"
       chart_day: "%d/%m"
+      chart_day_time: "%d/%m %H:%M"
       # CYRA-500: sull'arco di un anno la tacca dice anche in che anno si trova.
       chart_year: "%d/%m/%y"
   date:

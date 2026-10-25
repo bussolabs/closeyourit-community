@@ -41,10 +41,8 @@
 
         <%# CYRA-481 — ventitré voci in fila non si scorrono: raggruppate per famiglia (le stesse
             famiglie delle impostazioni personali, Notifications::Catalog) e con sotto la riga che dice
-            quando quell'evento succede. Select nativa: gli optgroup sono ciò che il ticket chiede, e
-            il dropdown arricchito non li rende. %>
+            quando quell'evento succede. The design system dropdown shows the families as headings (CYRA-1108). %>
         <div data-test="alerting-rule-event">
-          <label for="event_type" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.alerting.rules.form.event") %></label>
           <%# CYRA-465 — l'evento temperatura è proponibile solo se una macchina della flotta la riporta:
               senza sensori non potrà mai scattare. L'evento di una regola già su server_temp resta
               comunque, per non alterarla in modifica. %>
@@ -54,11 +52,9 @@
                events = (group.event_types & ::Alerting::Rule.event_types.keys) - hidden_events
                [ group.label, events.map { |type| [ alerting_event_label(type), type ] } ] if events.any?
              } %>
-          <%= select_tag "event_type", grouped_options_for_select(grouped, rule.event_type), required: true,
-                id: "event_type",
-                class: "w-full h-[34px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[13px] focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400",
-                data: { test: "alerting-rule-event-select", "alerting--rule-fields-target": "event",
-                        action: "change->alerting--rule-fields#refresh" } %>
+          <%= render Ui::SelectComponent.new(name: "event_type", label: t("member.alerting.rules.form.event"), required: true,
+                grouped: true, options: grouped, selected: rule.event_type, test_id: "alerting-rule-event-select",
+                select_data: { "alerting--rule-fields-target": "event", action: "change->alerting--rule-fields#refresh" }) %>
           <% if rule.event_type.present? && alerting_event_description(rule.event_type) %>
             <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400" data-test="alerting-rule-event-hint"><%= alerting_event_description(rule.event_type) %></p>
           <% end %>
