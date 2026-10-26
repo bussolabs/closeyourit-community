@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.197.1] - 2026-10-26
+
+### Changed
+
+- **Schede della Dashboard più pulite**: la scritta «Apri» non c'è più. Per aprire un servizio basta cliccare la sua scheda. ([Dashboard](/member/dashboards))
+
+
 ## [0.197.0] - 2026-10-25
 
 ### Fixed

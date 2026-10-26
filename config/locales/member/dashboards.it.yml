@@ -25,7 +25,6 @@ it:
       read_ago: "Letto %{time} fa"
       read_failed: "Lettura fallita"
       never_read: "Mai letto"
-      open: "Apri"
       setup_item: "Collega %{project}"
       empty: "Nessun servizio collegato"
       empty_body: "Collega un progetto al suo servizio e qui compaiono i suoi numeri principali, come utenti e abbonamenti."

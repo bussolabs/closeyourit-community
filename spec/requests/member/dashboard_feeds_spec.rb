@@ -69,6 +69,7 @@ RSpec.describe "Member::DashboardFeeds", type: :request do
     expect(card.text).not_to include("Fifth number")
     expect(card.at_css("[data-test='dashboard-card-state']").text).to include("Read 4 minutes ago")
     expect(card.at_css("[data-tone='good']")).to be_present
+    expect(card.at_css("[data-test$='-open-hint']")).to be_nil
   end
 
   it "marks a failed read and still shows the last good numbers" do

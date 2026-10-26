@@ -4,7 +4,7 @@
 <% state = report.state %>
 <% service = report.service %>
 <%= render Ui::EntityCardComponent.new(href: member_dashboard_feed_path(feed), title: feed.project.name, key: feed.project.key,
-      description: (service && "#{service[:version]} · #{service[:environment]}"), open_label: t("member.dashboards.open"),
+      description: (service && "#{service[:version]} · #{service[:environment]}"),
       test_id: "dashboard-card-#{feed.id}") do |card| %>
   <% card.with_mark { render Ui::EntityMarkComponent.new(record: feed.project, size: :xs) } %>
   <% card.with_badges do %>
