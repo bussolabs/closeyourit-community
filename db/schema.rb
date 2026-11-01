@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_25_134858) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_01_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -3774,6 +3774,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_25_134858) do
     t.integer "traces_retention_days", default: 14, null: false
     t.datetime "updated_at", null: false
     t.integer "uptime_retention_days"
+    t.boolean "ai_wikitech_enabled", default: true, null: false
     t.check_constraint "artifacts_retention_days >= 1 AND artifacts_retention_days <= 365", name: "settings_artifacts_retention"
     t.check_constraint "crashes_retention_days >= 1 AND crashes_retention_days <= 365", name: "settings_crashes_retention_range"
     t.check_constraint "measurements_retention_days >= 1 AND measurements_retention_days <= 365", name: "settings_valid_measurement_retention"
@@ -4430,6 +4431,61 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_25_134858) do
     t.index ["status"], name: "index_website_access_requests_on_status"
   end
 
+  create_table "wikitech_entries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "organization_id", null: false
+    t.string "name", null: false
+    t.string "name_key", null: false
+    t.string "repo_url"
+    t.text "summary"
+    t.text "facts", default: [], null: false, array: true
+    t.text "categories", default: [], null: false, array: true
+    t.text "links", default: [], null: false, array: true
+    t.integer "verification", default: 0, null: false, comment: "0 unconfirmed · 1 verified"
+    t.jsonb "repo_meta"
+    t.datetime "repo_checked_at"
+    t.integer "sources_count", default: 0, null: false
+    t.datetime "embedded_at"
+    t.string "embedding_checksum"
+    t.string "embedding_version"
+    t.vector "embedding", limit: 1024
+    t.index ["categories"], name: "index_wikitech_entries_on_categories", using: :gin
+    t.index ["embedding"], name: "index_wikitech_entries_on_embedding", opclass: :vector_cosine_ops, using: :hnsw
+    t.index ["embedding_version"], name: "index_wikitech_entries_on_embedding_version"
+    t.index ["organization_id", "name_key"], name: "index_wikitech_entries_on_organization_id_and_name_key"
+    t.index ["organization_id", "repo_url"], name: "index_wikitech_entries_on_organization_id_and_repo_url", unique: true, where: "(repo_url IS NOT NULL)"
+  end
+
+  create_table "wikitech_notes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "organization_id", null: false
+    t.uuid "created_by_id"
+    t.text "body", null: false
+    t.string "source_label"
+    t.string "source_url"
+    t.datetime "source_published_at"
+    t.text "links", default: [], null: false, array: true
+    t.string "checksum", null: false
+    t.integer "status", default: 0, null: false, comment: "0 pending · 1 processed · 2 discarded"
+    t.datetime "processed_at"
+    t.string "last_error"
+    t.index ["created_by_id"], name: "index_wikitech_notes_on_created_by_id"
+    t.index ["organization_id", "checksum"], name: "index_wikitech_notes_on_organization_id_and_checksum", unique: true
+    t.index ["organization_id", "status"], name: "index_wikitech_notes_on_organization_id_and_status"
+  end
+
+  create_table "wikitech_sources", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "entry_id", null: false
+    t.uuid "note_id", null: false
+    t.text "quote"
+    t.index ["entry_id", "note_id"], name: "index_wikitech_sources_on_entry_id_and_note_id", unique: true
+    t.index ["note_id"], name: "index_wikitech_sources_on_note_id"
+  end
+
   create_table "workload_actions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "completed_at"
     t.datetime "created_at", null: false
@@ -5011,6 +5067,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_25_134858) do
   add_foreign_key "vulnerabilities_manifests", "projects", on_delete: :cascade
   add_foreign_key "vulnerabilities_packages", "vulnerabilities_manifests", column: "manifest_id", on_delete: :cascade
   add_foreign_key "vulnerabilities_runtime_statuses", "projects", on_delete: :cascade
+  add_foreign_key "wikitech_entries", "organizations", on_delete: :cascade
+  add_foreign_key "wikitech_notes", "accounts", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "wikitech_notes", "organizations", on_delete: :cascade
+  add_foreign_key "wikitech_sources", "wikitech_entries", column: "entry_id", on_delete: :cascade
+  add_foreign_key "wikitech_sources", "wikitech_notes", column: "note_id", on_delete: :cascade
   add_foreign_key "workload_actions", "accounts", column: "created_by_id", on_delete: :nullify
   add_foreign_key "workload_actions", "teams_teams", column: "team_id", on_delete: :cascade
   add_foreign_key "workload_actions", "ticketing_tickets", column: "ticket_id", on_delete: :nullify

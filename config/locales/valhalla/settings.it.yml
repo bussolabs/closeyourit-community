@@ -59,3 +59,6 @@ it:
           knowledge_review:
             label: Revisore delle pagine di conoscenza
             hint: Controlla formato e qualità di ogni pagina nuova o modificata prima che entri. Nasce spento; accendilo solo con la chiave del server AI nel vault, altrimenti nessuna pagina si salva. Spento, le pagine entrano senza controllo (viene scritto nel registro).
+          wikitech:
+            label: Schede di Wikitech
+            hint: Trasforma le nozioni salvate in Wikitech in schede di progetto. Spento, le nozioni restano in attesa e vengono lavorate quando lo riaccendi.

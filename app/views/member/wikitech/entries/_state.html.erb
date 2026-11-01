@@ -1,0 +1,7 @@
+<% if entry.verification_verified? %>
+  <%= render Ui::BadgeComponent.new(label: t("member.wikitech.verification.verified"), color: :emerald, dot: true) %>
+<% elsif entry.repo_url %>
+  <%= render Ui::BadgeComponent.new(label: t("member.wikitech.verification.unconfirmed"), color: :amber, dot: true) %>
+<% else %>
+  <%= render Ui::BadgeComponent.new(label: t("member.wikitech.verification.no_repo"), color: :gray, dot: true) %>
+<% end %>

@@ -1,0 +1,36 @@
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="wikitech-table">
+  <%= render(Ui::TableToolbarComponent.new(framed: true, url: member_wikitech_root_path, query: params[:q],
+        search_placeholder: t("member.wikitech.search_placeholder"),
+        search_test_id: "wikitech-search", test_id: "wikitech-toolbar")) do |toolbar| %>
+    <% toolbar.with_filter(key: "category", label: t("member.wikitech.filter_category")) do %>
+      <div class="w-48"><%= render Ui::SelectComponent.new(name: "category", multiple: true, summary: true,
+        options: @categories.map { |category| [ category, category ] },
+        selected: params[:category], placeholder: t("member.wikitech.filter_category"), test_id: "filter-category") %></div>
+    <% end %>
+    <% toolbar.with_filter(key: "verification", label: t("member.wikitech.filter_verification")) do %>
+      <div class="w-44"><%= render Ui::SelectComponent.new(name: "verification", multiple: true, summary: true,
+        options: [ [ t("member.wikitech.verification.verified"), "verified", "emerald" ],
+                   [ t("member.wikitech.verification.unconfirmed"), "unconfirmed", "amber" ] ],
+        selected: params[:verification], placeholder: t("member.wikitech.filter_verification"), test_id: "filter-verification") %></div>
+    <% end %>
+  <% end %>
+
+  <% if @entries.empty? %>
+    <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_wikitech_root_path,
+          body: t("member.wikitech.no_results_body", count: @counts[:total]),
+          icon: "cpu", test_id: "wikitech-no-match", reset_test_id: "wikitech-reset-filters") %>
+  <% else %>
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("member.wikitech.title"))) do |t| %>
+      <% t.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.wikitech.col_card"), sort: "name") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.wikitech.col_categories"), classes: "w-56") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.wikitech.col_sources"), sort: "sources", initial: :desc, align: :right, classes: "w-20") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.wikitech.col_stars"), sort: "stars", initial: :desc, align: :right, classes: "w-24") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.wikitech.col_state"), classes: "w-32") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+      <% end %>
+      <%= render partial: "member/wikitech/entries/row", collection: @entries, as: :entry %>
+    <% end %>
+    <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "wikitech-pagination") %>
+  <% end %>
+</div>

@@ -1,0 +1,9 @@
+---
+it:
+  wikitech:
+    errors:
+      body_blank: Scrivi il testo della nozione
+      body_too_long: "Il testo supera i %{count} caratteri: accorcialo o dividilo in più nozioni."
+      url_invalid: "Questo indirizzo non è valido: %{url}"
+      question_blank: Scrivi la domanda
+      not_found: Scheda non trovata

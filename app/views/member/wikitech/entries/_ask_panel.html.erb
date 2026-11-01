@@ -1,0 +1,32 @@
+<%# Same request-and-poll flow as "Ask the knowledge base": the job answers with the same shape. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3"
+     data-test="wikitech-ask"
+     data-controller="knowledge-ask"
+     data-knowledge-ask-url-value="<%= member_wikitech_ask_path %>"
+     data-knowledge-ask-poll-url-value="<%= member_ai_request_path(":id") %>"
+     data-knowledge-ask-pending-message-value="<%= t("member.wikitech.ask.pending") %>"
+     data-knowledge-ask-failed-message-value="<%= t("member.wikitech.ask.failed") %>">
+  <label for="wikitech-question" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("member.wikitech.ask.label") %></label>
+  <div class="flex flex-col gap-2 sm:flex-row">
+    <input id="wikitech-question" type="text" autocomplete="off" data-knowledge-ask-target="input" data-test="wikitech-ask-input"
+           data-action="keydown.enter->knowledge-ask#submit"
+           placeholder="<%= t("member.wikitech.ask.placeholder") %>"
+           class="h-[34px] min-w-0 flex-1 px-3 rounded-md border border-stone-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[13px] text-zinc-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus:border-indigo-600 dark:focus:border-indigo-400 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400">
+    <%= render Ui::ButtonComponent.new(label: t("member.wikitech.ask.submit"), icon: "wand-sparkles", size: :sm, test_id: "wikitech-ask-submit",
+          data: { action: "knowledge-ask#submit", knowledge_ask_target: "submit" }) %>
+  </div>
+  <p hidden data-knowledge-ask-target="status" class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="wikitech-ask-status"></p>
+
+  <div hidden data-knowledge-ask-target="result" class="pt-3 border-t border-stone-100 dark:border-zinc-800 space-y-4">
+    <p hidden data-knowledge-ask-target="scopeNotice"></p>
+    <div hidden data-knowledge-ask-target="citationsWrapper">
+      <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.wikitech.ask.entries_heading") %></p>
+      <ul data-knowledge-ask-target="citations" data-test="wikitech-ask-citations" class="space-y-1"></ul>
+    </div>
+    <div hidden data-knowledge-ask-target="answerWrapper">
+      <p class="font-mono text-[9px] uppercase tracking-[1px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.wikitech.ask.answer_heading") %></p>
+      <div data-knowledge-ask-target="answer" data-test="wikitech-ask-answer" class="text-[13px] leading-relaxed text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap"></div>
+    </div>
+    <p hidden data-knowledge-ask-target="insufficient" data-test="wikitech-ask-empty" class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.wikitech.ask.insufficient") %></p>
+  </div>
+</div>

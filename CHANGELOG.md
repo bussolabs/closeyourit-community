@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## [0.197.2] - 2026-11-01
+## [0.198.1] - 2026-11-01
+
+### Fixed
+
+- **Wikitech torna disponibile.** La pagina Wikitech e i comandi `cyi wikitech` funzionano di nuovo.
+
+## [0.198.0] - 2026-11-01
+
+### Added
+
+- **Wikitech**: salva gli strumenti e i progetti tech visti in giro e ritrovali con una domanda normale. Wikitech tiene solo la parte tecnica, fa una scheda per progetto e risponde citando le fonti. ([Wikitech](/member/wikitech)) ([guida](/member/guides/wikitech))
 
 ### Changed
 

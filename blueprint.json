@@ -5422,6 +5422,97 @@
       ]
     },
     {
+      "id": "kno_page_wikitech",
+      "name": "Wikitech",
+      "level": 2,
+      "parent": "area_knowledge",
+      "kind": "page",
+      "summary": "Strumenti e progetti tech visti in giro, che non riguardano i progetti dell'organizzazione: una domanda in alto, le schede sotto, la pagina di una scheda e il modulo per salvare una nozione.",
+      "files": [
+        "app/controllers/member/wikitech/**",
+        "app/views/member/wikitech/**",
+        "app/views/member/guides/wikitech.html.erb"
+      ]
+    },
+    {
+      "id": "kno_flow_wikitech",
+      "name": "Da nozione a scheda",
+      "level": 2,
+      "parent": "area_knowledge",
+      "kind": "flow",
+      "summary": "Arriva solo testo. L'AI tiene la parte tecnica, una scheda per progetto senza doppioni, GitHub conferma il repository, la scheda entra nella ricerca per significato.",
+      "files": [
+        "app/services/wikitech/**",
+        "app/jobs/wikitech/**",
+        "app/models/wikitech/**"
+      ]
+    },
+    {
+      "id": "wkt_receive",
+      "name": "Arriva una nozione",
+      "level": 3,
+      "parent": "kno_flow_wikitech",
+      "kind": "step",
+      "summary": "Dalla pagina o da cyi. Lo stesso testo dalla stessa fonte si salva una volta sola.",
+      "files": [
+        "app/services/wikitech/save_note.rb",
+        "app/controllers/cli/v1/wikitech/notes_controller.rb",
+        "app/controllers/member/wikitech/notes_controller.rb"
+      ]
+    },
+    {
+      "id": "wkt_extract",
+      "name": "L'AI tiene solo il tech",
+      "level": 3,
+      "parent": "kno_flow_wikitech",
+      "kind": "step",
+      "summary": "Un elemento per progetto nominato; saluti, sponsor e commenti restano fuori. Coda ai a bassa priorità, interruttore in Valhalla.",
+      "files": [
+        "app/services/wikitech/extract_entries.rb",
+        "app/jobs/wikitech/process_note_job.rb",
+        "app/jobs/wikitech/process_pending_notes_job.rb"
+      ]
+    },
+    {
+      "id": "wkt_merge",
+      "name": "Una scheda per progetto",
+      "level": 3,
+      "parent": "kno_flow_wikitech",
+      "kind": "step",
+      "summary": "Si unisce sull'indirizzo GitHub, o sul nome quando il repository manca. La nozione diventa una fonte della scheda.",
+      "files": [
+        "app/services/wikitech/merge_item.rb",
+        "app/services/wikitech/repo_url.rb"
+      ]
+    },
+    {
+      "id": "wkt_verify",
+      "name": "GitHub conferma",
+      "level": 3,
+      "parent": "kno_flow_wikitech",
+      "kind": "step",
+      "summary": "Il repository esiste? Licenza, stelle, linguaggio. Senza token: 60 richieste all'ora, si riprova quando GitHub lo dice.",
+      "files": [
+        "app/services/wikitech/github_repo.rb",
+        "app/jobs/wikitech/verify_repo_job.rb"
+      ]
+    },
+    {
+      "id": "wkt_ask",
+      "name": "Cercare e chiedere",
+      "level": 3,
+      "parent": "kno_flow_wikitech",
+      "kind": "step",
+      "summary": "Ricerca per significato con le parole esatte in coda; la risposta usa solo le schede trovate e le cita.",
+      "files": [
+        "app/services/wikitech/search.rb",
+        "app/services/wikitech/ask.rb",
+        "app/jobs/wikitech/embed_entry_job.rb",
+        "app/controllers/cli/v1/wikitech/entries_controller.rb",
+        "app/controllers/cli/v1/wikitech/asks_controller.rb"
+      ]
+    },
+    {
       "id": "area_search",
       "name": "Ricerca e viste salvate",
       "level": 1,
@@ -15686,6 +15777,11 @@
       "from": "prj_page_blueprint",
       "to": "area_github",
       "label": "legge blueprint.json"
+    },
+    {
+      "from": "kno_page_wikitech",
+      "to": "kno_flow_wikitech",
+      "label": "nozioni"
     }
   ]
 }

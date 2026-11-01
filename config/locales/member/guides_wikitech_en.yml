@@ -1,0 +1,26 @@
+---
+en:
+  member:
+    guides:
+      index:
+        wikitech:
+          title: Wikitech
+      wikitech:
+        title: Wikitech
+        subtitle: How to save the tech tools you see around and find them again with a question.
+        open: Open Wikitech
+        what_title: What it is for
+        what_intro: "Wikitech collects tools, libraries and open-source projects you saw around that are not about your own projects. Knowledge about your projects belongs in the knowledge base."
+        what_b1: You save a text about a tool. Wikitech keeps only the technical part and removes greetings, ads and comments.
+        what_b2: Every project it names becomes a card. When the card exists already, it grows instead of doubling.
+        what_b3: When the project has a GitHub repository, Wikitech checks that it exists and shows license, stars and language.
+        steps_title: How to use it
+        steps_intro: Two gestures are enough, save and ask.
+        step1: Press Save note and paste the text, with where it comes from and its links. The cards appear shortly after.
+        step2: In the Ask Wikitech box write a plain question, for example “is there something to track tickets?”.
+        step3: The answer cites only cards you really have. When none fits, it says so.
+        terminal_title: From the terminal
+        terminal_intro: "cyi does the same: wikitech add saves, wikitech search searches, wikitech show opens a card, wikitech ask asks a question."
+        terminal_b1: Sending the same note again creates no duplicate, so a script can retry safely.
+        terminal_b2: Every command has --json output for scripts.
+        terminal_b3: You only see the cards of your organization.

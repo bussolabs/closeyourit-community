@@ -142,6 +142,8 @@ module Member
 
     def knowledge_review; end
 
+    def wikitech; end
+
     def tickets; end
 
     def vault; end
