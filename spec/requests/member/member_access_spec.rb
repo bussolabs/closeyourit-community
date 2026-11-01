@@ -297,6 +297,44 @@ RSpec.describe "Member::Members access", type: :request do
         expect(flash[:alert]).to be_present
         expect(member_membership.reload.secret_environment_codes).to eq([])
       end
+
+      # CYRA-1118 — chi gestisce i membri ma vede solo staging non può allargare né sé né gli altri.
+      context "da gestore limitato agli ambienti di prova" do
+        let(:manager) do
+          create(:account).tap do |m|
+            create(:membership, account: m, organization: org, role: :member, secret_environment_codes: [ "staging" ])
+            Authorization::SetAccountPermissions.call(organization: org, account: m, allow_keys: [ "members.manage" ], actor: owner)
+          end
+        end
+        let(:manager_membership) { org.memberships.find_by!(account: manager) }
+
+        before { sign_in(manager) }
+
+        it "svuotare la propria lista è rifiutato" do
+          patch access_member_member_path(manager_membership), params: { confirm: "1", secret_environment_codes: [ "" ] }
+
+          expect(flash[:alert]).to be_present
+          expect(manager_membership.reload.secret_environment_codes).to eq([ "staging" ])
+        end
+
+        it "dare la produzione a un collega su un solo progetto è rifiutato" do
+          member_membership.update!(secret_environment_codes: [ "staging" ])
+
+          patch access_member_member_path(member_membership),
+                params: { confirm: "1", secret_environment_codes: [ "staging" ],
+                          project_secret_environments: { project.id.to_s => [ "production" ] } }
+
+          expect(flash[:alert]).to be_present
+          expect(Connections::AccountSecretAccess.where(account: member, project:)).not_to exist
+        end
+
+        it "limitare un collega senza limiti agli ambienti di prova è permesso" do
+          patch access_member_member_path(member_membership), params: { confirm: "1", secret_environment_codes: [ "staging" ] }
+
+          expect(response).to redirect_to(member_members_path)
+          expect(member_membership.reload.secret_environment_codes).to eq([ "staging" ])
+        end
+      end
     end
   end
 

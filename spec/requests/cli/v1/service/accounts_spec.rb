@@ -71,6 +71,31 @@ RSpec.describe "Cli::V1::Service::Accounts", type: :request do
       expect(response).to have_http_status(:ok)
       expect(organization.memberships.find_by(account: account).secret_environment_codes).to eq([ "staging" ])
     end
+
+    # CYRA-1118 — prima rispondeva 200 anche quando nulla si salvava.
+    it "un delegato limitato che toglie i limiti → 403 col motivo, confine invariato" do
+      %w[staging production].each { |code| create(:environment, organization: organization, code: code) }
+      account = Accounts::Service::Create.call(organization: organization, name: "Bot", secret_environment_codes: [ "staging" ]).value
+      manager = create(:account)
+      create(:membership, account: manager, organization: organization, role: :member, secret_environment_codes: [ "staging" ])
+      Authorization::SetAccountPermissions.call(organization:, account: manager, allow_keys: [ "members.manage" ], actor: owner)
+
+      patch "/cli/v1/service/accounts/#{account.id}", headers: headers_for(manager),
+                                                      params: { confirm: "1", secret_environment_codes: [] }
+
+      expect(response).to have_http_status(:forbidden)
+      expect(organization.memberships.find_by(account: account).secret_environment_codes).to eq([ "staging" ])
+    end
+
+    it "una lista di soli ambienti inesistenti → errore, mai accesso a tutto" do
+      create(:environment, organization: organization, code: "staging")
+      account = Accounts::Service::Create.call(organization: organization, name: "Bot", secret_environment_codes: [ "staging" ]).value
+
+      patch "/cli/v1/service/accounts/#{account.id}", headers: headers, params: { confirm: "1", secret_environment_codes: [ "inesistente" ] }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(organization.memberships.find_by(account: account).secret_environment_codes).to eq([ "staging" ])
+    end
   end
 
   describe "DELETE destroy (retire audit-safe)" do

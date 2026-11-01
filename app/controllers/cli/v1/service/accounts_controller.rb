@@ -45,10 +45,17 @@ module Cli
         # Aggiorna la restrizione degli environment sui secret (allow-list; vuoto = tutti). Sanificazione
         # anti-lockout ai soli code dell'org dentro Connections::SetSecretAccess (CYRA-78: punto di
         # scrittura unico coi canali umani). Gli override per-progetto si impostano dalla pagina accessi.
+        # CYRA-1118: chi modifica è l'attore del guard anti-allargamento; un rifiuto è un errore envelope.
         def update
           membership = membership_for(@account)
-          ::Connections::SetSecretAccess.call(membership: membership,
-                                              org_wide_codes: params[:secret_environment_codes])
+          result = ::Connections::SetSecretAccess.call(membership: membership,
+                                                       org_wide_codes: params[:secret_environment_codes],
+                                                       actor: Current.account)
+          if result.err?
+            return render_error(result.error.code, result.error.message,
+                                status: result.error.status, details: result.error.details)
+          end
+
           render json: { data: serialize(@account, membership.reload) }
         end
 

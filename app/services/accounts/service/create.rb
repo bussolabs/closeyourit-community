@@ -34,6 +34,12 @@ module Accounts
         failure = nil
 
         ActiveRecord::Base.transaction do
+          # Il confine dell'attore si legge sotto lo stesso lock di Connections::SetSecretAccess: una
+          # restrizione concorrente dell'attore non passa tra la verifica e la creazione.
+          Connections::SetSecretAccess.lock_boundaries!(organization_id: @organization.id, account_ids: [ @actor&.id ])
+          failure = environment_barrier
+          raise ActiveRecord::Rollback if failure
+
           account = create_account!
           create_membership!(account)
 
@@ -102,10 +108,24 @@ module Accounts
       # Solo i code che esistono davvero come environment dell'org (evita di bloccare l'account fuori da
       # tutto per un code inesistente). Vuoto = nessuna restrizione. normalizes sul model ripulisce comunque.
       def sanitized_environment_codes
-        wanted = Array(@secret_environment_codes).map { |c| c.to_s.strip.downcase }.reject(&:blank?)
-        return [] if wanted.empty?
+        @sanitized_environment_codes ||= begin
+          wanted = Array(@secret_environment_codes).map { |c| c.to_s.strip.downcase }.reject(&:blank?)
+          wanted.empty? ? [] : wanted & @organization.environments.pluck(:code)
+        end
+      end
 
-        wanted & @organization.environments.pluck(:code)
+      # CYRA-1118 — prima di creare qualsiasi cosa: una lista di soli nomi inesistenti si svuoterebbe in
+      # "tutti gli ambienti" (R422-SECRET-008), e un delegato limitato non può coniare un account che vede
+      # ambienti che lui non vede, su nessun progetto (R403-ACCESS-001; current nil = l'account non aveva
+      # alcun accesso).
+      def environment_barrier
+        if Connections::SetSecretAccess.unknown_only?(@secret_environment_codes, sanitized_environment_codes)
+          return Connections::SetSecretAccess.unknown_only_error
+        end
+
+        requested = Authorization::SecretEnvironmentGuard::Boundary.new(org_wide: sanitized_environment_codes, overrides: {})
+        Authorization::SecretEnvironmentGuard.barrier(actor: @actor, organization: @organization,
+                                                      requested: requested, current: nil)
       end
 
       # Handle globale unico [a-z0-9_]. Il service account non fa @menzioni, ma la colonna è unica:

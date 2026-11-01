@@ -27,6 +27,14 @@ RSpec.describe Organizations::AiSetting do
       expect(setting(answer_language: "it")).to be_valid
       expect(setting(answer_language: "fr")).not_to be_valid
     end
+
+    it "rewrites the Wikitech cards when the language changes, not on other changes" do
+      record = setting(answer_language: "en").tap(&:save!)
+
+      expect { record.update!(answer_language: "it") }
+        .to have_enqueued_job(Wikitech::RebuildEntriesJob).with(organization_id: organization.id)
+      expect { record.update!(monthly_token_cap: 1000) }.not_to have_enqueued_job(Wikitech::RebuildEntriesJob)
+    end
   end
 
   it "keeps one row per organization" do

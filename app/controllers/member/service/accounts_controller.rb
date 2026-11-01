@@ -34,10 +34,15 @@ module Member
       # Aggiorna la restrizione degli environment sui secret (allow-list; vuoto = tutti). Sanificazione
       # anti-lockout ai soli code dell'org dentro Connections::SetSecretAccess (CYRA-78: punto di
       # scrittura unico coi canali umani). Su un membership del service account nell'org corrente.
+      # CYRA-1118: chi modifica è l'attore del guard anti-allargamento; un rifiuto mostra il motivo, mai
+      # la conferma di un salvataggio che non c'è stato.
       def update
         membership = current_organization.memberships.find_by!(account: @account)
-        ::Connections::SetSecretAccess.call(membership: membership,
-                                            org_wide_codes: params[:secret_environment_codes])
+        result = ::Connections::SetSecretAccess.call(membership: membership,
+                                                     org_wide_codes: params[:secret_environment_codes],
+                                                     actor: Current.account)
+        return redirect_to member_service_account_path(@account), alert: result.error.message if result.err?
+
         redirect_to member_service_account_path(@account), notice: t("member.service_accounts.updated")
       rescue ActiveRecord::RecordNotFound
         redirect_to member_service_accounts_path, alert: t("member.service_accounts.cannot_delete")
@@ -60,7 +65,10 @@ module Member
         if result.ok?
           redirect_to member_service_account_path(result.value), notice: t("member.service_accounts.created")
         else
-          @errors = result.error.details.presence || { base: [ result.error.message ] }
+          # Un rifiuto del guard (R403) porta nei details gli elementi rifiutati, non errori di campo:
+          # il form li mostrerebbe a nessun campo — il messaggio va in testa.
+          details = result.error.details.presence unless result.error.status == :forbidden
+          @errors = details || { base: [ result.error.message ] }
           render :new, status: :unprocessable_content
         end
       end

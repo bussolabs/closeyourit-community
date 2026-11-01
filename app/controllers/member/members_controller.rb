@@ -307,7 +307,7 @@ module Member
       per_project = params[:project_secret_environments].presence&.to_unsafe_h || {}
       Connections::SetSecretAccess.call(membership: membership,
                                         org_wide_codes: params[:secret_environment_codes],
-                                        per_project: per_project)
+                                        per_project: per_project, actor: Current.account)
     end
 
     # Dati della card «ambienti dei segreti»: allow-list org-wide, override già impostati e progetti su

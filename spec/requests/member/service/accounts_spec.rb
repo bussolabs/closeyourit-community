@@ -123,6 +123,24 @@ RSpec.describe "Member::Service::Accounts", type: :request do
         expect(response).to redirect_to(member_service_account_path(account))
         expect(org.memberships.find_by(account: account).secret_environment_codes).to eq([ "staging" ])
       end
+
+      # CYRA-1118 — prima la pagina diceva "aggiornati" anche quando nulla si salvava.
+      it "un delegato limitato che toglie i limiti vede il rifiuto, non la conferma" do
+        %w[staging production].each { |code| create(:environment, organization: org, code: code) }
+        account = ::Accounts::Service::Create.call(organization: org, name: "Bot", secret_environment_codes: [ "staging" ]).value
+        manager = create(:account)
+        create(:membership, account: manager, organization: org, role: :member, secret_environment_codes: [ "staging" ])
+        Authorization::SetAccountPermissions.call(organization: org, account: manager, allow_keys: [ "members.manage" ], actor: owner)
+        sign_in(manager)
+
+        patch member_service_account_path(account), params: { confirm: "1", secret_environment_codes: [ "" ] }
+
+        expect(response).to redirect_to(member_service_account_path(account))
+        expect(flash[:alert]).to be_present
+        # flash[:notice] può ancora portare il "Welcome back." del login: conta che non dica "aggiornati".
+        expect(flash[:notice]).not_to eq(I18n.t("member.service_accounts.updated"))
+        expect(org.memberships.find_by(account: account).secret_environment_codes).to eq([ "staging" ])
+      end
     end
 
     describe "DELETE destroy (retire audit-safe)" do

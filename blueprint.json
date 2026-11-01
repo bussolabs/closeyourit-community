@@ -5440,7 +5440,7 @@
       "level": 2,
       "parent": "area_knowledge",
       "kind": "flow",
-      "summary": "Arriva solo testo. L'AI tiene la parte tecnica, una scheda per progetto senza doppioni, GitHub conferma il repository, la scheda entra nella ricerca per significato.",
+      "summary": "Arriva solo testo. L'AI tiene la parte tecnica, una scheda per progetto senza doppioni, GitHub conferma il repository, la scheda entra nella ricerca per significato. Le schede sono scritte nella lingua AI dell'organizzazione: cambiarla le riscrive dalle nozioni.",
       "files": [
         "app/services/wikitech/**",
         "app/jobs/wikitech/**",
@@ -9846,10 +9846,11 @@
       "level": 3,
       "parent": "acc_flow_grant",
       "kind": "step",
-      "summary": "Chi non è proprietario non può dare permessi che non ha, né progetti che non vede. Se ci prova, nessuna modifica parte.",
+      "summary": "Chi non è proprietario non può dare permessi che non ha, progetti che non vede, né ambienti dei segreti che non vede. Se ci prova, nessuna modifica parte.",
       "files": [
         "app/services/authorization/grant_guard.rb",
-        "app/services/authorization/scope_guard.rb"
+        "app/services/authorization/scope_guard.rb",
+        "app/services/authorization/secret_environment_guard.rb"
       ]
     },
     {

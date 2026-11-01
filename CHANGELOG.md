@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.198.3] - 2026-11-01
+
+### Changed
+
+- **Wikitech scrive le schede nella lingua dell'organizzazione.** Le schede seguono la «Lingua delle risposte» scelta nelle impostazioni AI. Cambiandola, le schede già salvate vengono riscritte nella nuova lingua. ([AI dell'organizzazione](/member/organization/ai))
+
+## [0.198.2] - 2026-11-01
+
+### Security
+
+- **Ambienti dei segreti: si può solo restringere ciò che non si vede.** Chi gestisce i membri senza essere proprietario non può più dare ambienti dei segreti che non vede, né togliere tutti i limiti, anche su un solo progetto o account di servizio. Un elenco di soli ambienti inesistenti viene rifiutato e la pagina degli account di servizio dice perché. ([Membri](/member/members))
+
 ## [0.198.1] - 2026-11-01
 
 ### Fixed

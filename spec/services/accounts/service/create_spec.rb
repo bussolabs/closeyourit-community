@@ -122,6 +122,87 @@ RSpec.describe Accounts::Service::Create do
       end
     end
 
+    # CYRA-1118 — alla nascita l'account non vede niente: ogni ambiente che il confine apre conta.
+    context "guard sugli ambienti dei segreti" do
+      before { %w[staging production].each { |code| create(:environment, organization: organization, code: code) } }
+
+      # let!: l'attore nasce prima dei blocchi `change(Accounts::Account, :count)`, che altrimenti lo conterebbero.
+      let!(:actor) do
+        create(:account).tap do |manager|
+          create(:membership, account: manager, organization: organization, role: :member,
+                              secret_environment_codes: [ "staging" ])
+        end
+      end
+
+      it "un delegato limitato non conia un account senza limiti → R403-ACCESS-001, nessun account" do
+        expect {
+          result = described_class.call(organization: organization, name: "Bot", actor: actor)
+          expect(result.error.code).to eq("R403-ACCESS-001")
+        }.not_to change(Accounts::Account, :count)
+      end
+
+      it "un delegato limitato non conia un account con ambienti che non vede" do
+        result = described_class.call(organization: organization, name: "Bot", actor: actor,
+                                      secret_environment_codes: %w[staging production])
+
+        expect(result.error.code).to eq("R403-ACCESS-001")
+      end
+
+      it "un delegato limitato conia un account dentro i propri ambienti" do
+        result = described_class.call(organization: organization, name: "Bot", actor: actor,
+                                      secret_environment_codes: [ "staging" ])
+
+        expect(result).to be_ok
+        expect(Connections::Membership.find_by(account: result.value).secret_environment_codes).to eq([ "staging" ])
+      end
+
+      it "un delegato senza limiti org-wide ma più stretto su un progetto non conia un account senza limiti" do
+        Connections::Membership.find_by(account: actor, organization: organization).update!(secret_environment_codes: [])
+        project = create(:project, organization: organization)
+        create(:account_secret_access, account: actor, project: project, organization: organization,
+                                       environment_codes: [ "staging" ])
+
+        result = described_class.call(organization: organization, name: "Bot", actor: actor,
+                                      secret_environment_codes: %w[staging production])
+
+        expect(result.error.code).to eq("R403-ACCESS-001")
+        expect(result.error.details[:project_id]).to eq(project.id)
+      end
+
+      it "con un solo ambiente, un delegato limitato non conia un account senza limiti" do
+        solo = create(:organization)
+        create(:environment, organization: solo, code: "staging")
+        create(:membership, account: actor, organization: solo, role: :member, secret_environment_codes: [ "staging" ])
+
+        result = described_class.call(organization: solo, name: "Bot", actor: actor)
+
+        expect(result.error.code).to eq("R403-ACCESS-001")
+        expect(result.error.details[:unlimited]).to be(true)
+      end
+
+      it "una lista di soli ambienti inesistenti è rifiutata (non diventa accesso a tutto)" do
+        expect {
+          result = described_class.call(organization: organization, name: "Bot", secret_environment_codes: [ "inesistente" ])
+          expect(result.error.code).to eq("R422-SECRET-008")
+        }.not_to change(Accounts::Account, :count)
+      end
+
+      # Rilettura CYRA-1118: il confine dell'attore si legge sotto lo stesso lock di SetSecretAccess,
+      # così una sua restrizione concorrente non passa tra la verifica e la creazione.
+      it "verifica il confine dell'attore sotto lock della sua membership" do
+        statements = []
+        callback = ->(*, payload) { statements << payload[:sql] }
+        ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+          described_class.call(organization: organization, name: "Bot", actor: actor,
+                               secret_environment_codes: [ "staging" ])
+        end
+
+        locked = statements.find { |sql| sql.include?("FOR UPDATE") }
+        expect(locked).to be_present
+        expect(statements.index(locked)).to be < statements.index { |sql| sql.include?("connections_account_secret_accesses") }
+      end
+    end
+
     context "input invalido" do
       it "senza nome ritorna err e non lascia account/membership orfani" do
         expect {

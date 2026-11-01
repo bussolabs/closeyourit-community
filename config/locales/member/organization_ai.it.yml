@@ -23,7 +23,7 @@ it:
           own: Tutte le richieste vanno al tuo provider compatibile OpenAI, con la tua chiave.
       language:
         title: Lingua delle risposte
-        hint: La lingua in cui l'AI scrive ogni risposta, per tutti nell'organizzazione.
+        hint: La lingua in cui l'AI scrive ogni risposta, per tutti nell'organizzazione. Cambiarla riscrive anche le schede di Wikitech.
         label: Lingua
         options:
           interface: La lingua dell'interfaccia di ognuno

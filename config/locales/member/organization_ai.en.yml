@@ -23,7 +23,7 @@ en:
           own: Every request goes to your OpenAI-compatible provider, with your key.
       language:
         title: Language of the answers
-        hint: The language every AI answer is written in, for everyone in the organization.
+        hint: The language every AI answer is written in, for everyone in the organization. Changing it also rewrites the Wikitech cards.
         label: Language
         options:
           interface: Each person's interface language

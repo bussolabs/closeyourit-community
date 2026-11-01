@@ -33,6 +33,8 @@ module Organizations
     KEY_FOR_ADDRESS = { base_url: :api_key, rerank_base_url: :rerank_api_key }.freeze
 
     after_commit { Ai::Configuration.reset! }
+    # Wikitech cards are stored AI text: a new language rewrites them from their notes.
+    after_commit :rebuild_wikitech_entries, if: :saved_change_to_answer_language?
 
     def own? = mode == "own"
     def variation? = mode == "variation"
@@ -53,6 +55,10 @@ module Organizations
     end
 
     private
+
+    def rebuild_wikitech_entries
+      Wikitech::RebuildEntriesJob.perform_later(organization_id: organization_id)
+    end
 
     def addresses_outside_internal_network
       %i[base_url rerank_base_url].each do |attribute|
