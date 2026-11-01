@@ -59,6 +59,3 @@ en:
           knowledge_review:
             label: Knowledge page reviewer
             hint: Checks format and quality of every new or edited page before it gets in. Starts off; switch it on only with the AI server key in the vault, otherwise no page can be saved. Off, pages get in unchecked (logged).
-          wikitech:
-            label: Wikitech cards
-            hint: Turns the notes saved in Wikitech into project cards. Off, notes wait and are processed when you switch it back on.

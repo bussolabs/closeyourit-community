@@ -94,7 +94,7 @@ module Navigation
       # Knowledge + Book + matrice funzionalità: era lo space "product", che si chiamava quasi come il
       # gruppo "Prodotto" qui accanto e conteneva l'esatto contrario di quel che il nome prometteva
       # (CYRA-330). Ora il nome dice il contenuto.
-      "knowledge" => %w[member/knowledge member/product member/wikitech],
+      "knowledge" => %w[member/knowledge member/product],
       "observability" => %w[member/monitoring/traces member/monitoring/measurements member/monitoring/measurement_rules
                               member/monitoring/session_health member/monitoring/error_groups member/monitoring/metric_groups
                             member/monitoring/log_entries member/monitoring/replays

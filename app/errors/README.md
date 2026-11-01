@@ -208,16 +208,6 @@ Formato `R{HTTP_STATUS}-{DOMINIO}-{SEQ}` (rules/error-handling.md). Envelope API
 - `R502-KNOWLEDGE-001` — il revisore ha risposto con un verdetto illeggibile (fuori enum o forma): la pagina NON entra (`Knowledge::Review::Parse`)
 - `R503-KNOWLEDGE-001` — revisore non disponibile (server AI di casa giù, tempo scaduto, chiave rifiutata o `CHAT_*` non configurati): fail-closed, la pagina NON entra. `details.cause` porta il codice `R*-CHAT-*` di trasporto. Il freno è l'interruttore `knowledge_review` in Valhalla
 
-### WIKITECH — external tech knowledge of the organization (service `Wikitech::*`, shared by Member and CLI `Cli::V1::Wikitech::*`)
-- `R422-WIKITECH-001` — note with a blank body (`Wikitech::SaveNote`)
-- `R422-WIKITECH-002` — note body over `Wikitech::Constants::NOTE_BODY_MAX_CHARS` (`Wikitech::SaveNote`)
-- `R422-WIKITECH-003` — source or link address that is not http(s) (`Wikitech::SaveNote`)
-- `R422-WIKITECH-005` — note refused by the model validations (`Wikitech::SaveNote`)
-- `R422-WIKITECH-004` — blank question to Wikitech (`Wikitech::Ask`)
-- `R404-WIKITECH-001` — card not found in the caller's organization (`Cli::V1::Wikitech::EntriesController`, `Member::Wikitech::EntriesController`)
-- `R404-WIKITECH-002` — the repository named by a card does not exist on GitHub: the card stays unconfirmed (`Wikitech::GithubRepo`)
-- `R503-WIKITECH-001` — GitHub answered with an unexpected status; the verification job retries (`Wikitech::GithubRepo`)
-
 ### PRODUCT — matrice funzionalità × piattaforme (`Product::*`, area Member `Member::Product::*`)
 - `R404-PRODUCT-001` — stato o versione non ammissibili per questa cella (id fuori dagli stati attivi dell'org o dalle release del prodotto che girano su quella piattaforma; anti-BOLA, `Product::Cells::Set`)
 - `R422-PRODUCT-001` — salvataggio categoria fallito (nome blank o già usato nel prodotto, `Product::Categories::Save`)

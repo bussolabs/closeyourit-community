@@ -6,7 +6,7 @@ module Embeddings
   # their version: the daily backfill jobs, enqueued at once by ResizeColumnsJob, embed everything
   # again with the new model. One transaction: PostgreSQL DDL rolls back as a whole.
   class ResizeColumns < ApplicationService
-    TABLES = %w[errors_groups helpdesk_requests ideas_ideas knowledge_pages ticketing_tickets wikitech_entries].freeze
+    TABLES = %w[errors_groups helpdesk_requests ideas_ideas knowledge_pages ticketing_tickets].freeze
 
     def initialize(dimensions:)
       @dimensions = Integer(dimensions)

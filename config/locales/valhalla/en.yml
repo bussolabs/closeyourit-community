@@ -29,7 +29,6 @@ en:
         drift_knowledge_pages: "Knowledge pages hidden from search: %{count}"
         drift_ideas: "Ideas hidden from search: %{count}"
         drift_helpdesk_requests: "Helpdesk requests hidden from search: %{count}"
-        drift_wikitech_entries: "Wikitech cards hidden from search: %{count}"
         suspended: "Suspended organizations: %{count}"
         without_owner: "Organizations without an owner: %{count}"
       open_ai_settings: "Open AI settings"

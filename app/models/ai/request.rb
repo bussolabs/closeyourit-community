@@ -7,7 +7,7 @@ module Ai
   # Ai::Constants::REQUESTS_RETENTION. Scoping per ownership (account), MAI cross-account.
   class Request < ApplicationRecord
     KINDS = %w[ticket_analyze ticket_compose ticket_ask knowledge_ask
-               error_triage error_similar metric_triage idea_synthesize wikitech_ask].freeze
+               error_triage error_similar metric_triage idea_synthesize].freeze
 
     # Quale servizio COLLEGATO DALL'ORGANIZZAZIONE serve a ciascuna richiesta (CYRA-548): senza,
     # AiEnqueueing rifiuta prima di creare la riga. Dal CYRA-765 la mappa è VUOTA — l'AI generativa

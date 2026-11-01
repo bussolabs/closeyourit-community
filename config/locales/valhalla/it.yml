@@ -29,7 +29,6 @@ it:
         drift_knowledge_pages: "Pagine knowledge nascoste alla ricerca: %{count}"
         drift_ideas: "Idee nascoste alla ricerca: %{count}"
         drift_helpdesk_requests: "Richieste helpdesk nascoste alla ricerca: %{count}"
-        drift_wikitech_entries: "Schede Wikitech nascoste alla ricerca: %{count}"
         suspended: "Organizzazioni sospese: %{count}"
         without_owner: "Organizzazioni senza proprietario: %{count}"
       open_ai_settings: "Apri le impostazioni AI"

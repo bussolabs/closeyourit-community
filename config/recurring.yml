@@ -167,17 +167,6 @@ production: &schedule
     queue: batch
     schedule: every day at 4am
 
-  backfill_wikitech_embeddings:
-    class: Wikitech::BackfillEmbeddingsJob
-    queue: batch
-    schedule: every day at 4am
-
-  # Notes still pending after an hour (AI switch off, home AI server down past the retries).
-  wikitech_pending_notes:
-    class: Wikitech::ProcessPendingNotesJob
-    queue: batch
-    schedule: every hour
-
   # Downloads only when the file is missing or a week old, and only with MAXMIND_LICENSE_KEY (CYRA-914 P10).
   refresh_geo_database:
     class: Analytics::RefreshGeoDatabaseJob

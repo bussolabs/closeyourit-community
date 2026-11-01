@@ -503,7 +503,6 @@ namespace :member do
   get "guides/shared-values", to: "guides#shared_values", as: :guides_shared_values
   get "guides/knowledge",   to: "guides#knowledge",   as: :guides_knowledge
   get "guides/knowledge-review", to: "guides#knowledge_review", as: :guides_knowledge_review
-  get "guides/wikitech", to: "guides#wikitech", as: :guides_wikitech
   get "guides/traces", to: "guides#traces", as: :guides_traces
   get "guides/measurements", to: "guides#measurements", as: :guides_measurements
   get "guides/session-health", to: "guides#session_health", as: :guides_session_health
@@ -899,14 +898,6 @@ namespace :member do
     resource :ticket_link, path: "link", only: %i[create destroy], module: :helpdesk_requests # join a ticket / undo
     resource :reply, only: :create, module: :helpdesk_requests                  # answer the visitor by email (CYRA-943)
   end
-  # Wikitech (CYRA-1130): external tech knowledge of the organization, never about its projects.
-  namespace :wikitech do
-    root to: "entries#index"
-    resources :entries, only: :show
-    resources :notes, only: %i[new create]
-    post :ask, to: "entries#ask"
-  end
-
   # Knowledge base di progetto: pagine markdown (note/decisioni/guide) con ricerca semantica
   # cross-progetto sui progetti visibili. Controller Member::Knowledge::*.
   namespace :knowledge do

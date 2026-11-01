@@ -27,7 +27,6 @@ module Ai
       comment_compaction
       analysis_relabel
       knowledge_review
-      wikitech
     ].freeze
 
     # Le funzioni che escono verso il PROVIDER GENERATIVO (Gemini): tutte tranne quelle che parlano

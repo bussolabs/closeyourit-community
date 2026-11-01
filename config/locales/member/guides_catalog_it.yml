@@ -39,7 +39,6 @@ it:
         knowledge: "Quello che il team sa e non deve riscoprire ogni volta, scritto e cercabile."
         knowledge_overview: "Il punto di partenza della conoscenza: cosa c'è, cosa aspetta una revisione."
         knowledge_review: "Le pagine proposte da un assistente che aspettano il tuo sì."
-        wikitech: "Strumenti e progetti tech visti in giro, da ritrovare con una domanda."
         logs: "Il diario di quello che le applicazioni scrivono mentre lavorano."
         members: "Le persone dell'organizzazione e cosa può fare ciascuna."
         my_work: "Quello che riguarda te: assegnato, in attesa di una tua mossa, scaduto."

@@ -50,9 +50,6 @@ module Member
           active: cp.in?(%w[member/knowledge/pages member/knowledge/versions]) },
         { label: "member.nav.book", path: member_knowledge_books_path, icon: "book",
           test: "member-nav-book", visible: true, active: cp == "member/knowledge/books" },
-        # CYRA-1130 — external tech knowledge, kept apart from the pages about our own projects.
-        { label: "member.nav.wikitech", path: member_wikitech_root_path, icon: "cpu",
-          test: "member-nav-wikitech", visible: true, active: cp.start_with?("member/wikitech") },
         { label: "member.nav.feature_matrix", path: member_product_matrices_path, icon: "layout-grid",
           test: "member-nav-feature-matrix", visible: product_matrix_nav_visible?,
           active: cp.start_with?("member/product") }

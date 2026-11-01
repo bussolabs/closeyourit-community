@@ -31,7 +31,6 @@ guide_pages = {
   "/member/knowledge/pages"            => "knowledge",
   "/member/knowledge/books"            => "knowledge",
   "/member/knowledge/reviews"          => "knowledge_review",
-  "/member/wikitech"                   => "wikitech",
   "/member/tickets"                    => "tickets",
   "/member/helpdesk"                   => "helpdesk",
   "/member/projects/abc-123/helpdesk"  => "helpdesk",

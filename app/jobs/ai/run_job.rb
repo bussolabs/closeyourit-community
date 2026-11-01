@@ -81,8 +81,6 @@ module Ai
         Metrics::TriageWithAi.call(group: metric_group(org, request.args.fetch("group_id")))
       when "idea_synthesize"
         Ideas::SynthesizeTicket.call(idea: idea(org, request.args.fetch("idea_id")))
-      when "wikitech_ask"
-        Wikitech::Ask.call(scope: org.wikitech_entries, question: request.args.fetch("question").to_s)
       else
         Result.err(AppError.new("Kind AI sconosciuto", code: "R422-AI-001"))
       end
@@ -151,11 +149,6 @@ module Ai
     # «nessun ticket pertinente» si legge come un fatto sull'archivio invece che come un accesso
     # tolto nel frattempo. Il campo resta FUORI dagli altri kind: là non c'è nessun perimetro da
     # restringere, e un `false` costante li farebbe sembrare misurati quando non lo sono.
-    def wikitech_ask_payload(entry)
-      { id: entry.id, title: entry.name, kind_label: entry.categories.first,
-        url: Rails.application.routes.url_helpers.member_wikitech_entry_path(entry) }
-    end
-
     def payload_for(request, value)
       case request.kind
       when "ticket_analyze"
@@ -193,10 +186,6 @@ module Ai
           confidence: value.confidence, summary: value.summary }
       when "idea_synthesize"
         { title: value.title, description: value.description }
-      when "wikitech_ask"
-        # Same shape as knowledge_ask: the page reuses the knowledge-ask controller to draw it.
-        { answer: value.answer, insufficient: value.insufficient, scope_reduced: false,
-          pages: value.entries.map { |entry| wikitech_ask_payload(entry) } }
       end
     end
 

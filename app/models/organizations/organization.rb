@@ -124,17 +124,6 @@ module Organizations
              foreign_key: :organization_id,
              inverse_of: :organization,
              dependent: :destroy
-    # Wikitech (CYRA-1127): external tech knowledge, organization-wide and never tied to projects.
-    has_many :wikitech_notes,
-             class_name: "Wikitech::Note",
-             foreign_key: :organization_id,
-             inverse_of: :organization,
-             dependent: :destroy
-    has_many :wikitech_entries,
-             class_name: "Wikitech::Entry",
-             foreign_key: :organization_id,
-             inverse_of: :organization,
-             dependent: :destroy
 
     # Guidance (CYRA-74) dichiarata a livello ORG come owner. La legge Guidance::Resolve, non da qui.
     has_many :guidance_references,

@@ -1,9 +1,0 @@
----
-en:
-  wikitech:
-    errors:
-      body_blank: Write the text of the note
-      body_too_long: "The text is longer than %{count} characters: shorten it or split it into several notes."
-      url_invalid: "This address is not valid: %{url}"
-      question_blank: Write the question
-      not_found: Card not found

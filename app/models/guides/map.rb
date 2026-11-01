@@ -48,7 +48,6 @@ module Guides
       # Le raccolte non hanno una guida tutta loro: atterrano sul capitolo che le spiega.
       [ %r{\A/member/knowledge/books\b},                                    "knowledge", "books" ],
       [ %r{\A/member/knowledge\b},                                          "knowledge" ],
-      [ %r{\A/member/wikitech\b},                                           "wikitech" ],
       [ %r{\A/member/tickets\b},                                            "tickets" ],
       [ %r{\A/member/helpdesk\b},                                           "helpdesk" ],
       [ %r{\A/member/projects/[^/]+/helpdesk\b},                            "helpdesk" ],

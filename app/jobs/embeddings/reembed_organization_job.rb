@@ -14,7 +14,6 @@ module Embeddings
       Ideas::Idea.where(project_id: projects).find_each { |r| Ideas::EmbedIdeaJob.perform_later(idea_id: r.id) }
       Helpdesk::Request.where(project_id: projects).find_each { |r| Helpdesk::EmbedRequestJob.perform_later(request_id: r.id) }
       Knowledge::Page.where(organization_id:).find_each { |r| Knowledge::EmbedPageJob.perform_later(page_id: r.id) }
-      Wikitech::Entry.where(organization_id:).find_each { |r| Wikitech::EmbedEntryJob.perform_later(entry_id: r.id) }
     end
   end
 end

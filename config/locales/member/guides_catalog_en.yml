@@ -39,7 +39,6 @@ en:
         knowledge: "What the team knows and shouldn't rediscover every time, written and searchable."
         knowledge_overview: "The starting point of knowledge: what exists, what is waiting for review."
         knowledge_review: "Pages proposed by an assistant, waiting for your yes."
-        wikitech: "Tech tools and projects seen around, found again with a question."
         logs: "The diary of what applications write while they work."
         members: "The people in the organisation and what each of them can do."
         my_work: "What concerns you: assigned, waiting for your move, overdue."
