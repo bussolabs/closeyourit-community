@@ -58,16 +58,13 @@ module Member
 
     def require_access = require_permission!("shared_secrets.manage")
 
-    # Audit append-only dell'accesso al valore (CYRA-202). Fire-and-forget: un audit che fallisce non
-    # deve rompere la lettura (stesso principio di Secrets::RecordEvent per il vault di progetto).
+    # Audit append-only dell'accesso al valore (CYRA-202). No rescue on purpose: a reveal that cannot be
+    # recorded must not release the value (same rule as Secrets::RecordEvent::FAIL_CLOSED_ACTIONS).
     def record_reveal(value)
       ::Secrets::Shared::Event.create!(
         organization: value.organization, shared_variable: value.shared_variable, environment: value.environment,
         actor: Current.account, name: value.name, action: "revealed"
       )
-    rescue StandardError => e
-      Rails.logger.warn("Shared secret audit event failed: #{e.class} #{e.message}")
-      nil
     end
 
     # Celle inviate dal form-riga, filtrate agli ambienti REALI dell'org (subset-security: un env_id

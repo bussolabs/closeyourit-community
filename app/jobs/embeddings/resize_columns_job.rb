@@ -10,7 +10,7 @@ module Embeddings
 
     BACKFILLS = [ Ticketing::BackfillEmbeddingsJob, Errors::BackfillEmbeddingsJob,
                   Knowledge::BackfillEmbeddingsJob, Ideas::BackfillEmbeddingsJob,
-                  Helpdesk::BackfillEmbeddingsJob ].freeze
+                  Helpdesk::BackfillEmbeddingsJob, Wikitech::BackfillEmbeddingsJob ].freeze
 
     def perform(dimensions:)
       result = ResizeColumns.call(dimensions:)

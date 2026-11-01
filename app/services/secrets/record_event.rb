@@ -1,14 +1,17 @@
 # frozen_string_literal: true
 
 module Secrets
-  # Hub unico per l'audit del vault: crea un Secrets::Event append-only. Fire-and-forget — un audit che
-  # fallisce NON deve rompere una lettura/mutazione (rescue + log). Chiamato dai punti di lettura
+  # Hub unico per l'audit del vault: crea un Secrets::Event append-only. A failed audit never stops a
+  # change (rescue + log), but it does stop a read: see FAIL_CLOSED_ACTIONS. Chiamato dai punti di lettura
   # (bundle CLI, tab Member), di mutazione (Set/Delete/Import/Sync) e di RIFIUTO (action "denied":
   # confine ambienti, CYRA-78 — lì `channel:` dice se il tentativo arrivava dal web o dalla CLI).
   class RecordEvent < ApplicationService
     # Azioni che descrivono un ACCESSO ai valori (o un tentativo): sono le uniche su cui può scattare
     # un avviso (CYRA-77). Le mutazioni hanno già i loro (secret_deleted, secret_change_*).
     ALERTABLE_ACTIONS = %w[read denied].freeze
+    # A read hands out plaintext: if it cannot be recorded it must not happen, so these re-raise
+    # instead of being swallowed. Every caller records before it renders the value.
+    FAIL_CLOSED_ACTIONS = %w[read].freeze
 
     def initialize(action:, project:, environment: nil, actor: nil, name: nil, metadata: {}, channel: nil)
       @action = action
@@ -21,7 +24,15 @@ module Secrets
     end
 
     def call
-      event = Secrets::Event.create!(
+      event = record
+      notify_access(event) if event
+      event
+    end
+
+    private
+
+    def record
+      Secrets::Event.create!(
         action: @action,
         project: @project,
         organization: @project.organization,
@@ -31,14 +42,12 @@ module Secrets
         metadata: @metadata,
         channel: @channel
       )
-      notify_access(event)
-      event
     rescue StandardError => e
       Rails.logger.warn("Secrets audit event failed: #{e.class} #{e.message}")
+      raise if FAIL_CLOSED_ACTIONS.include?(@action.to_s)
+
       nil
     end
-
-    private
 
     # CYRA-77 — l'accesso a un segreto sensibile fa scattare la pipeline di alerting, ma SOLO dal web.
     # Le letture del terminale sono programmatiche per definizione (`cyi run` legge il vault a ogni
@@ -55,6 +64,9 @@ module Secrets
         event_type: "secret_#{@action}", subject_type: "Secrets::Event", subject_id: event.id,
         project_id: @project.id, environment_id: @environment&.id
       )
+    rescue StandardError => e
+      # The read is already recorded: a broken alert must not withhold it.
+      Rails.logger.warn("Secrets access alert failed: #{e.class} #{e.message}")
     end
   end
 end

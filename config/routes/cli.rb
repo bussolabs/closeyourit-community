@@ -237,6 +237,14 @@ namespace :cli do
       resources :requests, only: :show
     end
 
+    # Wikitech (CYRA-1127): external tech knowledge of the organization (`cyi wikitech`). Any member
+    # reads and sends notes; nothing here is tied to projects.
+    namespace :wikitech do
+      resources :notes, only: :create
+      resources :entries, only: %i[index show]
+      resources :asks, only: :create
+    end
+
     # Knowledge base cross-progetto (`cyi kb`): pagine dei progetti visibili. index con ?q=
     # (semantica, fallback ILIKE) + ?kind[] + ?project (key o UUID); ask = RAG con citazioni.
     namespace :knowledge do

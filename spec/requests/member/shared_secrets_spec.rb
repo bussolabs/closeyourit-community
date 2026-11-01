@@ -130,6 +130,15 @@ RSpec.describe "Member shared secrets", type: :request do
       expect(response.headers["Cache-Control"]).to include("no-store")
     end
 
+    it "fails closed: when the reveal cannot be audited the value is not released" do
+      shared = Secrets::Shared::Save.call(organization:, environment: env_prod, name: "api_key", value: "shared-plain").value
+      allow(Secrets::Shared::Event).to receive(:create!).and_raise(ActiveRecord::StatementInvalid, "db down")
+      sign_in(owner)
+
+      expect { get reveal_member_shared_secret_path(shared.shared_variable, value_id: shared.id) }
+        .to raise_error(ActiveRecord::StatementInvalid)
+    end
+
     it "membro senza shared_secrets.manage → redirect (forbidden), nessun valore esposto" do
       shared = Secrets::Shared::Save.call(organization:, environment: env_prod, name: "api_key", value: "shared-plain").value
       sign_in(member)

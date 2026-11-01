@@ -104,13 +104,18 @@
     <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="service-account-tokens">
       <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h3 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.service_accounts.tokens.title") %></h3></div>
       <div class="px-4 py-4 space-y-4">
-        <%= form_with url: member_service_account_tokens_path(@account), method: :post, class: "flex flex-wrap items-end gap-3" do %>
+        <%# CYRA-1117: generare un token è solo dell'owner (il controller lo impone); gli altri leggono chi può. %>
+        <% if actor_privileged? %>
+        <%= form_with url: member_service_account_tokens_path(@account), method: :post, class: "flex flex-wrap items-end gap-3", data: { test: "service-account-token-form" } do %>
           <div class="flex-1 min-w-[12rem]">
             <label for="token_name" class="block font-mono uppercase text-[9.5px] tracking-[1.2px] text-gray-500 dark:text-zinc-400 mb-1.5"><%= t("member.service_accounts.tokens.form_name") %> <span class="text-rose-500">*</span></label>
             <input type="text" name="name" id="token_name" value="<%= params[:name] %>" data-test="service-account-token-name" placeholder="ci-deploy" class="w-full h-[34px] px-3 rounded-md border <%= @errors&.dig(:name) ? 'border-rose-300 dark:border-rose-500/50' : 'border-stone-200 dark:border-zinc-800' %> text-[13px] focus:outline-none focus:border-indigo-600 dark:focus:border-indigo-400">
             <% if @errors&.dig(:name) %><p class="mt-1 text-[11px] text-rose-600 dark:text-rose-400"><%= @errors[:name].first %></p><% end %>
           </div>
           <%= render Ui::ButtonComponent.new(label: t("member.service_accounts.tokens.form_submit"), type: "submit", icon: "plus", size: :sm, test_id: "service-account-token-submit") %>
+        <% end %>
+        <% else %>
+          <p class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="service-account-token-owner-only"><%= t("member.service_accounts.tokens.owner_only") %></p>
         <% end %>
 
         <% if @tokens.empty? %>

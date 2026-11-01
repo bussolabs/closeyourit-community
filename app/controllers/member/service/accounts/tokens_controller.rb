@@ -6,8 +6,11 @@ module Member
       # Token CLI (cyi_u_) di un service account: conio con reveal-once + revoca. Gated members.manage.
       # I service account non fanno il device-flow (niente browser) → l'owner conia il token qui e lo
       # copia UNA volta. Il segreto è reso inline nella show (mai in sessione). Model SEMPRE ::Accounts::*.
+      # CYRA-1117 — il conio è solo owner/god: il token vede ciò che vede l'account, e un delegato
+      # members.manage se ne prenderebbe gli accessi. La revoca resta ai gestori: toglie, non aggiunge.
       class TokensController < Member::BaseController
         before_action :require_manage
+        before_action :require_actor_privileged!, only: :create
         before_action :set_account
 
         def create

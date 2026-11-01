@@ -173,6 +173,13 @@ RSpec.describe "Member::Service::Accounts", type: :request do
       end
     end
 
+    it "l'owner vede il modulo per generare un token" do
+      account = ::Accounts::Service::Create.call(organization: org, name: "Deploy Bot").value
+      get member_service_account_path(account)
+      expect(response.body).to include('data-test="service-account-token-form"')
+      expect(response.body).not_to include('data-test="service-account-token-owner-only"')
+    end
+
     describe "anti-BOLA" do
       it "service account di un'altra org → 404" do
         other_org = create(:organization, slug: "beta")
@@ -189,6 +196,49 @@ RSpec.describe "Member::Service::Accounts", type: :request do
       end
     end
   end
+  # CYRA-1117 — un delegato members.manage non conia token: il token vedrebbe ciò che vede l'account
+  # (qui la produzione), più di quanto il delegato veda. Revocare resta suo.
+  context "come gestore delegato (members.manage, non owner)" do
+    let(:manager) { create(:account) }
+    let(:account) do
+      create(:environment, organization: org, code: "production")
+      ::Accounts::Service::Create.call(organization: org, name: "Deploy Bot", secret_environment_codes: [ "production" ]).value
+    end
+
+    before do
+      create(:membership, account: manager, organization: org, role: :member)
+      Authorization::SetAccountPermissions.call(organization: org, account: manager, allow_keys: [ "members.manage" ], actor: owner)
+      sign_in(manager)
+    end
+
+    it "POST tokens → accesso negato e nessun token nasce" do
+      account
+      expect {
+        post member_service_account_tokens_path(account), params: { confirm: "1", name: "ci-deploy" }
+      }.not_to change(Accounts::ApiToken, :count)
+
+      expect(response).to redirect_to(root_path)
+      expect(flash[:alert]).to eq(I18n.t("member.forbidden"))
+    end
+
+    it "la pagina non mostra il modulo ma la nota, l'elenco e la revoca" do
+      token = ::Accounts::ApiTokens::Issue.call(account: account, organization: org, name: "old", expires_at: nil).value[:token]
+      get member_service_account_path(account)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).not_to include('data-test="service-account-token-form"')
+      expect(response.body).to include('data-test="service-account-token-owner-only"')
+      expect(response.body).to include(%(data-test="service-account-token-revoke-#{token.id}"))
+    end
+
+    it "DELETE token → revoca ancora" do
+      token = ::Accounts::ApiTokens::Issue.call(account: account, organization: org, name: "old", expires_at: nil).value[:token]
+      delete member_service_account_token_path(account, token), params: { confirm: "1" }
+      expect(response).to redirect_to(member_service_account_path(account))
+      expect(token.reload).to be_revoked
+    end
+  end
+
   # CYRA-924 — delete asks in a dialog that names the thing, never in the browser box (F16, C77).
   describe "delete confirmation (dialog)" do
     it "opens a dialog that sends the delete" do

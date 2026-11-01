@@ -73,6 +73,7 @@ module Changelog
       # pagina della GitHub App resta sua, tutto il resto di `/member/integrations` è quest'area.
       "integrations" => [ "member.nav.integrations", %w[/member/integrations] ],
       "knowledge" => [ "member.nav.knowledge", %w[/member/knowledge] ],
+      "wikitech" => [ "member.nav.wikitech", %w[/member/wikitech] ],
       "logs" => [ "member.nav.logs", %w[/member/monitoring/logs] ],
       "measurements" => [ "member.nav.measurements", %w[/member/monitoring/measurements] ],
       "members" => [ "member.nav.members", %w[/member/members] ],

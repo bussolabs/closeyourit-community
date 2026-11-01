@@ -8,7 +8,7 @@
 /.bundle
 
 # Ignore all environment files.
-/.env*
+.env*
 
 # Ignore all logfiles and tempfiles.
 /log/*
@@ -37,6 +37,8 @@
 
 # Ignore key files for decrypting credentials and more.
 /config/*.key
+*.pem
+*.key
 
 # Credenziali Rails cifrate: non usate (i secret stanno su ENV/CloseYourIt; bootstrap dichiarato) → mai versionate.
 /config/credentials.yml.enc
@@ -46,8 +48,8 @@
 /app/assets/builds/*
 !/app/assets/builds/.keep
 
-# Versiona il template ENV (placeholder) anche se /.env* è ignorato.
-!/.env.example
+# Versiona il template ENV (placeholder) anche se .env* è ignorato.
+!.env.example
 
 # Overmind socket (dev) + coverage output.
 /.overmind.sock

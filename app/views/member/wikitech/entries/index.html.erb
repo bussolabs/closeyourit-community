@@ -1,0 +1,34 @@
+<% content_for :title, t("member.wikitech.title") %>
+
+<div class="p-7 space-y-6" data-test="member-wikitech">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.wikitech.title"),
+        subtitle: t("member.wikitech.subtitle"),
+        breadcrumb: [ { label: t("member.wikitech.title") } ],
+        counts_test_id: "wikitech-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.wikitech.stats.total", count: @counts[:total]), value: @counts[:total], test_id: "wikitech-stat-total") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.wikitech.stats.verified", count: @counts[:verified]), value: @counts[:verified],
+            value_color: :emerald, href: member_wikitech_root_path(verification: [ "verified" ]), test_id: "wikitech-stat-verified") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.wikitech.stats.unconfirmed", count: @counts[:unconfirmed]), value: @counts[:unconfirmed],
+            value_color: :amber, href: member_wikitech_root_path(verification: [ "unconfirmed" ]), test_id: "wikitech-stat-unconfirmed") %>
+    <% end %>
+    <% h.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.wikitech.new_note"), href: new_member_wikitech_note_path,
+            variant: :primary, size: :sm, icon: "plus", test_id: "wikitech-new-note") %>
+    <% end %>
+  <% end %>
+
+  <% if @counts[:total].zero? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.wikitech.empty"), body: t("member.wikitech.empty_body"),
+          example: t("member.wikitech.empty_example"), icon: "cpu", framed: true, test_id: "wikitech-empty") do |empty| %>
+      <% empty.with_action do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.wikitech.new_note"), href: new_member_wikitech_note_path,
+              variant: :primary, size: :sm, icon: "plus", test_id: "wikitech-empty-new") %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= render "member/wikitech/entries/ask_panel" %>
+    <%= render "member/wikitech/entries/table" %>
+  <% end %>
+</div>

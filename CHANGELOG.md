@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.198.0] - 2026-11-01
+
+### Added
+
+- **Wikitech**: salva gli strumenti e i progetti tech visti in giro e ritrovali con una domanda normale. Wikitech tiene solo la parte tecnica, fa una scheda per progetto e risponde citando le fonti. ([Wikitech](/member/wikitech)) ([guida](/member/guides/wikitech))
+
+### Changed
+
+- **Tutte le copie open source disponibili.** La pagina pubblica del server rimanda alle copie di gateway di raccolta, automator, riga di comando e librerie, ognuna aggiornata a ogni rilascio stabile.
+
+### Security
+
+- **Token degli account di servizio solo dal proprietario.** Generare un token per un account di servizio, dal sito o dalla riga di comando, ora spetta al proprietario dell'organizzazione. Chi gestisce i membri vede ancora i token e può revocarli. ([Membri](/member/members))
+
 ## [0.197.1] - 2026-10-26
 
 ### Changed

@@ -43,8 +43,25 @@ RSpec.describe Secrets::RecordEvent, type: :service do
   it "un guasto dell'audit non ferma chi lo stava scrivendo" do
     allow(Secrets::Event).to receive(:create!).and_raise(ActiveRecord::StatementInvalid, "db giù")
 
-    expect { described_class.call(action: "read", project:, channel: "web") }.not_to raise_error
+    expect { described_class.call(action: "set", project:, channel: "web") }.not_to raise_error
     expect(Alerting::EvaluateJob).not_to have_been_enqueued
+  end
+
+  it "fails closed on a read: no stored audit, no value released" do
+    allow(Secrets::Event).to receive(:create!).and_raise(ActiveRecord::StatementInvalid, "db down")
+
+    expect { described_class.call(action: "read", project:, channel: "web") }
+      .to raise_error(ActiveRecord::StatementInvalid)
+    expect(Alerting::EvaluateJob).not_to have_been_enqueued
+  end
+
+  it "does not block a stored read when only the access alert fails" do
+    allow(Alerting::EvaluateJob).to receive(:perform_later).and_raise(StandardError, "queue down")
+    allow(Rails.logger).to receive(:warn)
+
+    expect { described_class.call(action: "read", project:, channel: "web") }
+      .to change(Secrets::Event, :count).by(1)
+    expect(Rails.logger).to have_received(:warn).with(/Secrets access alert failed/)
   end
 
   describe "gli avvisi sugli accessi (CYRA-77)" do

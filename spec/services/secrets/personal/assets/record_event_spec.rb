@@ -41,4 +41,12 @@ RSpec.describe Secrets::Personal::Assets::RecordEvent do
       .not_to change(Secrets::Personal::AssetEvent, :count)
     expect(Rails.logger).to have_received(:error).with(/personal_secret_asset_audit_failed/)
   end
+
+  it "fails closed on a download: no stored audit, no file released" do
+    allow(Secrets::Personal::AssetEvent).to receive(:create!).and_raise(ActiveRecord::StatementInvalid, "db down")
+    allow(Rails.logger).to receive(:error)
+
+    expect { described_class.call(action: "downloaded", asset:) }
+      .to raise_error(ActiveRecord::StatementInvalid)
+  end
 end

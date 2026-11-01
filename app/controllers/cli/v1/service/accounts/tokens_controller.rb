@@ -7,8 +7,11 @@ module Cli
         # Token CLI (cyi_u_) di un service account, da terminale. Gate members.manage. Il create ritorna
         # il SEGRETO una sola volta (reveal-once) accanto al record; in DB e nelle letture successive
         # esiste solo il prefix. destroy = revoca soft. Model SEMPRE ::Accounts::* fully-qualified.
+        # CYRA-1117 — il create è solo owner/god, come nel canale Member: il token eredita gli accessi
+        # dell'account, quindi un delegato members.manage non deve poterlo coniare.
         class TokensController < Cli::V1::BaseController
           before_action :require_manage
+          before_action :require_owner_to_issue, only: :create
           before_action :set_account
 
           def index
@@ -48,6 +51,10 @@ module Cli
 
           def require_manage
             require_permission!("members.manage")
+          end
+
+          def require_owner_to_issue
+            require_owner!("Only an owner or god can create a service account token")
           end
         end
       end

@@ -53,7 +53,8 @@ RSpec.describe "Voci di menu e titoli di pagina (CYRA-356)", type: :model do
     "member.nav.overview" => nil,
     "member.nav.uptime" => "Uptime è il nome della misura, si legge così anche in italiano",
     "member.nav.performance" => "Performance è entrato in italiano come nome della misura",
-    "member.nav.guidance" => "Guidance è il nome della funzione: menu, titolo, scheda e pulsanti"
+    "member.nav.guidance" => "Guidance è il nome della funzione: menu, titolo, scheda e pulsanti",
+    "member.nav.wikitech" => "Wikitech is the feature name (CYRA-1130), the same in every language"
     # CYRA-581/CYRA-545 — «member.nav.github_app» non è più una voce del menu: al suo posto c'è
     # «Integrazioni», l'elenco dei servizi collegabili, e la GitHub App è una delle sue schede. Il
     # nome resta in i18n perché è quello con cui il changelog nomina quell'area, ma qui non ha più

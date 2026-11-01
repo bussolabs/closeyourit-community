@@ -60,12 +60,16 @@ bundle exec rspec
 
 ## License and contributions
 
-- Server: AGPL-3.0 (`LICENSE`). SDKs and CLI: MIT, in their own repositories:
+- Server: AGPL-3.0 (`LICENSE`). Other components are published in their own repositories, each
+  updated at every stable release:
+  [server monitoring agent](https://github.com/bussolabs/closeyourit-agent-community),
+  [ingest gateway](https://github.com/bussolabs/closeyourit-ingest-community),
+  [automator](https://github.com/bussolabs/closeyourit-automator-community),
+  [CLI](https://github.com/bussolabs/closeyourit-cli-community) and the SDKs (MIT):
   [JavaScript](https://github.com/bussolabs/closeyourit-js-community),
   [Ruby](https://github.com/bussolabs/closeyourit-ruby-community),
   [Python](https://github.com/bussolabs/closeyourit-python-community),
-  [Dart and Flutter](https://github.com/bussolabs/closeyourit-dart-community),
-  [CLI](https://github.com/bussolabs/closeyourit-cli-community).
+  [Dart and Flutter](https://github.com/bussolabs/closeyourit-dart-community).
 - Pull requests are welcome. On your first one the CLA bot asks you to accept `CLA.md`.
 - This repository is a copy published at every release. Development happens in a private repository;
   accepted pull requests are applied there with your authorship and come back with the next release.

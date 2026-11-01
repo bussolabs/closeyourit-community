@@ -57,6 +57,8 @@ RSpec.describe "Secrets — avvisi sugli accessi (CYRA-77)" do
       expect do
         Secrets::RecordEvent.call(action: "read", project:, environment: production, actor:,
                                   name: "API_KEY", channel: "web")
+      rescue ActiveRecord::StatementInvalid
+        nil # a read fails closed when its audit fails: only the missing alert matters here
       end.not_to have_enqueued_job(Alerting::EvaluateJob)
     end
   end

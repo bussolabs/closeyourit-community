@@ -27,7 +27,9 @@ module Embeddings
       # un buco nel loro indice è invisibile esattamente come gli altri e va contato qui.
       ideas: Ideas::Idea,
       # CYRA-914 P8: helpdesk requests are grouped by meaning too.
-      helpdesk_requests: Helpdesk::Request
+      helpdesk_requests: Helpdesk::Request,
+      # CYRA-1129: Wikitech cards are found by meaning.
+      wikitech_entries: Wikitech::Entry
     }.freeze
 
     # Grazia sui vettori mai calcolati: subito dopo la create la riga resta con embedding NULL finché il

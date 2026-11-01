@@ -129,5 +129,35 @@ RSpec.describe "Cli::V1::Service::Accounts", type: :request do
       expect(response).to have_http_status(:no_content)
       expect(token.reload).to be_revoked
     end
+
+    # CYRA-1117 — il conio è solo owner/god anche da terminale; la revoca resta al delegato.
+    context "da gestore delegato (members.manage, non owner)" do
+      let(:manager) do
+        create(:account).tap do |m|
+          create(:membership, account: m, organization: organization, role: :member)
+          Authorization::SetAccountPermissions.call(organization:, account: m, allow_keys: [ "members.manage" ], actor: owner)
+        end
+      end
+      let(:manager_headers) { headers_for(manager) }
+
+      it "POST tokens → 403 col motivo e nessun token" do
+        account
+        manager_headers
+        expect {
+          post "/cli/v1/service/accounts/#{account.id}/tokens", headers: manager_headers, params: { confirm: "1", name: "ci-deploy" }
+        }.not_to change(Accounts::ApiToken, :count)
+
+        expect(response).to have_http_status(:forbidden)
+        expect(response.parsed_body["error"]["message"]).to eq("Only an owner or god can create a service account token")
+        expect(account.api_tokens.where(name: "ci-deploy")).not_to exist
+      end
+
+      it "DELETE token → 204 e revoca ancora" do
+        token = Accounts::ApiTokens::Issue.call(account: account, organization: organization, name: "old", expires_at: nil).value[:token]
+        delete "/cli/v1/service/accounts/#{account.id}/tokens/#{token.id}", params: { confirm: "1" }, headers: manager_headers
+        expect(response).to have_http_status(:no_content)
+        expect(token.reload).to be_revoked
+      end
+    end
   end
 end

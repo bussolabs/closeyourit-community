@@ -62,6 +62,14 @@ RSpec.describe Secrets::Assets::RecordEvent do
     allow(Secrets::AssetEvent).to receive(:create!).and_raise(ActiveRecord::StatementInvalid, "db giù")
     allow(Rails.logger).to receive(:error)
 
-    expect { described_class.call(action: "downloaded", actor:, asset:) }.not_to raise_error
+    expect { described_class.call(action: "uploaded", actor:, asset:) }.not_to raise_error
+  end
+
+  it "fails closed on a download: no stored audit, no file released" do
+    allow(Secrets::AssetEvent).to receive(:create!).and_raise(ActiveRecord::StatementInvalid, "db down")
+    allow(Rails.logger).to receive(:error)
+
+    expect { described_class.call(action: "downloaded", actor:, asset:) }
+      .to raise_error(ActiveRecord::StatementInvalid)
   end
 end
