@@ -156,7 +156,7 @@ RSpec.describe "Member::ProjectSettings tokens section", type: :request do
       get member_project_settings_path(project)
 
       links = doc.css("[data-test='project-settings-nav'] a").map { |a| a["href"] }
-      expect(links).to eq(%w[#tokens #ingest #tickets #retention #thresholds #production #features #supporter #dashboard #danger])
+      expect(links).to eq(%w[#tokens #ingest #tickets #retention #thresholds #production #features #supporter #council #automator-live #dashboard #danger])
       links.each { |anchor| expect(doc.at_css(anchor)).to be_present }
     end
 

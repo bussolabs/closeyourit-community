@@ -66,4 +66,16 @@ RSpec.describe Agents::AutomatorSetting do
     expect(setting.supporter_reserved_topic_list).to eq(%w[stripe paypal])
     expect(build(:agent_automator_setting, supporter_reserved_topics: "x" * 101)).to be_invalid
   end
+
+  describe "council_mode" do
+    it "defaults to off" do
+      expect(described_class.new.council_mode).to eq("off")
+    end
+
+    it "rejects an unknown mode" do
+      setting = build(:agent_automator_setting, council_mode: "sometimes")
+      expect(setting).not_to be_valid
+      expect(setting.errors[:council_mode]).to be_present
+    end
+  end
 end

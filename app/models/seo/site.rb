@@ -34,7 +34,8 @@ module Seo
     # Tetto massimo consentito, oltre il quale non si va nemmeno chiedendolo: un giro da diecimila
     # pagine è una visita ostile al sito di qualcun altro, e occuperebbe la coda per ore.
     # Raised from 1,000 for real sites of about 1,250 pages; at the 0.5s pause a full round still ends
-    # in well under an hour (CYRA-1094).
+    # in well under an hour (CYRA-1094). Seo::Crawl::MAX_DURATION (2 hours) leaves room for that and
+    # stops only rounds that are slow page after page (CYRA-1122).
     MAX_PAGES_CEILING = 2_000
 
     normalizes :base_url, with: ->(value) { value.to_s.strip.chomp("/") }

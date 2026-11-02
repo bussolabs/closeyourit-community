@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_01_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_200029) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -173,6 +173,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_130000) do
     t.index ["true_actor_id"], name: "index_activity_events_on_true_actor_id"
   end
 
+  create_table "agents_attempt_live_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "organization_id", null: false
+    t.uuid "attempt_id", null: false
+    t.integer "seq", null: false
+    t.string "kind", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "recorded_at", null: false
+    t.datetime "created_at", null: false
+    t.index ["attempt_id", "seq"], name: "index_agents_attempt_live_events_on_attempt_id_and_seq", unique: true
+    t.index ["created_at"], name: "index_agents_attempt_live_events_on_created_at"
+    t.index ["organization_id"], name: "index_agents_attempt_live_events_on_organization_id"
+    t.check_constraint "kind::text = ANY (ARRAY['file_change'::character varying::text, 'file_read'::character varying::text, 'search'::character varying::text, 'command'::character varying::text, 'truncated'::character varying::text])", name: "agents_attempt_live_events_kind_valid"
+    t.check_constraint "seq > 0", name: "agents_attempt_live_events_seq_positive"
+  end
+
   create_table "agents_attempts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "agent_id"
     t.jsonb "allowed_tools", default: [], null: false
@@ -212,6 +227,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_130000) do
     t.integer "ttl"
     t.datetime "updated_at", null: false
     t.uuid "workflow_id", null: false
+    t.string "work_model"
     t.index ["agent_id"], name: "index_agents_attempts_on_agent_id"
     t.index ["command_id"], name: "index_agents_attempts_on_command_id"
     t.index ["finished_at", "status"], name: "idx_agents_attempts_finished_at_status"
@@ -238,7 +254,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_130000) do
     t.text "supporter_reserved_topics"
     t.datetime "updated_at", null: false
     t.string "work_engine", default: "claude", null: false
+    t.string "council_mode", default: "off", null: false
     t.index ["organization_id"], name: "index_agents_automator_settings_on_organization_id", unique: true
+    t.check_constraint "council_mode::text = ANY (ARRAY['off'::character varying::text, 'dry_run'::character varying::text, 'on'::character varying::text])", name: "agents_automator_settings_council_mode_valid"
     t.check_constraint "reviewer::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text, 'opencode'::character varying::text])", name: "agents_automator_settings_reviewer_valid"
     t.check_constraint "supporter::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text, 'opencode'::character varying::text])", name: "agents_automator_settings_supporter_valid"
     t.check_constraint "work_engine::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text])", name: "agents_automator_settings_work_engine_valid"
@@ -275,6 +293,56 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_130000) do
     t.index ["personal_variable_id"], name: "index_agents_claude_credentials_on_personal_variable_id"
     t.index ["set_by_id"], name: "index_agents_claude_credentials_on_set_by_id"
     t.index ["shared_value_id"], name: "index_agents_claude_credentials_on_shared_value_id"
+  end
+
+  create_table "agents_council_proposals", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "council_run_id", null: false
+    t.uuid "organization_id", null: false
+    t.uuid "project_id", null: false
+    t.string "ref", null: false
+    t.string "proposer", null: false
+    t.string "title", null: false
+    t.text "problem", null: false
+    t.text "solution"
+    t.string "kind"
+    t.string "risk"
+    t.string "suggested_engine"
+    t.string "suggested_model"
+    t.jsonb "critique", default: {}, null: false
+    t.string "outcome", null: false
+    t.string "reasons", default: [], null: false, array: true
+    t.uuid "ticket_id"
+    t.uuid "idea_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["council_run_id", "ref"], name: "index_agents_council_proposals_on_council_run_id_and_ref", unique: true
+    t.index ["council_run_id"], name: "index_agents_council_proposals_on_council_run_id"
+    t.index ["idea_id"], name: "index_agents_council_proposals_on_idea_id"
+    t.index ["organization_id"], name: "index_agents_council_proposals_on_organization_id"
+    t.index ["project_id"], name: "index_agents_council_proposals_on_project_id"
+    t.index ["ticket_id"], name: "index_agents_council_proposals_on_ticket_id", unique: true
+  end
+
+  create_table "agents_council_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "organization_id", null: false
+    t.uuid "project_id", null: false
+    t.uuid "host_id", null: false
+    t.string "mode", null: false
+    t.string "status", default: "running", null: false
+    t.string "failure_kind"
+    t.text "failure"
+    t.datetime "started_at", null: false
+    t.datetime "finished_at"
+    t.jsonb "report", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["host_id"], name: "index_agents_council_runs_on_host_id"
+    t.index ["organization_id", "status", "started_at"], name: "idx_on_organization_id_status_started_at_f92c85cf34"
+    t.index ["organization_id"], name: "index_agents_council_runs_on_organization_id"
+    t.index ["organization_id"], name: "index_agents_council_runs_one_running_per_org", unique: true, where: "((status)::text = 'running'::text)"
+    t.index ["project_id", "started_at"], name: "index_agents_council_runs_on_project_id_and_started_at"
+    t.index ["project_id"], name: "index_agents_council_runs_on_project_id"
+    t.check_constraint "status::text = ANY (ARRAY['running'::character varying::text, 'completed'::character varying::text, 'failed'::character varying::text])", name: "agents_council_runs_status_valid"
   end
 
   create_table "agents_delivery_candidates", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -708,6 +776,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_130000) do
     t.datetime "triaged_at"
     t.integer "unreachable_count", default: 0, null: false
     t.datetime "updated_at", null: false
+    t.datetime "conflict_resolution_requested_at"
     t.index ["approved_by_id"], name: "index_agents_workflows_on_approved_by_id"
     t.index ["autopilot_approved_by_id"], name: "index_agents_workflows_on_autopilot_approved_by_id"
     t.index ["autopilot_by_agent_id"], name: "index_agents_workflows_on_autopilot_by_agent_id"
@@ -2752,6 +2821,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_130000) do
     t.text "supporter_reserved_topics"
     t.datetime "updated_at", null: false
     t.uuid "owner_id"
+    t.boolean "council_enabled", default: false, null: false
+    t.boolean "automator_live_code_enabled", default: false, null: false
     t.index ["created_by_id"], name: "index_projects_on_created_by_id"
     t.index ["cto_id"], name: "index_projects_on_cto_id"
     t.index ["default_assignee_id"], name: "index_projects_on_default_assignee_id"
@@ -2800,6 +2871,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_130000) do
     t.string "name", null: false
     t.uuid "organization_id", null: false
     t.datetime "updated_at", null: false
+    t.boolean "council_enabled", default: false, null: false
     t.index ["created_by_id"], name: "index_projects_groups_on_created_by_id"
     t.index ["organization_id", "name"], name: "index_projects_groups_on_organization_id_and_name"
     t.index ["organization_id"], name: "index_projects_groups_on_organization_id"
@@ -4522,6 +4594,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_130000) do
   add_foreign_key "activity_events", "accounts", column: "actor_id"
   add_foreign_key "activity_events", "accounts", column: "true_actor_id"
   add_foreign_key "activity_events", "organizations"
+  add_foreign_key "agents_attempt_live_events", "agents_attempts", column: "attempt_id", on_delete: :cascade
+  add_foreign_key "agents_attempt_live_events", "organizations", on_delete: :cascade
   add_foreign_key "agents_attempts", "accounts", column: "service_account_id", on_delete: :restrict
   add_foreign_key "agents_attempts", "agents_hosts", column: "host_id", on_delete: :restrict
   add_foreign_key "agents_attempts", "agents_workflows", column: "workflow_id", on_delete: :cascade
@@ -4536,6 +4610,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_130000) do
   add_foreign_key "agents_claude_credentials", "organizations", on_delete: :cascade
   add_foreign_key "agents_claude_credentials", "secrets_personal_variables", column: "personal_variable_id", on_delete: :cascade
   add_foreign_key "agents_claude_credentials", "secrets_shared_values", column: "shared_value_id", on_delete: :cascade
+  add_foreign_key "agents_council_proposals", "agents_council_runs", column: "council_run_id", on_delete: :cascade
+  add_foreign_key "agents_council_proposals", "ideas_ideas", column: "idea_id", on_delete: :nullify
+  add_foreign_key "agents_council_proposals", "organizations", on_delete: :cascade
+  add_foreign_key "agents_council_proposals", "projects", on_delete: :cascade
+  add_foreign_key "agents_council_proposals", "ticketing_tickets", column: "ticket_id", on_delete: :nullify
+  add_foreign_key "agents_council_runs", "agents_hosts", column: "host_id"
+  add_foreign_key "agents_council_runs", "organizations", on_delete: :cascade
+  add_foreign_key "agents_council_runs", "projects", on_delete: :cascade
   add_foreign_key "agents_delivery_candidates", "agents_attempts", column: "attempt_id"
   add_foreign_key "agents_delivery_candidates", "agents_workflows", column: "workflow_id"
   add_foreign_key "agents_delivery_candidates", "github_repositories", column: "repository_id"

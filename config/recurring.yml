@@ -39,6 +39,11 @@ production: &schedule
     class: Usage::PruneJob
     queue: batch
     schedule: at 4am every day
+  # CYAU-282 — concluded tickets lose the code of the agent's steps; old steps go.
+  agents_live_events_prune:
+    class: Agents::LiveEvents::PruneJob
+    queue: batch
+    schedule: at 4:30am every day
   # Anche questa su `batch` per la stessa ragione: pota a lotti con una pausa fra l'uno e l'altro,
   # quindi dura quanto è lunga la tabella dei job finiti dell'ultima ora.
   clear_solid_queue_finished_jobs:

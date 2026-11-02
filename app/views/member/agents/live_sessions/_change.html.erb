@@ -1,0 +1,22 @@
+<%# locals: (change:, fresh:, follow:, cursor: nil) %>
+<%# One change of the file. A change that just arrived lights up
+    and its new lines enter one after another; `cursor` ({ label:, color: }) tags the last line the agent added. %>
+<% blocks = Array(change.hunks).select { it.lines.any? }.map { automator_live_lines(it) } %>
+<% last_added = blocks.flatten.reverse.find { it.kind == :added } %>
+<% added = 0 %>
+<section class="shrink-0 border-b border-stone-200 dark:border-zinc-800" id="automator-live-change-<%= change.seq %>" data-test="automator-live-change" <%= tag.attributes(data: { controller: ("automator-live-follow" if follow) }) %>>
+  <p class="flex items-center gap-2 px-4 py-1.5 text-[11.5px] text-gray-500 dark:text-zinc-400">
+    <%= t("member.automator_live.change_at", time: automator_live_time(change.at)) %>
+    <span class="font-mono text-emerald-700 dark:text-emerald-400">+<%= change.added %></span>
+    <span class="font-mono text-red-700 dark:text-red-400">−<%= change.removed %></span>
+  </p>
+  <% blocks.each do |lines| %>
+    <div class="overflow-x-auto pb-2 font-mono text-[12px] leading-5">
+      <% lines.each do |line| %>
+        <% arriving = fresh && line.kind == :added %>
+        <% delay = arriving ? (added += 1) - 1 : nil %>
+        <%= render "member/agents/live_sessions/line", line:, fresh: arriving, delay:, cursor: (cursor if line.equal?(last_added)) %>
+      <% end %>
+    </div>
+  <% end %>
+</section>

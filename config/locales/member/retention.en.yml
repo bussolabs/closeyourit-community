@@ -78,6 +78,15 @@ en:
       supporter_reserved_topics_label: Project reserved topics
       supporter_reserved_topics_placeholder: "mailchimp\napp/services/payments/"
       supporter_reserved_topics_hint: One per line. They add to the organization's and the built-in topics, never remove them. A line with a slash (/) is a code folder.
+      council_section: Council
+      council_hint: Every day Claude and Codex look at this project and propose improvements.
+      council_enabled_label: Council on
+      council_enabled_hint: Approved proposals become tickets or ideas. The master switch is in the automator settings.
+      council_by_group: On for the whole %{group} group. Switch it off from the group.
+      automator_live_section: Automator live
+      automator_live_hint: While the automator works a ticket, the app sees which files it reads and changes, and by how many lines.
+      automator_live_code_label: Show the code too
+      automator_live_code_hint: The changed lines go through the app. They stay until the ticket is concluded, then they are deleted. Off, the code stays on the machine.
       tickets_section: Tickets
       default_assignee_label: Default assignee
       default_assignee_placeholder: None

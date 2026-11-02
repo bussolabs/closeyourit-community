@@ -122,6 +122,12 @@ module Realtime
       "#{tenant(project.organization_id)}analytics:project:#{project.id}"
     end
 
+    # CYRA-1138 — the live pages of every agent at work on one project; only a signal travels, and the stream
+    # ends with the project, so every delivery rechecks who may see it.
+    def automator_live_project(organization_id:, project_id:)
+      "#{tenant(organization_id)}automator_live_project:project:#{project_id}"
+    end
+
     # Scheda di UN agente (CYRA-823): il segnale che la sua attività è cambiata. Risorsa org-scoped
     # come server_host — l'host ha organization_id diretto, niente progetto. Ci viaggia SOLO un
     # segnale, mai HTML: `agents.view` è org-level ma i ticket che l'agente sta lavorando si vedono

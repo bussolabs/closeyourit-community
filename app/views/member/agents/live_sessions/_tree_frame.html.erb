@@ -1,0 +1,4 @@
+<%# One closed folder of the project tree, answered to its lazy frame. %>
+<%= turbo_frame_tag automator_live_tree_frame(@dir), target: "_top" do %>
+  <%= render "member/agents/live_sessions/tree_level", dir: @dir, depth: @depth %>
+<% end %>

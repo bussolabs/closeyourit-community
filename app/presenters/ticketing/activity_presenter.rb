@@ -49,7 +49,9 @@ module Ticketing
       "question_answered" => "reply",
       "question_closed" => "circle-x",
       # La consegna è andata avanti da sola perché i controlli erano tutti verdi (CYRA-868).
-      "autopilot_auto_approved" => "fast-forward"
+      "autopilot_auto_approved" => "fast-forward",
+      # The council's plan approved itself (CYRA-1133).
+      "plan_council_approved" => "users"
     }.freeze
 
     # Ordine canonico dei campi nella frase `updated`: il jsonb NON preserva l'insertion order,

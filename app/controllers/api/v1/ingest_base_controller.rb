@@ -19,11 +19,11 @@ module Api
       # Per resolve_dsn_token / sentry_key (risoluzione della DSN public key). authenticate_ingest!
       # del concern NON viene usato: qui l'autenticazione unifica bearer + public key.
       include IngestAuthentication
+      include RequestBodyLimit
 
-      # Byte cap at the head of the chain for every ingest channel (CYRA-1039). Without a bearer or
-      # X-Sentry-Auth the credential lookup reads params[:sentry_key], which parses the whole body:
-      # the cap must run before authentication and before the parse. Events and metrics keep their
-      # own limit and error code by overriding byte_cap / byte_cap_error_code.
+      # Byte cap at the head of the chain, before authentication and parse (CYRA-1039): it counts the
+      # bytes received when no size is declared, chunked bodies included (CYRA-1124). Events and
+      # metrics keep their own limit and code by overriding byte_cap / byte_cap_error_code.
       MAX_BYTES = 5.megabytes
       prepend_before_action :enforce_byte_cap!
 
@@ -36,7 +36,7 @@ module Api
       private
 
       def enforce_byte_cap!
-        return if request.content_length.to_i <= byte_cap
+        return unless request_body_over?(byte_cap)
 
         render_error(byte_cap_error_code, "Payload too large", status: :content_too_large)
       end

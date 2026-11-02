@@ -1,0 +1,19 @@
+<%# CYRA-1133 — the council looks at this project once a day. A group switched on covers it already. %>
+<%= render Ui::SectionComponent.new(title: t("member.project_settings.council_section"), id: "council",
+      class: "scroll-mt-4", test_id: "project-council") do |section| %>
+  <% section.with_subtitle do %>
+    <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.project_settings.council_hint") %></p>
+  <% end %>
+  <% if @project.group&.council_enabled? %>
+    <p class="px-4 py-4 text-[12.5px] text-gray-600 dark:text-zinc-400" data-test="project-council-by-group">
+      <%= t("member.project_settings.council_by_group", group: @project.group.name) %>
+    </p>
+  <% else %>
+    <%= render Ui::SwitchComponent.new(
+          name: "council_enabled", url: member_project_settings_path(@project),
+          checked: @project.council_enabled?, icon: "users",
+          label: t("member.project_settings.council_enabled_label"),
+          hint: t("member.project_settings.council_enabled_hint"),
+          test_id: "project-council-toggle") %>
+  <% end %>
+<% end %>

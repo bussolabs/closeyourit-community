@@ -32,16 +32,12 @@ module Agents
           # perché manca un dato che serve alla porta d'uscita non aggiunge sicurezza: toglie l'unica
           # strada. Le due colonne restano nulle insieme — il vincolo di database le vuole entrambe o
           # nessuna — e alla fine sarà una persona a dire «fatto» invece della macchina.
-          decision = Agents::Plan.decision_for(@workflow.ticket)
-          frozen = decision.frozen? ? { candidate_items: decision.candidate_items, completion_probe: decision.completion_probe } : {}
-          plan.update!(approved_by: @actor, approved_at: now, **frozen)
           # Decidere sul piano è anche decidere sul blocco (CYRA-218): sopravvivendo all'approvazione
           # terrebbe fuori dalla coda un workflow con un piano approvato, fermo senza che nulla lo dica.
           # QUALE versione del piano è quella approvata si fissa sempre, anche quando le due decisioni
           # non erano componibili: è l'identità di ciò che è stato approvato, e non dipende da come è
           # configurato il progetto. Chi eseguirà dovrà dichiarare di lavorare su QUESTA.
-          @workflow.update!(approved_by: @actor, approved_at: now, frozen_plan_id: plan.id,
-                            plan_frozen_at: now, **Agents::Workflow.cleared_block(now))
+          FreezePlan.call(workflow: @workflow, plan:, actor: @actor, now:)
         end
         Result.ok(@workflow)
       rescue ActiveRecord::RecordNotFound

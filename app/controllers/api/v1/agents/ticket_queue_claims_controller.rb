@@ -20,7 +20,9 @@ module Api
           outcome = result.value
           data = AgentLeaseSerializer.new(outcome.lease).as_json.merge(
             "attempt_id" => outcome.attempt.id, "review_mode" => outcome.attempt.review_mode, "reviewer" => outcome.attempt.reviewer, "reviewer_model" => outcome.attempt.reviewer_model,
-            "work_engine" => outcome.attempt.runtime
+            "work_engine" => outcome.attempt.runtime,
+            # CYRA-1133: the model the council chose; missing = the model the automator pins.
+            "work_model" => outcome.attempt.work_model
           )
           render json: { data: }, status: outcome.fresh_acquisition ? :created : :ok
         end

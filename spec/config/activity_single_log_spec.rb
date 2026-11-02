@@ -30,7 +30,9 @@ RSpec.describe "Il registro delle attività è uno solo (CYRA-745)", type: :mode
     "secrets_personal_events" => "è la cassaforte personale, privata di chi la usa",
     "secrets_personal_asset_events" => "sono i file della cassaforte personale, privati di chi li usa",
     # CYAG-22: Kubernetes warnings of an observed cluster, not actions of people.
-    "clusters_events" => "Kubernetes warnings of an observed cluster, not actions of people"
+    "clusters_events" => "Kubernetes warnings of an observed cluster, not actions of people",
+    # CYAU-282: an agent's steps on its own ticket copy, read by the automator live page and kept 14 days.
+    "agents_attempt_live_events" => "an agent's steps while it works, read on the automator live page"
   }.freeze
 
   def tabelle_registro

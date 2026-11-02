@@ -144,5 +144,14 @@ RSpec.describe "Resource and delivery security boundaries" do
       expect(channel.send(:authorized_stream?, "org:org:chat:conversation:chat")).to be(true)
       expect(channel.send(:authorized_stream?, "org:org:chat:conversation:chat")).to be(false)
     end
+
+    it "rechecks the project of the automator live pages on every delivery (CYRA-1138)" do
+      projects = double
+      allow(Authorization::VisibleScope).to receive(:new).and_return(double(projects:))
+      allow(projects).to receive(:exists?).with(id: "P-9").and_return(true, false)
+      stream = "org:org:automator_live_project:project:P-9"
+      expect(channel.send(:authorized_stream?, stream)).to be(true)
+      expect(channel.send(:authorized_stream?, stream)).to be(false)
+    end
   end
 end

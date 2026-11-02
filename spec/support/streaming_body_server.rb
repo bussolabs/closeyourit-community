@@ -52,8 +52,16 @@ class StreamingBodyServer
 
   def serve(socket, spec)
     read_request(socket)
-    write_head(socket, spec)
-    write_body(socket, spec[:body].to_s)
+    if spec[:drip_head]
+      drip(socket, head(spec), spec[:drip_head])
+    else
+      write_body(socket, head(spec))
+    end
+    if spec[:drip]
+      drip(socket, spec[:body].to_s, spec[:drip])
+    else
+      write_body(socket, spec[:body].to_s)
+    end
     @closed_by_client << wait_for_close(socket)
   ensure
     socket.close unless socket.closed?
@@ -65,15 +73,17 @@ class StreamingBodyServer
     end
   end
 
-  def write_head(socket, spec)
-    body = spec[:body].to_s
-    headers = { "Content-Length" => (spec[:declared_length] || body.bytesize).to_s,
-                "Connection" => "close" }.merge(spec[:headers] || {})
-    socket.write("HTTP/1.1 #{spec[:status] || '200 OK'}\r\n")
-    headers.each { |name, value| socket.write("#{name}: #{value}\r\n") }
-    socket.write("\r\n")
-  rescue Errno::EPIPE, Errno::ECONNRESET
-    nil
+  # Con `chunked: true` niente Content-Length: il corpo della prova è la cornice chunked stessa,
+  # scritta a mano, così da poterla mandare lenta quanto serve.
+  def head(spec)
+    length = if spec[:chunked]
+      { "Transfer-Encoding" => "chunked" }
+    else
+      { "Content-Length" => (spec[:declared_length] || spec[:body].to_s.bytesize).to_s }
+    end
+    headers = length.merge("Connection" => "close").merge(spec[:headers] || {})
+    lines = [ "HTTP/1.1 #{spec[:status] || '200 OK'}" ] + headers.map { |name, value| "#{name}: #{value}" }
+    "#{lines.join("\r\n")}\r\n\r\n"
   end
 
   def write_body(socket, body)
@@ -83,6 +93,19 @@ class StreamingBodyServer
     socket.flush
   rescue Errno::EPIPE, Errno::ECONNRESET
     nil # il client si è già fermato: è il caso che stiamo provando
+  end
+
+  # CYRA-1122 — il sito lento: un byte ogni `interval` secondi. Nessuna singola attesa scade, ed è
+  # proprio il caso che il tetto per singola attesa non vede. Vale per il corpo (`drip`) e per riga
+  # di stato e header (`drip_head`), che `Net::HTTP` legge prima di passare la mano a chiunque.
+  def drip(socket, text, interval)
+    text.each_char do |char|
+      sleep(interval)
+      socket.write(char)
+      socket.flush
+    end
+  rescue Errno::EPIPE, Errno::ECONNRESET, IOError
+    nil # il client ha smesso di aspettare: è il caso che stiamo provando
   end
 
   # Il socket diventa leggibile anche quando dall'altra parte non c'è più nessuno: la lettura

@@ -10,7 +10,8 @@ module Member
     # CYRA-376 — session_replay_enabled esisteva sul progetto e gatava l'ingest, ma nessuna
     # schermata lo accendeva: la funzione si poteva solo scoprire, mai attivare.
     FEATURE_FLAGS = %w[quick_bug_report_enabled analytics_enabled secret_approval_enabled
-                       session_replay_enabled helpdesk_enabled supporter_enabled].freeze
+                       session_replay_enabled helpdesk_enabled supporter_enabled council_enabled
+                       automator_live_code_enabled].freeze
     # The panels that save with their own form: a save returns to the panel it came from. It travels as
     # `?section=`, not `#anchor`: a fragment in a redirect is lost by the fetch that follows it.
     FORM_SECTIONS = %w[ingest tickets retention thresholds production supporter dashboard].freeze

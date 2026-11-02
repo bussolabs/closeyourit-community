@@ -1,5 +1,21 @@
 it:
   agents:
+    council:
+      ticket_body: |
+        **Problema:** %{problem}
+
+        **Soluzione proposta:** %{solution}
+
+        **Rischio:** %{risk}
+
+        **Proposta da:** %{proposer} · **Voto di %{critic}:** %{vote} (rischio %{critic_risk}) — %{reason}
+
+        **Chi lo implementa:** %{engine} %{model}
+      engine_default: scelta generale dell'organizzazione
+      activity_actor: Consiglio
+      errors:
+        not_found: Giro del consiglio non trovato
+        closed: Questo giro del consiglio è già chiuso
     supporter:
       errors:
         not_found: Giro di domande non trovato.

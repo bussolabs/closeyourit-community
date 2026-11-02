@@ -384,6 +384,27 @@ RSpec.describe Agents::Attempts::Deliver do
     expect(workflow.plans.sole).to have_attributes(version: 1, ticket_snapshot_digest: "snapshot")
   end
 
+  it "approves the plan of a council ticket by itself and skips the plan-ready notification" do
+    create(:agent_automator_setting, organization:, council_mode: "on")
+    create(:agent_council_proposal, ticket:, outcome: "ticket")
+    scope = build_delivery_scope(phase: "planner", organization:, project:, ticket:, workflow:)
+    workflow.update!(triage_started_at: nil, triaged_at: Time.current, ticket_snapshot_digest: "snapshot")
+    planner_payload = {
+      runtime: "claude", reviewer_runtime: "codex",
+      result: { code: ticket.code, technical_analysis: "Analisi del piano", state: "submitted-for-approval",
+                scenarios: [ { given: "contesto", when: "azione", then: "esito", expected: "atteso" } ],
+                definition_of_done: [ "Test verdi" ], mixed_parts: nil, notes: [] },
+      review: review_for("planner")
+    }
+
+    expect do
+      expect(described_class.call(organization:, host: scope[:host], attempt: scope[:attempt],
+                                  payload: planner_payload)).to be_ok
+    end.not_to have_enqueued_job(Agents::PlanReadyNotificationJob)
+    expect(workflow.plans.count).to eq(1)
+    expect(workflow.reload).to have_attributes(approved_at: be_present, approved_by_id: nil)
+  end
+
   it "conserva un piano v2 strutturato e genera la proiezione leggibile" do
     scope = build_delivery_scope(phase: "planner", organization:, project:, ticket:, workflow:)
     workflow.update!(triage_started_at: nil, triaged_at: Time.current, ticket_snapshot_digest: "snapshot")

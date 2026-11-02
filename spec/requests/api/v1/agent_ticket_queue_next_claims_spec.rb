@@ -86,6 +86,45 @@ RSpec.describe "Api::V1::AgentTicketQueueNextClaims (automator)", type: :request
     expect(response.parsed_body.fetch("data")).to include("reviewer_model" => nil)
   end
 
+  # CYRA-1133
+  it "uses the engine and model the council chose for the ticket" do
+    host.update!(runtimes: [ { "name" => "claude", "present" => true }, { "name" => "codex", "present" => true } ])
+    ticket = create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true)
+    create(:agent_council_proposal, ticket:, outcome: "ticket", suggested_engine: "codex", suggested_model: "gpt-6-astra")
+
+    post path, params:, headers:, as: :json
+
+    expect(response).to have_http_status(:created)
+    expect(response.parsed_body.fetch("data")).to include("work_engine" => "codex", "work_model" => "gpt-6-astra", "reviewer" => "claude")
+    expect(Agents::Attempt.sole).to have_attributes(runtime: "codex", work_model: "gpt-6-astra", expected_reviewer: "claude")
+  end
+
+  # CYAU-300
+  it "gives a code conflict waiting for its resolution to Codex, reviewed by Claude, and says so" do
+    host.update!(runtimes: [ { "name" => "claude", "present" => true }, { "name" => "codex", "present" => true } ])
+    ticket = create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true)
+    pronta_per!(ticket.agent_workflow, "autopilot")
+    ticket.agent_workflow.update!(conflict_resolution_requested_at: 1.minute.ago)
+
+    post path, params:, headers:, as: :json
+
+    expect(response).to have_http_status(:created)
+    data = response.parsed_body.fetch("data")
+    expect(data).to include("work_engine" => "codex", "reviewer" => "claude")
+    expect(data.dig("candidate", "workflow", "conflict_resolution")).to be(true)
+  end
+
+  it "keeps the machine's engine for a resolution when the machine has no Codex" do
+    ticket = create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true)
+    pronta_per!(ticket.agent_workflow, "autopilot")
+    ticket.agent_workflow.update!(conflict_resolution_requested_at: 1.minute.ago)
+
+    post path, params:, headers:, as: :json
+
+    expect(response.parsed_body.dig("data", "work_engine")).to eq("claude")
+    expect(response.parsed_body.dig("data", "candidate", "workflow", "conflict_resolution")).to be(true)
+  end
+
   # CYRA-921
   it "records the work under the engine the machine was told to use" do
     host.update!(work_engine: "codex", runtimes: [ { "name" => "codex", "present" => true } ])

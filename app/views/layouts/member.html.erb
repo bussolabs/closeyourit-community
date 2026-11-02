@@ -38,6 +38,10 @@
       <% if controller_path.in?(%w[member/coworkers member/coworker_activity]) && Coworkers.available_to?(account: Current.account, organization: Current.organization) %>
         <div class="md:hidden"><%= render "member/nav_sidebar", tree: member_nav_tree, compact: false %></div>
         <%= render "member/coworkers/sidebar" %>
+      <% elsif controller_path == "member/agents/live_sessions" %>
+        <%# CYRA-1138 — the live page frames itself like Coworkers: its own sidebar from md up. %>
+        <div class="md:hidden"><%= render "member/nav_sidebar", tree: member_nav_tree, compact: false %></div>
+        <%= render "member/agents/live_sessions/sidebar", sessions: @sessions, current: @attempt %>
       <% else %>
         <%= render "member/nav_sidebar", tree: member_nav_tree, compact: cookies[:sidebar_compact] == "1" %>
       <% end %>

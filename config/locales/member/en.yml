@@ -1402,6 +1402,8 @@ en:
       updated: Group saved.
       deleted: Group deleted.
       form:
+        council: Council on for every project
+        council_hint: Every day Claude and Codex look at the group's projects and propose improvements.
         new_title: New group
         edit_title: Edit group
         back: Back to groups
@@ -2440,6 +2442,7 @@ en:
         dependency_blocked: "Automated work stopped: %{count} prerequisites are not finished yet (%{dependencies})"
         already_done: "The work was already written in the code: the ticket closes without planning (%{files})"
         autopilot_auto_approved: "The delivered work moved on by itself: %{count} checks passed (%{checks}) and the code re-read is positive"
+        plan_council_approved: "The council approved this plan: no one had to sign it"
         more_files: "and %{count} more"
         dependency_added: "%{actor} added a dependency on ticket %{ticket}"
         dependency_removed: "%{actor} removed the dependency on ticket %{ticket}"

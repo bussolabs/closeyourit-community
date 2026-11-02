@@ -34,7 +34,9 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
       frozen_plan_version: workflow.frozen_plan&.version,
       # CYAU-249 — when a person last said "redo" (retry, reject, plan changes): the machine restarts its own
       # attempt series from here, or the next round would block the ticket again on the old count.
-      budget_from: workflow.review_budget_from&.iso8601(3)
+      budget_from: workflow.review_budget_from&.iso8601(3),
+      # CYAU-300 — this round resolves a code conflict with main: the skill merges in resolve mode.
+      conflict_resolution: workflow.conflict_resolution_requested_at.present?
     }
     # Il commit che una persona ha approvato (CYRA-612: `review_candidate`, scritto una volta sola).
     # La fase di rilascio lo esige «dal server» e non dal ramo, che nel frattempo può essersi mosso;

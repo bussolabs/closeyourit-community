@@ -158,12 +158,15 @@ module Seo
     # `page_id` → fin dove siamo arrivati su quella pagina, più `nil` → fin dove è arrivato il giro
     # (il massimo fra le pagine: i controlli d'insieme confrontano le pagine fra loro, e una sola
     # letta basta a renderli di nuovo possibili).
+    #
+    # Un giro fermato dal tempo (CYRA-1122) non ha il livello d'insieme: le pagine rimaste fuori
+    # potevano essere proprio quelle del duplicato, quindi i rilievi d'insieme restano come sono.
     def observation_levels(pages_by_url)
       levels = @crawl.pages.each_with_object({}) do |page, acc|
         record = pages_by_url[page[:url]]
         acc[record.id] = page[:observation] if record
       end
-      levels[nil] = Seo::Check.richest_observation(levels.values)
+      levels[nil] = Seo::Check.richest_observation(levels.values) unless @crawl.interrupted?
       levels
     end
 

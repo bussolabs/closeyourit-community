@@ -1,0 +1,15 @@
+<% content_for :title, "#{@ticket.code} · #{t("member.automator_live.title")}" %>
+<%# CYRA-1138 — the frame reloads itself when any agent of the project sends new steps (a step elsewhere can
+    open a conflict here): only a signal travels, and the reload uses the viewer's session, so what a viewer
+    may see is checked every time. %>
+<section class="flex h-full min-h-0 flex-col bg-stone-100 dark:bg-zinc-950" data-test="automator-live"
+         data-controller="live-frame" data-live-frame-frame-value="<%= ::Agents::LiveEvents::Broadcast::FRAME %>"
+         data-live-frame-url-value="<%= member_agents_live_session_path(@attempt, file: params[:file].presence, view: params[:view].presence) %>"
+         data-live-frame-interval-value="30000">
+  <%= turbo_stream_from Realtime::Streams.automator_live_project(organization_id: @attempt.organization_id, project_id: @ticket.project_id) %>
+  <details class="md:hidden border-b border-stone-200 dark:border-zinc-800 px-4 py-2">
+    <summary class="min-h-11 cursor-pointer content-center text-[13px] font-medium"><%= t("member.automator_live.sessions") %></summary>
+    <%= render partial: "member/agents/live_sessions/session_link", collection: @sessions, as: :attempt, locals: { current: @attempt } %>
+  </details>
+  <%= render "member/agents/live_sessions/frame" %>
+</section>

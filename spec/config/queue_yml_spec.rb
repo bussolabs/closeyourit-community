@@ -258,7 +258,34 @@ RSpec.describe "config/queue.yml" do
 
     it "nel pool dei lavori lunghi l'addestramento sta per ultimo: non affama gli altri lavori lunghi" do
       expect(ai_pool_queues.index("batch")).to be < ai_pool_queues.index("ai")
-      expect(ai_pool_queues.index("seo")).to be < ai_pool_queues.index("ai")
+    end
+  end
+
+  # CYRA-1122 — `seo`, `batch` e `ai` condividevano un solo thread. Una visita a un sito lento (un
+  # byte ogni pochi secondi, pagina dopo pagina) teneva quel thread per ore, e i giri notturni e
+  # l'AI accodati dietro aspettavano. I tetti di tempo su lettura e giro limitano il danno; la corsia
+  # propria lo toglie, perché un giro sano dura comunque minuti.
+  describe "corsia riservata ai controlli SEO (CYRA-1122)" do
+    let(:seo_pool) { workers.find { |w| pool_queues(w).include?("seo") } }
+
+    it "esiste un pool che serve SOLO seo, un controllo alla volta" do
+      expect(seo_pool).to be_present
+      expect(pool_queues(seo_pool)).to eq(%w[seo])
+      expect(seo_pool.fetch("threads")).to eq(1)
+      expect(seo_pool.fetch("processes")).to eq(1)
+    end
+
+    it "nessun altro pool la serve: notturni e AI non stanno più in fila dietro una visita" do
+      expect((workers - [ seo_pool ]).flat_map { |pool| pool_queues(pool) }).not_to include("seo")
+    end
+
+    it "notturni e AI restano insieme, come prima" do
+      expect(ai_pool_queues).to eq(%w[batch ai])
+    end
+
+    it "la visita e la misura di velocità girano sulla corsia SEO" do
+      expect(Seo::AuditSiteJob.new.queue_name).to eq("seo")
+      expect(Seo::LabRunJob.new.queue_name).to eq("seo")
     end
   end
 
@@ -270,7 +297,7 @@ RSpec.describe "config/queue.yml" do
   # problema di un'ora invece di toglierlo, e non serve a niente contro un lavoro lungo qualunque.
   #
   # Due corsie: `maintenance` per i controlli (secondi, alta frequenza) e una per i lavori lunghi
-  # (`seo`, `batch`, `ai`). La separazione è per CODA e non per thread in più, per la stessa ragione
+  # (allora `seo`, `batch`, `ai`; `seo` ha una corsia sua da CYRA-1122). La separazione è per CODA e non per thread in più, per la stessa ragione
   # di ingest ed embeddings: dentro una coda l'ordine è di arrivo, quindi i venti prune delle 3 di
   # notte precedono comunque il controllo accodato alle 3:01, e più capacità sposta la soglia senza
   # togliere l'attesa.

@@ -46,10 +46,21 @@ module NetworkGuard
   # Risolve l'host UNA volta e ritorna il primo indirizzo, o nil se blank/irrisolvibile o se UNO
   # qualsiasi degli indirizzi è interno (host con record misti pubblico+interno = sospetto → nil).
   # Il chiamante pinna questo IP sulla connessione: nessuna seconda risoluzione, niente rebinding.
-  def resolved_public_address(host)
+  #
+  # `timeout` (secondi, facoltativo) è il tempo che resta a chi chiede (CYRA-1122): ogni tentativo
+  # verso un nameserver si accorcia a quel residuo. Senza, la risoluzione è quella di sempre — uptime
+  # e avvisi non lo passano, e per loro non cambia niente.
+  def resolved_public_address(host, timeout: nil)
     return nil if host.blank?
 
-    addresses = ip_literal?(host) ? [ host ] : resolve(host)
+    addresses =
+      if ip_literal?(host)
+        [ host ]
+      elsif timeout
+        resolve(host, timeout:)
+      else
+        resolve(host)
+      end
     return nil if addresses.empty? || addresses.any? { |addr| blocked_address?(addr) }
 
     addresses.first
@@ -58,9 +69,13 @@ module NetworkGuard
   # Risoluzione DNS con timeout esplicito (DNS_TIMEOUTS). getaddresses (plurale) non solleva: ritorna
   # [] se non trova nulla. Il rescue copre i guasti del resolver (timeout scaduto, resolv.conf
   # illeggibile) mappandoli su [] → i chiamanti trattano l'host come irrisolvibile (bloccato/nil).
-  def resolve(host)
+  #
+  # Con `timeout` ogni tentativo dura al più quel residuo. Non è un tetto sul TOTALE: Resolv ripete
+  # per ogni nameserver e ogni dominio di ricerca. Per questo chi ha una scadenza vera aspetta
+  # comunque la risoluzione al più per il proprio residuo (Seo::Fetch, CYRA-1122).
+  def resolve(host, timeout: nil)
     dns = Resolv::DNS.new
-    dns.timeouts = DNS_TIMEOUTS
+    dns.timeouts = timeout ? DNS_TIMEOUTS.map { |seconds| [ seconds, timeout ].min } : DNS_TIMEOUTS
     dns.getaddresses(host).map(&:to_s)
   rescue Resolv::ResolvError, IOError, SystemCallError
     []

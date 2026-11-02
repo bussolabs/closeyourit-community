@@ -63,23 +63,31 @@ default: &default
       threads: 2
       processes: 1
       polling_interval: 0.1
-    # Corsia dei lavori lunghi: intelligenza artificiale (training ~fino a un'ora, predizioni), visite
-    # SEO ai siti (minuti per giro: una pausa fra le richieste per ogni pagina) e "batch", i giri che
-    # attraversano tabelle intere — potature, recuperi degli embedding, aggregazioni, scansioni.
-    # 1 thread e 1 processo: girano UNO alla volta e nessuno di loro può occupare la corsia dei
-    # controlli qui sopra né quella real-time.
+    # Corsia dei controlli SEO (CYRA-1122): visite ai siti (minuti per giro: una pausa fra le
+    # richieste per ogni pagina) e misure di velocità. Stava nel pool dei lavori lunghi qui sotto, e
+    # una visita a un sito lento — un byte ogni pochi secondi, pagina dopo pagina — teneva fermi per
+    # ore i giri notturni e l'AI. Ogni lettura ora ha un tetto (Seo::Fetch::TOTAL_TIMEOUT) e ogni
+    # giro pure (Seo::Crawl::MAX_DURATION), ma anche un giro sano dura minuti: corsia propria, così
+    # nessuno aspetta un sito che non è nostro. 1 thread: un controllo alla volta, come prima.
+    - queues: [seo]
+      threads: 1
+      processes: 1
+      polling_interval: 0.1
+    # Corsia dei lavori lunghi: intelligenza artificiale (training ~fino a un'ora, predizioni) e
+    # "batch", i giri che attraversano tabelle intere — potature, recuperi degli embedding,
+    # aggregazioni, scansioni. 1 thread e 1 processo: girano UNO alla volta e nessuno di loro può
+    # occupare la corsia dei controlli qui sopra né quella real-time.
     #
     # Perché code separate e non un thread in più su una sola coda: dentro una coda l'ordine è di
     # arrivo, quindi i venti prune accodati alle 3 di notte precedono comunque il controllo accodato
     # alle 3:01. Più capacità sposta la soglia, la separazione toglie l'attesa — è la stessa lezione
     # di "ingest" (CYRA-301) e "embeddings" (CYRA-649).
     #
-    # ORDINE = priorità stretta. "ai" per ULTIMA: è l'unica delle tre a volume illimitato (gli
-    # addestramenti si accodano a richiesta) e davanti alle altre potrebbe affamarle per ore. "seo"
-    # prima di "batch" perché la sua cadenza è oraria e un giro saltato è un'ora di misure perse,
-    # mentre i giri di "batch" sono notturni e recuperano da soli il giorno dopo. Devono restare
-    # tutte in QUESTA lista: una coda che nessun worker serve accumula job per sempre senza un errore.
-    - queues: [seo, batch, ai]
+    # ORDINE = priorità stretta. "ai" per ULTIMA: è l'unica delle due a volume illimitato (gli
+    # addestramenti si accodano a richiesta) e davanti a "batch" potrebbe affamarla per ore. Devono
+    # restare tutte in QUESTA lista: una coda che nessun worker serve accumula job per sempre senza
+    # un errore.
+    - queues: [batch, ai]
       threads: 1
       processes: 1
       polling_interval: 0.1

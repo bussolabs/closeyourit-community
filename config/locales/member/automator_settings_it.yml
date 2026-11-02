@@ -41,3 +41,32 @@ it:
       reserved_topics_label: Temi riservati dell'organizzazione
       reserved_topics_placeholder: "stripe\npaypal\napp/services/billing/"
       reserved_topics_hint: Uno per riga. Su questi temi decide sempre una persona, in ogni progetto. Una riga con la barra (/) indica una cartella del codice. Si sommano ai temi fissi (soldi, sicurezza, dati personali, cancellazioni, cambi visibili ai clienti).
+      council_mode_label: Consiglio
+      council_mode_hint: Claude e Codex propongono miglioramenti sui progetti con il consiglio attivo. In prova a vuoto scrivono solo il resoconto.
+      council_modes:
+        "off": Spento
+        dry_run: Prova a vuoto
+        "on": Acceso
+      council_runs_title: Ultimi giri del consiglio
+      council_runs_empty: Nessun giro finora.
+      council_statuses:
+        running: in corso
+        completed: concluso
+        failed: fallito
+      council_outcomes:
+        invalid: non valide
+        rejected: respinte
+        duplicate: doppioni
+        unchecked: non controllate
+        ticket: ticket
+        idea: idee
+        dry_ticket: sarebbero ticket
+        dry_idea: sarebbero idee
+        create_failed: non create
+      council_failures:
+        quota: quota esaurita
+        auth: accesso scaduto
+        session: sessione fallita
+        not_mapped: progetto non collegato alla macchina
+        abandoned: abbandonato
+        invalid: risposta non valida

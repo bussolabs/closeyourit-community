@@ -9,7 +9,11 @@ module Agents
       # li ha — la prima consegna bloccata solleva KeyError dentro la transazione della consegna.
       class Planner < Base
         def after_commit
-          Agents::PlanReadyNotificationJob.perform_later(@plan.id) if @plan
+          return unless @plan
+
+          # CYRA-1133 — a council ticket's plan approves itself; nobody needs to be told it waits.
+          approved = Agents::Workflows::CouncilApprovePlan.call(workflow: @plan.workflow).value
+          Agents::PlanReadyNotificationJob.perform_later(@plan.id) unless approved
         end
 
         private

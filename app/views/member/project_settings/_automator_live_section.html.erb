@@ -1,0 +1,13 @@
+<%# CYAU-282 — whether the automator's live steps keep the code of the changes; off by default. %>
+<%= render Ui::SectionComponent.new(title: t("member.project_settings.automator_live_section"), id: "automator-live",
+      class: "scroll-mt-4", test_id: "project-automator-live") do |section| %>
+  <% section.with_subtitle do %>
+    <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.project_settings.automator_live_hint") %></p>
+  <% end %>
+  <%= render Ui::SwitchComponent.new(
+        name: "automator_live_code_enabled", url: member_project_settings_path(@project),
+        checked: @project.automator_live_code_enabled?, icon: "code",
+        label: t("member.project_settings.automator_live_code_label"),
+        hint: t("member.project_settings.automator_live_code_hint"),
+        test_id: "project-automator-live-toggle") %>
+<% end %>

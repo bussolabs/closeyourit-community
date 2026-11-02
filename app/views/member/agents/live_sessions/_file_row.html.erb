@@ -1,0 +1,13 @@
+<%# locals: (entry:, session:, current_path:, depth: 0) %>
+<%# A file the agent touched: the agent's colour pulses on the one it wrote last and stays faint on the others it changed. %>
+<% current = entry.path == current_path %>
+<% dot = @colors[@attempt.id] ? automator_live_paint(@colors[@attempt.id], :dot) : "bg-emerald-500" %>
+<li>
+  <%= link_to member_agents_live_session_path(@attempt, file: entry.path, view: params[:view].presence), aria: { current: (current ? "true" : nil) },
+        class: "flex min-h-11 items-center gap-2 rounded-md px-2 py-1 text-[12px] #{current ? "bg-stone-100 dark:bg-zinc-800" : "hover:bg-stone-50 dark:hover:bg-zinc-800/60"}",
+        style: automator_live_indent(depth), data: { test: "automator-live-file" } do %>
+    <span class="size-1.5 shrink-0 rounded-full <%= entry.path == session.followed_path ? "#{dot} motion-safe:animate-pulse" : (entry.changed? ? "#{dot} opacity-40" : "bg-stone-300 dark:bg-zinc-600") %>"></span>
+    <span class="min-w-0 flex-1 truncate font-mono text-zinc-900 dark:text-zinc-100" title="<%= entry.path %>"><%= File.basename(entry.path) %></span>
+    <%= render "member/agents/live_sessions/file_counts", entry: %>
+  <% end %>
+</li>

@@ -25,8 +25,8 @@ RSpec.describe Seo::RecordAudit, type: :service do
     Seo::Analyze::Candidate.new(check_key:, url:, evidence:)
   end
 
-  def record(pages:, candidates:)
-    crawl = Seo::Crawl::Result.new(pages:, sitemap_urls: pages.map { |page| page[:url] })
+  def record(pages:, candidates:, interrupted: false)
+    crawl = Seo::Crawl::Result.new(pages:, sitemap_urls: pages.map { |page| page[:url] }, interrupted:)
     described_class.call(site:, audit:, crawl:, candidates:, now:)
   end
 
@@ -260,6 +260,27 @@ RSpec.describe Seo::RecordAudit, type: :service do
       record(pages: [ unread_page(path: "/altra"), crawled_page ], candidates: [])
 
       expect(site.issues.reload.find_by(check_key: "duplicate_title")).to be_status_resolved
+    end
+
+    # CYRA-1122 — un giro fermato dal tempo ha lasciato fuori delle pagine: il duplicato poteva stare
+    # proprio lì. Le pagine lette restano e i loro rilievi si aggiornano; quelli d'insieme no.
+    it "un giro interrotto dal tempo non chiude i rilievi d'insieme" do
+      duplicati = Seo::Analyze::Candidate.new(check_key: "duplicate_title", url: nil,
+                                              evidence: { "groups" => [] })
+      record(pages: [ crawled_page ], candidates: [ duplicati ])
+
+      record(pages: [ crawled_page ], candidates: [], interrupted: true)
+
+      expect(site.issues.reload.sole).to be_status_open
+    end
+
+    it "un giro interrotto chiude comunque i rilievi delle pagine che ha letto" do
+      record(pages: [ crawled_page ], candidates: [ candidate("missing_h1") ])
+
+      record(pages: [ crawled_page ], candidates: [], interrupted: true)
+
+      expect(site.issues.reload.sole).to be_status_resolved
+      expect(site.pages.sole.last_seen_at).to eq(now)
     end
 
     it "conta sul giro quante pagine non è riuscito a leggere" do

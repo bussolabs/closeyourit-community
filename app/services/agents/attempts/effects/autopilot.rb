@@ -21,6 +21,7 @@ module Agents
 
         def apply!
           return replan_from_agent! if result_state == "blocked" && failure_category == "invalid_plan"
+          return resolve_conflict! if result_state == "blocked" && failure_category == "merge_conflict" && workflow.conflict_resolution_requested_at.nil?
           return block_from_agent! if result_state == "blocked"
           return unless result_state.in?(ADVANCING_STATES)
 
@@ -37,7 +38,7 @@ module Agents
           # `reopen_execution_phase!` legge. Senza, un host morto a metà riapre l'autopilot e la macchina
           # apre una SECONDA proposta sullo stesso lavoro.
           record_delivery_candidate!
-          workflow.update!(autopilot_completed_at: Time.current)
+          workflow.update!(autopilot_completed_at: Time.current, conflict_resolution_requested_at: nil)
         end
 
         # La riga del registro: `pending`, da ricontrollare subito. Niente `head_sha` né `base_ref` —
@@ -68,6 +69,14 @@ module Agents
         end
 
         def failure_category = @payload.dig("result", "failure", "category")
+
+        # CYAU-300 — a code conflict with main gets one resolution attempt before it waits for a person: the
+        # autopilot goes back to the queue marked for it, and the claim gives it to Codex with Claude as reviewer.
+        # A second conflict blocks as before; the resolved branch still goes to a person's review.
+        def resolve_conflict!
+          workflow.reopen_execution_phase!(@attempt.phase)
+          workflow.update!(conflict_resolution_requested_at: Time.current, **Agents::Workflow.cleared_block)
+        end
 
         # CYRA-1062 — the approved plan does not fit the code: rerunning it would fail the same way, and
         # an approved plan cannot be changed by hand. Planning starts again with the machine's reason as

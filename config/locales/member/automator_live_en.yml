@@ -1,0 +1,57 @@
+en:
+  member:
+    nav:
+      automator_live: Live
+    automator_live:
+      title: Automator live
+      back: Back to agents
+      sessions: Sessions at work
+      running: At work
+      over: Over
+      empty_title: No agent at work right now
+      empty_body: When a machine takes a ticket, here you see the files it touches and its changes as they arrive.
+      empty_example: "For example: Claude changes two lines in ticket.rb and you see them appear here, whole, while it works."
+      started: "Started at %{time}"
+      elapsed: Time at work
+      view_switch: What to show
+      view_code: Code
+      view_files: Files only
+      files: Files touched
+      project_files: Project files
+      tree_partial: The project is too big to list whole, so some files are missing here.
+      file_read: read
+      file_created: new
+      follow: Follow the agent
+      following: Following the agent
+      no_steps: The agent has not done anything yet. Its steps show up here as soon as they arrive.
+      no_file: No file changed so far.
+      file_only_read: The agent only read this file.
+      code_off_title: The code stays on the machine
+      code_off_body: This project shows only which files change and by how many lines. The code view is turned on in the project settings.
+      files_only_body: You are looking only at which files change and by how many lines.
+      change_at: "Change at %{time}"
+      timeline: What is happening
+      truncated: The machine stopped recording steps because the session grew too long.
+      steps:
+        file_change: Changed
+        file_read: Read
+        search: Searched
+        command: Ran
+      conflict:
+        count:
+          one: 1 notice
+          other: "%{count} notices · show them all"
+        with_html: "%{agents} is changing %{path} too."
+        open: Open the file
+        pause: "Pause %{code}"
+        pause_reason: Paused from the live page to avoid a conflict.
+        close: Close the notice
+        lines:
+          title: "Conflict: same lines"
+          body: Git will not be able to merge these two changes by itself.
+        file:
+          title: Same file, different places
+          body: They will probably merge by themselves.
+        unknown:
+          title: Same file
+          body: One of the two sends no line numbers, so it is not clear whether they touch.

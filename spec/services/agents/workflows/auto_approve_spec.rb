@@ -87,6 +87,13 @@ RSpec.describe Agents::Workflows::AutoApprove do
     expect(event.data["review"]).to include("status" => "accepted", "runtime" => "codex")
   end
 
+  it "never approves the delivery of a council ticket by itself" do
+    create(:agent_council_proposal, ticket:, outcome: "ticket")
+    result = described_class.call(workflow:, candidate:, client: client_su(candidate.head_sha))
+    expect(result.value).to be_nil
+    expect(workflow.reload.autopilot_approved_at).to be_nil
+  end
+
   # ── Scenario 2: qualcosa non è verde → resta la decisione di una persona ──────────────────────
 
   # «Ho guardato e di controlli non ce n'è» è una risposta, non un verde: chi approva deve poterlo

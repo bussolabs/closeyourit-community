@@ -9,6 +9,10 @@ module Projects
     include Iconable
     include SupporterReservedTopics
 
+    # CYAU-282 — switching the code view off drops the code already kept, not only the code still to come.
+    after_update_commit -> { Agents::LiveEvents::PruneJob.perform_later },
+                        if: -> { saved_change_to_automator_live_code_enabled?(from: true, to: false) }
+
     belongs_to :organization,
                class_name: "Organizations::Organization",
                inverse_of: :projects
@@ -326,6 +330,11 @@ module Projects
     # "Registra il replay" = capability web E toggle esplicito (opt-in, default false). L'ingest è gata
     # sul solo session_replay_enabled? (Api::V1::ReplaysController); questa scope gata la UI.
     scope :session_replay_collecting, -> { session_replay_capable.where(session_replay_enabled: true) }
+
+    # CYRA-1133 — the council works on a project switched on by itself or by its group.
+    scope :council_active, -> { left_joins(:group).where("projects.council_enabled OR projects_groups.council_enabled") }
+
+    def council_active? = council_enabled? || group&.council_enabled? || false
 
     has_many :project_environments,
              class_name: "Connections::ProjectEnvironment",

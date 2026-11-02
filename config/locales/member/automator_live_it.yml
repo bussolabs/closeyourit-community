@@ -1,0 +1,57 @@
+it:
+  member:
+    nav:
+      automator_live: In diretta
+    automator_live:
+      title: Automator in diretta
+      back: Torna agli agenti
+      sessions: Sessioni al lavoro
+      running: Al lavoro
+      over: Finita
+      empty_title: Nessun agente al lavoro adesso
+      empty_body: Quando una macchina prende un ticket, qui vedi i file che tocca e le modifiche mentre arrivano.
+      empty_example: "Per esempio: Claude cambia due righe in ticket.rb e le vedi comparire qui, intere, mentre lavora."
+      started: "Iniziata alle %{time}"
+      elapsed: Da quanto lavora
+      view_switch: Cosa mostrare
+      view_code: Codice
+      view_files: Solo file
+      files: File toccati
+      project_files: File del progetto
+      tree_partial: Il progetto è troppo grande per elencarlo tutto, quindi qui mancano alcuni file.
+      file_read: letto
+      file_created: nuovo
+      follow: Segui l'agente
+      following: Segue l'agente
+      no_steps: L'agente non ha ancora fatto niente. I passi compaiono qui appena arrivano.
+      no_file: Nessun file cambiato finora.
+      file_only_read: L'agente ha solo letto questo file.
+      code_off_title: Il codice resta sulla macchina
+      code_off_body: Questo progetto mostra solo quali file cambiano e di quante righe. Il codice si accende dalle impostazioni del progetto.
+      files_only_body: Stai guardando solo quali file cambiano e di quante righe.
+      change_at: "Modifica delle %{time}"
+      timeline: Cosa sta succedendo
+      truncated: La macchina ha smesso di registrare i passi perché la sessione è diventata troppo lunga.
+      steps:
+        file_change: Ha cambiato
+        file_read: Ha letto
+        search: Ha cercato
+        command: Ha lanciato
+      conflict:
+        count:
+          one: 1 avviso
+          other: "%{count} avvisi · mostrali tutti"
+        with_html: "Anche %{agents} sta cambiando %{path}."
+        open: Apri il file
+        pause: "Pausa %{code}"
+        pause_reason: Messo in pausa dalla pagina in diretta per evitare un conflitto.
+        close: Chiudi l'avviso
+        lines:
+          title: "Conflitto: stesse righe"
+          body: Git non riuscirà a unire da solo queste due modifiche.
+        file:
+          title: Stesso file, punti diversi
+          body: Probabilmente si uniranno da sole.
+        unknown:
+          title: Stesso file
+          body: Uno dei due non manda i numeri di riga, quindi non si sa se si toccano.

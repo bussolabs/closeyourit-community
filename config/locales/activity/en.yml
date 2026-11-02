@@ -43,4 +43,6 @@ en:
       session_replay_enabled: Session replay
       roadmap_enabled: roadmap
       supporter_enabled: supporter on
+      automator_live_code_enabled: automator live code
+      council_enabled: Council enabled
       supporter_reserved_topics: supporter reserved topics

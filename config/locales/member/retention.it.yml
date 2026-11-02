@@ -80,6 +80,15 @@ it:
       supporter_reserved_topics_label: Temi riservati del progetto
       supporter_reserved_topics_placeholder: "mailchimp\napp/services/payments/"
       supporter_reserved_topics_hint: Uno per riga. Si sommano a quelli dell'organizzazione e ai temi fissi, senza toglierli. Una riga con la barra (/) indica una cartella del codice.
+      council_section: Consiglio
+      council_hint: Ogni giorno Claude e Codex guardano questo progetto e propongono miglioramenti.
+      council_enabled_label: Consiglio attivo
+      council_enabled_hint: Le proposte approvate diventano ticket o idee. L'interruttore generale sta nelle impostazioni dell'automator.
+      council_by_group: Attivo per tutto il gruppo %{group}. Si spegne dal gruppo.
+      automator_live_section: Automator in diretta
+      automator_live_hint: Mentre l'automator lavora un ticket, l'app vede quali file legge e cambia, e di quante righe.
+      automator_live_code_label: Mostra anche il codice
+      automator_live_code_hint: Le righe cambiate passano dall'app. Restano finché il ticket non è concluso, poi si cancellano. Spento, il codice resta sulla macchina.
       tickets_section: Ticket
       default_assignee_label: Assegnatario di default
       default_assignee_placeholder: Nessuno

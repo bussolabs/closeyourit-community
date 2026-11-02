@@ -33,8 +33,12 @@ module Projects
         "projects" => "id IN (:projects)",
         "projects_groups" => "id IN (:groups)",
         "agents_limit_policies" => "project_id IN (:projects)",
+        "agents_council_runs" => "project_id IN (:projects)",
+        "agents_council_proposals" => "project_id IN (:projects)",
         "agents_attempts" => "workflow_id IN (SELECT id FROM agents_workflows WHERE ticket_id IN (:tickets))",
         "agents_supporter_decisions" => "workflow_id IN (SELECT id FROM agents_workflows WHERE ticket_id IN (:tickets))",
+        "agents_attempt_live_events" => "attempt_id IN (SELECT agents_attempts.id FROM agents_attempts JOIN agents_workflows " \
+                                        "ON agents_workflows.id = agents_attempts.workflow_id WHERE agents_workflows.ticket_id IN (:tickets))",
         "connections_account_secret_accesses" => "project_id IN (:projects)",
         "knowledge_sample_questions" => "project_id IN (:projects)",
         "knowledge_pages" => "id IN (:pages)",

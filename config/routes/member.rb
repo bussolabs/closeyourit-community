@@ -1017,6 +1017,10 @@ namespace :member do
     resource :automator_setting, path: "automator", only: %i[show update]
     # CYAU-228 — the OpenRouter key OpenCode reviews with (owner only, write-only).
     resource :openrouter_credential, path: "openrouter", only: %i[show update destroy]
+    # CYRA-1138 — watch an automator attempt live: its files, its changes, its latest steps.
+    resources :live_sessions, path: "live", only: %i[index show] do
+      get :tree, on: :member
+    end
   end
   # CYRA-516 — `destroy` elimina la macchina DISMESSA e con lei il suo storico: senza, un Mac buttato
   # via resta in elenco per sempre (la revoca stacca le credenziali ma non toglie la riga).

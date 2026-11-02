@@ -12,6 +12,8 @@ module Agents
     validates :reviewer, inclusion: { in: Host::REVIEWERS }
     # CYAU-235 — the supporter answers questions and approves plans with its own engine.
     validates :supporter, inclusion: { in: Host::SUPPORTERS }
+    # CYRA-1133 — the council's master switch: off, dry run (report only) or on.
+    validates :council_mode, inclusion: { in: Agents::Council::MODES }
     validates :organization_id, uniqueness: true
     # CYAU-228 — the OpenRouter model OpenCode reviews with, as OpenRouter names it ("vendor/model").
     normalizes :opencode_model, with: ->(value) { value.to_s.strip.presence }

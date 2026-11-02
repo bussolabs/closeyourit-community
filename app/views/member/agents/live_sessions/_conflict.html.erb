@@ -1,0 +1,34 @@
+<%# locals: (file:, attempt:) %>
+<%# One file this agent and another of its project are both changing: red when their lines touch, yellow when
+    they do not or are unknown. «Open the file» shows it here; a ticket can be paused through its own switch.
+    Closing hides it for this conflict in this tab only. %>
+<% danger = file.level == :lines %>
+<% others = file.agents.reject { it.attempt.id == attempt.id } %>
+<aside role="status" data-test="automator-live-conflict" data-level="<%= file.level %>"
+       data-key="<%= [ file.path, *file.agents.map { it.attempt.id } ].join("|") %>" data-automator-live-notices-target="notice"
+       class="pointer-events-auto flex items-start gap-3 rounded-lg border px-4 py-3 <%= danger ? "border-red-200 bg-red-50 dark:border-red-500/40 dark:bg-red-950" : "border-amber-300 bg-amber-50 dark:border-amber-500/50 dark:bg-amber-950" %> <%= "motion-safe:animate-live-slide" if automator_live_fresh?(file.since) %>">
+  <%= render Ui::IconComponent.new(name: danger ? "circle-alert" : "triangle-alert",
+        class: "mt-0.5 text-[14px] #{danger ? "text-red-600 dark:text-red-400" : "text-amber-700 dark:text-amber-300"}") %>
+  <div class="min-w-0 flex-1 text-[12.5px] text-zinc-900 dark:text-zinc-100">
+    <p class="font-semibold"><%= t("member.automator_live.conflict.#{file.level}.title") %></p>
+    <p class="mt-0.5 text-gray-700 dark:text-zinc-300">
+      <%= t("member.automator_live.conflict.with_html",
+            agents: safe_join(others.map { |agent| tag.span(agent.name, class: "font-mono font-semibold #{automator_live_color(agent, :text)}") }, ", "),
+            path: tag.span(file.path, class: "break-all font-mono")) %>
+      <%= t("member.automator_live.conflict.#{file.level}.body") %>
+    </p>
+    <div class="mt-2 flex flex-wrap gap-2">
+      <%= render Ui::ButtonComponent.new(label: t("member.automator_live.conflict.open"), href: member_agents_live_session_path(attempt, file: file.path),
+            variant: :primary, size: :sm, icon: "file-diff", test_id: "automator-live-conflict-open") %>
+      <% if @can_pause %>
+        <% file.agents.reject { it.ticket.agent_eligibility_blocked? }.each do |agent| %>
+          <%= render Ui::ButtonComponent.new(label: t("member.automator_live.conflict.pause", code: agent.name), href: member_ticket_eligibility_path(agent.ticket),
+                method: :patch, params: { eligibility: "blocked", reason: t("member.automator_live.conflict.pause_reason") },
+                variant: :secondary, size: :sm, icon: "pause", test_id: "automator-live-pause") %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+  <%= render Ui::ButtonComponent.new(label: t("member.automator_live.conflict.close"), icon: "x", icon_only: true, variant: :ghost, size: :sm,
+        test_id: "automator-live-conflict-close", data: { action: "automator-live-notices#dismiss" }) %>
+</aside>

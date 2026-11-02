@@ -1,0 +1,15 @@
+<%# locals: (conflicts:, attempt:) %>
+<%# CYRA-1139 — the conflicts of this agent with others of its project, at the bottom right like every floating
+    notice. Two or more stack like a deck, the gravest in front; they spread on hover or focus. %>
+<% if conflicts.any? %>
+  <div class="automator-live-notices fixed md:absolute inset-x-4 bottom-20 md:bottom-4 z-30 md:left-auto md:right-4 md:w-[26rem] flex flex-col gap-2 pointer-events-none"
+       data-controller="automator-live-notices" data-test="automator-live-conflicts">
+    <% if conflicts.size > 1 %>
+      <%= render Ui::ButtonComponent.new(label: t("member.automator_live.conflict.count", count: conflicts.size), variant: :secondary, size: :sm,
+            class: "pointer-events-auto self-end", test_id: "automator-live-conflicts-count", data: { automator_live_notices_target: "counter" }) %>
+    <% end %>
+    <div class="automator-live-deck relative flex flex-col gap-2">
+      <%= render partial: "member/agents/live_sessions/conflict", collection: conflicts, as: :file, locals: { attempt: } %>
+    </div>
+  </div>
+<% end %>

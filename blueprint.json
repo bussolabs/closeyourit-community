@@ -84,7 +84,7 @@
       "level": 0,
       "parent": null,
       "kind": "external",
-      "summary": "Email (Resend), Telegram, Slack, webhook. Dove arrivano gli avvisi.",
+      "summary": "Email (Amazon SES), Telegram, Slack, webhook. Dove arrivano gli avvisi.",
       "files": []
     },
     {
@@ -205,11 +205,12 @@
       "level": 3,
       "parent": "ing_flow_v1",
       "kind": "step",
-      "summary": "Prima di tutto si guarda il peso: oltre 5 MB la richiesta è respinta. Errori e metriche hanno un tetto e un codice d'errore loro.",
+      "summary": "Prima di tutto si guarda il peso: oltre 5 MB la richiesta è respinta. Se il peso non è dichiarato, come negli invii a pezzi, si contano i byte arrivati. Errori e metriche hanno un tetto e un codice d'errore loro.",
       "files": [
         "app/controllers/api/v1/ingest_base_controller.rb",
         "app/controllers/api/v1/events_controller.rb",
-        "app/controllers/api/v1/metrics_controller.rb"
+        "app/controllers/api/v1/metrics_controller.rb",
+        "app/controllers/concerns/request_body_limit.rb"
       ]
     },
     {
@@ -4353,7 +4354,7 @@
       "level": 2,
       "parent": "area_projects",
       "kind": "page",
-      "summary": "Conservazione dei dati, assegnatario di default, funzioni attive, ambienti, piattaforme e documenti allegati. Nella sezione Dashboard si collega il servizio: indirizzo, chiave mostrata una volta, ultima lettura, pausa, leggi adesso, scollega.",
+      "summary": "Conservazione dei dati, assegnatario di default, funzioni attive, ambienti, piattaforme e documenti allegati. Si sceglie se i passi in diretta dell'automator tengono anche il codice. Nella sezione Dashboard si collega il servizio: indirizzo, chiave mostrata una volta, ultima lettura, pausa, leggi adesso, scollega.",
       "files": [
         "app/controllers/member/project_settings_controller.rb",
         "app/controllers/member/project_dashboard_feed_controller.rb",
@@ -5774,14 +5775,15 @@
       "level": 3,
       "parent": "agt_flow_claim",
       "kind": "step",
-      "summary": "La macchina deve essere viva, certificata e adatta alla fase. In produzione va un rilascio alla volta per repository, dopo l'attesa in staging scelta su progetto, organizzazione o piattaforma e senza errori nuovi; un ticket rimandato resta fermo fino alla sua ora.",
+      "summary": "La macchina deve essere viva, certificata e adatta alla fase. In produzione va un rilascio alla volta per repository, dopo l'attesa in staging scelta su progetto, organizzazione o piattaforma e senza errori nuovi; un ticket rimandato resta fermo fino alla sua ora. Un ticket il cui piano tocca file che un altro ticket del progetto sta cambiando aspetta, e riparte da solo quando quel lavoro finisce.",
       "files": [
         "app/services/agents/hosts/eligibility.rb",
         "app/services/agents/hosts/project_scope.rb",
         "app/services/agents/workflows/production_lock.rb",
         "app/services/agents/workflows/production_hold.rb",
         "app/services/agents/ticket_queues/defer.rb",
-        "app/models/agents/ticket_queue_deferral.rb"
+        "app/models/agents/ticket_queue_deferral.rb",
+        "app/services/agents/ticket_queues/overlap_hold.rb"
       ]
     },
     {
@@ -5937,6 +5939,20 @@
       ]
     },
     {
+      "id": "agt_dl_live",
+      "name": "Passi in diretta della sessione",
+      "level": 3,
+      "parent": "agt_flow_deliver",
+      "kind": "step",
+      "summary": "Mentre lavora, la macchina manda i passi dell'agente: file letti e cambiati, ricerche, comandi. Il codice resta solo se il progetto lo permette, e si toglie quando il ticket è concluso. Dopo 14 giorni i passi si cancellano.",
+      "files": [
+        "app/controllers/api/v1/agents/attempt_live_events_controller.rb",
+        "app/services/agents/live_events/record.rb",
+        "app/jobs/agents/live_events/prune_job.rb",
+        "app/services/agents/live_events/broadcast.rb"
+      ]
+    },
+    {
       "id": "agt_flow_phases",
       "name": "Le fasi del lavoro",
       "level": 2,
@@ -5995,12 +6011,13 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "La macchina scrive il codice e apre la proposta di modifica. Il server va a leggerla su GitHub e annota quale codice contiene e com'è andato il controllo automatico.",
+      "summary": "La macchina scrive il codice e apre la proposta di modifica. Il server va a leggerla su GitHub e annota quale codice contiene e com'è andato il controllo automatico. Se si ferma su un conflitto di codice con main, il ticket torna in coda una volta sola per un giro di risoluzione: lavora Codex, rilegge Claude, poi decide una persona.",
       "files": [
         "app/services/agents/attempts/effects/autopilot.rb",
         "app/services/agents/candidates/verify.rb",
         "app/jobs/agents/candidate_verification_job.rb",
-        "app/models/agents/delivery_candidate.rb"
+        "app/models/agents/delivery_candidate.rb",
+        "app/services/agents/conflict_resolution.rb"
       ]
     },
     {
@@ -6115,6 +6132,26 @@
       ]
     },
     {
+      "id": "agt_page_live",
+      "name": "Automator in diretta",
+      "level": 2,
+      "parent": "area_agents",
+      "kind": "page",
+      "summary": "Per ogni ticket al lavoro, tutti i file del progetto letti da GitHub con quelli che l'agente tocca accesi (senza GitHub solo i file toccati), le sue modifiche in stile revisione e gli ultimi passi, con il tempo di lavoro che avanza. Ogni agente ha il suo colore; le righe nuove entrano una alla volta e l'etichetta dell'agente sta sull'ultima scritta. Se un altro agente dello stesso progetto cambia lo stesso file, un avviso in basso a destra lo dice (rosso sulle stesse righe), apre il file e mette in pausa un ticket. Se il progetto tiene il codice sulla macchina, solo nomi e conteggi.",
+      "files": [
+        "app/controllers/member/agents/live_sessions_controller.rb",
+        "app/views/member/agents/live_sessions/**",
+        "app/services/agents/live_events/session.rb",
+        "app/services/agents/live_events/project_view.rb",
+        "app/helpers/member/automator_live_helper.rb",
+        "app/javascript/controllers/automator_live_notices_controller.js",
+        "app/javascript/controllers/automator_live_elapsed_controller.js",
+        "app/javascript/controllers/automator_live_follow_controller.js",
+        "app/javascript/controllers/automator_live_tree_controller.js",
+        "app/services/agents/live_events/project_tree.rb"
+      ]
+    },
+    {
       "id": "agt_page_settings",
       "name": "Impostazioni dell'automazione",
       "level": 2,
@@ -6212,9 +6249,10 @@
       "level": 3,
       "parent": "agt_data",
       "kind": "data",
-      "summary": "Un giro di lavoro di una macchina su una fase. Stati: in corso, approvato, bocciato, fallito, scaduto, annullato. Chiuso non si modifica più.",
+      "summary": "Un giro di lavoro di una macchina su una fase. Stati: in corso, approvato, bocciato, fallito, scaduto, annullato. Chiuso non si modifica più. Tiene i passi in diretta che la macchina ha mandato.",
       "files": [
-        "app/models/agents/attempt.rb"
+        "app/models/agents/attempt.rb",
+        "app/models/agents/attempt_live_event.rb"
       ]
     },
     {
@@ -7543,9 +7581,10 @@
       "level": 3,
       "parent": "ai_flow_gateway",
       "kind": "step",
-      "summary": "Si controllano chiave e limite del mese, poi la richiesta va al nostro server AI: testo, vettori, riordino o trascrizione.",
+      "summary": "Si guarda il peso (10 MB per il testo, 25 MB per l'audio), poi chiave e limite del mese, poi la richiesta va al nostro server AI: testo, vettori, riordino o trascrizione.",
       "files": [
-        "app/controllers/ai_gateway/proxy_controller.rb"
+        "app/controllers/ai_gateway/proxy_controller.rb",
+        "app/controllers/concerns/request_body_limit.rb"
       ]
     },
     {
@@ -15783,6 +15822,16 @@
       "from": "kno_page_wikitech",
       "to": "kno_flow_wikitech",
       "label": "nozioni"
+    },
+    {
+      "from": "agt_dl_live",
+      "to": "agt_page_live",
+      "label": "aggiorna"
+    },
+    {
+      "from": "agt_page_hosts",
+      "to": "agt_page_live",
+      "label": "apre in diretta"
     }
   ]
 }

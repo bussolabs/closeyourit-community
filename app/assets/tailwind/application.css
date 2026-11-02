@@ -21,6 +21,42 @@
   --font-size-xl: 1.125rem;    --font-size-xl--line-height: 1.75rem;
   --font-size-2xl: 1.25rem;    --font-size-2xl--line-height: 1.75rem;
   --font-size-3xl: 1.5rem;     --font-size-3xl--line-height: 2rem;
+  /* CYRA-1138 — a line the agent just added lights up, then settles; used with motion-safe only. */
+  --animate-live-arrive: live-arrive 1.6s ease-out backwards;
+  @keyframes live-arrive {
+    from { background-color: var(--color-emerald-200); opacity: 0; }
+    15% { opacity: 1; }
+  }
+  --animate-live-slide: live-slide 0.4s ease-out;
+  @keyframes live-slide {
+    from { transform: translateY(-6px); opacity: 0; }
+  }
+}
+
+/* CYRA-1139 — the conflict notices of a live session stack like a deck: the gravest in front, the others behind
+   it, peeking out above; hover or keyboard focus spreads them into a column. */
+.automator-live-notices.is-stacked:not(:hover):not(:focus-within) .automator-live-deck {
+  margin-top: 0.75rem;
+}
+.automator-live-notices.is-stacked:not(:hover):not(:focus-within) .automator-live-deck > :not(:first-child) {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  max-height: 100%;
+  overflow: hidden;
+  opacity: 0.85;
+  pointer-events: none;
+  transform: translateY(-0.6rem) scale(0.95);
+  transform-origin: top center;
+}
+.automator-live-deck > :first-child {
+  position: relative;
+  z-index: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .automator-live-deck > * {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
 }
 
 /* CYRA-457 — Blocchi "non misurati" negli istogrammi di sistema: tratteggio diagonale tenue al posto

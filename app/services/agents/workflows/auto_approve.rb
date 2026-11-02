@@ -29,6 +29,8 @@ module Agents
       # una persona. L'errore è solo quello di ApproveAutopilot, che chi chiama non propaga: «non è
       # passata da sola» non è un guasto della verifica appena fatta.
       def call
+        # CYRA-1133 — the council approved its own plan: its delivery always goes to a person.
+        return Result.ok(nil) if Agents::CouncilProposal.exists?(ticket_id: @workflow.ticket_id)
         return Result.ok(nil) unless all_green?
 
         outcome = ApproveAutopilot.call(workflow: @workflow, actor: nil, client: @client)

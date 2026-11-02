@@ -94,4 +94,40 @@ RSpec.describe NetworkGuard do
       expect(described_class.resolve("dead-ns.test")).to eq([])
     end
   end
+
+  # CYRA-1122 — chi ha una scadenza (Seo::Fetch) passa il tempo che gli resta: ogni tentativo si
+  # accorcia a quel residuo. Chi non la passa (uptime, avvisi) resta esattamente com'era.
+  describe "tempo massimo facoltativo (CYRA-1122)" do
+    let(:resolver) { instance_double(Resolv::DNS) }
+
+    before do
+      allow(Resolv::DNS).to receive(:new).and_return(resolver)
+      allow(resolver).to receive(:getaddresses).and_return([ Resolv::IPv4.create("93.184.216.34") ])
+      allow(resolver).to receive(:close)
+    end
+
+    it "accorcia ogni tentativo al residuo" do
+      expect(resolver).to receive(:timeouts=).with([ 1, 1 ])
+
+      expect(described_class.resolve("example.test", timeout: 1)).to eq([ "93.184.216.34" ])
+    end
+
+    it "non allunga mai i tentativi oltre le attese fisse" do
+      expect(resolver).to receive(:timeouts=).with([ 2, 2.5 ])
+
+      described_class.resolve("example.test", timeout: 2.5)
+    end
+
+    it "resolved_public_address lo inoltra alla risoluzione" do
+      expect(resolver).to receive(:timeouts=).with([ 0.5, 0.5 ])
+
+      expect(described_class.resolved_public_address("example.test", timeout: 0.5)).to eq("93.184.216.34")
+    end
+
+    it "senza tempo massimo la risoluzione è quella di sempre" do
+      expect(resolver).to receive(:timeouts=).with(NetworkGuard::DNS_TIMEOUTS)
+
+      expect(described_class.resolved_public_address("example.test")).to eq("93.184.216.34")
+    end
+  end
 end

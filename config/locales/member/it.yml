@@ -1447,6 +1447,8 @@ it:
       updated: Gruppo salvato.
       deleted: Gruppo eliminato.
       form:
+        council: Consiglio attivo per tutti i progetti
+        council_hint: Ogni giorno Claude e Codex guardano i progetti del gruppo e propongono miglioramenti.
         new_title: Nuovo gruppo
         edit_title: Modifica gruppo
         back: Torna ai gruppi
@@ -2517,6 +2519,7 @@ it:
         dependency_blocked: "La lavorazione automatica si è fermata: %{count} prerequisiti non ancora conclusi (%{dependencies})"
         already_done: "Il lavoro era già scritto nel codice: il ticket si chiude senza pianificare (%{files})"
         autopilot_auto_approved: "Il lavoro consegnato è andato avanti da solo: %{count} controlli superati (%{checks}) e la rilettura del codice è positiva"
+        plan_council_approved: "Il consiglio ha approvato questo piano: nessuno ha dovuto firmarlo"
         more_files: "e altri %{count}"
         dependency_added: "%{actor} ha aggiunto la dipendenza dal ticket %{ticket}"
         dependency_removed: "%{actor} ha rimosso la dipendenza dal ticket %{ticket}"

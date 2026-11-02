@@ -31,6 +31,10 @@ threads threads_count, threads_count
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
 port ENV.fetch("PORT", 3000)
 
+# Same body cap as kamal-proxy in config/deploy.yml (CYRA-1124), for traffic that does not cross it.
+# Puma answers 413 on a declared Content-Length and while it decodes a chunked body.
+http_content_length_limit 33_554_432
+
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
 

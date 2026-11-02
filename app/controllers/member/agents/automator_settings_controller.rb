@@ -16,7 +16,7 @@ module Member
         @setting = current_organization.automator_setting || current_organization.build_automator_setting
         @setting.assign_attributes(work_engine: params[:work_engine], reviewer: params[:reviewer], opencode_model: params[:opencode_model])
         # CYAU-235 — the supporter's engine and the reserved topics every project of the organization inherits.
-        @setting.assign_attributes(params.permit(:supporter, :supporter_reserved_topics))
+        @setting.assign_attributes(params.permit(:supporter, :supporter_reserved_topics, :council_mode))
         return redirect_to(member_agents_automator_setting_path, notice: t("member.automator_settings.saved")) if @setting.save
 
         # A rejected choice is never written: the page shows the choice still in force.
@@ -35,6 +35,9 @@ module Member
         @following_count = hosts.size - @own_choice_hosts.size
         # CYAU-228 — OpenCode cannot review without the organization's OpenRouter key: say so where it is chosen.
         uses_opencode = @setting.reviewer == "opencode" || hosts.any? { |host| host.effective_reviewer == "opencode" }
+        # CYRA-1133 — the last council rounds, so the dry run can be read before switching it on.
+        @council_runs = ::Agents::CouncilRun.where(organization: current_organization).includes(:project)
+                                            .order(started_at: :desc).limit(10)
         @openrouter_missing = uses_opencode && current_organization.openrouter_credential.nil?
       end
     end

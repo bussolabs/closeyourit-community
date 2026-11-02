@@ -218,20 +218,27 @@ module Agents
       def ensure_attempt!(context, selection)
         profile = Agents::PhaseProfile.fetch(execution_phase(context))
 
+        choice = Agents::ConflictResolution.choice_for(workflow: context.workflow, host: @host) ||
+                 Agents::Council::WorkChoice.for(ticket: context.ticket, host: @host)
         attempt = Agents::Attempt.find_or_create_by!(organization: @organization, idempotency_key: attempt_key(context)) do |record|
-          record.assign_attributes(
-            # CYRA-921 — the runtime is the machine's work engine. CYAU-226/227: the reviewer is fixed here too,
-            # so a choice changed mid-job does not reject the delivery.
-            **profile.to_h, runtime: @host.effective_work_engine, expected_reviewer: @host.effective_reviewer,
-            expected_reviewer_model: @host.effective_reviewer_model, phase: profile.phase, workflow: context.workflow, host: @host,
-            service_account: @host.service_account, external_run_id: @params[:run_id],
-            status: :running, started_at: Agents::Leases::Clock.current
-          )
+          record.assign_attributes(attempt_attributes(context, profile, choice))
         end
         return nil if attempt.status.in?(Agents::Attempt::TERMINAL_STATUSES)
 
         mark_workflow_started!(context.workflow, selection) if attempt.previously_new_record?
         attempt
+      end
+
+      def attempt_attributes(context, profile, choice)
+        {
+          # CYRA-921 — the runtime is the machine's work engine. CYAU-226/227: the reviewer is fixed here too,
+          # so a choice changed mid-job does not reject the delivery. CYRA-1133: a council ticket brings its own.
+          **profile.to_h, runtime: choice&.engine || @host.effective_work_engine, work_model: choice&.model,
+          expected_reviewer: choice&.reviewer || @host.effective_reviewer,
+          expected_reviewer_model: (choice ? nil : @host.effective_reviewer_model), phase: profile.phase,
+          workflow: context.workflow, host: @host, service_account: @host.service_account,
+          external_run_id: @params[:run_id], status: :running, started_at: Agents::Leases::Clock.current
+        }
       end
 
       # Il motivo, con il ticket che tiene la fila e da quando: senza quei due dati chi legge sa che

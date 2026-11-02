@@ -45,6 +45,11 @@ RSpec.describe Realtime::Streams do
       expect(described_class.cluster(cluster)).to eq("org:ORG-5:cluster:C-1")
     end
 
+    it "automator_live_project ends with the project, so every delivery rechecks who may see it (CYRA-1138)" do
+      expect(described_class.automator_live_project(organization_id: "ORG-5", project_id: "P-9"))
+        .to eq("org:ORG-5:automator_live_project:project:P-9")
+    end
+
     it "presence_for è per-viewer (stream dedicato all'account)" do
       account = instance_double("Accounts::Account", id: "A-1")
       expect(described_class.presence_for(organization, account))

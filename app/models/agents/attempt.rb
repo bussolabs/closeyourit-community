@@ -10,7 +10,7 @@ module Agents
     # tentativo di modifica solleva ActiveRecord::ReadonlyAttributeError.
     attr_readonly :host_id, :phase, :runtime, :skill_key, :sandbox, :permission_mode,
                   :allowed_tools, :ttl, :bundle_digest, :bundle_ref, :service_account_id, :expected_reviewer,
-                  :expected_reviewer_model
+                  :expected_reviewer_model, :work_model
 
     belongs_to :organization, class_name: "Organizations::Organization"
 
@@ -27,6 +27,8 @@ module Agents
     # istruzione e run sono cadute con la rimozione dei typed agent (MT-9); le colonne restano nullable e
     # valorizzate a NULL sui record storici, che così sopravvivono senza il puntatore.
     belongs_to :service_account, class_name: "Accounts::Account", optional: true
+    # CYAU-282 — the steps the machine reported while it worked; the database deletes them with the attempt.
+    has_many :live_events, class_name: "Agents::AttemptLiveEvent", inverse_of: :attempt
 
     enum :status, { running: 0, awaiting_review: 1, approved: 2, rejected: 3, failed: 4,
                     review_failed: 5, stale: 6, cancelled: 7 }, prefix: true

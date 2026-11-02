@@ -1,0 +1,33 @@
+<%# locals: attempt:, ticket:, code_available:, code_view:, color: — who works on what, since when, and what to show. %>
+<header class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-stone-200 bg-white px-4 py-2.5 dark:border-zinc-800 dark:bg-zinc-900" data-test="automator-live-header">
+  <div class="flex min-w-0 flex-col gap-0.5">
+    <div class="flex min-w-0 items-baseline gap-2">
+      <%= link_to ticket.code, member_ticket_path(ticket), class: "shrink-0 font-mono text-[12px] font-semibold text-indigo-700 hover:underline dark:text-indigo-300" %>
+      <span class="truncate text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= ticket.title %></span>
+    </div>
+    <p class="text-[12px] text-gray-500 dark:text-zinc-400">
+      <span class="font-mono"><%= attempt.host.hostname %></span> ·
+      <span class="font-semibold <%= color ? automator_live_paint(color, :text) : "text-zinc-700 dark:text-zinc-200" %>" data-test="automator-live-engine"><%= automator_live_engine(attempt.runtime) %></span>
+      · <%= automation_execution_phase_label(attempt.phase) %>
+      · <%= t("member.automator_live.started", time: automator_live_time(attempt.started_at)) %>
+    </p>
+  </div>
+  <div class="flex items-center gap-2">
+    <%= render Ui::BadgeComponent.new(label: t(attempt.status_running? ? "member.automator_live.running" : "member.automator_live.over"),
+          color: attempt.status_running? ? :emerald : :gray, pulse: attempt.status_running?, size: :sm, test_id: "automator-live-status") %>
+    <% if attempt.status_running? %>
+      <span class="font-mono text-[12px] tabular-nums text-gray-600 dark:text-zinc-300" title="<%= t("member.automator_live.elapsed") %>"
+            data-controller="automator-live-elapsed" data-automator-live-elapsed-since-value="<%= attempt.started_at.iso8601 %>"
+            data-test="automator-live-elapsed"><%= automator_live_elapsed(attempt.started_at) %></span>
+    <% end %>
+    <% if code_available %>
+      <%= render Ui::ButtonGroupComponent.new(test_id: "automator-live-view-switch", class: "border border-stone-200 dark:border-zinc-800 divide-x divide-stone-200 dark:divide-zinc-800",
+            aria: { label: t("member.automator_live.view_switch") }) do |group| %>
+        <% [ [ nil, "view_code", code_view ], [ "files", "view_files", !code_view ] ].each do |value, key, current| %>
+          <% group.with_button(label: t("member.automator_live.#{key}"), href: member_agents_live_session_path(attempt, file: params[:file].presence, view: value),
+                variant: current ? :secondary : :ghost, size: :sm, aria: { current: current.to_s }) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</header>

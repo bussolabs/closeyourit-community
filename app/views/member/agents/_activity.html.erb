@@ -1,5 +1,5 @@
 <%# locals: active_runs:, unreported_attempts:, visible_ticket_ids:, tickets_by_code:,
-    leases_by_ticket_code: — sezione Attività della show host.
+    leases_by_ticket_code:, host: — sezione Attività della show host.
     CYRA-183: ogni lavorazione mostra il PERCORSO (i passaggi di PhaseProfile con quello in corso
     evidenziato) e cosa ha prodotto finora.
     L'ELENCO viene da `active_runs` (snapshot heartbeat), NON dai lease vivi: una run ferma ha il lease
@@ -75,6 +75,11 @@
                   <span class="text-gray-400 dark:text-zinc-500"><%= t("member.agents.activity.products.none") %></span>
                 <% end %>
               </div>
+              <%# CYRA-1138 — the attempt this machine is running on the ticket opens live. %>
+              <% if (live = workflow&.attempts&.select { it.status_running? && it.host_id == host.id }&.max_by(&:started_at)) %>
+                <%= link_to t("member.agents.activity.watch_live"), member_agents_live_session_path(live),
+                      class: "text-[12px] font-medium text-indigo-700 hover:underline dark:text-indigo-300", data: { test: "host-run-live" } %>
+              <% end %>
             <% end %>
           </div>
         </li>

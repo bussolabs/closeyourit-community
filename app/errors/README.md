@@ -37,8 +37,8 @@ Formato `R{HTTP_STATUS}-{DOMINIO}-{SEQ}` (rules/error-handling.md). Envelope API
 ### INGEST — ingest eventi (Fase 2, error monitoring)
 - `R422-INGEST-001` — envelope/evento malformato
 - `R413-INGEST-001` — payload troppo grande (limite compresso/decompresso)
-- `R413-INGEST-003` — body of any ingest channel without its own cap (logs, pageviews, replays, web vitals, help desk) over `Api::V1::IngestBaseController::MAX_BYTES`, checked on `content_length` before auth and parse — CYRA-1039
-- `R413-INGEST-002` — evento `POST /events` oltre `Errors::Constants::EVENTS_MAX_BYTES` (byte del singolo evento, gate su `content_length` in testa alla catena via `prepend_before_action` → precede auth e parse; distinto da INGEST-001 che è l'envelope Sentry compresso/decompresso del DSN pubblico) — CYRA-112
+- `R413-INGEST-003` — body of any ingest channel without its own cap (logs, pageviews, replays, web vitals, help desk) over `Api::V1::IngestBaseController::MAX_BYTES`, checked on the declared size or, without one (chunked), on the bytes received, before auth and parse — CYRA-1039, CYRA-1124
+- `R413-INGEST-002` — evento `POST /events` oltre `Errors::Constants::EVENTS_MAX_BYTES` (byte del singolo evento, gate sulla dimensione dichiarata o, senza (chunked), sui byte ricevuti — CYRA-1124 — in testa alla catena via `prepend_before_action` → precede auth e parse; distinto da INGEST-001 che è l'envelope Sentry compresso/decompresso del DSN pubblico) — CYRA-112
 - `R403-INGEST-002` — origine non consentita dall'allowlist del progetto sul public ingest (richiesta browser con header `Origin` non elencato; CYRA-109). Trasversale a tutti i canali di ingest (`IngestAuthentication#enforce_origin_allowlist!`). Difesa AGGIUNTIVA, non autenticazione: senza `Origin` (client non-browser) o con allowlist vuota → passa sempre.
 - (riservato: `R429-INGEST-001` — quota ingest per-progetto, via rack-attack throttle `ingest/project`)
 
@@ -62,7 +62,7 @@ Formato `R{HTTP_STATUS}-{DOMINIO}-{SEQ}` (rules/error-handling.md). Envelope API
 - `R422-METRIC-003` — `performance_issue` senza `subtype` (richiesto: `n_plus_one`/`slow_request`/`slow_external_http`/`high_query_count`)
 - `R413-METRIC-004` — batch di metriche troppo grande (oltre `Metrics::Constants::MAX_BATCH`, NUMERO di campioni)
 - `R422-METRIC-005` — azione di triage non valida (`Metrics::Triage`; CYRA-45, speculare a `R422-ERROR-002`)
-- `R413-METRIC-006` — batch di metriche oltre `Metrics::Constants::MAX_BYTES` (byte del batch, gate su `content_length` in testa alla catena via `prepend_before_action` → precede auth e parse; distinto da METRIC-004 che limita il NUMERO di campioni) — CYRA-112
+- `R413-METRIC-006` — batch di metriche oltre `Metrics::Constants::MAX_BYTES` (byte del batch, gate sulla dimensione dichiarata o, senza (chunked), sui byte ricevuti — CYRA-1124 — in testa alla catena via `prepend_before_action` → precede auth e parse; distinto da METRIC-004 che limita il NUMERO di campioni) — CYRA-112
 
 ### LOG — ingest log strutturati (`Api::V1::LogsController`, `Logs::Ingest::*`) + link manuale (`Logs::Links::*`)
 - `R422-LOG-001` — log malformato (body non parsabile)
@@ -357,6 +357,7 @@ Dal CYRA-766 **non esiste più la famiglia `*-CHAT-*` del trasporto AI**: quei c
 - `R502-LLM-007` — il CORPO della risposta HTTP non è JSON: guasto del trasporto, non del modello (solo la modalità sincrona con attrezzi)
 - `R429-LLM-001` — troppe richieste al fornitore (HTTP 429)
 - `R402-LLM-001` / `R402-AI-001` — la chiave CloseYourIt AI ha raggiunto il tetto mensile (HTTP 402 dal gateway, CYRA-920)
+- `request_too_large` (HTTP 413 dal gateway CloseYourIt AI, formato OpenAI senza codice R) — body oltre `AiGateway::ProxyController::MAX_JSON_BYTES` (testo, vettori, riordino) o `MAX_AUDIO_BYTES` (trascrizione), misurato prima di leggerlo, chunked compreso; nessun conteggio — CYRA-1124
 - `R402-AI-002` — l'organizzazione ha speso il suo tetto mensile di token AI (`Ai::TokenBudget`, CYRA-914): nessuna chiamata parte fino al mese dopo o a un tetto più alto
 - `R503-LLM-001` — server AI non disponibile (HTTP 503). Nessuna riserva su un secondo modello: i chiamanti degradano
 - `R504-LLM-001` — timeout HTTP verso il fornitore: apertura, o attesa fra un pezzo e l'altro dello stream

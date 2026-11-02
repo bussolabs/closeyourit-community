@@ -20,6 +20,18 @@
           <%= render "member/shared/color_field", record: group, prefix: "group", scope: "member.groups.form" %>
 
           <%= render "member/shared/icon_field", record: group, prefix: "group", scope: "member.groups.form" %>
+
+          <%# CYRA-1133 — switching the council on for the group covers every project in it. %>
+          <div class="md:col-span-2">
+            <input type="hidden" name="council_enabled" value="0">
+            <label class="inline-flex items-center gap-2 text-[12.5px] text-zinc-900 dark:text-zinc-100">
+              <input type="checkbox" name="council_enabled" value="1" data-test="group-council"
+                     class="h-4 w-4 rounded border-stone-300 dark:border-zinc-700 text-indigo-600 dark:text-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400"
+                     <%= "checked" if group.council_enabled? %>>
+              <%= t("member.groups.form.council") %>
+            </label>
+            <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.groups.form.council_hint") %></p>
+          </div>
         </div>
       </div>
     </div>

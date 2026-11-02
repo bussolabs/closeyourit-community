@@ -1,0 +1,10 @@
+<%# locals: entry: — what happened to a file: lines added and removed, or only read. %>
+<% if entry.changed? %>
+  <span class="shrink-0 font-mono text-[11px]">
+    <% if entry.created %><span class="text-gray-500 dark:text-zinc-400"><%= t("member.automator_live.file_created") %></span><% end %>
+    <span class="text-emerald-700 dark:text-emerald-400">+<%= entry.added %></span>
+    <span class="text-red-700 dark:text-red-400">−<%= entry.removed %></span>
+  </span>
+<% else %>
+  <span class="shrink-0 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.automator_live.file_read") %></span>
+<% end %>

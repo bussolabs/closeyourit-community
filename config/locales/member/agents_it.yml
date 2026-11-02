@@ -57,6 +57,7 @@ it:
         unreported:
           one: "1 lavoro risulta aperto ma la macchina non lo sta segnalando: probabilmente si è fermata senza chiuderlo."
           other: "%{count} lavori risultano aperti ma la macchina non li sta segnalando: probabilmente si è fermata senza chiuderli."
+        watch_live: Guarda in diretta
         step_status:
           done: concluso
           current: in corso

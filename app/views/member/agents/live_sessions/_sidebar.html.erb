@@ -1,0 +1,10 @@
+<%# locals: sessions:, current: — CYRA-1138, the live page's own sidebar from md up, like Coworkers. %>
+<aside id="automator-live-sidebar" class="hidden md:flex w-60 shrink-0 flex-col rounded-xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-y-auto" data-test="automator-live-sidebar">
+  <div class="px-2 pt-2">
+    <%= render Ui::NavLinkComponent.new(label: t("member.automator_live.back"), path: member_agents_path, icon: "chevrons-left", size: :top) %>
+  </div>
+  <h1 class="px-3.5 pt-3 pb-1.5 text-[14px] font-semibold"><%= t("member.automator_live.title") %></h1>
+  <nav aria-label="<%= t("member.automator_live.sessions") %>" class="flex-1 p-2 space-y-0.5">
+    <%= render partial: "member/agents/live_sessions/session_link", collection: sessions, as: :attempt, locals: { current: } %>
+  </nav>
+</aside>

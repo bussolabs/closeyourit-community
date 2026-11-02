@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## [0.199.0] - 2026-11-02
+
+### Added
+
+- **Automator in diretta**: guarda un agente mentre lavora un ticket: tutti i file del progetto con quelli che tocca accesi, le righe nuove che entrano una alla volta e i suoi ultimi passi. Se un altro agente cambia le stesse righe, un avviso in basso a destra te lo dice e ti fa mettere in pausa un ticket. ([In diretta](/member/agents/live))
+- **Meno conflitti tra ticket**: un ticket il cui piano tocca file che un altro agente sta già cambiando aspetta in coda, e parte da solo quando quel lavoro finisce. L'avviso rosso funziona anche con il codice spento. ([In diretta](/member/agents/live))
+- **Conflitti risolti da Codex**: quando un ticket si ferma perché main ha cambiato le stesse righe, torna in coda una volta per un giro di risoluzione. Codex rimette insieme le due modifiche, Claude rilegge e la proposta aspetta la tua revisione. Se non ci riesce, decidi tu.
+
+## [0.198.8] - 2026-11-02
+
+### Security
+
+- **Richieste troppo grandi fermate all'ingresso.** Il server respinge le richieste oltre 32 MB prima di leggerle, anche quelle inviate a pezzi. Errori, log e metriche contano i byte davvero arrivati, e CloseYourIt AI accetta testi fino a 10 MB e audio fino a 25 MB.
+
+### Fixed
+
+- **Un sito lento non blocca più gli altri lavori.** Ogni pagina del controllo SEO si legge in al massimo 30 secondi, e ogni controllo dura al massimo 2 ore. I controlli SEO hanno una corsia propria: lavori notturni e intelligenza artificiale non li aspettano più.
+
+## [0.197.2] - 2026-11-01
 ## [0.198.7] - 2026-11-02
 
 ### Fixed

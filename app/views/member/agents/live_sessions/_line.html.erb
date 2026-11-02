@@ -1,0 +1,21 @@
+<%# locals: (line:, fresh:, delay: nil, cursor: nil) %>
+<%# One numbered line: removed in red and struck through, added
+    in green. A fresh added line enters after `delay` others; `cursor` puts the agent's name tag at its end. %>
+<% styles = { removed: "bg-red-50 text-red-800 dark:bg-red-500/10 dark:text-red-300",
+              added: "bg-emerald-50 text-emerald-900 dark:bg-emerald-500/10 dark:text-emerald-200",
+              context: "text-zinc-700 dark:text-zinc-300" } %>
+<div class="flex min-w-max <%= styles.fetch(line.kind) %> <%= "motion-safe:animate-live-arrive" if fresh %>" data-test="automator-live-line-<%= line.kind %>"
+     <%= tag.attributes(style: (automator_live_stagger(delay) if fresh && delay)) %>>
+  <span class="w-10 shrink-0 select-none pr-2 text-right text-gray-400 dark:text-zinc-500"><%= line.old_number %></span>
+  <span class="w-10 shrink-0 select-none pr-2 text-right text-gray-400 dark:text-zinc-500"><%= line.new_number %></span>
+  <span class="w-4 shrink-0 select-none text-center" aria-hidden="true"><%= { removed: "−", added: "+" }[line.kind] %></span>
+  <% if line.kind == :removed %>
+    <del class="whitespace-pre pr-4"><%= line.text %></del>
+  <% else %>
+    <span class="whitespace-pre pr-4"><%= line.text %></span>
+  <% end %>
+  <% if cursor %>
+    <span class="mr-4 self-center rounded-sm px-1.5 font-sans text-[10.5px] font-semibold leading-4 <%= automator_live_paint(cursor[:color], :tag) %>"
+          data-test="automator-live-cursor"><%= cursor[:label] %></span>
+  <% end %>
+</div>

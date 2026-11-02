@@ -1,0 +1,5 @@
+<% content_for :title, t("member.automator_live.title") %>
+<section class="flex h-full min-h-0 flex-col bg-white dark:bg-zinc-900" data-test="automator-live">
+  <%= render Ui::EmptyStateComponent.new(title: t("member.automator_live.empty_title"), body: t("member.automator_live.empty_body"),
+        example: t("member.automator_live.empty_example"), icon: "radio", class: "flex-1", test_id: "automator-live-empty") %>
+</section>

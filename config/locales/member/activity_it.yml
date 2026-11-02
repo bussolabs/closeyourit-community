@@ -51,6 +51,7 @@ it:
           review_rejected: Revisione respinta
           review_approved: Revisione approvata
           autopilot_auto_approved: Consegna andata avanti da sola
+          plan_council_approved: Piano approvato dal consiglio
           linked: Collegato
           branch_created: Ramo creato
           pull_request_opened: Proposta di modifica aperta

@@ -51,6 +51,8 @@ module Api
             "review_mode" => outcome.attempt.review_mode, "reviewer" => outcome.attempt.reviewer, "reviewer_model" => outcome.attempt.reviewer_model,
             # CYRA-921: which engine does the work, frozen on the attempt at claim time.
             "work_engine" => outcome.attempt.runtime,
+            # CYRA-1133: the model the council chose; missing = the model the automator pins.
+            "work_model" => outcome.attempt.work_model,
             "candidate" => AgentTicketCandidateSerializer.new(outcome.ticket).as_json
           )
         end

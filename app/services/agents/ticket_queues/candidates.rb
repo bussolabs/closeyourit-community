@@ -59,6 +59,7 @@ module Agents
                 .where(prerequisites_met_sql)
                 .where(production_slot_free_sql)
                 .where(production_hold_released_sql)
+                .where(OverlapHold.sql(project: @project, now: @now))
                 .order(Arel.sql("types_ticket_priorities.position DESC"), :number)
       end
 

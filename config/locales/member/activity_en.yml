@@ -50,6 +50,7 @@ en:
           review_rejected: Review rejected
           review_approved: Review approved
           autopilot_auto_approved: Delivery moved on by itself
+          plan_council_approved: Plan approved by the council
           linked: Linked
           branch_created: Branch created
           pull_request_opened: Pull request opened

@@ -1,5 +1,21 @@
 en:
   agents:
+    council:
+      ticket_body: |
+        **Problem:** %{problem}
+
+        **Proposed solution:** %{solution}
+
+        **Risk:** %{risk}
+
+        **Proposed by:** %{proposer} · **%{critic}'s vote:** %{vote} (risk %{critic_risk}) — %{reason}
+
+        **Implemented by:** %{engine} %{model}
+      engine_default: organization's default choice
+      activity_actor: Council
+      errors:
+        not_found: Council slice not found
+        closed: This council slice is already closed
     supporter:
       errors:
         not_found: Question round not found.

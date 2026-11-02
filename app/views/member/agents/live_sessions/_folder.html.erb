@@ -1,0 +1,7 @@
+<%# locals: (folder:) %>
+<%# The name of a folder above its files; the project root has none. %>
+<% if folder.present? %>
+  <li class="flex items-center gap-1.5 px-2 pt-2 pb-0.5 font-mono text-[10.5px] text-gray-500 dark:text-zinc-400" data-test="automator-live-folder">
+    <%= render Ui::IconComponent.new(name: "folder", class: "text-[11px]") %><span class="truncate" title="<%= folder %>"><%= folder %></span>
+  </li>
+<% end %>

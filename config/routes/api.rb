@@ -114,6 +114,11 @@ namespace :api do
       resources :supporter_rounds, only: [] do
         resource :answer, only: :create, controller: "supporter_answers"
       end
+      # CYRA-1133 — the council's next project slice for this machine, and the machine's proposals and votes.
+      resource :council_slice, only: :show
+      resources :council_slices, only: [] do
+        resource :result, only: :create, controller: "council_results"
+      end
     end
     # Coda agenti host-scoped (CYAU-84): appiattita, senza agent_id nell'URL. L'host è identificato dal token
     # cyi_ah_ (Current.agent_host); scope/capability/claim sono host-only (token host-bound + ProjectScope +
@@ -130,6 +135,8 @@ namespace :api do
       resource :result, only: :update, module: :agents, controller: "attempt_results"
       # Canale del fallimento (CYRA-282): la macchina riporta che la sessione è morta, col motivo.
       resource :failure, only: :create, module: :agents, controller: "attempt_failures"
+      # CYAU-282 — the agent's steps while it works, from the machine running the attempt.
+      resource :live_events, only: :create, module: :agents, controller: "attempt_live_events"
     end
     post "leases", to: "leases/acquisitions#create"
     post "leases/:ticket/renew", to: "leases/renewals#create", format: false

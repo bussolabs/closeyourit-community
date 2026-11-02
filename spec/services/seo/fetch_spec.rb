@@ -42,7 +42,7 @@ RSpec.describe Seo::Fetch, type: :service do
     end
 
     it "rivaluta ogni salto della catena: un redirect verso l'interno viene fermato" do
-      allow(NetworkGuard).to receive(:resolve).with("sito.test").and_return([ "93.184.216.34" ])
+      allow(NetworkGuard).to receive(:resolve).with("sito.test", timeout: anything).and_return([ "93.184.216.34" ])
       allow(NetworkGuard).to receive(:resolve).with("169.254.169.254").and_return([ "169.254.169.254" ])
       stub_request(:get, "https://sito.test/").to_return(status: 302, headers: { "Location" => "http://169.254.169.254/latest/meta-data" })
       metadata = stub_request(:get, "http://169.254.169.254/latest/meta-data")
@@ -209,6 +209,158 @@ RSpec.describe Seo::Fetch, type: :service do
         expect(result.error).to be_nil
         expect(result.body).to include("arrivato")
       end
+    end
+  end
+
+  # CYRA-1122 — il limite per singola attesa non basta: un sito che manda un byte prima di ogni
+  # scadenza la rinnova all'infinito. La lettura intera ha un tetto, e ogni attesa — risoluzione
+  # compresa — usa solo quello che ne resta. Le prove usano un tetto di un secondo o poco più
+  # invece dei 30 veri: è lo stesso meccanismo, senza far aspettare la suite.
+  describe "tempo massimo per l'intera lettura" do
+    def elapsed
+      started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      yield
+      Process.clock_gettime(Process::CLOCK_MONOTONIC) - started
+    end
+
+    it "di default vale TOTAL_TIMEOUT, 30 secondi" do
+      expect(described_class::TOTAL_TIMEOUT).to eq(30)
+    end
+
+    context "con un sito che manda un byte alla volta" do
+      let(:lento) { { headers: { "Content-Type" => "text/html" }, body: "a" * 200, drip: 0.1 } }
+      let(:server) { StreamingBodyServer.new([ lento ]).start }
+
+      around do |example|
+        WebMock.disable!
+        example.run
+      ensure
+        WebMock.enable!
+      end
+
+      before { allow(NetworkGuard).to receive(:resolved_public_address).and_return("127.0.0.1") }
+      after { server.stop }
+
+      shared_examples "si ferma al tetto" do
+        it "anche se nessuna singola attesa scade" do
+          result = nil
+          durata = elapsed { result = described_class.call(url: "http://127.0.0.1:#{server.port}/", budget: 1) }
+
+          expect(result.error).to eq("timeout")
+          expect(result).not_to be_ok
+          expect(durata).to be < 1.5
+          expect(server.client_closed_early?).to be(true)
+        end
+      end
+
+      context "nel corpo" do
+        it_behaves_like "si ferma al tetto"
+      end
+
+      # Riga di stato e header `Net::HTTP` li legge prima di chiamare qualunque nostro blocco: il
+      # tetto deve valere già lì, non solo sui pezzi del corpo.
+      context "nella riga di stato e negli header" do
+        let(:lento) { { headers: { "X-Lento" => "a" * 200 }, body: "", drip_head: 0.1 } }
+
+        it_behaves_like "si ferma al tetto"
+      end
+
+      # La riga con la lunghezza del pezzo chunked è una lettura interna del protocollo: finché non
+      # è completa il nostro blocco non vede niente.
+      context "nella cornice chunked" do
+        let(:lento) do
+          { headers: { "Content-Type" => "text/html" }, chunked: true,
+            body: "1;#{'x' * 200}\r\na\r\n0\r\n\r\n", drip: 0.1 }
+        end
+
+        it_behaves_like "si ferma al tetto"
+      end
+    end
+
+    context "con un sito chunked che risponde subito" do
+      let(:server) do
+        StreamingBodyServer.new([ { headers: { "Content-Type" => "text/html" }, chunked: true,
+                                    body: "5\r\n<html\r\n1\r\n>\r\n0\r\n\r\n" } ]).start
+      end
+
+      around do |example|
+        WebMock.disable!
+        example.run
+      ensure
+        WebMock.enable!
+      end
+
+      before { allow(NetworkGuard).to receive(:resolved_public_address).and_return("127.0.0.1") }
+      after { server.stop }
+
+      it "si legge come prima" do
+        result = described_class.call(url: "http://127.0.0.1:#{server.port}/")
+
+        expect(result).to be_ok
+        expect(result.body).to eq("<html>")
+      end
+    end
+
+    it "una risoluzione che non risponde finisce entro il residuo ed è tempo scaduto, non blocco" do
+      allow(NetworkGuard).to receive(:resolved_public_address) { sleep 3 }
+
+      result = nil
+      durata = elapsed { result = described_class.call(url: "https://sito.test/", budget: 1) }
+
+      expect(result.error).to eq("timeout")
+      expect(result).not_to be_blocked
+      expect(durata).to be < 1.5
+    end
+
+    it "una risoluzione fallita perché il tempo è finito durante i tentativi è tempo scaduto" do
+      allow(NetworkGuard).to receive(:resolved_public_address) do
+        sleep 0.3
+        nil
+      end
+
+      expect(described_class.call(url: "https://sito.test/", budget: 0.3).error).to eq("timeout")
+    end
+
+    it "una risoluzione fallita col tempo ancora davanti resta un indirizzo bloccato, come prima" do
+      allow(NetworkGuard).to receive(:resolve).and_return([])
+
+      expect(described_class.call(url: "https://sito.test/")).to be_blocked
+    end
+
+    it "passa alla risoluzione solo il tempo che resta" do
+      stub_request(:get, "https://sito.test/").to_return(status: 200, body: "ok")
+      allow(NetworkGuard).to receive(:resolved_public_address).and_call_original
+
+      described_class.call(url: "https://sito.test/", budget: 2)
+
+      expect(NetworkGuard).to have_received(:resolved_public_address)
+        .with("sito.test", timeout: a_value_between(0, 2))
+    end
+
+    it "il tetto vale per tutta la catena di salti, non per ciascuno" do
+      (1..5).each do |hop|
+        stub_request(:get, "https://sito.test/salto-#{hop}")
+          .to_return(status: 302, headers: { "Location" => "/salto-#{hop + 1}" })
+      end
+      stub_request(:get, "https://sito.test/salto-6").to_return(status: 200, body: "ok")
+      allow(NetworkGuard).to receive(:resolved_public_address) do
+        sleep 0.3
+        "93.184.216.34"
+      end
+
+      result = nil
+      durata = elapsed { result = described_class.call(url: "https://sito.test/salto-1", budget: 1) }
+
+      expect(result.error).to eq("timeout")
+      expect(durata).to be < 1.5
+      expect(a_request(:get, "https://sito.test/salto-6")).not_to have_been_made
+    end
+
+    it "un sito che risponde subito si legge come prima" do
+      stub_request(:get, "https://sito.test/").to_return(status: 200, body: "<html></html>",
+                                                         headers: { "Content-Type" => "text/html" })
+
+      expect(described_class.call(url: "https://sito.test/")).to be_ok
     end
   end
 

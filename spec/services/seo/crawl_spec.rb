@@ -122,6 +122,53 @@ RSpec.describe Seo::Crawl, type: :service do
     expect(crawl.error).to eq("standard_error")
   end
 
+  # CYRA-1122 — il giro ha un tetto suo, e ogni lettura usa al più quello che ne resta.
+  describe "tempo massimo del giro" do
+    it "di default vale due ore" do
+      expect(described_class::MAX_DURATION).to eq(2.hours)
+    end
+
+    it "un giro che finisce in tempo non risulta interrotto" do
+      stub_page("/")
+
+      expect(crawl).not_to be_interrupted
+    end
+
+    it "ogni lettura riceve al più il tetto della singola pagina" do
+      stub_page("/")
+      allow(Seo::Fetch).to receive(:call).and_call_original
+
+      crawl
+
+      expect(Seo::Fetch).to have_received(:call)
+        .with(url: "https://sito.test/", budget: a_value_between(0, Seo::Fetch::TOTAL_TIMEOUT)).once
+    end
+
+    it "anche robots.txt e sitemap si leggono col tempo del giro" do
+      stub_page("/")
+      allow(Seo::Fetch).to receive(:call).and_call_original
+
+      described_class.call(site:, pause: 0, max_duration: 10)
+
+      %w[robots.txt sitemap.xml].each do |file|
+        expect(Seo::Fetch).to have_received(:call).with(url: "https://sito.test/#{file}", budget: a_value_between(0, 10))
+      end
+    end
+
+    # La pausa dopo la home è più lunga di tutto il giro: quando tocca a /dopo il tempo è finito.
+    it "a tempo scaduto non visita altre pagine e tiene quelle già lette" do
+      stub_page("/", links: %w[/dopo])
+      dopo = stub_page("/dopo")
+
+      result = described_class.call(site:, pause: 0.6, max_duration: 0.5)
+
+      expect(result).to be_interrupted
+      expect(result.pages.map { |page| page[:path] }).to eq([ "/" ])
+      expect(result.pages.sole[:observation]).to eq(:analyzed)
+      expect(dopo).not_to have_been_requested
+    end
+  end
+
   # CYRA-808 — il fatto grezzo dice fin dove siamo arrivati su quella pagina. È l'informazione che
   # più a valle distingue «il problema non c'è più» da «non l'abbiamo guardato».
   describe "quanto siamo riusciti a osservare" do

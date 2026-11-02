@@ -41,3 +41,32 @@ en:
       reserved_topics_label: Organization reserved topics
       reserved_topics_placeholder: "stripe\npaypal\napp/services/billing/"
       reserved_topics_hint: One per line. On these topics a person always decides, in every project. A line with a slash (/) is a code folder. They add to the built-in topics (money, security, personal data, deletions, changes customers see).
+      council_mode_label: Council
+      council_mode_hint: Claude and Codex propose improvements on projects with the council on. In dry run they only write the report.
+      council_modes:
+        "off": "Off"
+        dry_run: Dry run
+        "on": "On"
+      council_runs_title: Last council rounds
+      council_runs_empty: No rounds yet.
+      council_statuses:
+        running: running
+        completed: completed
+        failed: failed
+      council_outcomes:
+        invalid: invalid
+        rejected: rejected
+        duplicate: duplicates
+        unchecked: unchecked
+        ticket: tickets
+        idea: ideas
+        dry_ticket: would be tickets
+        dry_idea: would be ideas
+        create_failed: not created
+      council_failures:
+        quota: quota exhausted
+        auth: sign-in expired
+        session: session failed
+        not_mapped: project not mapped on the machine
+        abandoned: abandoned
+        invalid: invalid answer

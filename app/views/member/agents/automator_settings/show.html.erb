@@ -51,6 +51,10 @@
         <%= render Ui::SelectComponent.new(name: "supporter", label: t("#{scope}.supporter_label"), test_id: "automator-settings-supporter",
               options: Agents::Host::SUPPORTERS.map { |engine| [ t("member.agents.engine.engines.#{engine}"), engine ] },
               hint: t("#{scope}.supporter_hint"), selected: @setting.supporter) %>
+        <%# CYRA-1133 — the council's master switch. %>
+        <%= render Ui::SelectComponent.new(name: "council_mode", label: t("#{scope}.council_mode_label"), test_id: "automator-settings-council-mode",
+              options: Agents::Council::MODES.map { |mode| [ t("#{scope}.council_modes.#{mode}"), mode ] },
+              hint: t("#{scope}.council_mode_hint"), selected: @setting.council_mode) %>
         <div class="md:col-span-2">
           <label for="supporter_reserved_topics" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("#{scope}.reserved_topics_label") %></label>
           <textarea name="supporter_reserved_topics" id="supporter_reserved_topics" rows="4" data-test="automator-settings-reserved-topics"
@@ -75,6 +79,25 @@
           <li class="flex flex-wrap items-center justify-between gap-2 py-2" data-test="automator-settings-own-host">
             <%= link_to host.hostname, member_agent_path(host), class: "font-medium text-indigo-700 dark:text-indigo-300 hover:underline" %>
             <span class="text-gray-600 dark:text-zinc-400"><%= t("#{scope}.choice_line", work: t("member.agents.engine.engines.#{host.effective_work_engine}"), review: t("member.agents.engine.engines.#{host.effective_reviewer}"), support: t("member.agents.engine.engines.#{host.effective_supporter}")) %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+
+  <%= render Ui::SectionComponent.new(title: t("#{scope}.council_runs_title"), header_padding: :wide, body_class: "px-5 py-5", test_id: "automator-settings-council-runs") do %>
+    <% if @council_runs.empty? %>
+      <p class="text-[12.5px] text-gray-600 dark:text-zinc-400"><%= t("#{scope}.council_runs_empty") %></p>
+    <% else %>
+      <ul class="divide-y divide-stone-100 dark:divide-zinc-800 text-[12.5px]">
+        <% @council_runs.each do |run| %>
+          <li class="flex flex-wrap items-center justify-between gap-2 py-2" data-test="council-run">
+            <span class="font-medium text-zinc-900 dark:text-zinc-100"><%= run.project.name %> · <%= l(run.started_at, format: :short) %></span>
+            <span class="text-gray-600 dark:text-zinc-400">
+              <%= t("#{scope}.council_modes.#{run.mode}") %> · <%= t("#{scope}.council_statuses.#{run.status}") %>
+              <% run.report.fetch("outcomes", {}).each do |outcome, count| %> · <%= t("#{scope}.council_outcomes.#{outcome}") %> <%= count %><% end %>
+              <% if run.failure_kind %> · <%= t("#{scope}.council_failures.#{run.failure_kind}") %><% end %>
+            </span>
           </li>
         <% end %>
       </ul>

@@ -15,27 +15,42 @@ module Seo
     # concorrenza qui guadagnerebbe minuti e costerebbe la fiducia di chi ospita il sito.
     REQUEST_PAUSE = 0.5
 
-    Result = Data.define(:pages, :sitemap_urls, :sitemap_reachable, :robots_reachable, :error) do
-      def initialize(pages: [], sitemap_urls: [], sitemap_reachable: true, robots_reachable: true, error: nil)
+    # Tetto sull'intero giro (CYRA-1122). Al tetto di pagine (Seo::Site::MAX_PAGES_CEILING) e con la
+    # pausa un giro sano dura meno di un'ora; questo ferma quello che non lo è — un sito che risponde
+    # piano a ogni pagina — prima che tenga occupata la corsia per una giornata. Le pagine già lette
+    # restano; il giro risulta interrotto e non chiude i rilievi d'insieme (Seo::RecordAudit).
+    MAX_DURATION = 2.hours
+
+    # `interrupted`: il giro si è fermato per tempo, con pagine ancora da visitare.
+    Result = Data.define(:pages, :sitemap_urls, :sitemap_reachable, :robots_reachable, :error,
+                         :interrupted) do
+      def initialize(pages: [], sitemap_urls: [], sitemap_reachable: true, robots_reachable: true, error: nil,
+                     interrupted: false)
         super
       end
+
+      def interrupted? = interrupted
     end
 
-    def initialize(site:, fetcher: Seo::Fetch, pause: REQUEST_PAUSE)
+    def initialize(site:, fetcher: Seo::Fetch, pause: REQUEST_PAUSE, max_duration: MAX_DURATION)
       @site = site
       @fetcher = fetcher
       @pause = pause
+      @max_duration = max_duration
     end
 
     def call
+      @deadline = clock + @max_duration.to_f
+      @interrupted = false
       robots = load_robots
       sitemap = load_sitemap(robots)
       seeds = build_seeds(sitemap.urls)
 
       pages = visit(seeds, robots, sitemap.urls.to_set)
+      log_interruption(pages) if @interrupted
 
       Result.new(pages:, sitemap_urls: sitemap.urls, sitemap_reachable: sitemap.reachable,
-                 robots_reachable: @robots_reachable)
+                 robots_reachable: @robots_reachable, interrupted: @interrupted)
     rescue StandardError => e
       Result.new(error: e.class.name.demodulize.underscore)
     end
@@ -45,7 +60,7 @@ module Seo
     def base_uri = URI.parse(@site.base_url)
 
     def load_robots
-      response = @fetcher.call(url: "#{@site.base_url}/robots.txt")
+      response = fetch("#{@site.base_url}/robots.txt")
       @robots_reachable = response.ok?
       # Un robots.txt assente non vieta niente: è così che si comportano i motori veri.
       response.ok? ? Seo::Robots.parse(response.body) : Seo::Robots.permissive
@@ -57,7 +72,29 @@ module Seo
       # La sitemap dichiarata dal robots.txt vince su quella indovinata: è quella che il
       # proprietario del sito considera la sua.
       url = robots.sitemaps.first.presence || "#{@site.base_url}/sitemap.xml"
-      Seo::Sitemap.call(url:, fetcher: @fetcher)
+      # Anche le sitemap figlie (fino a MAX_CHILD_SITEMAPS) si leggono col tempo del giro.
+      Seo::Sitemap.call(url:, fetcher: ->(url:) { fetch(url) })
+    end
+
+    # Ogni lettura ha il minore fra il proprio tetto e quanto resta al giro: nemmeno l'ultima pagina
+    # sfora la scadenza. A giro scaduto non si bussa più — la lettura risulta scaduta senza partire.
+    def fetch(url)
+      left = @deadline - clock
+      unless left.positive?
+        @interrupted = true
+        return Seo::Fetch::Result.new(url:, error: "timeout")
+      end
+
+      @fetcher.call(url:, budget: [ Seo::Fetch::TOTAL_TIMEOUT, left ].min)
+    end
+
+    def expired? = clock >= @deadline
+
+    def clock = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+    # Host soltanto: è la riga che spiega perché un giro ha meno pagine del solito.
+    def log_interruption(pages)
+      Rails.logger.warn("[seo] giro interrotto dopo #{@max_duration.to_i}s con #{pages.size} pagine: #{base_uri.host}")
     end
 
     def build_seeds(sitemap_urls)
@@ -74,6 +111,11 @@ module Seo
       while (entry = queue.shift)
         break if pages.size >= @site.max_pages
 
+        if expired?
+          @interrupted = true
+          break
+        end
+
         url, discovered_from = entry
         path = path_of(url)
 
@@ -84,7 +126,7 @@ module Seo
           next
         end
 
-        response = @fetcher.call(url:)
+        response = fetch(url)
         page = build_page(url, response, discovered_from, sitemap_set.include?(url))
         pages << page
 
@@ -92,6 +134,9 @@ module Seo
         sleep(@pause) if @pause.positive?
       end
 
+      # L'ultima lettura può essersi fermata sulla scadenza del giro, con niente dopo in fila: anche
+      # quel giro non ha visto tutto ciò che voleva.
+      @interrupted ||= expired? && pages.last&.dig(:error) == "timeout"
       pages
     end
 
