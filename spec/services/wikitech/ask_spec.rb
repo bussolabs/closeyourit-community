@@ -58,6 +58,16 @@ RSpec.describe Wikitech::Ask do
     expect(ask.error.code).to eq("R502-LLM-002")
   end
 
+  it "lets the model judge cards the reranker scores low and reads farther than the other searches" do
+    # Distance 0.65: past the 0.6 of the shared searches, still a card about the question.
+    engine.update_columns(embedding: [ 0.35, Math.sqrt(1 - (0.35**2)) ] + Array.new(1022, 0.0))
+    allow(Embeddings::QueryVector).to receive(:call).and_return(Result.ok([ 1.0 ] + Array.new(1023, 0.0)))
+    allow(chat_client).to receive(:generate_content).and_return("answer" => "ok", "cited_ids" => [ engine.id ])
+
+    expect(ask.value.entries).to eq([ engine ])
+    expect(Embeddings::Rerank).to have_received(:call).with(hash_including(min_score: nil))
+  end
+
   it "keeps the cosine order when the reranker is down" do
     allow(Embeddings::Rerank).to receive(:call).and_return(Result.err(AppError.new("x", code: "R503-AI-002")))
     allow(chat_client).to receive(:generate_content).and_return("answer" => "ok", "cited_ids" => [ engine.id ])

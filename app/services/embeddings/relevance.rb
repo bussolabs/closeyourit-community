@@ -53,8 +53,8 @@ module Embeddings
 
     # Posizioni (indici dei documenti passati al rerank) davvero pertinenti, nell'ordine deciso
     # dal cross-encoder. Lista vuota = nessuna corrispondenza, ed è una risposta legittima.
-    def self.relevant_indexes(ranking)
-      ranking.select { |item| item[:score].to_f >= MIN_SCORE }.map { |item| item[:index] }
+    def self.relevant_indexes(ranking, min_score: MIN_SCORE)
+      ranking.select { |item| min_score.nil? || item[:score].to_f >= min_score }.map { |item| item[:index] }
     end
   end
 end

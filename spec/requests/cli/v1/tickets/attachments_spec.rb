@@ -137,35 +137,70 @@ RSpec.describe "Cli::V1::Tickets::Attachments", type: :request do
     end
   end
 
-  describe "GET download (baseline — redirect al blob)" do
-    it "owner scarica → redirect al blob col filename" do
+  # CYRA-1121 — il file arriva dall'app subito dopo il controllo di visibilità, mai da un rimando a un
+  # link dello storage (che si aprirebbe senza ricontrollare chi lo usa).
+  describe "GET download (baseline — file inviato dopo il controllo)" do
+    let(:png) { File.binread(file_fixture("screenshot.png")) }
+
+    def expect_file_delivered
+      expect(response).to have_http_status(:ok)
+      expect(response.location).to be_nil
+      expect(response.body.b).to eq(png.b)
+      expect(response.media_type).to eq("application/octet-stream")
+      expect(response.headers["Content-Disposition"]).to include("attachment", "screenshot.png")
+      expect(response.headers["X-Content-Type-Options"]).to eq("nosniff")
+    end
+
+    it "owner scarica → riceve il file, senza redirect" do
       ticket.files.attach(fixture_file_upload("screenshot.png", "image/png"))
       attachment = ticket.files.first
 
       get "#{attachments_path}/#{attachment.id}/download", headers: headers
 
-      expect(response).to have_http_status(:redirect)
-      expect(response.location).to include("screenshot.png")
+      expect_file_delivered
     end
 
-    it "member che vede il progetto può scaricare → redirect (baseline)" do
+    it "SC-7: chi vede il progetto riceve il file, chi non lo vede più riceve 404" do
       ticket.files.attach(fixture_file_upload("screenshot.png", "image/png"))
       attachment = ticket.files.first
+      reader = member_headers
+      outsider = create(:account)
+      create(:membership, account: outsider, organization:, role: :member)
+      outsider_secret = Accounts::ApiTokens::Issue.call(account: outsider, organization:, name: "CLI").value[:secret]
 
-      get "#{attachments_path}/#{attachment.id}/download", headers: member_headers
+      get "#{attachments_path}/#{attachment.id}/download", headers: reader
+      expect_file_delivered
 
-      expect(response).to have_http_status(:redirect)
+      get "#{attachments_path}/#{attachment.id}/download", headers: { "Authorization" => "Bearer #{outsider_secret}" }
+      expect(response).to have_http_status(:not_found)
+      expect(response.body.b).not_to include(png.b)
     end
 
-    it "file di un COMMENTO del ticket → redirect al blob (unico endpoint per tutti i binari del ticket)" do
+    it "SC-7: lo STESSO token smette di scaricare appena il membro viene tolto dal progetto" do
+      ticket.files.attach(fixture_file_upload("screenshot.png", "image/png"))
+      attachment = ticket.files.first
+      reader = member_headers
+      download_path = "#{attachments_path}/#{attachment.id}/download"
+
+      get download_path, headers: reader
+      expect_file_delivered
+
+      Connections::ProjectMembership.where(project:).destroy_all
+      get download_path, headers: reader
+
+      expect(response).to have_http_status(:not_found)
+      expect(response.location).to be_nil
+      expect(response.body.b).not_to include(png.b)
+    end
+
+    it "file di un COMMENTO del ticket → file inviato (unico endpoint per tutti i binari del ticket)" do
       comment = create(:ticket_comment, ticket:, organization:)
       comment.files.attach(fixture_file_upload("screenshot.png", "image/png"))
       attachment = comment.files_attachments.first
 
       get "#{attachments_path}/#{attachment.id}/download", headers: headers
 
-      expect(response).to have_http_status(:redirect)
-      expect(response.location).to include("screenshot.png")
+      expect_file_delivered
     end
 
     it "file di un commento di un ALTRO ticket → 404 (lookup scoped al ticket, anti-BOLA)" do
@@ -179,14 +214,14 @@ RSpec.describe "Cli::V1::Tickets::Attachments", type: :request do
       expect(response).to have_http_status(:not_found)
     end
 
-    it "download via code umano del ticket → redirect (i sub-endpoint accettano lo stesso ref dello show)" do
+    it "download via code umano del ticket → file inviato (i sub-endpoint accettano lo stesso ref dello show)" do
       ticket.files.attach(fixture_file_upload("screenshot.png", "image/png"))
       attachment = ticket.files.first
 
       get "/cli/v1/projects/#{project.id}/tickets/#{ticket.code}/attachments/#{attachment.id}/download",
           headers: headers
 
-      expect(response).to have_http_status(:redirect)
+      expect_file_delivered
     end
   end
 end

@@ -94,6 +94,70 @@ RSpec.describe Coworkers::Mcp do
     end
   end
 
+  describe "network failures (CYRA-1126)" do
+    it "stops reading an answer over the byte cap" do
+      stub_method("tools/list", body: "x" * (described_class::MAX_BYTES + 1))
+
+      expect { described_class.list_tools(connection) }.to raise_error(described_class::Error, "too_large")
+    end
+
+    it "turns a read that times out into a readable error" do
+      stub_request(:post, url).with { |req| JSON.parse(req.body)["method"] == "tools/list" }.to_timeout
+
+      expect { described_class.list_tools(connection) }.to raise_error(described_class::Error, "timeout")
+    end
+
+    it "shares one deadline across the whole conversation" do
+      allow(described_class).to receive(:clock).and_return(0.0, 1.0, described_class::TIMEOUT + 1.0)
+      list_stub = stub_method("tools/list", body: { result: { tools: [] } }.to_json)
+
+      expect { described_class.list_tools(connection) }.to raise_error(described_class::Error, "timeout")
+      expect(initialize_stub).to have_been_requested
+      expect(initialized_stub).not_to have_been_requested
+      expect(list_stub).not_to have_been_requested
+    end
+
+    it "bounds each call with what is left of the deadline" do
+      allow(described_class).to receive(:clock).and_return(0.0, 0.0, 5.0, 12.0)
+      allow(BoundedHttp).to receive(:request).and_call_original
+      stub_method("tools/list", body: { result: { tools: [] } }.to_json)
+
+      described_class.list_tools(connection)
+
+      expect(BoundedHttp).to have_received(:request).with(anything, anything, max_bytes: 1.megabyte, timeout: 15.0)
+      expect(BoundedHttp).to have_received(:request).with(anything, anything, max_bytes: 1.megabyte, timeout: 10.0)
+      expect(BoundedHttp).to have_received(:request).with(anything, anything, max_bytes: 1.megabyte, timeout: 3.0)
+    end
+
+    it "interrupts a name lookup that hangs past the deadline" do
+      stub_const("#{described_class}::TIMEOUT", 0.2)
+      lookups = 0
+      allow(NetworkGuard).to receive(:resolved_public_address) do
+        lookups += 1
+        sleep 5 if lookups == 2
+        "93.184.215.14"
+      end
+      started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+      expect { described_class.list_tools(connection) }.to raise_error(described_class::Error, "timeout")
+      expect(Process.clock_gettime(Process::CLOCK_MONOTONIC) - started).to be < 1
+      expect(initialize_stub).to have_been_requested
+      expect(initialized_stub).not_to have_been_requested
+    end
+
+    it "turns a server that cannot be reached into a readable error" do
+      stub_request(:post, url).with { |req| JSON.parse(req.body)["method"] == "initialize" }.to_raise(Errno::ECONNREFUSED)
+
+      expect { described_class.call_tool(connection, "search", {}) }.to raise_error(described_class::Error, "unreachable")
+    end
+
+    it "turns a broken TLS handshake into a readable error" do
+      stub_request(:post, url).with { |req| JSON.parse(req.body)["method"] == "initialize" }.to_raise(OpenSSL::SSL::SSLError)
+
+      expect { described_class.list_tools(connection) }.to raise_error(described_class::Error, "unreachable")
+    end
+  end
+
   describe ".call_tool" do
     it "joins the text parts and reports the server's error flag" do
       stub_method("tools/call", body: { result: { isError: true, content: [

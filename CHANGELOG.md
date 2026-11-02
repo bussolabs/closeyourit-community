@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+## [0.198.7] - 2026-11-02
+
+### Fixed
+
+- **Wikitech risponde anche se la domanda usa parole diverse dalle schede.** «Esiste un sistema per fare videogiochi?» ora trova i progetti di giochi: decide l'AI quali schede servono. ([Wikitech](/member/wikitech))
+- **Schede più pulite.** «A cosa serve» sta in 80 caratteri, gli strumenti solo nominati non hanno più una scheda loro, i repository rinominati si verificano e le note con molti progetti non si interrompono. ([Wikitech](/member/wikitech))
+
+## [0.198.6] - 2026-11-02
+
+### Security
+
+- **Le app collegate ai colleghi AI non possono più bloccare la pagina.** Ogni risposta si ferma oltre 1 MB e tutta la conversazione con l'app dura al massimo 15 secondi. Un'app lenta, troppo grande o irraggiungibile ora compare come «Non risponde» sulla connessione, invece di una pagina di errore.
+
+## [0.198.5] - 2026-11-02
+
+### Security
+
+- **I segreti nei messaggi restano nascosti anche quando sono annidati.** Se dopo una parola come token o password c'è un gruppo di valori o un elenco, ora si nasconde tutto il gruppo, non solo il primo valore. Vale anche per i dati citati dentro un altro testo e per le righe tagliate a metà.
+
+## [0.198.4] - 2026-11-02
+
+### Security
+
+- **I file dei ticket si aprono solo a chi vede il ticket.** I file di ticket e commenti passano dall'app, che controlla l'accesso a ogni apertura, anche da `cyi`. Un vecchio link copiato non apre più il file a chi ha perso l'accesso; a chi lo ha ancora lo apre come prima.
+
 ## [0.198.3] - 2026-11-01
 
 ### Changed

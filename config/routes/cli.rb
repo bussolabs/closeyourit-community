@@ -381,7 +381,7 @@ namespace :cli do
         resources :links,     only: %i[index destroy], module: :tickets        # GET link ticket↔ticket / DELETE rimuovi (gate tickets.edit)
         resources :dependencies, only: %i[index create destroy], module: :tickets # GET prerequisiti / POST aggiungi / DELETE per UUID dependency (gate tickets.edit su create/destroy)
         resources :attachments, only: %i[index create destroy], module: :tickets do # GET lista / POST allega / DELETE rimuovi
-          get :download, on: :member                                                # GET scarica il binario (redirect al blob)
+          get :download, on: :member                                                # GET scarica il binario (inviato dall'app)
         end
         scope module: :tickets do
           namespace :review do

@@ -30,6 +30,22 @@ RSpec.describe "Member coworker apps, sites, screen, procedures and computers", 
     expect(response.body).not_to include("s3cret")
   end
 
+  it "keeps the connection card with an error when the app cannot be reached (CYRA-1126)" do
+    allow(NetworkGuard).to receive(:resolved_public_address).and_return("93.184.215.14")
+    stub_request(:post, "https://mcp.example.com/mcp").to_raise(Errno::ECONNREFUSED)
+    post member_coworker_connections_path(puck), params: { connection: { provider: "mcp", name: "Notion", url: "https://mcp.example.com/mcp", token: "t", access: "read" } }
+    expect(response).to redirect_to(member_coworker_path(puck, panel: "rules"))
+    connection = puck.connections.find_by!(provider: "mcp")
+    expect(connection.last_error).to eq("unreachable")
+
+    stub_request(:post, "https://mcp.example.com/mcp").to_timeout
+    patch member_coworker_connection_path(puck, connection)
+    expect(response).to redirect_to(member_coworker_path(puck, panel: "rules"))
+    expect(connection.reload.last_error).to eq("timeout")
+    get member_coworker_path(puck, panel: "rules")
+    expect(response.body).to include("Notion").and match(/Non risponde|Not answering/)
+  end
+
   it "lets the person take the screen, click and type, then give it back" do
     run = task
     run.screen.attach(io: StringIO.new("\xFF\xD8\xFFfake".b), filename: "screen.jpg", content_type: "image/jpeg")

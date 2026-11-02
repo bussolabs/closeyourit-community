@@ -31,6 +31,8 @@ RSpec.describe Wikitech::Search do
 
     expect(outcome.mode).to eq(:semantic)
     expect(outcome.scope.to_a).to eq([ engine, tracker ])
+    # The reranker only orders: its scores are too low on Italian cards to be a cutoff.
+    expect(Embeddings::Rerank).to have_received(:call).with(hash_including(min_score: nil))
   end
 
   it "keeps the cosine order when the reranker is unavailable and answers empty when nothing matches" do

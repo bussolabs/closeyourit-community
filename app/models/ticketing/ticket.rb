@@ -411,6 +411,15 @@ module Ticketing
       end
     end
 
+    # Un file del ticket O di uno dei suoi commenti (CYRA-1121): l'unico lookup con cui si serve un
+    # binario del ticket, dalla pagina come dalla CLI. Resta scoped al ticket — un file di un altro
+    # ticket è RecordNotFound, mai il file.
+    def find_file_attachment!(id)
+      files_attachments.find_by(id: id) ||
+        ActiveStorage::Attachment.where(record_type: "Ticketing::Comment", name: "files", record_id: comments.select(:id))
+                                 .find(id)
+    end
+
 
     private
 

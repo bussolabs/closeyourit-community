@@ -66,3 +66,17 @@ Rails.application.configure do
     video/x-msvideo
   ]
 end
+
+# CYRA-1121 — i file di ticket, commenti, domande e risposte non escono MAI dalle rotte generiche
+# (redirect, proxy, rappresentazioni): RestrictedBlobServing li rimanda alla rotta del ticket, che
+# ricontrolla la visibilità, o risponde 404. In to_prepare perché controller e concern sono autoloadati
+# (e ricaricati in sviluppo). La rotta disk resta com'è: le sue URL scadono in minuti e, senza più
+# redirect generici per questi file, l'app non ne rilascia di nuove.
+Rails.application.config.to_prepare do
+  [
+    ActiveStorage::Blobs::RedirectController,
+    ActiveStorage::Blobs::ProxyController,
+    ActiveStorage::Representations::RedirectController,
+    ActiveStorage::Representations::ProxyController
+  ].each { |controller| controller.include(RestrictedBlobServing) }
+end

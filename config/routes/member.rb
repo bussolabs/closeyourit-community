@@ -820,6 +820,10 @@ namespace :member do
     # Discussione + allegati (Fase D bis). Controller Member::Tickets::*.
     resources :comments, only: %i[create destroy], module: :tickets
     resources :attachments, only: %i[create destroy], module: :tickets
+    # CYRA-1121 — unica via per APRIRE un file del ticket o di un suo commento: ricontrolla la
+    # visibilità del ticket a ogni richiesta (anche a ogni pezzo di un video). Il path non porta il
+    # filename, come il download della KB; i vecchi link /rails/active_storage/ rimandano qui.
+    resources :files, only: :show, module: :tickets
     # Domande e risposte di primo livello (CYRA-782). Chiedere e rispondere sono baseline di chi vede
     # il ticket: è una conversazione. Marcare una domanda bloccante ferma la coda degli agenti, quindi
     # è una leva sul lavoro e passa da tickets.edit — come il ritiro di una domanda altrui.

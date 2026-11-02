@@ -24,6 +24,20 @@ RSpec.describe Wikitech::GithubRepo do
     expect(described_class.call(repo_url: repo_url).value["license"]).to be_nil
   end
 
+  it "follows GitHub to the new address of a renamed repository" do
+    moved = "https://api.github.com/repositories/42"
+    stub_request(:get, api).to_return(status: 301, headers: { "Location" => moved })
+    stub_request(:get, moved).to_return(status: 200, body: { full_name: "godotengine/godot-new" }.to_json)
+
+    expect(described_class.call(repo_url: repo_url).value["full_name"]).to eq("godotengine/godot-new")
+  end
+
+  it "does not follow a redirect that leaves the GitHub API" do
+    stub_request(:get, api).to_return(status: 301, headers: { "Location" => "https://example.com/x" })
+
+    expect(described_class.call(repo_url: repo_url).error.code).to eq(described_class::UNAVAILABLE)
+  end
+
   it "answers not found for a repository that does not exist" do
     stub_request(:get, api).to_return(status: 404, body: "{}")
 

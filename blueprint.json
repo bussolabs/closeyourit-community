@@ -5466,7 +5466,7 @@
       "level": 3,
       "parent": "kno_flow_wikitech",
       "kind": "step",
-      "summary": "Un elemento per progetto nominato; saluti, sponsor e commenti restano fuori. Coda ai a bassa priorità, interruttore in Valhalla.",
+      "summary": "Un elemento per progetto presentato, non per strumento solo nominato; «A cosa serve» in 80 caratteri; saluti, sponsor e commenti restano fuori. Coda ai a bassa priorità, interruttore in Valhalla.",
       "files": [
         "app/services/wikitech/extract_entries.rb",
         "app/jobs/wikitech/process_note_job.rb",
@@ -5491,7 +5491,7 @@
       "level": 3,
       "parent": "kno_flow_wikitech",
       "kind": "step",
-      "summary": "Il repository esiste? Licenza, stelle, linguaggio. Senza token: 60 richieste all'ora, si riprova quando GitHub lo dice.",
+      "summary": "Il repository esiste? Licenza, stelle, linguaggio. Senza token: 60 richieste all'ora, si riprova quando GitHub lo dice. Un repository rinominato si segue al nuovo indirizzo.",
       "files": [
         "app/services/wikitech/github_repo.rb",
         "app/jobs/wikitech/verify_repo_job.rb"
@@ -5503,7 +5503,7 @@
       "level": 3,
       "parent": "kno_flow_wikitech",
       "kind": "step",
-      "summary": "Ricerca per significato con le parole esatte in coda; la risposta usa solo le schede trovate e le cita.",
+      "summary": "Ricerca per significato con le parole esatte in coda; la risposta usa solo le schede trovate e le cita. Il riordino qui ordina e non scarta: decide l'AI.",
       "files": [
         "app/services/wikitech/search.rb",
         "app/services/wikitech/ask.rb",
@@ -7457,7 +7457,7 @@
       "level": 3,
       "parent": "ai_flow_embed",
       "kind": "step",
-      "summary": "Un secondo modello riordina i risultati; soglie uniche decidono cosa è pertinente e come mostrarne la somiglianza.",
+      "summary": "Un secondo modello riordina i risultati; soglie uniche decidono cosa è pertinente e come mostrarne la somiglianza. Wikitech usa il riordino solo per ordinare.",
       "files": [
         "app/services/embeddings/rerank.rb",
         "app/services/embeddings/relevance.rb",

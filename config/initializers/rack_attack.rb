@@ -32,6 +32,9 @@ class Rack::Attack
   # legittimo chiamato `deploy.cgi` o `install.php` riceverebbe un 404 silenzioso al download, con
   # una diagnosi tutt'altro che ovvia (CYRA-176). Il filename NON è codice eseguibile: i blob vivono
   # su S3 e nessun interprete esiste nell'immagine.
+  # L'esenzione non apre i file di ticket, commenti, domande e risposte: su queste rotte non escono mai
+  # (RestrictedBlobServing, CYRA-1121). Quelli del ticket passano da /member/tickets/:id/files/:id, che
+  # non porta il filename e quindi non ha bisogno di esenzioni.
   ACTIVE_STORAGE_PREFIX = "/rails/active_storage/"
 
   # Direct upload: montata di default da ActiveStorage ma MAI usata lato client (nessun

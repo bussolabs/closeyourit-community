@@ -38,7 +38,8 @@
         <% comment.files.each do |file| %>
           <% image = file.content_type.to_s.start_with?("image/") %>
           <% video = file.content_type.to_s.start_with?("video/") %>
-          <%= link_to rails_blob_path(file, disposition: (image || video ? :inline : :attachment)), target: "_blank", rel: "noopener", class: "inline-flex items-center gap-2 pl-2 pr-2.5 h-7 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-800 text-[11.5px] text-zinc-700 dark:text-zinc-300" do %>
+          <%# CYRA-1121 — mai rails_blob_path: la rotta del ticket ricontrolla chi apre a ogni richiesta. %>
+          <%= link_to member_ticket_file_path(ticket, file, disposition: (image || video ? nil : :attachment)), target: "_blank", rel: "noopener", class: "inline-flex items-center gap-2 pl-2 pr-2.5 h-7 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 hover:bg-stone-100 dark:hover:bg-zinc-800 text-[11.5px] text-zinc-700 dark:text-zinc-300" do %>
             <%= render Ui::IconComponent.new(name: image ? "image" : (video ? "video" : "file-text"), class: "text-[11px] text-gray-400 dark:text-zinc-500") %><%= file.filename %>
           <% end %>
         <% end %>

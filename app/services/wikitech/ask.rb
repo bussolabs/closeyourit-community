@@ -8,7 +8,9 @@ module Wikitech
     Answer = Data.define(:answer, :entries, :insufficient)
 
     TOP_K = 8
-    MAX_DISTANCE = 0.55
+    # Wider than the shared searches (0.6): a question in other words than the cards ("make games"
+    # against "game engine") lands around 0.6. The model reads the candidates and says when none fits.
+    MAX_DISTANCE = 0.7
     CONTEXT_CHARS = 900
 
     SYSTEM_PROMPT = <<~PROMPT.freeze
@@ -70,7 +72,7 @@ module Wikitech
       return candidates if candidates.empty?
 
       documents = candidates.map { |entry| "#{entry.name}\n#{entry.summary}".first(CONTEXT_CHARS) }
-      ranking = Embeddings::Rerank.call(query: @question, documents: documents, client: @embed_client)
+      ranking = Embeddings::Rerank.call(query: @question, documents: documents, client: @embed_client, min_score: nil)
       return candidates if ranking.err?
 
       ranking.value.filter_map { |index| candidates[index] }

@@ -20,16 +20,17 @@ module Cli
           render_ok(AttachmentSerializer.new(attachments), meta: meta)
         end
 
-        # Scarica il binario: redirect all'URL del blob ActiveStorage (mai URL firmato nel serializer).
+        # Consegna il binario dopo il controllo di visibilità (CYRA-1121): niente redirect a un link
+        # dello storage, che si aprirebbe senza ricontrollare chi lo usa. Come il download KB: tipo
+        # neutro e disposition attachment.
         # Unico endpoint di download per TUTTI i binari del ticket: file del ticket E file dei suoi
         # commenti (le immagini incollate nei commenti, esposte da CommentSerializer#files). Il lookup
         # resta scoped al ticket → anti-BOLA invariato (file di altro ticket/commento → R404).
         def download
-          attachment = @ticket.files_attachments.find_by(id: params[:id]) ||
-                       ActiveStorage::Attachment.where(record_type: "Ticketing::Comment", name: "files",
-                                                       record_id: @ticket.comments.select(:id))
-                                                .find(params[:id])
-          redirect_to rails_blob_url(attachment.blob, disposition: "attachment")
+          blob = @ticket.find_file_attachment!(params[:id]).blob
+          response.headers["X-Content-Type-Options"] = "nosniff"
+          send_data blob.download, filename: blob.filename.sanitized, type: "application/octet-stream",
+                                   disposition: "attachment"
         end
 
         def create

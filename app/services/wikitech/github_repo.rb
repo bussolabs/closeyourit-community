@@ -26,7 +26,10 @@ module Wikitech
     end
 
     def call
-      response = request
+      response = request(URI("#{API}#{Wikitech::RepoUrl.full_name(@repo_url)}"))
+      # A renamed repository answers 301 with its new API address: follow it once, only inside the API.
+      moved = moved_to(response)
+      response = request(moved) if moved
       case response.code.to_i
       when 200 then Result.ok(meta(JSON.parse(response.body)))
       when 404, 451 then Result.err(AppError.new("Repository not found", code: NOT_FOUND, status: :not_found))
@@ -37,8 +40,16 @@ module Wikitech
 
     private
 
-    def request
-      uri = URI("#{API}#{Wikitech::RepoUrl.full_name(@repo_url)}")
+    def moved_to(response)
+      return unless %w[301 302 307 308].include?(response.code.to_s)
+
+      uri = URI(response["location"].to_s)
+      uri if uri.is_a?(URI::HTTPS) && uri.host == "api.github.com"
+    rescue URI::InvalidURIError
+      nil
+    end
+
+    def request(uri)
       Net::HTTP.start(uri.host, uri.port, use_ssl: true, open_timeout: 5, read_timeout: 10) do |http|
         http.get(uri.request_uri, "Accept" => "application/vnd.github+json", "User-Agent" => "CloseYourIt-Wikitech")
       end

@@ -23,6 +23,12 @@ RSpec.describe Embeddings::Rerank do
     expect(result.value).to eq([])
   end
 
+  it "without a cutoff keeps every candidate, in the cross-encoder order" do
+    allow(client).to receive(:rerank).and_return([ { index: 1, score: 0.01 }, { index: 0, score: 0.001 } ])
+
+    expect(described_class.call(query: "q", documents: %w[a b], client: client, min_score: nil).value).to eq([ 1, 0 ])
+  end
+
   it "chiede il rerank col tetto di attesa corto: la ricerca è interattiva" do
     allow(client).to receive(:rerank).and_return([ { index: 0, score: 0.9 } ])
 

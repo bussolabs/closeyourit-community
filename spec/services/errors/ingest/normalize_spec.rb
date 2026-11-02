@@ -397,5 +397,28 @@ RSpec.describe Errors::Ingest::Normalize, type: :service do
       n = normalize("breadcrumbs" => { "values" => [ { "message" => "GET /pay?token=SECRET&plan=pro" } ] })
       expect(n.payload.dig("breadcrumbs", "values", 0, "message")).to eq("GET /pay?token=[FILTERED]&plan=pro")
     end
+
+    # CYRA-1123 — il dato strutturato citato nel messaggio dell'eccezione: sotto il token c'è un blocco,
+    # non un testo, e prima usciva in chiaro sia nel titolo sia nel payload conservato.
+    it "redige l'intero blocco annidato sotto una chiave sensibile, nel titolo e nel payload" do
+      valore = 'config rifiutata: {"token":{"value":"SECRET","scope":["a","b"]},"area":"pay"}'
+      n = normalize("exception" => { "values" => [ { "type" => "RuntimeError", "value" => valore } ] })
+
+      atteso = 'config rifiutata: {"token":"[FILTERED]","area":"pay"}'
+      expect(n.title).to eq("RuntimeError: #{atteso}")
+      expect(n.payload.dig("exception", "values", 0, "value")).to eq(atteso)
+      expect(n.payload.to_json).not_to include("SECRET")
+    end
+
+    it "redige il blocco annidato anche quando la chiave sensibile è scritta con escape Unicode" do
+      chiave = %(to#{"\\"}u006ben) # la `k` di token scritta come escape Unicode
+      valore = %(config rifiutata: {"#{chiave}":{"value":"SECRET"},"area":"pay"})
+      n = normalize("exception" => { "values" => [ { "type" => "RuntimeError", "value" => valore } ] })
+
+      atteso = %(config rifiutata: {"#{chiave}":"[FILTERED]","area":"pay"})
+      expect(n.title).to eq("RuntimeError: #{atteso}")
+      expect(n.payload.dig("exception", "values", 0, "value")).to eq(atteso)
+      expect(n.payload.to_json).not_to include("SECRET")
+    end
   end
 end

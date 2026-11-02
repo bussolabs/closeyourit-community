@@ -16,6 +16,9 @@ module Wikitech
       Drop everything else: greetings, jokes, calls to follow or like, "link in bio", sponsors that
       are not about the project, comments from users, hashtags, emoji, music, opinions without content.
 
+      A tool only named along the way (a dependency, an integration, something used to build or run
+      the presented project) is not an item: it goes in the facts of the project that uses it.
+
       Never invent projects, addresses or facts that are not in the note. When the note has nothing
       technical, return an empty list.
 
@@ -25,7 +28,7 @@ module Wikitech
       For each item:
       - `name`: the project name as written by its authors.
       - `repo_url`: its GitHub repository address only if it appears in the note, otherwise empty.
-      - `summary`: what it is for, in at most two short plain sentences.
+      - `summary`: what it is for, in one plain sentence of at most 80 characters.
       - `facts`: short technical facts stated in the note, one per entry.
       - `categories`: two or three short lowercase topics (e.g. "game dev", "self-hosted", "ai").
       - `links`: other addresses of the project found in the note (site, docs).
@@ -60,7 +63,8 @@ module Wikitech
 
     def call
       args = Ai::Structured.call(client: @client || Ai::Llm::Client.new, system: SYSTEM_PROMPT,
-                                 user: user_text, schema: SCHEMA)
+                                 user: user_text, schema: SCHEMA,
+                                 max_output_tokens: Wikitech::Constants::EXTRACT_MAX_OUTPUT_TOKENS)
       Result.ok(Array(args["items"]).filter_map { |raw| item(raw) })
     rescue Ai::Llm::Client::Error => e
       Result.err(AppError.new(e.message, code: e.code, status: e.status))
@@ -81,11 +85,20 @@ module Wikitech
       return nil if name.blank?
 
       Item.new(name: name, repo_url: Wikitech::RepoUrl.normalize(raw["repo_url"]),
-               summary: raw["summary"].to_s.squish.first(Wikitech::Constants::SUMMARY_MAX_CHARS).presence,
+               summary: short_summary(raw["summary"]),
                facts: texts(raw["facts"], Wikitech::Constants::FACT_MAX_CHARS),
                categories: texts(raw["categories"], 40).map(&:downcase).uniq,
                links: Array(raw["links"]).map { |link| link.to_s.strip }.grep(%r{\Ahttps?://}).uniq,
                quote: raw["quote"].to_s.squish.first(Wikitech::Constants::QUOTE_MAX_CHARS).presence)
+    end
+
+    # The model is asked for 80 characters; a longer answer is cut at the last word that fits.
+    def short_summary(raw)
+      text = raw.to_s.squish
+      max = Wikitech::Constants::SUMMARY_MAX_CHARS
+      return text.presence if text.length <= max
+
+      "#{text.first(max - 1).sub(/\s+\S*\z/, '')}…"
     end
 
     def texts(values, max) = Array(values).map { |value| value.to_s.squish.first(max) }.compact_blank.uniq

@@ -11,10 +11,13 @@ module Embeddings
   # feature, e soprattutto non giustifica tenere occupato un thread web finché il servizio non
   # decide di rispondere.
   class Rerank < ApplicationService
-    def initialize(query:, documents:, client: nil)
+    # min_score: nil keeps every candidate in the cross-encoder order (Wikitech, where a model reads
+    # the candidates afterwards and its scores on Italian text sit far below the cutoff).
+    def initialize(query:, documents:, client: nil, min_score: Relevance::MIN_SCORE)
       @query = query.to_s
       @documents = documents
       @client = client
+      @min_score = min_score
     end
 
     def call
@@ -23,7 +26,7 @@ module Embeddings
       client = @client || Ai::Embedding::Client.new
       ranking = client.rerank(query: @query, documents: @documents,
                               read_timeout: Ai::Constants::RERANK_READ_TIMEOUT_SECONDS)
-      Result.ok(Relevance.relevant_indexes(ranking))
+      Result.ok(Relevance.relevant_indexes(ranking, min_score: @min_score))
     rescue Ai::Embedding::Client::Error => e
       Result.err(AppError.new(e.message, code: e.code, status: e.status))
     rescue KeyError

@@ -98,6 +98,111 @@ RSpec.describe Ingest::PiiScrubbing, type: :service do
         .to eq('{"password":"[FILTERED]","user":"mario"}')
     end
 
+    # CYRA-1123 — sotto una chiave sensibile il valore può essere un blocco o un elenco: la regex del
+    # valore fra virgolette non lo riconosceva e il segreto annidato usciva in chiaro.
+    it "redige un blocco annidato sotto una chiave sensibile con un solo segnaposto" do
+      expect(scrubber.scrub_message('{"token": {"value": "SECRET", "meta": {"exp": 1}}, "user": "mario"}'))
+        .to eq('{"token": "[FILTERED]", "user": "mario"}')
+    end
+
+    it "redige un elenco sotto una chiave sensibile per intero" do
+      expect(scrubber.scrub_message('{"tokens":["T1","T2","T3"],"area":"pay"}'))
+        .to eq('{"tokens":"[FILTERED]","area":"pay"}')
+    end
+
+    it "una parentesi dentro un testo del blocco non chiude il blocco" do
+      expect(scrubber.scrub_message('{"session":{"note":"} ]","id":"SECRET"},"ok":1}'))
+        .to eq('{"session":"[FILTERED]","ok":1}')
+    end
+
+    it "redige il valore semplice citato dentro un altro testo (virgolette precedute da una barra)" do
+      expect(scrubber.scrub_message('body="{\"password\":\"hunter2\",\"user\":\"mario\"}"'))
+        .to eq('body="{\"password\":\"[FILTERED]\",\"user\":\"mario\"}"')
+    end
+
+    it "redige il blocco citato dentro un altro testo, anche con virgolette annidate nel valore" do
+      testo = '{"payload":"{\"token\":{\"v\":\"SE\\\\\"CRET\"},\"user\":\"mario\"}"}'
+
+      expect(scrubber.scrub_message(testo))
+        .to eq('{"payload":"{\"token\":\"[FILTERED]\",\"user\":\"mario\"}"}')
+    end
+
+    # Un nome di chiave con escape Unicode è la stessa chiave per chi decodifica il dato: `to`, la
+    # `k` scritta come escape, `en` è `token`, e il suo blocco non deve uscire in chiaro. Gli escape
+    # si costruiscono qui, così nel sorgente non c'è niente che un editor possa decodificare.
+    def escape_unicode(text, backslashes: 1, upcase: false)
+      text.each_char.map do |char|
+        hex = format("%04x", char.ord)
+        "#{"\\" * backslashes}u#{upcase ? hex.upcase : hex}"
+      end.join
+    end
+
+    it "redige il blocco sotto una chiave sensibile scritta con escape Unicode" do
+      chiave = "to#{escape_unicode("k")}en"
+
+      expect(scrubber.scrub_message(%({"#{chiave}":{"value":"SECRET"},"user":"mario"})))
+        .to eq(%({"#{chiave}":"[FILTERED]","user":"mario"}))
+    end
+
+    it "decodifica gli escape Unicode della chiave anche nel dato citato dentro un altro testo" do
+      chiave = "pass#{escape_unicode("w", backslashes: 2)}ord"
+      testo = %(body="{\\"#{chiave}\\":{\\"v\\":\\"hunter2\\"},\\"user\\":\\"mario\\"}")
+
+      expect(scrubber.scrub_message(testo))
+        .to eq(%(body="{\\"#{chiave}\\":\\"[FILTERED]\\",\\"user\\":\\"mario\\"}"))
+    end
+
+    it "decodifica la chiave scritta tutta in escape, anche maiuscoli" do
+      chiave = escape_unicode("TOKEN", upcase: true)
+
+      expect(scrubber.scrub_message(%({"#{chiave}":"SECRET"}))).to eq(%({"#{chiave}":"[FILTERED]"}))
+    end
+
+    it "una chiave innocua scritta con escape resta innocua" do
+      chiave = escape_unicode("user")
+
+      expect(scrubber.scrub_message(%({"#{chiave}":"mario"}))).to eq(%({"#{chiave}":"mario"}))
+    end
+
+    it "un escape malformato nel nome della chiave non ferma il filtro" do
+      chiave = escape_unicode("x").sub("0078", "d800") # metà di una coppia, senza l'altra metà
+
+      expect(scrubber.scrub_message(%({"#{chiave}x":"chiaro","token":"SECRET"})))
+        .to eq(%({"#{chiave}x":"chiaro","token":"[FILTERED]"}))
+    end
+
+    it "sotto una chiave innocua il blocco resta leggibile, salvo i segreti al suo interno" do
+      expect(scrubber.scrub_message('{"request":{"path":"/pay","api_key":"K","items":[1,2]}}'))
+        .to eq('{"request":{"path":"/pay","api_key":"[FILTERED]","items":[1,2]}}')
+    end
+
+    it "numeri, booleani e null sotto una chiave sensibile restano come sono" do
+      expect(scrubber.scrub_message('{"pin":1234,"session":null,"token":true}'))
+        .to eq('{"pin":1234,"session":null,"token":true}')
+    end
+
+    # Il testo arriva tagliato prima del filtro (log dei server): un blocco senza chiusura nasconde
+    # tutto fino alla fine, così un segreto non esce mai a metà.
+    it "un blocco senza chiusura redige il testo fino alla fine" do
+      expect(scrubber.scrub_message('avvio {"token":{"value":"SEC'))
+        .to eq('avvio {"token":"[FILTERED]"')
+    end
+
+    it "un valore semplice senza chiusura redige il testo fino alla fine" do
+      expect(scrubber.scrub_message('{"password":"hunt')).to eq('{"password":"[FILTERED]"')
+    end
+
+    it "un blocco oltre il tetto di lettura redige il testo fino alla fine" do
+      enorme = %({"token":{"v":"#{"x" * (described_class::QUOTED_VALUE_SCAN_MAX_BYTES + 10)}"},"user":"mario"})
+
+      expect(scrubber.scrub_message(enorme)).to eq('{"token":"[FILTERED]"')
+    end
+
+    it "la lettura a byte non sposta il testo non ASCII intorno al valore redatto" do
+      expect(scrubber.scrub_message('città {"token":{"v":"è"}} però'))
+        .to eq('città {"token":"[FILTERED]"} però')
+    end
+
     it "redige un indirizzo email scritto per intero nel testo" do
       expect(scrubber.scrub_message("invio la ricevuta a mario.rossi+ordini@example.co.uk"))
         .to eq("invio la ricevuta a [FILTERED]")
@@ -191,6 +296,18 @@ RSpec.describe Ingest::PiiScrubbing, type: :service do
       expect(errore.payload.dig("breadcrumbs", "values", 0, "message")).to eq(atteso)
       expect(log.message).to eq(atteso)
       expect(server.journal_entries.first[:message]).to eq(atteso)
+    end
+
+    # CYRA-1123 — i log dei server si tagliano PRIMA del filtro: il blocco segreto arriva senza
+    # chiusura, e dal segreto in poi non deve leggersi nulla.
+    it "una riga di log del server tagliata a metà di un blocco segreto non lascia uscire il segreto" do
+      riga = %(avvio {"token":{"value":"#{"S" * 2_000}"}} fine)
+
+      server = Servers::Ingest::Normalize.call(
+        payload: { "journal" => { "entries" => [ { "c" => "cur", "t" => 1, "p" => 3, "m" => riga } ] } }
+      )
+
+      expect(server.journal_entries.first[:message]).to eq('avvio {"token":"[FILTERED]"')
     end
 
     it "una data nel futuro viene riportata ad adesso su tutti e tre i canali" do

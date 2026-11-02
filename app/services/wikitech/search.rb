@@ -37,7 +37,7 @@ module Wikitech
       return [] if candidates.empty?
 
       documents = candidates.map { |entry| "#{entry.name}\n#{entry.summary}".first(Embeddings::Relevance::RERANK_TEXT_CHARS) }
-      ranking = Embeddings::Rerank.call(query: @query, documents: documents, client: @client)
+      ranking = Embeddings::Rerank.call(query: @query, documents: documents, client: @client, min_score: nil)
       return candidates.map(&:id) if ranking.err?
 
       ranking.value.filter_map { |index| candidates[index]&.id }

@@ -13,8 +13,9 @@
           <% video = file.content_type.to_s.start_with?("video/") %>
           <% if image %>
             <div class="group relative rounded-md border border-stone-200 dark:border-zinc-800 overflow-hidden bg-white dark:bg-zinc-900" data-test="member-ticket-attachment-<%= file.id %>">
-              <%= link_to rails_blob_path(file, disposition: :inline), target: "_blank", rel: "noopener", class: "block aspect-[4/3] bg-stone-50 dark:bg-zinc-800" do %>
-                <%= image_tag rails_blob_path(file, disposition: :inline), alt: file.filename.to_s, class: "w-full h-full object-cover" %>
+              <%# CYRA-1121 — mai rails_blob_path: la rotta del ticket ricontrolla chi apre a ogni richiesta. %>
+              <%= link_to member_ticket_file_path(ticket, file), target: "_blank", rel: "noopener", class: "block aspect-[4/3] bg-stone-50 dark:bg-zinc-800" do %>
+                <%= image_tag member_ticket_file_path(ticket, file), alt: file.filename.to_s, class: "w-full h-full object-cover" %>
               <% end %>
               <div class="px-2 py-1.5 border-t border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-2">
                 <p class="text-[11.5px] text-zinc-700 dark:text-zinc-300 truncate" title="<%= file.filename %>"><%= file.filename %></p>
@@ -26,9 +27,9 @@
           <% elsif video %>
             <div class="col-span-2 sm:col-span-3 rounded-md border border-stone-200 dark:border-zinc-800 overflow-hidden bg-white dark:bg-zinc-900" data-test="member-ticket-attachment-<%= file.id %>">
               <%# preload=metadata: il browser scarica solo l'intestazione, non 20 MB per ogni video in pagina. %>
-              <video controls preload="metadata" class="w-full max-h-[420px] bg-black" src="<%= rails_blob_path(file, disposition: :inline) %>"></video>
+              <video controls preload="metadata" class="w-full max-h-[420px] bg-black" src="<%= member_ticket_file_path(ticket, file) %>"></video>
               <div class="px-2 py-1.5 border-t border-stone-200 dark:border-zinc-800 flex items-center justify-between gap-2">
-                <%= link_to file.filename, rails_blob_path(file, disposition: :attachment), class: "min-w-0 flex-1 text-[11.5px] text-zinc-700 dark:text-zinc-300 truncate hover:text-indigo-600 dark:hover:text-indigo-400", title: file.filename %>
+                <%= link_to file.filename, member_ticket_file_path(ticket, file, disposition: :attachment), class: "min-w-0 flex-1 text-[11.5px] text-zinc-700 dark:text-zinc-300 truncate hover:text-indigo-600 dark:hover:text-indigo-400", title: file.filename %>
                 <% if can_manage %>
                   <%= button_to member_ticket_attachment_path(ticket, file), method: :delete, class: "shrink-0 text-gray-300 dark:text-zinc-600 hover:text-red-600 dark:hover:text-red-400", data: { test: "member-ticket-attachment-delete-#{file.id}", turbo_confirm: t("member.tickets.attachments.remove_confirm") } do %><%= render Ui::IconComponent.new(name: "trash", class: "text-[11px]") %><% end %>
                 <% end %>
@@ -37,7 +38,7 @@
           <% else %>
             <div class="col-span-2 sm:col-span-3 flex items-center gap-3 px-3 h-[44px] rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-ticket-attachment-<%= file.id %>">
               <%= render Ui::IconComponent.new(name: "file-text", class: "text-[15px] text-gray-400 dark:text-zinc-500") %>
-              <%= link_to file.filename, rails_blob_path(file, disposition: :attachment), class: "min-w-0 flex-1 text-[12.5px] text-zinc-700 dark:text-zinc-300 truncate hover:text-indigo-600 dark:hover:text-indigo-400" %>
+              <%= link_to file.filename, member_ticket_file_path(ticket, file, disposition: :attachment), class: "min-w-0 flex-1 text-[12.5px] text-zinc-700 dark:text-zinc-300 truncate hover:text-indigo-600 dark:hover:text-indigo-400" %>
               <% if can_manage %>
                 <%= button_to member_ticket_attachment_path(ticket, file), method: :delete, class: "shrink-0 text-gray-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400", data: { test: "member-ticket-attachment-delete-#{file.id}", turbo_confirm: t("member.tickets.attachments.remove_confirm") } do %><%= render Ui::IconComponent.new(name: "trash", class: "text-[12px]") %><% end %>
               <% end %>
