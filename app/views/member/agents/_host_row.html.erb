@@ -21,8 +21,19 @@
     <% if (pause_summary = agent_host_pause_summary(host)) %>
       <span class="block text-[11.5px] text-amber-700 dark:text-amber-300 mt-0.5 truncate max-w-[320px]" title="<%= pause_summary %>" data-test="agent-host-paused"><%= pause_summary %></span>
     <% end %>
+    <% if (hang_summary = agent_host_hang_summary(host)) %>
+      <span class="block text-[11.5px] text-amber-700 dark:text-amber-300 mt-0.5 truncate max-w-[320px]" title="<%= hang_summary %>" data-test="agent-host-hang"><%= hang_summary %></span>
+    <% end %>
     <% if (stop_reason = agent_host_last_stop_reason(host)) %>
       <span class="block text-[11.5px] text-amber-700 dark:text-amber-300 mt-0.5 truncate max-w-[320px]" title="<%= stop_reason %>" data-test="agent-host-last-stop"><%= t("member.agents.activity.last_stop", reason: stop_reason) %></span>
+    <% end %>
+    <%# CYRA-1177 — quota left on each engine; nothing for a machine whose Automator does not report it. %>
+    <% if (quota_items = agent_host_quota_items(host)).any? %>
+      <span class="mt-0.5 flex flex-wrap gap-x-2" data-test="agent-host-quota">
+        <% quota_items.each do |item| %>
+          <%= render Ui::StatLabelComponent.new(label: item[:engine], value: item[:value], value_color: item[:color]) %>
+        <% end %>
+      </span>
     <% end %>
   <% end %>
   <%= render(Ui::TableComponent::CellComponent.new(label: t("member.agents.col_slots"), align: :right, mono: true, class: "text-zinc-900 dark:text-zinc-100")) { "#{host.running}/#{host.capacity}" } %>

@@ -121,6 +121,42 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       expect(response.body).to include(I18n.t("member.agents.activity.last_stop", reason: "empty ticket queue for LAB"))
     end
 
+    it "shows on the row the remaining quota of each engine and its pause (CYRA-1177)" do
+      travel_to Time.zone.parse("2026-11-03 10:00")
+      online_host(hostname: "mac-quota", agent_quota: [
+        { "runtime" => "claude", "remaining_percent" => 42, "resets_at" => nil, "paused_until" => nil },
+        { "runtime" => "codex", "remaining_percent" => nil, "resets_at" => nil, "paused_until" => 2.hours.from_now.iso8601 }
+      ])
+
+      get member_agents_path
+
+      quota = Capybara.string(response.body).find("[data-test='agent-host-quota']")
+      expect(quota).to have_text("Claude: 42%")
+      expect(quota).to have_text("Codex: #{I18n.t('member.agents.quota.paused_until', time: '12:00')}")
+    end
+
+    it "shows no quota line for a machine that never reported it (CYRA-1177)" do
+      online_host(hostname: "mac-old-automator")
+
+      get member_agents_path
+
+      expect(response.body).not_to include('data-test="agent-host-quota"')
+    end
+
+    # CYRA-1178 — the automator reported its event loop blocked, then recovered.
+    it "shows a hung machine and one that resumed after a hang" do
+      at = 30.seconds.ago
+      report = { "started_at" => (at - 300).iso8601, "duration_seconds" => 300, "resumed_at" => nil,
+                 "reported_at" => at.utc.iso8601(6) }
+      online_host(hostname: "mac-hung", last_heartbeat_at: at, hang: report.merge("state" => "hung"))
+      online_host(hostname: "mac-back", last_heartbeat_at: at, hang: report.merge("state" => "resumed"))
+
+      get member_agents_path
+
+      expect(response.body).to include(I18n.t("member.agents.status.hung", count: 5))
+      expect(response.body).to include(I18n.t("member.agents.hang.resumed", count: 5))
+    end
+
     # CYRA-450 Scenario 1: un host fermo da oltre la soglia è in allarme (riga + badge) e conta tra i "fermi".
     it "host fermo → riga in allarme, badge dedicato e conteggio fermi" do
       stale_host(hostname: "mac-dead")
@@ -213,6 +249,21 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
         expect(body).not_to include('data-test="host-performance"')
       end
 
+      # CYRA-1177 — the header says how much quota each engine has left, on every tab.
+      it "shows the quota of each engine in the header, unknown when null" do
+        host = online_host(hostname: "mac-quota-show", agent_quota: [
+          { "runtime" => "claude", "remaining_percent" => 7, "resets_at" => nil, "paused_until" => nil },
+          { "runtime" => "codex", "remaining_percent" => nil, "resets_at" => nil, "paused_until" => nil }
+        ])
+
+        get member_agent_path(host)
+
+        html = Capybara.string(response.body)
+        expect(html.find("[data-test='host-quota-claude']")).to have_text("7%")
+        expect(html.find("[data-test='host-quota-codex']")).to have_text(I18n.t("member.agents.quota.unknown"))
+        expect(html.find("[data-test='host-quota-codex']")).to have_no_text("0%")
+      end
+
       # CYRA-1034 — the details tab says which installed programs have a newer release.
       it "marks the programs that have an update on the details tab" do
         allow(Agents::RuntimeVersions).to receive(:status).and_return(nil)
@@ -252,6 +303,21 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       expect(response.body).to include("mac-1", ticket.code, "Sistemare la navbar")
       expect(response.body).to include('data-test="host-activity"')
       expect(response.body).to include('data-test="host-labels"')
+    end
+
+    # CYRA-1178 — the machine page says the automator is blocked, or that it was and came back.
+    it "shows the hang in the machine page header" do
+      at = 30.seconds.ago
+      report = { "started_at" => (at - 120).iso8601, "duration_seconds" => 120, "resumed_at" => nil,
+                 "reported_at" => at.utc.iso8601(6) }
+      hung = online_host(hostname: "mac-hung", last_heartbeat_at: at, hang: report.merge("state" => "hung"))
+      back = online_host(hostname: "mac-back", last_heartbeat_at: at, hang: report.merge("state" => "restarted"))
+
+      get member_agent_path(hung)
+      expect(response.body).to include(I18n.t("member.agents.status.hung", count: 2))
+
+      get member_agent_path(back)
+      expect(response.body).to include('data-test="host-hang-note"', I18n.t("member.agents.hang.resumed", count: 2))
     end
 
     it "mostra il percorso per fasi con quello in corso evidenziato" do

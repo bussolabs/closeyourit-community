@@ -103,7 +103,9 @@ module Api
           active_runs: %i[
             ticket run_id phase runtime started_at updated_at lease_expires_at lease_health stalled
           ],
-          last_stops: %i[action state reason]
+          last_stops: %i[action state reason],
+          agent_quota: %i[runtime remaining_percent resets_at paused_until],
+          hang: %i[state started_at duration_seconds resumed_at]
         )
       end
     end

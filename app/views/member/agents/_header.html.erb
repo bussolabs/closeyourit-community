@@ -32,6 +32,10 @@
       <% end %>
       <%= render Ui::StatLabelComponent.new(label: t("member.agents.show.certification_label"), value: (host.certified? ? t("member.agents.show.certified_value") : t("member.agents.show.not_certified_value")), value_color: (host.certified? ? :emerald : :amber), test_id: "host-certification") %>
       <%= render Ui::StatLabelComponent.new(label: t("member.agents.show.heartbeat_label"), value: agent_host_time_ago(host.last_heartbeat_at), test_id: "host-heartbeat") %>
+      <%# CYRA-1177 — quota left on each engine; a null reading says "unknown", never 0%. %>
+      <% agent_host_quota_items(host).each do |item| %>
+        <%= render Ui::StatLabelComponent.new(label: item[:engine], value: item[:value], value_color: item[:color], test_id: "host-quota-#{item[:runtime]}") %>
+      <% end %>
     <% end %>
     <%# CYRA-1032 — the tabs: overview (activity and performance), work history, details and settings. %>
     <% [ [ "overview", "activity" ], [ "work", "list-checks" ], [ "details", "settings" ] ].each do |name, icon| %>
@@ -73,6 +77,13 @@
   <% if (pause_summary = agent_host_pause_summary(host)) %>
     <%= render Ui::AlertComponent.new(variant: :warning, test_id: "host-paused-note") do %>
       <%= pause_summary %>
+    <% end %>
+  <% end %>
+
+  <%# CYRA-1178 — the automator was blocked and came back: say it once, next to the status. %>
+  <% if (hang_summary = agent_host_hang_summary(host)) %>
+    <%= render Ui::AlertComponent.new(variant: :warning, test_id: "host-hang-note") do %>
+      <%= hang_summary %>
     <% end %>
   <% end %>
 

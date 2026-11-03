@@ -35,12 +35,27 @@ en:
         recovery_required: Recovery required
         stale: Stale
         paused: Paused
+        hung:
+          one: "Blocked for %{count} minute"
+          other: "Blocked for %{count} minutes"
+      # CYRA-1178 — the automator watchdog reported the end of a hang.
+      hang:
+        resumed:
+          one: "Blocked %{count} minute, resumed"
+          other: "Blocked %{count} minutes, resumed"
       phases:
         triage: triage
         planner: plan
         autopilot: work
         closer_staging: staging
         closer_production: production
+      quota:
+        title: Quota left
+        unknown: unknown
+        paused_until: "paused until %{time}"
+        engines:
+          claude: Claude
+          codex: Codex
       tabs:
         overview: Overview
         work: Work

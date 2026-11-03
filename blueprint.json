@@ -5785,7 +5785,7 @@
       "level": 3,
       "parent": "agt_flow_host_setup",
       "kind": "step",
-      "summary": "A ogni giro la macchina manda una foto del suo stato insieme al controllo periodico. Il server tiene solo i campi ammessi e scarta il resto.",
+      "summary": "A ogni giro la macchina manda una foto del suo stato insieme al controllo periodico, compresa la quota rimasta a Claude e Codex. Il server tiene solo i campi ammessi e scarta il resto. Se l'automator è bloccato, manda un segno ridotto ogni minuto e poi dice come è finita.",
       "files": [
         "app/controllers/api/v1/cron_check_ins_controller.rb",
         "app/services/agents/hosts/record_heartbeat.rb"
@@ -6183,7 +6183,7 @@
       "level": 2,
       "parent": "area_agents",
       "kind": "page",
-      "summary": "Le macchine dell'organizzazione: online o no, cosa stanno facendo, ticket lavorati, prestazioni e confronto fra due macchine. Da qui si certificano, si mettono in pausa, si sceglie il motore e quanti lavori fanno insieme.",
+      "summary": "Le macchine dell'organizzazione: online, bloccate o no, cosa stanno facendo, quota rimasta ai motori, ticket lavorati, prestazioni e confronto fra due macchine. Da qui si certificano, si mettono in pausa, si sceglie il motore e quanti lavori fanno insieme.",
       "files": [
         "app/controllers/member/agents_controller.rb",
         "app/views/member/agents/**",
@@ -6323,7 +6323,7 @@
       "level": 3,
       "parent": "agt_data",
       "kind": "data",
-      "summary": "Un'installazione dell'automazione, legata a un solo account di servizio. Ha certificazione, ultimo segno di vita, motore di lavoro e revisore.",
+      "summary": "Un'installazione dell'automazione, legata a un solo account di servizio. Ha certificazione, ultimo segno di vita, quota dei motori, ultimo blocco segnalato, motore di lavoro e revisore.",
       "files": [
         "app/models/agents/host.rb",
         "app/models/agents/host_token.rb"

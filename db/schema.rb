@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_03_180100) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_03_200500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -415,6 +415,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_180100) do
     t.string "pause_reason"
     t.uuid "paused_by_id"
     t.integer "max_parallel"
+    t.jsonb "agent_quota", default: [], null: false
+    t.jsonb "hang"
     t.index ["certified_by_id"], name: "index_agents_hosts_on_certified_by_id"
     t.index ["heartbeat_project_id"], name: "index_agents_hosts_on_heartbeat_project_id"
     t.index ["organization_id", "fingerprint"], name: "index_agents_hosts_on_organization_id_and_fingerprint", unique: true
@@ -427,6 +429,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_180100) do
     t.check_constraint "heartbeat_grace_minutes >= 0", name: "agents_hosts_heartbeat_grace_nonnegative"
     t.check_constraint "host_status::text = ANY (ARRAY['idle'::character varying::text, 'busy'::character varying::text, 'waiting'::character varying::text, 'recovery_required'::character varying::text])", name: "agents_hosts_status"
     t.check_constraint "jsonb_typeof(active_runs) = 'array'::text", name: "agents_hosts_active_runs_array"
+    t.check_constraint "jsonb_typeof(agent_quota) = 'array'::text", name: "agents_hosts_agent_quota_array"
     t.check_constraint "jsonb_typeof(last_stops) = 'array'::text", name: "agents_hosts_last_stops_array"
     t.check_constraint "jsonb_typeof(repositories) = 'array'::text", name: "agents_hosts_repositories_array"
     t.check_constraint "jsonb_typeof(runtimes) = 'array'::text", name: "agents_hosts_runtimes_array"

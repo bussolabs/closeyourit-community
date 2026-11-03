@@ -4,7 +4,7 @@
 # al serializer; il solo secret appena emesso viene aggiunto esplicitamente dal create controller.
 class AgentHostSerializer < ApplicationSerializer
   attributes :id, :fingerprint, :hostname, :platform, :arch, :automator_version,
-             :runtimes, :repositories, :last_stops, :running, :slots, :host_status,
+             :runtimes, :repositories, :last_stops, :agent_quota, :running, :slots, :host_status,
              :last_heartbeat_at, :heartbeat_expected_interval_minutes, :heartbeat_grace_minutes,
              :revoked_at, :created_at
 

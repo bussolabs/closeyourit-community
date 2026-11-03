@@ -45,6 +45,69 @@ RSpec.describe "Api::V1::CronCheckIns (bearer Agent Host)", type: :request do
     expect(host.reload.last_stops).to eq([ { "action" => "lab", "state" => "waiting", "reason" => "empty ticket queue" } ])
   end
 
+  it "saves the remaining quota of each engine sent with the heartbeat (CYRA-1177)" do
+    quota = [ { runtime: "claude", remaining_percent: 42, resets_at: "2026-11-03T15:00:00.000Z", paused_until: nil },
+              { runtime: "codex", remaining_percent: nil, resets_at: nil, paused_until: "2026-11-03T12:00:00.000Z" } ]
+
+    post "/api/v1/projects/#{project.id}/crons/automator-minion-1/check_in", headers:,
+         params: { status: "ok", agent_quota: quota }, as: :json
+
+    expect(response).to have_http_status(:accepted)
+    expect(host.reload.agent_quota).to eq(quota.map(&:deep_stringify_keys))
+  end
+
+  it "rejects a malformed quota report with 422 (CYRA-1177)" do
+    post "/api/v1/projects/#{project.id}/crons/automator-minion-1/check_in", headers:,
+         params: { status: "ok", agent_quota: [ { runtime: "claude", remaining_percent: 140, resets_at: nil, paused_until: nil } ] },
+         as: :json
+
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(response.parsed_body.dig("error", "details").keys).to include("agent_quota.0")
+    expect(host.reload.agent_quota).to eq([])
+  end
+
+  it "keeps accepting heartbeats from automators that do not send the quota (CYRA-1177)" do
+    post "/api/v1/projects/#{project.id}/crons/automator-minion-1/check_in", headers:,
+         params: { status: "ok", automator_version: "0.47.1" }, as: :json
+
+    expect(response).to have_http_status(:accepted)
+    expect(host.reload.agent_quota).to eq([])
+  end
+
+  # CYRA-1178 — a reduced heartbeat sent while the automator event loop is blocked.
+  describe "hang report" do
+    let(:hang) { { state: "hung", started_at: 3.minutes.ago.utc.iso8601, duration_seconds: 180 } }
+
+    it "stores the hang and shows the host as hung, not online" do
+      host.update!(host_status: "busy", last_heartbeat_at: 2.minutes.ago)
+
+      post "/api/v1/projects/#{project.id}/crons/automator-minion-1/check_in", headers:,
+           params: { status: "fail", automator_version: "0.48.0", hang: hang.merge(secret: "x") }, as: :json
+
+      expect(response).to have_http_status(:accepted)
+      expect(host.reload.hang).to include("state" => "hung", "duration_seconds" => 180)
+      expect(host.hang).not_to have_key("secret")
+      expect(host.activity_status).to eq("hung")
+    end
+
+    it "raises no alert for the reduced heartbeat" do
+      expect do
+        post "/api/v1/projects/#{project.id}/crons/automator-minion-1/check_in", headers:,
+             params: { status: "fail", automator_version: "0.48.0", hang: }, as: :json
+      end.not_to have_enqueued_job(Alerting::EvaluateJob)
+
+      expect(response).to have_http_status(:accepted)
+    end
+
+    it "rejects a malformed hang report → 422" do
+      post "/api/v1/projects/#{project.id}/crons/automator-minion-1/check_in", headers:,
+           params: { status: "fail", hang: hang.merge(state: "frozen") }, as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(host.reload.hang).to be_nil
+    end
+  end
+
   it "un host revocato non batte → 401" do
     host.update!(revoked_at: Time.current)
 

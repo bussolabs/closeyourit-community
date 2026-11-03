@@ -16,6 +16,9 @@ module Agents
     PARALLEL_CHOICES = (1..4).freeze
     # CYAU-235 — the supporter may use any engine that can review.
     SUPPORTERS = REVIEWERS
+    # CYRA-1178 — the Automator watchdog reports a blocked event loop for 30 minutes at most.
+    HANG_STATES = %w[hung resumed restarted].freeze
+    HANG_REPORT_WINDOW = 30.minutes
 
     belongs_to :organization,
                class_name: "Organizations::Organization",
@@ -144,9 +147,32 @@ module Agents
       (last_heartbeat_at || created_at) + Agents::Constants::HOST_STALE_AFTER
     end
 
+    # CYRA-1178 — hung while the last heartbeat carried a "hung" report younger than the watchdog window.
+    # The reduced heartbeat does not refresh host_status, so without this the machine would look healthy.
+    def hung?(now: Time.current)
+      return false unless hang.is_a?(Hash) && hang["state"] == "hung"
+
+      reported_at = hang_reported_at
+      reported_at.present? && last_heartbeat_at.present? && reported_at >= last_heartbeat_at &&
+        reported_at > now - HANG_REPORT_WINDOW
+    end
+
+    # Whole minutes of the last reported hang, at least one.
+    def hang_minutes
+      [ (hang.to_h["duration_seconds"].to_i / 60.0).round, 1 ].max
+    end
+
+    def hang_reported_at
+      raw = hang.is_a?(Hash) ? hang["reported_at"] : nil
+      raw.present? ? Time.iso8601(raw) : nil
+    rescue ArgumentError
+      nil
+    end
+
     # Per la dashboard un host idle ma vivo è "online"; gli altri stati operativi restano distinti.
     def activity_status(now: Time.current)
       return "offline" unless heartbeat_online?(now:)
+      return "hung" if hung?(now:)
       return "online" if host_status == "idle"
 
       host_status
@@ -214,7 +240,7 @@ module Agents
     end
 
     def telemetry_snapshots_are_arrays
-      %i[runtimes repositories active_runs last_stops].each do |attribute|
+      %i[runtimes repositories active_runs last_stops agent_quota].each do |attribute|
         errors.add(attribute, :invalid) unless public_send(attribute).is_a?(Array)
       end
       errors.add(:active_runs, :invalid) if active_runs.is_a?(Array) && active_runs.any? { |run| !run.is_a?(Hash) }

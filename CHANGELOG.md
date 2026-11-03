@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.206.0] - 2026-11-03
+
+### Added
+
+- **Quota dei motori sulla macchina**: l'elenco e la scheda della macchina mostrano quanta quota resta a Claude e Codex. Se un motore è in pausa vedi fino a che ora; un valore non letto resta «sconosciuta», mai 0%. ([Agenti](/member/agents))
+
+- **Macchina bloccata**: se l'automator si blocca, la pagina delle macchine dice «Bloccato da N minuti». Quando riparte vedi «Bloccato N minuti, ripreso». ([Agenti](/member/agents))
+
 ## [0.205.0] - 2026-11-03
 
 ### Added
