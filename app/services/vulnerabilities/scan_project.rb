@@ -15,11 +15,12 @@ module Vulnerabilities
   # (CYRA-810).
   class ScanProject < ApplicationService
     def initialize(project:, github_client: Github::Client.new, osv_client: Osv::Client.new,
-                   eol_client: Eol::Client.new, now: Time.current)
+                   eol_client: Eol::Client.new, registry_client: Registry::Client.new, now: Time.current)
       @project = project
       @github_client = github_client
       @osv_client = osv_client
       @eol_client = eol_client
+      @registry_client = registry_client
       @now = now
     end
 
@@ -34,6 +35,8 @@ module Vulnerabilities
       check_runtimes(repository, tree)
 
       packages, unverified = collect_packages(discovery.value)
+      # CYRA-1167 — release dates of freshly appeared versions; never fails the scan.
+      RecordReleaseDates.call(packages: packages, client: @registry_client, now: @now)
       return record({}, [], unverified) if packages.empty?
 
       matches = Osv::Query.call(coordinates: packages.map(&:osv_key).uniq, client: @osv_client,

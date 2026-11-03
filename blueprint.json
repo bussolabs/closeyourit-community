@@ -3320,9 +3320,10 @@
       "level": 3,
       "parent": "ana_flow_pageview",
       "kind": "step",
-      "summary": "Tiene solo il percorso della pagina, riduce la provenienza al nome del sito e corregge le date nel futuro.",
+      "summary": "Tiene solo il percorso della pagina, riduce la provenienza al nome del sito e corregge le date nel futuro. Di un evento tiene al massimo 10 dettagli brevi e scarta quelli che sembrano dati personali.",
       "files": [
-        "app/services/analytics/ingest/normalize.rb"
+        "app/services/analytics/ingest/normalize.rb",
+        "app/services/analytics/ingest/properties.rb"
       ]
     },
     {
@@ -3438,12 +3439,28 @@
       "level": 3,
       "parent": "ana_page_dashboard",
       "kind": "step",
-      "summary": "Obiettivi per visita a una pagina o per evento. Le conversioni si contano al momento della lettura.",
+      "summary": "Obiettivi per visita a una pagina o per evento, anche solo per un valore di un dettaglio dell'evento. Le conversioni si contano al momento della lettura.",
       "files": [
         "app/controllers/member/monitoring/analytics/goals_controller.rb",
         "app/services/analytics/goals/save.rb",
         "app/services/analytics/goals/delete.rb",
         "app/views/member/monitoring/analytics/goals/**"
+      ]
+    },
+    {
+      "id": "ana_step_event_definitions",
+      "name": "Eventi dichiarati",
+      "level": 3,
+      "parent": "ana_page_dashboard",
+      "kind": "step",
+      "summary": "L'elenco degli eventi che il sito invia, con i dettagli attesi, gestito dalla pagina e dalla riga di comando. Gli eventi arrivati fuori elenco hanno una pagina loro e si aggiungono con un clic.",
+      "files": [
+        "app/controllers/member/monitoring/analytics/event_definitions_controller.rb",
+        "app/controllers/member/monitoring/analytics/undeclared_events_controller.rb",
+        "app/controllers/cli/v1/analytics/event_definitions_controller.rb",
+        "app/services/analytics/event_definitions/**",
+        "app/views/member/monitoring/analytics/event_definitions/**",
+        "app/views/member/monitoring/analytics/undeclared_events/**"
       ]
     },
     {
@@ -4015,6 +4032,20 @@
       ]
     },
     {
+      "id": "tkt_comment_refs",
+      "name": "Ticket citati nel testo",
+      "level": 3,
+      "parent": "tkt_flow_comments",
+      "kind": "step",
+      "summary": "Un codice di ticket scritto in commenti, chat, pagine e resoconti diventa un'etichetta con titolo e stato. La pagina chiede tutti i codici in una volta; chi non vede il ticket legge solo il codice.",
+      "files": [
+        "app/components/ui/markdown_component.rb",
+        "app/components/ui/ticket_ref_component.rb",
+        "app/controllers/member/tickets/references_controller.rb",
+        "app/javascript/controllers/ticket_refs_controller.js"
+      ]
+    },
+    {
       "id": "tkt_flow_questions",
       "name": "Domande sul ticket",
       "level": 2,
@@ -4195,6 +4226,21 @@
         "app/jobs/ticketing/backfill_embeddings_job.rb",
         "app/services/ticketing/embedding_text.rb",
         "app/services/ticketing/semantic_search.rb"
+      ]
+    },
+    {
+      "id": "tkt_job_stalled_epics",
+      "name": "Epic fermi",
+      "level": 2,
+      "parent": "area_tickets",
+      "kind": "job",
+      "summary": "Ogni ora cerca gli epic in cui nessun ticket avanza e tutti aspettano qualcuno. Avvisa chi deve decidere e su cosa, una volta sola per ogni situazione.",
+      "files": [
+        "app/jobs/ticketing/notify_stalled_epics_job.rb",
+        "app/services/ticketing/stalled_epics/detect.rb",
+        "app/services/ticketing/stalled_epics/notify.rb",
+        "app/services/agents/workflows/in_flight.rb",
+        "config/recurring.yml"
       ]
     },
     {
@@ -5533,11 +5579,12 @@
       "level": 2,
       "parent": "area_search",
       "kind": "flow",
-      "summary": "Mentre si scrive si cerca in progetti, ticket, errori, pagine, idee, monitor, server, persone, segreti e voci di menu.",
+      "summary": "Mentre si scrive si cerca in progetti, ticket, errori, pagine, idee, monitor, server, persone, segreti, voci di menu e impostazioni. Sulla pagina di un ticket offre anche azioni su quel ticket.",
       "files": [
         "app/services/search/global.rb",
         "app/services/search/sources.rb",
-        "app/controllers/member/searches_controller.rb"
+        "app/controllers/member/searches_controller.rb",
+        "app/javascript/controllers/ui/global_search_controller.js"
       ]
     },
     {
@@ -5569,10 +5616,25 @@
       "level": 3,
       "parent": "sea_flow_global",
       "kind": "step",
-      "summary": "Risultati divisi per tipo. Un codice ticket o una chiave di progetto scritti per intero vanno in cima.",
+      "summary": "Risultati divisi per tipo. Un codice ticket, una chiave di progetto o un link incollato (richiesta di modifica su GitHub o pagina dell'app) vanno in cima.",
       "files": [
         "app/services/search/global.rb",
+        "app/services/search/address.rb",
         "app/views/member/searches"
+      ]
+    },
+    {
+      "id": "sea_global_commands",
+      "name": "Azioni e impostazioni",
+      "level": 3,
+      "parent": "sea_flow_global",
+      "kind": "step",
+      "summary": "La finestra manda la pagina aperta. Su un ticket offre assegna a me, cambia stato e consenti agli agenti, con gli stessi indirizzi dei pulsanti; senza permesso la voce è grigia col motivo. Le sezioni delle impostazioni si trovano per nome e si aprono evidenziate.",
+      "files": [
+        "app/services/search/ticket_actions.rb",
+        "app/services/search/settings_catalog.rb",
+        "app/helpers/member/search_commands_helper.rb",
+        "app/javascript/controllers/section_panels_controller.js"
       ]
     },
     {
@@ -8063,10 +8125,11 @@
       "level": 2,
       "parent": "area_alerting",
       "kind": "page",
-      "summary": "Le proprie notifiche, con filtri per tipo e progetto. Le ripetute sono raggruppate e un avviso di guasto mostra quando la cosa è tornata a posto.",
+      "summary": "Le proprie notifiche, con filtri per tipo e progetto. Le ripetute sono raggruppate e un avviso di guasto mostra quando la cosa è tornata a posto. Aprire un ticket, un errore o un monitor segna lette le proprie notifiche su quella cosa.",
       "files": [
         "app/controllers/member/alerting_notifications_controller.rb",
         "app/views/member/alerting_notifications/**",
+        "app/services/notifications/mark_read.rb",
         "app/services/alerting/notification_group.rb",
         "app/services/alerting/recoveries.rb"
       ]
@@ -9192,6 +9255,19 @@
       ]
     },
     {
+      "id": "vul_step_release_dates",
+      "name": "Data di uscita delle versioni nuove",
+      "level": 3,
+      "parent": "vul_flow_scan",
+      "kind": "step",
+      "summary": "Per le versioni comparse da meno di 72 ore chiede al registro pubblico quando sono uscite. Una data nota non si richiede; un registro muto si riprova il giorno dopo.",
+      "files": [
+        "app/services/vulnerabilities/record_release_dates.rb",
+        "app/services/vulnerabilities/registry/client.rb",
+        "app/models/vulnerabilities/package_release.rb"
+      ]
+    },
+    {
       "id": "vul_step_osv",
       "name": "Chiede al database delle falle",
       "level": 3,
@@ -9244,7 +9320,7 @@
       "level": 2,
       "parent": "area_vulnerabilities",
       "kind": "page",
-      "summary": "Elenco e dettaglio delle falle trovate, con ignora, riapri, trasforma in ticket e nuova scansione. Una scheda mostra lo stato dei linguaggi.",
+      "summary": "Elenco e dettaglio delle falle trovate, con ignora, riapri, trasforma in ticket e nuova scansione. Un riquadro a parte segnala le librerie uscite da meno di 72 ore. Una scheda mostra lo stato dei linguaggi.",
       "files": [
         "app/controllers/member/monitoring/vulnerabilities_controller.rb",
         "app/views/member/monitoring/vulnerabilities/**"
@@ -13147,6 +13223,16 @@
       "from": "tkt_create_background",
       "to": "tkt_job_embeddings",
       "label": "indice"
+    },
+    {
+      "from": "tkt_job_stalled_epics",
+      "to": "tkt_data",
+      "label": "legge"
+    },
+    {
+      "from": "tkt_job_stalled_epics",
+      "to": "alr_data_notification",
+      "label": "avvisa"
     },
     {
       "from": "tkt_ai_request",

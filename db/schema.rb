@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_03_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_03_180100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -1021,6 +1021,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_160000) do
     t.index ["organization_id"], name: "index_alerting_telegram_groups_on_organization_id", unique: true
   end
 
+  create_table "analytics_event_definitions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "project_id", null: false
+    t.string "name", null: false
+    t.string "property_names", default: [], null: false, array: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id", "name"], name: "index_analytics_event_definitions_on_project_id_and_name", unique: true
+  end
+
   create_table "analytics_goals", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "display_name", null: false
@@ -1029,7 +1038,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_160000) do
     t.string "path_pattern"
     t.uuid "project_id", null: false
     t.datetime "updated_at", null: false
-    t.index ["project_id", "event_name"], name: "idx_analytics_goals_event", unique: true, where: "(kind = 1)"
+    t.string "property_name"
+    t.string "property_value"
+    t.index ["project_id", "event_name", "property_name", "property_value"], name: "idx_analytics_goals_event", unique: true, where: "(kind = 1)", nulls_not_distinct: true
     t.index ["project_id", "path_pattern"], name: "idx_analytics_goals_path", unique: true, where: "(kind = 0)"
     t.index ["project_id"], name: "index_analytics_goals_on_project_id"
   end
@@ -1071,6 +1082,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_160000) do
     t.string "utm_source"
     t.string "utm_term"
     t.string "visitor_hash", null: false
+    t.jsonb "properties", default: {}, null: false
     t.index ["project_id", "name", "occurred_at"], name: "idx_analytics_pageviews_goal", order: { occurred_at: :desc }
     t.index ["project_id", "occurred_at"], name: "index_analytics_pageviews_on_project_id_and_occurred_at", order: { occurred_at: :desc }
   end
@@ -4461,6 +4473,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_160000) do
     t.index ["project_id"], name: "index_vulnerabilities_manifests_on_project_id"
   end
 
+  create_table "vulnerabilities_package_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "ecosystem", null: false
+    t.string "name", null: false
+    t.string "version", null: false
+    t.datetime "released_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ecosystem", "name", "version"], name: "index_vulnerabilities_package_releases_on_coordinates", unique: true
+    t.index ["released_at"], name: "index_vulnerabilities_package_releases_on_released_at"
+  end
+
   create_table "vulnerabilities_packages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.boolean "direct", default: false, null: false
@@ -4706,6 +4729,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_160000) do
   add_foreign_key "alerting_rules", "types_environments", column: "environment_id", on_delete: :nullify
   add_foreign_key "alerting_telegram_groups", "accounts", on_delete: :cascade
   add_foreign_key "alerting_telegram_groups", "organizations", on_delete: :cascade
+  add_foreign_key "analytics_event_definitions", "projects", on_delete: :cascade
   add_foreign_key "analytics_goals", "projects", on_delete: :cascade
   add_foreign_key "analytics_links", "accounts", column: "created_by_id", on_delete: :nullify
   add_foreign_key "analytics_links", "projects", on_delete: :cascade

@@ -6,3 +6,8 @@ en:
         display_name: Name
         path_pattern: Path pattern
         event_name: Event name
+        property_name: Property
+        property_value: Property value
+      analytics/event_definition:
+        name: Event name
+        property_names: Expected properties

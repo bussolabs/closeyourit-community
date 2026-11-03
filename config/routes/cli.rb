@@ -335,6 +335,7 @@ namespace :cli do
       end
       resource :analytics, only: :show do                                     # stats API web analytics (snapshot)
         resources :goals, only: %i[index create destroy], module: :analytics  # goal di conversione (read=visibilità)
+        resources :event_definitions, path: "events", only: %i[index create update destroy], module: :analytics # CYRA-1158
         resource  :share, only: %i[create destroy], module: :analytics        # link pubblico condivisione dashboard
       end
       resources :ideas, only: %i[index show create update destroy] do         # idee (list/show/propose/edit/elimina)

@@ -9,7 +9,7 @@ const RECENTS_LIMIT = 6
 const INTERNAL_PATH = /^\/(?!\/)/
 
 export default class extends Controller {
-  static targets = ["dialog", "trigger", "form", "input", "progress", "type", "recents", "recentsList"]
+  static targets = ["dialog", "trigger", "form", "input", "progress", "type", "context", "recents", "recentsList"]
 
   connect() {
     this.onKeydown = (event) => this.#handleGlobalKeydown(event)
@@ -53,6 +53,8 @@ export default class extends Controller {
 
   search() {
     clearTimeout(this.searchTimer)
+    // The page behind the dialog decides which actions and settings are offered (CYRA-1145).
+    if (this.hasContextTarget) this.contextTarget.value = window.location.pathname
     this.pending = true
     this.#renderRecents()
     if (this.hasProgressTarget) this.progressTarget.hidden = false

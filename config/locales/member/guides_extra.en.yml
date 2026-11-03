@@ -77,6 +77,10 @@ en:
         token_link: "Manage the project keys"
         token_locked: "You get a placeholder instead of the real key: the key is visible to whoever manages that project's keys. Ask them for it and swap it in before you publish."
         npm_hint: "Does your site use a bundler (Vite, webpack)? Install the package from npm and call init with the same values:"
+        events_title: "Events and properties"
+        events_intro: "Besides visits, your site can send events, like a signup. Each event can carry up to 10 short properties in the properties field: short texts, numbers or true and false."
+        events_privacy: "A property that looks like personal data, such as an email, a phone or a card, is dropped. The event still arrives."
+        events_declare: "Declare your events in the Events list of the statistics: the ones outside the list show up as undeclared events. A goal can count only one value, for example the pro plan."
         cta: "Open the analytics"
         cta_no_project: "Choose a project"
       secrets:

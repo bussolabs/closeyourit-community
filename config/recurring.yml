@@ -436,6 +436,13 @@ production: &schedule
     queue: maintenance
     schedule: every hour at minute 8
 
+  # Stalled epics (CYRA-1155): every open child waits for someone and none moves. Hourly is enough
+  # for work stuck for days; the situation's fingerprint keeps the notice from repeating.
+  notify_stalled_epics:
+    class: Ticketing::NotifyStalledEpicsJob
+    queue: maintenance
+    schedule: every hour at minute 23
+
   # Allarme "una macchina è ferma" (CYRA-450): un host che non batte da oltre la soglia di allarme (offline
   # + grazia) va segnalato. Cadenza allineata alla soglia (15') e a detect_stalled_agents: una macchina morta
   # è rilevata al più entro un giro. Un riavvio breve rientra prima del giro grazie alla grazia sulla soglia,

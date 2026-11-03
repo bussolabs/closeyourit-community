@@ -13,9 +13,16 @@ module Analytics
     normalizes :display_name, with: ->(v) { v.to_s.strip }
     normalizes :event_name, with: ->(v) { v.to_s.strip.presence }
     normalizes :path_pattern, with: ->(v) { v.to_s.strip.presence }
+    normalizes :property_name, :property_value, with: ->(v) { v.to_s.strip.presence }
+
+    # CYRA-1158 — the property filter belongs to event goals only.
+    before_validation { self.property_name = self.property_value = nil if pageview_path? }
 
     validates :display_name, presence: true
-    validates :event_name, presence: true, uniqueness: { scope: :project_id }, if: :custom_event?
+    validates :event_name, presence: true, uniqueness: { scope: %i[project_id property_name property_value] },
+                           if: :custom_event?
+    validates :property_name, presence: true, if: -> { property_value.present? }
+    validates :property_value, presence: true, if: -> { property_name.present? }
     validates :path_pattern, presence: true, uniqueness: { scope: :project_id }, if: :pageview_path?
 
     scope :ordered, -> { order(:display_name) }
@@ -27,8 +34,16 @@ module Analytics
       when "pageview_path"
         events.where(name: Pageview::PAGEVIEW_NAME).merge(path_condition)
       when "custom_event"
-        events.where(name: event_name)
+        scope = events.where(name: event_name)
+        property_name ? scope.where("properties ->> ? = ?", property_name, property_value) : scope
       end
+    end
+
+    # What the goal counts, as shown next to its name: the path, or the event with its property filter.
+    def target_label
+      return path_pattern if pageview_path?
+
+      property_name ? "#{event_name} · #{property_name} = #{property_value}" : event_name
     end
 
     private

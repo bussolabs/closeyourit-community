@@ -36,6 +36,12 @@ en:
           zero: No open vulnerabilities right now.
           one: "There is %{count} open vulnerability, but it is not part of what you asked for."
           other: "There are %{count} open vulnerabilities, but none are part of what you asked for."
+        recent_releases:
+          title:
+            one: "One library version came out less than 72 hours ago"
+            other: "%{count} library versions came out less than 72 hours ago"
+          body: Very new versions are where a hijacked library usually shows up. This is only a caution, not a vulnerability, and it goes away by itself after 72 hours.
+          released: "released %{time} ago"
         unverified:
           title:
             one: "Incomplete check: one dependency file could not be read"

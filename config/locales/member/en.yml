@@ -109,7 +109,11 @@ en:
         secret:
           one: Secret in %{count} project
           other: Secret in %{count} projects
+        project_setting: "Settings · %{project}"
+        personal_setting: Personal settings
       groups:
+        actions: Actions
+        settings: Settings
         projects: Projects
         tickets: Tickets
         error_groups: Errors
@@ -125,6 +129,19 @@ en:
         people: People
         conversations: Conversations
         secrets: Secrets
+      actions:
+        assign:
+          label: Assign to me
+          terms: assignee
+        status:
+          label: "Move to %{status}"
+          terms: change status
+        automation:
+          label: Allow agents
+          terms: hand to automation agent
+        blocked:
+          assign: You cannot assign this project's tickets.
+          edit: You cannot change this project's tickets.
     nav:
       home: Home
       valhalla: Valhalla · God mode

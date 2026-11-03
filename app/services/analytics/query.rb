@@ -148,6 +148,17 @@ module Analytics
       { unique_conversions: unique, total_conversions: total, conversion_rate: rate }
     end
 
+    # Custom events of the range missing from the declared list (CYRA-1158), busiest first:
+    # [{ name:, count:, property_names: }]. Property names are the distinct keys seen on that event.
+    def undeclared_events(declared:, limit: 50)
+      relation = events_scope.where.not(name: [ Pageview::PAGEVIEW_NAME, *declared ])
+      counts = relation.group(:name).order(Arel.sql("COUNT(*) DESC"), :name).limit(limit).count
+      keys = relation.where(name: counts.keys)
+                     .pluck(Arel.sql("DISTINCT name, jsonb_object_keys(properties)"))
+                     .group_by(&:first).transform_values { |rows| rows.map(&:last).sort }
+      counts.map { |name, count| { name: name, count: count, property_names: keys.fetch(name, []) } }
+    end
+
     # Metriche di sessione (sessionizzazione query-time, gap ANALYTICS_SESSION_GAP): numero sessioni,
     # durata media (s), pageview per visita, bounce rate per-sessione (nil senza traffico).
     def session_summary

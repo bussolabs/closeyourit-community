@@ -1,0 +1,19 @@
+<%# locals: (releases:, count:) %>
+<%# CYRA-1167 — versions published less than 72 hours ago: a caution, kept apart from the findings. %>
+<% if count.positive? %>
+  <%= render Ui::AlertComponent.new(variant: :info, test_id: "vulnerabilities-recent-releases",
+        title: t("member.monitoring.vulnerabilities.recent_releases.title", count: count)) do %>
+    <%= t("member.monitoring.vulnerabilities.recent_releases.body") %>
+    <ul class="mt-1.5 space-y-0.5">
+      <% releases.each do |package| %>
+        <li class="font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="recent-release-row">
+          <%= package.coordinates %> · <span title="<%= package.manifest.project.name %>"><%= package.manifest.project.key %></span> ·
+          <%= t("member.monitoring.vulnerabilities.recent_releases.released", time: time_ago_in_words(package.released_at)) %>
+        </li>
+      <% end %>
+      <% if count > releases.size %>
+        <li class="text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.vulnerabilities.unverified.more", count: count - releases.size) %></li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>

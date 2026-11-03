@@ -371,6 +371,15 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
         expect(pagina.css("[data-test='host-run']").size).to eq(1)
       end
 
+      # CYRA-1176 — with jobs at once raised, the header said «2/1»: the limit is the capacity.
+      it "shows the jobs-at-once limit as the denominator" do
+        host = create(:agent_host, organization:, slots: 1, max_parallel: 3)
+
+        get member_agent_path(host)
+
+        expect(Nokogiri::HTML(response.body).at_css("[data-test='host-slots']").text).to match(%r{\b0/3\b})
+      end
+
       it "i lavori aperti che la macchina non segnala diventano un avviso, non un numero che smentisce" do
         ticket = create(:ticket, organization:, with_agent_workflow: true)
         workflow = ticket.agent_workflow || create(:agent_workflow, organization:, ticket:)

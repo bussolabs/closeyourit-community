@@ -563,6 +563,9 @@ namespace :member do
     # Goals/conversioni del progetto (project_id come query param, come la dashboard).
     namespace :analytics do
       resources :goals, only: %i[index new create destroy]
+      # CYRA-1158 — the project's declared events, and the events that arrive outside that list.
+      resources :event_definitions, path: "events", except: :show
+      resources :undeclared_events, path: "undeclared-events", only: :index
       # Link pubblico di condivisione/embed (uno per progetto): crea / revoca.
       resource :share, only: %i[create destroy], controller: "shares"
     end
@@ -808,6 +811,8 @@ namespace :member do
       # Voci del campo «Ticket collegato» (CYRA-364): poche righe cercate lato server per codice
       # o titolo, invece dell'intero archivio caricato con la pagina.
       get :linkable, to: "tickets/linkable#index"
+      # CYRA-1148 — title and status of the ticket codes cited in a page's text, in one request.
+      get :references, to: "tickets/references#index"
     end
     member do
       patch :status

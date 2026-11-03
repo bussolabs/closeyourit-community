@@ -15,7 +15,7 @@ module Analytics
       Normalized = Data.define(
         :event_id, :name, :hostname, :path, :referrer_host,
         :utm_source, :utm_medium, :utm_campaign, :utm_term, :utm_content,
-        :screen_class, :environment, :occurred_at
+        :screen_class, :environment, :occurred_at, :properties
       )
 
       UTM_MAX_LENGTH = 150
@@ -50,7 +50,8 @@ module Analytics
           utm_content: utm("utm_content"),
           screen_class: screen_class,
           environment: @payload["environment"].to_s.presence || DEFAULT_ENVIRONMENT,
-          occurred_at: parse_time(@payload["occurred_at"])
+          occurred_at: parse_time(@payload["occurred_at"]),
+          properties: Properties.call(raw: @payload["properties"])
         )
       end
 

@@ -82,6 +82,9 @@ Formato `R{HTTP_STATUS}-{DOMINIO}-{SEQ}` (rules/error-handling.md). Envelope API
 ### GOAL — goal/conversioni analytics (`Analytics::Goals::*`, `Member::Monitoring::Analytics::GoalsController`)
 - `R422-GOAL-001` — goal non valido (validazioni: display_name/path_pattern/event_name, unicità per progetto)
 
+### EVENTDEF — eventi dichiarati analytics (`Analytics::EventDefinitions::*`, CYRA-1158)
+- `R422-EVENTDEF-001` — evento dichiarato non valido (nome mancante o già presente, troppi dettagli)
+
 ### ANALYTICS — stats API di lettura (`Api::V1::AnalyticsController`)
 - `R404-ANALYTICS-001` — progetto del path ≠ progetto del token (anti-BOLA)
 

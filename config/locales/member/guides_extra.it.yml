@@ -77,6 +77,10 @@ it:
         token_link: "Gestisci i codici del progetto"
         token_locked: "Al posto della chiave vera trovi un segnaposto: la chiave la vede chi gestisce i codici di quel progetto. Chiedigliela e sostituiscila prima di pubblicare."
         npm_hint: "Il sito usa un bundler (Vite, webpack)? Installa il pacchetto da npm e chiama init con gli stessi valori:"
+        events_title: "Eventi e dettagli"
+        events_intro: "Oltre alle visite, il sito può mandare eventi, come un'iscrizione. Ogni evento può portare fino a 10 dettagli brevi nel campo properties: testi corti, numeri o vero e falso."
+        events_privacy: "Un dettaglio che sembra un dato personale, come un'email, un telefono o una carta, viene scartato. L'evento arriva lo stesso."
+        events_declare: "Dichiara i tuoi eventi nell'elenco Eventi delle statistiche: quelli fuori elenco li trovi tra gli eventi non dichiarati. Un obiettivo può contare solo un valore, per esempio il piano pro."
         cta: "Apri le statistiche"
         cta_no_project: "Scegli un progetto"
       secrets:

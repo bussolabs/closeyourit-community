@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## [0.205.0] - 2026-11-03
+
+### Added
+
+- **Avviso per gli epic fermi**: quando nessun ticket di un epic avanza e tutti aspettano qualcuno, ricevi un avviso. Dice, ticket per ticket, chi deve decidere e su cosa. Non si ripete finché la situazione resta uguale. ([Ticket](/member/tickets))
+
+- **Avviso sulle librerie appena uscite**: la pagina delle vulnerabilità segnala in un riquadro a parte le versioni di librerie uscite da meno di 72 ore. È solo un avviso, non conta fra le falle e sparisce da solo. ([Vulnerabilità](/member/monitoring/vulnerabilities))
+
+- **Ticket citati con titolo e stato**: quando un commento, un messaggio o una pagina cita un ticket col suo codice, al posto del codice vedi titolo e stato, e un clic lo apre. Chi non vede quel ticket legge solo il codice.
+
+- **Comandi nella ricerca rapida**: dalla pagina di un ticket, ⌘K offre assegna a me, cambia stato e consenti agli agenti. Trovi anche le impostazioni per nome, e un link di GitHub o dell'app incollato apre il ticket collegato. Le azioni che non puoi fare restano grigie, con il motivo.
+
+- **Eventi con dettagli**: ogni evento del sito può portare fino a 10 dettagli brevi, come il piano scelto. Dichiari i tuoi eventi in un elenco, vedi quelli arrivati fuori elenco e un obiettivo può contare un solo valore. I dettagli che sembrano dati personali vengono scartati. ([guida](/member/guides/analytics))
+
+### Changed
+
+- **Notifiche lette quando apri la cosa**: aprire un ticket, un errore o un monitor segna lette le tue notifiche su quella cosa. Il numero della campanella scende subito, anche nelle altre schede. Le notifiche dei colleghi non cambiano.
+
+### Fixed
+
+- **Lavori insieme giusti sulla scheda della macchina**: il numero «in corso / massimo» ora usa il limite di lavori insieme scelto per la macchina, non più 1 fisso.
+
 ## [0.204.0] - 2026-11-03
 
 ### Added

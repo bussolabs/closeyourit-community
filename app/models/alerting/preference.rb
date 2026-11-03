@@ -42,7 +42,7 @@ module Alerting
       when "ticket_created", "ticket_assigned", "ticket_status_changed",
            "ticket_milestone_changed", "ticket_commented", "ticket_mentioned",
            "ticket_review_requested", "ticket_review_rejected", "ticket_review_approved",
-           "ticket_question_asked", "ticket_question_answered" then tickets_enabled?
+           "ticket_question_asked", "ticket_question_answered", "ticket_epic_stalled" then tickets_enabled?
       when "chat_message", "chat_mentioned" then chat_enabled?
       when "server_down", "server_up", "server_cpu", "server_mem", "server_disk",
            "server_temp", "server_service_failed", "server_smart_failing",

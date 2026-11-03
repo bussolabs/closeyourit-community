@@ -73,4 +73,10 @@ RSpec.describe Analytics::Ingest::Record do
       expect(described_class.acceptable?("no")).to be(false)
     end
   end
+
+  # CYRA-1158 — properties are stored with the event; an event without them stores an empty set.
+  it "stores the cleaned properties with the event and an empty set when none arrive" do
+    described_class.call(project:, payload: [ item("properties" => { "plan" => "pro", "email" => "a@b.it" }), item ], context:)
+    expect(project.analytics_pageviews.pluck(:properties)).to contain_exactly({ "plan" => "pro" }, {})
+  end
 end

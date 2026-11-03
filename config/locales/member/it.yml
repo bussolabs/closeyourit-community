@@ -111,7 +111,11 @@ it:
         secret:
           one: Segreto in %{count} progetto
           other: Segreto in %{count} progetti
+        project_setting: "Impostazioni · %{project}"
+        personal_setting: Impostazioni personali
       groups:
+        actions: Azioni
+        settings: Impostazioni
         projects: Progetti
         tickets: Ticket
         error_groups: Errori
@@ -127,6 +131,19 @@ it:
         people: Persone
         conversations: Conversazioni
         secrets: Segreti
+      actions:
+        assign:
+          label: Assegna a me
+          terms: assegna assegnatario
+        status:
+          label: "Sposta in %{status}"
+          terms: cambia stato
+        automation:
+          label: Consenti agli agenti
+          terms: affida all'automazione automazione agente
+        blocked:
+          assign: Non puoi assegnare i ticket di questo progetto.
+          edit: Non puoi modificare i ticket di questo progetto.
     nav:
       home: Home
       valhalla: Valhalla · God mode

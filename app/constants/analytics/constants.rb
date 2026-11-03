@@ -17,6 +17,12 @@ module Analytics
     # oltre, è un client che sta accumulando invece di mandare.
     WEB_VITALS_MAX_BATCH = 50
 
+    # Caps on the properties one event carries (CYRA-1158): the rest is dropped or truncated, never
+    # rejected, so the table grows by a bounded amount per event.
+    EVENT_PROPERTIES_MAX = 10
+    EVENT_PROPERTY_NAME_MAX_LENGTH = 40
+    EVENT_PROPERTY_VALUE_MAX_LENGTH = 100
+
     # Vita del salt giornaliero (giorni); oltre → distrutto dal PruneJob, rendendo i visitor_hash
     # storici irreversibili (postura GDPR cookieless).
     SALT_RETENTION_DAYS = 2
