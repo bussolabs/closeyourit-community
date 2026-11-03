@@ -41,7 +41,7 @@
       <% elsif controller_path == "member/agents/live_sessions" %>
         <%# CYRA-1138 — the live page frames itself like Coworkers: its own sidebar from md up. %>
         <div class="md:hidden"><%= render "member/nav_sidebar", tree: member_nav_tree, compact: false %></div>
-        <%= render "member/agents/live_sessions/sidebar", sessions: @sessions, current: @attempt %>
+        <%= render "member/agents/live_sessions/sidebar" %>
       <% else %>
         <%= render "member/nav_sidebar", tree: member_nav_tree, compact: cookies[:sidebar_compact] == "1" %>
       <% end %>

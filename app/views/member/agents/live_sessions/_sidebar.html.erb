@@ -1,10 +1,25 @@
-<%# locals: sessions:, current: — CYRA-1138, the live page's own sidebar from md up, like Coworkers. %>
+<%# CYRA-1172 — the live page's own sidebar from md up, like Coworkers: the projects at work, then the agents of
+    the open project as a filter. %>
 <aside id="automator-live-sidebar" class="hidden md:flex w-60 shrink-0 flex-col rounded-xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-y-auto" data-test="automator-live-sidebar">
   <div class="px-2 pt-2">
     <%= render Ui::NavLinkComponent.new(label: t("member.automator_live.back"), path: member_agents_path, icon: "chevrons-left", size: :top) %>
   </div>
   <h1 class="px-3.5 pt-3 pb-1.5 text-[14px] font-semibold"><%= t("member.automator_live.title") %></h1>
-  <nav aria-label="<%= t("member.automator_live.sessions") %>" class="flex-1 p-2 space-y-0.5">
-    <%= render partial: "member/agents/live_sessions/session_link", collection: sessions, as: :attempt, locals: { current: } %>
-  </nav>
+  <% if @projects.present? %>
+    <h2 class="px-3.5 pt-2 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.automator_live.projects") %></h2>
+    <nav aria-label="<%= t("member.automator_live.projects") %>" class="p-2 space-y-0.5">
+      <% @projects.each do |project, count| %>
+        <%= render Ui::NavLinkComponent.new(label: project.name, path: project_member_agents_live_sessions_path(project), icon: "folder",
+              active: project.id == @project&.id, size: :top, test_id: "automator-live-project") do %>
+          <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= count %></span>
+        <% end %>
+      <% end %>
+    </nav>
+  <% end %>
+  <% if @project %>
+    <h2 class="px-3.5 pt-2 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.automator_live.agents_on", project: @project.name) %></h2>
+    <nav aria-label="<%= t("member.automator_live.agents") %>" class="flex-1 p-2 space-y-0.5">
+      <%= render "member/agents/live_sessions/agent_links" %>
+    </nav>
+  <% end %>
 </aside>

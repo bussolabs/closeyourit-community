@@ -1,21 +1,32 @@
-<%# locals: entry:, code_available:, code_view: — the file on show, its changes in review style: removed lines
-    struck through, new lines below them, whole. No typing effect: the agent changes a block at once; a fresh one's lines only enter in turn. %>
+<%# locals: (file:) %>
+<%# CYRA-1172 — the file on show: each agent's changes in review style, one agent after the other, each under its
+    colour and ticket. No typing effect: an agent changes a block at once; a fresh change's lines only enter in turn. %>
 <div class="flex min-w-0 flex-col md:min-h-0 md:overflow-y-auto md:overflow-x-hidden bg-white dark:bg-zinc-900 md:rounded-lg md:border md:border-stone-200 dark:md:border-zinc-800" data-test="automator-live-code">
-  <% if entry.nil? %>
+  <% if file.nil? %>
     <%= render Ui::EmptyNoteComponent.new(text: t("member.automator_live.no_file"), inset: true) %>
   <% else %>
-    <h2 class="sticky top-0 z-10 border-b border-stone-200 bg-white px-4 py-2 font-mono text-[12px] font-semibold text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"><%= entry.path %></h2>
-    <% if !entry.changed? %>
-      <%= render Ui::EmptyNoteComponent.new(text: t("member.automator_live.file_only_read"), inset: true) %>
-    <% elsif !code_view %>
-      <%= render Ui::EmptyNoteComponent.new(text: t(code_available ? "member.automator_live.files_only_body" : "member.automator_live.code_off_title"),
-            hint: (t("member.automator_live.code_off_body") unless code_available), inset: true, test_id: (code_available ? nil : "automator-live-code-off")) %>
+    <h2 class="sticky top-0 z-10 border-b border-stone-200 bg-white px-4 py-2 font-mono text-[12px] font-semibold text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"><%= file.path %></h2>
+    <% if !@code_view %>
+      <%= render Ui::EmptyNoteComponent.new(text: t(@code_available ? "member.automator_live.files_only_body" : "member.automator_live.code_off_title"),
+            hint: (t("member.automator_live.code_off_body") unless @code_available), inset: true, test_id: (@code_available ? nil : "automator-live-code-off")) %>
     <% else %>
-      <% latest = entry.changes.last %>
-      <% cursor = { label: "#{automator_live_engine(@attempt.runtime)} · #{@ticket.code}", color: @colors[@attempt.id] } if @following && @attempt.status_running? && @colors[@attempt.id] %>
-      <% entry.changes.each do |change| %>
-        <%= render "member/agents/live_sessions/change", change:, follow: @following && change.equal?(latest),
-              fresh: change.equal?(latest) && automator_live_fresh?(change.at), cursor: (cursor if change.equal?(latest)) %>
+      <% last = automator_live_last_writer(file) %>
+      <% file.touches.each do |touch| %>
+        <% agent = touch.agent %>
+        <section data-test="automator-live-side" data-agent="<%= agent.name %>">
+          <p class="flex items-center gap-2 border-b border-stone-100 px-4 pt-2.5 pb-1 text-[12px] dark:border-zinc-800">
+            <span class="size-2 rounded-full <%= automator_live_color(agent, :dot) %>"></span>
+            <span class="font-mono font-semibold <%= automator_live_color(agent, :text) %>"><%= agent.name %></span>
+            <span class="text-gray-500 dark:text-zinc-400"><%= automator_live_engine(agent.attempt.runtime) %> · <span class="font-mono"><%= agent.attempt.host.hostname %></span></span>
+          </p>
+          <% latest = touch.entry.changes.last %>
+          <% cursor = { label: "#{automator_live_engine(agent.attempt.runtime)} · #{agent.name}", color: agent.color } if agent.attempt.status_running? %>
+          <% touch.entry.changes.each do |change| %>
+            <% newest = change.equal?(latest) %>
+            <%= render "member/agents/live_sessions/change", change:, follow: @following && newest && agent == last,
+                  fresh: newest && automator_live_fresh?(change.at), cursor: (cursor if newest) %>
+          <% end %>
+        </section>
       <% end %>
     <% end %>
   <% end %>

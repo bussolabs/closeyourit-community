@@ -5,13 +5,34 @@ en:
     automator_live:
       title: Automator live
       back: Back to agents
-      sessions: Sessions at work
+      projects: Projects at work
+      project_title: "%{project} · live"
+      project_hint: Every file of the project. The lit ones are being changed by an agent, each in its own copy.
+      agents: Agents at work
+      agents_on: "Agents on %{project}"
+      all_agents: All agents
+      counts:
+        agents:
+          one: agent
+          other: agents
+        hosts:
+          one: machine
+          other: machines
+        files:
+          one: file in progress
+          other: files in progress
+      conflicts:
+        one: conflict
+        other: conflicts
+      risk:
+        lines: same lines
+        file: different places
+        unknown: same file
       running: At work
       over: Over
       empty_title: No agent at work right now
       empty_body: When a machine takes a ticket, here you see the files it touches and its changes as they arrive.
       empty_example: "For example: Claude changes two lines in ticket.rb and you see them appear here, whole, while it works."
-      started: "Started at %{time}"
       elapsed: Time at work
       view_switch: What to show
       view_code: Code
@@ -41,7 +62,7 @@ en:
         count:
           one: 1 notice
           other: "%{count} notices · show them all"
-        with_html: "%{agents} is changing %{path} too."
+        with_html: "%{agents} are changing %{path}."
         open: Open the file
         pause: "Pause %{code}"
         pause_reason: Paused from the live page to avoid a conflict.

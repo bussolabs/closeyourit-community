@@ -5,13 +5,34 @@ it:
     automator_live:
       title: Automator in diretta
       back: Torna agli agenti
-      sessions: Sessioni al lavoro
+      projects: Progetti al lavoro
+      project_title: "%{project} · in diretta"
+      project_hint: Tutti i file del progetto. Quelli accesi li sta cambiando un agente, ognuno nella sua copia.
+      agents: Agenti al lavoro
+      agents_on: "Agenti su %{project}"
+      all_agents: Tutti gli agenti
+      counts:
+        agents:
+          one: agente
+          other: agenti
+        hosts:
+          one: macchina
+          other: macchine
+        files:
+          one: file in lavorazione
+          other: file in lavorazione
+      conflicts:
+        one: conflitto
+        other: conflitti
+      risk:
+        lines: stesse righe
+        file: punti diversi
+        unknown: stesso file
       running: Al lavoro
       over: Finita
       empty_title: Nessun agente al lavoro adesso
       empty_body: Quando una macchina prende un ticket, qui vedi i file che tocca e le modifiche mentre arrivano.
       empty_example: "Per esempio: Claude cambia due righe in ticket.rb e le vedi comparire qui, intere, mentre lavora."
-      started: "Iniziata alle %{time}"
       elapsed: Da quanto lavora
       view_switch: Cosa mostrare
       view_code: Codice
@@ -41,7 +62,7 @@ it:
         count:
           one: 1 avviso
           other: "%{count} avvisi · mostrali tutti"
-        with_html: "Anche %{agents} sta cambiando %{path}."
+        with_html: "%{agents} stanno cambiando %{path}."
         open: Apri il file
         pause: "Pausa %{code}"
         pause_reason: Messo in pausa dalla pagina in diretta per evitare un conflitto.

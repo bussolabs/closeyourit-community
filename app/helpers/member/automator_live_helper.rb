@@ -44,6 +44,15 @@ module Member
       entries.group_by { ::Agents::LiveEvents::ProjectTree::Index.parent_of(it.path) }.sort.map { |folder, list| [ folder, list.sort_by(&:path) ] }
     end
 
+    # CYRA-1172 — a link to the live project page that keeps the agent filter, the file and the view unless changed.
+    def automator_live_path(**changes)
+      current = { agent: @agent&.attempt&.id, file: params[:file].presence, view: params[:view].presence }
+      project_member_agents_live_sessions_path(@project, **current.merge(changes).compact)
+    end
+
+    # The agent that changed the file last: its dot pulses while it works.
+    def automator_live_last_writer(file) = file.touches.max_by { it.entry.changes.last.at }.agent
+
     # A frame id per folder of the project tree; hex keeps "a/b" and "a-b" apart.
     def automator_live_tree_frame(dir) = "automator-live-tree-#{dir.unpack1("H*")}"
 

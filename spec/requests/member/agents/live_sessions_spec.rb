@@ -2,8 +2,9 @@
 
 require "rails_helper"
 
-# CYRA-1138 — the live page of an automator attempt: what the agent touched, its changes in review
-# style, its latest steps. Behind agents.view, and only for tickets the viewer can see.
+# CYRA-1138, CYRA-1172 — the live page of a project: every agent at work on it, the files they change, their
+# changes in review style, their latest steps, and a filter on one agent. Behind agents.view, and only for
+# tickets the viewer can see. A session URL opens its project with that agent filtered.
 RSpec.describe "Member::Agents::LiveSessions", type: :request do
   let(:organization) { create(:organization) }
   let(:owner) { create(:account) }
@@ -30,6 +31,8 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
 
   def html = Capybara.string(response.body)
 
+  def live(agent: attempt, **params) = project_member_agents_live_sessions_path(ticket.project_id, agent: agent&.id, **params)
+
   describe "who can open it" do
     it "sends a visitor to the login" do
       get member_agents_live_session_path(attempt)
@@ -55,6 +58,9 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
       sign_in(viewer)
 
       get member_agents_live_session_path(attempt)
+      expect(response).to have_http_status(:not_found)
+
+      get project_member_agents_live_sessions_path(ticket.project_id)
       expect(response).to have_http_status(:not_found)
 
       get member_agents_live_sessions_path
@@ -96,7 +102,13 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
       attempt
       get member_agents_live_sessions_path
 
-      expect(response).to redirect_to(member_agents_live_session_path(attempt))
+      expect(response).to redirect_to(project_member_agents_live_sessions_path(ticket.project_id))
+    end
+
+    it "opens a session as its project with that agent filtered, keeping the file asked" do
+      get member_agents_live_session_path(attempt, file: "README.md")
+
+      expect(response).to redirect_to(live(file: "README.md"))
     end
 
     it "says there is nothing at work yet" do
@@ -110,10 +122,11 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
     before { sign_in(owner) }
 
     it "frames the page like Coworkers, with the sessions at work in its own sidebar" do
-      get member_agents_live_session_path(attempt)
+      get live
 
-      expect(html).to have_css("[data-test='automator-live-sidebar']", text: ticket.code)
-      expect(html).to have_css("[data-test='automator-live-header']", text: "Filter tickets by status")
+      expect(html).to have_css("[data-test='automator-live-sidebar']", text: "Filter tickets by status")
+      expect(html).to have_css("[data-test='automator-live-project'][aria-current='page']", text: ticket.project.name)
+      expect(html).to have_css("[data-test='automator-live-header']", text: ticket.code)
       expect(html).to have_css("[data-test='automator-live-header']", text: "mac-live")
       expect(html).to have_css("turbo-frame#automator-live")
       expect(html).to have_css("[data-controller~='live-frame'][data-live-frame-frame-value='automator-live']")
@@ -124,7 +137,7 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
       step(1, "file_read", { "path" => "README.md" })
       step(2, "file_change", change("app/models/ticket.rb", hunks: [ hunk ]))
 
-      get member_agents_live_session_path(attempt)
+      get live
 
       expect(html).to have_css("[data-test='automator-live-file'][aria-current='true'] [title='app/models/ticket.rb']")
       expect(html).to have_css("[data-test='automator-live-line-removed'] del", text: "old_line")
@@ -137,7 +150,7 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
       step(1, "file_change", change("README.md", hunks: [ hunk ]))
       step(2, "file_change", change("app/models/ticket.rb", hunks: [ hunk ]))
 
-      get member_agents_live_session_path(attempt, file: "README.md")
+      get live(file: "README.md")
 
       expect(html).to have_css("[data-test='automator-live-file'][aria-current='true'] [title='README.md']")
       expect(html).to have_css("[data-test='automator-live-follow']")
@@ -146,7 +159,7 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
     it "shows only names and counts when the project keeps the code on the machine" do
       step(1, "file_change", change("app/models/ticket.rb", hunks: [ hunk ]))
 
-      get member_agents_live_session_path(attempt)
+      get live
 
       expect(html).to have_css("[data-test='automator-live-file'] [title='app/models/ticket.rb']")
       expect(html).to have_css("[data-test='automator-live-code-off']")
@@ -158,7 +171,7 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
       ticket.project.update!(automator_live_code_enabled: true)
       step(1, "file_change", change("app/models/ticket.rb", hunks: [ hunk ]))
 
-      get member_agents_live_session_path(attempt, view: "files")
+      get live(view: "files")
 
       expect(html).to have_no_css("[data-test='automator-live-line-added']")
       expect(html).to have_css("[data-test='automator-live-view-switch']")
@@ -168,14 +181,14 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
       step(1, "search", { "pattern" => "def call" })
       step(2, "command", { "command" => "bin/rspec spec/models" })
 
-      get member_agents_live_session_path(attempt)
+      get live
 
       expect(html.all("[data-test='automator-live-step']").map(&:text).map(&:squish))
         .to match([ a_string_including("bin/rspec spec/models"), a_string_including("def call") ])
     end
 
     it "tells the viewer nothing happened yet" do
-      get member_agents_live_session_path(attempt)
+      get live
 
       expect(html).to have_css("[data-test='automator-live-no-steps']")
     end
@@ -183,7 +196,7 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
     it "answers the frame alone when the page reloads it" do
       step(1, "file_read", { "path" => "README.md" })
 
-      get member_agents_live_session_path(attempt), headers: { "Turbo-Frame" => "automator-live" }
+      get live, headers: { "Turbo-Frame" => "automator-live" }
 
       expect(html).to have_css("turbo-frame#automator-live")
       expect(html).to have_no_css("[data-test='automator-live-sidebar']")
@@ -192,7 +205,7 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
     it "ticks the time at work from the real start and names the engine in the agent's colour" do
       attempt.update_columns(started_at: 3.minutes.ago - 42.seconds)
 
-      get member_agents_live_session_path(attempt)
+      get live
 
       timer = html.find("[data-test='automator-live-elapsed']")
       expect(timer.text).to eq("3:42")
@@ -207,7 +220,7 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
       Agents::AttemptLiveEvent.create!(organization:, attempt:, seq: 1, kind: "file_change", payload: change("app/models/ticket.rb", hunks: [ fresh ]),
                                        recorded_at: 2.seconds.ago, created_at: Time.current)
 
-      get member_agents_live_session_path(attempt)
+      get live
 
       added = html.all("[data-test='automator-live-line-added']")
       expect(added.map { it["style"] }).to eq([ "animation-delay: 0ms", "animation-delay: 90ms" ])
@@ -219,14 +232,14 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
       ticket.project.update!(automator_live_code_enabled: true)
       step(1, "file_change", change("app/models/ticket.rb", hunks: [ hunk ]))
 
-      get member_agents_live_session_path(attempt)
+      get live
 
       expect(html.find("[data-test='automator-live-line-added']")["style"]).to be_nil
       expect(html).to have_css("[data-test='automator-live-cursor']")
     end
 
     it "listens to the whole project, so a step of another agent refreshes this page" do
-      get member_agents_live_session_path(attempt)
+      get live
 
       expect(response.body).to include(Realtime::Streams.automator_live_project(organization_id: organization.id, project_id: ticket.project_id)
                                          .then { Turbo::StreamsChannel.signed_stream_name(it) })
@@ -234,9 +247,9 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
 
     it "can be reopened when the work is over" do
       attempt.update_columns(status: Agents::Attempt.statuses[:approved], finished_at: Time.current)
-      step(1, "file_read", { "path" => "README.md" })
+      step(1, "file_change", change("README.md"))
 
-      get member_agents_live_session_path(attempt)
+      get live
 
       expect(response).to have_http_status(:ok)
       expect(html).to have_css("[data-test='automator-live-file'] [title='README.md']")
@@ -254,7 +267,7 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
     end
 
     it "shows the untouched files too, opens the folders the agent works in and closes the others" do
-      get member_agents_live_session_path(attempt)
+      get live
 
       expect(html).to have_css("[data-test='automator-live-tree-file']", text: "README.md")
       expect(html).to have_css("[data-test='automator-live-tree-file']", text: "workflow.rb")
@@ -267,13 +280,13 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
     it "adds a file the agent created that main does not have yet" do
       step(2, "file_change", change("app/models/agents/new_thing.rb"))
 
-      get member_agents_live_session_path(attempt)
+      get live
 
       expect(html).to have_css("[data-test='automator-live-file']", text: "new_thing.rb")
     end
 
     it "loads one closed folder on demand" do
-      get tree_member_agents_live_session_path(attempt, dir: "config")
+      get project_tree_member_agents_live_sessions_path(ticket.project_id, dir: "config")
 
       expect(response).to have_http_status(:ok)
       expect(html).to have_css("turbo-frame#automator-live-tree-#{"config".unpack1("H*")}[target='_top'] [data-test='automator-live-tree-file']", text: "routes.rb")
@@ -283,7 +296,7 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
       allow(Agents::LiveEvents::ProjectTree).to receive(:call)
         .and_return(Agents::LiveEvents::ProjectTree::Result.new(paths:, partial: true))
 
-      get member_agents_live_session_path(attempt)
+      get live
 
       expect(html).to have_css("[data-test='automator-live-tree-partial']")
     end
@@ -291,7 +304,7 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
     it "falls back to the touched files when the project has no tree" do
       allow(Agents::LiveEvents::ProjectTree).to receive(:call).and_return(nil)
 
-      get member_agents_live_session_path(attempt)
+      get live
 
       expect(html).to have_css("[data-test='automator-live-file']", text: "attempt.rb")
       expect(html).not_to have_css("[data-test='automator-live-tree-file']")
@@ -302,9 +315,57 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
       other = create(:agent_attempt, organization: elsewhere, host: create(:agent_host, organization: elsewhere),
                                      workflow: create(:agent_workflow, organization: elsewhere))
 
-      get tree_member_agents_live_session_path(other, dir: "config")
+      get project_tree_member_agents_live_sessions_path(other.workflow.ticket.project_id, dir: "config")
 
       expect(response).to have_http_status(:not_found)
+    end
+  end
+
+  describe "every agent of the project" do
+    let(:other_ticket) { create(:ticket, organization:, project: ticket.project, title: "Fix the CSV export") }
+    let(:other) do
+      other_workflow = other_ticket.agent_workflow || create(:agent_workflow, organization:, ticket: other_ticket)
+      create(:agent_attempt, workflow: other_workflow, organization:, host:, phase: "autopilot", status: :running, started_at: 1.minute.ago)
+    end
+
+    before do
+      ticket.project.update!(automator_live_code_enabled: true)
+      step(1, "file_change", change("app/models/ticket.rb", hunks: [ hunk ]))
+      step(1, "file_change", change("app/models/ticket.rb", hunks: [ hunk.merge("old_start" => 40) ]), on: other)
+      step(2, "file_change", change("config/routes.rb", hunks: [ hunk ]), on: other)
+      sign_in(owner)
+    end
+
+    it "shows every agent: one row per agent on a shared file, both changes in the centre, both in the steps" do
+      get live(agent: nil, file: "app/models/ticket.rb")
+
+      row = html.find("[data-test='automator-live-file'][aria-current='true']")
+      expect(row.all("[data-test='automator-live-file-agent']").map(&:text).map(&:squish))
+        .to contain_exactly(a_string_including(ticket.code), a_string_including(other_ticket.code))
+      expect(html.all("[data-test='automator-live-side']").map { it["data-agent"] }).to contain_exactly(ticket.code, other_ticket.code)
+      expect(html.all("[data-test='automator-live-step']").map(&:text).join).to include(ticket.code, other_ticket.code)
+      expect(html).to have_css("[data-test='automator-live-all-agents'][aria-current='page']")
+      expect(html).to have_css("[data-test='automator-live-counts']", text: "2")
+    end
+
+    it "narrows the page to one agent: its files, its changes, its steps" do
+      get live(agent: other, file: "app/models/ticket.rb")
+
+      expect(html.all("[data-test='automator-live-side']").map { it["data-agent"] }).to eq([ other_ticket.code ])
+      expect(html.all("[data-test='automator-live-step']").map(&:text).join).not_to include(ticket.code)
+      expect(html).to have_css("[data-test='automator-live-file'] [title='config/routes.rb']")
+      expect(html).to have_css("[data-test='automator-live-filtered']", text: other_ticket.code)
+    end
+
+    it "shows on a closed folder the dots of the agents working inside" do
+      tree = Agents::LiveEvents::ProjectTree::Result.new(paths: %w[app/models/ticket.rb config/routes.rb lib/x.rb], partial: false)
+      allow(Agents::LiveEvents::ProjectTree).to receive(:call).and_return(tree)
+
+      get live(agent: nil)
+
+      expect(html).to have_css("details[data-dir='lib']:not([open])")
+      expect(html).to have_no_css("details[data-dir='lib'] [data-test='automator-live-folder-dots']")
+      expect(html).to have_css("[data-test='automator-live-folder']", text: "config")
     end
   end
 
@@ -325,12 +386,12 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
       changed(attempt, "app/models/ticket.rb", 10)
       changed(other, "app/models/ticket.rb", 10)
 
-      get member_agents_live_session_path(attempt)
+      get live
 
       notice = html.find("[data-test='automator-live-conflicts'] [data-test='automator-live-conflict']")
       expect(notice["data-level"]).to eq("lines")
       expect(notice.text).to include(other_ticket.code, "app/models/ticket.rb")
-      expect(notice).to have_link(href: member_agents_live_session_path(attempt, file: "app/models/ticket.rb"))
+      expect(notice).to have_link(href: live(file: "app/models/ticket.rb"))
       expect(notice).to have_css("form[action='#{member_ticket_eligibility_path(other_ticket)}']")
     end
 
@@ -340,7 +401,7 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
       step(2, "file_change", change("config/routes.rb", hunks: [ hunk.merge("old_start" => 3) ]))
       step(2, "file_change", change("config/routes.rb", hunks: [ hunk.merge("old_start" => 90) ]), on: other)
 
-      get member_agents_live_session_path(attempt)
+      get live
 
       expect(html.all("[data-test='automator-live-conflict']").map { it["data-level"] }).to eq(%w[lines file])
       expect(html).to have_css("[data-test='automator-live-conflicts-count']", text: "2")
@@ -351,7 +412,7 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
       changed(attempt, "app/models/ticket.rb", 10)
       changed(other, "app/models/ticket.rb", 10)
 
-      get member_agents_live_session_path(attempt)
+      get live
 
       expect(html.find("[data-test='automator-live-conflict']")["data-level"]).to eq("lines")
     end
@@ -364,7 +425,7 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
       changed(attempt, "app/models/ticket.rb", 10)
       changed(elsewhere, "app/models/ticket.rb", 10)
 
-      get member_agents_live_session_path(attempt)
+      get live
 
       expect(html).to have_no_css("[data-test='automator-live-conflicts']")
     end

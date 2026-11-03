@@ -1,0 +1,9 @@
+<%# locals: (agents:) %>
+<%# The agents changing something inside a closed folder, one dot each in its colour. %>
+<% if agents.any? %>
+  <span class="flex shrink-0 gap-0.5" data-test="automator-live-folder-dots">
+    <% agents.each do |agent| %>
+      <span class="size-1.5 rounded-full <%= automator_live_color(agent, :dot) %>" title="<%= agent.name %>"></span>
+    <% end %>
+  </span>
+<% end %>

@@ -1,13 +1,26 @@
-<%# locals: (entry:, session:, current_path:, depth: 0) %>
-<%# A file the agent touched: the agent's colour pulses on the one it wrote last and stays faint on the others it changed. %>
-<% current = entry.path == current_path %>
-<% dot = @colors[@attempt.id] ? automator_live_paint(@colors[@attempt.id], :dot) : "bg-emerald-500" %>
+<%# locals: (file:, depth: 0) %>
+<%# A file the agents changed: one line per agent with its colour, ticket and counts; the dot of the agent that wrote
+    it last pulses while that agent works. Red or amber marks a conflict. %>
+<% current = file.path == @current_path %>
+<% last = automator_live_last_writer(file) %>
 <li>
-  <%= link_to member_agents_live_session_path(@attempt, file: entry.path, view: params[:view].presence), aria: { current: (current ? "true" : nil) },
-        class: "flex min-h-11 items-center gap-2 rounded-md px-2 py-1 text-[12px] #{current ? "bg-stone-100 dark:bg-zinc-800" : "hover:bg-stone-50 dark:hover:bg-zinc-800/60"}",
+  <%= link_to automator_live_path(file: file.path), aria: { current: (current ? "true" : nil) },
+        class: "flex flex-col gap-0.5 rounded-md px-2 py-1 #{current ? "bg-stone-100 dark:bg-zinc-800" : "hover:bg-stone-50 dark:hover:bg-zinc-800/60"}",
         style: automator_live_indent(depth), data: { test: "automator-live-file" } do %>
-    <span class="size-1.5 shrink-0 rounded-full <%= entry.path == session.followed_path ? "#{dot} motion-safe:animate-pulse" : (entry.changed? ? "#{dot} opacity-40" : "bg-stone-300 dark:bg-zinc-600") %>"></span>
-    <span class="min-w-0 flex-1 truncate font-mono text-zinc-900 dark:text-zinc-100" title="<%= entry.path %>"><%= File.basename(entry.path) %></span>
-    <%= render "member/agents/live_sessions/file_counts", entry: %>
+    <span class="flex min-w-0 items-center gap-2">
+      <span class="min-w-0 flex-1 truncate font-mono text-[12px] font-semibold text-zinc-900 dark:text-zinc-100" title="<%= file.path %>"><%= File.basename(file.path) %></span>
+      <% if @agent.nil? && file.conflict? %>
+        <span class="shrink-0 text-[10.5px] font-semibold <%= file.level == :lines ? "text-red-700 dark:text-red-400" : "text-amber-800 dark:text-amber-300" %>"
+              data-test="automator-live-file-risk"><%= t("member.automator_live.risk.#{file.level}") %></span>
+      <% end %>
+    </span>
+    <% file.touches.each do |touch| %>
+      <% agent = touch.agent %>
+      <span class="flex items-center gap-1.5 font-mono text-[11px]" data-test="automator-live-file-agent">
+        <span class="size-1.5 shrink-0 rounded-full <%= automator_live_color(agent, :dot) %> <%= "motion-safe:animate-pulse" if agent == last && agent.attempt.status_running? %>"></span>
+        <span class="font-semibold <%= automator_live_color(agent, :text) %>"><%= agent.name %></span>
+        <%= render "member/agents/live_sessions/file_counts", entry: touch.entry %>
+      </span>
+    <% end %>
   <% end %>
 </li>

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.200.0] - 2026-11-03
+
+### Added
+
+- **In diretta, tutto il progetto**: la pagina in diretta mostra un progetto intero, con tutti gli agenti che ci lavorano. Ogni file acceso dice chi lo sta cambiando, e al centro vedi le modifiche di ciascuno. Puoi guardarli tutti insieme o sceglierne uno. ([In diretta](/member/agents/live))
+
 ## [0.199.0] - 2026-11-02
 
 ### Added

@@ -2,46 +2,48 @@
 
 module Member
   module Agents
-    # CYRA-1138 — watch an automator attempt live: the files the agent touches, its changes in review style,
-    # its latest steps. agents.view is per organization and tickets are per project, so every attempt here
-    # is filtered to the tickets the viewer can see. New steps arrive as a signal and the page reloads its
-    # frame with the viewer's own session (Agents::LiveEvents::Broadcast). A conflict with another agent of the
-    # project shows as a notice at the bottom right.
+    # CYRA-1172 — watch a project live: every agent at work on it, the whole project tree with the files they
+    # change, their changes in review style, their latest steps, and an optional filter on one agent. agents.view
+    # is per organization and tickets are per project, so every attempt here is filtered to the tickets the
+    # viewer can see. New steps arrive as a signal and the page reloads its frame with the viewer's own session
+    # (Agents::LiveEvents::Broadcast). A session URL opens its project with that agent filtered.
     class LiveSessionsController < Member::BaseController
       SIDEBAR_SIZE = 20
 
       before_action :require_view
 
       def index
-        latest = live_scope.status_running.order(started_at: :desc).first
-        return redirect_to(member_agents_live_session_path(latest)) if latest
+        latest = live_scope.status_running.includes(workflow: :ticket).order(started_at: :desc).first
+        return redirect_to(project_member_agents_live_sessions_path(latest.workflow.ticket.project_id)) if latest
 
-        @sessions = []
+        @projects = []
       end
 
       def show
-        @attempt = live_scope.includes(:host, workflow: { ticket: :project }).find(params[:id])
-        @ticket = @attempt.workflow.ticket
-        @session = ::Agents::LiveEvents::Session.new(attempt: @attempt)
-        @code_available = @ticket.project.automator_live_code_enabled? && @session.code?
+        attempt = live_scope.includes(workflow: :ticket).find(params[:id])
+        redirect_to project_member_agents_live_sessions_path(attempt.workflow.ticket.project_id, agent: attempt.id,
+                                                             file: params[:file].presence, view: params[:view].presence)
+      end
+
+      def project
+        load_project
+        @code_available = @project.automator_live_code_enabled? && @shown.any? { it.session.code? }
         @code_view = @code_available && params[:view] != "files"
-        @following = params[:file].blank? || @session.file(params[:file]).nil?
-        @current_path = @following ? @session.followed_path : params[:file]
-        @sessions = sidebar_sessions
-        @colors = ::Agents::LiveEvents::ProjectView.colors(@sessions)
-        @conflicts = conflicts
-        @can_pause = can?("tickets.edit", scope: @ticket.project)
-        load_tree
+        @files = @shown_files
+        @current_path = @files.find { it.path == params[:file] }&.path || followed_path
+        @following = params[:file].blank? || @current_path != params[:file]
+        @timeline = @shown.flat_map { |agent| agent.session.timeline.map { [ agent, it ] } }
+                          .sort_by { |_, step| step.at }.reverse.first(::Agents::LiveEvents::Session::TIMELINE_SIZE)
+        @conflicts = @agent ? @view.conflicts_with(@agent.attempt) : @view.conflicts
+        @can_pause = can?("tickets.edit", scope: @project)
+        @projects = sidebar_projects
         render(partial: "frame", layout: false) if turbo_frame_request_id == ::Agents::LiveEvents::Broadcast::FRAME
       end
 
       # One closed folder of the project tree, loaded when the viewer opens it.
-      def tree
-        @attempt = live_scope.includes(workflow: { ticket: :project }).find(params[:id])
-        @ticket = @attempt.workflow.ticket
-        @session = ::Agents::LiveEvents::Session.new(attempt: @attempt)
-        @colors = ::Agents::LiveEvents::ProjectView.colors(sidebar_sessions)
-        load_tree
+      def project_tree
+        load_project
+        @files = @shown_files
         @dir = params[:dir].to_s
         @depth = params[:depth].to_i.clamp(0, 50)
         render partial: "tree_frame", layout: false
@@ -54,29 +56,45 @@ module Member
                          .joins(:workflow).where(agents_workflows: { ticket_id: visible.tickets.select(:id) })
       end
 
-      # The sessions at work, plus the one open even when it is over, so the sidebar always shows where you are.
-      def sidebar_sessions
-        running = live_scope.status_running.includes(:host, workflow: { ticket: :project }).order(started_at: :desc).limit(SIDEBAR_SIZE).to_a
-        running.any? { it.id == @attempt.id } ? running : [ @attempt, *running ]
+      # The agents at work on the project, plus the filtered one even when it is over.
+      def load_project
+        @project = visible.projects.find(params[:project_id])
+        scope = live_scope.where(agents_workflows: { ticket_id: @project.tickets.select(:id) }).includes(:host, workflow: { ticket: :project })
+        attempts = scope.status_running.order(started_at: :desc).limit(SIDEBAR_SIZE).to_a
+        if params[:agent].present? && attempts.none? { it.id == params[:agent] }
+          filtered = scope.find_by(id: params[:agent])
+          attempts << filtered if filtered
+        end
+        @view = ::Agents::LiveEvents::ProjectView.new(attempts:)
+        @agent = @view.agents.find { it.attempt.id == params[:agent] }
+        @shown = @agent ? [ @agent ] : @view.agents
+        @shown_files = @view.files.filter_map do |file|
+          touches = file.touches.select { |touch| @shown.include?(touch.agent) }
+          file.with(touches:) if touches.any?
+        end
+        load_tree
       end
 
-      # CYRA-1139 — the files this agent and another agent of the same project are both changing right now.
-      def conflicts
-        return [] unless @attempt.status_running?
-
-        others = live_scope.status_running.where.not(id: @attempt.id)
-                           .where(agents_workflows: { ticket_id: @ticket.project.tickets.select(:id) })
-                           .includes(:host, workflow: { ticket: :project }).to_a
-        ::Agents::LiveEvents::ProjectView.new(attempts: [ @attempt, *others ]).conflicts_with(@attempt)
+      # The file the agents changed last, so the page follows the work.
+      def followed_path
+        @files.max_by { |file| file.touches.map { it.entry.changes.last.at }.max }&.path
       end
 
-      # CYRA-1138 — the whole project from GitHub, with the files the agent created merged in; nil keeps the touched-only list.
+      def sidebar_projects
+        live_scope.status_running.joins(workflow: :ticket).group(::Ticketing::Ticket.arel_table[:project_id]).count
+                  .then { |counts| visible.projects.where(id: counts.keys).order(:name).map { [ it, counts[it.id] ] } }
+      end
+
+      # CYRA-1138 — the whole project from GitHub with the files the agents created merged in; nil keeps the touched-only list.
       def load_tree
-        @tree = ::Agents::LiveEvents::ProjectTree.call(project: @ticket.project)
+        @tree = ::Agents::LiveEvents::ProjectTree.call(project: @project)
         return unless @tree
 
-        @tree_index = ::Agents::LiveEvents::ProjectTree::Index.new(@tree.paths | @session.files.map(&:path))
-        @open_dirs = @session.files.flat_map { folders_above(it.path) }.to_set
+        @tree_index = ::Agents::LiveEvents::ProjectTree::Index.new(@tree.paths | @shown_files.map(&:path))
+        @open_dirs = @shown_files.flat_map { folders_above(it.path) }.to_set
+        @dir_agents = @shown_files.each_with_object(Hash.new { |hash, dir| hash[dir] = [] }) do |file, dirs|
+          folders_above(file.path).each { |dir| dirs[dir] |= file.agents }
+        end
       end
 
       def folders_above(path)

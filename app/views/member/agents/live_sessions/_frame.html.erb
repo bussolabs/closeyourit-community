@@ -1,16 +1,15 @@
 <%= turbo_frame_tag ::Agents::LiveEvents::Broadcast::FRAME, class: "flex flex-1 min-h-0 flex-col", target: "_top" do %>
-  <%= render "member/agents/live_sessions/header", attempt: @attempt, ticket: @ticket, code_available: @code_available, code_view: @code_view, color: @colors[@attempt.id] %>
-  <% if @session.timeline.empty? %>
+  <%= render "member/agents/live_sessions/header" %>
+  <% if @timeline.empty? %>
     <div class="flex-1 bg-white dark:bg-zinc-900">
       <%= render Ui::EmptyNoteComponent.new(text: t("member.automator_live.no_steps"), inset: true, test_id: "automator-live-no-steps") %>
     </div>
   <% else %>
-    <div class="grid flex-1 min-h-0 grid-cols-1 overflow-y-auto md:gap-2 md:p-2 md:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] md:overflow-hidden xl:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_minmax(0,17rem)]">
-      <%= render "member/agents/live_sessions/files", session: @session, current_path: @current_path, following: @following %>
-      <%= render "member/agents/live_sessions/code", entry: @current_path && @session.file(@current_path),
-            code_available: @code_available, code_view: @code_view %>
-      <%= render "member/agents/live_sessions/timeline", session: @session %>
+    <div class="grid flex-1 min-h-0 grid-cols-1 overflow-y-auto md:gap-2 md:p-2 md:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] md:overflow-hidden xl:grid-cols-[minmax(0,17rem)_minmax(0,1fr)_minmax(0,18rem)]">
+      <%= render "member/agents/live_sessions/files" %>
+      <%= render "member/agents/live_sessions/code", file: @files.find { it.path == @current_path } %>
+      <%= render "member/agents/live_sessions/timeline" %>
     </div>
   <% end %>
-  <%= render "member/agents/live_sessions/conflicts", conflicts: @conflicts, attempt: @attempt %>
+  <%= render "member/agents/live_sessions/conflicts", conflicts: @conflicts %>
 <% end %>

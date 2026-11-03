@@ -1019,7 +1019,10 @@ namespace :member do
     resource :openrouter_credential, path: "openrouter", only: %i[show update destroy]
     # CYRA-1138 — watch an automator attempt live: its files, its changes, its latest steps.
     resources :live_sessions, path: "live", only: %i[index show] do
-      get :tree, on: :member
+      collection do
+        get "projects/:project_id", action: :project, as: :project
+        get "projects/:project_id/tree", action: :project_tree, as: :project_tree
+      end
     end
   end
   # CYRA-516 — `destroy` elimina la macchina DISMESSA e con lei il suo storico: senza, un Mac buttato

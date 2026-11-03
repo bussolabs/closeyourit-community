@@ -1,5 +1,6 @@
 <%# locals: (dir:, depth:) %>
-<%# One level of the whole project (from GitHub). Folders the agent works in stay open; the others load when opened. %>
+<%# One level of the whole project (from GitHub). Folders the agents work in stay open; the others load when opened
+    and show the dots of the agents working inside. %>
 <% @tree_index.folders(dir).each do |folder| %>
   <% if @open_dirs.include?(folder) %>
     <li class="flex items-center gap-1.5 py-1 pr-2 font-mono text-[11px] text-gray-600 dark:text-zinc-300" style="<%= automator_live_indent(depth) %>" data-test="automator-live-folder">
@@ -10,16 +11,17 @@
     <li>
       <details data-dir="<%= folder %>" data-automator-live-tree-target="folder" data-action="toggle->automator-live-tree#remember">
         <summary class="flex min-h-8 cursor-pointer list-none items-center gap-1.5 rounded-md py-1 pr-2 font-mono text-[11px] text-gray-500 hover:bg-stone-50 dark:text-zinc-400 dark:hover:bg-zinc-800/60" style="<%= automator_live_indent(depth) %>">
-          <%= render Ui::IconComponent.new(name: "folder", class: "text-[11px]") %><span class="truncate" title="<%= folder %>"><%= File.basename(folder) %></span>
+          <%= render Ui::IconComponent.new(name: "folder", class: "text-[11px]") %><span class="min-w-0 flex-1 truncate" title="<%= folder %>"><%= File.basename(folder) %></span>
+          <%= render "member/agents/live_sessions/folder_dots", agents: @dir_agents[folder] %>
         </summary>
-        <ul><%= turbo_frame_tag automator_live_tree_frame(folder), src: tree_member_agents_live_session_path(@attempt, dir: folder, depth: depth + 1), loading: :lazy, target: "_top" %></ul>
+        <ul><%= turbo_frame_tag automator_live_tree_frame(folder), src: project_tree_member_agents_live_sessions_path(@project, dir: folder, depth: depth + 1, agent: @agent&.attempt&.id), loading: :lazy, target: "_top" %></ul>
       </details>
     </li>
   <% end %>
 <% end %>
 <% @tree_index.files(dir).each do |path| %>
-  <% if (entry = @session.file(path)) %>
-    <%= render "member/agents/live_sessions/file_row", entry:, session: @session, current_path: @current_path, depth: %>
+  <% if (file = @files.find { it.path == path }) %>
+    <%= render "member/agents/live_sessions/file_row", file:, depth: %>
   <% else %>
     <li class="flex min-h-8 items-center gap-2 py-1 pr-2 text-[12px]" style="<%= automator_live_indent(depth) %>" data-test="automator-live-tree-file">
       <span class="size-1.5 shrink-0"></span>

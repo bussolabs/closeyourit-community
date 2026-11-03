@@ -1,7 +1,8 @@
-<%# locals: (step:) %>
-<%# One step of «What is happening»; a step that just arrived slides in. %>
+<%# locals: (agent:, step:) %>
+<%# One step of «What is happening», with the ticket in the agent's colour; a step that just arrived slides in. %>
 <li class="text-[12px] <%= "motion-safe:animate-live-slide" if automator_live_fresh?(step.at) %>" data-test="automator-live-step">
   <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= automator_live_time(step.at) %></span>
+  <span class="font-mono font-semibold <%= automator_live_color(agent, :text) %>"><%= agent.name %></span>
   <span class="text-gray-600 dark:text-zinc-300"><%= t("member.automator_live.steps.#{step.kind}") %></span>
   <span class="break-all font-mono text-zinc-900 dark:text-zinc-100"><%= step.text %></span>
   <% if step.kind == "file_change" %>

@@ -1,0 +1,14 @@
+<%# The agents of the open project as a filter: all of them, or one. Each dot has the agent's colour (the same on
+    every live page), pulsing while it works, grey once it is over; machine and engine under it. %>
+<%= render Ui::NavLinkComponent.new(label: t("member.automator_live.all_agents"), path: automator_live_path(agent: nil),
+      active: @agent.nil?, size: :top, icon: "users", test_id: "automator-live-all-agents") %>
+<% @view.agents.each do |agent| %>
+  <% attempt = agent.attempt %>
+  <%= render Ui::NavLinkComponent.new(label: "#{agent.name} · #{agent.ticket.title}", path: automator_live_path(agent: attempt.id),
+        active: @agent == agent, size: :top, detail: "#{attempt.host.hostname} · #{automator_live_engine(attempt.runtime)}",
+        class: "h-12! min-w-0", test_id: "automator-live-session") do %>
+    <span class="size-2 shrink-0 rounded-full <%= attempt.status_running? ? "#{automator_live_color(agent, :dot)} motion-safe:animate-pulse" : "bg-stone-300 dark:bg-zinc-600" %>"
+          data-color="<%= agent.color %>"
+          title="<%= t(attempt.status_running? ? "member.automator_live.running" : "member.automator_live.over") %>"></span>
+  <% end %>
+<% end %>
