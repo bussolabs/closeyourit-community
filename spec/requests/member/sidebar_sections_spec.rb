@@ -66,7 +66,7 @@ RSpec.describe "Member sidebar — un menu solo, con gruppi", type: :request do
     get member_monitoring_servers_path
 
     %w[member-nav-home member-nav-my-work member-nav-approvals member-nav-conversations
-       member-nav-home-todos member-nav-guides].each do |voce|
+       member-nav-automator-live member-nav-guides].each do |voce|
       expect(response.body).to include(%(data-test="#{voce}"))
     end
   end

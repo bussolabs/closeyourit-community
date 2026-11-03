@@ -75,17 +75,6 @@ RSpec.describe "Member sidebar refresh", type: :request do
       .to eq("1")
   end
 
-  it "shows the items still to do next to Todos" do
-    list = create(:todo_list, organization: org, account: owner)
-    create(:todo_item, list: list, done: false)
-    create(:todo_item, list: list, done: true, completed_at: Time.current)
-
-    get root_path
-
-    expect(sidebar.at_css("[data-test='member-nav-home-todos'] [data-test='member-nav-home-todos-badge']").text)
-      .to eq("1")
-  end
-
   it "links each group name to its overview and gives the chevron its own button" do
     get member_monitoring_error_groups_path
 

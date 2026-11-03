@@ -73,7 +73,7 @@ RSpec.describe Member::NavigationHelper, type: :helper do
     it "opens with the five pinned entries, in sidebar order" do
       expect(helper.member_nav_tree.pinned.map(&:test)).to eq(
         %w[member-nav-home member-nav-my-work member-nav-approvals member-nav-conversations
-           member-nav-home-todos]
+           member-nav-automator-live]
       )
     end
 

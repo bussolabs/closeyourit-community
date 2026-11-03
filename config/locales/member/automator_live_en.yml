@@ -1,9 +1,9 @@
 en:
   member:
     nav:
-      automator_live: Live
+      automator_live: Live coding
     automator_live:
-      title: Automator live
+      title: Live coding
       back: Back to agents
       projects: Projects at work
       project_title: "%{project} · live"

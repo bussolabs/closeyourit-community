@@ -18,27 +18,28 @@ RSpec.describe "Member sidebar — raggiungibilità", type: :request do
     post login_path, params: { email: owner.email, password: "Secret123!" }
   end
 
-  it "le attività personali sono una voce del menu, col loro nome" do
+  # The pinned slot that held the todo lists now opens the agents at work; the lists keep their top-bar icon.
+  it "pins the live automator entry, with its name" do
     get root_path
 
-    voce = doc.at_css("[data-test='member-nav-home-todos']")
+    entries = doc.css("#member-sidebar [data-test='member-nav-automator-live']")
 
-    expect(voce.text.strip).to eq(I18n.t("member.nav.todos"))
-    expect(voce["href"]).to eq(member_todo_lists_path)
+    expect(entries.size).to eq(1)
+    expect(entries.first.text.strip).to eq(I18n.t("member.nav.automator_live"))
+    expect(entries.first["href"]).to eq(member_agents_live_sessions_path)
   end
 
-  it "la voce si accende quando ci sei, anche per un lettore di schermo" do
-    get member_todo_lists_path
+  it "lights the live entry when you are on it, for screen readers too" do
+    get member_agents_live_sessions_path
 
-    expect(doc.at_css("[data-test='member-nav-home-todos'][aria-current='page']")).to be_present
+    expect(doc.at_css("[data-test='member-nav-automator-live'][aria-current='page']")).to be_present
   end
 
-  # La scorciatoia in alto resta: è una scorciatoia, non l'unica strada.
-  it "l'icona in alto continua a esistere accanto alla voce di menu" do
+  it "keeps the todo lists one click away from the top-bar icon" do
     get root_path
 
     expect(response.body).to include('data-test="member-nav-todos"')
-    expect(response.body).to include('data-test="member-nav-home-todos"')
+    expect(doc.at_css("#member-sidebar [data-test='member-nav-home-todos']")).to be_nil
   end
 
   # Il guasto originale: una funzione dietro un blocco da aprire. La regola nasceva assoluta — nessuna
@@ -51,7 +52,7 @@ RSpec.describe "Member sidebar — raggiungibilità", type: :request do
     get root_path
 
     fisse = %w[member-nav-home member-nav-approvals member-nav-conversations
-               member-nav-home-todos member-nav-guides]
+               member-nav-automator-live member-nav-guides]
     dentro_blocchi = fisse.select { |voce| doc.at_css("#member-sidebar details a[data-test='#{voce}']") }
 
     expect(dentro_blocchi).to be_empty

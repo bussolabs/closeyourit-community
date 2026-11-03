@@ -5,8 +5,8 @@ module Member
   # anywhere and never inside a group. Without an organization only Home is left (CYRA-742).
   module NavPinnedItemsHelper
     # CYRA-903 — how much is waiting behind a pinned entry. The approvals queue is heavy, so its
-    # number arrives in a lazy frame after the page; unread conversations and open todos are one
-    # indexed count each.
+    # number arrives in a lazy frame after the page; unread conversations are one
+    # indexed count.
     def nav_item_badge(item)
       case item.id
       when "approvals"
@@ -21,10 +21,6 @@ module Member
         count = chat_unread_count
         render("shared/notification_counter", count: count, label: t("member.nav.chat_unread", count: count),
                                               test_id: "member-nav-conversations-badge")
-      when "todos"
-        count = todos_open_count
-        render("shared/notification_counter", count: count, label: t("member.nav.todos_open", count: count),
-                                              test_id: "member-nav-home-todos-badge")
       end
     end
 
@@ -55,9 +51,10 @@ module Member
         { id: "conversations", label: "member.nav.conversations", path: member_chat_conversations_path,
           icon: "messages-square", test: "member-nav-conversations", visible: true,
           active: cp.start_with?("member/chat") },
-        # `member-nav-todos` is the icon shortcut in the top bar: the menu entry keeps its own test-id.
-        { id: "todos", label: "member.nav.todos", path: member_todo_lists_path, icon: "list-check",
-          test: "member-nav-home-todos", visible: true, active: cp.start_with?("member/todo_lists") }
+        # The todo lists keep their top-bar icon; this slot opens the agents at work (CYRA-1138).
+        { id: "automator_live", label: "member.nav.automator_live", path: member_agents_live_sessions_path,
+          icon: "radio", test: "member-nav-automator-live", visible: agents_nav_visible?,
+          active: cp == "member/agents/live_sessions" }
       ] if current_organization
 
       items.filter_map { |item| build_nav_item(item) if item[:visible] }

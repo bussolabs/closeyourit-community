@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.201.0] - 2026-11-03
+
+### Changed
+
+- **Live coding nel menu**: al posto di «Da fare» nel menu c'è «Live coding», per guardare gli agenti al lavoro con un clic. Le liste «Da fare» restano sull'icona in alto. ([Live coding](/member/agents/live))
+
 ## [0.200.0] - 2026-11-03
 
 ### Added

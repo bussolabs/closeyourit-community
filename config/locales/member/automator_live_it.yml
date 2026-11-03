@@ -1,9 +1,9 @@
 it:
   member:
     nav:
-      automator_live: In diretta
+      automator_live: Live coding
     automator_live:
-      title: Automator in diretta
+      title: Live coding
       back: Torna agli agenti
       projects: Progetti al lavoro
       project_title: "%{project} · in diretta"
