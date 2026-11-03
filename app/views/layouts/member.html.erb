@@ -33,7 +33,7 @@
     <%# CYRA-883 — from md up sidebar and content are panels detached 14px from the window edges. %>
     <%# CYRA-935 — the Support button slides this whole page up; the support screen waits underneath. %>
     <div class="relative h-dvh overflow-hidden" data-controller="ui--support" data-ui--support-identity-value="<%= Current.account.id %>:<%= Current.organization&.id %>" data-action="keydown.esc@window->ui--support#closeOnEscape">
-    <div class="relative z-10 flex h-dvh md:gap-3.5 md:p-3.5 bg-stone-100 dark:bg-zinc-950" data-ui--support-target="page" data-controller="ui--mobile-nav keyboard"
+    <div class="relative z-10 flex h-dvh md:gap-3.5 md:p-3.5 bg-stone-100 dark:bg-zinc-950" data-ui--support-target="page" data-controller="ui--mobile-nav keyboard tab-badge"
          data-keyboard-nav-value="<%= keyboard_nav_bindings.to_json %>">
       <% if controller_path.in?(%w[member/coworkers member/coworker_activity]) && Coworkers.available_to?(account: Current.account, organization: Current.organization) %>
         <div class="md:hidden"><%= render "member/nav_sidebar", tree: member_nav_tree, compact: false %></div>

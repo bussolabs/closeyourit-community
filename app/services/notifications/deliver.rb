@@ -136,8 +136,10 @@ module Notifications
       )
     end
 
+    # Same scope as the bell on page load, or the tab count would jump between the two (CYRA-1147).
     def unread_count
-      Alerting::Notification.where(account_id: @payload.account.id, via: :in_app).unread.count
+      Alerting::Notification.where(account_id: @payload.account.id, organization_id: @payload.organization.id,
+                                   via: :in_app).unread.count
     end
   end
 end

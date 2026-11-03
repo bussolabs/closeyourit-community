@@ -2714,7 +2714,7 @@
       "level": 2,
       "parent": "area_crons",
       "kind": "job",
-      "summary": "Ogni minuto segna «mancato» chi non ha battuto entro intervallo più tolleranza, e avvisa una volta sola per volta.",
+      "summary": "Ogni minuto segna «mancato» chi non ha battuto entro intervallo più tolleranza, e avvisa una volta sola per volta. Se è lui a ripartire in ritardo di oltre 3 minuti, salta quel giro.",
       "files": [
         "app/jobs/crons/evaluate_job.rb",
         "config/recurring.yml"
@@ -8255,9 +8255,10 @@
       "level": 3,
       "parent": "ntf_flow_deliver",
       "kind": "step",
-      "summary": "La notifica compare subito in cima alla casella e il numero delle non lette si aggiorna senza ricaricare.",
+      "summary": "La notifica compare subito in cima alla casella e il numero delle non lette dell'organizzazione si aggiorna senza ricaricare, anche nel nome della scheda del browser.",
       "files": [
-        "app/services/notifications/deliver.rb"
+        "app/services/notifications/deliver.rb",
+        "app/javascript/controllers/tab_badge_controller.js"
       ]
     },
     {

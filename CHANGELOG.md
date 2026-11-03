@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.204.0] - 2026-11-03
+
+### Added
+
+- **La scheda del browser ti dice cosa ti aspetta**: il nome della scheda inizia con il numero di decisioni in attesa e notifiche non lette, per esempio «(3)», e l'icona prende un pallino. Lo vedi anche con tante schede aperte. Il numero si aggiorna da solo.
+
+### Fixed
+
+- **Niente falsi allarmi sui lavori programmati**: dopo un aggiornamento dell'app o un rallentamento, i lavori sani non risultano più mancati. Un lavoro davvero fermo viene segnalato come prima.
+
 ## [0.203.0] - 2026-11-03
 
 ### Added
