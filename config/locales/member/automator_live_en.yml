@@ -33,6 +33,10 @@ en:
       empty_title: No agent at work right now
       empty_body: When a machine takes a ticket, here you see the files it touches and its changes as they arrive.
       empty_example: "For example: Claude changes two lines in ticket.rb and you see them appear here, whole, while it works."
+      awaiting:
+        one: "%{count} job is waiting for you."
+        other: "%{count} jobs are waiting for you."
+      awaiting_link: Go to Approvals
       elapsed: Time at work
       view_switch: What to show
       view_code: Code

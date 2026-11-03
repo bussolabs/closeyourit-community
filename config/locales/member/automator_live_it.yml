@@ -33,6 +33,10 @@ it:
       empty_title: Nessun agente al lavoro adesso
       empty_body: Quando una macchina prende un ticket, qui vedi i file che tocca e le modifiche mentre arrivano.
       empty_example: "Per esempio: Claude cambia due righe in ticket.rb e le vedi comparire qui, intere, mentre lavora."
+      awaiting:
+        one: "%{count} lavoro aspetta te."
+        other: "%{count} lavori aspettano te."
+      awaiting_link: Vai ad Approvazioni
       elapsed: Da quanto lavora
       view_switch: Cosa mostrare
       view_code: Codice

@@ -16,7 +16,8 @@ module Api
         project = resolve_project
         return if performed?
 
-        render_ok(::Agents::Limits::Resolve.call(organization: Current.organization, project:, runtime:))
+        render_ok(::Agents::Limits::Resolve.call(organization: Current.organization, project:, runtime:,
+                                                       host: Current.agent_host))
       end
 
       private

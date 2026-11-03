@@ -206,6 +206,13 @@ en:
         updated: Supporter updated. It applies from the next question.
         opencode_model_missing: OpenCode cannot be the supporter until the Automator page names an OpenRouter model.
         invalid: Not a valid choice.
+      parallel:
+        title: Jobs at once
+        hint: How many tickets this machine works at the same time. Each one gets its own copy of the project. Raise it only on a machine with room for it.
+        label: Jobs at once
+        save: Save
+        updated: Saved. It applies from the next round of the machine.
+        invalid: Choose a number from 1 to 4.
       engine:
         title: Who does the work
         hint: The engine that works the tickets on this machine. It must be installed and signed in there.

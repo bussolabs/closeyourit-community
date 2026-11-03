@@ -854,6 +854,34 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
       expect(host.reload.work_engine).to eq("codex")
     end
 
+    # CYRA-1175
+    it "lets the machine take several jobs at once, after confirmation" do
+      sign_in(owner)
+      host = create(:agent_host, organization:)
+
+      get member_agent_path(host, tab: "details")
+      expect(response.body).to include('data-test="host-parallel"')
+
+      patch parallel_member_agent_path(host), params: { max_parallel: "3" }
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(host.reload.max_parallel).to be_nil
+
+      patch parallel_member_agent_path(host), params: { max_parallel: "3", confirm: "1" }
+
+      expect(response).to redirect_to(member_agent_path(host, tab: "details"))
+      expect(host.reload.max_parallel).to eq(3)
+    end
+
+    it "refuses a number of parallel jobs outside one to four" do
+      sign_in(owner)
+      host = create(:agent_host, organization:)
+
+      patch parallel_member_agent_path(host), params: { max_parallel: "9", confirm: "1" }
+
+      expect(flash[:alert]).to eq(I18n.t("member.agents.parallel.invalid"))
+      expect(host.reload.max_parallel).to be_nil
+    end
+
     it "refuses an unknown work engine" do
       sign_in(owner)
       host = create(:agent_host, organization:)
@@ -1126,6 +1154,14 @@ RSpec.describe "Member::Agents (host-centric)", type: :request do
         patch engine_member_agent_path(host), params: { work_engine: "codex", confirm: "1" }
 
         expect(host.reload.effective_work_engine).to eq("claude")
+      end
+
+      it "cannot change how many jobs the machine takes at once" do
+        host = create(:agent_host, organization:)
+
+        patch parallel_member_agent_path(host), params: { max_parallel: "3", confirm: "1" }
+
+        expect(host.reload.max_parallel).to be_nil
       end
 
       it "cannot send a machine back to following the organization" do

@@ -11,9 +11,8 @@ module Member
       def self.cache_key(account, organization) = [ "nav-approvals-count", organization.id, account.id ]
 
       def show
-        queue = ::Home::Approvals::Queue.call(account: Current.account, organization: current_organization,
-                                              visible_projects: visible.projects, visible_tickets: visible.tickets)
-        @count = queue.total - queue.totals[::Home::Approvals::Queue::WAITING_STATE].to_i
+        @count = ::Home::Approvals::Queue.awaiting_count(account: Current.account, organization: current_organization,
+                                                         visible_projects: visible.projects, visible_tickets: visible.tickets)
         Rails.cache.write(self.class.cache_key(Current.account, current_organization), @count, expires_in: 1.hour)
         render layout: false
       end

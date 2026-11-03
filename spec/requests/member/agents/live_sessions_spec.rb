@@ -116,6 +116,39 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
 
       expect(html).to have_css("[data-test='automator-live-empty']")
     end
+
+    # CYRA-1173 — the same count as Approvals in the sidebar, only for the projects the viewer sees.
+    def waiting_for_owner(count, project: create(:project, organization:))
+      # Bulk fixture in the setup: per-record queries of the factory, not a production N+1.
+      allow_n_plus_one do
+        status = create(:ticket_status, :in_review, organization:)
+        count.times { create(:ticket, organization:, project:, reviewer: owner, status:) }
+      end
+    end
+
+    it "says how many jobs wait for the viewer, with a link to Approvals" do
+      waiting_for_owner(3)
+
+      get member_agents_live_sessions_path
+
+      expect(html).to have_css("[data-test='automator-live-awaiting']", text: "3 jobs are waiting for you.")
+      expect(html).to have_link("Go to Approvals", href: member_home_approvals_path)
+    end
+
+    it "uses the singular for one job" do
+      waiting_for_owner(1)
+
+      get member_agents_live_sessions_path
+
+      expect(html).to have_css("[data-test='automator-live-awaiting']", text: "1 job is waiting for you.")
+    end
+
+    it "says nothing about waiting jobs when none waits" do
+      get member_agents_live_sessions_path
+
+      expect(html).to have_css("[data-test='automator-live-empty']")
+      expect(html).to have_no_css("[data-test='automator-live-awaiting']")
+    end
   end
 
   describe "a session" do

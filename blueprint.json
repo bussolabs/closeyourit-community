@@ -5792,7 +5792,7 @@
       "level": 3,
       "parent": "agt_flow_claim",
       "kind": "step",
-      "summary": "Prima di partire si prenota una quota sui limiti dell'organizzazione e del progetto. Vince sempre il limite più stretto; oltre, il lavoro non parte.",
+      "summary": "Prima di partire si prenota una quota sui limiti dell'organizzazione e del progetto. Vince sempre il limite più stretto; oltre, il lavoro non parte. Anche la macchina che chiede ha il suo tetto di lavori insieme.",
       "files": [
         "app/services/agents/limits/reserve.rb",
         "app/services/agents/limits/resolve.rb",
@@ -6121,7 +6121,7 @@
       "level": 2,
       "parent": "area_agents",
       "kind": "page",
-      "summary": "Le macchine dell'organizzazione: online o no, cosa stanno facendo, ticket lavorati, prestazioni e confronto fra due macchine. Da qui si certificano, si mettono in pausa e si sceglie il motore.",
+      "summary": "Le macchine dell'organizzazione: online o no, cosa stanno facendo, ticket lavorati, prestazioni e confronto fra due macchine. Da qui si certificano, si mettono in pausa, si sceglie il motore e quanti lavori fanno insieme.",
       "files": [
         "app/controllers/member/agents_controller.rb",
         "app/views/member/agents/**",
@@ -6137,7 +6137,7 @@
       "level": 2,
       "parent": "area_agents",
       "kind": "page",
-      "summary": "Per ogni progetto, tutti gli agenti al lavoro insieme (o uno solo, come filtro): tutti i file del progetto letti da GitHub con quelli che gli agenti toccano accesi, una riga per agente (senza GitHub solo i file toccati); la pagina di una sessione apre il suo progetto con quell'agente scelto; le sue modifiche in stile revisione e gli ultimi passi, con il tempo di lavoro che avanza. Ogni agente ha il suo colore; le righe nuove entrano una alla volta e l'etichetta dell'agente sta sull'ultima scritta. Se un altro agente dello stesso progetto cambia lo stesso file, un avviso in basso a destra lo dice (rosso sulle stesse righe), apre il file e mette in pausa un ticket. Se il progetto tiene il codice sulla macchina, solo nomi e conteggi.",
+      "summary": "Per ogni progetto, tutti gli agenti al lavoro insieme (o uno solo, come filtro): tutti i file del progetto letti da GitHub con quelli che gli agenti toccano accesi, una riga per agente (senza GitHub solo i file toccati); la pagina di una sessione apre il suo progetto con quell'agente scelto; le sue modifiche in stile revisione e gli ultimi passi, con il tempo di lavoro che avanza. Ogni agente ha il suo colore; le righe nuove entrano una alla volta e l'etichetta dell'agente sta sull'ultima scritta. Se un altro agente dello stesso progetto cambia lo stesso file, un avviso in basso a destra lo dice (rosso sulle stesse righe), apre il file e mette in pausa un ticket. Se il progetto tiene il codice sulla macchina, solo nomi e conteggi. Quando nessun agente lavora, la pagina vuota dice quanti lavori aspettano chi guarda (lo stesso numero del menu) e rimanda ad Approvazioni.",
       "files": [
         "app/controllers/member/agents/live_sessions_controller.rb",
         "app/views/member/agents/live_sessions/**",

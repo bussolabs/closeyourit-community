@@ -17,6 +17,9 @@ module Member
         return redirect_to(project_member_agents_live_sessions_path(latest.workflow.ticket.project_id)) if latest
 
         @projects = []
+        # CYRA-1173 — counted only when nothing is at work: the same number as Approvals in the sidebar.
+        @awaiting_count = ::Home::Approvals::Queue.awaiting_count(account: Current.account, organization: current_organization,
+                                                                  visible_projects: visible.projects, visible_tickets: visible.tickets)
       end
 
       def show

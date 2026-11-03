@@ -210,6 +210,13 @@ it:
         updated: Supporter aggiornato. Vale dalla prossima domanda.
         opencode_model_missing: OpenCode non può fare il supporter finché nella pagina Automator manca il modello OpenRouter.
         invalid: Scelta non valida.
+      parallel:
+        title: Lavori insieme
+        hint: Quanti ticket questa macchina lavora nello stesso momento. Ognuno ha la sua copia del progetto. Alzalo solo su una macchina che ha spazio.
+        label: Lavori insieme
+        save: Salva
+        updated: Salvato. Vale dal prossimo giro della macchina.
+        invalid: Scegli un numero da 1 a 4.
       engine:
         title: Chi fa il lavoro
         hint: Il motore che lavora i ticket su questa macchina. Deve essere installato e con l'accesso fatto.

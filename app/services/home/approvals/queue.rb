@@ -91,7 +91,15 @@ module Home
       # `project`/`agent` = il filtro acceso, validato contro il perimetro, o nil. CYRA-319, CYRA-448
       Batch = Data.define(:items, :total, :totals, :filter, :projects, :project, :agents, :agent) do
         def any? = total.positive?
+
+        # Le decisioni che aspettano proprio chi guarda: tutta la coda meno le righe in cui la palla è a
+        # qualcun altro. È il numero accanto ad Approvazioni nel menu e quello della pagina In diretta
+        # vuota: vive qui perché due copie della regola darebbero due numeri. CYRA-903, CYRA-1173
+        def awaiting_viewer = total - totals[WAITING_STATE].to_i
       end
+
+      # Il solo numero di Batch#awaiting_viewer, per chi non mostra le righe. CYRA-1173
+      def self.awaiting_count(...) = call(...).awaiting_viewer
 
       def initialize(account:, organization:, visible_projects:, visible_tickets:, limit: nil, state: nil,
                      project: nil, agent: nil)

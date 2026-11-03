@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_02_200029) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_03_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -414,6 +414,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_200029) do
     t.datetime "paused_until"
     t.string "pause_reason"
     t.uuid "paused_by_id"
+    t.integer "max_parallel"
     t.index ["certified_by_id"], name: "index_agents_hosts_on_certified_by_id"
     t.index ["heartbeat_project_id"], name: "index_agents_hosts_on_heartbeat_project_id"
     t.index ["organization_id", "fingerprint"], name: "index_agents_hosts_on_organization_id_and_fingerprint", unique: true

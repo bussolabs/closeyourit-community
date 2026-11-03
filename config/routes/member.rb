@@ -1041,6 +1041,7 @@ namespace :member do
       patch :review     # CYRA-921 — chi rilegge il lavoro: l'altro motore o lo stesso
       patch :engine     # CYRA-921 — who does the work: Claude or Codex
       patch :supporter  # CYAU-235 — who answers the machine's questions
+      patch :parallel   # CYRA-1175 — how many jobs the machine takes at once
       patch :follow_organization, path: "follow" # CYAU-227 — drop the machine's own choice, follow the organization's
     end
     # CYRA-1052 — this machine's own Claude credential (owner only, write-only).

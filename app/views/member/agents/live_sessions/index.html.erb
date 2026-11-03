@@ -1,5 +1,16 @@
 <% content_for :title, t("member.automator_live.title") %>
 <section class="flex h-full min-h-0 flex-col bg-white dark:bg-zinc-900" data-test="automator-live">
   <%= render Ui::EmptyStateComponent.new(title: t("member.automator_live.empty_title"), body: t("member.automator_live.empty_body"),
-        example: t("member.automator_live.empty_example"), icon: "radio", class: "flex-1", test_id: "automator-live-empty") %>
+        example: t("member.automator_live.empty_example"), icon: "radio", class: "flex-1", test_id: "automator-live-empty") do |empty| %>
+    <%# CYRA-1173 — nothing at work: point to the decisions waiting for the viewer, the same number as the sidebar. %>
+    <% if @awaiting_count.positive? %>
+      <% empty.with_action do %>
+        <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="automator-live-awaiting">
+          <%= t("member.automator_live.awaiting", count: @awaiting_count) %>
+          <%= link_to t("member.automator_live.awaiting_link"), member_home_approvals_path,
+                class: "font-medium text-zinc-900 underline underline-offset-2 dark:text-zinc-100", data: { test: "automator-live-approvals" } %>
+        </p>
+      <% end %>
+    <% end %>
+  <% end %>
 </section>

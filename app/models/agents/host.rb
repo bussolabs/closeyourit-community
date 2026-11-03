@@ -12,6 +12,8 @@ module Agents
     # new session of the same engine, for a machine that has only one. OpenCode only reviews (CYAU-228).
     REVIEW_ONLY_ENGINES = %w[opencode].freeze
     REVIEWERS = (WORK_ENGINES + REVIEW_ONLY_ENGINES).freeze
+    # CYRA-1175 — how many jobs one machine may take at once; null keeps it at one.
+    PARALLEL_CHOICES = (1..4).freeze
     # CYAU-235 — the supporter may use any engine that can review.
     SUPPORTERS = REVIEWERS
 
@@ -38,6 +40,7 @@ module Agents
     validates :work_engine, inclusion: { in: WORK_ENGINES }, allow_nil: true
     # CYAU-235: null means the machine follows the organization's supporter engine.
     validates :supporter, inclusion: { in: SUPPORTERS }, allow_nil: true
+    validates :max_parallel, inclusion: { in: PARALLEL_CHOICES }, allow_nil: true
     before_validation :complete_engine_choice
     before_validation :keep_following_supporter
     validate :opencode_has_a_model
@@ -98,6 +101,8 @@ module Agents
     def effective_supporter = supporter || organization_choice.supporter
     # CYAU-228 — the OpenRouter model OpenCode reviews with; Claude and Codex use the model the automator pins.
     def effective_reviewer_model = effective_reviewer == "opencode" ? organization_choice.opencode_model : nil
+    # CYRA-1175 — the heartbeat reports one slot; the chosen parallel jobs widen it.
+    def capacity = [ slots, max_parallel || 0 ].max
     def supported_platform? = platform == SUPPORTED_PLATFORM
 
     # Certificazione esplicita: un host resta ineleggibile finché un umano non lo abilita. Il gate

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.203.0] - 2026-11-03
+
+### Added
+
+- **Più lavori insieme su una macchina**: nella scheda di ogni macchina dell'automator scegli quanti ticket lavora nello stesso momento, da 1 a 4. Ognuno ha la sua copia del progetto. Senza una scelta resta un lavoro alla volta. ([Agenti](/member/agents))
+
+## [0.202.0] - 2026-11-03
+
+### Added
+
+- **In diretta ti dice cosa ti aspetta**: quando nessun agente lavora, la pagina in diretta dice quanti lavori aspettano te, con lo stesso numero del menu, e ti porta ad Approvazioni con un clic. ([In diretta](/member/agents/live))
+
 ## [0.201.0] - 2026-11-03
 
 ### Changed
