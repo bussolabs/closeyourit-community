@@ -15,6 +15,13 @@ namespace :cli do
   namespace :v1 do
     get "whoami", to: "whoami#show"
 
+    # The approvals queue from the terminal (`cyi approvals`, CYRA-1184): same queue and decisions as
+    # /member/home/approvals. `:kind/:id` is the card key split on its colon.
+    get  "approvals",                    to: "approvals#index"
+    get  "approvals/:kind/:id",          to: "approvals#show",   as: :approval
+    post "approvals/:kind/:id/decision", to: "approvals#decide", as: :approval_decision
+    post "approvals/:kind/:id/deferral", to: "approvals#defer",  as: :approval_deferral
+
     # I PROPRI token CLI (CYRA-643): elenco cross-org e revoca, per chiudere un dispositivo perso
     # senza aprire il browser. `:id` accetta anche la parola "current" = il token con cui si sta
     # chiamando (`cyi logout --revoke`). Controller flat Cli::V1::UserTokensController: un

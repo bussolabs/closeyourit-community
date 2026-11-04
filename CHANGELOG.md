@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.208.0] - 2026-11-04
+
+### Added
+
+- **Approvazioni dal terminale**: la coda delle approvazioni ora risponde anche alla CLI. Con `cyi approvals` scarichi le richieste e le approvi, respingi, rimandi o salti senza aprire il sito. ([Approvazioni](/member/home/approvals))
+
 ## [0.207.0] - 2026-11-04
 
 ### Added
