@@ -6133,7 +6133,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "La macchina mette l'etichetta di versione. Il ticket è «Fatto» solo quando il server vede il rilascio riuscito e la produzione che risponde con quella versione.",
+      "summary": "La macchina mette l'etichetta di versione. Il ticket è «Fatto» solo quando il server vede il rilascio riuscito e la produzione che risponde con quella versione. Se la prova del piano è l'unione del codice, il ticket è «Fatto» appena l'etichetta stabile è messa.",
       "files": [
         "app/services/agents/attempts/effects/closer_production.rb",
         "app/services/agents/probes/bind.rb",

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.209.2] - 2026-11-04
+
+### Fixed
+
+- **Il lavoro arriva sempre in produzione**: nei progetti dove «fatto» vuol dire codice unito, il ticket si chiudeva dopo il rilascio di prova. Ora parte anche il rilascio definitivo, e il ticket è risolto solo dopo. ([Approvazioni](/member/home/approvals))
+
 ## [0.209.1] - 2026-11-04
 
 ### Fixed

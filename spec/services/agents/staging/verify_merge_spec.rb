@@ -85,9 +85,9 @@ RSpec.describe Agents::Staging::VerifyMerge do
     expect(workflow.reload.phase).to eq("closer_production_queued")
   end
 
-  # A project whose proof of done is the merge itself has nothing to observe in production: the
-  # production step used to refuse it ("no proof declared") and the work never became done.
-  it "with the merge as proof of done, the verified merge completes the work" do
+  # CYRA-1193 — the merge as proof of done used to complete the work here, on a beta tag: the
+  # ticket became done and the stable release never happened. The merge still opens production.
+  it "with the merge as proof of done, the verified merge opens production and completes nothing" do
     create(:ticket_status, :done, organization:)
     congela_piano!(workflow, kind: "merge")
     dichiara
@@ -95,9 +95,9 @@ RSpec.describe Agents::Staging::VerifyMerge do
     described_class.call(workflow:, client: client_che_risponde(true, true))
 
     workflow.reload
-    expect(workflow.completed_at).to be_present
-    expect(workflow.ready_execution_phase).to be_nil
-    expect(ticket.reload.status.category).to eq("done")
+    expect(workflow.completed_at).to be_nil
+    expect(workflow.ready_execution_phase).to eq("closer_production")
+    expect(ticket.reload.status&.category).not_to eq("done")
   end
 
   it "with a production proof, the verified merge opens production and completes nothing" do
