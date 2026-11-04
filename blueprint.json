@@ -6073,6 +6073,20 @@
       ]
     },
     {
+      "id": "agt_ph_supporter_plan",
+      "name": "Il supporter approva il piano",
+      "level": 3,
+      "parent": "agt_flow_phases",
+      "kind": "step",
+      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo solo i piani a rischio fino a 6, senza temi riservati; gli altri restano a una persona.",
+      "files": [
+        "app/controllers/api/v1/agent_host/supporter_plans_controller.rb",
+        "app/controllers/api/v1/agent_host/supporter_plan_verdicts_controller.rb",
+        "app/services/agents/supporters/next_plan.rb",
+        "app/services/agents/supporters/judge_plan.rb"
+      ]
+    },
+    {
       "id": "agt_ph_autopilot",
       "name": "Sviluppo",
       "level": 3,

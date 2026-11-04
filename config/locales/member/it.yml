@@ -2552,6 +2552,7 @@ it:
         already_done: "Il lavoro era già scritto nel codice: il ticket si chiude senza pianificare (%{files})"
         autopilot_auto_approved: "Il lavoro consegnato è andato avanti da solo: %{count} controlli superati (%{checks}) e la rilettura del codice è positiva"
         plan_council_approved: "Il consiglio ha approvato questo piano: nessuno ha dovuto firmarlo"
+        plan_supporter_approved: "Il supporter ha approvato questo piano a rischio basso: nessuno ha dovuto firmarlo"
         more_files: "e altri %{count}"
         dependency_added: "%{actor} ha aggiunto la dipendenza dal ticket %{ticket}"
         dependency_removed: "%{actor} ha rimosso la dipendenza dal ticket %{ticket}"

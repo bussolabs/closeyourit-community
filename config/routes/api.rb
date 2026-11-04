@@ -115,6 +115,11 @@ namespace :api do
       resources :supporter_rounds, only: [] do
         resource :answer, only: :create, controller: "supporter_answers"
       end
+      # CYRA-1193 — the next plan for the machine's supporter to judge, and its verdict on it.
+      resource :supporter_plan, only: :show
+      resources :supporter_plans, only: [] do
+        resource :verdict, only: :create, controller: "supporter_plan_verdicts"
+      end
       # CYRA-1133 — the council's next project slice for this machine, and the machine's proposals and votes.
       resource :council_slice, only: :show
       resources :council_slices, only: [] do

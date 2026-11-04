@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.209.0] - 2026-11-04
+
+### Added
+
+- **Il supporter approva i piani a rischio basso**: nei progetti con il supporter attivo, i piani fino a rischio 6 senza temi delicati partono senza aspettarti. Quelli che toccano database, rilasci, soldi o dati personali restano a te. ([Approvazioni](/member/home/approvals))
+
 ## [0.208.0] - 2026-11-04
 
 ### Added
