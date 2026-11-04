@@ -85,9 +85,11 @@ module Agents
         end
 
         # `causa` è opzionale, e assente vale needs_decision.
+        # CYRA-1193 — a `network` failure counts as unreachable whatever `retryable` says: agents cut off from
+        # the network marked it not retryable, and every such phase stopped for a person at the first try.
         def unreachable?
           failure = @payload.dig("result", "failure")
-          return failure["retryable"] == true if failure.is_a?(Hash)
+          return failure["retryable"] == true || failure["category"] == "network" if failure.is_a?(Hash)
 
           @payload.dig("result", "causa") == "unreachable"
         end

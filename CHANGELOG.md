@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.209.1] - 2026-11-04
+
+### Fixed
+
+- **Un problema di rete non ferma più la lavorazione**: se l'agente non raggiunge un servizio, la fase torna in coda e riprova da sola invece di aspettare una persona. ([Approvazioni](/member/home/approvals))
+
 ## [0.209.0] - 2026-11-04
 
 ### Added
