@@ -4649,10 +4649,15 @@
       "level": 3,
       "parent": "prj_data",
       "kind": "data",
-      "summary": "Una versione che gira. Nasce dalla CI o dal primo errore che la nomina, e lega gli errori alla versione.",
+      "summary": "Una versione che gira. Nasce dalla CI o dal primo errore che la nomina, e lega gli errori alla versione. Chi gestisce il progetto può ritirarla con un messaggio e poi ripristinarla; le librerie chiedono con la chiave pubblica se la loro versione è ritirata.",
       "files": [
         "app/models/projects/release.rb",
         "app/services/projects/releases/merge.rb",
+        "app/services/projects/releases/retire.rb",
+        "app/services/projects/releases/restore.rb",
+        "app/services/projects/releases/status.rb",
+        "app/controllers/member/project_release_retirements_controller.rb",
+        "app/controllers/api/v1/release_statuses_controller.rb",
         "app/jobs/projects/releases/backfill_job.rb"
       ]
     },

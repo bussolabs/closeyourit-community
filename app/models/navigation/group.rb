@@ -87,7 +87,7 @@ module Navigation
                        member/project_environment_capabilities member/project_github
                        member/project_guidance member/project_guidance_procedures member/project_usage
                        member/project_guidance_references member/project_milestones
-                       member/project_helpdesk_requests
+                       member/project_helpdesk_requests member/project_release_retirements
                        member/project_servers member/project_settings member/project_source_versions
                        member/project_tokens member/project_moves member/project_dashboard_feed],
       "product" => %w[member/tickets member/ideas member/workload member/helpdesk_requests member/dashboard_feeds],

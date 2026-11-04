@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_03_200500) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_03_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -2943,10 +2943,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_200500) do
     t.string "sha"
     t.datetime "updated_at", null: false
     t.string "version", null: false
+    t.datetime "retired_at"
+    t.text "retirement_message"
+    t.uuid "retired_by_id"
     t.index ["project_id", "created_at"], name: "index_projects_releases_on_project_id_and_created_at"
     t.index ["project_id", "environment"], name: "index_projects_releases_live_per_environment", unique: true, where: "current"
     t.index ["project_id", "version", "environment"], name: "index_projects_releases_on_project_version_environment", unique: true
     t.index ["project_id"], name: "index_projects_releases_on_project_id"
+    t.index ["retired_by_id"], name: "index_projects_releases_on_retired_by_id"
   end
 
   create_table "projects_source_versions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -4987,6 +4991,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_200500) do
   add_foreign_key "projects_moves", "accounts", column: "requested_by_id", on_delete: :nullify
   add_foreign_key "projects_moves", "organizations", column: "destination_organization_id", on_delete: :cascade
   add_foreign_key "projects_moves", "organizations", column: "source_organization_id", on_delete: :cascade
+  add_foreign_key "projects_releases", "accounts", column: "retired_by_id", on_delete: :nullify
   add_foreign_key "projects_releases", "projects", on_delete: :cascade
   add_foreign_key "projects_source_versions", "projects_sources", column: "source_id", on_delete: :cascade
   add_foreign_key "projects_sources", "projects", on_delete: :cascade

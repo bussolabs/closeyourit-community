@@ -351,6 +351,10 @@ namespace :member do
       post :rollback, on: :member
       delete :purge, on: :member
     end
+    # CYRA-1161 — retire a release (with a message for its users) and restore it, from the release list.
+    resources :releases, only: [] do
+      resource :retirement, only: %i[create destroy], controller: "project_release_retirements"
+    end
     # Milestone del progetto (Fase 4). Controller flat Member::ProjectMilestonesController (stesso motivo dei tokens).
     resources :milestones, controller: "project_milestones"
     # Help desk tab: the requests written from this project's sites (CYRA-940). Gate helpdesk.manage.

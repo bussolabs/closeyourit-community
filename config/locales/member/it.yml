@@ -1422,6 +1422,21 @@ it:
         danger_title: Zona pericolosa
         danger_desc: Eliminare questo progetto lo rimuove definitivamente insieme a tutti i suoi ticket. L'azione è irreversibile.
         delete_project: Elimina progetto
+      release_retirement:
+        retired: ritirata
+        retire: Ritira
+        restore: Ripristina
+        restore_confirm: "Ripristinare questa versione? Ai suoi utenti non verrà più chiesto di aggiornare."
+        dialog_title: Ritira una versione
+        dialog_body: "Le app con questa versione chiederanno ai loro utenti di aggiornare, appena la loro libreria lo farà. Potrai ripristinarla dopo."
+        message_label: Messaggio per gli utenti
+        message_placeholder: "Es. Questa versione si blocca all'avvio: aggiorna l'app."
+        confirm: Ritira la versione
+        cancel: Annulla
+        retired_notice: "Versione %{version} ritirata."
+        restored_notice: "Versione %{version} ripristinata."
+        confirmation_required: Conferma il ritiro dalla sua finestra.
+        message_required: Scrivi un messaggio per gli utenti.
       history:
         title: "Cronologia attività · %{project}"
         back: Torna al progetto

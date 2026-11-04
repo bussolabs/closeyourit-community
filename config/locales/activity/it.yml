@@ -11,6 +11,8 @@ it:
       moved_out: "%{actor} l'ha spostato in un'altra organizzazione"
     fields:
       sentry_project_id: ID progetto Sentry
+      release_retired: una versione, ora ritirata
+      release_restored: una versione, ora ripristinata
       name: nome
       key: chiave
       description: descrizione

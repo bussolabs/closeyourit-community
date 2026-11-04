@@ -11,7 +11,8 @@ module Api
     #     (closeyourit-js) — così log/metriche/visite/replay funzionano dal browser come già gli errori
     #     via /api/:project_id/{envelope,store}, senza esporre un segreto.
     #
-    # La public key resta confinata all'ingest e NON apre alcuna API di lettura: le read usano
+    # La public key resta confinata all'ingest e NON apre altre API di lettura (sola eccezione lo stato
+    # di una versione, Api::V1::ReleaseStatusesController, CYRA-1161): le read usano
     # Api::V1::BaseController (authenticate_token! risolve SOLO il bearer segreto → una public key su
     # una rotta di lettura riceve 401). L'anti-BOLA (:project_id del path == progetto del token) e lo
     # scope :ingest sono centralizzati qui: valgono per ogni canale, con qualsiasi credenziale.

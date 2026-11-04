@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.207.0] - 2026-11-04
+
+### Added
+
+- **Ritira una versione difettosa**: nell'elenco versioni del progetto puoi ritirare una versione con un messaggio per gli utenti, e poi ripristinarla. L'invito ad aggiornare comparirà nelle app quando le loro librerie saranno aggiornate.
+
 ## [0.206.0] - 2026-11-03
 
 ### Added

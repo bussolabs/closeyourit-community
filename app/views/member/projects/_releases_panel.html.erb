@@ -1,7 +1,9 @@
 <%# The last releases; "See all" opens every recent one in a dialog, read with the page. %>
+<%# Who edits the project gets the retire/restore commands: one shared form and one retire dialog (CYRA-1161). %>
 <% shown = @releases.first(Member::ProjectsController::RELEASES_IN_PANEL) %>
+<% manage = @releases.any? && can?("projects.edit", scope: @project) %>
 <%= render Ui::SectionComponent.new(title: t("member.projects.show.releases"), body_class: nil,
-      test_id: "project-releases", data: { controller: "ui--dialog" }) do |section| %>
+      test_id: "project-releases", data: { controller: "ui--dialog ui--shared-dialog" }) do |section| %>
   <% if @releases.size > shown.size %>
     <% section.with_actions do %>
       <%= render Ui::ButtonComponent.new(label: t("member.projects.show.releases_all"), variant: :link, size: :sm,
@@ -9,9 +11,13 @@
     <% end %>
   <% end %>
   <div class="divide-y divide-stone-100 dark:divide-zinc-800">
-    <%= render partial: "member/projects/release_row", collection: shown, as: :release, locals: { test_id: "project-release-row" } %>
+    <%= render partial: "member/projects/release_row", collection: shown, as: :release, locals: { test_id: "project-release-row", manage: } %>
   </div>
   <% if @releases.size > shown.size %>
-    <%= render "member/projects/releases_modal" %>
+    <%= render "member/projects/releases_modal", manage: %>
+  <% end %>
+  <% if manage %>
+    <%= render Ui::RowActionsFormComponent.new(id: "project-release-actions") %>
+    <%= render "member/projects/release_retire_dialog" %>
   <% end %>
 <% end %>

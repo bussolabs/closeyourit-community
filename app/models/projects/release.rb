@@ -9,6 +9,8 @@ module Projects
     self.table_name = "projects_releases"
 
     belongs_to :project, class_name: "Projects::Project", inverse_of: :releases
+    # Who retired the release (CYRA-1161); the foreign key nullifies it when the account goes.
+    belongs_to :retired_by, class_name: "Accounts::Account", optional: true
 
     # Celle della matrice funzionalità che indicano questa release come "disponibile da" (CYRA-256).
     # Nullify: le release possono essere potate, la cella sopravvive perdendo solo la versione.
@@ -20,9 +22,11 @@ module Projects
 
     normalizes :version, with: ->(value) { value.to_s.strip }
     normalizes :environment, with: ->(value) { value.to_s.strip.downcase }
+    normalizes :retirement_message, with: ->(value) { value.strip.presence }
 
     validates :version, presence: true, uniqueness: { scope: %i[project_id environment] }
     validates :environment, presence: true
+    validates :retirement_message, presence: true, length: { maximum: 500 }, if: :retired?
 
     scope :recent, -> { order(created_at: :desc) }
     # Release "live" per environment: marcata dal binding (Github::Releases::Reconcile). Indice
@@ -36,6 +40,9 @@ module Projects
     # di un tag leggibile: le release nate dall'ingest (track_event!) portano in `version` il campo
     # `release` del payload SDK, che è spesso il commit hash grezzo. I tag reali (v1.2.3) NON matchano.
     SHA_SHAPED = /\A[0-9a-f]{7,40}\z/
+
+    # A retired release asks its users to update; the SDKs read it with Projects::Releases::Status.
+    def retired? = retired_at.present?
 
     # True se `version` è una commit SHA grezza e non un tag di versione leggibile.
     def version_sha_shaped?

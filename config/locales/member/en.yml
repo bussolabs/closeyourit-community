@@ -1377,6 +1377,21 @@ en:
         danger_title: Danger zone
         danger_desc: Deleting this project permanently removes it and all of its tickets. This action cannot be undone.
         delete_project: Delete project
+      release_retirement:
+        retired: retired
+        retire: Retire
+        restore: Restore
+        restore_confirm: "Restore this release? Its users will no longer be asked to update."
+        dialog_title: Retire a release
+        dialog_body: "The apps on this version will ask their users to update, as soon as their library supports it. You can restore it later."
+        message_label: Message for the users
+        message_placeholder: "e.g. This version crashes at start-up: please update."
+        confirm: Retire the release
+        cancel: Cancel
+        retired_notice: "Release %{version} retired."
+        restored_notice: "Release %{version} restored."
+        confirmation_required: Confirm the retire from its dialog.
+        message_required: Write a message for the users.
       history:
         title: "Activity history · %{project}"
         back: Back to project

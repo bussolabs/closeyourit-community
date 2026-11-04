@@ -39,6 +39,7 @@ namespace :api do
       resources :helpdesk_requests, only: :create # a visitor of the project's site asks for help (CYRA-940)
       resource :analytics, only: :show    # stats API di lettura (snapshot completo del range)
       resources :releases, only: %i[index create]  # release tracking (upsert da CI)
+      resource :release_status, only: :show # CYRA-1161: is the SDK's version retired (public key)
       resources :deploy_failures, only: :create   # CYRA-871: ticket quando la produzione non è in piedi dopo il deploy
       resources :coverage_reports, only: %i[index create], path: "coverage" # CYSK-26: estratto copertura da CI (upsert per branch)
       resources :usages, only: %i[index create] # Server-only ingest and authenticated read-back.
