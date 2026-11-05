@@ -5,6 +5,7 @@ it:
       title_current: "Versione %{version}"
       badge:
         available: Nuova versione
+        insecure: Falla di sicurezza
         queued: In partenza
         running: In corso
         done: Fatto
@@ -28,4 +29,7 @@ it:
       not_requestable: "Adesso non si può aggiornare da qui: il server non risponde o un aggiornamento è già in corso."
       strip_available: "È uscita la %{version}. Sei sulla %{current}."
       strip_running: "Aggiornamento in corso. L'app può fermarsi per qualche minuto."
+      strip_insecure: "La %{current} ha una falla di sicurezza. Installa la %{fixed_in} appena puoi."
+      insecure_title: "La %{current} ha una falla di sicurezza"
+      insecure_body: "Installa la %{fixed_in} o una versione più nuova. L'avviso sparisce da solo dopo l'aggiornamento."
       strip_open: Vai all'aggiornamento

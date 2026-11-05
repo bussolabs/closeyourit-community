@@ -41,6 +41,46 @@ RSpec.describe Instance::Update do
 
       expect(update.available).to be_nil
     end
+
+    it "never offers a beta left in the cache once the install is back on stable (CYRA-1160)" do
+      release!("1.6.0-beta.1")
+
+      expect(update.available).to be_nil
+    end
+
+    it "offers a beta on the beta channel (CYRA-1160)" do
+      Settings::Global.instance.update!(release_channel: "beta")
+      release!("1.6.0-beta.1")
+
+      expect(update.available.version).to eq("1.6.0-beta.1")
+    end
+  end
+
+  describe "#insecurity (CYRA-1160)" do
+    let(:issued_at) { Time.zone.parse("2026-11-02 09:00:00") }
+
+    it "names the version to install when the stored list marks the running one" do
+      stored_advisories!(issued_at:, advisories: [ { id: "CYI-1", fixed_in: "1.4.3" } ])
+
+      expect(update.insecurity.fixed_in).to eq("1.4.3")
+    end
+
+    it "is nil once the install runs the version to install" do
+      stored_advisories!(issued_at:, advisories: [ { id: "CYI-1", fixed_in: "1.4.3" } ])
+
+      expect(described_class.new(dir:, current: "v1.4.3", cache:, now:).insecurity).to be_nil
+    end
+
+    it "is nil without a stored list" do
+      expect(update.insecurity).to be_nil
+    end
+
+    it "is nil outside a community install" do
+      stored_advisories!(issued_at:, advisories: [ { id: "CYI-1", fixed_in: "1.4.3" } ])
+      stub_const("ENV", ENV.to_h.merge("CLOSEYOURIT_SELF_HOSTED" => "false"))
+
+      expect(update.insecurity).to be_nil
+    end
   end
 
   describe "#helper_alive?" do

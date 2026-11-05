@@ -15,6 +15,8 @@ module Valhalla
     def update
       @settings = Settings::Global.instance
       updated = @settings.update(settings_params)
+      # A new channel is read at once, not at the next periodic check (CYRA-1160).
+      Instance::CheckReleaseJob.perform_later if updated && @settings.saved_change_to_release_channel?
 
       respond_to do |format|
         format.json { render_switch_result(updated) }
@@ -42,10 +44,11 @@ module Valhalla
 
     # Gli interruttori AI sono elencati dal model (AI_SWITCH_COLUMNS), fonte unica: aggiungere un
     # servizio a Ai::Feature::KEYS lo rende salvabile senza toccare il controller.
+    # The release channel only exists on a community install (CYRA-1160).
     def settings_params
       params.permit(:logs_retention_days, :analytics_retention_days, :errors_retention_days,
                     :performance_retention_days, :servers_retention_days, :uptime_retention_days, :traces_retention_days, :artifacts_retention_days, :crashes_retention_days, :session_health_retention_days, :measurements_retention_days,
-                    :production_hold_hours, *Settings::Global::AI_SWITCH_COLUMNS)
+                    :production_hold_hours, *Settings::Global::AI_SWITCH_COLUMNS, *(:release_channel if App::SelfHosted.enabled?))
     end
   end
 end

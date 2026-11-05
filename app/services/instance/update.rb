@@ -15,23 +15,36 @@ module Instance
 
     Status = Data.define(:state, :target, :from, :backup)
 
-    def initialize(dir: App::SelfHosted.updates_dir, current: App::Version.tag, cache: Rails.cache, now: Time.current)
+    def initialize(dir: App::SelfHosted.updates_dir, current: App::Version.tag, cache: Rails.cache, now: Time.current, settings: nil)
       @dir = Pathname(dir)
       @current = current.to_s.delete_prefix("v")
       @cache = cache
       @now = now
+      @settings = settings
     end
 
     def enabled? = App::SelfHosted.enabled?
 
     def current_version = @current
 
-    # The cached release, still newer than what runs now (the cache outlives the update itself).
+    # The cached release, still newer than what runs now (the cache outlives the update itself). A beta
+    # left in the cache by the beta channel is never offered once the install is back on stable.
     def available
       return @available if defined?(@available)
 
       release = enabled? ? @cache.read(CACHE_KEY) : nil
-      @available = release if release && newer?(release.version)
+      @available = release if release && newer?(release.version) && offered?(release.version)
+    end
+
+    # The stored verified list says the running version is insecure: what to install (CYRA-1160).
+    # Never the last download, so a forged or missing list can neither raise nor hide it.
+    def insecurity
+      return @insecurity if defined?(@insecurity)
+
+      @insecurity = enabled? ? settings.security_advisory_list&.finding(@current) : nil
+    rescue Advisories::Invalid, KeyError, ArgumentError => e
+      Rails.logger.error("Instance::Update could not read the stored security list: #{e.message}")
+      @insecurity = nil
     end
 
     # The host writes a heartbeat every minute once `closeyourit enable updates` ran.
@@ -80,6 +93,10 @@ module Instance
 
     def request_file = @dir.join("inbox/request")
     def status_file = @dir.join("status/status.json")
+
+    def settings = @settings ||= Settings::Global.instance
+
+    def offered?(version) = settings.release_channel == "beta" || ReleaseFeed.stable?(version)
 
     def newer?(version)
       !@current.match?(ReleaseFeed::VERSION_FORMAT) || Gem::Version.new(version) > Gem::Version.new(@current)

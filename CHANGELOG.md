@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Canale beta e avvisi di sicurezza per chi ospita CloseYourIt**: nelle impostazioni scegli se ricevere solo le versioni stabili o anche le beta. Se la tua versione ha una falla di sicurezza, in cima alle pagine compare un avviso rosso con la versione da installare. Sparisce da solo dopo l'aggiornamento.
+
+### Fixed
+
+- **Un rilascio fallito non blocca più la fila**: se un rilascio successivo, riuscito, contiene già quel codice, la lavorazione si chiude da sola. Prima teneva ferma la produzione di tutto il progetto. ([Approvazioni](/member/home/approvals))
+
 ## [0.209.4] - 2026-11-05
 
 ### Fixed
@@ -73,6 +81,13 @@
 ### Fixed
 
 - **Lavori insieme giusti sulla scheda della macchina**: il numero «in corso / massimo» ora usa il limite di lavori insieme scelto per la macchina, non più 1 fisso.
+
+## [0.210.0] - 2026-11-05
+
+### Added
+
+- **Canale stabile o beta per chi ospita CloseYourIt**: nelle impostazioni di un'installazione autonoma scegli se ricevere solo le versioni stabili o anche le beta. Il canale stabile non propone mai una beta.
+- **Avviso rosso per le versioni insicure**: se la versione installata è segnata come insicura in un elenco firmato, l'amministrazione e la striscia in cima alle pagine diventano rosse e indicano la versione da installare. L'avviso sparisce da solo dopo l'aggiornamento.
 
 ## [0.204.0] - 2026-11-03
 

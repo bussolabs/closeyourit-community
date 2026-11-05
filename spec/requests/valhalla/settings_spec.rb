@@ -172,4 +172,54 @@ RSpec.describe "Valhalla::Settings", type: :request do
       expect(response.body).not_to include("translation_missing")
     end
   end
+
+  describe "update channel (CYRA-1160)" do
+    let(:self_hosted) { "true" }
+
+    before do
+      stub_const("ENV", ENV.to_h.merge("CLOSEYOURIT_SELF_HOSTED" => self_hosted))
+      sign_in_as(god)
+    end
+
+    it "offers stable and beta on a community install, stable at first" do
+      get valhalla_settings_path
+
+      expect(response.body).to include("release-channel", "Update channel")
+      expect(Settings::Global.instance.release_channel).to eq("stable")
+    end
+
+    it "saves the channel and checks the versions again at once" do
+      expect do
+        patch valhalla_settings_path, params: { release_channel: "beta" }
+      end.to have_enqueued_job(Instance::CheckReleaseJob)
+
+      expect(response).to redirect_to(valhalla_settings_path)
+      expect(Settings::Global.instance.release_channel).to eq("beta")
+    end
+
+    it "does not check again when the channel stays the same" do
+      expect do
+        patch valhalla_settings_path, params: { release_channel: "stable", logs_retention_days: 30 }
+      end.not_to have_enqueued_job(Instance::CheckReleaseJob)
+    end
+
+    it "refuses a channel that does not exist" do
+      patch valhalla_settings_path, params: { release_channel: "nightly" }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(Settings::Global.instance.release_channel).to eq("stable")
+    end
+
+    context "when the app is closeyour.it" do
+      let(:self_hosted) { "false" }
+
+      it "shows no channel and ignores one sent anyway" do
+        get valhalla_settings_path
+        expect(response.body).not_to include("release-channel")
+
+        patch valhalla_settings_path, params: { release_channel: "beta", logs_retention_days: 30 }
+        expect(Settings::Global.instance.release_channel).to eq("stable")
+      end
+    end
+  end
 end

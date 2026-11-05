@@ -201,6 +201,49 @@ RSpec.describe Agents::Probes::Observe do
     end
   end
 
+  # A failed release no longer holds the project's production lane once a later release, proved in
+  # production, already carries the sealed commit: the code is live, nobody has anything left to do.
+  describe "when a later proved release already contains the sealed commit" do
+    let(:later_sha) { "9b83c66a19ab59c15f44eb22b089254b10ea9c5f" }
+    let(:failed_jobs) { [ { "name" => "deploy / deploy-production", "conclusion" => "failure" } ] }
+
+    def failing_client(contained:)
+      client_che(jobs: failed_jobs, run_conclusion: "failure").tap do |c|
+        allow(c).to receive(:commit_contained?).and_return(contained)
+      end
+    end
+
+    before { row_proved!(sha: later_sha, version: "v0.31.0") }
+
+    it "closes the workflow as released instead of blocking it" do
+      client = failing_client(contained: true)
+
+      osserva(client)
+
+      expect(workflow.reload).to have_attributes(completed_at: be_present, blocked_at: nil)
+      expect(ticket.reload.status).to eq(fatto)
+      expect(probe.reload.evidence).to include("closed_by" => "superseded", "superseded_by" => "v0.31.0")
+      expect(client).to have_received(:commit_contained?)
+        .with(repository.installation.installation_id, repository.full_name, later_sha, sealed_sha)
+    end
+
+    it "also closes a workflow the failed release had already blocked" do
+      osserva(failing_client(contained: false))
+      expect(workflow.reload.blocked_at).to be_present
+
+      osserva(failing_client(contained: true))
+
+      expect(workflow.reload.completed_at).to be_present
+      expect(Agents::Workflows::ProductionLock.open?(workflow)).to be(false)
+    end
+
+    it "still blocks when the later release does not contain the sealed commit" do
+      osserva(failing_client(contained: false))
+
+      expect(workflow.reload).to have_attributes(completed_at: nil, blocked_kind: "release_probe")
+    end
+  end
+
   describe "la riga del rilascio" do
     it "manca: non chiude" do
       osserva(client_che)

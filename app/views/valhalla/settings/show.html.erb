@@ -59,6 +59,15 @@
                 placeholder: t("valhalla.settings.production_hold_hours_placeholder", count: Agents::Workflows::ProductionHold::DEFAULT_HOURS),
                 hint: t("valhalla.settings.production_hold_hours_hint"),
                 error: @errors&.dig(:production_hold_hours)&.first) %>
+          <%# CYRA-1160 — only a community install picks where its updates come from. %>
+          <% if App::SelfHosted.enabled? %>
+            <%= render Ui::SelectComponent.new(
+                  name: "release_channel", label: t("valhalla.settings.release_channel.label"), test_id: "release-channel",
+                  options: Instance::ReleaseFeed::CHANNELS.map { |channel| [ t("valhalla.settings.release_channel.options.#{channel}"), channel ] },
+                  descriptions: Instance::ReleaseFeed::CHANNELS.index_with { |channel| t("valhalla.settings.release_channel.descriptions.#{channel}") },
+                  selected: @settings.release_channel, hint: t("valhalla.settings.release_channel.hint"),
+                  error: @errors&.dig(:release_channel)&.first) %>
+          <% end %>
         </div>
       </div>
     </div>

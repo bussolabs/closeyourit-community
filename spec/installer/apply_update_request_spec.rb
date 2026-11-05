@@ -90,6 +90,48 @@ RSpec.describe "closeyourit apply-update-request" do
     expect(status_file).not_to exist
   end
 
+  describe "beta versions (CYRA-1160)" do
+    it "updates to a newer beta" do
+      request_file.write("1.5.0-beta.1\n")
+
+      output, result = run_cli("apply-update-request")
+
+      expect(result).to be_success, output
+      expect(status).to include("state" => "done", "target" => "1.5.0-beta.1", "from" => "1.4.2")
+    end
+
+    it "moves from a beta to the next beta and then to its stable" do
+      home.join(".env").write("CLOSEYOURIT_VERSION=1.5.0-beta.2\n")
+      request_file.write("1.5.0-beta.10\n")
+      run_cli("apply-update-request")
+      expect(status).to include("state" => "done", "target" => "1.5.0-beta.10")
+
+      home.join(".env").write("CLOSEYOURIT_VERSION=1.5.0-beta.10\n")
+      request_file.write("1.5.0\n")
+      run_cli("apply-update-request")
+      expect(status).to include("state" => "done", "target" => "1.5.0")
+    end
+
+    it "refuses the beta of a version already installed as stable" do
+      home.join(".env").write("CLOSEYOURIT_VERSION=1.5.0\n")
+      request_file.write("1.5.0-beta.3\n")
+
+      output, = run_cli("apply-update-request")
+
+      expect(output).to include("refused")
+      expect(status_file).not_to exist
+    end
+
+    it "refuses any other suffix" do
+      request_file.write("1.5.0-rc.1\n")
+
+      output, = run_cli("apply-update-request")
+
+      expect(output).to include("refused")
+      expect(status_file).not_to exist
+    end
+  end
+
   it "refuses a link and never reads where it points" do
     secret = home.join("secret")
     secret.write("2.0.0\n")

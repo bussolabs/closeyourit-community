@@ -5,6 +5,7 @@ en:
       title_current: "Version %{version}"
       badge:
         available: New version
+        insecure: Security flaw
         queued: Starting
         running: In progress
         done: Done
@@ -28,4 +29,7 @@ en:
       not_requestable: "You cannot update from here right now: the server does not answer or an update is already running."
       strip_available: "Version %{version} is out. You are on %{current}."
       strip_running: "Update in progress. The app may stop for a few minutes."
+      strip_insecure: "Version %{current} has a security flaw. Install %{fixed_in} as soon as you can."
+      insecure_title: "Version %{current} has a security flaw"
+      insecure_body: "Install %{fixed_in} or a newer version. This warning goes away by itself after the update."
       strip_open: Go to the update

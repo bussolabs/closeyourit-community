@@ -3,7 +3,8 @@
 module Settings
   # Configurazione globale di sistema a riga singola (gestita dal god in Valhalla): la retention di
   # default di log e analytics (livello più alto della gerarchia god → org → progetto) e gli
-  # interruttori per-servizio delle funzioni AI (vedi Ai::Feature).
+  # interruttori per-servizio delle funzioni AI (vedi Ai::Feature), il canale degli aggiornamenti e
+  # l'ultimo elenco verificato delle versioni insicure di un'installazione autonoma (CYRA-1160).
   class Global < ApplicationRecord
     self.table_name = "settings_global"
 
@@ -75,7 +76,23 @@ module Settings
     # Monthly AI chat tokens per organization (CYRA-914); empty = no cap.
     validates :ai_org_monthly_token_cap, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
 
+    # Release channel of a community install (CYRA-1160): stable never offers a beta.
+    validates :release_channel, inclusion: { in: Instance::ReleaseFeed::CHANNELS }
+
     after_commit { Ai::Configuration.reset! }
+
+    # The last verified list of insecure versions (CYRA-1160); nil until one arrived.
+    def security_advisory_list
+      Instance::Advisories.from_payload(security_advisories) if security_advisories.present?
+    end
+
+    # Takes a verified list only when it is newer than the stored one: an old list replayed by a
+    # mirror never wins. False when the stored one stays.
+    def store_security_advisories(list)
+      return false if security_advisories_issued_at && list.issued_at <= security_advisories_issued_at
+
+      update!(security_advisories: list.to_payload, security_advisories_issued_at: list.issued_at)
+    end
 
     # La (unica) riga di configurazione: creata coi default al primo accesso (idempotente).
     def self.instance

@@ -173,15 +173,16 @@ module Agents
       # Le tre scritture insieme: se una non riesce non ne resta nessuna. Un ticket «Fatto» con la
       # prova ancora agganciata verrebbe riguardato per sempre; una prova chiusa con il ticket non
       # Fatto sparirebbe in silenzio.
-      def close!
+      def close!(evidence = { "closed_by" => "probe" })
         rejected = false
         ActiveRecord::Base.transaction do
           state = @workflow.organization.ticket_statuses.active.category_done.ordered.first
           raise ActiveRecord::RecordNotFound, "Stato done non configurato" if state.nil?
 
           @probe.update!(closed_at: @now, next_check_at: nil, last_error_code: nil,
-                         evidence: @probe.evidence.merge("closed_by" => "probe", "at" => @now))
-          @workflow.update!(completed_at: @now)
+                         evidence: @probe.evidence.merge(evidence).merge("at" => @now))
+          @workflow.update!(completed_at: @now, blocked_at: nil, blocked_phase: nil, blocked_kind: nil,
+                            blocked_reason: nil)
           outcome = Ticketing::ChangeStatus.call(organization: @workflow.organization, ticket: @workflow.ticket,
                                                status_id: state.id, channel: :workflow)
           # CYRA-597 — il cancello dei prerequisiti vive dentro quella porta, e qui la sua parola
@@ -209,8 +210,41 @@ module Agents
         stop!("release_proof_timeout")
       end
 
+      # A release that failed (or never proved itself) is moot once a LATER release, proved in production,
+      # already contains the sealed commit: the code is live. Without this the failed workflow keeps the
+      # project's production lane (ProductionLock) closed forever, and every release behind it waits.
+      def superseded?
+        return false if installation.nil?
+
+        later = latest_proved_release
+        return false if later.nil?
+
+        client.commit_contained?(installation, repo, later.sha, @probe.expected_sha)
+      rescue Github::Client::Error
+        false
+      end
+
+      def latest_proved_release
+        @latest_proved_release ||= @workflow.ticket.project.releases
+                                            .where(environment: Projects::Release::DEFAULT_ENVIRONMENT)
+                                            .where.not(proved_at: nil).where.not(sha: nil)
+                                            .where.not(version: @probe.expected_version)
+                                            .order(proved_at: :desc).first
+      end
+
+      def superseded_evidence
+        { "closed_by" => "superseded", "superseded_by" => latest_proved_release.version,
+          "superseded_sha" => latest_proved_release.sha }
+      end
+
       # Fermarsi passa dalla porta unica (CYRA-618): il motivo porta da DOVE il fatto è stato visto.
       def stop!(reason)
+        # Once only: a close the prerequisites gate rejects comes back through not_yet, which may stop again.
+        unless @supersede_checked
+          @supersede_checked = true
+          return close!(superseded_evidence) if superseded?
+        end
+
         Agents::Workflows::BlockExhaustedPhase.call(
           workflow: @workflow, phase: "closer_production", source: "release_probe",
           kind: "release_probe", reason: "#{reason} on #{repo} #{@probe.expected_version}"

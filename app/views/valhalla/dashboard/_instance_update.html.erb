@@ -4,7 +4,10 @@
 <% release = update.available %>
 <%# A release newer than the one just installed is news: its badge wins over the previous "done". %>
 <% badge_state = release && (state.nil? || state == :done) ? :available : state %>
-<% badge = { available: [ :indigo, "available" ], queued: [ :amber, "queued" ], running: [ :amber, "running" ], done: [ :green, "done" ], failed: [ :red, "failed" ] }.fetch(badge_state) %>
+<%# CYRA-1160 — the stored security list marks the running version: red until it is gone. %>
+<% insecurity = update.insecurity %>
+<% badge_state = :insecure if insecurity && [ nil, :available, :done ].include?(badge_state) %>
+<% badge = { available: [ :indigo, "available" ], insecure: [ :red, "insecure" ], queued: [ :amber, "queued" ], running: [ :amber, "running" ], done: [ :green, "done" ], failed: [ :red, "failed" ] }.fetch(badge_state) %>
 <%= render Ui::SectionComponent.new(heading_size: :md, test_id: "instance-update", id: "instance-update") do |section| %>
   <% section.with_title do %>
     <span class="flex items-center gap-2">
@@ -13,6 +16,11 @@
     </span>
   <% end %>
   <div class="space-y-4">
+    <% if insecurity %>
+      <%= render Ui::AlertComponent.new(variant: :danger, title: t("valhalla.instance_update.insecure_title", current: update.current_version), test_id: "instance-update-insecure") do %>
+        <%= t("valhalla.instance_update.insecure_body", fixed_in: insecurity.fixed_in) %>
+      <% end %>
+    <% end %>
     <% if %i[queued running].include?(state) %>
       <div class="space-y-1" data-controller="instance-update" data-instance-update-url-value="<%= valhalla_instance_update_path(format: :json) %>" data-test="instance-update-running">
         <p class="text-[13px] text-zinc-900 dark:text-zinc-100"><%= t("valhalla.instance_update.running_#{state}") %></p>

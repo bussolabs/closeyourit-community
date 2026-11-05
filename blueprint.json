@@ -6133,7 +6133,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "La macchina mette l'etichetta di versione. Il ticket è «Fatto» solo quando il server vede il rilascio riuscito e la produzione che risponde con quella versione. Se la prova del piano è l'unione del codice, il ticket è «Fatto» appena l'etichetta stabile è messa.",
+      "summary": "La macchina mette l'etichetta di versione. Il ticket è «Fatto» solo quando il server vede il rilascio riuscito e la produzione che risponde con quella versione. Se la prova del piano è l'unione del codice, il ticket è «Fatto» appena l'etichetta stabile è messa. Un rilascio fallito si chiude da solo quando un rilascio successivo, riuscito, contiene già quel codice.",
       "files": [
         "app/services/agents/attempts/effects/closer_production.rb",
         "app/services/agents/probes/bind.rb",
@@ -11672,10 +11672,12 @@
       "level": 3,
       "parent": "val_flow_instance_update",
       "kind": "step",
-      "summary": "Ogni 6 ore si chiede l'ultima versione pubblica con le sue note. Funziona solo sulle installazioni autonome.",
+      "summary": "Ogni 6 ore si chiede l'ultima versione del canale scelto, stabile o beta, e l'elenco firmato delle versioni insicure. Funziona solo sulle installazioni autonome.",
       "files": [
         "app/jobs/instance/check_release_job.rb",
-        "app/services/instance/release_feed.rb"
+        "app/services/instance/release_feed.rb",
+        "app/services/instance/advisories.rb",
+        "app/controllers/valhalla/settings_controller.rb"
       ]
     },
     {
@@ -11684,7 +11686,7 @@
       "level": 3,
       "parent": "val_flow_instance_update",
       "kind": "step",
-      "summary": "Se la versione salvata è più nuova di quella attiva, il pannello la mostra.",
+      "summary": "Se la versione salvata è più nuova di quella attiva, il pannello la mostra. Se l'ultimo elenco verificato segna insicura la versione attiva, l'avviso diventa rosso.",
       "files": [
         "app/services/instance/update.rb",
         "app/helpers/instance_update_helper.rb"

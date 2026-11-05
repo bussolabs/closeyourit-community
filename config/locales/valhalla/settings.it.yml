@@ -22,6 +22,15 @@ it:
         one: "valore di sistema (%{count} ora)"
         other: "valore di sistema (%{count} ore)"
       production_hold_hours_hint: Default globale, da 0 a 72 ore intere. Organizzazioni e progetti possono sovrascriverlo. Con 0 il rilascio non aspetta, ma un errore nuovo comparso in staging lo ferma comunque. Lascia vuoto per il valore di sistema.
+      release_channel:
+        label: Canale degli aggiornamenti
+        hint: Cambiando canale le versioni disponibili si ricontrollano subito.
+        options:
+          stable: Stabile
+          beta: Beta
+        descriptions:
+          stable: Solo le versioni stabili, già provate.
+          beta: Anche le versioni beta, prima della stabile. Possono avere difetti.
       ai:
         title: Funzioni AI
         hint: Spegni una funzione per fermare subito le chiamate al provider, senza rilascio. Vale per tutte le organizzazioni e ha effetto al clic.

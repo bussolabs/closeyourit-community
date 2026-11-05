@@ -88,6 +88,51 @@ RSpec.describe Instance::ReleaseFeed do
     expect { described_class.call(current: "v1.4.2") }.to raise_error(Instance::ReleaseFeed::Error)
   end
 
+  describe "channels (CYRA-1160)" do
+    def stub_list(*tags, drafts: [])
+      body = tags.map { |tag| { tag_name: tag, draft: false } } + drafts.map { |tag| { tag_name: tag, draft: true } }
+      stub_request(:get, "#{api}/releases?per_page=30").to_return(status: 200, body: body.to_json)
+    end
+
+    it "offers the newest beta on the beta channel, with its own changes" do
+      stub_list("v1.5.0", "v1.6.0-beta.2", "v1.6.0-beta.10", "v1.5.1-rc.1", drafts: %w[v1.7.0-beta.1])
+      text = "## [Unreleased]\n\n### Added\n\n- **Beta thing.** New.\n\n#{changelog}"
+      stub_request(:get, "#{raw}/v1.6.0-beta.10/CHANGELOG.md").to_return(status: 200, body: text)
+
+      release = described_class.call(current: "v1.4.2", channel: "beta")
+
+      expect(release.version).to eq("1.6.0-beta.10")
+      expect(release.notes.map(&:version)).to eq(%w[1.6.0-beta.10 1.5.0 1.4.3])
+    end
+
+    it "offers the stable once it is out to an install on its beta" do
+      stub_list("v1.6.0", "v1.6.0-beta.3")
+      stub_request(:get, "#{raw}/v1.6.0/CHANGELOG.md").to_return(status: 404)
+
+      expect(described_class.call(current: "v1.6.0-beta.3", channel: "beta").version).to eq("1.6.0")
+    end
+
+    it "never asks the full list on the stable channel, so a newer beta stays unseen" do
+      stub_latest("v1.4.2")
+      list = stub_list("v1.6.0-beta.1")
+
+      expect(described_class.call(current: "v1.4.2", channel: "stable")).to be_nil
+      expect(list).not_to have_been_requested
+    end
+
+    it "refuses a beta handed out as the latest stable release" do
+      stub_latest("v1.6.0-beta.1")
+
+      expect { described_class.call(current: "v1.4.2") }.to raise_error(Instance::ReleaseFeed::Error, /unexpected release tag/)
+    end
+
+    it "raises a feed error when the beta list has no version" do
+      stub_list("nightly")
+
+      expect { described_class.call(current: "v1.4.2", channel: "beta") }.to raise_error(Instance::ReleaseFeed::Error)
+    end
+  end
+
   it "reads from the mirror set in the environment" do
     stub_const("ENV", ENV.to_h.merge("CLOSEYOURIT_RELEASES_API" => "http://mirror.test/api",
                                       "CLOSEYOURIT_RELEASES_RAW" => "http://mirror.test/raw"))

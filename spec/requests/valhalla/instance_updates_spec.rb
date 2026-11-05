@@ -104,6 +104,79 @@ RSpec.describe "Valhalla::InstanceUpdates", type: :request do
         expect(page.at_css('[data-test="instance-update"]')).to be_nil
         expect(page.at_css('[data-test="instance-update-strip"]')).to be_nil
       end
+
+      it "shows no security warning either, whatever the stored list says (CYRA-1160)" do
+        stored_advisories!(issued_at: Time.zone.parse("2026-11-02 09:00:00"), advisories: [ { id: "CYI-1", fixed_in: "1.5.0" } ])
+        sign_in_as(god)
+
+        get valhalla_root_path
+
+        expect(page.at_css('[data-test="instance-update-insecure"]')).to be_nil
+        expect(page.at_css('[data-test="instance-update-strip"]')).to be_nil
+      end
+    end
+
+    describe "channels (CYRA-1160)" do
+      let(:beta_notes) { Changelog::Parse.call("## [1.6.0-beta.1] - beta\n\n### Added\n\n- **Beta views.** Tried before the stable.\n") }
+
+      before { cache.write(Instance::Update::CACHE_KEY, Instance::ReleaseFeed::Release.new(version: "1.6.0-beta.1", notes: beta_notes)) }
+
+      it "shows a newer beta with its notes and the button on the beta channel" do
+        Settings::Global.instance.update!(release_channel: "beta")
+        heartbeat!
+        sign_in_as(god)
+
+        get valhalla_root_path
+
+        expect(page.at_css('[data-test="instance-update"]').text).to include("1.6.0-beta.1", "Beta views")
+        expect(page.at_css('[data-test="instance-update-button"]')).to be_present
+      end
+
+      it "shows no update on the stable channel" do
+        heartbeat!
+        sign_in_as(god)
+
+        get valhalla_root_path
+
+        expect(page.at_css('[data-test="instance-update"]')).to be_nil
+        expect(page.at_css('[data-test="instance-update-strip"]')).to be_nil
+      end
+    end
+
+    describe "the security warning (CYRA-1160)" do
+      before { stored_advisories!(issued_at: Time.zone.parse("2026-11-02 09:00:00"), advisories: [ { id: "CYI-1", fixed_in: "1.5.0" } ]) }
+
+      it "shows the version to install in red, in the panel and in the strip" do
+        sign_in_as(god)
+
+        get valhalla_root_path
+
+        expect(page.at_css('[data-test="instance-update-insecure"]').text).to include("1.4.2", "1.5.0")
+        expect(page.at_css('[data-test="instance-update-badge"]').text).to eq("Security flaw")
+        strip = page.at_css('[data-test="instance-update-strip"]')
+        expect(strip["data-tone"]).to eq("red")
+        expect(strip.text).to include("security flaw", "1.5.0")
+      end
+
+      it "shows the warning even with no newer release to offer" do
+        cache.clear
+        sign_in_as(god)
+
+        get valhalla_root_path
+
+        expect(page.at_css('[data-test="instance-update-insecure"]')).to be_present
+        expect(page.at_css('[data-test="instance-update-strip"]')["data-tone"]).to eq("red")
+      end
+
+      it "goes away by itself once the install runs the version to install" do
+        stub_const("ENV", ENV.to_h.merge("APP_GIT_TAG" => "v1.5.0"))
+        sign_in_as(god)
+
+        get valhalla_root_path
+
+        expect(page.at_css('[data-test="instance-update-insecure"]')).to be_nil
+        expect(page.at_css('[data-test="instance-update-strip"]')).to be_nil
+      end
     end
   end
 

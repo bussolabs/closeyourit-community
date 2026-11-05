@@ -22,6 +22,15 @@ en:
         one: "system value (%{count} hour)"
         other: "system value (%{count} hours)"
       production_hold_hours_hint: Global default, from 0 to 72 whole hours. Organizations and projects can override it. With 0 the release does not wait, but a new error showing up on staging still stops it. Leave blank for the system value.
+      release_channel:
+        label: Update channel
+        hint: Changing channel checks the available versions again right away.
+        options:
+          stable: Stable
+          beta: Beta
+        descriptions:
+          stable: Stable versions only, already tested.
+          beta: Beta versions too, before the stable one. They may have defects.
       ai:
         title: AI features
         hint: Switch a feature off to stop provider calls immediately, with no release. It applies to every organization and takes effect on click.

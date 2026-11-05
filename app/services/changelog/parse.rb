@@ -2,12 +2,12 @@
 
 module Changelog
   # Parser puro (nessun I/O) del formato Keep a Changelog:
-  #   ## [x.y.z] - YYYY-MM-DD  → release (l'intestazione [Unreleased] viene ignorata)
+  #   ## [x.y.z] - YYYY-MM-DD  → release, anche x.y.z-beta.N (l'intestazione [Unreleased] viene ignorata)
   #   ### Label                → sezione (Added/Changed/Fixed/…)
   #   - voce                   → voce della sezione; le righe indentate seguenti la continuano
   # Ritorna un Array<Changelog::Release>.
   class Parse < ApplicationService
-    RELEASE = /\A## \[(\d+\.\d+\.\d+)\] - (.+)\z/
+    RELEASE = /\A## \[(\d+\.\d+\.\d+(?:-beta\.\d+)?)\] - (.+)\z/
     HEADING = /\A## \[/
     SECTION = /\A### (.+)\z/
     ITEM    = /\A- (.+)\z/
