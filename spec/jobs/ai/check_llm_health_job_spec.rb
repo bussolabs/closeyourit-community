@@ -46,8 +46,9 @@ RSpec.describe Ai::CheckLlmHealthJob do
                            subject_type: "Organizations::Organization", subject_id: organization.id,
                            value: "R503-LLM-001"))
     expect(Rails.cache.read(described_class::DOWN_KEY)).to be(true)
-    expect(ActiveJob::Base.queue_adapter.enqueued_jobs.map { |job| job[:args].first["organization_id"] })
-      .not_to include(customer.id)
+    # Only the alert jobs: other jobs in the queue may carry no hash argument at all.
+    alerts = ActiveJob::Base.queue_adapter.enqueued_jobs.select { |job| job[:job] == Alerting::EvaluateJob }
+    expect(alerts.map { |job| job[:args].first["organization_id"] }).not_to include(customer.id)
   end
 
   it "server tornato su dopo un giù: annuncia ai_available e dimentica il guasto" do

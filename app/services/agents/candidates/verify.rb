@@ -15,7 +15,7 @@ module Agents
     #   verified_passing         controlli verdi → il lavoro arriva davanti a una persona
     #   verified_none_configured ho guardato e di controlli non ce n'è → arriva, con la riga rossa
     #   unreachable              non sono riuscito a guardare → NON arriva, non chiede niente, riprova
-    #   verified_failing         controlli rossi → la lavorazione si ferma e chiama una persona
+    #   verified_failing         controlli rossi → torna una volta all'agente (CYRA-1195), poi chiama una persona
     #
     # `unreachable` e `verified_none_configured` sono la coppia che non va mai confusa: la seconda è
     # una risposta, la prima è l'assenza di una risposta. Se finissero nella stessa casella, un guasto
@@ -159,9 +159,22 @@ module Agents
       def fail!(state, checks, code: "checks_failing")
         ApplicationRecord.transaction do
           write_verdict!(state, checks, :verified_failing)
-          stop!(code)
+          fix_round_available?(code) ? request_ci_fix! : stop!(code)
         end
         Result.ok(@candidate)
+      end
+
+      # CYRA-1195 — the first red result sends the work back to the agent, once, on the same pull request;
+      # the failing checks reach it as rework findings. A second red result calls a person, as before.
+      # Checks that never ran are not a code defect: re-running them is a person's call.
+      def fix_round_available?(code)
+        code == "checks_failing" && @candidate.workflow.ci_fix_requested_at.nil?
+      end
+
+      def request_ci_fix!
+        workflow = @candidate.workflow
+        workflow.send_phase_back_to_work!("autopilot")
+        workflow.reload.update!(ci_fix_requested_at: @now, **Agents::Workflow.cleared_block(@now))
       end
 
       # `unreachable` e `checks_running` non sono un verdetto: la riga resta com'è e si riprova. Non

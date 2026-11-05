@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.211.0] - 2026-11-05
+
+### Security
+
+- **Aggiornamenti di sicurezza di Rails e librerie collegate**: Rails 8.1.4.1, nokogiri, addressable e sqlite3 alle versioni che chiudono le falle segnalate oggi.
+
+### Changed
+
+- **Controlli rossi: il lavoro torna all'agente una volta**: se i controlli della proposta falliscono, l'agente riceve l'elenco dei controlli rossi e corregge sulla stessa proposta. Solo al secondo rosso la lavorazione chiama una persona. ([Approvazioni](/member/home/approvals))
+
 ## [0.210.1] - 2026-11-05
 
 ### Fixed

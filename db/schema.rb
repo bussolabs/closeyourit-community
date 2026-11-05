@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_04_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_05_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -781,6 +781,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_090000) do
     t.integer "unreachable_count", default: 0, null: false
     t.datetime "updated_at", null: false
     t.datetime "conflict_resolution_requested_at"
+    t.datetime "ci_fix_requested_at"
     t.index ["approved_by_id"], name: "index_agents_workflows_on_approved_by_id"
     t.index ["autopilot_approved_by_id"], name: "index_agents_workflows_on_autopilot_approved_by_id"
     t.index ["autopilot_by_agent_id"], name: "index_agents_workflows_on_autopilot_by_agent_id"

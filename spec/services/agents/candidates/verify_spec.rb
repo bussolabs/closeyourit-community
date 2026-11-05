@@ -110,6 +110,7 @@ RSpec.describe Agents::Candidates::Verify do
     # Controlli rossi: qui il sì automatico non si pone nemmeno, la lavorazione si ferma e chiama una
     # persona col motivo scritto (comportamento CYRA-614, che questo ticket non tocca).
     it "controlli rossi: si ferma col motivo, e nessuno approva niente" do
+      workflow.update!(ci_fix_requested_at: 1.hour.ago)
       described_class.call(candidate:, client: client_con(risposta(checks: [ check_run("FAILURE") ])))
 
       expect(workflow.reload).to have_attributes(autopilot_approved_at: nil, phase: "review_blocked")
@@ -126,6 +127,7 @@ RSpec.describe Agents::Candidates::Verify do
     end
 
     it "keeps checks_failing when a real failure sits next to a cancelled check" do
+      workflow.update!(ci_fix_requested_at: 1.hour.ago)
       described_class.call(candidate:, client: client_con(risposta(checks: [ check_run("FAILURE"), check_run("STARTUP_FAILURE") ])))
 
       expect(workflow.reload.blocked_reason).to include("checks_failing")
@@ -208,6 +210,7 @@ RSpec.describe Agents::Candidates::Verify do
   # ── Chiama una persona ────────────────────────────────────────────────────────────────────────
 
   it "controlli rossi: ferma la lavorazione e chiama una persona" do
+    workflow.update!(ci_fix_requested_at: 1.hour.ago)
     described_class.call(candidate:, client: client_con(risposta(checks: [ check_run("FAILURE") ])))
 
     expect(candidate.reload).to be_state_verified_failing
@@ -275,10 +278,39 @@ RSpec.describe Agents::Candidates::Verify do
   # CYRA-618 — il blocco passa dalla porta unica, e il motivo porta da DOVE è stato visto: «si è
   # fermata» e «si è fermata per questo, visto da qui» sono due cose diverse per chi legge l'archivio.
   it "il motivo del blocco dice da dove è stato visto" do
+    workflow.update!(ci_fix_requested_at: 1.hour.ago)
     described_class.call(candidate:, client: client_con(risposta(checks: [ check_run("FAILURE") ])))
 
     expect(workflow.reload.blocked_reason).to start_with("candidate_check:")
     expect(workflow.blocked_reason).to include("checks_failing")
+  end
+
+  # CYRA-1195 — the first red result sends the work back to the agent on the same pull request, once.
+  describe "one fix round on red checks" do
+    it "sends the autopilot back to work instead of blocking on the first red result" do
+      described_class.call(candidate:, client: client_con(risposta(checks: [ check_run("FAILURE") ])))
+
+      expect(candidate.reload.state).to eq("verified_failing")
+      expect(workflow.reload).to have_attributes(blocked_at: nil, autopilot_started_at: nil,
+                                                 autopilot_completed_at: nil)
+      expect(workflow.ci_fix_requested_at).to be_present
+      expect(workflow.ready_execution_phase).to eq("autopilot")
+    end
+
+    it "blocks and calls a person on the second red result" do
+      workflow.update!(ci_fix_requested_at: 1.hour.ago)
+
+      described_class.call(candidate:, client: client_con(risposta(checks: [ check_run("FAILURE") ])))
+
+      expect(workflow.reload.blocked_reason).to include("checks_failing")
+    end
+
+    it "still stops on checks that never ran: re-running them is not a code fix" do
+      described_class.call(candidate:, client: client_con(risposta(checks: [ check_run("CANCELLED") ])))
+
+      expect(workflow.reload.blocked_reason).to include("checks_not_run")
+      expect(workflow.ci_fix_requested_at).to be_nil
+    end
   end
 
   it "repository non collegato: si ferma senza nemmeno chiamare GitHub" do

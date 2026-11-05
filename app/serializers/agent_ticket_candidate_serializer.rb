@@ -89,6 +89,9 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
     phase = workflow.ready_execution_phase
     return unless phase
 
+    ci_fix = ci_fix_for(workflow, phase)
+    return ci_fix if ci_fix
+
     # The claim creates the new attempt BEFORE this payload is built, so "the last attempt" is the one
     # just started: skip attempts still open and those that ended without a verdict (stale, cancelled).
     last = workflow.attempts.where(phase:).where.not(status: %w[running awaiting_review stale cancelled])
@@ -107,6 +110,32 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
     return if findings.empty?
 
     { phase:, attempt_id: last.id, findings: }
+  end
+
+  # CYRA-1195 — the fix round after red checks: the failing checks of the delivered pull request, in the
+  # same shape as review findings, so the session fixes them on the same branch and delivers again.
+  FAILING_CHECK_CONCLUSIONS = (Agents::Candidates::Verify::FAILING_CONCLUSIONS +
+                               Agents::Candidates::Verify::FAILING_STATUS_STATES).freeze
+
+  def self.ci_fix_for(workflow, phase)
+    return unless phase == "autopilot" && workflow.ci_fix_requested_at
+
+    candidate = workflow.delivery_candidates.order(:created_at).last
+    return unless candidate&.state == "verified_failing"
+
+    findings = Array(candidate.checks_payload).filter_map do |check|
+      next unless check.is_a?(Hash)
+      next unless FAILING_CHECK_CONCLUSIONS.include?((check["conclusion"] || check["state"]).to_s.upcase)
+
+      name = check["name"] || check["context"]
+      url = check["detailsUrl"] || check["targetUrl"]
+      { severity: "major", title: "CI check failing: #{name}".truncate(REWORK_TEXT_LIMIT),
+        detail: "Check failing on #{candidate.repository_full_name}##{candidate.number} at #{candidate.head_sha}. " \
+                "Read its log (#{url}), fix the code on the same branch and deliver again.".truncate(REWORK_TEXT_LIMIT) }
+    end.first(REWORK_FINDINGS_LIMIT)
+    return if findings.empty?
+
+    { phase:, attempt_id: candidate.attempt_id, findings: }
   end
 
   attribute :project do |ticket|

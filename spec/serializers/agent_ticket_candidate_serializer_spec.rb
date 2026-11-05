@@ -223,6 +223,28 @@ RSpec.describe AgentTicketCandidateSerializer do
       expect(described_class.new(ticket.reload).as_json.dig("workflow", :rework, :findings).size).to eq(1)
     end
 
+    # CYRA-1195 — the fix round after red checks tells the agent which checks failed.
+    it "carries the failing checks of the delivered pull request in the CI fix round" do
+      workflow.update!(autopilot_started_at: nil, ci_fix_requested_at: Time.current)
+      create(:agent_delivery_candidate, workflow:, organization: ticket.project.organization,
+                                        repository_full_name: "bussolabs/app", number: 9, state: :verified_failing,
+                                        head_sha: "b" * 40, base_ref: "main", verified_at: Time.current,
+                                        checks_count: 2, last_checked_at: Time.current,
+                                        checks_payload: [
+                                          { "__typename" => "CheckRun", "name" => "rspec", "conclusion" => "FAILURE",
+                                            "detailsUrl" => "https://github.com/bussolabs/app/actions/runs/1" },
+                                          { "__typename" => "CheckRun", "name" => "lint", "conclusion" => "SUCCESS" }
+                                        ])
+
+      rework = described_class.new(ticket.reload).as_json.dig("workflow", :rework)
+
+      expect(rework).to include(phase: "autopilot")
+      expect(rework[:findings].size).to eq(1)
+      expect(rework[:findings].first).to include(severity: "major")
+      expect(rework[:findings].first[:title]).to include("rspec")
+      expect(rework[:findings].first[:detail]).to include("bussolabs/app#9", "actions/runs/1")
+    end
+
     it "carries nothing when the latest attempt of the phase was not rejected by its review" do
       create(:agent_attempt, organization: ticket.project.organization, workflow:, phase: "autopilot",
                              status: "running", review_status: nil, review: {})

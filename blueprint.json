@@ -6107,7 +6107,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Con controlli verdi, rilettura accettata e proposta invariata la consegna passa da sola. Se manca un verde decide una persona.",
+      "summary": "Con controlli verdi, rilettura accettata e proposta invariata la consegna passa da sola. Al primo controllo rosso il lavoro torna all'agente; al secondo decide una persona.",
       "files": [
         "app/services/agents/workflows/auto_approve.rb",
         "app/services/agents/workflows/approve_autopilot.rb",

@@ -115,14 +115,9 @@ RSpec.describe Knowledge::Attachment do
       expect(filename_for("deploy\v\x01.sh")).to eq("deploy.sh")
     end
 
-    it "il null byte non arriva nemmeno al metodo: lo respinge ActiveStorage" do
-      # Documentato come test perche' e' una difesa che NON ci appartiene e potrebbe cambiare: se un
-      # domani l'attach lo accettasse, questo esempio fallisce e ci ricorda di gestirlo noi.
-      attachment = build(:knowledge_attachment)
-
-      expect do
-        attachment.file.attach(io: StringIO.new("ciao"), filename: "deploy\0.sh", content_type: "text/plain")
-      end.to raise_error(ArgumentError, /null byte/)
+    it "never delivers a null byte in the filename" do
+      # Before Rails 8.1.4.1 attach raised on it; now ActiveStorage replaces it, and our cntrl strip backs it up.
+      expect(filename_for("deploy\0.sh")).not_to include("\0")
     end
 
     it "non lascia passare l'override RTL" do
