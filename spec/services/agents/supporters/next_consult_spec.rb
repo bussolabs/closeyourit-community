@@ -37,6 +37,14 @@ RSpec.describe Agents::Supporters::NextConsult do
     expect(described_class.call(host:).value).to be_nil
   end
 
+  it "serves only stops on projects the machine follows, even behind older ones elsewhere" do
+    stopped(at: 2.hours.ago, project: create(:project, organization:, supporter_enabled: true))
+    mine = stopped(at: 1.minute.ago)
+    host.update!(repositories: [ project.key ])
+
+    expect(described_class.call(host:).value[:workflow_id]).to eq(mine.id)
+  end
+
   it "skips a stop already judged and serves the next one" do
     judged = stopped(at: 1.hour.ago)
     other = stopped(at: 1.minute.ago)

@@ -58,6 +58,15 @@ RSpec.describe Agents::Supporters::NextRound do
     expect(described_class.call(host:).value[:round_id]).to eq(round.id)
   end
 
+  it "serves only rounds on projects the machine follows" do
+    other = create(:ticket, organization:, project: create(:project, organization:, supporter_enabled: true),
+                            with_agent_workflow: true)
+    create(:agent_clarification, workflow: other.agent_workflow, questions: [ "Elsewhere?" ], created_at: 1.day.ago)
+    host.update!(repositories: [ project.key ])
+
+    expect(described_class.call(host:).value[:round_id]).to eq(round.id)
+  end
+
   it "skips a round already answered" do
     round.update!(answered_at: Time.current)
     expect(described_class.call(host:).value).to be_nil

@@ -36,6 +36,7 @@ module Agents
         Agents::Clarification.joins(workflow: { ticket: :project })
           .where(answered_at: nil, agents_workflows: { cancelled_at: nil, completed_at: nil })
           .where(projects: { organization_id: @host.organization_id, supporter_enabled: true })
+          .where(FollowedProjects.condition(@host))
           .includes(workflow: { ticket: :project })
       end
 

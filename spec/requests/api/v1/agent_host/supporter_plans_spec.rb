@@ -51,6 +51,15 @@ RSpec.describe "Api::V1::AgentHost::SupporterPlans", type: :request do
     expect(response).to have_http_status(:no_content)
   end
 
+  # CYRA-1197
+  it "does not serve a plan of a project the machine does not follow" do
+    host.update!(repositories: [ "OTHER" ])
+    create_plan
+
+    get "/api/v1/agent_host/supporter_plan", headers: headers
+    expect(response).to have_http_status(:no_content)
+  end
+
   it "does not serve a plan of a project with the supporter off" do
     project.update!(supporter_enabled: false)
     create_plan

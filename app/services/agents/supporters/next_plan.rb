@@ -44,6 +44,7 @@ module Agents
           .where(cancelled_at: nil, completed_at: nil, blocked_at: nil, approved_at: nil)
           .where.not(planned_at: nil)
           .where(projects: { organization_id: @host.organization_id, supporter_enabled: true })
+          .where(FollowedProjects.condition(@host))
           .includes(ticket: :project).order(:planned_at, :id)
       end
 

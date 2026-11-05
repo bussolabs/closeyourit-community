@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.214.1] - 2026-11-05
+
+### Fixed
+
+- **Il supporter riceve solo lavoro dei progetti che la sua macchina segue**: prima gli veniva proposto per primo un ticket che non poteva aprire, e tutti gli altri restavano ad aspettarti. ([Approvazioni](/member/home/approvals))
+
 ## [0.214.0] - 2026-11-05
 
 ### Added
