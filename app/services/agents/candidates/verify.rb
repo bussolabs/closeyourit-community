@@ -49,6 +49,8 @@ module Agents
 
       def call
         return Result.ok(@candidate) unless @candidate.state.in?(Agents::DeliveryCandidate::RETRYABLE_STATES)
+        # A closed workflow has nobody left to act on a verdict: stop checking its row.
+        return park! if @candidate.workflow.terminal?
 
         repository = @candidate.repository
         return reject!("repository_not_linked") if repository.nil?
@@ -183,6 +185,11 @@ module Agents
         @candidate.update!(state: final_state, last_checked_at: @now,
                            next_check_at: @now + RETRY_EVERY, last_error_code: code,
                            **coordinate(state))
+        Result.ok(@candidate)
+      end
+
+      def park!
+        @candidate.update!(next_check_at: nil, last_checked_at: @now)
         Result.ok(@candidate)
       end
 

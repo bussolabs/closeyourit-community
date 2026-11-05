@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.211.1] - 2026-11-05
+
+### Fixed
+
+- **«Sblocca e riprova» sulla stessa proposta riparte davvero**: prima, se l'agente non aveva cambiato codice, il nuovo controllo falliva in silenzio e la lavorazione restava ferma in verifica. ([Approvazioni](/member/home/approvals))
+
 ## [0.211.0] - 2026-11-05
 
 ### Security

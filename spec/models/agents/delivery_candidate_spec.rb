@@ -75,11 +75,12 @@ RSpec.describe Agents::DeliveryCandidate do
   # mostrerebbe uno a caso. Ma se dopo il controllo il codice cambia, nasce una riga nuova accanto
   # alla vecchia, che resta come prova.
   describe "una proposta, una riga per ogni codice" do
-    it "rifiuta il doppione sulla stessa proposta con lo stesso codice" do
+    # The same code can be read again after a person unblocks it: each read is its own row. What the
+    # card shows is the row the workflow points at (review_candidate), never one picked at random.
+    it "keeps every read of the same code as its own row" do
       candidate(:verified_passing, number: 7)
 
-      expect { candidate(:verified_passing, number: 7) }
-        .to raise_error(ActiveRecord::RecordNotUnique)
+      expect { candidate(:verified_passing, number: 7) }.not_to raise_error
     end
 
     # Qui `nulls_not_distinct` è tutto: col comportamento normale di Postgres due righe con SHA nullo

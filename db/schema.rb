@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_05_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_05_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -365,7 +365,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_150000) do
     t.index ["attempt_id"], name: "index_agents_delivery_candidates_on_attempt_id"
     t.index ["next_check_at"], name: "index_agents_delivery_candidates_due", where: "(state = ANY (ARRAY[0, 4, 5]))"
     t.index ["repository_id"], name: "index_agents_delivery_candidates_on_repository_id"
-    t.index ["workflow_id", "repository_full_name", "number", "head_sha"], name: "index_agents_delivery_candidates_identity", unique: true, nulls_not_distinct: true
+    t.index ["workflow_id", "repository_full_name", "number"], name: "index_agents_delivery_candidates_open_identity", unique: true, where: "(head_sha IS NULL)"
     t.index ["workflow_id"], name: "index_agents_delivery_candidates_on_workflow_id"
     t.check_constraint "NOT (state = ANY (ARRAY[1, 2, 3])) OR head_sha IS NOT NULL AND base_ref IS NOT NULL AND verified_at IS NOT NULL AND checks_payload IS NOT NULL", name: "agents_delivery_candidates_verified_complete"
   end

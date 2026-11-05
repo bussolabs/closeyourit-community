@@ -313,6 +313,28 @@ RSpec.describe Agents::Candidates::Verify do
     end
   end
 
+  # A person unblocked a red result without new code: the re-armed row reads the same head already judged.
+  it "judges again a re-armed row whose code was already judged" do
+    create(:agent_delivery_candidate, workflow:, repository:, organization:, repository_full_name: "bussolabs/closeyourit-rails",
+                                      number: 7, state: :verified_failing, head_sha: "a" * 40, base_ref: "main",
+                                      verified_at: 1.hour.ago, last_checked_at: 1.hour.ago, checks_payload: [], checks_count: 0)
+
+    described_class.call(candidate:, client: client_con(risposta(checks: [ check_run("FAILURE") ])))
+
+    expect(candidate.reload).to have_attributes(state: "verified_failing", head_sha: "a" * 40)
+    expect(workflow.reload.ci_fix_requested_at).to be_present
+  end
+
+  it "does not judge a row of a cancelled workflow and stops checking it" do
+    workflow.update!(cancelled_at: Time.current)
+    client = instance_double(Github::Client)
+
+    described_class.call(candidate:, client:)
+
+    expect(candidate.reload.next_check_at).to be_nil
+    expect(Agents::DeliveryCandidate.due).not_to include(candidate)
+  end
+
   it "repository non collegato: si ferma senza nemmeno chiamare GitHub" do
     orfano = create(:agent_delivery_candidate, workflow:, repository: nil, organization:,
                                                repository_full_name: "qualcunaltro/repo", number: 3)
