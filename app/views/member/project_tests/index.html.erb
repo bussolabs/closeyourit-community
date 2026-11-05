@@ -1,0 +1,34 @@
+<% content_for :title, t("member.project_tests.title", project: @project.name) %>
+
+<%# CYRA-1165 — the tests the CI reported for this project: the last outcome of each, the flaky mark
+    and the known failures. The counts are filters, as on the other lists. %>
+<div class="p-7 space-y-6" data-test="member-project-tests">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "tests" %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="tests-panel">
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.project_tests.section_title") %></h2>
+      <div class="flex items-center flex-wrap gap-1.5" data-test="tests-counts">
+        <%= render Ui::StatLabelComponent.new(label: t("member.project_tests.count_total"), value: @counts[:total],
+              href: member_project_tests_path(@project), active: @filter.nil?, test_id: "tests-count-total") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.project_tests.count_flaky"), value: @counts[:flaky], value_color: :amber,
+              href: member_project_tests_path(@project, filter: "flaky"), active: @filter == "flaky", test_id: "tests-count-flaky") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.project_tests.count_failing"), value: @counts[:failing], value_color: :red,
+              href: member_project_tests_path(@project, filter: "failing"), active: @filter == "failing", test_id: "tests-count-failing") %>
+        <%= render Ui::StatLabelComponent.new(label: t("member.project_tests.count_known"), value: @counts[:known], value_color: :indigo,
+              href: member_project_tests_path(@project, filter: "known"), active: @filter == "known", test_id: "tests-count-known") %>
+      </div>
+      <% if @last_run %>
+        <span class="ml-auto font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="tests-last-run">
+          <%= t("member.project_tests.last_run", version: @last_run.version || "—", sha: @last_run.short_sha, at: l(@last_run.ran_at, format: :long)) %>
+        </span>
+      <% end %>
+    </div>
+
+    <% if @counts[:total].zero? %>
+      <%= render "member/project_tests/empty" %>
+    <% else %>
+      <%= render "member/project_tests/table", project: @project, test_cases: @test_cases, pagination: @pagination, filter: @filter %>
+    <% end %>
+  </div>
+</div>

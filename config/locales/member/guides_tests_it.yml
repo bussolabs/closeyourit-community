@@ -1,0 +1,23 @@
+it:
+  member:
+    guides:
+      index:
+        tests:
+          title: "Risultati dei test"
+      tests:
+        title: "Risultati dei test"
+        subtitle: "Manda dalla tua CI l'esito di ogni test: storia, test instabili e fallimenti già noti."
+        what_title: "Come funziona"
+        what_intro: "Dopo ogni giro di prova la tua CI manda l'esito di ogni test, con la versione e il commit provati. Li trovi nella scheda Test del progetto."
+        what_history: "Ogni test ha la sua storia, giro per giro: un test si riconosce dal file e dal nome completo."
+        what_flaky: "Un test che sullo stesso commit è passato e fallito negli ultimi %{days} giorni viene segnato come instabile, con la data dell'ultima volta."
+        what_known: "Chi può modificare il progetto segna un fallimento come già noto, con il ticket che lo sistemerà e una scadenza. Finché vale, quel fallimento compare come noto; dopo, torna a comparire come nuovo."
+        what_renamed: "Un test rinominato o spostato riparte con una storia vuota: il vecchio nome resta visibile finché i suoi giri non vengono cancellati."
+        what_retention: "I giri più vecchi di %{days} giorni vengono cancellati ogni notte."
+        send_title: "Come si manda"
+        send_intro: "Dopo i test, manda il rapporto a questo indirizzo con il token di ingest del progetto, lo stesso della copertura:"
+        send_fields: "Il commit è obbligatorio: serve a riconoscere i test instabili. L'esito di ogni test è passed, failed o skipped. La versione, se la CI l'ha registrata, lega il giro a quel rilascio."
+        send_limits: "Un rapporto può contenere al massimo %{tests} test e pesare al massimo %{megabytes} MB. Oltre, viene rifiutato per intero e non si salva niente."
+        send_cli: "Il comando della CLI che legge i rapporti JUnit e li manda da solo arriverà con una prossima versione della CLI."
+        token_placeholder: "token di ingest"
+        project_placeholder: "ID del progetto"

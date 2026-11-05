@@ -69,6 +69,8 @@
   <% end %>
   <%# Usage (CYRA-733): reading = project visibility (no .view gate, Catalog principle). %>
   <% h.with_more_tab(label: t("member.usage.tab"), href: member_project_usage_path(project), active: active_tab.to_s == "usage", icon: "chart-column", test_id: "project-usage-link") %>
+  <%# Tests (CYRA-1165): reading = project visibility, like Usage. %>
+  <% h.with_more_tab(label: t("member.project_tests.tab"), href: member_project_tests_path(project), active: active_tab.to_s == "tests", icon: "flask-conical", test_id: "project-tests-link") %>
   <% if can_edit %>
     <% h.with_more_tab(label: t("member.guidance.title"), href: member_project_guidance_path(project), active: active_tab.to_s == "guidance", icon: "compass", test_id: "project-guidance-link") %>
   <% end %>

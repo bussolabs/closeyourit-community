@@ -377,6 +377,12 @@ namespace :member do
     resource :usage, only: :show, controller: "project_usage"
     # Map tab (CYRA-1071): blueprint.json read from the repository, read only.
     resource :blueprint, only: :show, controller: "project_blueprint"
+    # Tests tab (CYRA-1165): the tests the CI reported and the history of each, read = project
+    # visibility; the known-failure mark of a test is gated projects.edit. Flat controllers.
+    # The mark lives at …/known: web addresses keep single-word segments.
+    resources :tests, only: %i[index show], controller: "project_tests" do
+      resource :known_failure, path: "known", only: %i[create destroy], controller: "project_test_known_failures"
+    end
     # Guidance del progetto (tab Guidance, CYRA-75): references + procedures LOCALI + preview del
     # contesto effettivo (Guidance::Preview). Controller flat (niente Member::Projects che ombreggia
     # ::Projects, né Member::Guidance che ombreggia ::Guidance). Gate projects.edit.
@@ -501,6 +507,8 @@ namespace :member do
   get "guides/replays",     to: "guides#replays",     as: :guides_replays
   # CYRA-485 — i lavori programmati non avevano una guida: fra tredici, nessuna li nominava.
   get "guides/crons",       to: "guides#crons",       as: :guides_crons
+  # CYRA-1165 — sending the outcome of every test from the CI, flaky tests and known failures.
+  get "guides/tests",       to: "guides#tests",       as: :guides_tests
   get "guides/coverage",    to: "guides#coverage",    as: :guides_coverage
   get "guides/servers",     to: "guides#servers",     as: :guides_servers
   get "guides/analytics",   to: "guides#analytics",   as: :guides_analytics

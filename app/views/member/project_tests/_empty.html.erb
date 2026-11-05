@@ -1,0 +1,8 @@
+<%# CYRA-1165 — a project that never sent results: the page says how to connect the CI, and where the guide is. %>
+<%= render Ui::EmptyStateComponent.new(title: t("member.project_tests.empty"), body: t("member.project_tests.empty_body"),
+      example: t("member.project_tests.empty_example"), icon: "flask-conical", test_id: "tests-empty") do |empty| %>
+  <% empty.with_action do %>
+    <%= render Ui::ButtonComponent.new(label: t("member.project_tests.empty_guide"), href: member_guides_tests_path,
+          variant: :secondary, size: :sm, icon: "book-open", test_id: "tests-empty-guide") %>
+  <% end %>
+<% end %>

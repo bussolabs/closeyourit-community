@@ -42,6 +42,7 @@ namespace :api do
       resource :release_status, only: :show # CYRA-1161: is the SDK's version retired (public key)
       resources :deploy_failures, only: :create   # CYRA-871: ticket quando la produzione non è in piedi dopo il deploy
       resources :coverage_reports, only: %i[index create], path: "coverage" # CYSK-26: estratto copertura da CI (upsert per branch)
+      resources :test_runs, only: :create # CYRA-1165: outcome of every test of a CI run, kept as history
       resources :usages, only: %i[index create] # Server-only ingest and authenticated read-back.
       # Heartbeat cron: il job fa check-in su POST .../crons/:slug/check_in (upsert monitor al 1° ping).
       post "crons/:slug/check_in", to: "cron_check_ins#create"

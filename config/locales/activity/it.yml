@@ -13,6 +13,8 @@ it:
       sentry_project_id: ID progetto Sentry
       release_retired: una versione, ora ritirata
       release_restored: una versione, ora ripristinata
+      known_failure_marked: un test, ora segnato come fallimento noto
+      known_failure_cleared: un test, non più fallimento noto
       name: nome
       key: chiave
       description: descrizione

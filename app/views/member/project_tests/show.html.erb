@@ -1,0 +1,25 @@
+<% content_for :title, t("member.project_tests.show.title", test: @test_case.name.truncate(80)) %>
+
+<%# CYRA-1165 — one test: its identity, its known-failure mark, and its history run by run. %>
+<div class="p-7 space-y-6" data-test="member-project-test">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "tests" %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="test-identity">
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+      <%= link_to t("member.project_tests.show.back"), member_project_tests_path(@project),
+            class: "text-[12px] text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "test-back" } %>
+      <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100 break-all"><%= @test_case.name %></h2>
+      <%= test_status_badge(@test_case.last_status, known: @known_failure&.valid_on?, test_id: "test-last-status") %>
+      <% if @test_case.flaky? %>
+        <%= render Ui::BadgeComponent.new(label: t("member.project_tests.show.flaky_badge", at: l(@test_case.flaky_at, format: :long)),
+              color: :amber, size: :sm, test_id: "test-flaky") %>
+      <% end %>
+    </div>
+    <div class="px-4 py-3 font-mono text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="test-file"><%= @test_case.file.presence || "—" %></div>
+  </div>
+
+  <%= render "member/project_tests/known_failure", project: @project, test_case: @test_case,
+        known_failure: @known_failure, can_edit: @can_edit %>
+
+  <%= render "member/project_tests/history", results: @results, pagination: @pagination %>
+</div>

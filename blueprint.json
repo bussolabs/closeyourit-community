@@ -4622,6 +4622,80 @@
       ]
     },
     {
+      "id": "prj_page_tests",
+      "name": "Scheda Test del progetto",
+      "level": 2,
+      "parent": "area_projects",
+      "kind": "page",
+      "summary": "I test mandati dalla CI, con filtri per instabili, falliti e fallimenti noti. Aprendo un test si vede la sua storia giro per giro, con versione e commit. Chi può modificare il progetto segna o toglie un fallimento noto, con ticket e scadenza. Senza risultati spiega come collegare la CI.",
+      "files": [
+        "app/controllers/member/project_tests_controller.rb",
+        "app/controllers/member/project_test_known_failures_controller.rb",
+        "app/views/member/project_tests/**",
+        "app/helpers/member/project_tests_helper.rb",
+        "app/services/projects/known_failures/**",
+        "app/views/member/guides/tests.html.erb"
+      ]
+    },
+    {
+      "id": "prj_flow_test_runs",
+      "name": "Risultati dei test dalla CI",
+      "level": 2,
+      "parent": "area_projects",
+      "kind": "flow",
+      "summary": "La CI manda l'esito di ogni test di un giro con la chiave di raccolta del progetto. Il giro si salva tutto o niente, poi si cercano i test instabili.",
+      "files": [
+        "app/controllers/api/v1/test_runs_controller.rb",
+        "app/services/projects/test_runs/**",
+        "app/serializers/test_run_serializer.rb"
+      ]
+    },
+    {
+      "id": "prj_test_runs_receive",
+      "name": "Ricezione del rapporto",
+      "level": 3,
+      "parent": "prj_flow_test_runs",
+      "kind": "step",
+      "summary": "Serve la chiave con il permesso di raccolta. Un rapporto oltre il tetto di peso o di numero di test è rifiutato per intero. Le chiamate sono limitate per progetto.",
+      "files": [
+        "app/controllers/api/v1/test_runs_controller.rb",
+        "config/initializers/rack_attack.rb"
+      ]
+    },
+    {
+      "id": "prj_test_runs_record",
+      "name": "Salvataggio del giro",
+      "level": 3,
+      "parent": "prj_flow_test_runs",
+      "kind": "step",
+      "summary": "Ogni test si riconosce da file e nome completo, così la sua storia si accumula. Il giro si lega al rilascio con la stessa versione. Un fallimento coperto da un fallimento noto ancora valido si salva come noto.",
+      "files": [
+        "app/services/projects/test_runs/record.rb"
+      ]
+    },
+    {
+      "id": "prj_test_runs_flaky",
+      "name": "Riconoscimento degli instabili",
+      "level": 3,
+      "parent": "prj_flow_test_runs",
+      "kind": "step",
+      "summary": "Si guarda lo stesso commit nei giri degli ultimi 14 giorni: un test che lì è sia passato sia fallito diventa instabile, con la data dell'ultima volta.",
+      "files": [
+        "app/services/projects/test_runs/detect_flaky.rb"
+      ]
+    },
+    {
+      "id": "prj_job_prune_test_runs",
+      "name": "Pulizia dei giri di prova",
+      "level": 2,
+      "parent": "area_projects",
+      "kind": "job",
+      "summary": "Ogni notte alle 3 cancella i giri più vecchi di 90 giorni con i loro esiti, e i test che nessun giro nomina più da allora.",
+      "files": [
+        "app/jobs/projects/prune_test_runs_job.rb"
+      ]
+    },
+    {
       "id": "prj_data_project",
       "name": "Progetto",
       "level": 3,
@@ -4695,6 +4769,20 @@
       "summary": "Il passaggio di un progetto o gruppo da un'organizzazione a un'altra. Stati: in attesa, in corso, riuscito, fallito.",
       "files": [
         "app/models/projects/move.rb"
+      ]
+    },
+    {
+      "id": "prj_data_test_run",
+      "name": "Giri di prova e test",
+      "level": 3,
+      "parent": "prj_data",
+      "kind": "data",
+      "summary": "Un giro di prova della CI con versione, commit, ramo e totali; l'esito di ogni test in quel giro; il test con la sua identità stabile e il segno di instabile; il fallimento noto con ticket, scadenza e chi l'ha segnato.",
+      "files": [
+        "app/models/projects/test_run.rb",
+        "app/models/projects/test_result.rb",
+        "app/models/projects/test_case.rb",
+        "app/models/projects/known_failure.rb"
       ]
     },
     {
@@ -13451,6 +13539,41 @@
       "from": "prj_deploy_ticket",
       "to": "tkt_create_save",
       "label": "crea il ticket"
+    },
+    {
+      "from": "prj_test_runs_receive",
+      "to": "prj_test_runs_record",
+      "label": "rapporto accettato"
+    },
+    {
+      "from": "prj_test_runs_record",
+      "to": "prj_test_runs_flaky",
+      "label": "giro salvato"
+    },
+    {
+      "from": "prj_test_runs_record",
+      "to": "prj_data_test_run",
+      "label": "scrive"
+    },
+    {
+      "from": "prj_test_runs_record",
+      "to": "prj_data_release",
+      "label": "lega alla versione"
+    },
+    {
+      "from": "prj_test_runs_flaky",
+      "to": "prj_data_test_run",
+      "label": "segna gli instabili"
+    },
+    {
+      "from": "prj_page_tests",
+      "to": "prj_data_test_run",
+      "label": "legge e segna i fallimenti noti"
+    },
+    {
+      "from": "prj_job_prune_test_runs",
+      "to": "prj_data_test_run",
+      "label": "pulisce"
     },
     {
       "from": "prj_page_milestones",

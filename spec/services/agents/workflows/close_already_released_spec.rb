@@ -65,6 +65,27 @@ RSpec.describe Agents::Workflows::CloseAlreadyReleased do
     expect(workflow.reload.completed_at).to be_nil
   end
 
+  # Projects proved by "merge" record their releases without a proved commit: the stable tag is the evidence.
+  it "reads the commit of the latest stable tag when no release was proved" do
+    project.releases.update_all(proved_at: nil, sha: nil)
+    c = client(contained: true)
+    allow(c).to receive(:tag_commit).and_return(release_sha)
+
+    described_class.call(workflow:, client: c)
+
+    expect(workflow.reload.completed_at).to be_present
+    expect(c).to have_received(:tag_commit).with(repository.installation.installation_id, "bussolabs/app", "v1.4.0")
+  end
+
+  it "ignores a beta tag recorded as the latest release" do
+    project.releases.update_all(proved_at: nil, sha: nil, version: "v1.5.0-beta.1")
+    c = instance_double(Github::Client)
+
+    described_class.call(workflow:, client: c)
+
+    expect(workflow.reload.completed_at).to be_nil
+  end
+
   it "ignores work a person has not approved yet" do
     workflow.update!(autopilot_approved_at: nil)
     c = instance_double(Github::Client)

@@ -95,6 +95,12 @@ production: &schedule
     queue: batch
     schedule: every day at 3am
 
+  # CYRA-1165 — the CI test runs older than 90 days, with their results.
+  prune_test_runs:
+    class: Projects::PruneTestRunsJob
+    queue: batch
+    schedule: every day at 3am
+
   prune_alerting_notifications:
     class: Alerting::PruneNotificationsJob
     queue: batch

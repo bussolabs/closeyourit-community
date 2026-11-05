@@ -1,0 +1,37 @@
+<%# locals: (results:, pagination:) %>
+<%# CYRA-1165 — the history of one test, newest run first: version and commit of each run. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="test-history">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.project_tests.show.history_title") %></h2>
+  </div>
+  <%= render(Ui::TableComponent.new(stacked: true, label: t("member.project_tests.show.history_title"), body_test_id: "test-history-rows")) do |table| %>
+    <% table.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.project_tests.show.col_ran_at"), classes: "w-40") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.project_tests.show.col_version"), classes: "w-32") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.project_tests.show.col_commit"), classes: "w-24") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.project_tests.show.col_branch"), classes: "w-32") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.project_tests.col_status"), classes: "w-28") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.project_tests.show.col_duration"), classes: "w-24") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.project_tests.show.col_message")) %>
+    <% end %>
+    <% results.each do |result| %>
+      <% run = result.test_run %>
+      <%= render Ui::TableComponent::RowComponent.new(test_id: "test-history-row") do %>
+        <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-[12.5px] text-zinc-900 dark:text-zinc-100 whitespace-nowrap")) { l(run.ran_at, format: :long) } %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: t("member.project_tests.show.col_version"), mono: true)) { run.version || "—" } %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: t("member.project_tests.show.col_commit"), mono: true)) { tag.span(run.short_sha, title: run.sha) } %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: t("member.project_tests.show.col_branch"), class: "text-[12.5px] text-gray-600 dark:text-zinc-400")) { run.branch || "—" } %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: t("member.project_tests.col_status"))) { test_status_badge(result.status, known: result.known_failure, test_id: "test-history-status") } %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: t("member.project_tests.show.col_duration"), mono: true)) { test_duration(result.duration_ms) } %>
+        <%= render Ui::TableComponent::CellComponent.new(label: t("member.project_tests.show.col_message"), class: "text-[12px] text-gray-600 dark:text-zinc-400") do %>
+          <% if result.message.present? %>
+            <span class="block font-mono text-[11px] whitespace-pre-wrap break-all line-clamp-4" title="<%= result.message.truncate(500) %>"><%= result.message %></span>
+          <% else %>
+            —
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%= render(Ui::PaginationComponent.new(pagination: pagination, test_id: "test-history-pagination")) %>
+</div>

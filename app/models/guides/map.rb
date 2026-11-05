@@ -64,6 +64,8 @@ module Guides
       [ %r{\A/member/(organization|groups/[^/]+|projects/[^/]+)/guidance\b}, "guidance" ],
       # CYRA-879 — the move pages of a project or group open the guide on moving between organizations.
       [ %r{\A/member/(groups|projects)/[^/]+/move\b},                       "project_moves" ],
+      # CYRA-1165 — the Tests tab of a project opens the guide on sending test results from the CI.
+      [ %r{\A/member/projects/[^/]+/tests\b},                               "tests" ],
       [ %r{\A/member/(roles|teams)\b},                                     "permissions" ],
       # CYRA-745 — dal registro si arriva alla guida che dice cosa ci si trova e cosa no.
       [ %r{\A/member/activity\b},                                          "activity" ],

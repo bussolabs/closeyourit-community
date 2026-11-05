@@ -16,11 +16,11 @@ module Agents
       def call
         return Result.ok(nil) unless eligible?
 
-        release = latest_proved_release
-        return Result.ok(nil) if release.nil?
-        return Result.ok(nil) unless contained?(release)
+        version, sha = released_code
+        return Result.ok(nil) if sha.blank?
+        return Result.ok(nil) unless contained?(sha)
 
-        close!(release)
+        close!(version, sha)
       rescue Github::Client::Error
         Result.ok(nil)
       end
@@ -40,19 +40,30 @@ module Agents
         Github::PullRequest.state_merged.exists?(repository_id: candidate.repository_id, number: candidate.number)
       end
 
-      def latest_proved_release
+      def production_releases
         @workflow.ticket.project.releases.where(environment: Projects::Release::DEFAULT_ENVIRONMENT)
-                 .where.not(proved_at: nil).where.not(sha: nil).order(proved_at: :desc).first
       end
 
-      def contained?(release)
-        client.commit_contained?(candidate.repository.github_installation_id, candidate.repository_full_name,
-                                 release.sha, candidate.head_sha)
+      # A release proved in production carries its commit. Projects proved by "merge" record releases
+      # without one: for them the latest stable tag is the evidence, read from GitHub.
+      def released_code
+        proved = production_releases.where.not(proved_at: nil).where.not(sha: nil).order(proved_at: :desc).first
+        return [ proved.version, proved.sha ] if proved
+
+        latest = production_releases.order(created_at: :desc).first
+        return [ nil, nil ] unless latest&.version&.match?(/\Av?\d+\.\d+\.\d+\z/)
+
+        [ latest.version, client.tag_commit(installation_id, candidate.repository_full_name, latest.version) ]
       end
 
-      def close!(release)
-        evidence = { "closed_by" => "already_released", "release" => release.version, "release_sha" => release.sha,
-                     "at" => @now }
+      def installation_id = candidate.repository.github_installation_id
+
+      def contained?(sha)
+        client.commit_contained?(installation_id, candidate.repository_full_name, sha, candidate.head_sha)
+      end
+
+      def close!(version, sha)
+        evidence = { "closed_by" => "already_released", "release" => version, "release_sha" => sha, "at" => @now }
         outcome = nil
         ApplicationRecord.transaction do
           @workflow.lock!

@@ -170,6 +170,12 @@ module Projects
              inverse_of: :project,
              dependent: :destroy
 
+    # CYRA-1165 — the test runs the CI sends, the history of each test and the known failures. The
+    # foreign keys cascade: a project goes with all of its rows in one statement each.
+    has_many :test_runs, class_name: "Projects::TestRun", foreign_key: :project_id, inverse_of: :project, dependent: :delete_all
+    has_many :test_cases, class_name: "Projects::TestCase", foreign_key: :project_id, inverse_of: :project, dependent: :delete_all
+    has_many :known_failures, class_name: "Projects::KnownFailure", foreign_key: :project_id, inverse_of: :project, dependent: :delete_all
+
     # Repo GitHub agganciato (1:1): presente solo se il progetto è connesso a un repo.
     has_one :github_repository,
             class_name: "Github::Repository",

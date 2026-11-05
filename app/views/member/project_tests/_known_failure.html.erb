@@ -1,0 +1,34 @@
+<%# locals: (project:, test_case:, known_failure:, can_edit:) %>
+<%# CYRA-1165 — the known-failure mark of a test: ticket, expiry, who set it. Only who can edit the
+    project sees the form and the clear button; an expired mark stays readable and no longer hides anything. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="test-known-failure">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.project_tests.known_failure.title") %></h2>
+  </div>
+  <div class="px-4 py-4 space-y-4 text-[12.5px] text-gray-600 dark:text-zinc-400">
+    <% if known_failure %>
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5" data-test="test-known-failure-current">
+        <% if known_failure.ticket %>
+          <%= link_to known_failure.ticket.code, member_ticket_path(known_failure.ticket),
+                class: "font-mono text-[12px] font-semibold text-indigo-700 dark:text-indigo-300 hover:underline", data: { test: "test-known-failure-ticket" } %>
+        <% end %>
+        <span data-test="test-known-failure-expiry">
+          <%= t(known_failure.valid_on? ? "member.project_tests.known_failure.valid_until" : "member.project_tests.known_failure.expired_on",
+                date: l(known_failure.expires_on, format: :long)) %>
+        </span>
+        <span class="text-gray-500 dark:text-zinc-400"><%= t("member.project_tests.known_failure.marked_by", name: known_failure.marked_by&.name || t("activity.unknown_actor")) %></span>
+        <% if can_edit %>
+          <%= render Ui::ButtonComponent.new(label: t("member.project_tests.known_failure.clear"), variant: :secondary_muted, size: :sm,
+                icon: "x", href: member_project_test_known_failure_path(project, test_case), method: :delete,
+                confirm: t("member.project_tests.known_failure.clear_confirm"), test_id: "test-known-failure-clear") %>
+        <% end %>
+      </div>
+    <% else %>
+      <p data-test="test-known-failure-none"><%= t("member.project_tests.known_failure.none") %></p>
+    <% end %>
+
+    <% if can_edit %>
+      <%= render "member/project_tests/known_failure_form", project: project, test_case: test_case, known_failure: known_failure %>
+    <% end %>
+  </div>
+</div>

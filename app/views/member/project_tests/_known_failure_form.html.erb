@@ -1,0 +1,16 @@
+<%# locals: (project:, test_case:, known_failure:) %>
+<%# CYRA-1165 — mark (or mark again) as known: the ticket of this project that will fix it, and until when. %>
+<%= form_with url: member_project_test_known_failure_path(project, test_case), method: :post,
+      class: "grid gap-3 md:grid-cols-2 items-end", data: { test: "test-known-failure-form" } do %>
+  <%= render Ui::InputComponent.new(name: "ticket", label: t("member.project_tests.known_failure.ticket_label"),
+        value: known_failure&.ticket&.code, placeholder: "#{project.key}-123", required: true,
+        hint: t("member.project_tests.known_failure.ticket_hint"), test_id: "test-known-failure-ticket-input") %>
+  <%= render Ui::InputComponent.new(name: "expires_on", type: "date", label: t("member.project_tests.known_failure.expires_label"),
+        value: (known_failure&.expires_on || 14.days.from_now.to_date).iso8601, required: true,
+        min: Date.current.iso8601, max: Projects::KnownFailure::MAX_VALIDITY.from_now.to_date.iso8601,
+        hint: t("member.project_tests.known_failure.expires_hint", days: Projects::KnownFailure::MAX_VALIDITY.in_days.to_i), test_id: "test-known-failure-expiry-input") %>
+  <div class="md:col-span-2">
+    <%= render Ui::ButtonComponent.new(label: t(known_failure ? "member.project_tests.known_failure.update" : "member.project_tests.known_failure.mark"),
+          type: "submit", variant: :secondary, size: :sm, icon: "bookmark-check", test_id: "test-known-failure-submit") %>
+  </div>
+<% end %>

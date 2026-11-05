@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.213.0] - 2026-11-05
+
+### Added
+
+- **Risultati dei test dalla tua CI**: la CI può mandare l'esito di ogni test, legato a versione e commit. Nella scheda Test del progetto vedi la storia di ogni test, quelli instabili e i fallimenti già noti, segnati con il loro ticket e una scadenza. ([guida](/member/guides/tests))
+
+### Fixed
+
+- **Anche i progetti con prova «merge» chiudono da soli il lavoro già uscito**: vale l'ultimo tag stabile, non serve un rilascio provato. ([Approvazioni](/member/home/approvals))
+
 ## [0.212.0] - 2026-11-05
 
 ### Added

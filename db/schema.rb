@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_05_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_05_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -2907,6 +2907,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_180000) do
     t.index ["organization_id"], name: "index_projects_groups_on_organization_id"
   end
 
+  create_table "projects_known_failures", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "expires_on", null: false
+    t.uuid "marked_by_id"
+    t.uuid "project_id", null: false
+    t.uuid "test_case_id", null: false
+    t.uuid "ticket_id"
+    t.datetime "updated_at", null: false
+    t.index ["marked_by_id"], name: "index_projects_known_failures_on_marked_by_id"
+    t.index ["project_id", "expires_on"], name: "index_projects_known_failures_on_project_id_and_expires_on"
+    t.index ["test_case_id"], name: "index_projects_known_failures_on_test_case_id", unique: true
+    t.index ["ticket_id"], name: "index_projects_known_failures_on_ticket_id"
+  end
+
   create_table "projects_milestones", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.string "code", null: false
@@ -2990,6 +3004,55 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_180000) do
     t.string "version"
     t.index ["project_id", "tool_code"], name: "index_projects_sources_on_project_id_and_tool_code", unique: true
     t.index ["project_id"], name: "index_projects_sources_on_project_id"
+  end
+
+  create_table "projects_test_cases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "file", default: "", null: false
+    t.datetime "flaky_at"
+    t.string "flaky_sha"
+    t.string "identity_digest", null: false
+    t.datetime "last_run_at"
+    t.string "last_status"
+    t.text "name", null: false
+    t.uuid "project_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id", "flaky_at"], name: "index_projects_test_cases_on_project_id_and_flaky_at"
+    t.index ["project_id", "identity_digest"], name: "index_projects_test_cases_on_project_id_and_identity_digest", unique: true
+    t.index ["project_id", "last_run_at"], name: "index_projects_test_cases_on_project_id_and_last_run_at"
+  end
+
+  create_table "projects_test_results", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "duration_ms"
+    t.boolean "known_failure", default: false, null: false
+    t.text "message"
+    t.string "status", null: false
+    t.uuid "test_case_id", null: false
+    t.uuid "test_run_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["test_case_id"], name: "index_projects_test_results_on_test_case_id"
+    t.index ["test_run_id", "test_case_id"], name: "index_projects_test_results_on_test_run_id_and_test_case_id", unique: true
+  end
+
+  create_table "projects_test_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "branch"
+    t.datetime "created_at", null: false
+    t.bigint "duration_ms"
+    t.integer "failed_count", default: 0, null: false
+    t.integer "known_failed_count", default: 0, null: false
+    t.integer "passed_count", default: 0, null: false
+    t.uuid "project_id", null: false
+    t.datetime "ran_at", null: false
+    t.uuid "release_id"
+    t.string "sha", null: false
+    t.integer "skipped_count", default: 0, null: false
+    t.integer "tests_count", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.string "version"
+    t.index ["project_id", "ran_at"], name: "index_projects_test_runs_on_project_id_and_ran_at"
+    t.index ["project_id", "sha"], name: "index_projects_test_runs_on_project_id_and_sha"
+    t.index ["release_id"], name: "index_projects_test_runs_on_release_id"
   end
 
   create_table "projects_tokens", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -5004,6 +5067,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_180000) do
   add_foreign_key "projects_documents", "projects"
   add_foreign_key "projects_groups", "accounts", column: "created_by_id", on_delete: :nullify
   add_foreign_key "projects_groups", "organizations"
+  add_foreign_key "projects_known_failures", "accounts", column: "marked_by_id", on_delete: :nullify
+  add_foreign_key "projects_known_failures", "projects", on_delete: :cascade
+  add_foreign_key "projects_known_failures", "projects_test_cases", column: "test_case_id", on_delete: :cascade
+  add_foreign_key "projects_known_failures", "ticketing_tickets", column: "ticket_id", on_delete: :nullify
   add_foreign_key "projects_milestones", "accounts", column: "created_by_id", on_delete: :nullify
   add_foreign_key "projects_milestones", "projects"
   add_foreign_key "projects_moves", "accounts", column: "requested_by_id", on_delete: :nullify
@@ -5013,6 +5080,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_180000) do
   add_foreign_key "projects_releases", "projects", on_delete: :cascade
   add_foreign_key "projects_source_versions", "projects_sources", column: "source_id", on_delete: :cascade
   add_foreign_key "projects_sources", "projects", on_delete: :cascade
+  add_foreign_key "projects_test_cases", "projects", on_delete: :cascade
+  add_foreign_key "projects_test_results", "projects_test_cases", column: "test_case_id", on_delete: :cascade
+  add_foreign_key "projects_test_results", "projects_test_runs", column: "test_run_id", on_delete: :cascade
+  add_foreign_key "projects_test_runs", "projects", on_delete: :cascade
+  add_foreign_key "projects_test_runs", "projects_releases", column: "release_id", on_delete: :nullify
   add_foreign_key "projects_tokens", "accounts", column: "created_by_id"
   add_foreign_key "projects_tokens", "projects"
   add_foreign_key "projects_tokens", "types_environments", column: "environment_id"

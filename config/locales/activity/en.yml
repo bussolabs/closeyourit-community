@@ -13,6 +13,8 @@ en:
       sentry_project_id: Sentry project ID
       release_retired: a release, now retired
       release_restored: a release, now restored
+      known_failure_marked: a test, now marked as a known failure
+      known_failure_cleared: a test, no longer a known failure
       name: name
       key: key
       description: description

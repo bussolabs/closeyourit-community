@@ -59,7 +59,10 @@ guide_pages = {
   # fretta, la guida spiega cos'è una chiave, chi ne paga il consumo e cosa si spegne togliendola.
   "/member/integrations"               => "integrations",
   # CYRA-879 — the move pages of a project or group open the guide on moving between organizations.
-  "/member/projects/abc-123/move/new"  => "project_moves"
+  "/member/projects/abc-123/move/new"  => "project_moves",
+  # CYRA-1165 — the Tests tab of a project opens the guide on sending test results from the CI.
+  "/member/projects/abc-123/tests"     => "tests",
+  "/member/projects/abc-123/tests/def-456" => "tests"
 }.freeze
 
 RSpec.describe Guides::Map do

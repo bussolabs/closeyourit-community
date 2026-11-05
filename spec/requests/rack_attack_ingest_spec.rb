@@ -298,3 +298,27 @@ RSpec.describe "Rack::Attack — release status", type: :request do
     expect(throttle.block.call(attack_request("/api/v1/projects/#{project_id}/releases"))).to be_nil
   end
 end
+
+# CYRA-1165 — the test reports of a CI have their own per-project ceiling, on POST only.
+RSpec.describe "Rack::Attack — test runs", type: :request do
+  def attack_request(path, method: "POST")
+    Rack::Attack::Request.new(Rack::MockRequest.env_for(path, method: method))
+  end
+
+  let(:project_id) { "550e8400-e29b-41d4-a716-446655440000" }
+  let(:throttle) { Rack::Attack.throttles.fetch("test_runs/project") }
+
+  it "counts the reports per project, whatever the form of the address" do
+    [ "", ".json", "/", ".JSON/" ].each do |suffix|
+      expect(throttle.block.call(attack_request("/api/v1/projects/#{project_id}/test_runs#{suffix}"))).to eq(project_id)
+    end
+    expect(throttle.block.call(attack_request("/api/v1/projects/%35%35%30e8400-e29b-41d4-a716-446655440000/test_runs")))
+      .to eq(project_id)
+  end
+
+  it "sits far below telemetry and ignores other methods and doors" do
+    expect(throttle.limit).to be <= 30
+    expect(throttle.block.call(attack_request("/api/v1/projects/#{project_id}/test_runs", method: "GET"))).to be_nil
+    expect(throttle.block.call(attack_request("/api/v1/projects/#{project_id}/coverage"))).to be_nil
+  end
+end

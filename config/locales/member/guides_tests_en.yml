@@ -1,0 +1,23 @@
+en:
+  member:
+    guides:
+      index:
+        tests:
+          title: "Test results"
+      tests:
+        title: "Test results"
+        subtitle: "Send the outcome of every test from your CI: history, flaky tests and known failures."
+        what_title: "How it works"
+        what_intro: "After every run your CI sends the outcome of each test, with the version and the commit it proved. You find them in the project's Tests tab."
+        what_history: "Every test has its history, run by run: a test is recognised by its file and its full name."
+        what_flaky: "A test that both passed and failed on the same commit in the last %{days} days is marked as flaky, with the date of the last time."
+        what_known: "Whoever can edit the project marks a failure as already known, with the ticket that will fix it and an expiry. While it is valid, that failure shows up as known; after it, as new again."
+        what_renamed: "A renamed or moved test starts with an empty history: the old name stays visible until its runs are deleted."
+        what_retention: "Runs older than %{days} days are deleted every night."
+        send_title: "How to send it"
+        send_intro: "After the tests, send the report to this address with the project's ingest token, the same one as the coverage:"
+        send_fields: "The commit is required: it is how flaky tests are recognised. The outcome of each test is passed, failed or skipped. The version, when the CI registered it, ties the run to that release."
+        send_limits: "A report can hold at most %{tests} tests and weigh at most %{megabytes} MB. Beyond that, it is refused whole and nothing is saved."
+        send_cli: "The CLI command that reads JUnit reports and sends them for you will come with a later version of the CLI."
+        token_placeholder: "ingest token"
+        project_placeholder: "project ID"

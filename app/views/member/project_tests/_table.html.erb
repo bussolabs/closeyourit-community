@@ -1,0 +1,47 @@
+<%# locals: (project:, test_cases:, pagination:, filter:) %>
+<%# CYRA-1165 — one row per test: last outcome (a valid known failure reads «known»), the flaky mark
+    with the date it last happened, and the last run that named it. %>
+<div data-test="tests-table">
+  <%= render(Ui::TableToolbarComponent.new(url: member_project_tests_path(project), framed: true,
+        apply_test_id: "tests-filter", test_id: "tests-toolbar")) do |toolbar| %>
+    <% toolbar.with_filter(key: "filter", label: t("member.project_tests.filter_label")) do %>
+      <div class="w-44"><%= render Ui::SelectComponent.new(name: "filter", summary: true,
+            options: Member::ProjectTestsController::FILTERS.map { |key| [ t("member.project_tests.filters.#{key}"), key ] },
+            selected: filter, placeholder: t("member.project_tests.filter_label"), test_id: "tests-filter-select") %></div>
+    <% end %>
+  <% end %>
+
+  <% if test_cases.empty? %>
+    <div class="px-4 py-10 text-center" data-test="tests-no-match">
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.project_tests.no_match") %></p>
+    </div>
+  <% else %>
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("member.project_tests.section_title"), body_test_id: "tests-rows")) do |table| %>
+      <% table.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.project_tests.col_test")) %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.project_tests.col_status"), classes: "w-28") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.project_tests.col_flaky"), classes: "w-40") %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.project_tests.col_last_run"), classes: "w-40") %>
+      <% end %>
+      <% test_cases.each do |test_case| %>
+        <% known = test_case.known_failure&.valid_on? %>
+        <%= render Ui::TableComponent::RowComponent.new(test_id: "tests-row") do %>
+          <%= render Ui::TableComponent::CellComponent.new(header: true, class: "text-[12.5px] text-zinc-900 dark:text-zinc-100") do %>
+            <%= link_to test_case.name, member_project_test_path(project, test_case), class: "hover:underline", data: { test: "tests-row-link" } %>
+            <span class="block font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= test_case.file.presence || "—" %></span>
+          <% end %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.project_tests.col_status"))) { test_status_badge(test_case.last_status, known: known, test_id: "tests-row-status") } %>
+          <%= render Ui::TableComponent::CellComponent.new(label: t("member.project_tests.col_flaky"), class: "text-[12.5px] whitespace-nowrap") do %>
+            <% if test_case.flaky? %>
+              <span class="text-amber-600 dark:text-amber-400" data-test="tests-row-flaky"><%= t("member.project_tests.flaky_since", at: l(test_case.flaky_at, format: :long)) %></span>
+            <% else %>
+              <span class="text-gray-400 dark:text-zinc-500">—</span>
+            <% end %>
+          <% end %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("member.project_tests.col_last_run"), class: "text-[12.5px] text-gray-500 dark:text-zinc-400 whitespace-nowrap")) { test_case.last_run_at ? l(test_case.last_run_at, format: :long) : "—" } %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <%= render(Ui::PaginationComponent.new(pagination: pagination, test_id: "tests-pagination")) %>
+  <% end %>
+</div>

@@ -1,0 +1,54 @@
+<% content_for :title, t("member.guides.tests.title") %>
+<% code_class = "mt-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-4 py-3 font-mono text-[11.5px] leading-relaxed text-zinc-800 dark:text-zinc-200 overflow-x-auto" %>
+
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-tests">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "list-checks", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-sky-50 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.tests.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.tests.title") } ]) do |h| %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.tests.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.tests.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.tests.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "history", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.tests.what_history") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "shuffle", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.tests.what_flaky", days: Projects::TestRun::FLAKY_LOOKBACK.in_days.to_i) %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "bookmark-check", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.tests.what_known") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "pencil", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.tests.what_renamed") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "trash-2", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.tests.what_retention", days: Projects::TestRun::RETENTION.in_days.to_i) %></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.tests.send_title") %></h2></div>
+    <div class="px-4 py-4 space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+      <p><%= t("member.guides.tests.send_intro") %></p>
+      <pre class="<%= code_class %>"><code>POST <%= request.base_url %>/api/v1/projects/&lt;<%= t("member.guides.tests.project_placeholder") %>&gt;/test_runs
+Authorization: Bearer &lt;<%= t("member.guides.tests.token_placeholder") %>&gt;
+Content-Type: application/json
+
+{
+  "version": "v1.4.0",
+  "sha": "3f2a91c0d4e6b8079a1c5f3d2e7b4a6c8d0f1e29",
+  "branch": "main",
+  "ran_at": "2026-11-05T10:00:00Z",
+  "tests": [
+    { "file": "spec/models/user_spec.rb", "name": "User validates the email", "status": "passed", "duration_ms": 12 },
+    { "file": "spec/models/user_spec.rb", "name": "User sends the welcome mail", "status": "failed",
+      "duration_ms": 340, "message": "expected 1 delivery, got 0" }
+  ]
+}</code></pre>
+      <p><%= t("member.guides.tests.send_fields") %></p>
+      <p><%= t("member.guides.tests.send_limits", tests: number_with_delimiter(Projects::TestRun::MAX_TESTS),
+              megabytes: Projects::TestRun::MAX_PAYLOAD_BYTES / 1.megabyte) %></p>
+      <p><%= t("member.guides.tests.send_cli") %></p>
+    </div>
+  </div>
+</div>

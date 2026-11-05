@@ -183,6 +183,7 @@ class Rack::Attack
   INGEST_WEB_VITALS_PATH     = %r{\A/api/v1/projects/([^/]+)/web_vitals#{PATH_FORMAT_SUFFIX}}
   HELPDESK_REQUESTS_PATH     = %r{\A/api/v1/projects/([^/]+)/helpdesk_requests#{PATH_FORMAT_SUFFIX}}
   RELEASE_STATUS_PATH        = %r{\A/api/v1/projects/([^/]+)/release_status#{PATH_FORMAT_SUFFIX}}
+  TEST_RUNS_PATH             = %r{\A/api/v1/projects/([^/]+)/test_runs#{PATH_FORMAT_SUFFIX}}
 
   # Discriminatore per-progetto: il project_id catturato va DECODIFICATO, non usato grezzo. req.path è
   # PATH_INFO ancora URL-encoded, ma Rails instrada ogni percent-encoding (`/api/%35%35%30e…/envelope`)
@@ -249,6 +250,12 @@ class Rack::Attack
 
   throttle("helpdesk/ip", limit: 5, period: 1.minute) do |req|
     req.ip if req.post? && HELPDESK_REQUESTS_PATH.match?(req.path)
+  end
+
+  # CYRA-1165 — a CI sends one test report per run, or one per parallel part: a few a minute. The
+  # ceiling sits far below telemetry because every report can carry thousands of rows.
+  throttle("test_runs/project", limit: 30, period: 1.minute) do |req|
+    Rack::Attack.ingest_project_key(req, TEST_RUNS_PATH)
   end
 
   # CYRA-1161 — every start of every app asks whether its version is retired: a read, so a GET, with

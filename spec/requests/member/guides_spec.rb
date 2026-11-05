@@ -30,6 +30,20 @@ RSpec.describe "Member::Guides", type: :request do
       expect(response.body).to include("--file")
     end
 
+    # CYRA-1165 — sending the outcome of every test: endpoint, required commit, limits, flaky and known.
+    it "GET guides/tests shows the endpoint, the report shape and the limits" do
+      get member_guides_tests_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('data-test="member-guide-tests"')
+      expect(response.body).to include("/test_runs")
+      expect(response.body).to include('"sha": "')
+
+      get member_guides_path
+
+      expect(response.body).to include('data-test="member-guides-card-tests"')
+    end
+
     it "lists the coverage guide in the guides index on the left" do
       get member_guides_path
 
