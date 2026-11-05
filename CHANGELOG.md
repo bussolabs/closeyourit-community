@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.209.4] - 2026-11-05
+
+### Fixed
+
+- **Immagini decorative non più segnalate.** Il controllo SEO non segnala più le immagini lasciate apposta senza descrizione, come le icone. Restano segnalate le immagini a cui la descrizione manca del tutto, e i vecchi rilievi si chiudono da soli al controllo successivo. ([SEO](/member/monitoring/seo))
+
 ## [0.209.3] - 2026-11-05
 
 ### Fixed

@@ -38,7 +38,8 @@ module Seo
         word_count: word_count(document),
         jsonld_types: jsonld_types(document),
         images_total: document.css("img").size,
-        images_without_alt: document.css("img").count { |img| img["alt"].to_s.strip.empty? },
+        # An empty alt marks a decorative image on purpose: only a missing one is a finding (CYRA-1170).
+        images_without_alt: document.css("img").count { |img| img["alt"].nil? },
         internal_links: links[:internal],
         external_links_count: links[:external].size,
         html_bytes: @html.bytesize,

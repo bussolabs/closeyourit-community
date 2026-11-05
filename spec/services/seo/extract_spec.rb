@@ -66,17 +66,18 @@ RSpec.describe Seo::Extract, type: :service do
     expect(result[:external_links_count]).to eq(1)
   end
 
-  it "conta le immagini senza testo alternativo" do
+  it "counts only images with no alt attribute, leaving decorative empty alts out" do
     result = extract(<<~HTML)
       <html><body>
-        <img src="/a.png" alt="Descritta">
+        <img src="/a.png" alt="Described">
         <img src="/b.png" alt="">
-        <img src="/c.png">
+        <img src="/c.png" alt="   ">
+        <img src="/d.png">
       </body></html>
     HTML
 
-    expect(result[:images_total]).to eq(3)
-    expect(result[:images_without_alt]).to eq(2)
+    expect(result[:images_total]).to eq(4)
+    expect(result[:images_without_alt]).to eq(1)
   end
 
   it "raccoglie gli hreflang dichiarati, risolvendo gli indirizzi relativi" do
