@@ -31,6 +31,26 @@ RSpec.describe Ticketing::RecoverAgentEligibilityJob do
       .to have_enqueued_job(Ticketing::EvaluateAgentEligibilityJob).with(ticket_id: ticket.id)
   end
 
+  # CYRA-1197
+  it "turns a waiting advice into the decision on a project with the supporter on" do
+    project.update!(supporter_enabled: true)
+    ticket = create_ticket(title: "Sort the list by name")
+    mark_evaluated(ticket)
+
+    described_class.perform_now
+
+    expect(ticket.reload.agent_eligibility).to eq("allowed")
+  end
+
+  it "leaves the decision to a person on a project with the supporter off" do
+    ticket = create_ticket(title: "Sort the list by name")
+    mark_evaluated(ticket)
+
+    described_class.perform_now
+
+    expect(ticket.reload.agent_eligibility).to eq("pending")
+  end
+
   it "non tocca un ticket già valutato" do
     ticket = create_ticket
     mark_evaluated(ticket)

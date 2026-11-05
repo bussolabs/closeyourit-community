@@ -67,6 +67,8 @@ module Ticketing
         ticket: ticket, source: :automatic, eligibility: verdict.eligibility,
         reason: verdict.reason, risks: verdict.risks, checksum: checksum
       )
+      # CYRA-1197 — with the supporter on, the advice becomes the decision unless the server's checks need a person.
+      Ticketing::AutoDecideAgentEligibility.call(ticket: ticket.reload)
     end
   end
 end

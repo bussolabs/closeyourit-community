@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.215.0] - 2026-11-05
+
+### Changed
+
+- **Un ticket scritto bene arriva agli agenti senza aspettarti**: nei progetti con il supporter acceso il parere dell'AI diventa la decisione. Restano a te i ticket su temi riservati (soldi, sicurezza, dati personali, cancellazioni, cose visibili ai clienti) e quelli che propongono di aggirare i controlli. ([Approvazioni](/member/home/approvals))
+
 ## [0.214.1] - 2026-11-05
 
 ### Fixed

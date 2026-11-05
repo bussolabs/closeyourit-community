@@ -24,6 +24,7 @@ module Ticketing
     queue_as :batch
 
     def perform
+      decide_waiting_advice
       total = 0
       recoverable.find_each do |ticket|
         # La staleness si legge in Ruby perché il checksum è uno SHA calcolato lato app, non
@@ -45,6 +46,17 @@ module Ticketing
     end
 
     private
+
+    # CYRA-1197 — open tickets whose advice is in but whose decision still waits: on projects with the supporter on,
+    # the advice becomes the decision (Ticketing::AutoDecideAgentEligibility), so the backlog does not wait for a person.
+    def decide_waiting_advice
+      Ticketing::Ticket.joins(:status, :project)
+                       .where(types_ticket_statuses: { category: Types::TicketStatus.categories.fetch("open") })
+                       .where(agent_eligibility: :pending, agent_eligibility_source: :automatic)
+                       .where.not(agent_eligibility_advice: :unknown)
+                       .where(projects: { supporter_enabled: true })
+                       .find_each { |ticket| Ticketing::AutoDecideAgentEligibility.call(ticket:) }
+    end
 
     # Solo i ticket APERTI: quelli in lavorazione hanno già qualcuno addosso, i chiusi non entrano
     # comunque nella coda degli agenti. Stessa scelta (e stesse ragioni) del default del rake.

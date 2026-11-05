@@ -4128,7 +4128,7 @@
       "level": 3,
       "parent": "tkt_flow_eligibility",
       "kind": "step",
-      "summary": "Parte poco dopo creazione o modifica, così una raffica di correzioni costa una sola valutazione. Salta se il testo non è cambiato o se ha deciso una persona.",
+      "summary": "Parte poco dopo creazione o modifica, così una raffica di correzioni costa una sola valutazione. Salta se il testo non è cambiato o se ha deciso una persona. Nei progetti con il supporter acceso il parere diventa la decisione, salvo temi riservati o tentativi di aggirare i controlli.",
       "files": [
         "app/services/ticketing/agent_eligibility_queue.rb",
         "app/jobs/ticketing/evaluate_agent_eligibility_job.rb",
@@ -4154,7 +4154,8 @@
       "kind": "step",
       "summary": "Il parere dell'AI e la decisione sono due cose separate. La coda degli agenti guarda solo la decisione.",
       "files": [
-        "app/services/ticketing/set_agent_eligibility.rb"
+        "app/services/ticketing/set_agent_eligibility.rb",
+        "app/services/ticketing/auto_decide_agent_eligibility.rb"
       ]
     },
     {
@@ -4175,7 +4176,7 @@
       "level": 3,
       "parent": "tkt_flow_eligibility",
       "kind": "step",
-      "summary": "Ogni ora, al minuto 50, si rivalutano i ticket rimasti senza parere per un guasto del server AI, con un tetto per giro.",
+      "summary": "Ogni ora, al minuto 50, si rivalutano i ticket rimasti senza parere per un guasto del server AI, con un tetto per giro. Nei progetti con il supporter acceso, i ticket con un parere ma ancora senza decisione la ricevono dal parere.",
       "files": [
         "app/jobs/ticketing/recover_agent_eligibility_job.rb",
         "config/recurring.yml"
