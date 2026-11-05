@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.210.1] - 2026-11-05
+
+### Fixed
+
+- **I progetti passati alla prova «merge» chiudono il lavoro dopo il rilascio**: prima il rilascio usciva ma la lavorazione si fermava cercando una prova che il progetto non usa più. ([Approvazioni](/member/home/approvals))
+- **Il supporter vede tutti i piani in attesa**: prima guardava solo i 20 più vecchi, e se li aveva già giudicati non approvava più niente. ([Approvazioni](/member/home/approvals))
+- **Un rilascio annullato e poi rifatto non ferma più la chiusura**: se sullo stesso codice un secondo rilascio riesce, il lavoro si chiude da solo invece di bloccarsi sul primo. ([Approvazioni](/member/home/approvals))
+
+## [0.210.0] - 2026-11-05
+
 ### Added
 
 - **Canale beta e avvisi di sicurezza per chi ospita CloseYourIt**: nelle impostazioni scegli se ricevere solo le versioni stabili o anche le beta. Se la tua versione ha una falla di sicurezza, in cima alle pagine compare un avviso rosso con la versione da installare. Sparisce da solo dopo l'aggiornamento.

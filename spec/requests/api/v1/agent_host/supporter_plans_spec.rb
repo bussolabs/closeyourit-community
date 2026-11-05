@@ -69,6 +69,29 @@ RSpec.describe "Api::V1::AgentHost::SupporterPlans", type: :request do
     expect(response).to have_http_status(:no_content)
   end
 
+  # The oldest plans may all be judged already (escalated to a person): the supporter must still reach the
+  # newer ones behind them instead of answering "nothing to judge".
+  it "serves a newer plan when the older ones are all judged already" do
+    judged = Prosopite.pause { Array.new(21) { |index| judged_plan(index) } }
+    fresh = create_plan
+
+    get "/api/v1/agent_host/supporter_plan", headers: headers
+
+    expect(judged.size).to eq(21)
+    expect(response.parsed_body.dig("data", "plan_id")).to eq(fresh.id)
+  end
+
+  def judged_plan(index)
+    other = create(:ticket, organization:, project:, with_agent_workflow: true).agent_workflow
+    other.update!(triaged_at: 1.hour.ago, planned_at: (60 - index).minutes.ago)
+    attempt = create(:agent_attempt, organization:, workflow: other)
+    plan = Agents::Plan.create!(workflow: other, attempt:, technical_analysis: "Bump a dependency.", scenarios: [],
+                                definition_of_done: [ "Audit is clean" ], notes: [], ticket_snapshot_digest: "s")
+    Agents::SupporterDecision.create!(organization:, workflow: other, target_type: "plan", target_id: plan.id,
+                                      target_digest: Agents::Supporters::NextPlan.digest(plan), outcome: "escalated",
+                                      engine: "codex", risk_score: 7)
+  end
+
   it "refuses an uncertified host" do
     host.update!(certified_at: nil)
     get "/api/v1/agent_host/supporter_plan", headers: headers

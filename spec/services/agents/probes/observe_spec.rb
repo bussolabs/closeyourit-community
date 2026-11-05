@@ -199,6 +199,22 @@ RSpec.describe Agents::Probes::Observe do
       expect(workflow.reload.blocked_at).to be_nil
       expect(probe.reload.last_error_code).to eq("release_run_missing")
     end
+
+    # The same tag pushed twice: the first run was cancelled, the second one released for real.
+    it "a cancelled run does not block when a later run on the same commit released" do
+      cancelled = [ { "name" => "deploy / deploy-production", "conclusion" => "cancelled" } ]
+      client = instance_double(Github::Client).tap do |c|
+        allow(c).to receive(:tag_commit).and_return(sealed_sha)
+        allow(c).to receive(:workflow_runs)
+          .and_return([ { "id" => 8, "conclusion" => "success" }, { "id" => 7, "conclusion" => "cancelled" } ])
+        allow(c).to receive(:workflow_run_jobs).with(anything, anything, 8).and_return(passaggi_riusciti)
+        allow(c).to receive(:workflow_run_jobs).with(anything, anything, 7).and_return(cancelled)
+      end
+
+      expect(osserva(client)).to be_ok
+      expect(workflow.reload.blocked_at).to be_nil
+      expect(ticket.reload.status).to eq(fatto)
+    end
   end
 
   # A failed release no longer holds the project's production lane once a later release, proved in

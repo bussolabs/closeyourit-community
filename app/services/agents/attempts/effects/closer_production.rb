@@ -41,6 +41,9 @@ module Agents
           # Un progetto che non dichiara come si prova che un rilascio è vivo non deve far aspettare
           # un'ora per niente: si chiama subito una persona, con parole diverse da quelle della scadenza.
           return if bound.ok?
+          # The frozen proof cannot be armed, but the project has since declared the merge as its proof:
+          # the stable release just delivered is that proof, so the work is done.
+          return complete_on_merge! if project_declares_merge?
 
           Agents::Workflows::BlockExhaustedPhase.call(
             workflow:, phase: "closer_production", source: "release_probe",
@@ -50,6 +53,10 @@ module Agents
 
         def merge_is_the_proof?
           workflow.frozen_plan&.completion_probe&.dig("kind") == "merge"
+        end
+
+        def project_declares_merge?
+          workflow.ticket.project.github_repository&.release_probe_merge? || false
         end
 
         # Same writes as a closed production probe. The prerequisites gate in ChangeStatus has the last

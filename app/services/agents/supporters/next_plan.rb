@@ -21,8 +21,20 @@ module Agents
         @host = host
       end
 
+      # Every waiting plan, not a fixed window: the oldest may all be judged already, and the next one to
+      # judge can sit far behind them. Three queries whatever the backlog: workflows, latest plans, verdicts.
       def call
-        Result.ok(candidates.lazy.filter_map { |workflow| item(workflow) }.first)
+        workflows = candidates.to_a
+        plans = latest_plans(workflows)
+        judged = judged_digests(plans.values)
+        workflows.each do |workflow|
+          plan = plans[workflow.id]
+          next if plan.nil? || plan.approved_at? || plan.change_request.present?
+
+          digest = self.class.digest(plan)
+          return Result.ok(item(workflow, plan, digest)) unless judged.include?([ plan.id, digest ])
+        end
+        Result.ok(nil)
       end
 
       private
@@ -32,19 +44,23 @@ module Agents
           .where(cancelled_at: nil, completed_at: nil, blocked_at: nil, approved_at: nil)
           .where.not(planned_at: nil)
           .where(projects: { organization_id: @host.organization_id, supporter_enabled: true })
-          .includes(ticket: :project).order(:planned_at).limit(20)
+          .includes(ticket: :project).order(:planned_at, :id)
+      end
+
+      def latest_plans(workflows)
+        Agents::Plan.where(workflow_id: workflows.map(&:id))
+          .select("DISTINCT ON (agents_plans.workflow_id) agents_plans.*")
+          .reorder(:workflow_id, version: :desc).index_by(&:workflow_id)
+      end
+
+      def judged_digests(plans)
+        SupporterDecision.where(target_type: "plan", target_id: plans.map(&:id)).pluck(:target_id, :target_digest).to_set
       end
 
       # OpenCode judges with the organization's OpenRouter model, like it reviews.
       def model = (Agents::AutomatorSetting.for(@host.organization).opencode_model if @host.effective_supporter == "opencode")
 
-      def item(workflow)
-        plan = workflow.plans.reorder(version: :desc).first
-        return if plan.nil? || plan.approved_at? || plan.change_request.present?
-
-        digest = self.class.digest(plan)
-        return if SupporterDecision.exists?(target_type: "plan", target_id: plan.id, target_digest: digest)
-
+      def item(workflow, plan, digest)
         ticket = workflow.ticket
         { plan_id: plan.id, digest: digest, engine: @host.effective_supporter, project_key: ticket.project.key,
           ticket: { code: ticket.code, title: ticket.title, description: ticket.description.to_s },

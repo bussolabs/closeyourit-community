@@ -44,10 +44,15 @@ module Agents
         return not_yet("tag_mismatch", tag_commit: commit) if commit != @probe.expected_sha
 
         runs = release_runs(commit)
+        released = runs.any? { |succeeded, _| succeeded }
         # Un rilascio andato male non è «non ancora»: è una cosa che una persona deve guardare, e
         # aspettare un'ora per dirglielo vorrebbe dire tenerla al buio mentre la produzione è ferma.
-        return stop!("release_run_failed") if runs.any? { |_, outcome| FAILED_CONCLUSIONS.include?(outcome) }
-        return not_yet("release_run_missing") unless runs.any? { |succeeded, _| succeeded }
+        # A failed or cancelled run only counts when no other run on the same commit released: a tag
+        # pushed again after a cancelled run is a release that went fine.
+        if !released && runs.any? { |_, outcome| FAILED_CONCLUSIONS.include?(outcome) }
+          return stop!("release_run_failed")
+        end
+        return not_yet("release_run_missing") unless released
         return not_yet("release_not_proved") unless row_proved?
 
         close!
