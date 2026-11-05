@@ -52,6 +52,8 @@ en:
           autopilot_auto_approved: Delivery moved on by itself
           plan_council_approved: Plan approved by the council
           plan_supporter_approved: Plan approved by the supporter
+          workflow_supporter_retried: Work sent back to the agent by the supporter
+          agent_safety_stopped: Work stopped for safety
           linked: Linked
           branch_created: Branch created
           pull_request_opened: Pull request opened

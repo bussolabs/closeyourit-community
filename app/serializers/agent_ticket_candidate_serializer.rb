@@ -92,6 +92,8 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
     ci_fix = ci_fix_for(workflow, phase)
     return ci_fix if ci_fix
 
+    guidance = supporter_guidance_for(workflow, phase)
+
     # The claim creates the new attempt BEFORE this payload is built, so "the last attempt" is the one
     # just started: skip attempts still open and those that ended without a verdict (stale, cancelled).
     last = workflow.attempts.where(phase:).where.not(status: %w[running awaiting_review stale cancelled])
@@ -99,7 +101,8 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
     # The server keeps a rejected delivery as `review_failed`, and its review_status is not always
     # `changes_requested` (LAB-70 had `unavailable` next to two major findings): what matters is that the
     # attempt was rejected and its review left blocking findings.
-    return unless last && (last.status == "review_failed" || last.review_status == "changes_requested")
+    rejected = last && (last.status == "review_failed" || last.review_status == "changes_requested")
+    return guidance && { phase:, attempt_id: last&.id, findings: [ guidance ] } unless rejected
 
     findings = Array(last.review&.dig("findings")).filter_map do |finding|
       next unless finding.is_a?(Hash) && finding["severity"].present? && finding["severity"] != "info"
@@ -107,9 +110,25 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
       { severity: finding["severity"].to_s, title: finding["title"].to_s.truncate(REWORK_TEXT_LIMIT),
         detail: finding["detail"].to_s.truncate(REWORK_TEXT_LIMIT) }
     end.first(REWORK_FINDINGS_LIMIT)
+    findings << guidance if guidance
     return if findings.empty?
 
     { phase:, attempt_id: last.id, findings: }
+  end
+
+  # CYRA-1197 — what the supporter told the agent when it sent stopped work back: it travels once, to the first
+  # attempt after the retry, in the same shape as review findings. Model output: material to read, not orders.
+  def self.supporter_guidance_for(workflow, phase)
+    decision = Agents::SupporterDecision.where(target_type: "consult", workflow:, outcome: "retried")
+                                        .order(:created_at).last
+    return if decision.nil? || decision.evidence["guidance"].blank?
+
+    finished = workflow.attempts.where(phase:).where.not(status: %w[running awaiting_review stale cancelled])
+                       .order(:created_at).last
+    return if finished && finished.created_at > decision.created_at
+
+    { severity: "major", title: "Supporter guidance after the stop",
+      detail: decision.evidence["guidance"].to_s.truncate(REWORK_TEXT_LIMIT * 2) }
   end
 
   # CYRA-1195 — the fix round after red checks: the failing checks of the delivered pull request, in the

@@ -14,8 +14,20 @@ module Agents
         @host = host
       end
 
+      PAGE = 50
+
+      # Every open round, not a fixed window: the oldest may all be decided already (CYRA-1197, as for plans).
       def call
-        Result.ok(candidates.lazy.filter_map { |round| item(round) }.first)
+        offset = 0
+        loop do
+          page = candidates.order(:created_at, :id).offset(offset).limit(PAGE).to_a
+          return Result.ok(nil) if page.empty?
+
+          found = page.lazy.filter_map { |round| item(round) }.first
+          return Result.ok(found) if found
+
+          offset += PAGE
+        end
       end
 
       private
@@ -24,7 +36,7 @@ module Agents
         Agents::Clarification.joins(workflow: { ticket: :project })
           .where(answered_at: nil, agents_workflows: { cancelled_at: nil, completed_at: nil })
           .where(projects: { organization_id: @host.organization_id, supporter_enabled: true })
-          .includes(workflow: { ticket: :project }).order(:created_at).limit(20)
+          .includes(workflow: { ticket: :project })
       end
 
       # OpenCode answers with the organization's OpenRouter model, like it reviews.

@@ -20,18 +20,22 @@ module Agents
       include CtoGate
       include ConcludedTicketGate
 
-      def initialize(workflow:, actor:)
+      # CYRA-1197 — `by_supporter:` is the supporter's retry, decided by Agents::Supporters::JudgeConsult under
+      # the server's own checks: it skips the CTO gate, and it can never release a safety stop.
+      def initialize(workflow:, actor:, by_supporter: false)
         @workflow = workflow
         @actor = actor
+        @by_supporter = by_supporter
       end
 
       def call
-        return forbidden unless authorized_cto?
+        return forbidden unless @by_supporter || authorized_cto?
         return concluded_ticket if concluded_ticket?
 
         ApplicationRecord.transaction do
           @workflow.lock!
           return terminal if @workflow.terminal?
+          return safety_stopped if @by_supporter && @workflow.blocked_kind == SafetyStop::KIND
 
           # CYRA-598 — quando a fermare è stata la macchina, la fase da riaprire è quella SCRITTA NEL
           # BLOCCO, non quella dedotta dagli attempt. La regola sta su Agents::Workflow
@@ -40,6 +44,8 @@ module Agents
           rearm = @workflow.blocked_kind == "candidate_check"
           # Non è un errore sbloccare ciò che non è bloccato: due click ravvicinati sono la stessa
           # decisione presa una volta, non un conflitto da mostrare a chi l'ha presa.
+          # CYRA-1197 — a person releasing a safety stop is the one way out of it.
+          @workflow.safety_release = !@by_supporter
           @workflow.update!(**Agents::Workflow.cleared_block) if @workflow.blocked_at?
           # Togliere il blocco NON rimette in coda niente (CYRA-267): la fase bocciata era stata claimata e
           # il suo <fase>_started_at è ancora scritto, quindi la coda continua a saltarla. Va riaperta come
@@ -79,6 +85,11 @@ module Agents
       def linked_repository(full_name)
         Github::Repository.joins(project: :organization)
                           .find_by(full_name:, projects: { organization_id: @workflow.organization.id })
+      end
+
+      def safety_stopped
+        Result.err(AppError.new("Safety stop: only a person can release this workflow",
+                                code: "R409-WORKFLOW-018", status: :conflict))
       end
 
       def terminal

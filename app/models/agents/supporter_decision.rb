@@ -4,8 +4,8 @@ module Agents
   # CYAU-235 — a decision the supporter took: an answer, a plan approval or a hand-over to a person. Applied
   # decisions wait in "To review" until a person marks them seen; marking seen neither approves nor undoes.
   class SupporterDecision < ApplicationRecord
-    TARGET_TYPES = %w[question plan].freeze
-    OUTCOMES = %w[answered approved escalated].freeze
+    TARGET_TYPES = %w[question plan consult].freeze
+    OUTCOMES = %w[answered approved escalated retried stopped].freeze
 
     belongs_to :organization, class_name: "Organizations::Organization"
     belongs_to :workflow, class_name: "Agents::Workflow"

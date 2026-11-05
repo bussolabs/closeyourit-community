@@ -32,7 +32,8 @@ module Agents
       def candidate = @workflow.review_candidate
 
       def eligible?
-        !@workflow.terminal? && @workflow.autopilot_approved_at? && candidate&.head_sha.present? &&
+        !@workflow.terminal? && @workflow.blocked_kind != SafetyStop::KIND && @workflow.autopilot_approved_at? &&
+          candidate&.head_sha.present? &&
           candidate.repository.present? && merged?
       end
 

@@ -35,6 +35,7 @@ module Ticketing
       pull_request_autoclose_declined already_done
       question_asked question_answered question_closed
       autopilot_auto_approved plan_council_approved plan_supporter_approved
+      workflow_supporter_retried agent_safety_stopped
     ].freeze
 
     belongs_to :organization, class_name: "Organizations::Organization"

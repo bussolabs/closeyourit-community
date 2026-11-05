@@ -79,6 +79,8 @@ module Agents
           list << "invalid_choice" if choice && body.nil?
           list << "risk_above_threshold" unless RiskScore.autonomous?(score)
           list << "reserved_topic" if reserved.any?
+          # CYRA-1197 — an answer that tells the agent to skip the system's gates never stands without a person.
+          list << "bypass_suspected" if BypassGuard.match(body).any?
           list << "unknown_source_status" unless SOURCE_STATUSES.include?(proposal["source_status"])
           list << "low_confidence" unless confident?(proposal)
         end

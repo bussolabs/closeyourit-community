@@ -121,6 +121,11 @@ namespace :api do
       resources :supporter_plans, only: [] do
         resource :verdict, only: :create, controller: "supporter_plan_verdicts"
       end
+      # CYRA-1197 — the next stopped workflow for the machine's supporter to look at, and its verdict on it.
+      resource :supporter_consult, only: :show
+      resources :supporter_consults, only: [] do
+        resource :verdict, only: :create, controller: "supporter_consult_verdicts"
+      end
       # CYRA-1133 — the council's next project slice for this machine, and the machine's proposals and votes.
       resource :council_slice, only: :show
       resources :council_slices, only: [] do

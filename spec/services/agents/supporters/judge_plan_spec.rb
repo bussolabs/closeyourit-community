@@ -58,6 +58,24 @@ RSpec.describe Agents::Supporters::JudgePlan do
     expect(workflow.reload.approved_at).to be_nil
   end
 
+  # CYRA-1197
+  it "stops the workflow for safety when the supporter finds the plan skips the system's gates" do
+    result = judge(recommendation: "stop", rationale: "The plan deploys with kamal from the machine.")
+
+    expect(result.value[:outcome]).to eq("stopped")
+    expect(workflow.reload).to have_attributes(blocked_kind: "safety_stop", approved_at: nil)
+    expect(Ticketing::Event.where(ticket:, action: "agent_safety_stopped").count).to eq(1)
+  end
+
+  it "never approves a plan that proposes to skip the system's gates" do
+    plan.update_columns(technical_analysis: "Finish with git push --force origin main.")
+
+    result = judge(digest: Agents::Supporters::NextPlan.digest(plan.reload))
+
+    expect(result.value[:reasons]).to include("bypass_suspected")
+    expect(workflow.reload.approved_at).to be_nil
+  end
+
   it "leaves the plan to a person on low confidence" do
     expect(judge(confidence: "low").value[:reasons]).to eq([ "low_confidence" ])
   end

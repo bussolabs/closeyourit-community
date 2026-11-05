@@ -45,6 +45,10 @@ module Agents
     validate :review_candidate_belongs_here
 
     before_update :ensure_review_candidate_is_write_once
+    before_update :keep_safety_stop_until_a_person_releases_it
+
+    # CYRA-1197 — set only by a person's Unblock: the one way out of a safety stop.
+    attr_accessor :safety_release
 
     # L'ordine di demolizione e' scritto per esteso e non affidato alla posizione delle has_many qui
     # sopra, che chiunque puo rimescolare senza sapere cosa rompe: le foreign key dei figli verso
@@ -55,6 +59,16 @@ module Agents
     delegate :project, to: :ticket
 
     def organization = ticket.project.organization
+
+    # CYRA-1197 — a safety stop (an agent tried to skip the gates or to harm production) is never cleared by a
+    # machine path: retries, fix rounds and automatic closings all clear blocks, and any of them would let the
+    # same agent go on. Only a person's Unblock sets #safety_release; cancelling keeps the block and is allowed.
+    def keep_safety_stop_until_a_person_releases_it
+      return unless blocked_kind_was == Agents::Workflows::SafetyStop::KIND
+      return if blocked_kind == Agents::Workflows::SafetyStop::KIND || safety_release || cancelled_at?
+
+      raise ActiveRecord::ReadOnlyRecord, "Safety stop: only a person can release this workflow"
+    end
 
     # Il puntatore alla verifica si può SPOSTARE, ma solo passando dal vuoto: saltare da una riga
     # all'altra senza azzerare in mezzo sposterebbe di nascosto una decisione su un'altra prova. La

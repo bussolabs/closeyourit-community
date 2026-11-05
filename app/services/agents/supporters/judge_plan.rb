@@ -28,6 +28,9 @@ module Agents
         return error("R409-SUPPORTER-004", :plan_stale) unless judgeable? && @payload["digest"] == digest
 
         judged = judgement
+        # CYRA-1197 — a plan that tries to skip the system's gates or to harm production stops the workflow.
+        return Result.ok(summary(record!(judged, digest, "stopped"))) if verdict["recommendation"] == "stop" && stop!
+
         outcome = judged[:reasons].empty? && approve! ? "approved" : "escalated"
         Result.ok(summary(record!(judged, digest, outcome)))
       end
@@ -56,7 +59,8 @@ module Agents
         text = [ ticket.title, ticket.description, NextPlan.document(plan) ].join("\n")
         reserved = ReservedTopics.new(organization: project.organization, project: project).match(text: text, paths: paths)
         score = RiskScore.resolve(previous: nil, proposed: verdict["risk_score"], reserved: reserved.any?, paths: paths)
-        { score:, reserved: reserved.map(&:value), reasons: reasons(score, reserved) }
+        bypass = BypassGuard.match(NextPlan.document(plan))
+        { score:, reserved: reserved.map(&:value), bypass:, reasons: reasons(score, reserved, bypass) }
       end
 
       # The files the plan itself names, so a supporter that forgets one cannot hide it.
@@ -64,11 +68,12 @@ module Agents
         plan.document.work_items.flat_map { |item| Array(item.to_h["files"]) }.filter_map { |file| file.to_h["path"].presence }
       end
 
-      def reasons(score, reserved)
+      def reasons(score, reserved, bypass)
         [].tap do |list|
           list << "supporter_escalated" unless verdict["recommendation"] == "approve"
           list << "risk_above_threshold" unless RiskScore.autonomous?(score)
           list << "reserved_topic" if reserved.any?
+          list << "bypass_suspected" if bypass.any?
           list << "low_confidence" unless CONFIDENT.include?(verdict["confidence"])
           list << "ticket_concluded" if concluded_ticket?
         end
@@ -90,11 +95,18 @@ module Agents
         end
       end
 
+      def stop!
+        reason = [ verdict["rationale"], Array(verdict["bypass_signals"]).join(", ") ].compact_blank.join(" — ")
+        Agents::Workflows::SafetyStop.call(workflow:, reason: reason.presence || "plan stopped by the supporter",
+                                           actor_name: I18n.t("agents.supporter.activity_actor"))
+      end
+
       def record!(judged, digest, outcome)
         SupporterDecision.create!(
           organization: project.organization, workflow:, target_type: "plan", target_id: plan.id,
           target_digest: digest, outcome:, engine: @host.effective_supporter, risk_score: judged[:score],
           evidence: verdict.merge("plan_version" => plan.version, "reserved_matches" => judged[:reserved],
+                                  "bypass_matches" => judged[:bypass],
                                   "reasons" => judged[:reasons])
         )
       end

@@ -42,6 +42,22 @@ RSpec.describe Agents::Supporters::NextRound do
     expect(described_class.call(host:).value).to be_nil
   end
 
+  # CYRA-1197 — not a fixed window of the 20 oldest: when they are all decided, the next one is still served.
+  it "serves an open round behind more than a page of rounds already decided" do
+    decided = Array.new(described_class::PAGE) do |i|
+      other = create(:ticket, organization:, project:, with_agent_workflow: true)
+      create(:agent_clarification, workflow: other.agent_workflow, questions: [ "Old #{i}?" ], created_at: 2.hours.ago)
+    end
+    decided.each do |old|
+      question = old.questions.first
+      Agents::SupporterDecision.create!(organization:, workflow: old.workflow, target_type: "question", target_id: question.id,
+                                        target_digest: described_class.digest(old, [ question ]), outcome: "escalated",
+                                        engine: "codex", risk_score: 9)
+    end
+
+    expect(described_class.call(host:).value[:round_id]).to eq(round.id)
+  end
+
   it "skips a round already answered" do
     round.update!(answered_at: Time.current)
     expect(described_class.call(host:).value).to be_nil

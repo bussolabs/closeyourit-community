@@ -53,7 +53,10 @@ module Ticketing
       # The council's plan approved itself (CYRA-1133).
       "plan_council_approved" => "users",
       # The supporter approved a low-risk plan (CYRA-1193).
-      "plan_supporter_approved" => "life-buoy"
+      "plan_supporter_approved" => "life-buoy",
+      # The supporter sent stopped work back to the agent, or stopped an agent for safety (CYRA-1197).
+      "workflow_supporter_retried" => "rotate-ccw",
+      "agent_safety_stopped" => "shield-alert"
     }.freeze
 
     # Ordine canonico dei campi nella frase `updated`: il jsonb NON preserva l'insertion order,

@@ -28,7 +28,9 @@ module Agents
       # CYRA-624 — `release_probe`: il rilascio non si è visto in piedi. È un momento diverso dal
       # controllo della proposta, e chiamarlo con le sue parole manderebbe a cercare nel posto sbagliato.
       # CYRA-871 — `held_by_person`: il CTO ha fermato un rilascio prima della produzione.
-      KINDS = %w[attempt_limit agent_blocked candidate_check release_probe held_by_person].freeze
+      # CYRA-1197 — `safety_stop`: an agent tried to skip the system's gates or to harm production. Only a person
+      # releases it (see Agents::Workflow#safety_release and Agents::Workflows::SafetyStop).
+      KINDS = %w[attempt_limit agent_blocked candidate_check release_probe held_by_person safety_stop].freeze
 
       def initialize(workflow:, phase:, reason:, kind:)
         @workflow = workflow

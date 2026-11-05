@@ -25,6 +25,8 @@ en:
         not_settled: The answers were not recorded. The round stays with a person.
         plan_not_found: Plan not found.
         plan_stale: The plan changed or was already decided. Take the updated plan.
+        consult_not_found: Workflow not found.
+        consult_stale: The workflow moved or was already decided. Take the updated one.
       activity_actor: Supporter
     # CYRA-675 — fixed-length service line, same reason as the clarification one: a comment has a
     # character cap and the agent summary does not. The full summary is in the Automation panel.

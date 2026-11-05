@@ -35,6 +35,8 @@ module Agents
 
       def call
         return Result.ok(@probe) unless @probe.live?
+        # CYRA-1197 — a workflow under a safety stop waits for a person, even when its release shows up.
+        return Result.ok(@probe) if @workflow.blocked_kind == Agents::Workflows::SafetyStop::KIND
         return check_registry if @probe.kind == "publish"
 
         commit = tag_commit

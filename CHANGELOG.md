@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.214.0] - 2026-11-05
+
+### Added
+
+- **Un agente fermo viene guardato da un altro agente prima di chiamarti**: il supporter rimanda il lavoro all'agente con le sue indicazioni, oppure lo lascia a te. Se un agente prova ad aggirare i controlli o a toccare la produzione, la lavorazione si ferma per sicurezza e riparte solo se la sblocchi tu. ([Approvazioni](/member/home/approvals))
+
 ## [0.213.0] - 2026-11-05
 
 ### Added

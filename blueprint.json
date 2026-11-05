@@ -6189,6 +6189,22 @@
       ]
     },
     {
+      "id": "agt_ph_supporter_consult",
+      "name": "Il supporter guarda il lavoro fermo",
+      "level": 3,
+      "parent": "agt_flow_phases",
+      "kind": "step",
+      "summary": "Prima di chiamare una persona, il supporter legge perché un agente si è fermato. Il server decide: rimanda il lavoro all'agente con le indicazioni (al massimo 2 volte), lo lascia a una persona, oppure lo ferma per sicurezza se l'agente ha provato ad aggirare i controlli o a toccare la produzione. Un fermo di sicurezza lo toglie solo una persona.",
+      "files": [
+        "app/controllers/api/v1/agent_host/supporter_consults_controller.rb",
+        "app/controllers/api/v1/agent_host/supporter_consult_verdicts_controller.rb",
+        "app/services/agents/supporters/next_consult.rb",
+        "app/services/agents/supporters/judge_consult.rb",
+        "app/services/agents/supporters/bypass_guard.rb",
+        "app/services/agents/workflows/safety_stop.rb"
+      ]
+    },
+    {
       "id": "agt_ph_autopilot",
       "name": "Sviluppo",
       "level": 3,

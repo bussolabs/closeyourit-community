@@ -25,6 +25,8 @@ it:
         not_settled: Le risposte non sono state registrate. Il giro resta a una persona.
         plan_not_found: Piano non trovato.
         plan_stale: Il piano è cambiato o è già stato deciso. Riprendi il piano aggiornato.
+        consult_not_found: Lavorazione non trovata.
+        consult_stale: La lavorazione si è mossa o è già stata decisa. Riprendi quella aggiornata.
       activity_actor: Supporter
     # CYRA-675 — riga di servizio a lunghezza FISSA, come quella dei chiarimenti e per lo stesso
     # motivo: il riassunto dell'agente non ha un tetto e un commento sì. Il riassunto per esteso sta

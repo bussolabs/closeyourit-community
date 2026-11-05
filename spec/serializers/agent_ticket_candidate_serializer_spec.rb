@@ -245,6 +245,23 @@ RSpec.describe AgentTicketCandidateSerializer do
       expect(rework[:findings].first[:detail]).to include("bussolabs/app#9", "actions/runs/1", "sync-main.sh")
     end
 
+    # CYRA-1197 — the supporter sent stopped work back: its guidance reaches the first attempt after the retry.
+    it "carries the supporter's guidance once, to the first attempt after its retry" do
+      org = ticket.project.organization
+      create(:agent_attempt, organization: org, workflow:, phase: "autopilot", status: "failed", created_at: 10.minutes.ago)
+      Agents::SupporterDecision.create!(organization: org, workflow:, target_type: "consult", target_id: workflow.id,
+                                        target_digest: "sha256:x", outcome: "retried", engine: "codex", risk_score: 3,
+                                        evidence: { "guidance" => "Use the factory in spec/factories/items.rb." })
+      create(:agent_attempt, organization: org, workflow:, phase: "autopilot", status: "running")
+
+      rework = described_class.new(ticket.reload).as_json.dig("workflow", :rework)
+      expect(rework[:findings]).to eq([ { severity: "major", title: "Supporter guidance after the stop",
+                                          detail: "Use the factory in spec/factories/items.rb." } ])
+
+      workflow.attempts.status_running.update_all(status: "failed")
+      expect(described_class.new(ticket.reload).as_json.dig("workflow", :rework)).to be_nil
+    end
+
     it "carries nothing when the latest attempt of the phase was not rejected by its review" do
       create(:agent_attempt, organization: ticket.project.organization, workflow:, phase: "autopilot",
                              status: "running", review_status: nil, review: {})
