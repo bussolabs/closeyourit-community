@@ -275,3 +275,26 @@ RSpec.describe "Rack::Attack — help desk requests", type: :request do
     expect(throttle.block.call(attack_request(path.sub("helpdesk_requests", "pageviews")))).to be_nil
   end
 end
+
+# CYRA-1161 — the release status read has its own per-project ceiling, on GET only.
+RSpec.describe "Rack::Attack — release status", type: :request do
+  def attack_request(path, method: "GET")
+    Rack::Attack::Request.new(Rack::MockRequest.env_for(path, method: method))
+  end
+
+  let(:project_id) { "550e8400-e29b-41d4-a716-446655440000" }
+  let(:throttle) { Rack::Attack.throttles.fetch("release_status/project") }
+
+  it "counts the reads per project, whatever the form of the address" do
+    [ "", ".json", "/", "?version=2.4.1" ].each do |suffix|
+      expect(throttle.block.call(attack_request("/api/v1/projects/#{project_id}/release_status#{suffix}"))).to eq(project_id)
+    end
+    expect(throttle.block.call(attack_request("/api/v1/projects/%35%35%30e8400-e29b-41d4-a716-446655440000/release_status")))
+      .to eq(project_id)
+  end
+
+  it "ignores other methods and other doors" do
+    expect(throttle.block.call(attack_request("/api/v1/projects/#{project_id}/release_status", method: "POST"))).to be_nil
+    expect(throttle.block.call(attack_request("/api/v1/projects/#{project_id}/releases"))).to be_nil
+  end
+end

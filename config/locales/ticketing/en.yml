@@ -53,6 +53,15 @@ en:
         mentioned: "%{name} mentioned you in %{code}"
         question_asked: "%{name} asked a question on %{code}"
         question_answered: "%{name} answered a question on %{code}"
+        stalled_epic: "Epic %{code} is stalled: no ticket moves"
+        stalled_epic_line: "%{code}: %{what}, up to %{name}"
+        stalled_epic_nobody: "nobody named"
+        stalled_epic_waits:
+          awaiting_approval: "approve the plan"
+          awaiting_autopilot_approval: "approve the delivered work"
+          review_blocked: "unblock the stopped work"
+          question: "answer the question “%{detail}”"
+          dependency: "finish %{detail}"
     ticket_notifications:
       mailer:
         notify:

@@ -70,6 +70,18 @@ RSpec.describe "Member::Monitoring::Analytics::Goals", type: :request do
       end.to change(Analytics::Goal, :count).by(1)
     end
 
+    # CYRA-1158 — an event goal may count only one property value.
+    it "creates an event goal filtered by a property value and lists the filter" do
+      post member_monitoring_analytics_goals_path(project_id: project.id),
+           params: { analytics_goal: { kind: "custom_event", event_name: "Signup", display_name: "Pro signups",
+                                       property_name: "plan", property_value: "pro" } }
+
+      goal = project.analytics_goals.sole
+      expect([ goal.property_name, goal.property_value ]).to eq(%w[plan pro])
+      get member_monitoring_analytics_goals_path(project_id: project.id)
+      expect(response.body).to include("plan = pro")
+    end
+
     it "dati invalidi → 422 e ri-render del form" do
       post member_monitoring_analytics_goals_path(project_id: project.id),
            params: { analytics_goal: { kind: "pageview_path", path_pattern: "", display_name: "" } }

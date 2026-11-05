@@ -1,0 +1,56 @@
+<% content_for :title, t("member.monitoring.analytics.undeclared_events.title") %>
+
+<div class="p-7 space-y-6" data-test="member-analytics-undeclared-events">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.monitoring.analytics.undeclared_events.title"),
+        subtitle: t("member.monitoring.analytics.undeclared_events.subtitle"),
+        breadcrumb: [
+          { label: t("member.monitoring.analytics.title"), href: member_monitoring_analytics_path(project_id: @project.id, range: @range) },
+          { label: t("member.monitoring.analytics.event_definitions.title"), href: member_monitoring_analytics_event_definitions_path(project_id: @project.id) },
+          { label: t("member.monitoring.analytics.undeclared_events.title") }
+        ],
+        counts_test_id: "analytics-undeclared-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.monitoring.analytics.undeclared_events.count"), value: @events.size, test_id: "analytics-undeclared-count") %>
+    <% end %>
+    <% h.with_actions do %>
+      <div class="inline-flex rounded-md border border-stone-200 dark:border-zinc-800 p-0.5 bg-stone-50 dark:bg-zinc-800" data-test="range-selector">
+        <% ::Analytics::Pageview::BUCKETS.each_key do |r| %>
+          <%= link_to r, member_monitoring_analytics_undeclared_events_path(project_id: @project.id, range: r),
+                class: "h-[26px] px-2.5 inline-flex items-center rounded-[5px] text-[12px] font-medium #{@range == r ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-stone-200 dark:border-zinc-800' : 'text-gray-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}" %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="analytics-undeclared-list">
+    <% if @events.empty? %>
+      <div class="px-4 py-12 text-center">
+        <p class="text-[13px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.undeclared_events.empty") %></p>
+      </div>
+    <% else %>
+      <%= render(Ui::TableComponent.new(stacked: true, label: t("member.monitoring.analytics.undeclared_events.title"))) do |t| %>
+        <% t.with_head do %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.event_definitions.col_name")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.undeclared_events.col_count")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.event_definitions.col_properties")) %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.monitoring.analytics.undeclared_events.declare"), label_hidden: true) %>
+        <% end %>
+        <% @events.each do |event| %>
+          <%= render Ui::TableComponent::RowComponent.new(test_id: "analytics-undeclared-row") do %>
+            <%= render(Ui::TableComponent::CellComponent.new(header: true, mono: true)) { event[:name] } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.analytics.undeclared_events.col_count"), mono: true, class: "text-gray-600 dark:text-zinc-400")) { event[:count].to_s } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.analytics.event_definitions.col_properties"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { event[:property_names].join(", ").presence || "—" } %>
+            <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>
+              <%= form_with url: member_monitoring_analytics_event_definitions_path(project_id: @project.id), method: :post, data: { test: "analytics-undeclared-declare-form" } do %>
+                <%= hidden_field_tag "analytics_event_definition[name]", event[:name], id: nil %>
+                <%= hidden_field_tag "analytics_event_definition[property_names]", event[:property_names].first(::Analytics::Constants::EVENT_PROPERTIES_MAX).join(","), id: nil %>
+                <%= render Ui::ButtonComponent.new(label: t("member.monitoring.analytics.undeclared_events.declare"), type: "submit", variant: :secondary_muted, size: :sm, test_id: "analytics-undeclared-declare") %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

@@ -106,6 +106,30 @@ RSpec.describe Agents::Attempts::Deliver, "il blocco dichiarato dalla macchina" 
 
   # CYRA-1062 — the plan the person approved does not fit the code: «Riprova» would rerun the same plan,
   # and an approved plan could not be changed. The work goes back to planning with the reason.
+  # CYRA-1193 — a network failure is the machine not reaching a service, whatever it says about retrying:
+  # the phase goes back to the queue and a person is called only past the unreachable limit.
+  describe "the machine is cut off from the network" do
+    let(:network_failure) do
+      { category: "network", summary: "The sandbox denies www.closeyour.it.", retryable: false,
+        human_action: "Restore access to CloseYourIt." }
+    end
+
+    it "requeues the phase instead of calling a person" do
+      consegna("planner", contract_version: 2, state: "blocked", failure: network_failure)
+
+      expect(workflow.reload).to have_attributes(blocked_at: nil, unreachable_count: 1)
+    end
+
+    it "calls a person past the unreachable limit" do
+      Agents::Constants::PHASE_UNREACHABLE_LIMIT.times do
+        consegna("planner", contract_version: 2, state: "blocked", failure: network_failure)
+      end
+
+      expect(workflow.reload).to have_attributes(blocked_phase: "planner", blocked_kind: "agent_blocked")
+      expect(workflow.blocked_reason).to include("unreachable").and include("The sandbox denies www.closeyour.it.")
+    end
+  end
+
   describe "the machine says the approved plan does not apply" do
     let!(:plan) do
       Agents::Plan.create!(workflow:, attempt: create(:agent_attempt, organization:, workflow:), technical_analysis: "Plan",

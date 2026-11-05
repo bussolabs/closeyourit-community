@@ -47,6 +47,21 @@ module Ticketing
         )
       end
 
+      # CYRA-1155 — an epic whose children all wait: one line per wait, who acts and on what.
+      def self.stalled_epic(stall:)
+        lines = stall.waits.map do |wait|
+          what = I18n.t("ticketing.notifications.content.stalled_epic_waits.#{wait.kind}", detail: wait.detail.to_s.truncate(120))
+          I18n.t("ticketing.notifications.content.stalled_epic_line",
+                 code: wait.child.code, what: what,
+                 name: wait.account&.name || I18n.t("ticketing.notifications.content.stalled_epic_nobody"))
+        end
+        new(
+          title: I18n.t("ticketing.notifications.content.stalled_epic", code: stall.epic.code),
+          body: lines.join("\n"),
+          url: Rails.application.routes.url_helpers.member_ticket_path(stall.epic)
+        )
+      end
+
       # Titolo umano per azione, attinto da event.data (label già snapshottate da RecordActivity).
       def self.title_for(event, ticket)
         code = ticket.code

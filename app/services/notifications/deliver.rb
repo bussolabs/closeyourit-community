@@ -33,6 +33,17 @@ module Notifications
       Webhook.call(channel: channel, event_type: event_type, subject: subject, content: content)
     end
 
+    # The bell count pushed to every open tab of the account; also used by Notifications::MarkRead.
+    # Same scope as the bell on page load, or the tab count would jump between the two (CYRA-1147).
+    def self.broadcast_unread_count(account:, organization:)
+      count = Alerting::Notification.where(account_id: account.id, organization_id: organization.id,
+                                           via: :in_app).unread.count
+      Turbo::StreamsChannel.broadcast_replace_to(
+        "alerting:notifications:#{account.id}", target: "alerting_notification_badge",
+        partial: "member/alerting_notifications/badge", locals: { count: count }
+      )
+    end
+
     def initialize(payload:, via:, quiet: false, bucket: nil)
       @payload = payload
       @via = via
@@ -130,14 +141,7 @@ module Notifications
         partial: "member/alerting_notifications/notification",
         locals: { group: Alerting::NotificationGroup.new(notification) }
       )
-      Turbo::StreamsChannel.broadcast_replace_to(
-        stream, target: "alerting_notification_badge",
-        partial: "member/alerting_notifications/badge", locals: { count: unread_count }
-      )
-    end
-
-    def unread_count
-      Alerting::Notification.where(account_id: @payload.account.id, via: :in_app).unread.count
+      self.class.broadcast_unread_count(account: @payload.account, organization: @payload.organization)
     end
   end
 end

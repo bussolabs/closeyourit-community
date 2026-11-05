@@ -20,6 +20,19 @@ RSpec.describe Assistant::StartReply do
     expect(conversation.reload.last_message_at).to be_within(1.second).of(reply.created_at)
   end
 
+  # A spoken question's bubble is already on the page: only the reply is appended (CYRA-1084).
+  it "appends only the reply when the question is not sent along" do
+    expect { described_class.call(question: question) }
+      .to have_broadcasted_to(Realtime::Streams.assistant_conversation(conversation)).exactly(:once)
+      .with { |payload| expect(payload.scan(/data-role="(\w+)"/).flatten).to eq(%w[assistant]) }
+  end
+
+  it "appends the question before the reply, in one broadcast, when asked to" do
+    expect { described_class.call(question: question, with_question: true) }
+      .to have_broadcasted_to(Realtime::Streams.assistant_conversation(conversation)).exactly(:once)
+      .with { |payload| expect(payload.scan(/data-role="(\w+)"/).flatten).to eq(%w[user assistant]) }
+  end
+
   it "narrows the scope to the project the conversation is fixed on" do
     project = create(:project, organization: conversation.organization)
     create(:project, organization: conversation.organization)

@@ -12,8 +12,13 @@ module Agents
     # new session of the same engine, for a machine that has only one. OpenCode only reviews (CYAU-228).
     REVIEW_ONLY_ENGINES = %w[opencode].freeze
     REVIEWERS = (WORK_ENGINES + REVIEW_ONLY_ENGINES).freeze
+    # CYRA-1175 — how many jobs one machine may take at once; null keeps it at one.
+    PARALLEL_CHOICES = (1..4).freeze
     # CYAU-235 — the supporter may use any engine that can review.
     SUPPORTERS = REVIEWERS
+    # CYRA-1178 — the Automator watchdog reports a blocked event loop for 30 minutes at most.
+    HANG_STATES = %w[hung resumed restarted].freeze
+    HANG_REPORT_WINDOW = 30.minutes
 
     belongs_to :organization,
                class_name: "Organizations::Organization",
@@ -38,6 +43,7 @@ module Agents
     validates :work_engine, inclusion: { in: WORK_ENGINES }, allow_nil: true
     # CYAU-235: null means the machine follows the organization's supporter engine.
     validates :supporter, inclusion: { in: SUPPORTERS }, allow_nil: true
+    validates :max_parallel, inclusion: { in: PARALLEL_CHOICES }, allow_nil: true
     before_validation :complete_engine_choice
     before_validation :keep_following_supporter
     validate :opencode_has_a_model
@@ -98,6 +104,8 @@ module Agents
     def effective_supporter = supporter || organization_choice.supporter
     # CYAU-228 — the OpenRouter model OpenCode reviews with; Claude and Codex use the model the automator pins.
     def effective_reviewer_model = effective_reviewer == "opencode" ? organization_choice.opencode_model : nil
+    # CYRA-1175 — the heartbeat reports one slot; the chosen parallel jobs widen it.
+    def capacity = [ slots, max_parallel || 0 ].max
     def supported_platform? = platform == SUPPORTED_PLATFORM
 
     # Certificazione esplicita: un host resta ineleggibile finché un umano non lo abilita. Il gate
@@ -139,9 +147,32 @@ module Agents
       (last_heartbeat_at || created_at) + Agents::Constants::HOST_STALE_AFTER
     end
 
+    # CYRA-1178 — hung while the last heartbeat carried a "hung" report younger than the watchdog window.
+    # The reduced heartbeat does not refresh host_status, so without this the machine would look healthy.
+    def hung?(now: Time.current)
+      return false unless hang.is_a?(Hash) && hang["state"] == "hung"
+
+      reported_at = hang_reported_at
+      reported_at.present? && last_heartbeat_at.present? && reported_at >= last_heartbeat_at &&
+        reported_at > now - HANG_REPORT_WINDOW
+    end
+
+    # Whole minutes of the last reported hang, at least one.
+    def hang_minutes
+      [ (hang.to_h["duration_seconds"].to_i / 60.0).round, 1 ].max
+    end
+
+    def hang_reported_at
+      raw = hang.is_a?(Hash) ? hang["reported_at"] : nil
+      raw.present? ? Time.iso8601(raw) : nil
+    rescue ArgumentError
+      nil
+    end
+
     # Per la dashboard un host idle ma vivo è "online"; gli altri stati operativi restano distinti.
     def activity_status(now: Time.current)
       return "offline" unless heartbeat_online?(now:)
+      return "hung" if hung?(now:)
       return "online" if host_status == "idle"
 
       host_status
@@ -209,7 +240,7 @@ module Agents
     end
 
     def telemetry_snapshots_are_arrays
-      %i[runtimes repositories active_runs last_stops].each do |attribute|
+      %i[runtimes repositories active_runs last_stops agent_quota].each do |attribute|
         errors.add(attribute, :invalid) unless public_send(attribute).is_a?(Array)
       end
       errors.add(:active_runs, :invalid) if active_runs.is_a?(Array) && active_runs.any? { |run| !run.is_a?(Hash) }

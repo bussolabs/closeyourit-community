@@ -34,6 +34,9 @@ module Member
                                          .find(params[:id])
         return render_history if params[:section] == "history"
 
+        # CYRA-1146 — before rendering, so this page's bell already shows the new count.
+        ::Notifications::MarkRead.call(account: Current.account, organization: Current.organization, subjects: [ @ticket ])
+
         @voted = @ticket.votes.exists?(account_id: Current.account.id)
         @watching = @ticket.subscriptions.exists?(account_id: Current.account.id)
         @watchers_count = @ticket.subscriptions.count

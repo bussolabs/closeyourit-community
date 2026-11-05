@@ -6,11 +6,14 @@ module Assistant
   module MessageBroadcast
     module_function
 
-    def append(message)
+    # Bubbles of one conversation travel in a single broadcast, in the given order: two broadcasts
+    # sent close together can reach the panel swapped, a single one cannot. CYRA-1084
+    def append(*messages)
+      conversation = messages.first.conversation
       Turbo::StreamsChannel.broadcast_append_to(
-        Realtime::Streams.assistant_conversation(message.conversation),
-        target: "assistant_messages_#{message.conversation_id}",
-        partial: "member/assistant_conversations/message", locals: { message: message }
+        Realtime::Streams.assistant_conversation(conversation),
+        target: "assistant_messages_#{conversation.id}",
+        partial: "member/assistant_conversations/message", collection: messages, as: :message
       )
     end
 

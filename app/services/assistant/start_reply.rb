@@ -3,9 +3,12 @@
 module Assistant
   # Starts the assistant's answer to a user message that already has its text: empty reply,
   # bubble, job. Shared by a typed message (PostMessage) and a transcribed one (TranscribeJob). CYRA-908
+  # `with_question:` sends the question's bubble with the reply's in one broadcast, so the panel
+  # cannot receive them swapped; a spoken question is already on the page and stays out. CYRA-1084
   class StartReply < ApplicationService
-    def initialize(question:)
+    def initialize(question:, with_question: false)
       @question = question
+      @with_question = with_question
       @conversation = question.conversation
     end
 
@@ -15,7 +18,7 @@ module Assistant
                                        organization_id: @conversation.organization_id)
                      .tap { |message| @conversation.update!(last_message_at: message.created_at) }
       end
-      MessageBroadcast.append(reply)
+      MessageBroadcast.append(*(@with_question ? [ @question, reply ] : [ reply ]))
       enqueue(reply)
       Result.ok(reply)
     end

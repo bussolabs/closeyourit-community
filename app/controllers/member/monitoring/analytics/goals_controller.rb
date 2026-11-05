@@ -57,7 +57,7 @@ module Member
         end
 
         def goal_params
-          params.require(:analytics_goal).permit(:kind, :event_name, :path_pattern, :display_name)
+          params.require(:analytics_goal).permit(:kind, :event_name, :path_pattern, :display_name, :property_name, :property_value)
         end
       end
     end

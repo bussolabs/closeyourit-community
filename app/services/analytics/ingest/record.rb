@@ -72,6 +72,7 @@ module Analytics
           screen_class: normalized.screen_class,
           environment: normalized.environment,
           occurred_at: normalized.occurred_at,
+          properties: normalized.properties,
           created_at: Time.current
         }
       end

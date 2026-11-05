@@ -145,6 +145,23 @@ RSpec.describe Analytics::Query, type: :service do
     end
   end
 
+  # CYRA-1158 — events that arrived in the range but are not in the project's declared list.
+  describe "#undeclared_events" do
+    it "lists each undeclared event with its count and the property names seen, busiest first" do
+      pv(name: "Signup", properties: { "plan" => "pro" })
+      pv(name: "Signup", properties: { "seats" => 2, "plan" => "free" })
+      pv(name: "Download")
+      pv(name: "Checkout", properties: { "total" => 10 })
+      pv(name: "pageview")
+      pv(name: "Old", occurred_at: 3.days.ago)
+
+      expect(query("24h").undeclared_events(declared: [ "Checkout" ])).to eq([
+        { name: "Signup", count: 2, property_names: %w[plan seats] },
+        { name: "Download", count: 1, property_names: [] }
+      ])
+    end
+  end
+
   describe "#conversions" do
     it "pageview_path goal: unique/total conversioni + rate sui visitatori totali" do
       pv(name: "pageview", path: "/pricing", visitor_hash: "a")

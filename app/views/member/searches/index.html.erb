@@ -15,7 +15,7 @@
       <%= render Ui::NoResultsComponent.new(query: @query, reset_href: member_search_path, compact: true,
             reset_test_id: "global-search-reset", test_id: "global-search-empty", class: "flex-1 md:min-h-48") %>
     <% else %>
-      <%= render "results", found: @found, query: @query, type: @type %>
+      <%= render "results", found: @found, query: @query, type: @type, context: @context %>
     <% end %>
   <% end %>
 <% end %>

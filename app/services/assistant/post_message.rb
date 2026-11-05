@@ -2,7 +2,7 @@
 
 module Assistant
   # Records the user's turn and starts the reply through Assistant::StartReply: the question's bubble
-  # appears at once, the reply is born empty and a job fills it. The controller already resolved the
+  # appears with the reply's, born empty, and a job fills it. The controller already resolved the
   # conversation within the account's ownership. CYRA-908
   class PostMessage < ApplicationService
     def initialize(conversation:, text:, correction_of: nil)
@@ -23,11 +23,11 @@ module Assistant
       return Result.err(::Ai::Feature.disabled_error(:assistant_chat)) if ::Ai::Feature.disabled?(:assistant_chat)
 
       user_message = persist
-      MessageBroadcast.append(user_message)
       discard_stale_proposals
-      # The reply starts with a short delay so a freshly rendered panel can subscribe first; the
+      # The question's bubble travels with the empty reply's, in one broadcast (CYRA-1084). The reply
+      # starts with a short delay so a freshly rendered panel can subscribe first; the
       # `ui--assistant-reconcile` fallback covers a lost broadcast (STREAM_START_DELAY).
-      StartReply.call(question: user_message)
+      StartReply.call(question: user_message, with_question: true)
     end
 
     private

@@ -67,29 +67,10 @@ module Agents
         @workflow.update!(closer_staging_verified_at: @now, closer_staging_next_check_at: nil,
                           closer_staging_last_error_code: nil)
         # CYRA-1050 — a missing review status does not stop the release: the merge was seen anyway.
-        merge_is_the_proof? ? complete_on_merge! : Agents::Workflows::StatusProjection.call(workflow: @workflow)
+        # CYRA-1193 — production always follows, even when the merge is the proof of done: a beta tag
+        # is not a release, and closing the work here left the stable release undone.
+        Agents::Workflows::StatusProjection.call(workflow: @workflow)
         Result.ok(@workflow)
-      end
-
-      # When the project's proof of done is the merge, this verified merge IS that proof: production
-      # has nothing to observe and refused to bind it, so the work never became done.
-      def merge_is_the_proof?
-        @workflow.frozen_plan&.completion_probe&.dig("kind") == "merge"
-      end
-
-      # Same writes as a closed production probe, together: a done ticket on unfinished work, or the
-      # reverse, would never be looked at again. The prerequisites gate in ChangeStatus has the last
-      # word: if it refuses, nothing is written and the work waits in production as before.
-      def complete_on_merge!
-        state = @workflow.organization.ticket_statuses.active.category_done.ordered.first
-        return if state.nil?
-
-        ActiveRecord::Base.transaction do
-          @workflow.update!(completed_at: @now)
-          outcome = Ticketing::ChangeStatus.call(organization: @workflow.organization, ticket: @workflow.ticket,
-                                               status_id: state.id, channel: :workflow)
-          raise ActiveRecord::Rollback unless outcome.ok?
-        end
       end
 
       # «Non ancora» finché la finestra di grazia dalla consegna non è passata: fra la spedizione e la

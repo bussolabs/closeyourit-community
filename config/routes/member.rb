@@ -351,6 +351,10 @@ namespace :member do
       post :rollback, on: :member
       delete :purge, on: :member
     end
+    # CYRA-1161 — retire a release (with a message for its users) and restore it, from the release list.
+    resources :releases, only: [] do
+      resource :retirement, only: %i[create destroy], controller: "project_release_retirements"
+    end
     # Milestone del progetto (Fase 4). Controller flat Member::ProjectMilestonesController (stesso motivo dei tokens).
     resources :milestones, controller: "project_milestones"
     # Help desk tab: the requests written from this project's sites (CYRA-940). Gate helpdesk.manage.
@@ -563,6 +567,9 @@ namespace :member do
     # Goals/conversioni del progetto (project_id come query param, come la dashboard).
     namespace :analytics do
       resources :goals, only: %i[index new create destroy]
+      # CYRA-1158 — the project's declared events, and the events that arrive outside that list.
+      resources :event_definitions, path: "events", except: :show
+      resources :undeclared_events, path: "undeclared-events", only: :index
       # Link pubblico di condivisione/embed (uno per progetto): crea / revoca.
       resource :share, only: %i[create destroy], controller: "shares"
     end
@@ -808,6 +815,8 @@ namespace :member do
       # Voci del campo «Ticket collegato» (CYRA-364): poche righe cercate lato server per codice
       # o titolo, invece dell'intero archivio caricato con la pagina.
       get :linkable, to: "tickets/linkable#index"
+      # CYRA-1148 — title and status of the ticket codes cited in a page's text, in one request.
+      get :references, to: "tickets/references#index"
     end
     member do
       patch :status
@@ -1041,6 +1050,7 @@ namespace :member do
       patch :review     # CYRA-921 — chi rilegge il lavoro: l'altro motore o lo stesso
       patch :engine     # CYRA-921 — who does the work: Claude or Codex
       patch :supporter  # CYAU-235 — who answers the machine's questions
+      patch :parallel   # CYRA-1175 — how many jobs the machine takes at once
       patch :follow_organization, path: "follow" # CYAU-227 — drop the machine's own choice, follow the organization's
     end
     # CYRA-1052 — this machine's own Claude credential (owner only, write-only).

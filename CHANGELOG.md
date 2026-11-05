@@ -2,6 +2,88 @@
 
 ## [Unreleased]
 
+## [0.209.3] - 2026-11-05
+
+### Fixed
+
+- **La risposta dell'assistente resta sotto la tua domanda**: inviando un messaggio, la domanda e la risposta compaiono nel pannello sempre in quest'ordine, lo stesso che vedi dopo aver ricaricato la pagina.
+
+## [0.209.2] - 2026-11-04
+
+### Fixed
+
+- **Il lavoro arriva sempre in produzione**: nei progetti dove «fatto» vuol dire codice unito, il ticket si chiudeva dopo il rilascio di prova. Ora parte anche il rilascio definitivo, e il ticket è risolto solo dopo. ([Approvazioni](/member/home/approvals))
+
+## [0.209.1] - 2026-11-04
+
+### Fixed
+
+- **Un problema di rete non ferma più la lavorazione**: se l'agente non raggiunge un servizio, la fase torna in coda e riprova da sola invece di aspettare una persona. ([Approvazioni](/member/home/approvals))
+
+## [0.209.0] - 2026-11-04
+
+### Added
+
+- **Il supporter approva i piani a rischio basso**: nei progetti con il supporter attivo, i piani fino a rischio 6 senza temi delicati partono senza aspettarti. Quelli che toccano database, rilasci, soldi o dati personali restano a te. ([Approvazioni](/member/home/approvals))
+
+## [0.208.0] - 2026-11-04
+
+### Added
+
+- **Approvazioni dal terminale**: la coda delle approvazioni ora risponde anche alla CLI. Con `cyi approvals` scarichi le richieste e le approvi, respingi, rimandi o salti senza aprire il sito. ([Approvazioni](/member/home/approvals))
+
+## [0.207.0] - 2026-11-04
+
+### Added
+
+- **Ritira una versione difettosa**: nell'elenco versioni del progetto puoi ritirare una versione con un messaggio per gli utenti, e poi ripristinarla. L'invito ad aggiornare comparirà nelle app quando le loro librerie saranno aggiornate.
+
+## [0.206.0] - 2026-11-03
+
+### Added
+
+- **Quota dei motori sulla macchina**: l'elenco e la scheda della macchina mostrano quanta quota resta a Claude e Codex. Se un motore è in pausa vedi fino a che ora; un valore non letto resta «sconosciuta», mai 0%. ([Agenti](/member/agents))
+
+- **Macchina bloccata**: se l'automator si blocca, la pagina delle macchine dice «Bloccato da N minuti». Quando riparte vedi «Bloccato N minuti, ripreso». ([Agenti](/member/agents))
+
+## [0.205.0] - 2026-11-03
+
+### Added
+
+- **Avviso per gli epic fermi**: quando nessun ticket di un epic avanza e tutti aspettano qualcuno, ricevi un avviso. Dice, ticket per ticket, chi deve decidere e su cosa. Non si ripete finché la situazione resta uguale. ([Ticket](/member/tickets))
+
+- **Avviso sulle librerie appena uscite**: la pagina delle vulnerabilità segnala in un riquadro a parte le versioni di librerie uscite da meno di 72 ore. È solo un avviso, non conta fra le falle e sparisce da solo. ([Vulnerabilità](/member/monitoring/vulnerabilities))
+
+- **Ticket citati con titolo e stato**: quando un commento, un messaggio o una pagina cita un ticket col suo codice, al posto del codice vedi titolo e stato, e un clic lo apre. Chi non vede quel ticket legge solo il codice.
+
+- **Comandi nella ricerca rapida**: dalla pagina di un ticket, ⌘K offre assegna a me, cambia stato e consenti agli agenti. Trovi anche le impostazioni per nome, e un link di GitHub o dell'app incollato apre il ticket collegato. Le azioni che non puoi fare restano grigie, con il motivo.
+
+- **Eventi con dettagli**: ogni evento del sito può portare fino a 10 dettagli brevi, come il piano scelto. Dichiari i tuoi eventi in un elenco, vedi quelli arrivati fuori elenco e un obiettivo può contare un solo valore. I dettagli che sembrano dati personali vengono scartati. ([guida](/member/guides/analytics))
+
+### Changed
+
+- **Notifiche lette quando apri la cosa**: aprire un ticket, un errore o un monitor segna lette le tue notifiche su quella cosa. Il numero della campanella scende subito, anche nelle altre schede. Le notifiche dei colleghi non cambiano.
+
+### Fixed
+
+- **Lavori insieme giusti sulla scheda della macchina**: il numero «in corso / massimo» ora usa il limite di lavori insieme scelto per la macchina, non più 1 fisso.
+
+## [0.204.0] - 2026-11-03
+
+### Added
+
+- **La scheda del browser ti dice cosa ti aspetta**: il nome della scheda inizia con il numero di decisioni in attesa e notifiche non lette, per esempio «(3)», e l'icona prende un pallino. Lo vedi anche con tante schede aperte. Il numero si aggiorna da solo.
+
+### Fixed
+
+- **Niente falsi allarmi sui lavori programmati**: dopo un aggiornamento dell'app o un rallentamento, i lavori sani non risultano più mancati. Un lavoro davvero fermo viene segnalato come prima.
+
+## [0.203.0] - 2026-11-03
+
+### Added
+
+- **Più lavori insieme su una macchina**: nella scheda di ogni macchina dell'automator scegli quanti ticket lavora nello stesso momento, da 1 a 4. Ognuno ha la sua copia del progetto. Senza una scelta resta un lavoro alla volta. ([Agenti](/member/agents))
+
 ## [0.202.0] - 2026-11-03
 
 ### Added

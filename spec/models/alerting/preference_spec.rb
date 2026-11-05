@@ -54,6 +54,11 @@ RSpec.describe Alerting::Preference, type: :model do
       expect(build(:alerting_preference, uptime_enabled: false).source_enabled?("uptime_slow")).to be(false)
       expect(build(:alerting_preference, uptime_enabled: true).source_enabled?("uptime_slow")).to be(true)
     end
+
+    it "the stalled epic follows the tickets switch" do
+      expect(build(:alerting_preference, tickets_enabled: false).source_enabled?("ticket_epic_stalled")).to be(false)
+      expect(build(:alerting_preference, tickets_enabled: true).source_enabled?("ticket_epic_stalled")).to be(true)
+    end
   end
 
   describe "#quiet_now? (range notturno 22→8 Europe/Rome)" do

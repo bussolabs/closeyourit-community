@@ -55,6 +55,21 @@ RSpec.describe "Api::V1::Limits (automator)", type: :request do
       )
     end
 
+    # CYRA-1175
+    it "caps parallel work at what the calling machine was given" do
+      registration.fetch(:host).update!(max_parallel: 3)
+
+      get "/api/v1/limits", headers: host_headers
+      expect(response.parsed_body["data"]).to include("max_parallel" => 3)
+
+      create(:agent_limit_policy, organization:, max_parallel: 2)
+      get "/api/v1/limits", headers: host_headers
+      expect(response.parsed_body["data"]).to include("max_parallel" => 2)
+
+      get "/api/v1/limits", headers: organization_headers
+      expect(response.parsed_body["data"]).to include("max_parallel" => 2)
+    end
+
     it "non rivela repository di un altro tenant" do
       foreign = create(:github_repository, full_name: "other/private")
 

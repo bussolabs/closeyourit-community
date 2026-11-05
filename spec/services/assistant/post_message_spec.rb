@@ -55,9 +55,11 @@ RSpec.describe Assistant::PostMessage do
       expect(result.value.role).to eq("assistant")
     end
 
-    it "appende le bolle sullo stream della conversazione" do
+    # Two broadcasts sent close together can reach the panel swapped: one carries both (CYRA-1084).
+    it "appende domanda e risposta in un solo invio, la domanda prima della risposta" do
       expect { described_class.call(conversation: conversation, text: "ciao") }
-        .to have_broadcasted_to(Realtime::Streams.assistant_conversation(conversation)).at_least(:once)
+        .to have_broadcasted_to(Realtime::Streams.assistant_conversation(conversation)).exactly(:once)
+        .with { |payload| expect(payload.scan(/data-role="(\w+)"/).flatten).to eq(%w[user assistant]) }
     end
 
     it "tronca un testo eccessivamente lungo (protezione DB/costi)" do

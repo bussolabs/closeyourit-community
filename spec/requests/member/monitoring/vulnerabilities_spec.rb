@@ -245,6 +245,70 @@ RSpec.describe "Member::Monitoring vulnerabilities", type: :request do
     end
   end
 
+  # CYRA-1167 — versions published less than 72 hours ago, in a panel of their own.
+  describe "GET index with recently released packages" do
+    def installed(target_project, name:, released:, version: "2.0.0")
+      manifest = create(:vulnerability_manifest, project: target_project, path: "#{name}/Gemfile.lock")
+      create(:vulnerability_package, manifest: manifest, name: name, version: version)
+      create(:vulnerability_package_release, ecosystem: manifest.ecosystem, name: name, version: version,
+                                             released_at: released)
+    end
+
+    def panel = Nokogiri::HTML(response.body).at_css("[data-test='vulnerabilities-recent-releases']")
+
+    it "lists a package released yesterday, with its version and project, outside the findings" do
+      installed(project, name: "fresh-gem", released: 1.day.ago)
+      sign_in(owner)
+
+      get member_monitoring_vulnerabilities_path
+
+      expect(panel.text).to include("fresh-gem", "2.0.0", project.key)
+      expect(response.body).to include("vulnerabilities-empty")
+      expect(Nokogiri::HTML(response.body).at_css("[data-test='vulnerabilities-stat-open']").text).to include("0")
+    end
+
+    it "does not list a version released five days ago" do
+      installed(project, name: "old-gem", released: 5.days.ago)
+      sign_in(owner)
+
+      get member_monitoring_vulnerabilities_path
+
+      expect(panel).to be_nil
+    end
+
+    it "drops the package by itself once 72 hours have passed, without a new scan" do
+      installed(project, name: "fresh-gem", released: 71.hours.ago)
+      sign_in(owner)
+
+      travel 2.hours do
+        get member_monitoring_vulnerabilities_path
+      end
+
+      expect(panel).to be_nil
+    end
+
+    it "does not show packages of a project the viewer cannot see" do
+      installed(create(:project), name: "hidden-gem", released: 1.day.ago)
+      sign_in(owner)
+
+      get member_monitoring_vulnerabilities_path
+
+      expect(panel).to be_nil
+      expect(response.body).not_to include("hidden-gem")
+    end
+
+    # Two rows also prove each row's project is preloaded (burst-read guard, CYRA-747).
+    it "lists several packages at once" do
+      installed(project, name: "fresh-gem", released: 1.day.ago)
+      installed(project, name: "newer-gem", released: 2.hours.ago)
+      sign_in(owner)
+
+      get member_monitoring_vulnerabilities_path
+
+      expect(panel.text).to include("fresh-gem", "newer-gem")
+    end
+  end
+
   describe "GET show" do
     it "mostra il dettaglio con il riferimento pubblico" do
       finding = finding_in(project)

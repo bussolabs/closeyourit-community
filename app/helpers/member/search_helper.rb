@@ -4,7 +4,8 @@ module Member
   # How the global search shows each kind of result (CYRA-900). One method per kind keeps the
   # results view free of a fifteen-branch case.
   module SearchHelper
-    Hit = Data.define(:href, :icon, :title, :meta, :test_id, :method)
+    # `blocked` is the reason an action cannot run (CYRA-1145): the hit is shown greyed, not as a link.
+    Hit = Data.define(:href, :icon, :title, :meta, :test_id, :method, :confirm, :blocked)
 
     # Only lists whose index filters by `q` get a "see all" link.
     SEE_ALL_PATHS = {
@@ -118,8 +119,9 @@ module Member
       ::Search::Global::NavEntry.new(label: label, path: item.path, icon: item.icon || group&.icon || "arrow-right")
     end
 
-    def hit(href, icon, title, meta, test_id, method: nil)
-      Hit.new(href: href, icon: icon, title: title, meta: meta, test_id: test_id, method: method)
+    def hit(href, icon, title, meta, test_id, method: nil, confirm: nil, blocked: nil)
+      Hit.new(href: href, icon: icon, title: title, meta: meta, test_id: test_id, method: method,
+              confirm: confirm, blocked: blocked)
     end
   end
 end

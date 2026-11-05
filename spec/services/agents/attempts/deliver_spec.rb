@@ -815,6 +815,34 @@ RSpec.describe Agents::Attempts::Deliver do
     expect(prova.expected).to include("version" => "v0.30.0", "sha" => "3f2a91c0d4e6b8079a1c5f3d2e7b4a6c8d0f1e29")
   end
 
+  # CYRA-1193 — with the merge as proof of done there is nothing to observe in production: the stable
+  # release delivered by the closer is the last step, so it completes the work and the ticket is done.
+  it "closer_production delivered with the merge as proof completes the work" do
+    scope = build_delivery_scope(phase: "closer_production", organization:, project:, ticket:, workflow:)
+    assigned_version(workflow, "closer_production", version: "v0.30.0", sha: "3f2a91c0d4e6b8079a1c5f3d2e7b4a6c8d0f1e29")
+    in_progress = create(:ticket_status, :in_progress, organization:)
+    create(:ticket_status, :done, organization:)
+    ticket.update!(status: in_progress)
+    workflow.update!(triage_started_at: nil, triaged_at: Time.current, planned_at: Time.current,
+                     approved_at: Time.current, autopilot_started_at: Time.current,
+                     autopilot_completed_at: Time.current, autopilot_approved_at: Time.current,
+                     closer_staging_started_at: Time.current, closer_staging_completed_at: Time.current,
+                     closer_staging_verified_at: Time.current, ticket_snapshot_digest: "snapshot")
+    closer_payload = {
+      runtime: "claude", reviewer_runtime: "codex",
+      result: { code: ticket.code, state: "production-released", tag: "v0.30.0", commit: "3f2a91c0d4e6b8079a1c5f3d2e7b4a6c8d0f1e29", awaiting_human_approval: true },
+      review: review_for("closer_production"), observed: observed_head
+    }
+    congela_piano!(workflow, kind: "merge")
+
+    expect(described_class.call(organization:, host: scope[:host], attempt: scope[:attempt],
+                                payload: closer_payload)).to be_ok
+
+    expect(workflow.reload).to have_attributes(completed_at: be_present, closer_production_completed_at: be_present,
+                                               blocked_at: nil)
+    expect(ticket.reload.status.category).to eq("done")
+  end
+
   it "respinge un closer senza outcome completed senza avanzare (review_failed)" do
     scope = build_delivery_scope(phase: "closer_staging", organization:, project:, ticket:, workflow:)
     # CYRA-621 — il numero lo assegna il server prima che la fase parta: la consegna deve portare

@@ -20,6 +20,10 @@ module Agents
       MAX_LAST_STOPS = 5
       MAX_STOP_REASON_LENGTH = 500
       STOP_STATES = %w[waiting blocked].freeze
+      # CYRA-1177 — remaining quota and pause of each engine (Automator CYAU-275). An engine the server
+      # does not know yet is dropped, not rejected: a newer Automator must not turn the machine offline.
+      QUOTA_RUNTIMES = %w[claude codex].freeze
+      MAX_AGENT_QUOTA_ENTRIES = 8
 
       def initialize(project:, payload:, at: Time.current)
         @project = project
@@ -96,6 +100,8 @@ module Agents
         attributes[:repositories] = normalize_repositories if @payload.key?("repositories")
         attributes[:active_runs] = normalize_active_runs if @payload.key?("active_runs")
         attributes[:last_stops] = normalize_last_stops if @payload.key?("last_stops")
+        attributes[:agent_quota] = normalize_agent_quota if @payload.key?("agent_quota")
+        attributes[:hang] = normalize_hang if @payload.key?("hang")
         attributes
       end
 
@@ -211,6 +217,48 @@ module Agents
           end
           { "action" => value["action"], "state" => value["state"], "reason" => reason.first(MAX_STOP_REASON_LENGTH) }
         end
+      end
+
+      # Unknown values stay null, never 0: a missing reading is not an empty quota.
+      def normalize_agent_quota
+        list = bounded_array("agent_quota", MAX_AGENT_QUOTA_ENTRIES)
+        return [] unless list
+
+        seen = Set.new
+        list.filter_map.with_index do |entry, index|
+          next add_error("agent_quota.#{index}") unless entry.is_a?(Hash)
+
+          value = entry.deep_stringify_keys
+          next add_error("agent_quota.#{index}") unless valid_agent_quota?(value) && seen.add?(value["runtime"])
+          next unless QUOTA_RUNTIMES.include?(value["runtime"])
+
+          %w[runtime remaining_percent resets_at paused_until].index_with { |key| value[key] }
+        end
+      end
+
+      def valid_agent_quota?(entry)
+        percent = entry["remaining_percent"]
+        valid_string?(entry["runtime"]) &&
+          (percent.nil? || (percent.is_a?(Numeric) && percent.between?(0, 100))) &&
+          valid_timestamp?(entry["resets_at"]) && valid_timestamp?(entry["paused_until"])
+      end
+
+      # CYRA-1178 — the watchdog report, stamped with the server time it arrived: the host model judges
+      # how fresh a "hung" report is from that stamp, never from the automator clock.
+      def normalize_hang
+        value = @payload["hang"]
+        return add_error("hang") unless value.is_a?(Hash)
+
+        value = value.deep_stringify_keys
+        duration = strict_integer(value["duration_seconds"])
+        unless Agents::Host::HANG_STATES.include?(value["state"]) && value["started_at"].present? &&
+               valid_timestamp?(value["started_at"]) && valid_timestamp?(value["resumed_at"]) &&
+               duration&.between?(0, MAX_INTERVAL_MINUTES)
+          return add_error("hang")
+        end
+
+        { "state" => value["state"], "started_at" => value["started_at"], "duration_seconds" => duration,
+          "resumed_at" => value["resumed_at"], "reported_at" => @at.utc.iso8601(6) }
       end
 
       def valid_active_run?(run)

@@ -27,7 +27,7 @@ module Agents
       def call
         return denied unless capable?
         return denied unless @host.heartbeat_online?(now: @now)
-        return denied unless @host.running < @host.slots
+        return denied unless @host.running < @host.capacity
 
         Result.ok(true)
       end

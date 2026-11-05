@@ -1,12 +1,22 @@
-<%# locals: (release:, test_id:) %>
+<%# locals: (release:, test_id:, manage: false) %>
 <%# Wraps in a narrow column instead of cutting the time off (CYRA-1105). %>
+<%# A retired release shows its mark and message; who edits the project retires or restores it (CYRA-1161). %>
 <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 px-4 py-2.5" data-test="<%= test_id %>">
   <span class="font-mono text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= release.display_version %></span>
   <%= render Ui::BadgeComponent.new(label: release.environment, color: environment_badge_color(release.environment), size: :sm, dot: true, test_id: "project-release-environment") %>
   <% if release.current? %>
     <%= render Ui::BadgeComponent.new(label: t("member.projects.show.release_live"), color: "emerald", size: :sm, dot: true, test_id: "project-release-live") %>
   <% end %>
+  <% if release.retired? %>
+    <%= render Ui::BadgeComponent.new(label: t("member.projects.release_retirement.retired"), color: :amber, size: :sm, dot: true, test_id: "project-release-retired") %>
+  <% end %>
   <% if release.sha.present? %><span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= release.sha.first(7) %></span><% end %>
   <span class="ml-auto whitespace-nowrap font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= release.events_count %> <%= t("member.projects.show.releases_events") %></span>
   <span class="whitespace-nowrap font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= release.last_event_at ? l(release.last_event_at, format: :short) : (release.build_time ? l(release.build_time, format: :short) : "—") %></span>
+  <% if manage %>
+    <%= render "member/projects/release_retirement_action", release: release %>
+  <% end %>
+  <% if release.retired? %>
+    <p class="basis-full text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="project-release-retirement-message"><%= release.retirement_message %></p>
+  <% end %>
 </div>

@@ -1,3 +1,4 @@
 <%= turbo_frame_tag "member-nav-approvals-count" do %>
-  <%= render "shared/notification_counter", count: @count, label: t("member.nav.approvals_pending", count: @count), test_id: "member-nav-approvals-badge" %>
+  <%# CYRA-1147 — the exact number for the tab title: the label stops at 99+. %>
+  <span class="contents" data-pending-count="<%= @count %>"><%= render "shared/notification_counter", count: @count, label: t("member.nav.approvals_pending", count: @count), test_id: "member-nav-approvals-badge" %></span>
 <% end %>

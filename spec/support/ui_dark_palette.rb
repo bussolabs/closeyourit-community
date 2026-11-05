@@ -9,6 +9,7 @@ module UiDarkPalette
     alert assistant audit_meta badge breadcrumb button button_group card changelog changelog_release
     description_list floating_notice github_status histogram input meter metric_tile modal nav_link
     password_rules presence_menu range_filter row_menu select sparkline switch tooltip user_menu voice markdown
+    ticket_ref
   ].freeze
 
   # Light class => its dark counterpart, zinc ground (page zinc-950, panel zinc-900).

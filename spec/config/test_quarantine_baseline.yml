@@ -1,0 +1,22 @@
+# CYRA-1166 — per-file counts on 2026-11-03 that lib/test_quarantine.rb lets through.
+# They may only go down: a new skip needs `# quarantine: CYRA-123`, not a line here.
+skip:
+  spec/config/parallel_runtime_log_spec.rb: 1
+  spec/config/repository_hygiene_spec.rb: 1
+  spec/requests/cli/v1/artifacts/proguard_maps_spec.rb: 1
+  spec/services/artifacts/proguard_maps/concurrency_spec.rb: 1
+  spec/services/errors/symbolication/java/resolve_spec.rb: 1
+  spec/support/js_system.rb: 1
+  spec/support/native_symbol_fixture.rb: 1
+  spec/system/member/sidebar_overflow_spec.rb: 1
+  spec/system/ui/select_panel_overflow_spec.rb: 1
+  spec/system/ui/tooltip_position_spec.rb: 1
+sleep:
+  spec/services/artifacts/native_symbols/concurrency_spec.rb: 1
+  spec/services/coworkers/mcp_spec.rb: 1
+  spec/services/crashes/concurrency_spec.rb: 1
+  spec/services/seo/fetch_spec.rb: 3
+  spec/support/streaming_body_server.rb: 1
+  spec/support/system_wait_helpers.rb: 1
+wall_clock:
+  spec/installer/apply_update_request_spec.rb: 1

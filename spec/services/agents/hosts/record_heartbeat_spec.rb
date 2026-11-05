@@ -163,6 +163,60 @@ RSpec.describe Agents::Hosts::RecordHeartbeat, type: :service do
     expect(host.reload).to have_attributes(repositories: [ "CYRA" ], last_heartbeat_at: be_within(1.second).of(at))
   end
 
+  # CYRA-1178 — the Automator hang watchdog: while the event loop is blocked it sends a reduced heartbeat
+  # (host_id, automator_version, hang), then one heartbeat saying how the hang ended.
+  describe "hang" do
+    let(:started_at) { "2026-11-03T10:00:00Z" }
+    let(:hung) { { state: "hung", started_at:, duration_seconds: 180 } }
+
+    it "stores the report of a reduced heartbeat with the time it arrived" do
+      at = Time.current
+      reduced = { host_id: host.id, automator_version: "0.48.0", hang: hung }
+      result = described_class.call(project:, payload: reduced, at:)
+
+      expect(result).to be_ok
+      expect(host.reload.hang).to eq(
+        "state" => "hung", "started_at" => started_at, "duration_seconds" => 180, "resumed_at" => nil,
+        "reported_at" => at.utc.iso8601(6)
+      )
+      expect(host.last_heartbeat_at).to be_within(1.second).of(at)
+    end
+
+    it "stores how the hang ended and drops unknown keys" do
+      ended = hung.merge(state: "resumed", duration_seconds: 240, resumed_at: "2026-11-03T10:04:00Z", token: "secret")
+      result = described_class.call(project:, payload: payload(hang: ended), at: Time.current)
+
+      expect(result).to be_ok
+      expect(host.reload.hang).to include("state" => "resumed", "resumed_at" => "2026-11-03T10:04:00Z")
+      expect(host.hang.keys).to contain_exactly("state", "started_at", "duration_seconds", "resumed_at", "reported_at")
+    end
+
+    it "keeps the previous report when an older automator sends no hang" do
+      described_class.call(project:, payload: payload(hang: hung), at: 2.minutes.ago)
+      described_class.call(project:, payload: payload, at: 1.minute.ago)
+
+      expect(host.reload.hang).to include("state" => "hung")
+    end
+
+    it "leaves the column empty for an automator that never reports a hang" do
+      described_class.call(project:, payload: payload, at: Time.current)
+
+      expect(host.reload.hang).to be_nil
+    end
+
+    it "rejects a malformed report without touching the host" do
+      [ hung.merge(state: "frozen"), hung.merge(started_at: "yesterday"), hung.merge(duration_seconds: -1),
+        hung.merge(duration_seconds: "abc"), hung.merge(resumed_at: "soon"), hung.except(:started_at), "hung" ]
+        .each do |report|
+          result = described_class.call(project:, payload: payload(hang: report), at: Time.current)
+
+          expect(result).to be_err
+          expect(result.error.details.keys).to include("hang")
+          expect(host.reload.hang).to be_nil
+        end
+    end
+  end
+
   # CYRA-999 — the reasons the machine last stopped before taking work (Automator CYAU-116).
   describe "last_stops" do
     let(:stop) { { action: "lab", state: "waiting", reason: "empty ticket queue for LAB" } }
@@ -238,6 +292,84 @@ RSpec.describe Agents::Hosts::RecordHeartbeat, type: :service do
 
       expect(result).to be_ok
       expect(host.reload.last_stops.pluck("action")).to eq(stops.pluck(:action))
+    end
+  end
+
+  # CYRA-1177 — remaining quota and pause of each engine (Automator CYAU-275). Unknown stays null, never 0.
+  describe "agent_quota" do
+    let(:claude) { { runtime: "claude", remaining_percent: 42, resets_at: "2026-11-03T15:00:00.000Z", paused_until: nil } }
+    let(:codex) { { runtime: "codex", remaining_percent: nil, resets_at: nil, paused_until: "2026-11-03T12:00:00.000Z" } }
+
+    it "stores one entry per engine, keeping unknown values null" do
+      result = described_class.call(project:, payload: payload(agent_quota: [ claude, codex ]), at: Time.current)
+
+      expect(result).to be_ok
+      expect(host.reload.agent_quota).to eq([
+        { "runtime" => "claude", "remaining_percent" => 42, "resets_at" => "2026-11-03T15:00:00.000Z", "paused_until" => nil },
+        { "runtime" => "codex", "remaining_percent" => nil, "resets_at" => nil, "paused_until" => "2026-11-03T12:00:00.000Z" }
+      ])
+    end
+
+    it "accepts a heartbeat without the field and keeps the previous report" do
+      described_class.call(project:, payload: payload(agent_quota: [ claude ]), at: 2.minutes.ago)
+      result = described_class.call(project:, payload: payload, at: 1.minute.ago)
+
+      expect(result).to be_ok
+      expect(host.reload.agent_quota.size).to eq(1)
+    end
+
+    it "leaves a machine that never reported with an empty report" do
+      expect(described_class.call(project:, payload: payload, at: Time.current)).to be_ok
+      expect(host.reload.agent_quota).to eq([])
+    end
+
+    it "accepts the bounds and a fractional percent" do
+      quota = [ claude.merge(remaining_percent: 0), codex.merge(remaining_percent: 100) ]
+      expect(described_class.call(project:, payload: payload(agent_quota: quota), at: 1.minute.ago)).to be_ok
+
+      fractional = described_class.call(project:, payload: payload(agent_quota: [ claude.merge(remaining_percent: 12.5) ]), at: Time.current)
+      expect(fractional).to be_ok
+      expect(host.reload.agent_quota.first["remaining_percent"]).to eq(12.5)
+    end
+
+    it "drops unknown keys and engines it does not know" do
+      quota = [ claude.merge(token: "secret"), { runtime: "gemini", remaining_percent: 10, resets_at: nil, paused_until: nil } ]
+      result = described_class.call(project:, payload: payload(agent_quota: quota), at: Time.current)
+
+      expect(result).to be_ok
+      expect(host.reload.agent_quota).to eq([
+        { "runtime" => "claude", "remaining_percent" => 42, "resets_at" => "2026-11-03T15:00:00.000Z", "paused_until" => nil }
+      ])
+    end
+
+    it "rejects out-of-range or non-numeric percents without replacing the previous report" do
+      described_class.call(project:, payload: payload(agent_quota: [ claude ]), at: 1.minute.ago)
+      previous = host.reload.agent_quota
+
+      [ -1, 100.1, "42", true ].each do |remaining_percent|
+        result = described_class.call(project:, payload: payload(agent_quota: [ claude.merge(remaining_percent:) ]), at: Time.current)
+
+        expect(result).to be_err
+        expect(result.error.details.keys).to include("agent_quota.0")
+        expect(host.reload.agent_quota).to eq(previous)
+      end
+    end
+
+    it "rejects malformed timestamps, entries, duplicates and lists" do
+      bad_time = described_class.call(project:, payload: payload(agent_quota: [ claude.merge(resets_at: "tomorrow"), codex.merge(paused_until: 42) ]), at: Time.current)
+      expect(bad_time.error.details.keys).to include("agent_quota.0", "agent_quota.1")
+
+      not_a_hash = described_class.call(project:, payload: payload(agent_quota: [ "claude" ]), at: Time.current)
+      expect(not_a_hash.error.details.keys).to include("agent_quota.0")
+
+      duplicate = described_class.call(project:, payload: payload(agent_quota: [ claude, claude ]), at: Time.current)
+      expect(duplicate.error.details.keys).to include("agent_quota.1")
+
+      [ nil, {}, "claude", Array.new(described_class::MAX_AGENT_QUOTA_ENTRIES + 1) { claude } ].each do |quota|
+        result = described_class.call(project:, payload: payload(agent_quota: quota), at: Time.current)
+        expect(result).to be_err
+        expect(result.error.details.keys).to include("agent_quota")
+      end
     end
   end
 end

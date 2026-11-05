@@ -33,6 +33,7 @@ SimplecovConfiguration.start!
 # CYRA-711 — dopo l'avvio della copertura, così le sue righe sono misurate come quelle di
 # qualunque altro file di lib/.
 require_relative "../lib/slowest_examples_policy"
+require_relative "../lib/test_quarantine"
 
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
@@ -77,6 +78,10 @@ RSpec.configure do |config|
   # SlowestExamplesPolicy) perché chi insegue un rosso rilancia tre esempi e non vuole dieci righe
   # di tempi a ogni giro.
   config.profile_examples = SlowestExamplesPolicy.count_for
+
+  # CYRA-1166 — a skip needs a quarantine ticket, sleeps and clock reads only go down. A suite hook
+  # runs whatever the example selection, so a focused test cannot hide it.
+  config.before(:suite) { TestQuarantine.verify! }
 
 # The settings below are suggested to provide a good initial experience
 # with RSpec, but feel free to customize to your heart's content.

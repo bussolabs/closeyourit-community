@@ -453,6 +453,30 @@ RSpec.describe Agents::Workflows::InFlight do
     end
   end
 
+  # CYRA-1155 — the same waiting/running rule, readable for any workflows of the organization and
+  # not only for the projects the reader answers for.
+  describe ".states_by_workflow" do
+    it "applies the queue rule to workflows outside the reader's projects" do
+      other_project = create(:project, organization: organization, key: "BETA")
+      other_project.update_column(:cto_id, create(:account).id)
+      running = running_workflow(other_project)
+      waiting = awaiting_workflow(other_project)
+      asking = running_workflow(other_project)
+      create(:agent_clarification, workflow: asking, attempt: create(:agent_attempt, workflow: asking, organization:))
+      idle = create(:agent_workflow, ticket: ticket_in(other_project), triage_requested_at: nil)
+
+      states = described_class.states_by_workflow([ running, waiting, asking, idle ])
+
+      expect(states.transform_values { |entry| entry[:state] })
+        .to eq(running.id => "running", waiting.id => "waiting", asking.id => "waiting", idle.id => "idle")
+      expect(states[waiting.id][:phase]).to eq("awaiting_approval")
+    end
+
+    it "reads nothing for an empty list" do
+      expect(described_class.states_by_workflow([])).to eq({})
+    end
+  end
+
   describe "paginazione" do
     it "taglia la pagina e conta tutto" do
       3.times { running_workflow }

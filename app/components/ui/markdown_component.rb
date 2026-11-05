@@ -84,19 +84,41 @@ module Ui
     # Il contenitore esce anche col testo vuoto: i `data-test` ci restano agganciati (li usano gli
     # spec di sistema) e le pagine che vogliono un empty state proprio lo decidono già a monte.
     def rendered
-      @rendered ||=
-        if @text.to_s.strip.blank?
-          "".html_safe
-        elsif @inline
-          render_markdown_inline(@text, remote_images: @remote_images)
-        elsif @anchor_prefix
-          anchor_headings(render_markdown(@text, page: @page, links: @links, remote_images: @remote_images),
-                          prefix: @anchor_prefix)
-        elsif @short_links
-          shorten_links(render_markdown(@text, page: @page, links: @links, remote_images: @remote_images))
-        else
-          render_markdown(@text, page: @page, links: @links, remote_images: @remote_images)
-        end
+      @rendered ||= mark_ticket_codes(converted)
+    end
+
+    def converted
+      if @text.to_s.strip.blank?
+        "".html_safe
+      elsif @inline
+        render_markdown_inline(@text, remote_images: @remote_images)
+      elsif @anchor_prefix
+        anchor_headings(render_markdown(@text, page: @page, links: @links, remote_images: @remote_images),
+                        prefix: @anchor_prefix)
+      elsif @short_links
+        shorten_links(render_markdown(@text, page: @page, links: @links, remote_images: @remote_images))
+      else
+        render_markdown(@text, page: @page, links: @links, remote_images: @remote_images)
+      end
+    end
+
+    # CYRA-1148 — a ticket code in prose becomes a placeholder holding only the code; the member page
+    # (`ticket-refs` controller) swaps in title and status for the tickets the reader can see.
+    # Code, pre and links stay as written. Uppercase key first, so dates and `utf-8` never match.
+    TICKET_CODE = /\b[A-Z][A-Z0-9]*-[1-9]\d{0,9}\b/
+
+    def mark_ticket_codes(html)
+      return html unless html.match?(TICKET_CODE)
+
+      fragment = Nokogiri::HTML5.fragment(html)
+      fragment.xpath(".//text()[not(ancestor::code or ancestor::pre or ancestor::a)]").each do |node|
+        next unless node.text.match?(TICKET_CODE)
+
+        # Escape first: `node.text` is the raw text, and the code characters need no escaping.
+        escaped = ERB::Util.html_escape(node.text).to_str
+        node.replace(escaped.gsub(TICKET_CODE) { |code| %(<span data-ticket-refs-target="ref" data-code="#{code}">#{code}</span>) })
+      end
+      fragment.to_html.html_safe
     end
 
     SHORT_LINK = "no-underline! whitespace-nowrap rounded-full border border-stone-200 dark:border-zinc-700 " \

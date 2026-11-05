@@ -2714,7 +2714,7 @@
       "level": 2,
       "parent": "area_crons",
       "kind": "job",
-      "summary": "Ogni minuto segna «mancato» chi non ha battuto entro intervallo più tolleranza, e avvisa una volta sola per volta.",
+      "summary": "Ogni minuto segna «mancato» chi non ha battuto entro intervallo più tolleranza, e avvisa una volta sola per volta. Se è lui a ripartire in ritardo di oltre 3 minuti, salta quel giro.",
       "files": [
         "app/jobs/crons/evaluate_job.rb",
         "config/recurring.yml"
@@ -3320,9 +3320,10 @@
       "level": 3,
       "parent": "ana_flow_pageview",
       "kind": "step",
-      "summary": "Tiene solo il percorso della pagina, riduce la provenienza al nome del sito e corregge le date nel futuro.",
+      "summary": "Tiene solo il percorso della pagina, riduce la provenienza al nome del sito e corregge le date nel futuro. Di un evento tiene al massimo 10 dettagli brevi e scarta quelli che sembrano dati personali.",
       "files": [
-        "app/services/analytics/ingest/normalize.rb"
+        "app/services/analytics/ingest/normalize.rb",
+        "app/services/analytics/ingest/properties.rb"
       ]
     },
     {
@@ -3438,12 +3439,28 @@
       "level": 3,
       "parent": "ana_page_dashboard",
       "kind": "step",
-      "summary": "Obiettivi per visita a una pagina o per evento. Le conversioni si contano al momento della lettura.",
+      "summary": "Obiettivi per visita a una pagina o per evento, anche solo per un valore di un dettaglio dell'evento. Le conversioni si contano al momento della lettura.",
       "files": [
         "app/controllers/member/monitoring/analytics/goals_controller.rb",
         "app/services/analytics/goals/save.rb",
         "app/services/analytics/goals/delete.rb",
         "app/views/member/monitoring/analytics/goals/**"
+      ]
+    },
+    {
+      "id": "ana_step_event_definitions",
+      "name": "Eventi dichiarati",
+      "level": 3,
+      "parent": "ana_page_dashboard",
+      "kind": "step",
+      "summary": "L'elenco degli eventi che il sito invia, con i dettagli attesi, gestito dalla pagina e dalla riga di comando. Gli eventi arrivati fuori elenco hanno una pagina loro e si aggiungono con un clic.",
+      "files": [
+        "app/controllers/member/monitoring/analytics/event_definitions_controller.rb",
+        "app/controllers/member/monitoring/analytics/undeclared_events_controller.rb",
+        "app/controllers/cli/v1/analytics/event_definitions_controller.rb",
+        "app/services/analytics/event_definitions/**",
+        "app/views/member/monitoring/analytics/event_definitions/**",
+        "app/views/member/monitoring/analytics/undeclared_events/**"
       ]
     },
     {
@@ -4015,6 +4032,20 @@
       ]
     },
     {
+      "id": "tkt_comment_refs",
+      "name": "Ticket citati nel testo",
+      "level": 3,
+      "parent": "tkt_flow_comments",
+      "kind": "step",
+      "summary": "Un codice di ticket scritto in commenti, chat, pagine e resoconti diventa un'etichetta con titolo e stato. La pagina chiede tutti i codici in una volta; chi non vede il ticket legge solo il codice.",
+      "files": [
+        "app/components/ui/markdown_component.rb",
+        "app/components/ui/ticket_ref_component.rb",
+        "app/controllers/member/tickets/references_controller.rb",
+        "app/javascript/controllers/ticket_refs_controller.js"
+      ]
+    },
+    {
       "id": "tkt_flow_questions",
       "name": "Domande sul ticket",
       "level": 2,
@@ -4195,6 +4226,21 @@
         "app/jobs/ticketing/backfill_embeddings_job.rb",
         "app/services/ticketing/embedding_text.rb",
         "app/services/ticketing/semantic_search.rb"
+      ]
+    },
+    {
+      "id": "tkt_job_stalled_epics",
+      "name": "Epic fermi",
+      "level": 2,
+      "parent": "area_tickets",
+      "kind": "job",
+      "summary": "Ogni ora cerca gli epic in cui nessun ticket avanza e tutti aspettano qualcuno. Avvisa chi deve decidere e su cosa, una volta sola per ogni situazione.",
+      "files": [
+        "app/jobs/ticketing/notify_stalled_epics_job.rb",
+        "app/services/ticketing/stalled_epics/detect.rb",
+        "app/services/ticketing/stalled_epics/notify.rb",
+        "app/services/agents/workflows/in_flight.rb",
+        "config/recurring.yml"
       ]
     },
     {
@@ -4603,10 +4649,15 @@
       "level": 3,
       "parent": "prj_data",
       "kind": "data",
-      "summary": "Una versione che gira. Nasce dalla CI o dal primo errore che la nomina, e lega gli errori alla versione.",
+      "summary": "Una versione che gira. Nasce dalla CI o dal primo errore che la nomina, e lega gli errori alla versione. Chi gestisce il progetto può ritirarla con un messaggio e poi ripristinarla; le librerie chiedono con la chiave pubblica se la loro versione è ritirata.",
       "files": [
         "app/models/projects/release.rb",
         "app/services/projects/releases/merge.rb",
+        "app/services/projects/releases/retire.rb",
+        "app/services/projects/releases/restore.rb",
+        "app/services/projects/releases/status.rb",
+        "app/controllers/member/project_release_retirements_controller.rb",
+        "app/controllers/api/v1/release_statuses_controller.rb",
         "app/jobs/projects/releases/backfill_job.rb"
       ]
     },
@@ -5533,11 +5584,12 @@
       "level": 2,
       "parent": "area_search",
       "kind": "flow",
-      "summary": "Mentre si scrive si cerca in progetti, ticket, errori, pagine, idee, monitor, server, persone, segreti e voci di menu.",
+      "summary": "Mentre si scrive si cerca in progetti, ticket, errori, pagine, idee, monitor, server, persone, segreti, voci di menu e impostazioni. Sulla pagina di un ticket offre anche azioni su quel ticket.",
       "files": [
         "app/services/search/global.rb",
         "app/services/search/sources.rb",
-        "app/controllers/member/searches_controller.rb"
+        "app/controllers/member/searches_controller.rb",
+        "app/javascript/controllers/ui/global_search_controller.js"
       ]
     },
     {
@@ -5569,10 +5621,25 @@
       "level": 3,
       "parent": "sea_flow_global",
       "kind": "step",
-      "summary": "Risultati divisi per tipo. Un codice ticket o una chiave di progetto scritti per intero vanno in cima.",
+      "summary": "Risultati divisi per tipo. Un codice ticket, una chiave di progetto o un link incollato (richiesta di modifica su GitHub o pagina dell'app) vanno in cima.",
       "files": [
         "app/services/search/global.rb",
+        "app/services/search/address.rb",
         "app/views/member/searches"
+      ]
+    },
+    {
+      "id": "sea_global_commands",
+      "name": "Azioni e impostazioni",
+      "level": 3,
+      "parent": "sea_flow_global",
+      "kind": "step",
+      "summary": "La finestra manda la pagina aperta. Su un ticket offre assegna a me, cambia stato e consenti agli agenti, con gli stessi indirizzi dei pulsanti; senza permesso la voce è grigia col motivo. Le sezioni delle impostazioni si trovano per nome e si aprono evidenziate.",
+      "files": [
+        "app/services/search/ticket_actions.rb",
+        "app/services/search/settings_catalog.rb",
+        "app/helpers/member/search_commands_helper.rb",
+        "app/javascript/controllers/section_panels_controller.js"
       ]
     },
     {
@@ -5723,7 +5790,7 @@
       "level": 3,
       "parent": "agt_flow_host_setup",
       "kind": "step",
-      "summary": "A ogni giro la macchina manda una foto del suo stato insieme al controllo periodico. Il server tiene solo i campi ammessi e scarta il resto.",
+      "summary": "A ogni giro la macchina manda una foto del suo stato insieme al controllo periodico, compresa la quota rimasta a Claude e Codex. Il server tiene solo i campi ammessi e scarta il resto. Se l'automator è bloccato, manda un segno ridotto ogni minuto e poi dice come è finita.",
       "files": [
         "app/controllers/api/v1/cron_check_ins_controller.rb",
         "app/services/agents/hosts/record_heartbeat.rb"
@@ -5792,7 +5859,7 @@
       "level": 3,
       "parent": "agt_flow_claim",
       "kind": "step",
-      "summary": "Prima di partire si prenota una quota sui limiti dell'organizzazione e del progetto. Vince sempre il limite più stretto; oltre, il lavoro non parte.",
+      "summary": "Prima di partire si prenota una quota sui limiti dell'organizzazione e del progetto. Vince sempre il limite più stretto; oltre, il lavoro non parte. Anche la macchina che chiede ha il suo tetto di lavori insieme.",
       "files": [
         "app/services/agents/limits/reserve.rb",
         "app/services/agents/limits/resolve.rb",
@@ -6006,6 +6073,20 @@
       ]
     },
     {
+      "id": "agt_ph_supporter_plan",
+      "name": "Il supporter approva il piano",
+      "level": 3,
+      "parent": "agt_flow_phases",
+      "kind": "step",
+      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo solo i piani a rischio fino a 6, senza temi riservati; gli altri restano a una persona.",
+      "files": [
+        "app/controllers/api/v1/agent_host/supporter_plans_controller.rb",
+        "app/controllers/api/v1/agent_host/supporter_plan_verdicts_controller.rb",
+        "app/services/agents/supporters/next_plan.rb",
+        "app/services/agents/supporters/judge_plan.rb"
+      ]
+    },
+    {
       "id": "agt_ph_autopilot",
       "name": "Sviluppo",
       "level": 3,
@@ -6052,7 +6133,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "La macchina mette l'etichetta di versione. Il ticket è «Fatto» solo quando il server vede il rilascio riuscito e la produzione che risponde con quella versione.",
+      "summary": "La macchina mette l'etichetta di versione. Il ticket è «Fatto» solo quando il server vede il rilascio riuscito e la produzione che risponde con quella versione. Se la prova del piano è l'unione del codice, il ticket è «Fatto» appena l'etichetta stabile è messa.",
       "files": [
         "app/services/agents/attempts/effects/closer_production.rb",
         "app/services/agents/probes/bind.rb",
@@ -6121,7 +6202,7 @@
       "level": 2,
       "parent": "area_agents",
       "kind": "page",
-      "summary": "Le macchine dell'organizzazione: online o no, cosa stanno facendo, ticket lavorati, prestazioni e confronto fra due macchine. Da qui si certificano, si mettono in pausa e si sceglie il motore.",
+      "summary": "Le macchine dell'organizzazione: online, bloccate o no, cosa stanno facendo, quota rimasta ai motori, ticket lavorati, prestazioni e confronto fra due macchine. Da qui si certificano, si mettono in pausa, si sceglie il motore e quanti lavori fanno insieme.",
       "files": [
         "app/controllers/member/agents_controller.rb",
         "app/views/member/agents/**",
@@ -6175,10 +6256,13 @@
       "level": 2,
       "parent": "area_agents",
       "kind": "page",
-      "summary": "La coda di ciò che aspetta una persona e l'elenco di tutto il lavoro in corso. Si approva, si riprova, si rivaluta, si ferma o si annulla.",
+      "summary": "La coda di ciò che aspetta una persona e l'elenco di tutto il lavoro in corso. Si approva, si riprova, si rivaluta, si ferma o si annulla, anche dal terminale con cyi approvals.",
       "files": [
         "app/controllers/member/tickets/automation/**",
         "app/controllers/member/home/approvals_controller.rb",
+        "app/controllers/cli/v1/approvals_controller.rb",
+        "app/serializers/approval_row_serializer.rb",
+        "app/serializers/approval_card_serializer.rb",
         "app/services/home/approvals/**",
         "app/views/member/home/approvals/**",
         "app/services/agents/workflows/in_flight.rb",
@@ -6261,7 +6345,7 @@
       "level": 3,
       "parent": "agt_data",
       "kind": "data",
-      "summary": "Un'installazione dell'automazione, legata a un solo account di servizio. Ha certificazione, ultimo segno di vita, motore di lavoro e revisore.",
+      "summary": "Un'installazione dell'automazione, legata a un solo account di servizio. Ha certificazione, ultimo segno di vita, quota dei motori, ultimo blocco segnalato, motore di lavoro e revisore.",
       "files": [
         "app/models/agents/host.rb",
         "app/models/agents/host_token.rb"
@@ -8063,10 +8147,11 @@
       "level": 2,
       "parent": "area_alerting",
       "kind": "page",
-      "summary": "Le proprie notifiche, con filtri per tipo e progetto. Le ripetute sono raggruppate e un avviso di guasto mostra quando la cosa è tornata a posto.",
+      "summary": "Le proprie notifiche, con filtri per tipo e progetto. Le ripetute sono raggruppate e un avviso di guasto mostra quando la cosa è tornata a posto. Aprire un ticket, un errore o un monitor segna lette le proprie notifiche su quella cosa.",
       "files": [
         "app/controllers/member/alerting_notifications_controller.rb",
         "app/views/member/alerting_notifications/**",
+        "app/services/notifications/mark_read.rb",
         "app/services/alerting/notification_group.rb",
         "app/services/alerting/recoveries.rb"
       ]
@@ -8255,9 +8340,10 @@
       "level": 3,
       "parent": "ntf_flow_deliver",
       "kind": "step",
-      "summary": "La notifica compare subito in cima alla casella e il numero delle non lette si aggiorna senza ricaricare.",
+      "summary": "La notifica compare subito in cima alla casella e il numero delle non lette dell'organizzazione si aggiorna senza ricaricare, anche nel nome della scheda del browser.",
       "files": [
-        "app/services/notifications/deliver.rb"
+        "app/services/notifications/deliver.rb",
+        "app/javascript/controllers/tab_badge_controller.js"
       ]
     },
     {
@@ -9191,6 +9277,19 @@
       ]
     },
     {
+      "id": "vul_step_release_dates",
+      "name": "Data di uscita delle versioni nuove",
+      "level": 3,
+      "parent": "vul_flow_scan",
+      "kind": "step",
+      "summary": "Per le versioni comparse da meno di 72 ore chiede al registro pubblico quando sono uscite. Una data nota non si richiede; un registro muto si riprova il giorno dopo.",
+      "files": [
+        "app/services/vulnerabilities/record_release_dates.rb",
+        "app/services/vulnerabilities/registry/client.rb",
+        "app/models/vulnerabilities/package_release.rb"
+      ]
+    },
+    {
       "id": "vul_step_osv",
       "name": "Chiede al database delle falle",
       "level": 3,
@@ -9243,7 +9342,7 @@
       "level": 2,
       "parent": "area_vulnerabilities",
       "kind": "page",
-      "summary": "Elenco e dettaglio delle falle trovate, con ignora, riapri, trasforma in ticket e nuova scansione. Una scheda mostra lo stato dei linguaggi.",
+      "summary": "Elenco e dettaglio delle falle trovate, con ignora, riapri, trasforma in ticket e nuova scansione. Un riquadro a parte segnala le librerie uscite da meno di 72 ore. Una scheda mostra lo stato dei linguaggi.",
       "files": [
         "app/controllers/member/monitoring/vulnerabilities_controller.rb",
         "app/views/member/monitoring/vulnerabilities/**"
@@ -13146,6 +13245,16 @@
       "from": "tkt_create_background",
       "to": "tkt_job_embeddings",
       "label": "indice"
+    },
+    {
+      "from": "tkt_job_stalled_epics",
+      "to": "tkt_data",
+      "label": "legge"
+    },
+    {
+      "from": "tkt_job_stalled_epics",
+      "to": "alr_data_notification",
+      "label": "avvisa"
     },
     {
       "from": "tkt_ai_request",

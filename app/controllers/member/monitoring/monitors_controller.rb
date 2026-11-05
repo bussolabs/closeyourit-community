@@ -84,6 +84,9 @@ module Member
       end
 
       def show
+        # CYRA-1146 — the down and back-up alerts belong to the monitor's outages.
+        ::Notifications::MarkRead.call(account: Current.account, organization: Current.organization,
+                                       subjects: [ @monitor, @monitor.incidents ])
         @tab = params[:tab] == "public" ? "public" : "overview"
         @range = range_param
         source = Uptime::Monitor.bucket_config(@range)[:source]

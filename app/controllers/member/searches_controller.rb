@@ -20,10 +20,13 @@ module Member
     def index
       @query = params[:q].to_s.strip.first(100)
       @type = params[:type].to_s
+      # CYRA-1145 — the page the dialog was opened from: its ticket gets actions, its project settings.
+      @context = params[:context].to_s.first(300).presence
       @found = Search::Global.call(
         query: @query, type: @type, visible: visible,
         viewer: Current.account, organization: Current.organization,
-        nav_items: @query.length >= Search::Global::MIN_QUERY_LENGTH ? helpers.search_nav_entries : []
+        nav_items: @query.length >= Search::Global::MIN_QUERY_LENGTH ? helpers.search_nav_entries : [],
+        context: Search::Address.new(@context), can: method(:can?)
       )
     end
   end

@@ -35,12 +35,27 @@ en:
         recovery_required: Recovery required
         stale: Stale
         paused: Paused
+        hung:
+          one: "Blocked for %{count} minute"
+          other: "Blocked for %{count} minutes"
+      # CYRA-1178 — the automator watchdog reported the end of a hang.
+      hang:
+        resumed:
+          one: "Blocked %{count} minute, resumed"
+          other: "Blocked %{count} minutes, resumed"
       phases:
         triage: triage
         planner: plan
         autopilot: work
         closer_staging: staging
         closer_production: production
+      quota:
+        title: Quota left
+        unknown: unknown
+        paused_until: "paused until %{time}"
+        engines:
+          claude: Claude
+          codex: Codex
       tabs:
         overview: Overview
         work: Work
@@ -206,6 +221,13 @@ en:
         updated: Supporter updated. It applies from the next question.
         opencode_model_missing: OpenCode cannot be the supporter until the Automator page names an OpenRouter model.
         invalid: Not a valid choice.
+      parallel:
+        title: Jobs at once
+        hint: How many tickets this machine works at the same time. Each one gets its own copy of the project. Raise it only on a machine with room for it.
+        label: Jobs at once
+        save: Save
+        updated: Saved. It applies from the next round of the machine.
+        invalid: Choose a number from 1 to 4.
       engine:
         title: Who does the work
         hint: The engine that works the tickets on this machine. It must be installed and signed in there.

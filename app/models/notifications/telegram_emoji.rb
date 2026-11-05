@@ -20,6 +20,7 @@ module Notifications
       "ticket_question_asked" => "❓",
       "ticket_question_answered" => "💬",
       "ticket_review_rejected" => "❌",
+      "ticket_epic_stalled" => "⏸️",
       # chat
       "chat_message" => "💬",
       "chat_mentioned" => "📣",
