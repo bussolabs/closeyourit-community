@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.211.2] - 2026-11-05
+
+### Fixed
+
+- **Il lavoro già uscito in produzione si chiude da solo**: se la proposta approvata è unita e un rilascio provato la contiene già, la lavorazione diventa «Fatto» senza aspettare il rilascio di prova. ([Approvazioni](/member/home/approvals))
+
 ## [0.211.1] - 2026-11-05
 
 ### Fixed

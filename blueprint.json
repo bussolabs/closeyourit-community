@@ -6133,9 +6133,11 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "La macchina mette l'etichetta di versione. Il ticket è «Fatto» solo quando il server vede il rilascio riuscito e la produzione che risponde con quella versione. Se la prova del piano è l'unione del codice, il ticket è «Fatto» appena l'etichetta stabile è messa. Un rilascio fallito si chiude da solo quando un rilascio successivo, riuscito, contiene già quel codice.",
+      "summary": "La macchina mette l'etichetta di versione. Il ticket è «Fatto» solo quando il server vede il rilascio riuscito e la produzione che risponde con quella versione. Se la prova del piano è l'unione del codice, il ticket è «Fatto» appena l'etichetta stabile è messa. Un rilascio fallito si chiude da solo quando un rilascio successivo, riuscito, contiene già quel codice. Lo stesso vale per un lavoro approvato e unito che un rilascio provato porta già in produzione.",
       "files": [
         "app/services/agents/attempts/effects/closer_production.rb",
+        "app/services/agents/workflows/close_already_released.rb",
+        "app/jobs/agents/already_released_sweep_job.rb",
         "app/services/agents/probes/bind.rb",
         "app/services/agents/probes/observe.rb",
         "app/jobs/agents/release_probe_job.rb",

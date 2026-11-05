@@ -402,6 +402,11 @@ production: &schedule
     queue: maintenance
     schedule: every minute
 
+  close_already_released_agent_work:
+    class: Agents::AlreadyReleasedSweepJob
+    queue: maintenance
+    schedule: every 10 minutes
+
   # Lavorazioni degli agenti la cui prenotazione è scaduta senza consegna: senza questo giro restavano
   # "in corso" per sempre e potevano bloccare i tentativi successivi sullo stesso ticket (CYRA-201).
   mark_stale_agent_attempts:
