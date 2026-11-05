@@ -33,7 +33,7 @@
     <%# CYRA-883 — from md up sidebar and content are panels detached 14px from the window edges. %>
     <%# CYRA-935 — the Support button slides this whole page up; the support screen waits underneath. %>
     <div class="relative h-dvh overflow-hidden" data-controller="ui--support" data-ui--support-identity-value="<%= Current.account.id %>:<%= Current.organization&.id %>" data-action="keydown.esc@window->ui--support#closeOnEscape">
-    <div class="relative z-10 flex h-dvh md:gap-3.5 md:p-3.5 bg-stone-100 dark:bg-zinc-950" data-ui--support-target="page" data-controller="ui--mobile-nav keyboard tab-badge"
+    <div class="relative z-10 flex h-dvh md:gap-3.5 md:p-3.5 bg-stone-100 dark:bg-zinc-950" data-ui--support-target="page" data-controller="ui--mobile-nav keyboard"
          data-keyboard-nav-value="<%= keyboard_nav_bindings.to_json %>">
       <% if controller_path.in?(%w[member/coworkers member/coworker_activity]) && Coworkers.available_to?(account: Current.account, organization: Current.organization) %>
         <div class="md:hidden"><%= render "member/nav_sidebar", tree: member_nav_tree, compact: false %></div>
@@ -73,7 +73,7 @@
           <%# CYRA-911 — the Administration pages share a frame with their section list on the left.
               T1 — from md up the page wrapper sheds its padding and reaches 1px past the frame, which clips it:
               the panels touch the frame and its border is the only line on that side. %>
-          <main id="main-content" tabindex="-1" data-panels="flush" data-controller="ui--panel-edges ticket-refs" data-ticket-refs-url-value="<%= references_member_tickets_path %>" class="relative h-full overflow-y-auto pb-20 md:pb-0 md:overflow-x-hidden md:[&>.p-7]:-m-px md:[&>.p-7]:max-w-none md:[&>.p-7]:p-0"><% if admin_area? %><%= render layout: "member/admin_shell" do %><%= yield %><% end %><% elsif guides_area? %><%= render layout: "member/guides_shell" do %><%= yield %><% end %><% else %><%= yield %><% end %></main>
+          <main id="main-content" tabindex="-1" data-panels="flush" data-controller="ui--panel-edges" class="relative h-full overflow-y-auto pb-20 md:pb-0 md:overflow-x-hidden md:[&>.p-7]:-m-px md:[&>.p-7]:max-w-none md:[&>.p-7]:p-0"><% if admin_area? %><%= render layout: "member/admin_shell" do %><%= yield %><% end %><% elsif guides_area? %><%= render layout: "member/guides_shell" do %><%= yield %><% end %><% else %><%= yield %><% end %></main>
           <%= render "shared/floating_notices" %>
         </div>
 

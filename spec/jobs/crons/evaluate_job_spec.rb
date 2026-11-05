@@ -37,51 +37,6 @@ RSpec.describe Crons::EvaluateJob, type: :job do
     expect { described_class.perform_now(now:) }.not_to have_enqueued_job(Alerting::EvaluateJob)
   end
 
-  describe "late check guard (CYRA-1141)" do
-    let(:cache) { ActiveSupport::Cache::MemoryStore.new }
-
-    before { allow(Rails).to receive(:cache).and_return(cache) }
-
-    def stale_monitor
-      create(:cron_monitor, project:, expected_interval_minutes: 60, grace_minutes: 5,
-                            status: :ok, last_check_in_at: now - 2.hours)
-    end
-
-    it "skips one round without flagging anything when the previous run was more than 3 minutes ago" do
-      cache.write(described_class::LAST_RUN_KEY, now - 4.minutes)
-      monitor = stale_monitor
-
-      expect { described_class.perform_now(now:) }.not_to have_enqueued_job(Alerting::EvaluateJob)
-      expect(monitor.reload).to be_status_ok
-    end
-
-    it "judges again on the round right after the skip" do
-      cache.write(described_class::LAST_RUN_KEY, now - 4.minutes)
-      monitor = stale_monitor
-      described_class.perform_now(now:)
-
-      expect { described_class.perform_now(now: now + 1.minute) }
-        .to have_enqueued_job(Alerting::EvaluateJob).with(hash_including(subject_id: monitor.id))
-      expect(monitor.reload).to be_status_missed
-    end
-
-    it "flags an overdue monitor as usual when the check runs on time" do
-      cache.write(described_class::LAST_RUN_KEY, now - 1.minute)
-      monitor = stale_monitor
-
-      expect { described_class.perform_now(now:) }.to have_enqueued_job(Alerting::EvaluateJob)
-      expect(monitor.reload).to be_status_missed
-    end
-
-    it "judges as usual when no previous run is recorded" do
-      monitor = stale_monitor
-
-      expect { described_class.perform_now(now:) }.to have_enqueued_job(Alerting::EvaluateJob)
-      expect(monitor.reload).to be_status_missed
-      expect(cache.read(described_class::LAST_RUN_KEY)).to be_within(1).of(now)
-    end
-  end
-
   describe "broadcast realtime" do
     let(:organization) { project.organization }
     let(:crons_stream) { Realtime::Streams.crons(organization) }

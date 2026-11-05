@@ -16,8 +16,6 @@
     <% end %>
   <% end %>
 
-  <%= render "member/monitoring/vulnerabilities/recent_releases", releases: @recent_releases, count: @recent_releases_count %>
-
   <% filtering = params[:q].present? || params[:severity].present? || params[:status].present? || params[:project_id].present? %>
   <% if @findings.empty? && !filtering %>
     <%= render Ui::EmptyStateComponent.new(title: t("member.monitoring.vulnerabilities.empty"), body: t("member.monitoring.vulnerabilities.empty_hint"), icon: "shield-half", framed: true, test_id: "vulnerabilities-empty") %>

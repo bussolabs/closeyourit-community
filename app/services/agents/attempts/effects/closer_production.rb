@@ -33,9 +33,6 @@ module Agents
           return unless result_state == "production-released"
 
           workflow.update!(closer_production_completed_at: Time.current)
-          # CYRA-1193 — with the merge as proof of done there is nothing to observe: the stable
-          # release is the last step, so the work is done here.
-          return complete_on_merge! if merge_is_the_proof?
 
           bound = Agents::Probes::Bind.call(workflow:)
           # Un progetto che non dichiara come si prova che un rilascio è vivo non deve far aspettare
@@ -46,22 +43,6 @@ module Agents
             workflow:, phase: "closer_production", source: "release_probe",
             kind: "release_probe", reason: bound.error.message
           )
-        end
-
-        def merge_is_the_proof?
-          workflow.frozen_plan&.completion_probe&.dig("kind") == "merge"
-        end
-
-        # Same writes as a closed production probe. The prerequisites gate in ChangeStatus has the last
-        # word: if it refuses, the ticket keeps its status and the work stays open for a person.
-        def complete_on_merge!
-          state = workflow.organization.ticket_statuses.active.category_done.ordered.first
-          return if state.nil?
-
-          workflow.update!(completed_at: Time.current)
-          outcome = Ticketing::ChangeStatus.call(organization: workflow.organization, ticket: workflow.ticket,
-                                               status_id: state.id, channel: :workflow)
-          workflow.update!(completed_at: nil) unless outcome.ok?
         end
       end
     end

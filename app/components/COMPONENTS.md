@@ -328,14 +328,6 @@ Badge / chip / status. Reso come `<span>`. Pallino colorato opzionale che può "
 - **Badge status/priority (Fase D)**: usare `Ui::BadgeComponent.new(color: status.color, label: status.label)`
   — `priority.code == "high"` → `icon: "arrow-up"`.
 
-### `Ui::TicketRefComponent`
-Un ticket citato in un testo libero (CYRA-1148): codice, titolo accorciato e badge di stato, in un solo
-link che apre il ticket. `render Ui::TicketRefComponent.new(ticket:)`
-- Non si scrive nelle viste. `Ui::MarkdownComponent` lascia nel testo solo un segnaposto col codice
-  (`data-ticket-refs-target="ref"`, mai dentro codice o link); nell'area member il controller
-  `ticket-refs` chiede in una volta sola `GET /member/tickets/references?codes=…` e mette questa etichetta
-  al posto dei codici che chi legge può vedere. Gli altri restano testo.
-
 ### `Ui::StatLabelComponent`
 Conteggio come **testo in linea, mai pill** (DESIGN.md T12): numero Mono colorato, poi la parola in
 grigio (`12 da fare`); tra conteggi vicini un puntino. Un valore che non è un numero tiene l'etichetta

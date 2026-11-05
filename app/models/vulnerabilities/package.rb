@@ -21,13 +21,6 @@ module Vulnerabilities
 
     scope :direct, -> { where(direct: true) }
     scope :ordered, -> { order(:name, :version) }
-    # CYRA-1167 — versions published after `time`, carrying that date as `released_at`.
-    scope :released_after, lambda { |time|
-      joins("INNER JOIN vulnerabilities_package_releases releases ON releases.ecosystem = vulnerabilities_packages.ecosystem " \
-            "AND releases.name = vulnerabilities_packages.name AND releases.version = vulnerabilities_packages.version")
-        .where("releases.released_at > ?", time)
-        .select("vulnerabilities_packages.*, releases.released_at AS released_at")
-    }
 
     def coordinates = "#{name}@#{version}"
 

@@ -157,9 +157,6 @@ it:
         ticket_question_answered:
           title: Domanda risposta
           description: Arriva la risposta a una domanda su un ticket che segui.
-        ticket_epic_stalled:
-          title: Epic fermo
-          description: Nessun ticket di un epic avanza e tutti aspettano qualcuno. Ti dice chi deve decidere e su cosa.
         chat_message:
           title: Nuovo messaggio in chat
           description: Viene inviato un nuovo messaggio in una conversazione a cui partecipi.

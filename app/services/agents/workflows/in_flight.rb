@@ -155,22 +155,16 @@ module Agents
       end
 
       def autonomous_count
-        self.class.states_by_workflow(workflows).count { |_id, entry| entry[:state] != "waiting" }
-      end
-
-      # { workflow_id => { phase:, state: } } for any workflows, whoever reads them: the queue's rule
-      # in bulk, outside the CTO perimeter, so the stalled-epic alert never re-derives it (CYRA-1155).
-      def self.states_by_workflow(workflows)
-        ids = workflows.map(&:id)
+        rows = workflows
+        ids = rows.map(&:id)
         failed = PhaseResolver.failed_phases_by_workflow(ids)
         open = PhaseResolver.open_phases_by_workflow(ids)
         asking_ids = workflows_asking(ids)
 
-        workflows.to_h do |workflow|
+        rows.count do |workflow|
           phase = PhaseResolver.phase(workflow, failed[workflow.id])
-          [ workflow.id, { phase: phase,
-                           state: state_for(workflow, phase, failed[workflow.id], open[workflow.id],
-                                            asking: asking_ids.include?(workflow.id)) } ]
+          state_for(workflow, phase, failed[workflow.id], open[workflow.id],
+                    asking: asking_ids.include?(workflow.id)) != "waiting"
         end
       end
 
@@ -184,7 +178,7 @@ module Agents
         # CYRA-630 — chi ha una domanda senza risposta aspetta una persona, e la coda delle decisioni
         # lo conta. La FASE non lo dice: una lavorazione con una domanda in sospeso resta in una fase
         # di lavoro, e senza questa lettura la stessa riga finirebbe nei due elenchi e nei due numeri.
-        asking_ids = self.class.workflows_asking(ids)
+        asking_ids = workflows_asking(ids)
         # CYRA-626 — due letture in blocco per l'intera pagina, mai una per riga: la frase la vedono
         # venticinque righe insieme, e una query a riga la pagherebbe chi apre l'elenco.
         hints = retry_hints_by_workflow(ids)
@@ -202,8 +196,8 @@ module Agents
           Row.new(workflow: workflow, ticket: workflow.ticket, project: workflow.ticket.project,
                   host: hosts[aggregate[:host_id] || attributed_host_id(workflow)],
                   phase: phase,
-                  state: self.class.state_for(workflow, phase, failed[workflow.id], open[workflow.id],
-                                              asking: asking_ids.include?(workflow.id)),
+                  state: state_for(workflow, phase, failed[workflow.id], open[workflow.id],
+                                   asking: asking_ids.include?(workflow.id)),
                   last_status: aggregate[:last_status],
                   host_seconds: aggregate[:host_seconds],
                   last_at: aggregate[:last_at] || workflow.updated_at,
@@ -280,7 +274,7 @@ module Agents
       # — e allora aspetta una persona — oppure già in nuovo tentativo, e allora sta lavorando. Il
       # discrimine è lo STESSO della coda, letto dalle fasi precaricate invece che con due query per
       # riga (Workflow#stalled_review_phase_from).
-      def self.state_for(workflow, phase, failed_phases, open_phases, asking: false)
+      def state_for(workflow, phase, failed_phases, open_phases, asking: false)
         # Prima di tutto il resto: una domanda in sospeso aspetta una persona qualunque sia la fase.
         return "waiting" if asking
 
@@ -296,7 +290,7 @@ module Agents
       # con la stessa condizione della coda delle decisioni (`answered_at` e non la FK del commento,
       # CYRA-219): due condizioni diverse per la stessa domanda farebbero comparire la riga in tutti e
       # due gli elenchi, o in nessuno.
-      def self.workflows_asking(workflow_ids)
+      def workflows_asking(workflow_ids)
         return Set.new if workflow_ids.empty?
 
         ::Agents::Clarification.where(workflow_id: workflow_ids, answered_at: nil).distinct.pluck(:workflow_id).to_set

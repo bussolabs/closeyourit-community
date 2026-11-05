@@ -10,41 +10,21 @@ module Search
     # Candidates checked against the presence cohort: enough to fill a group after filtering.
     PEOPLE_CANDIDATES = 50
 
-    # `context` is the page the search was opened from; `can` is the pages' permission check (CYRA-1145).
-    def initialize(query:, visible:, viewer:, organization:, nav_items:, context: nil, can: nil)
+    def initialize(query:, visible:, viewer:, organization:, nav_items:)
       @query = query
       @visible = visible
       @viewer = viewer
       @organization = organization
       @nav_items = nav_items
-      @context = context
-      @can = can
     end
 
     # The ticket or project whose code was typed in full, looked up on its own so newer partial
     # matches can never push it out of the group (CYRA-900).
     def exact(key)
       case key
-      when :tickets then linked_ticket || exact_ticket
-      when :projects then linked_project || @visible.projects.find_by("LOWER(projects.key) = LOWER(?)", @query)
+      when :tickets then exact_ticket
+      when :projects then @visible.projects.find_by("LOWER(projects.key) = LOWER(?)", @query)
       end
-    end
-
-    # Actions on the ticket the search was opened from, only when the viewer sees it.
-    def actions
-      ticket = context_ticket
-      return [] unless ticket && @can
-
-      TicketActions.new(ticket: ticket, viewer: @viewer, organization: @organization, can: @can).matching(@query)
-    end
-
-    # The open page's project first and alone; elsewhere every visible project.
-    def settings
-      return [] unless @can
-
-      project = context_ticket&.project || context_project
-      projects = project ? [ project ] : @visible.projects.order(:name)
-      SettingsCatalog.new(projects: projects, can: @can).matching(@query)
     end
 
     def nav
@@ -139,35 +119,6 @@ module Search
     end
 
     private
-
-    def context_ticket
-      return @context_ticket if defined?(@context_ticket)
-
-      id = @context&.ticket_id
-      @context_ticket = id && @visible.tickets.preload(:project).find_by(id: id)
-    end
-
-    def context_project
-      id = @context&.project_id
-      id && @visible.projects.find_by(id: id)
-    end
-
-    def address = @address ||= Address.new(@query)
-
-    # A pasted pull request or app link: found only among the tickets the viewer already sees.
-    def linked_ticket
-      if (url = address.pull_request_url)
-        pull_requests = Github::PullRequest.where("LOWER(github_pull_requests.html_url) = ?", url)
-        return @visible.tickets.preload(:project).find_by(id: pull_requests.select(:ticket_id))
-      end
-      id = address.ticket_id
-      id && @visible.tickets.preload(:project).find_by(id: id)
-    end
-
-    def linked_project
-      id = address.project_id
-      id && @visible.projects.find_by(id: id)
-    end
 
     def exact_ticket
       match = Ticketing::LinkableTickets::CODE_QUERY.match(@query)

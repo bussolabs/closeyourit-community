@@ -19,8 +19,6 @@ module Member
       # Quanti file non letti si nominano nell'avviso: oltre, il conteggio dice il resto. Un monorepo
       # con quaranta lockfile rotti riempirebbe la testata invece di avvisare.
       UNVERIFIED_PREVIEW = 5
-      # How many too-recent packages the panel names; past it, the count says the rest (CYRA-1167).
-      RECENT_RELEASES_PREVIEW = 20
 
       SORT_COLUMNS = {
         "severity" => { expr: "vulnerabilities_advisories.severity", joins: :advisory },
@@ -47,7 +45,6 @@ module Member
         @saved_views = saved_views_for("vulnerabilities")
         assign_counts
         assign_unverified_manifests
-        assign_recent_releases
       end
 
       def show
@@ -153,16 +150,6 @@ module Member
         unverified = visible.vulnerability_manifests.failing
         @unverified_manifests_count = unverified.count
         @unverified_manifests = unverified.includes(:project).ordered.limit(UNVERIFIED_PREVIEW).to_a
-      end
-
-      # CYRA-1167 — versions published less than 72 hours ago. The age is computed now, so a package
-      # leaves the panel by itself; it never counts as a vulnerability and never notifies.
-      def assign_recent_releases
-        recent = Vulnerabilities::Package.where(manifest_id: visible.vulnerability_manifests.select(:id))
-                                         .released_after(Vulnerabilities::PackageRelease::RECENT_WINDOW.ago)
-        @recent_releases_count = recent.count(:all)
-        @recent_releases = recent.includes(manifest: :project).reorder("releases.released_at DESC")
-                                 .limit(RECENT_RELEASES_PREVIEW).to_a
       end
 
       def redirect_back_to_list(notice_key:)

@@ -115,7 +115,6 @@ en:
           help_title: "The visits or events that count as a goal reached."
           new: New goal
           manage: Manage goals
-          events: Events
           count: Goals
           empty: No goals yet. Create one to track conversions.
           created: Goal created
@@ -141,40 +140,6 @@ en:
             path_hint: For pageview-path goals — exact path or prefix with "*" (e.g. /blog/*).
             event_name: Event name
             event_hint: For custom-event goals — the name sent by captureEvent.
-            property_name: Property (optional)
-            property_value: Property value
-            property_hint: "For custom-event goals — count only the events with this value (e.g. plan = pro). Empty: all of them count."
-        event_definitions:
-          title: Declared events
-          subtitle: "The events your site sends, with the properties you expect."
-          count: Events
-          new: New event
-          edit: Edit event
-          empty: No declared events. Add one, or look at the ones that arrived outside the list.
-          created: Event added
-          updated: Event updated
-          deleted: Event removed
-          delete: Remove
-          actions: Actions
-          delete_dialog:
-            title: "Remove the %{name} event from the list?"
-            body: "Events already received stay and will show up again as undeclared."
-          save: Save event
-          cancel: Cancel
-          col_name: Event
-          col_properties: Properties
-          form:
-            name: Event name
-            name_hint: The name sent by captureEvent, letter for letter.
-            property_names: Expected properties
-            property_names_hint: "Comma separated names, at most 10 (e.g. plan, seats)."
-        undeclared_events:
-          title: Undeclared events
-          subtitle: "The events received in the period that are not in the list."
-          count: Events
-          empty: No events outside the list in this period.
-          col_count: Received
-          declare: Add to the list
         share:
           title: Share & embed
           create: Create link

@@ -38,7 +38,7 @@ module Cli
         end
 
         def goal_params
-          params.permit(:kind, :event_name, :path_pattern, :display_name, :property_name, :property_value)
+          params.permit(:kind, :event_name, :path_pattern, :display_name)
         end
       end
     end

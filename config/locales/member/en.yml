@@ -109,11 +109,7 @@ en:
         secret:
           one: Secret in %{count} project
           other: Secret in %{count} projects
-        project_setting: "Settings · %{project}"
-        personal_setting: Personal settings
       groups:
-        actions: Actions
-        settings: Settings
         projects: Projects
         tickets: Tickets
         error_groups: Errors
@@ -129,19 +125,6 @@ en:
         people: People
         conversations: Conversations
         secrets: Secrets
-      actions:
-        assign:
-          label: Assign to me
-          terms: assignee
-        status:
-          label: "Move to %{status}"
-          terms: change status
-        automation:
-          label: Allow agents
-          terms: hand to automation agent
-        blocked:
-          assign: You cannot assign this project's tickets.
-          edit: You cannot change this project's tickets.
     nav:
       home: Home
       valhalla: Valhalla · God mode
@@ -1377,21 +1360,6 @@ en:
         danger_title: Danger zone
         danger_desc: Deleting this project permanently removes it and all of its tickets. This action cannot be undone.
         delete_project: Delete project
-      release_retirement:
-        retired: retired
-        retire: Retire
-        restore: Restore
-        restore_confirm: "Restore this release? Its users will no longer be asked to update."
-        dialog_title: Retire a release
-        dialog_body: "The apps on this version will ask their users to update, as soon as their library supports it. You can restore it later."
-        message_label: Message for the users
-        message_placeholder: "e.g. This version crashes at start-up: please update."
-        confirm: Retire the release
-        cancel: Cancel
-        retired_notice: "Release %{version} retired."
-        restored_notice: "Release %{version} restored."
-        confirmation_required: Confirm the retire from its dialog.
-        message_required: Write a message for the users.
       history:
         title: "Activity history · %{project}"
         back: Back to project
@@ -2475,7 +2443,6 @@ en:
         already_done: "The work was already written in the code: the ticket closes without planning (%{files})"
         autopilot_auto_approved: "The delivered work moved on by itself: %{count} checks passed (%{checks}) and the code re-read is positive"
         plan_council_approved: "The council approved this plan: no one had to sign it"
-        plan_supporter_approved: "The supporter approved this low-risk plan: no one had to sign it"
         more_files: "and %{count} more"
         dependency_added: "%{actor} added a dependency on ticket %{ticket}"
         dependency_removed: "%{actor} removed the dependency on ticket %{ticket}"

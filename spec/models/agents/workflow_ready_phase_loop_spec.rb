@@ -67,7 +67,6 @@ RSpec.describe "la coda non ripropone all'infinito una fase consegnata" do
       # `pending` e non `skip`: il giorno in cui il buco viene chiuso questo esempio inizia a passare e
       # RSpec fa fallire la build chiedendo di togliere il pending. È il promemoria che il freno sulla
       # macchina può essere tolto — cioè il gate del resto di CYAU-179 — e non una riga da dimenticare.
-      # quarantine: CYAU-179
       pending "il planner non ha un marcatore di avvio: finché non ce l'ha, il freno sulla macchina resta" if fase == "planner"
 
       workflow = lavorazione(fase)

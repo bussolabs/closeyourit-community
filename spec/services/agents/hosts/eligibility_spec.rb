@@ -171,16 +171,6 @@ RSpec.describe Agents::Hosts::Eligibility do
 
     expect(described_class.call(host:, project:, phase:)).to be_ok
   end
-
-  # CYRA-1175
-  it "counts the parallel jobs chosen for the machine as free capacity" do
-    host.update!(certified_at: Time.current, running: 1, slots: 1, max_parallel: 2)
-
-    expect(described_class.call(host:, project:, phase:)).to be_ok
-
-    host.update!(running: 2)
-    expect(described_class.call(host:, project:, phase:).error.code).to eq("R403-AGENT-006")
-  end
   # ── CYAU-178 ──────────────────────────────────────────────────────────────────────────────────
   #
   # Da qui in avanti una consegna che scrive codice deve portare l'impronta del codice che l'host aveva

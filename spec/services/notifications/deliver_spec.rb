@@ -39,19 +39,6 @@ RSpec.describe Notifications::Deliver do
 
   # Il canale email è l'unico che ha bisogno di sapere quale pagina spedire, e ogni dominio ha la
   # sua. Meglio rumoroso subito che una notifica che risulta consegnata e non è mai partita.
-  # CYRA-1147 — the live bell count is the one the page shows on load: this organization only.
-  it "broadcasts an unread count limited to the notification's organization" do
-    other = create(:organization)
-    create(:alerting_notification, :unread, organization: other, account: account)
-    counts = []
-    allow(Turbo::StreamsChannel).to receive(:broadcast_prepend_to)
-    allow(Turbo::StreamsChannel).to receive(:broadcast_replace_to) { |_stream, **opts| counts << opts[:locals][:count] }
-
-    described_class.in_app(payload: payload)
-
-    expect(counts).to eq([ 1 ])
-  end
-
   it "il canale email senza mailer si ferma invece di dire che ha spedito" do
     expect { described_class.email(payload: payload) }
       .to raise_error(ArgumentError, /mailer/)

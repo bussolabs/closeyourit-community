@@ -18,8 +18,7 @@ module Notifications
     # v2 (CYRA-712): il rientro del servizio generativo (ai_available) entra fra i ritorni alla
     # normalità, che in «Essenziale» restano spenti — l'in-app li mostra comunque.
     # v3 (CYAG-22): cluster_down is critical, cluster_up joins the recoveries.
-    # v4 (CYRA-1155): a stalled epic waits for you, so it is personal.
-    VERSION = 4
+    VERSION = 3
 
     IMMEDIATE = Cadence::IMMEDIATE
     DAILY = Cadence::DAILY
@@ -29,7 +28,7 @@ module Notifications
     # Arrivano subito anche nella configurazione "Essenziale", perché il ritardo costa a un altro.
     PERSONAL_EVENT_TYPES = %w[
       ticket_assigned ticket_mentioned ticket_review_requested ticket_review_rejected ticket_review_approved
-      chat_mentioned secret_change_requested ticket_epic_stalled
+      chat_mentioned secret_change_requested
     ].freeze
 
     # Ritorni alla normalità: il ripristino non è una notizia urgente. Spenti in "Essenziale" —

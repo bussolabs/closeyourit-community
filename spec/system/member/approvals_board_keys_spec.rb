@@ -20,25 +20,12 @@ RSpec.describe "Approvals board — keyboard and preview", :js, type: :system do
     create(:ticket, organization: org, project:, status: review_status, reviewer: owner, title:)
   end
 
-  # Presses a move key until the focus lands on the row (CYRA-1179): under CI load the browser now
-  # and then drops a key press. Repeating is safe because j and k stop at the first and last row.
-  def move_focus_to(key, title)
-    3.times do
-      page.send_keys(key)
-      return if page.has_css?("[data-test='approvals-board-row']:focus-within", text: title, wait: 2)
-    end
-    expect(page).to have_css("[data-test='approvals-board-row']:focus-within", text: title)
+  def focused_test
+    page.evaluate_script("document.activeElement.closest('tr')?.dataset.test")
   end
 
-  # Clicks the toggle again only while the preview is still closed: a second click on an open
-  # preview would close it (CYRA-1179).
-  def open_preview_with_toggle
-    toggle = find("[data-test='approvals-row-preview-toggle']")
-    3.times do
-      toggle.click
-      return if page.has_css?("[data-test='approvals-row-preview-toggle'][aria-expanded='true']", wait: 2)
-    end
-    expect(page).to have_css("[data-test='approvals-row-preview-toggle'][aria-expanded='true']")
+  def focused_text
+    page.evaluate_script("document.activeElement.textContent")
   end
 
   it "moves with j and k, ticks with x and approves the focused row with a" do
@@ -47,10 +34,14 @@ RSpec.describe "Approvals board — keyboard and preview", :js, type: :system do
     sign_in_as(owner)
     visit member_home_approvals_path
 
-    move_focus_to("j", first.title)
+    page.send_keys("j")
+    expect(focused_test).to eq("approvals-board-row")
+    expect(focused_text).to include(first.title)
 
-    move_focus_to("j", second.title)
-    move_focus_to("k", first.title)
+    page.send_keys("j")
+    expect(focused_text).to include(second.title)
+    page.send_keys("k")
+    expect(focused_text).to include(first.title)
 
     page.send_keys("x")
     expect(page).to have_css("[data-test='approvals-bulk-bar']", visible: true)
@@ -69,7 +60,7 @@ RSpec.describe "Approvals board — keyboard and preview", :js, type: :system do
 
     expect(page).to have_no_css("[data-test='approvals-preview']")
 
-    open_preview_with_toggle
+    find("[data-test='approvals-row-preview-toggle']").click
 
     within("[data-test='approvals-row-preview']") do
       expect(page).to have_css("[data-test='approvals-detail-title']", text: ticket.title)

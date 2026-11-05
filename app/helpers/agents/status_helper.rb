@@ -12,31 +12,23 @@ module Agents
       "offline" => :gray,
       "busy" => :indigo,
       "waiting" => :amber,
-      "recovery_required" => :red,
-      "hung" => :red
+      "recovery_required" => :red
     }.freeze
-
-    # The Automator stops asking for work below this remaining percent (CYAU-275).
-    QUOTA_LOW_PERCENT = 10
 
     # CYRA-450 — un host fermo (offline oltre la soglia di allarme) sale a rosso "Fermo": il grigio offline
     # non distingueva un host a riposo da uno rotto. Lo stale prevale sull'activity_status (già "offline").
     def agent_host_status_color(host)
       return :red if agent_host_stale?(host)
+      return :amber if host.paused?
 
-      status = host.activity_status
-      return :amber if host.paused? && status != "hung"
-
-      HOST_STATUS_COLORS.fetch(status, :gray)
+      HOST_STATUS_COLORS.fetch(host.activity_status, :gray)
     end
 
     def agent_host_status_label(host)
       return t("member.agents.status.stale") if agent_host_stale?(host)
-      status = host.activity_status
-      return t("member.agents.status.hung", count: host.hang_minutes) if status == "hung"
       return t("member.agents.status.paused") if host.paused?
 
-      t("member.agents.status.#{status}")
+      t("member.agents.status.#{host.activity_status}")
     end
 
     # CYRA-450 — l'host tace da oltre la soglia di allarme: riga evidenziata, badge "Fermo", avviso. Diverso
@@ -90,17 +82,6 @@ module Agents
       host.last_stops.last&.dig("reason")
     end
 
-    # CYRA-1177 — remaining quota of each engine as the Automator reported it, one item per engine:
-    # `{ runtime:, engine:, value:, color: }`. Empty for a machine that never reported it (older
-    # Automator). A pause still running wins over the percent; a null percent is "unknown", never 0%.
-    def agent_host_quota_items(host)
-      host.agent_quota.map do |entry|
-        runtime = entry["runtime"]
-        engine = t("member.agents.quota.engines.#{runtime}", default: runtime.to_s.capitalize)
-        { runtime:, engine:, **agent_quota_value(entry) }
-      end
-    end
-
     # Almeno una run dichiarata dall'host è stalled (host offline) → marker ambra nella lista.
     def agent_host_stalled?(host)
       host.observable_active_runs.any? { |run| run["stalled"] }
@@ -117,29 +98,6 @@ module Agents
 
       t("member.agents.activity.started_ago", time: time_ago_in_words(time))
     rescue ArgumentError, TypeError
-      nil
-    end
-
-    private
-
-    def agent_quota_value(entry)
-      paused_until = agent_quota_time(entry["paused_until"])
-      if paused_until&.future?
-        { value: t("member.agents.quota.paused_until", time: l(paused_until, format: paused_until.today? ? :chart_time : :short)),
-          color: :amber }
-      elsif (percent = entry["remaining_percent"]).nil?
-        { value: t("member.agents.quota.unknown"), color: :gray }
-      else
-        { value: "#{percent.round}%", color: percent < QUOTA_LOW_PERCENT ? :amber : :neutral }
-      end
-    end
-
-    # Defensive parse of an iso8601 string sent by the host: nil when absent or malformed.
-    def agent_quota_time(raw)
-      return nil if raw.blank?
-
-      Time.iso8601(raw.to_s).in_time_zone
-    rescue ArgumentError
       nil
     end
   end

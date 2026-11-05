@@ -13,11 +13,8 @@ module Member
         last = Rails.cache.read(Member::Home::ApprovalCountsController.cache_key(Current.account, current_organization))
         turbo_frame_tag("member-nav-approvals-count", src: member_home_approvals_count_path, loading: :lazy) do
           if last
-            # CYRA-1147 — the exact number for the tab title: the label stops at 99+.
-            tag.span(class: "contents", data: { pending_count: last }) do
-              render("shared/notification_counter", count: last, label: t("member.nav.approvals_pending", count: last),
-                                                    test_id: "member-nav-approvals-badge")
-            end
+            render("shared/notification_counter", count: last, label: t("member.nav.approvals_pending", count: last),
+                                                  test_id: "member-nav-approvals-badge")
           end
         end
       when "conversations"

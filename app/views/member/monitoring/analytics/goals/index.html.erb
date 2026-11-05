@@ -33,7 +33,7 @@
           <%= render Ui::TableComponent::RowComponent.new(test_id: "analytics-goals-row") do %>
             <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
               <span class="text-zinc-900 dark:text-zinc-100"><%= goal.display_name %></span>
-              <span class="ml-1.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= goal.target_label %></span>
+              <span class="ml-1.5 font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= goal.custom_event? ? goal.event_name : goal.path_pattern %></span>
             <% end %>
             <%= render(Ui::TableComponent::CellComponent.new(label: t("member.monitoring.analytics.goals.col_kind"), class: "text-gray-500 dark:text-zinc-400")) { t("member.monitoring.analytics.goals.kinds.#{goal.kind}") } %>
             <%= render Ui::TableComponent::CellComponent.new(actions: true) do %>

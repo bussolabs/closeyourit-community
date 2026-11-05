@@ -35,28 +35,12 @@ it:
         recovery_required: Recupero richiesto
         stale: Fermo
         paused: In pausa
-        hung:
-          one: "Bloccato da %{count} minuto"
-          other: "Bloccato da %{count} minuti"
-      # CYRA-1178 — the automator watchdog reported the end of a hang.
-      hang:
-        resumed:
-          one: "Bloccato %{count} minuto, ripreso"
-          other: "Bloccato %{count} minuti, ripreso"
       phases:
         triage: triage
         planner: piano
         autopilot: lavorazione
         closer_staging: staging
         closer_production: produzione
-      # CYRA-1177 — quota left on each engine, as the machine reports it.
-      quota:
-        title: Quota rimasta
-        unknown: sconosciuta
-        paused_until: "in pausa fino alle %{time}"
-        engines:
-          claude: Claude
-          codex: Codex
       tabs:
         overview: Panoramica
         work: Lavorazioni
@@ -226,13 +210,6 @@ it:
         updated: Supporter aggiornato. Vale dalla prossima domanda.
         opencode_model_missing: OpenCode non può fare il supporter finché nella pagina Automator manca il modello OpenRouter.
         invalid: Scelta non valida.
-      parallel:
-        title: Lavori insieme
-        hint: Quanti ticket questa macchina lavora nello stesso momento. Ognuno ha la sua copia del progetto. Alzalo solo su una macchina che ha spazio.
-        label: Lavori insieme
-        save: Salva
-        updated: Salvato. Vale dal prossimo giro della macchina.
-        invalid: Scegli un numero da 1 a 4.
       engine:
         title: Chi fa il lavoro
         hint: Il motore che lavora i ticket su questa macchina. Deve essere installato e con l'accesso fatto.

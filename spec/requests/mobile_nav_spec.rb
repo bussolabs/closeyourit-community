@@ -28,7 +28,7 @@ RSpec.describe "Navigazione mobile (drawer)", type: :request do
     it "risponde 200 col wrapper controllato da ui--mobile-nav" do
       expect(response).to have_http_status(:ok)
       # CYRA-28 ha aggiunto il controller keyboard universale al wrapper member → multi-controller.
-      expect(response.body).to include('data-controller="ui--mobile-nav keyboard tab-badge"')
+      expect(response.body).to include('data-controller="ui--mobile-nav keyboard"')
     end
 
     it "espone l'hamburger md:hidden con i data attribute Stimulus" do

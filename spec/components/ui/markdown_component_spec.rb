@@ -124,43 +124,4 @@ RSpec.describe Ui::MarkdownComponent, type: :component do
 
     expect(page).to have_css('div[data-test="ticket-description"]')
   end
-
-  # CYRA-1148 — ticket codes in prose become placeholders the page fills with title and status.
-  describe "ticket codes" do
-    it "marks a code written in prose with a placeholder that holds only the code" do
-      render_inline(described_class.new(text: "Same cause as CYRA-12, see there."))
-
-      ref = page.find("span[data-ticket-refs-target='ref']")
-      expect(ref["data-code"]).to eq("CYRA-12")
-      expect(ref.text).to eq("CYRA-12")
-      expect(page).to have_text("Same cause as CYRA-12, see there.")
-    end
-
-    it "marks codes in the inline variant too" do
-      render_inline(described_class.new(text: "blocked by **AB1-3**", inline: true))
-
-      expect(page).to have_css("span[data-ticket-refs-target='ref'][data-code='AB1-3']")
-    end
-
-    it "leaves codes inside code blocks, inline code and links alone" do
-      text = "`CYRA-1`\n\n```\nCYRA-2\n```\n\n[CYRA-3](https://example.com/CYRA-3)"
-      render_inline(described_class.new(text:))
-
-      expect(page).to have_no_css("[data-ticket-refs-target]")
-      expect(page).to have_css("a", text: "CYRA-3")
-    end
-
-    it "ignores lowercase words and dates" do
-      render_inline(described_class.new(text: "utf-8 on 2026-11-03"))
-
-      expect(page).to have_no_css("[data-ticket-refs-target]")
-    end
-
-    it "keeps escaped markup escaped when it marks a code" do
-      render_inline(described_class.new(text: "<script>alert(1)</script> CYRA-4"))
-
-      expect(page).to have_no_css("script")
-      expect(page).to have_text("<script>alert(1)</script> CYRA-4")
-    end
-  end
 end

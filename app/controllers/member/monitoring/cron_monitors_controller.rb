@@ -61,8 +61,6 @@ module Member
       }.freeze
 
       def show
-        # CYRA-1146 — before rendering, so this page's bell already shows the new count.
-        ::Notifications::MarkRead.call(account: Current.account, organization: Current.organization, subjects: [ @monitor ])
         # CYRA-924 — the last fifty, sorted on any column (C9); the outage history reads its own rows.
         @check_ins = sorted_rows(@monitor.check_ins.recent.limit(50).to_a, columns: CHECK_IN_SORT_COLUMNS)
         # CYRA-484 — «da quanto dura questo stato»: chi guarda non deve contare i giorni da solo.

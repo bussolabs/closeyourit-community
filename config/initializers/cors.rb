@@ -8,8 +8,7 @@
 # origins "*" è sicuro qui perché l'ingest si autentica per-progetto tramite bearer token
 # nell'header Authorization (Bearer cyi_…) OPPURE la DSN public key non-segreta (header X-Sentry-Auth
 # o query ?sentry_key=, CYRA-108) e NON usa cookie/sessioni: con credentials: false nessuna risorsa
-# autenticata via cookie è raggiungibile cross-origin. La public key apre l'ingest e lo stato di una
-# versione (CYRA-1161), mai le altre read.
+# autenticata via cookie è raggiungibile cross-origin. La public key apre solo l'ingest, mai le read.
 # Il resto dell'app (web/member/valhalla/cli) resta volutamente senza header CORS.
 #
 # La restrizione di provenienza (origin allowlist per-progetto, CYRA-109) NON vive qui ma è enforced
@@ -24,14 +23,6 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
              headers: %w[Authorization Content-Type Content-Encoding X-Sentry-Auth],
              expose: %w[Retry-After X-Sentry-Rate-Limits X-CloseYourIt-Ignored-Items X-CloseYourIt-Attachment-Results],
              methods: %i[post options],
-             credentials: false,
-             max_age: 3600
-
-    # CYRA-1161 — the browser SDK reads whether its version is retired, and revalidates on the ETag.
-    resource %r{\A/api/v1/projects/[^/]+/release_status/?\z},
-             headers: %w[Authorization Content-Type X-Sentry-Auth If-None-Match],
-             expose: %w[ETag],
-             methods: %i[get options],
              credentials: false,
              max_age: 3600
 

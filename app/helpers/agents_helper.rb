@@ -9,7 +9,6 @@
 # compito; il nome resta perché una vista continua a chiamare i metodi per nome.
 #
 #   Agents::StatusHelper       in che stato è una macchina e cosa sta facendo adesso
-#   Agents::HangHelper         the notice after the Automator reported a blocked event loop
 #   Agents::DurationsHelper    i formati: durata, costo, percentuale
 #   Agents::TrendsHelper       la variazione rispetto al periodo precedente
 #   Agents::PerformanceHelper  i riquadri del rendimento, quali mostrare e cosa scrivono
@@ -17,7 +16,6 @@
 #   Agents::TimelineHelper     il percorso di una lavorazione: pallini, etichette, segmenti
 module AgentsHelper
   include Agents::StatusHelper
-  include Agents::HangHelper
   include Agents::DurationsHelper
   include Agents::TrendsHelper
   include Agents::PerformanceHelper

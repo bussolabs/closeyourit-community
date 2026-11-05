@@ -8,9 +8,8 @@ module Search
     MIN_QUERY_LENGTH = 2
     LIMIT_PER_GROUP = 5
     LIMIT_FILTERED = 20
-    # Actions on the open ticket come first; a group with an exact match still goes before them.
     KEYS = %i[
-      actions nav settings projects tickets error_groups pages books ideas monitors cron_monitors
+      nav projects tickets error_groups pages books ideas monitors cron_monitors
       servers groups teams people conversations secrets
     ].freeze
 
@@ -20,11 +19,11 @@ module Search
     # One entry of the side menu, already filtered by the menu's own rules (CYRA-900).
     NavEntry = Data.define(:label, :path, :icon)
 
-    def initialize(query:, visible:, viewer:, organization:, nav_items: [], type: nil, context: nil, can: nil)
+    def initialize(query:, visible:, viewer:, organization:, nav_items: [], type: nil)
       @query = query.to_s.strip.first(100)
       @type = KEYS.find { |key| key.to_s == type.to_s }
       @sources = Sources.new(query: @query, visible: visible, viewer: viewer,
-                             organization: organization, nav_items: nav_items, context: context, can: can)
+                             organization: organization, nav_items: nav_items)
     end
 
     def call

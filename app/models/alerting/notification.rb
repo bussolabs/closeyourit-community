@@ -189,10 +189,7 @@ module Alerting
       puck_decision_needed: 81,
       # CYRA-1011: a Puck reports on new signals it found alone (subject = Coworkers::Run, rule_id nil).
       # Value APPENDED (81 is puck_decision_needed).
-      puck_report_ready: 82,
-      # CYRA-1155: an epic whose open children all wait for someone (subject = the epic, rule_id nil,
-      # direct dispatch). Value APPENDED (82 is puck_report_ready).
-      ticket_epic_stalled: 83
+      puck_report_ready: 82
     }, prefix: :event
     # Valori APPESI (mai riordinare): queued (4) = email/telegram trattenuta per il digest (cadenza
     # daily/weekly), raccolta e marcata :sent dal job digest (digest_bucket dice a quale ciclo appartiene).

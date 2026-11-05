@@ -59,16 +59,6 @@ RSpec.describe "Cli::V1::Analytics goals & share", type: :request do
       expect(response.parsed_body["data"]["event_name"]).to eq("Signup")
     end
 
-    # CYRA-1158 — the CLI takes and shows the same property filter as the page.
-    it "creates a custom_event goal filtered by a property value" do
-      post goals_path, headers: headers,
-                       params: { kind: "custom_event", event_name: "Signup", display_name: "Pro",
-                                 property_name: "plan", property_value: "pro" }
-
-      expect(response).to have_http_status(:created)
-      expect(response.parsed_body["data"]).to include("property_name" => "plan", "property_value" => "pro")
-    end
-
     it "create senza display_name → 422 R422-GOAL-001" do
       post goals_path, headers: headers, params: { kind: "pageview_path", path_pattern: "/x" }
 

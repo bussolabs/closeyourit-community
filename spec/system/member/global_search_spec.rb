@@ -95,46 +95,6 @@ RSpec.describe "Ricerca globale member", :js, type: :system do
     expect(page).to have_current_path(member_project_path(other))
   end
 
-  # CYRA-1145 — on a ticket page the first result is an action, and Enter runs it like the page's button.
-  it "assigns the open ticket to the viewer with Enter on the action" do
-    ticket = create(:ticket, :plain_bug, organization: organization, project: project, title: "Login broken")
-    page.current_window.resize_to(1280, 900)
-    visit member_ticket_path(ticket)
-
-    click_on_test "global-search-trigger-desktop"
-    fill_test "global-search-input", with: "assign"
-    expect_test "global-search-result-action-assign"
-    find("[data-test='global-search-input']").send_keys(:enter)
-
-    expect(page).to have_text(I18n.t("member.tickets.assignee_changed"))
-    expect(ticket.reload.assignee_id).to eq(owner.id)
-  end
-
-  it "opens the ticket of a pasted pull request link with Enter" do
-    ticket = create(:ticket, :plain_bug, organization: organization, project: project, title: "Login broken")
-    create(:github_pull_request, ticket: ticket, html_url: "https://github.com/acme/app/pull/42")
-    page.current_window.resize_to(1280, 900)
-    visit root_path
-
-    click_on_test "global-search-trigger-desktop"
-    fill_test "global-search-input", with: "https://github.com/acme/app/pull/42"
-    expect_test "global-search-result-ticket-#{ticket.id}"
-    find("[data-test='global-search-input']").send_keys(:enter)
-
-    expect(page).to have_current_path(member_ticket_path(ticket))
-  end
-
-  it "opens a settings section found by name, highlighted" do
-    page.current_window.resize_to(1280, 900)
-    visit member_project_path(project)
-
-    click_on_test "global-search-trigger-desktop"
-    fill_test "global-search-input", with: "retention"
-    find("[data-test='global-search-result-setting-#{project.id}-retention']").click
-
-    expect(page).to have_css("[data-anchor='retention'][data-highlighted]")
-  end
-
   it "su mobile occupa lo schermo e la lente non ha bordo" do
     page.current_window.resize_to(390, 844)
     visit root_path

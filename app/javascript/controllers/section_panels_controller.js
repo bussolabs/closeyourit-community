@@ -4,10 +4,6 @@ import { Controller } from "@hotwired/stimulus"
 // reload or a shared link opens the same one; without a fragment, `initial` is the panel the server wants
 // open (the one just saved, or a save that failed). Without JS nothing is hidden and the links scroll to
 // their panel as plain anchors.
-// A link from the quick search names the section to point out with `?highlight=` (CYRA-1145).
-const HIGHLIGHT = ["rounded-lg", "ring-2", "ring-indigo-600"]
-const HIGHLIGHT_MS = 2500
-
 export default class extends Controller {
   static targets = ["panel", "link"]
   static values = { initial: String }
@@ -17,12 +13,10 @@ export default class extends Controller {
     this.onHashChange = () => this.#show(this.#anchorFromHash())
     window.addEventListener("hashchange", this.onHashChange)
     this.#show(this.#anchorFromHash() || this.initialValue)
-    this.#highlight(new URLSearchParams(location.search).get("highlight"))
   }
 
   disconnect() {
     window.removeEventListener("hashchange", this.onHashChange)
-    clearTimeout(this.highlightTimer)
   }
 
   open(event) {
@@ -31,18 +25,6 @@ export default class extends Controller {
     history.replaceState(history.state, "", `${location.pathname}#${anchor}`)
     this.#show(anchor)
     this.element.closest("main")?.scrollTo({ top: 0 })
-  }
-
-  #highlight(anchor) {
-    const panel = this.panelTargets.find((candidate) => candidate.dataset.anchor === anchor)
-    if (!panel || panel.hidden) return
-
-    panel.classList.add(...HIGHLIGHT)
-    panel.dataset.highlighted = "true"
-    this.highlightTimer = setTimeout(() => {
-      panel.classList.remove(...HIGHLIGHT)
-      delete panel.dataset.highlighted
-    }, HIGHLIGHT_MS)
   }
 
   #anchorFromHash() {

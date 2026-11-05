@@ -116,7 +116,6 @@ it:
           help_title: "Le visite o gli eventi che contano come obiettivo raggiunto."
           new: Nuovo goal
           manage: Gestisci goal
-          events: Eventi
           count: Goal
           empty: Nessun goal. Creane uno per tracciare le conversioni.
           created: Goal creato
@@ -142,40 +141,6 @@ it:
             path_hint: Per i goal path-pagina — path esatto o prefisso con "*" (es. /blog/*).
             event_name: Nome evento
             event_hint: Per i goal evento-custom — il nome inviato da captureEvent.
-            property_name: Dettaglio (facoltativo)
-            property_value: Valore del dettaglio
-            property_hint: "Per i goal evento-custom — conta solo gli eventi con questo valore (es. plan = pro). Vuoti: contano tutti."
-        event_definitions:
-          title: Eventi dichiarati
-          subtitle: "Gli eventi che il sito invia, con i dettagli che ti aspetti."
-          count: Eventi
-          new: Nuovo evento
-          edit: Modifica evento
-          empty: Nessun evento dichiarato. Aggiungine uno, o guarda quelli arrivati fuori elenco.
-          created: Evento aggiunto
-          updated: Evento aggiornato
-          deleted: Evento tolto
-          delete: Togli
-          actions: Azioni
-          delete_dialog:
-            title: "Togliere l'evento %{name} dall'elenco?"
-            body: "Gli eventi già arrivati restano e torneranno tra quelli non dichiarati."
-          save: Salva evento
-          cancel: Annulla
-          col_name: Evento
-          col_properties: Dettagli
-          form:
-            name: Nome evento
-            name_hint: Il nome inviato da captureEvent, uguale lettera per lettera.
-            property_names: Dettagli attesi
-            property_names_hint: "Nomi separati da virgola, al massimo 10 (es. plan, seats)."
-        undeclared_events:
-          title: Eventi non dichiarati
-          subtitle: "Gli eventi arrivati nel periodo che non sono nell'elenco."
-          count: Eventi
-          empty: Nessun evento fuori elenco in questo periodo.
-          col_count: Arrivi
-          declare: Aggiungi all'elenco
         share:
           title: Condivisione ed embed
           create: Crea link

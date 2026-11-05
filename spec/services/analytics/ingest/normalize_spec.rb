@@ -109,45 +109,4 @@ RSpec.describe Analytics::Ingest::Normalize do
     expect(n.hostname).to eq("")
     expect(n.path).to eq("")
   end
-
-  # CYRA-1158 — event properties: capped, scalar only, never personal data.
-  describe "properties" do
-    it "is empty when the payload carries none (older SDKs)" do
-      expect(normalize({}).properties).to eq({})
-      expect(normalize({ "properties" => "plan=pro" }).properties).to eq({})
-    end
-
-    it "keeps short strings, numbers and booleans, and drops nested values and nulls" do
-      props = normalize({ "properties" => {
-        "plan" => " pro ", "seats" => 3, "price" => 9.5, "trial" => true,
-        "nested" => { "a" => 1 }, "list" => [ 1 ], "empty" => nil, " " => "x"
-      } }).properties
-      expect(props).to eq("plan" => "pro", "seats" => 3, "price" => 9.5, "trial" => true)
-    end
-
-    it "keeps only the first 10 properties without rejecting the event" do
-      many = (1..30).to_h { |i| [ "p#{i}", i ] }
-      props = normalize({ "properties" => many }).properties
-      expect(props.keys).to eq((1..10).map { "p#{_1}" })
-    end
-
-    it "truncates names to 40 and values to 100 characters" do
-      props = normalize({ "properties" => { "k" * 60 => "v" * 300 } }).properties
-      expect(props.keys.first.length).to eq(40)
-      expect(props.values.first.length).to eq(100)
-    end
-
-    it "drops a property whose name points to personal data" do
-      props = normalize({ "properties" => { "user_email" => "x", "phone" => "1", "plan" => "pro" } }).properties
-      expect(props).to eq("plan" => "pro")
-    end
-
-    it "drops a property whose value looks like an email, a phone number or a card number" do
-      props = normalize({ "properties" => {
-        "a" => "mario.rossi@example.com", "b" => "+39 333 123 4567", "c" => "4111 1111 1111 1111",
-        "d" => 4_111_111_111_111_111, "plan" => "pro", "order" => 1_234_567, "day" => "2026-11-03"
-      } }).properties
-      expect(props).to eq("plan" => "pro", "order" => 1_234_567, "day" => "2026-11-03")
-    end
-  end
 end

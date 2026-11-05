@@ -52,7 +52,6 @@ it:
           review_approved: Revisione approvata
           autopilot_auto_approved: Consegna andata avanti da sola
           plan_council_approved: Piano approvato dal consiglio
-          plan_supporter_approved: Piano approvato dal supporter
           linked: Collegato
           branch_created: Ramo creato
           pull_request_opened: Proposta di modifica aperta

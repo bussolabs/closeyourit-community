@@ -122,8 +122,6 @@ module Member
       end
 
       def show
-        # CYRA-1146 — before rendering, so this page's bell already shows the new count.
-        ::Notifications::MarkRead.call(account: Current.account, organization: Current.organization, subjects: [ @group ])
         # Il primo livello dei "simili" è un'EURISTICA, non una chiamata AI: stesso messaggio, stesso
         # progetto, punto del codice diverso. Il fingerprint include il frame di origine, quindi lo
         # stesso errore lanciato da quattro punti diventa quattro gruppi, e qui si rimettono insieme

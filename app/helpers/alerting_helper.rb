@@ -37,7 +37,6 @@ module AlertingHelper
     "ticket_question_asked" => { icon: "circle-question-mark", bg: "bg-amber-50 dark:bg-amber-500/15", fg: "text-amber-700 dark:text-amber-300" },
     "ticket_question_answered" => { icon: "reply", bg: "bg-sky-50 dark:bg-sky-500/15", fg: "text-sky-700 dark:text-sky-300" },
     "ticket_review_requested" => { icon: "clipboard-check", bg: "bg-indigo-50 dark:bg-indigo-500/15", fg: "text-indigo-600 dark:text-indigo-400" },
-    "ticket_epic_stalled" => { icon: "hourglass", bg: "bg-amber-50 dark:bg-amber-500/15", fg: "text-amber-700 dark:text-amber-300" },
     "metric_threshold" => { icon: "gauge", bg: "bg-amber-50 dark:bg-amber-500/15", fg: "text-amber-700 dark:text-amber-300" },
     "log_alert" => { icon: "file-text", bg: "bg-red-50 dark:bg-red-500/15", fg: "text-red-600 dark:text-red-400" },
     "uptime_ssl_expiring" => { icon: "lock", bg: "bg-amber-50 dark:bg-amber-500/15", fg: "text-amber-700 dark:text-amber-300" },
@@ -100,7 +99,8 @@ module AlertingHelper
     "dataset_training_failed" => { icon: "triangle-alert", bg: "bg-red-50 dark:bg-red-500/15", fg: "text-red-600 dark:text-red-400" },
     # Servizio di embedding irraggiungibile (CYEM-2): funzioni intere ferme — tono allarme.
     "embedding_down" => { icon: "brain", bg: "bg-red-50 dark:bg-red-500/15", fg: "text-red-600 dark:text-red-400" },
-    # Generative service (CYRA-712): down = alarm tone like embedding_down, back = positive like server_up.
+    # Servizio generativo (CYRA-712): giù = tono allarme come embedding_down, rientro = positivo
+    # come server_up.
     "ai_unavailable" => { icon: "bot", bg: "bg-red-50 dark:bg-red-500/15", fg: "text-red-600 dark:text-red-400" },
     "ai_available" => { icon: "bot", bg: "bg-emerald-50 dark:bg-emerald-500/15", fg: "text-emerald-700 dark:text-emerald-300" },
     # Memoria temporanea giù (CYRA-846): gli avvisi esterni possono tacere — tono allarme.

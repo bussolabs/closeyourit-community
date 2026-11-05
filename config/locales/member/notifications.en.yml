@@ -157,9 +157,6 @@ en:
         ticket_question_answered:
           title: Question answered
           description: An answer arrives for a question on a ticket you follow.
-        ticket_epic_stalled:
-          title: Epic stalled
-          description: No ticket of an epic moves and all of them wait for someone. It tells you who has to decide and on what.
         chat_message:
           title: New chat message
           description: A new message is posted in a conversation you take part in.

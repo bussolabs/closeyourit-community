@@ -292,12 +292,6 @@ module Projects
              inverse_of: :project,
              dependent: :destroy
 
-    has_many :analytics_event_definitions,
-             class_name: "Analytics::EventDefinition",
-             foreign_key: :project_id,
-             inverse_of: :project,
-             dependent: :delete_all
-
     has_many :analytics_links,
              class_name: "Analytics::Link",
              foreign_key: :project_id,

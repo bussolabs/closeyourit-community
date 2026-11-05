@@ -6,8 +6,3 @@ it:
         display_name: Nome
         path_pattern: Pattern del path
         event_name: Nome evento
-        property_name: Dettaglio
-        property_value: Valore del dettaglio
-      analytics/event_definition:
-        name: Nome evento
-        property_names: Dettagli attesi

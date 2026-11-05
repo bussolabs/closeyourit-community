@@ -14,7 +14,7 @@ module Notifications
       { key: :tickets, events: %w[
         ticket_created ticket_assigned ticket_status_changed ticket_milestone_changed
         ticket_commented ticket_mentioned ticket_review_requested ticket_review_rejected ticket_review_approved
-        ticket_question_asked ticket_question_answered ticket_epic_stalled
+        ticket_question_asked ticket_question_answered
       ] },
       { key: :chat, events: %w[chat_message chat_mentioned] },
       { key: :errors, events: %w[error_new error_regression error_spike] },

@@ -186,68 +186,6 @@ RSpec.describe Agents::Host, type: :model do
     end
   end
 
-  # CYRA-1178 — the automator reports a blocked event loop; the server shows it for 30 minutes at most.
-  describe "#hung? / #activity_status with a hang report" do
-    let(:now) { Time.current }
-
-    def host(**attrs)
-      build(:agent_host, **{ heartbeat_expected_interval_minutes: 2, heartbeat_grace_minutes: 1,
-                             host_status: "busy" }.merge(attrs))
-    end
-
-    def hang(state:, reported_at:, duration_seconds: 300)
-      { "state" => state, "started_at" => (reported_at - duration_seconds).iso8601,
-        "duration_seconds" => duration_seconds, "resumed_at" => nil, "reported_at" => reported_at.utc.iso8601(6) }
-    end
-
-    it "is hung while the last heartbeat carried a fresh hung report" do
-      at = now - 1.minute
-      h = host(last_heartbeat_at: at, hang: hang(state: "hung", reported_at: at))
-
-      expect(h.hung?(now:)).to be(true)
-      expect(h.activity_status(now:)).to eq("hung")
-      expect(h.hang_minutes).to eq(5)
-    end
-
-    it "is no longer hung once the hung report is 30 minutes old" do
-      at = now - 31.minutes
-      h = host(last_heartbeat_at: at, heartbeat_expected_interval_minutes: 60, hang: hang(state: "hung", reported_at: at))
-
-      expect(h.hung?(now:)).to be(false)
-      expect(h.activity_status(now:)).to eq("busy")
-    end
-
-    it "is no longer hung when a later heartbeat came without the report" do
-      h = host(last_heartbeat_at: now - 30.seconds, hang: hang(state: "hung", reported_at: now - 2.minutes))
-
-      expect(h.hung?(now:)).to be(false)
-    end
-
-    it "is not hung after a resumed or restarted report" do
-      %w[resumed restarted].each do |state|
-        at = now - 1.minute
-        h = host(last_heartbeat_at: at, hang: hang(state:, reported_at: at))
-
-        expect(h.hung?(now:)).to be(false)
-        expect(h.activity_status(now:)).to eq("busy")
-      end
-    end
-
-    it "keeps the offline status when the heartbeat expired" do
-      at = now - 10.minutes
-      h = host(last_heartbeat_at: at, hang: hang(state: "hung", reported_at: at))
-
-      expect(h.activity_status(now:)).to eq("offline")
-    end
-
-    it "behaves as before without any hang report" do
-      h = host(last_heartbeat_at: now - 30.seconds, hang: nil)
-
-      expect(h.hung?(now:)).to be(false)
-      expect(h.activity_status(now:)).to eq("busy")
-    end
-  end
-
   # CYAU-227 — a machine with no choice of its own follows the organization's.
   describe "engine choice" do
     let(:organization) { create(:organization) }

@@ -63,8 +63,7 @@ export default class extends Controller {
   #describe() {
     const details = {
       page: `${location.pathname}${location.search}`,
-      // Without the "(n) " waiting count the tab badge puts in front (CYRA-1147).
-      page_title: document.title.replace(/^\(\d+\+?\) /, ""),
+      page_title: document.title,
       window: `${window.innerWidth} × ${window.innerHeight}`,
       theme: document.documentElement.classList.contains("dark") ? "dark" : "light",
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || ""

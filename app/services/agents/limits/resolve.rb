@@ -7,9 +7,8 @@ module Agents
     class Resolve < ApplicationService
       DEFAULT_MAX_AGE_SECONDS = 60
 
-      def initialize(organization:, project: nil, runtime: nil, host: nil)
+      def initialize(organization:, project: nil, runtime: nil)
         @organization = organization
-        @host = host
         @project = project
         @runtime = runtime.to_s.strip.downcase.presence
       end
@@ -19,7 +18,7 @@ module Agents
                                       .to_a
         {
           scope: policies.any?(&:project_id) ? "repository" : "organization",
-          max_parallel: [ minimum(policies, :max_parallel), @host&.max_parallel ].compact.min,
+          max_parallel: minimum(policies, :max_parallel),
           max_daily_runs: minimum(policies, :max_daily_runs),
           max_daily_cost: minimum(policies, :max_daily_cost)&.to_f,
           max_runtime_seconds: minimum(policies, :max_runtime_seconds),

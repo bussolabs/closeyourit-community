@@ -9,8 +9,8 @@ module Member
   # ombreggerebbe ::Agents di dominio) → model SEMPRE ::Agents::Host.
   class AgentsController < Member::BaseController
     before_action :require_view
-    before_action :set_host, only: %i[show certify decertify destroy review engine supporter parallel follow_organization pause resume]
-    before_action :require_manage, only: %i[certify decertify destroy review engine supporter parallel follow_organization
+    before_action :set_host, only: %i[show certify decertify destroy review engine supporter follow_organization pause resume]
+    before_action :require_manage, only: %i[certify decertify destroy review engine supporter follow_organization
                                             pause resume pause_all resume_all]
 
     # CYRA-694 — filtri ricordati (memoria per-indirizzo, vedi RememberableFilters).
@@ -115,15 +115,6 @@ module Member
         redirect_to member_agent_path(@host, tab: "details"), notice: t("member.agents.engine.updated")
       else
         redirect_to member_agent_path(@host, tab: "details"), alert: t("member.agents.engine.invalid")
-      end
-    end
-
-    # CYRA-1175 — how many jobs this machine takes at once.
-    def parallel
-      if @host.update(max_parallel: params[:max_parallel])
-        redirect_to member_agent_path(@host, tab: "details"), notice: t("member.agents.parallel.updated")
-      else
-        redirect_to member_agent_path(@host, tab: "details"), alert: t("member.agents.parallel.invalid")
       end
     end
 

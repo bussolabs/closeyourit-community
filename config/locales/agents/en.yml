@@ -23,9 +23,6 @@ en:
         no_service_account: The machine has no service account to answer with.
         stale: The questions changed meanwhile. Take the updated round.
         not_settled: The answers were not recorded. The round stays with a person.
-        plan_not_found: Plan not found.
-        plan_stale: The plan changed or was already decided. Take the updated plan.
-      activity_actor: Supporter
     # CYRA-675 — fixed-length service line, same reason as the clarification one: a comment has a
     # character cap and the agent summary does not. The full summary is in the Automation panel.
     closer_staging:

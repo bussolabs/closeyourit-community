@@ -53,18 +53,6 @@
         <% end %>
         <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.goals.form.event_hint") %></p>
       </div>
-
-      <%# CYRA-1158 — an event goal may count only the events carrying one property value. %>
-      <% %i[property_name property_value].each do |field| %>
-        <div>
-          <label class="block text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.monitoring.analytics.goals.form.#{field}") %></label>
-          <%= f.text_field field, placeholder: (field == :property_name ? "plan" : "pro"), "aria-invalid": (true if @goal.errors[field].any?), class: "w-full h-[36px] px-3 rounded-md border border-stone-200 dark:border-zinc-800 text-[13px] focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400", data: { test: "analytics-goal-#{field.to_s.dasherize}" } %>
-          <% if (message = @goal.errors.full_messages_for(field).first) %>
-            <p class="mt-1 text-[11.5px] text-red-600 dark:text-red-400" data-test="analytics-goal-<%= field.to_s.dasherize %>-error"><%= message %></p>
-          <% end %>
-        </div>
-      <% end %>
-      <p class="md:col-span-2 -mt-3 text-[11.5px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.analytics.goals.form.property_hint") %></p>
     </div>
   <% end %>
 </div>

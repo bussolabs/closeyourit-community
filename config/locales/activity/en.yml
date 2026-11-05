@@ -11,8 +11,6 @@ en:
       moved_out: "%{actor} moved it to another organization"
     fields:
       sentry_project_id: Sentry project ID
-      release_retired: a release, now retired
-      release_restored: a release, now restored
       name: name
       key: key
       description: description

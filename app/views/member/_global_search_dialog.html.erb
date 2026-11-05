@@ -21,8 +21,6 @@
             data: { turbo_frame: "member-global-search-results", ui__global_search_target: "form" } do |form| %>
         <%= form.label :q, t("member.search.label"), class: "sr-only" %>
         <%= hidden_field_tag :type, nil, id: nil, data: { ui__global_search_target: "type" } %>
-        <%# CYRA-1145 — the open page's path, filled on every search: actions and settings follow it. %>
-        <%= hidden_field_tag :context, nil, id: nil, data: { ui__global_search_target: "context" } %>
         <%= render Ui::IconComponent.new(name: "search", class: "ml-3 text-[14px] text-gray-400 dark:text-zinc-500") %>
         <%= form.search_field :q,
               placeholder: t("member.search.placeholder"), autocomplete: "off",

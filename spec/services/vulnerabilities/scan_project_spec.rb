@@ -7,7 +7,6 @@ RSpec.describe Vulnerabilities::ScanProject do
   let(:project) { repository.project }
   let(:github_client) { instance_double(Github::Client) }
   let(:osv_client) { instance_double(Vulnerabilities::Osv::Client) }
-  let(:registry_client) { instance_double(Vulnerabilities::Registry::Client, released_at: nil) }
   let(:lockfile) { Rails.root.join("spec/fixtures/vulnerabilities/gemfile_lock.txt").read }
 
   def tree_with(*paths)
@@ -15,8 +14,7 @@ RSpec.describe Vulnerabilities::ScanProject do
       truncated: false }
   end
 
-  def scan = described_class.call(project: project, github_client: github_client, osv_client: osv_client,
-                                   registry_client: registry_client)
+  def scan = described_class.call(project: project, github_client: github_client, osv_client: osv_client)
 
   before do
     allow(github_client).to receive(:git_tree).and_return(tree_with("Gemfile.lock"))
@@ -80,33 +78,6 @@ RSpec.describe Vulnerabilities::ScanProject do
     expect(result).to be_err
     expect(result.error.code).to eq("R502-OSV-001")
     expect(existing.reload).to be_status_open
-  end
-
-  # CYRA-1167 — release dates of freshly appeared versions are asked during the same scan.
-  it "stores the release date of the versions it has just read" do
-    allow(registry_client).to receive(:released_at).and_return(nil)
-    allow(registry_client).to receive(:released_at).with(ecosystem: "RubyGems", name: "actionpack", version: anything)
-                                                   .and_return(1.day.ago)
-    allow(osv_client).to receive(:query_batch) { |queries| queries.map { [] } }
-
-    expect(scan).to be_ok
-    expect(Vulnerabilities::PackageRelease.pluck(:name)).to eq([ "actionpack" ])
-  end
-
-  it "keeps finding vulnerabilities when the registries are down" do
-    allow(registry_client).to receive(:released_at)
-      .and_raise(Vulnerabilities::Registry::Client::Error.new("down", code: "R502-REG-001"))
-    allow(osv_client).to receive(:query_batch) do |queries|
-      queries.map { |query| query[:name] == "actionpack" ? [ "GHSA-1" ] : [] }
-    end
-    allow(osv_client).to receive(:vulnerability).with("GHSA-1").and_return(
-      "id" => "GHSA-1", "database_specific" => { "severity" => "HIGH" },
-      "affected" => [ { "package" => { "name" => "actionpack", "ecosystem" => "RubyGems" } } ]
-    )
-
-    expect(scan).to be_ok
-    expect(Vulnerabilities::Finding.sole.package_name).to eq("actionpack")
-    expect(Vulnerabilities::PackageRelease.count).to eq(0)
   end
 
   it "un progetto senza repository non è scansionabile" do

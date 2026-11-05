@@ -102,9 +102,9 @@ RSpec.describe Notifications::Preset, type: :model do
     # Il ticket lo chiede a lettere: una configurazione che cambia sotto i piedi fa perdere scelte
     # fatte a mano. Cambiare le liste senza bumpare VERSION rompe qui, di proposito.
     it "resta ferma finché non si bumpa VERSION" do
-      expect(described_class::VERSION).to eq(4)
+      expect(described_class::VERSION).to eq(3)
       expect(Digest::SHA256.hexdigest(described_class::DEFINITIONS.inspect))
-        .to eq("0eecf59e6e18cca827af014652094a3a19bc817bce343a57173ac08db4728e1c"),
+        .to eq("74588e8201fe02c3c4a858a473351cd97bfa1afe2574fae7c62c5c45f4329659"),
              "definizioni cambiate: aggiorna il digest E bumpa Notifications::Preset::VERSION"
     end
   end

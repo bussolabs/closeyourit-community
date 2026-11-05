@@ -1,8 +1,0 @@
-<%# locals: (hit:, query:, meta:) %>
-<span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-stone-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400" aria-hidden="true">
-  <%= render Ui::IconComponent.new(name: hit.icon, class: "text-[12px]") %>
-</span>
-<span class="min-w-0">
-  <span class="block truncate text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= search_highlight(hit.title, query) %></span>
-  <span class="mt-0.5 block truncate font-mono text-[10px] text-gray-500 dark:text-zinc-400"><%= meta %></span>
-</span>

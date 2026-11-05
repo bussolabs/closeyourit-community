@@ -59,15 +59,6 @@ it:
         mentioned: "%{name} ti ha menzionato in %{code}"
         question_asked: "%{name} ha fatto una domanda su %{code}"
         question_answered: "%{name} ha risposto a una domanda su %{code}"
-        stalled_epic: "L'epic %{code} è fermo: nessun ticket avanza"
-        stalled_epic_line: "%{code}: %{what}, tocca a %{name}"
-        stalled_epic_nobody: "nessuno indicato"
-        stalled_epic_waits:
-          awaiting_approval: "approvare il piano"
-          awaiting_autopilot_approval: "approvare il lavoro consegnato"
-          review_blocked: "sbloccare la lavorazione fermata"
-          question: "rispondere alla domanda «%{detail}»"
-          dependency: "finire %{detail}"
     ticket_notifications:
       mailer:
         notify:

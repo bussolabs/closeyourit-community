@@ -38,13 +38,6 @@ it:
           zero: Nessuna vulnerabilità aperta al momento.
           one: "C'è %{count} vulnerabilità aperta, ma non rientra in quello che hai chiesto."
           other: "Ci sono %{count} vulnerabilità aperte, ma nessuna rientra in quello che hai chiesto."
-        # CYRA-1167 — versioni uscite da meno di 72 ore: solo un avviso, fuori dalle vulnerabilità.
-        recent_releases:
-          title:
-            one: "Una versione di libreria è uscita da meno di 72 ore"
-            other: "%{count} versioni di librerie sono uscite da meno di 72 ore"
-          body: Le versioni appena uscite sono quelle dove di solito compare una libreria manomessa. È solo un avviso, non una vulnerabilità, e sparisce da solo dopo 72 ore.
-          released: "uscita %{time} fa"
         # CYRA-810 — un file delle dipendenze che la scansione non è riuscita a leggere non dice
         # «nessun problema», dice «non lo so». Finché resta così l'elenco è incompleto, e la pagina
         # deve dirlo: senza, chi legge crede che quel pezzo di progetto sia pulito.

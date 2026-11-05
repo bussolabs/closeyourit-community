@@ -182,7 +182,6 @@ class Rack::Attack
   INGEST_REPLAYS_PATH        = %r{\A/api/v1/projects/([^/]+)/replays#{PATH_FORMAT_SUFFIX}}
   INGEST_WEB_VITALS_PATH     = %r{\A/api/v1/projects/([^/]+)/web_vitals#{PATH_FORMAT_SUFFIX}}
   HELPDESK_REQUESTS_PATH     = %r{\A/api/v1/projects/([^/]+)/helpdesk_requests#{PATH_FORMAT_SUFFIX}}
-  RELEASE_STATUS_PATH        = %r{\A/api/v1/projects/([^/]+)/release_status#{PATH_FORMAT_SUFFIX}}
 
   # Discriminatore per-progetto: il project_id catturato va DECODIFICATO, non usato grezzo. req.path è
   # PATH_INFO ancora URL-encoded, ma Rails instrada ogni percent-encoding (`/api/%35%35%30e…/envelope`)
@@ -249,13 +248,6 @@ class Rack::Attack
 
   throttle("helpdesk/ip", limit: 5, period: 1.minute) do |req|
     req.ip if req.post? && HELPDESK_REQUESTS_PATH.match?(req.path)
-  end
-
-  # CYRA-1161 — every start of every app asks whether its version is retired: a read, so a GET, with
-  # its own per-project ceiling. The project id is decoded like ingest_project_key does.
-  throttle("release_status/project", limit: 1200, period: 1.minute) do |req|
-    match = RELEASE_STATUS_PATH.match(req.path) if req.get?
-    URI::DEFAULT_PARSER.unescape(match[1]) if match
   end
 
   # Throttle session replay PER-PROGETTO — i chunk rrweb sono pesanti: limite più basso.
