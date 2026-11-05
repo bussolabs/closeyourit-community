@@ -201,10 +201,14 @@ end
 # il corpo dopo la decompressione: è il numero confrontabile con i byte del request spec, mentre
 # `transferSize` dipende da come il server ha compresso ed è 0 quando la risposta arriva dalla cache.
 module PartialUpdateBrowserHelpers
+  # Il contatore delle approvazioni nella sidebar è una richiesta sua, pigra: una navigazione Drive
+  # rifà la sidebar e il contatore riparte quando gli pare, dentro o fuori la finestra misurata. Non
+  # fa parte dell'aggiornamento, quindi non si conta (la misura «intera» trovava 2 richieste a caso).
   TRAFFICO_JS = <<~JS
     (() => {
       const voci = performance.getEntriesByType('resource')
-        .filter((voce) => voce.initiatorType === 'fetch' && voce.name.startsWith(window.location.origin));
+        .filter((voce) => voce.initiatorType === 'fetch' && voce.name.startsWith(window.location.origin))
+        .filter((voce) => !new URL(voce.name).pathname.endsWith('/approvals/count'));
       return {
         richieste: voci.length,
         byte: voci.reduce((somma, voce) => somma + (voce.decodedBodySize || voce.transferSize || 0), 0)

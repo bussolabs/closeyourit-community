@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_05_170000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_05_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -96,6 +96,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_170000) do
     t.datetime "used_at"
     t.index ["account_id", "code_digest"], name: "idx_on_account_id_code_digest_e2e9f3ec1a", unique: true
     t.index ["account_id"], name: "index_accounts_otp_recovery_codes_on_account_id"
+  end
+
+  create_table "accounts_referral_prompts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id", null: false
+    t.integer "closed_tickets_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "declined_at"
+    t.datetime "last_shown_at"
+    t.integer "next_threshold", default: 10, null: false
+    t.datetime "postponed_at"
+    t.integer "shown_count", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_accounts_referral_prompts_on_account_id", unique: true
   end
 
   create_table "accounts_sessions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -4620,6 +4633,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_170000) do
   add_foreign_key "accounts_impersonation_events", "accounts"
   add_foreign_key "accounts_impersonation_events", "accounts", column: "god_id"
   add_foreign_key "accounts_otp_recovery_codes", "accounts", on_delete: :cascade
+  add_foreign_key "accounts_referral_prompts", "accounts", on_delete: :cascade
   add_foreign_key "accounts_sessions", "accounts"
   add_foreign_key "accounts_sessions", "accounts", column: "impersonated_account_id", on_delete: :nullify
   add_foreign_key "accounts_telegram_link_codes", "accounts", on_delete: :cascade

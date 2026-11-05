@@ -94,6 +94,8 @@
   <%= render "member/tickets/page_footer" %>
 </div>
 
+<%= render "member/tickets/referral_prompt", number: @referral_prompt if @referral_prompt %>
+
 <%# The toast stack lives here, not in the layout, so the blocking-question notice can join it. Outside the
     page stack: as its last child it kept the footer off the frame edge. %>
 <% content_for :page_flash, "1" %>

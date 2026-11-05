@@ -224,6 +224,8 @@ namespace :member do
   # B25 — the collapsed page header, saved by the header's own toggle.
   resource :page_header_preference, only: :update, path: "preferences/header"
   resources :dismissed_notices, only: :create, path: "preferences/notices"
+  # «Later» or «No, thanks» on the request to recommend the app (CYRA-1162).
+  resource :referral_prompt, only: :update, path: "preferences/referral"
   # The Support button in the footer (CYRA-935).
   resources :support_requests, only: %i[index create], path: "support"
   # Tab "Notifiche" delle impostazioni account: matrice cadenze per-notifica × canale.

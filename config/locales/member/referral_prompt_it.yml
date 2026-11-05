@@ -1,0 +1,9 @@
+it:
+  member:
+    referral_prompt:
+      title: "Ti sta facendo risparmiare tempo?"
+      body: "Se CloseYourIt ti è utile, fallo conoscere: invita un collega oppure lascia una stella al progetto su GitHub."
+      invite: "Invita un collega"
+      star: "Lascia una stella"
+      later: "Più tardi"
+      never: "No, grazie"

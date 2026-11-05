@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.212.0] - 2026-11-05
+
+### Added
+
+- **Fai conoscere CloseYourIt**: dopo un errore risolto da un agente, o dopo 10 ticket chiusi, la pagina del ticket propone di invitare un collega o lasciare una stella. Compare al massimo due volte: «Più tardi» la rimanda, «No, grazie» la spegne su ogni dispositivo. ([Ticket](/member/tickets))
+
 ## [0.211.2] - 2026-11-05
 
 ### Fixed

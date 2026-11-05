@@ -242,7 +242,7 @@ RSpec.describe AgentTicketCandidateSerializer do
       expect(rework[:findings].size).to eq(1)
       expect(rework[:findings].first).to include(severity: "major")
       expect(rework[:findings].first[:title]).to include("rspec")
-      expect(rework[:findings].first[:detail]).to include("bussolabs/app#9", "actions/runs/1")
+      expect(rework[:findings].first[:detail]).to include("bussolabs/app#9", "actions/runs/1", "sync-main.sh")
     end
 
     it "carries nothing when the latest attempt of the phase was not rejected by its review" do

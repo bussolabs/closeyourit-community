@@ -1,0 +1,9 @@
+en:
+  member:
+    referral_prompt:
+      title: "Is it saving you time?"
+      body: "If CloseYourIt helps you, spread the word: invite a colleague or leave a star on the project on GitHub."
+      invite: "Invite a colleague"
+      star: "Leave a star"
+      later: "Later"
+      never: "No, thanks"

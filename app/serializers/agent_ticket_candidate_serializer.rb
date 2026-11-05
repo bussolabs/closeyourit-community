@@ -131,7 +131,9 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
       url = check["detailsUrl"] || check["targetUrl"]
       { severity: "major", title: "CI check failing: #{name}".truncate(REWORK_TEXT_LIMIT),
         detail: "Check failing on #{candidate.repository_full_name}##{candidate.number} at #{candidate.head_sha}. " \
-                "Read its log (#{url}), fix the code on the same branch and deliver again.".truncate(REWORK_TEXT_LIMIT) }
+                "First bring main in (sync-main.sh): a failure already fixed on main goes away with it. " \
+                "Then read the log (#{url}), fix what is still red on the same branch and deliver again."
+                .truncate(REWORK_TEXT_LIMIT) }
     end.first(REWORK_FINDINGS_LIMIT)
     return if findings.empty?
 

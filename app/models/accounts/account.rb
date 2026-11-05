@@ -103,6 +103,14 @@ module Accounts
              inverse_of: :account,
              dependent: :destroy
 
+    # The request to recommend the app (CYRA-1162): its counters change often, so they live in their
+    # own row instead of the preferences above. FK on_delete: :cascade.
+    has_one :referral_prompt,
+            class_name: "Accounts::ReferralPrompt",
+            foreign_key: :account_id,
+            inverse_of: :account,
+            dependent: :delete
+
     has_many :memberships,
              class_name: "Connections::Membership",
              foreign_key: :account_id,

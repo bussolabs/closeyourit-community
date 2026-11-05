@@ -3686,6 +3686,20 @@
       ]
     },
     {
+      "id": "tkt_detail_referral_prompt",
+      "name": "Invito a far conoscere l'app",
+      "level": 3,
+      "parent": "tkt_page_detail",
+      "kind": "step",
+      "summary": "Dopo un errore risolto da un agente, o dopo 10 ticket chiusi, la pagina propone di invitare un collega o lasciare una stella. Compare al massimo 2 volte; «Più tardi» alza la soglia, «No, grazie» la spegne.",
+      "files": [
+        "app/models/accounts/referral_prompt.rb",
+        "app/controllers/member/referral_prompts_controller.rb",
+        "app/views/member/tickets/_referral_prompt.html.erb",
+        "app/services/ticketing/change_status.rb"
+      ]
+    },
+    {
       "id": "tkt_detail_dependencies",
       "name": "Prerequisiti e collegamenti",
       "level": 3,

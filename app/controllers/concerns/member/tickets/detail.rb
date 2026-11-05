@@ -133,9 +133,39 @@ module Member
         @security_findings_declared = Member::AutomationSecurityFindings.declared?(ticket: @ticket)
         load_automation_tab if @tab == "automation"
         load_questions_tab if @tab == "questions"
+        @referral_prompt = offer_referral_prompt
       end
 
       private
+
+      # CYRA-1162 — the request to recommend the app is decided only here, on a page the person opened:
+      # the reservation is one UPDATE, so two pages opened together show it once. Nil = nothing to show.
+      def offer_referral_prompt
+        return if referral_prompt_quiet?
+
+        prompt = Current.account.referral_prompt
+        return if prompt&.finished?
+
+        agent_at = agent_resolved_error_at
+        due = prompt&.threshold_reached? || (agent_at && (prompt.nil? || prompt.agent_moment_open?(agent_at)))
+        ::Accounts::ReferralPrompt.reserve(account: Current.account, agent_moment_at: agent_at) if due
+      end
+
+      # Never for an impersonation (the shows are the person's), never on the page a save led back to,
+      # never on a prefetch or a frame, never next to an approval waiting for a decision.
+      def referral_prompt_quiet?
+        Current.true_account != Current.account || !Current.account.human? || prefetch? ||
+          turbo_frame_request? || flash[:notice].present? || flash[:alert].present? || @ticket.status.review_gate?
+      end
+
+      # When an agent's work resolved the error this ticket was born from, recently enough to be news.
+      def agent_resolved_error_at
+        completed_at = @workflow&.completed_at
+        return unless completed_at && completed_at > ::Accounts::ReferralPrompt::AGENT_MOMENT_WINDOW.ago
+        return unless @ticket.status.category_done? && @ticket.error_group
+
+        completed_at
+      end
 
       def render_history
         @history = Pagination.call(@ticket.events.reorder(created_at: :desc, id: :desc)

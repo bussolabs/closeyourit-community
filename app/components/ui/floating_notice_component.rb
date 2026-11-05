@@ -19,6 +19,7 @@ module Ui
       /\Aservers_todo:[a-z0-9_,]{1,200}\z/,
       /\Acoverage_(uptime|crons):(covered|uncovered-\d{1,6})\z/,
       /\Arelease:v?[\w.-]{1,40}\z/,
+      /\Areferral_prompt:[12]\z/,
       /\Aticket_review:\h{8}-\h{4}-\h{4}-\h{4}-\h{12}\z/,
       /\Asame_incident:\h{8}-\h{4}-\h{4}-\h{4}-\h{12}:\d{1,4}\z/,
       /\Aproject_next_steps:\h{8}-\h{4}-\h{4}-\h{4}-\h{12}:[a-z0-9,-]{1,200}\z/

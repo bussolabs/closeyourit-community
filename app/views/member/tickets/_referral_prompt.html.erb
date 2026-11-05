@@ -1,0 +1,21 @@
+<%# locals: (number:) %>
+<%# CYRA-1162 — the request to recommend the app, shown once per reserved show (Accounts::ReferralPrompt).
+    Inviting follows the same rule as the invitations page; the star is for everyone. %>
+<% content_for :floating_notice do %>
+  <%= render Ui::FloatingNoticeComponent.new(key: "referral_prompt:#{number}", title: t("member.referral_prompt.title"),
+        test_id: "referral-prompt") do %>
+    <p><%= t("member.referral_prompt.body") %></p>
+    <div class="mt-2.5 flex flex-wrap items-center gap-2">
+      <% if can?("members.invite") %>
+        <%= render Ui::ButtonComponent.new(label: t("member.referral_prompt.invite"), href: new_member_invitation_path,
+              variant: :primary, size: :sm, icon: "user-plus", test_id: "referral-prompt-invite") %>
+      <% end %>
+      <%= render Ui::ButtonComponent.new(label: t("member.referral_prompt.star"), href: Accounts::ReferralPrompt::STAR_URL,
+            variant: :secondary, size: :sm, icon: "star", test_id: "referral-prompt-star", target: "_blank", rel: "noopener") %>
+      <%= render Ui::ButtonComponent.new(label: t("member.referral_prompt.later"), href: member_referral_prompt_path(choice: "later"),
+            method: :patch, variant: :ghost, size: :sm, test_id: "referral-prompt-later") %>
+      <%= render Ui::ButtonComponent.new(label: t("member.referral_prompt.never"), href: member_referral_prompt_path(choice: "never"),
+            method: :patch, variant: :ghost, size: :sm, test_id: "referral-prompt-never") %>
+    </div>
+  <% end %>
+<% end %>

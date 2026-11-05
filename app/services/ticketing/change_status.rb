@@ -77,6 +77,7 @@ module Ticketing
         raise ActiveRecord::Rollback if guard.err?
 
         @ticket.update!(status: status)
+        count_closing(from_status, status)
         event = RecordActivity.call(ticket: @ticket, actor: @actor, true_actor: @true_actor,
                                     action: "status_changed",
                                     # simplecov:disable status_id è null:false → un ticket persistito ha sempre uno
@@ -105,6 +106,17 @@ module Ticketing
     end
 
     private
+
+    # CYRA-1162 — a person who brings a ticket to done gets one more on their referral counter. Not the
+    # machines, not the system's own moves, not an impersonation; reopening never takes one back.
+    def count_closing(from_status, status)
+      return unless status.category_done? && !from_status.category_done?
+      return if @channel == :workflow
+      return unless @actor.is_a?(Accounts::Account) && @actor.human?
+      return if @true_actor && @true_actor != @actor
+
+      Accounts::ReferralPrompt.count_closed!(@actor)
+    end
 
     # Sui ticket che nessuna macchina ha mai preso in mano non cambia niente: si spostano come sempre,
     # da ogni parte. Il blocco riguarda solo i lavori davvero in corso.
