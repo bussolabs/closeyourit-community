@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.215.1] - 2026-11-06
+
+### Fixed
+
+- **Un problema SEO che torna si riapre**: se un problema già risolto ricompare in un controllo, torna aperto e ricevi l'avviso. Prima restava segnato come risolto e non lo vedevi più.
+
 ## [0.215.0] - 2026-11-05
 
 ### Changed

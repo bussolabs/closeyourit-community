@@ -9163,7 +9163,7 @@
       "level": 3,
       "parent": "seo_flow_audit",
       "kind": "step",
-      "summary": "Problemi nuovi si aprono, quelli ancora presenti si confermano, quelli spariti si chiudono da soli. Una visita fallita non chiude niente. Se cambia l'indirizzo del sito, si chiudono i problemi delle pagine rimaste fuori.",
+      "summary": "Problemi nuovi si aprono, quelli ancora presenti si confermano, quelli spariti si chiudono da soli e si riaprono se tornano. Una visita fallita non chiude niente. Se cambia l'indirizzo del sito, si chiudono i problemi delle pagine rimaste fuori.",
       "files": [
         "app/services/seo/record_audit.rb"
       ]

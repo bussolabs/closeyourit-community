@@ -82,6 +82,20 @@ RSpec.describe Seo::RecordAudit, type: :service do
     expect(report.resolved.size).to eq(1)
   end
 
+  it "reopens a resolved issue when the problem comes back (CYRA-1169)" do
+    record(pages: [ crawled_page ], candidates: [ candidate("missing_h1") ])
+    record(pages: [ crawled_page ], candidates: [])
+    site.reload # each real round loads the site afresh
+    report = record(pages: [ crawled_page ], candidates: [ candidate("missing_h1") ])
+
+    issue = site.issues.reload.sole
+    expect(issue).to be_status_open
+    expect(issue.resolved_at).to be_nil
+    expect(issue.last_seen_at).to eq(now)
+    expect(report.opened).to eq([ issue ])
+    expect(report.reconfirmed).to be_empty
+  end
+
   it "non riapre ciò che qualcuno ha deciso di ignorare" do
     record(pages: [ crawled_page ], candidates: [ candidate("missing_h1") ])
     site.issues.sole.update!(status: :ignored)

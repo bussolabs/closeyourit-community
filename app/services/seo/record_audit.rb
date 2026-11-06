@@ -7,6 +7,7 @@ module Seo
   # - candidato nuovo            → si apre il rilievo;
   # - candidato già noto         → si riconferma (data e prova aggiornate, stato intatto);
   # - rilievo aperto non trovato → si chiude da solo, perché il problema non c'è più.
+  # - resolved issue found again → reopens, because the problem came back (CYRA-1169).
   #
   # Un rilievo `ignored` non partecipa: non si riapre e non si richiude. Chi ha deciso di
   # conviverci ha già dato la sua risposta, e ridargliela ogni giorno sarebbe solo rumore.
@@ -97,7 +98,12 @@ module Seo
         key = [ candidate.check_key, page&.id ]
         severity = Seo::Check.find(candidate.check_key)&.severity || :medium
 
-        if (issue = existing[key])
+        if (issue = existing[key])&.status_resolved?
+          # A resolved issue seen again is a problem that came back: open again and notify (CYRA-1169).
+          issue.update!(status: :open, resolved_at: nil, last_seen_at: @now, severity:,
+                        evidence: candidate.evidence.presence || issue.evidence)
+          opened << issue
+        elsif issue
           issue.touch_seen!(@now, candidate.evidence, severity)
           reconfirmed << issue
         else
