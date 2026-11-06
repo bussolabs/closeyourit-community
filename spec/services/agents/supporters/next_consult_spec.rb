@@ -37,6 +37,26 @@ RSpec.describe Agents::Supporters::NextConsult do
     expect(described_class.call(host:).value).to be_nil
   end
 
+  it "skips stops on tickets already concluded" do
+    concluded = stopped(at: 2.hours.ago)
+    concluded.ticket.update_columns(status_id: create(:ticket_status, organization:, category: :done).id)
+    open = stopped(at: 1.minute.ago)
+
+    expect(described_class.call(host:).value[:workflow_id]).to eq(open.id)
+  end
+
+  it "shows the reviewer's summary of a rejected attempt and why a lost attempt has no reason" do
+    workflow = stopped(kind: "attempt_limit")
+    create(:agent_attempt, organization:, workflow:, phase: "autopilot", status: "stale", created_at: 2.minutes.ago)
+    create(:agent_attempt, organization:, workflow:, phase: "autopilot", status: "review_failed",
+                           review: { "status" => "changes_requested", "summary" => "The backfill misses the orphan case." })
+
+    rejected, lost = described_class.call(host:).value[:stop][:attempts]
+
+    expect(rejected).to include(status: "review_failed", review_summary: "The backfill misses the orphan case.")
+    expect(lost).to include(status: "stale", failure_reason: described_class::STALE_REASON)
+  end
+
   it "serves only stops on projects the machine follows, even behind older ones elsewhere" do
     stopped(at: 2.hours.ago, project: create(:project, organization:, supporter_enabled: true))
     mine = stopped(at: 1.minute.ago)

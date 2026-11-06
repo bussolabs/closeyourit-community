@@ -10,6 +10,7 @@ module Agents
     #     pass (score within the autonomous range, no reserved topic, no bypass in the guidance, confidence at
     #     least medium, retries left).
     #   - "escalate", or any check failing: the workflow stays with a person, as before.
+    #   - a stop where the machine lost every attempt goes back like a machine retry: nothing in the work failed.
     # Every verdict is written to the ledger, pinned to the stop it read.
     class JudgeConsult < ApplicationService
       include Agents::Workflows::ConcludedTicketGate
@@ -70,15 +71,28 @@ module Agents
 
       def reasons(score, reserved, bypass)
         [].tap do |list|
-          list << "supporter_escalated" unless verdict["recommendation"] == "retry"
-          list << "no_guidance" if guidance.length < GUIDANCE_MIN
-          list << "risk_above_threshold" unless RiskScore.autonomous?(score)
+          unless machine_lost?
+            list << "supporter_escalated" unless verdict["recommendation"] == "retry"
+            list << "no_guidance" if guidance.length < GUIDANCE_MIN
+            list << "risk_above_threshold" unless RiskScore.autonomous?(score)
+            list << "low_confidence" unless CONFIDENT.include?(verdict["confidence"])
+          end
           list << "reserved_topic" if reserved.any?
           list << "bypass_suspected" if bypass.any?
-          list << "low_confidence" unless CONFIDENT.include?(verdict["confidence"])
           list << "retries_exhausted" if retries >= NextConsult::MAX_RETRIES
           list << "ticket_concluded" if concluded_ticket?
         end
+      end
+
+      # Every attempt on the stopped phase was lost by the machine (restart, lease timeout): nothing in the work
+      # failed, so the work goes back as a machine retry would, whatever the model made of the empty record. The
+      # other checks (reserved topic, bypass, retries left, open ticket) still apply.
+      def machine_lost?
+        return @machine_lost if defined?(@machine_lost)
+
+        statuses = workflow.attempts.where(phase: workflow.blocked_phase).order(created_at: :desc)
+                           .limit(NextConsult::ATTEMPTS_SHOWN).pluck(:status)
+        @machine_lost = workflow.blocked_kind == "attempt_limit" && statuses.any? && statuses.all?("stale")
       end
 
       def retries = SupporterDecision.where(target_type: "consult", workflow:, outcome: "retried").count

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.215.2] - 2026-11-06
+
+### Fixed
+
+- **Il supporter vede perché un lavoro si è fermato**: ora riceve il motivo scritto dal revisore quando un piano viene bocciato. Se la macchina ha perso il tentativo, il lavoro riparte da solo. I ticket già chiusi non vengono più guardati.
+
 ## [0.215.1] - 2026-11-06
 
 ### Fixed

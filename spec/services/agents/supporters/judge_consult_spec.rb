@@ -44,6 +44,37 @@ RSpec.describe Agents::Supporters::JudgeConsult do
     expect(workflow.reload.blocked_at).to be_present
   end
 
+  context "when the machine lost every attempt" do
+    before do
+      workflow.update!(blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: autopilot failed 2 times")
+      create_list(:agent_attempt, 2, organization:, workflow:, phase: "autopilot", status: "stale")
+    end
+
+    it "sends the work back even when the model escalates the empty record" do
+      expect(judge(recommendation: "escalate", guidance: "", risk_score: 10, confidence: "low").value[:outcome])
+        .to eq("retried")
+      expect(workflow.reload.blocked_at).to be_nil
+    end
+
+    it "still leaves a reserved topic to a person" do
+      workflow.update!(blocked_reason: "attempt_limit: autopilot failed 2 times on the invoice totals")
+
+      expect(judge(recommendation: "escalate").value).to include(outcome: "escalated", reasons: [ "reserved_topic" ])
+    end
+
+    it "still applies a safety stop" do
+      expect(judge(recommendation: "stop").value[:outcome]).to eq("stopped")
+    end
+  end
+
+  it "does not treat a rejected attempt as lost by the machine" do
+    workflow.update!(blocked_kind: "attempt_limit")
+    create(:agent_attempt, organization:, workflow:, phase: "autopilot", status: "stale")
+    create(:agent_attempt, organization:, workflow:, phase: "autopilot", status: "review_failed")
+
+    expect(judge(recommendation: "escalate").value[:outcome]).to eq("escalated")
+  end
+
   it "leaves the work to a person without usable guidance" do
     expect(judge(guidance: "retry").value[:reasons]).to eq([ "no_guidance" ])
     expect(workflow.reload.blocked_at).to be_present

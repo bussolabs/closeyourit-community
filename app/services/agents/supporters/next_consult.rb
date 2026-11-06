@@ -3,7 +3,7 @@
 module Agents
   module Supporters
     # CYRA-1197 — the stopped workflow a machine's supporter should look at next: blocked by a machine (not by a
-    # person, not by a safety stop), on a project of the machine's organization with the supporter on, not yet
+    # person, not by a safety stop), on an open ticket of a project of the machine's organization with the supporter on, not yet
     # judged at this stop, and with retries left. The digest pins the stop it read: a verdict on a workflow that
     # moved meanwhile is refused.
     class NextConsult < ApplicationService
@@ -12,6 +12,8 @@ module Agents
       MAX_RETRIES = 2
       ATTEMPTS_SHOWN = 3
       TEXT_LIMIT = 800
+      STALE_REASON = "stale: the machine lost this attempt (restart or lease timeout) before it reported; " \
+                     "nothing came back from the work itself"
 
       def self.digest(workflow)
         "sha256:" + Digest::SHA256.hexdigest(JSON.generate([ workflow.id, workflow.blocked_at&.to_i,
@@ -31,8 +33,16 @@ module Agents
 
           "#{finding["severity"]}: #{finding["title"]} #{finding["detail"]}".squish.truncate(300)
         end.first(5)
-        { status: attempt.status, failure_reason: attempt.failure_reason.to_s.truncate(TEXT_LIMIT), review_findings: findings,
+        { status: attempt.status, failure_reason: failure_reason(attempt), review_findings: findings,
+          review_summary: attempt.review.is_a?(Hash) ? attempt.review["summary"].to_s.truncate(TEXT_LIMIT) : "",
           summary: attempt.result.is_a?(Hash) ? attempt.result["summary"].to_s.truncate(TEXT_LIMIT) : "" }
+      end
+
+      # A stale attempt leaves no reason of its own: the machine lost it (restart, lease timeout), not the work.
+      def self.failure_reason(attempt)
+        return attempt.failure_reason.to_s.truncate(TEXT_LIMIT) if attempt.failure_reason.present?
+
+        attempt.status == "stale" ? STALE_REASON : ""
       end
 
       def initialize(host:)
@@ -61,6 +71,7 @@ module Agents
         Agents::Workflow.joins(ticket: :project)
           .where(cancelled_at: nil, completed_at: nil, blocked_kind: CONSULTABLE_KINDS)
           .where.not(blocked_at: nil)
+          .where.not(Ticketing::Ticket.table_name => { status_id: Types::TicketStatus.category_done.select(:id) })
           .where(projects: { organization_id: @host.organization_id, supporter_enabled: true })
           .where(FollowedProjects.condition(@host))
           .includes(ticket: :project).order(:blocked_at, :id)
