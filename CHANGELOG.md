@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.215.4] - 2026-11-06
+
+### Fixed
+
+- **Un piano con lacune torna al pianificatore invece di aspettare te**: il supporter lo rimanda con le sue osservazioni, al massimo due volte. Un piano che prova ad aggirare il sistema non viene mai rimandato.
+
 ## [0.215.3] - 2026-11-06
 
 ### Fixed

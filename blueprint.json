@@ -6181,7 +6181,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo solo i piani a rischio fino a 6, senza temi riservati; gli altri restano a una persona.",
+      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo solo i piani a rischio fino a 6, senza temi riservati. Un piano con lacune torna al pianificatore con le osservazioni, al massimo due volte; gli altri restano a una persona.",
       "files": [
         "app/controllers/api/v1/agent_host/supporter_plans_controller.rb",
         "app/controllers/api/v1/agent_host/supporter_plan_verdicts_controller.rb",

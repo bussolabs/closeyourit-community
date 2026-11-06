@@ -28,6 +28,7 @@ it:
         consult_not_found: Lavorazione non trovata.
         consult_stale: La lavorazione si è mossa o è già stata decisa. Riprendi quella aggiornata.
       activity_actor: Supporter
+      plan_revision_intro: "Il supporter chiede di rivedere il piano prima dell'approvazione:"
     # CYRA-675 — riga di servizio a lunghezza FISSA, come quella dei chiarimenti e per lo stesso
     # motivo: il riassunto dell'agente non ha un tetto e un commento sì. Il riassunto per esteso sta
     # nella scheda Automazione, i file provati nella cronologia.

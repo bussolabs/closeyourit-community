@@ -76,6 +76,37 @@ RSpec.describe Agents::Supporters::JudgePlan do
     expect(workflow.reload.approved_at).to be_nil
   end
 
+  # CYRA-1197 — a plan with fixable gaps goes back to the planner instead of waiting for a person.
+  it "sends a plan with fixable gaps back to the planner with the supporter's findings" do
+    result = judge(recommendation: "revise", risk_score: 10, reasons_against: "The check for the empty list is missing.")
+
+    expect(result.value[:outcome]).to eq("retried")
+    expect(plan.reload.change_request).to include("The check for the empty list is missing.")
+    expect(workflow.reload).to have_attributes(planned_at: nil, approved_at: nil, blocked_at: nil)
+  end
+
+  it "leaves the plan to a person after two revisions asked by the supporter" do
+    2.times do |i|
+      Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
+                                        target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 5)
+    end
+
+    result = judge(recommendation: "revise")
+
+    expect(result.value).to include(outcome: "escalated")
+    expect(result.value[:reasons]).to include("revisions_exhausted")
+    expect(plan.reload.change_request).to be_blank
+  end
+
+  it "never sends back for revision a plan that proposes to skip the system's gates" do
+    plan.update_columns(technical_analysis: "Finish with git push --force origin main.")
+
+    result = judge(digest: Agents::Supporters::NextPlan.digest(plan.reload), recommendation: "revise")
+
+    expect(result.value[:outcome]).to eq("escalated")
+    expect(plan.reload.change_request).to be_blank
+  end
+
   it "leaves the plan to a person on low confidence" do
     expect(judge(confidence: "low").value[:reasons]).to eq([ "low_confidence" ])
   end

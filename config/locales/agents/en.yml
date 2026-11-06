@@ -28,6 +28,7 @@ en:
         consult_not_found: Workflow not found.
         consult_stale: The workflow moved or was already decided. Take the updated one.
       activity_actor: Supporter
+      plan_revision_intro: "The supporter asks to revise the plan before approval:"
     # CYRA-675 — fixed-length service line, same reason as the clarification one: a comment has a
     # character cap and the agent summary does not. The full summary is in the Automation panel.
     closer_staging:

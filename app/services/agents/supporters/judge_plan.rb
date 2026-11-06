@@ -11,6 +11,8 @@ module Agents
       include Agents::Workflows::ConcludedTicketGate
 
       CONFIDENT = %w[medium high].freeze
+      # CYRA-1197 — how many times the supporter may send a plan back before a person decides.
+      MAX_REVISIONS = 2
 
       def initialize(host:, plan_id:, payload:)
         @host = host
@@ -30,6 +32,9 @@ module Agents
         judged = judgement
         # CYRA-1197 — a plan that tries to skip the system's gates or to harm production stops the workflow.
         return Result.ok(summary(record!(judged, digest, "stopped"))) if verdict["recommendation"] == "stop" && stop!
+
+        # CYRA-1197 — fixable gaps go back to the planner with the findings, never past the bypass guard.
+        return Result.ok(summary(record!(judged, digest, "retried"))) if revise?(judged) && request_changes!
 
         outcome = judged[:reasons].empty? && approve! ? "approved" : "escalated"
         Result.ok(summary(record!(judged, digest, outcome)))
@@ -71,6 +76,7 @@ module Agents
       def reasons(score, reserved, bypass)
         [].tap do |list|
           list << "supporter_escalated" unless verdict["recommendation"] == "approve"
+          list << "revisions_exhausted" if verdict["recommendation"] == "revise" && revisions_exhausted?
           list << "risk_above_threshold" unless RiskScore.autonomous?(score)
           list << "reserved_topic" if reserved.any?
           list << "bypass_suspected" if bypass.any?
@@ -93,6 +99,34 @@ module Agents
                                          actor_name: I18n.t("agents.supporter.activity_actor"), data: {})
           true
         end
+      end
+
+      def revise?(judged)
+        verdict["recommendation"] == "revise" && judged[:bypass].empty? && !revisions_exhausted? && !concluded_ticket?
+      end
+
+      def revisions_exhausted?
+        @revisions_exhausted ||=
+          SupporterDecision.where(workflow:, target_type: "plan", outcome: "retried").count >= MAX_REVISIONS
+      end
+
+      # Same reset a person's change request does: the planner phase is offered again and reads the findings.
+      def request_changes!
+        ApplicationRecord.transaction do
+          workflow.lock!
+          latest = workflow.plans.reorder(version: :desc).lock.first
+          next false unless latest == plan && workflow.planned_at? && latest.approved_at.nil? &&
+                            latest.change_request.blank?
+
+          latest.update!(change_request: change_request_text)
+          workflow.update!(planned_at: nil, approved_at: nil, approved_by: nil, **Agents::Workflow.cleared_block)
+          true
+        end
+      end
+
+      def change_request_text
+        findings = Array(verdict["reasons_against"]).join("\n").strip
+        [ I18n.t("agents.supporter.plan_revision_intro"), findings.presence || verdict["rationale"].to_s ].join("\n\n")
       end
 
       def stop!
