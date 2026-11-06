@@ -15,8 +15,11 @@ module Agents
       STALE_REASON = "stale: the machine lost this attempt (restart or lease timeout) before it reported; " \
                      "nothing came back from the work itself"
 
+      # Bumped when what the supporter reads about a stop changes, so stops judged on the old record are read again.
+      DIGEST_VERSION = 2
+
       def self.digest(workflow)
-        "sha256:" + Digest::SHA256.hexdigest(JSON.generate([ workflow.id, workflow.blocked_at&.to_i,
+        "sha256:" + Digest::SHA256.hexdigest(JSON.generate([ DIGEST_VERSION, workflow.id, workflow.blocked_at&.to_i,
                                                              workflow.blocked_kind, workflow.blocked_reason ]))
       end
 

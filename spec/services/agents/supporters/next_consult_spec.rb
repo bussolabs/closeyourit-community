@@ -37,6 +37,15 @@ RSpec.describe Agents::Supporters::NextConsult do
     expect(described_class.call(host:).value).to be_nil
   end
 
+  it "serves again a stop judged on an older record" do
+    workflow = stopped
+    Agents::SupporterDecision.create!(organization:, workflow:, target_type: "consult", target_id: workflow.id,
+                                      target_digest: "sha256:old", outcome: "escalated", engine: "codex", risk_score: 10,
+                                      evidence: {})
+
+    expect(described_class.call(host:).value[:workflow_id]).to eq(workflow.id)
+  end
+
   it "skips stops on tickets already concluded" do
     concluded = stopped(at: 2.hours.ago)
     concluded.ticket.update_columns(status_id: create(:ticket_status, organization:, category: :done).id)

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.215.3] - 2026-11-06
+
+### Fixed
+
+- **Le lavorazioni già guardate dal supporter vengono rilette**: con le regole nuove il supporter riguarda una volta i lavori fermi che aveva lasciato a te, invece di saltarli per sempre.
+
 ## [0.215.2] - 2026-11-06
 
 ### Fixed
