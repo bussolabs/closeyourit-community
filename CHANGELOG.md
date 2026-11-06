@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.215.6] - 2026-11-06
+
+### Fixed
+
+- **I piani lasciati a te vengono riletti con le istruzioni corrette del supporter**: un ritocco visibile ai clienti chiesto dal ticket non conta più come rischio massimo.
+
 ## [0.215.5] - 2026-11-06
 
 ### Fixed
