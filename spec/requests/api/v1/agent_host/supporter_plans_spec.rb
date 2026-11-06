@@ -78,6 +78,18 @@ RSpec.describe "Api::V1::AgentHost::SupporterPlans", type: :request do
     expect(response).to have_http_status(:no_content)
   end
 
+  # CYRA-1197 — plans escalated before the supporter could send them back are read once more.
+  it "serves again a plan judged with an older version of the rules" do
+    plan = create_plan
+    old = "sha256:" + Digest::SHA256.hexdigest(JSON.generate([ plan.id, plan.version,
+                                                               Agents::Supporters::NextPlan.document(plan) ]))
+    Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: plan.id,
+                                      target_digest: old, outcome: "escalated", engine: "codex", risk_score: 7)
+
+    get "/api/v1/agent_host/supporter_plan", headers: headers
+    expect(response).to have_http_status(:ok)
+  end
+
   # The oldest plans may all be judged already (escalated to a person): the supporter must still reach the
   # newer ones behind them instead of answering "nothing to judge".
   it "serves a newer plan when the older ones are all judged already" do

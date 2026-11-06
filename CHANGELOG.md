@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.215.5] - 2026-11-06
+
+### Fixed
+
+- **Il supporter rilegge una volta i piani e i blocchi già lasciati a te**: con le regole nuove può rimandare un piano al pianificatore o far ripartire un lavoro perso, invece di lasciarlo fermo.
+
 ## [0.215.4] - 2026-11-06
 
 ### Fixed

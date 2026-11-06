@@ -6,8 +6,12 @@ module Agents
     # approval, on live work of a project of the machine's organization with the supporter on, and not yet
     # judged at this version. The digest pins the version read: a verdict on a plan changed meanwhile is refused.
     class NextPlan < ApplicationService
+      # Bumped when the supporter's options change, so plans judged under the old rules are read once more.
+      # 2: the supporter can send a plan back to the planner (CYRA-1197).
+      DIGEST_VERSION = 2
+
       def self.digest(plan)
-        "sha256:" + Digest::SHA256.hexdigest(JSON.generate([ plan.id, plan.version, document(plan) ]))
+        "sha256:" + Digest::SHA256.hexdigest(JSON.generate([ DIGEST_VERSION, plan.id, plan.version, document(plan) ]))
       end
 
       # What the supporter reads: the plan as the person approving it reads it, with its Definition of Done.
