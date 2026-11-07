@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.215.10] - 2026-11-07
+
+### Fixed
+
+- **Niente più avvisi di traffico in calo ogni notte**: il controllo orario confronta l'ultima ora con la stessa ora dei 7 giorni precedenti, non più con la media dell'intera giornata. Le ore di solito con poche visite restano senza verdetto.
+
 ## [0.215.9] - 2026-11-07
 
 ### Fixed

@@ -3522,7 +3522,7 @@
       "level": 2,
       "parent": "area_analytics",
       "kind": "job",
-      "summary": "Ogni ora confronta l'ultima finestra con la media di prima e avvisa se il traffico crolla o esplode. Sotto poche visite non giudica.",
+      "summary": "Ogni ora confronta l'ultima ora con la stessa ora dei 7 giorni precedenti e avvisa se il traffico crolla o esplode. Sotto poche visite attese non giudica.",
       "files": [
         "app/jobs/analytics/detect_traffic_anomalies_job.rb",
         "app/services/analytics/detect_traffic_anomalies.rb",

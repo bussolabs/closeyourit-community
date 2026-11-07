@@ -37,11 +37,12 @@ module Analytics
     SESSION_GAP = 30.minutes
 
     # CYRA-147 — rilevamento anomalie di traffico (crollo/picco). Il detector confronta le visite
-    # dell'ultima finestra con la media oraria della baseline. Sotto MIN_BASELINE (visite/ora nella
-    # baseline) non si dà alcun verdetto: troppo poco traffico per distinguere un crollo dal rumore
-    # (limite noto: la stagionalità giorno/notte non è modellata, è un follow-up).
+    # dell'ultima finestra con la media della STESSA fascia oraria nei TRAFFIC_BASELINE_DAYS giorni
+    # precedenti (CYRA-1116: segue il ritmo giorno/notte, la notte tranquilla non sembra un crollo).
+    # Sotto MIN_BASELINE (visite attese nella fascia) non si dà alcun verdetto: troppo poco traffico per
+    # distinguere un crollo dal rumore.
     TRAFFIC_WINDOW = 1.hour
-    TRAFFIC_BASELINE_HOURS = 24
+    TRAFFIC_BASELINE_DAYS = 7
     TRAFFIC_DROP_RATIO = 0.25
     TRAFFIC_SPIKE_RATIO = 4.0
     TRAFFIC_MIN_BASELINE = 20

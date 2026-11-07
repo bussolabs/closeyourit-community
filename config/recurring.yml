@@ -477,10 +477,11 @@ production: &schedule
     queue: maintenance
     schedule: every minute
 
-  # Allarme "crollo/picco di traffico" (CYRA-147): confronta l'ultima ora con la baseline oraria e
-  # accoda l'avviso rule-based. Cadenza oraria, coerente con la finestra di confronto. Il throttle di
-  # default della regola (5 minuti) è più corto della cadenza, quindi NON collassa i giri: un'anomalia
-  # persistente ri-avvisa a ogni giro (~1 all'ora). Per meno rumore si alza il throttle della regola.
+  # Allarme "crollo/picco di traffico" (CYRA-147): confronta l'ultima ora con la media della stessa ora
+  # nei 7 giorni precedenti (CYRA-1116) e accoda l'avviso rule-based. Cadenza oraria, coerente con la
+  # finestra di confronto. Il throttle di default della regola (5 minuti) è più corto della cadenza,
+  # quindi NON collassa i giri: un'anomalia persistente ri-avvisa a ogni giro (~1 all'ora). Per meno
+  # rumore si alza il throttle della regola.
   detect_traffic_anomalies:
     class: Analytics::DetectTrafficAnomaliesJob
     queue: maintenance

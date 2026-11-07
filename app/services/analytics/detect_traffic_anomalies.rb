@@ -2,14 +2,18 @@
 
 module Analytics
   # CYRA-147 — "crollo o picco di traffico del sito". Giro periodico che, per ogni progetto che raccoglie
-  # analytics, confronta le visite dell'ultima finestra (WINDOW) con la media oraria della baseline
-  # (BASELINE_HOURS precedenti) e, se l'anomalia supera la soglia, accoda l'allarme rule-based
+  # analytics, confronta le visite dell'ultima finestra (WINDOW) con la media della STESSA fascia oraria
+  # nei BASELINE_DAYS giorni precedenti e, se l'anomalia supera la soglia, accoda l'allarme rule-based
   # (analytics_traffic_drop / analytics_traffic_spike) via Alerting::EvaluateJob — subject = il progetto.
   #
-  # Sotto MIN_BASELINE visite/ora nella baseline NON si dà alcun verdetto: un progetto a basso traffico
-  # non permette di distinguere un crollo dal rumore. La stagionalità giorno/notte NON è modellata (la
-  # baseline è una media piatta sulle 24h): limite noto, accettabile per la v1. Sola lettura: rende
-  # visibile un'anomalia, non muta nulla.
+  # CYRA-1116 — la baseline segue il ritmo giorno/notte: alle 3 di notte si confronta con le 3 di notte
+  # dei giorni prima, non con una media piatta sulle 24h che faceva sembrare ogni notte un crollo. Il
+  # giorno della settimana NON è modellato (servirebbero settimane di storia). Un progetto con meno di
+  # BASELINE_DAYS giorni di storia ha una media più bassa e quindi avvisa meno: voluto.
+  #
+  # Sotto MIN_BASELINE visite attese nella fascia NON si dà alcun verdetto: un'ora di solito quasi vuota
+  # non permette di distinguere un crollo dal rumore. Sola lettura: rende visibile un'anomalia, non muta
+  # nulla.
   #
   # RE-ALERT: i giri NON vengono collassati dall'anti-spam. Il throttle di default della regola (5 minuti)
   # è molto più corto della cadenza oraria del detector, quindi un'anomalia persistente ri-avvisa a ogni
@@ -18,7 +22,7 @@ module Analytics
   # qui.
   class DetectTrafficAnomalies < ApplicationService
     WINDOW = Analytics::Constants::TRAFFIC_WINDOW
-    BASELINE_HOURS = Analytics::Constants::TRAFFIC_BASELINE_HOURS
+    BASELINE_DAYS = Analytics::Constants::TRAFFIC_BASELINE_DAYS
     DROP_RATIO = Analytics::Constants::TRAFFIC_DROP_RATIO
     SPIKE_RATIO = Analytics::Constants::TRAFFIC_SPIKE_RATIO
 
@@ -44,18 +48,27 @@ module Analytics
     private
 
     # Verdetto per un progetto: :analytics_traffic_drop, :analytics_traffic_spike o nil (normale / troppo
-    # poco traffico storico). Le due finestre sono disgiunte (baseline [now-25h, now-1h), corrente
-    # [now-1h, now]) così l'ultima ora non inquina la propria baseline.
+    # poco traffico storico). Corrente [now-1h, now); baseline = media delle stesse fasce
+    # [now-1h-Nd, now-Nd) per N in 1..BASELINE_DAYS, così l'ultima ora non inquina la propria baseline.
     def anomaly_for(project)
       current = pageviews_in(project, @now - WINDOW, @now)
-      baseline_total = pageviews_in(project, @now - WINDOW - BASELINE_HOURS.hours, @now - WINDOW)
-      baseline_hourly = baseline_total / BASELINE_HOURS.to_f
-      return nil if baseline_hourly < @min_baseline
+      baseline = same_slot_average(project)
+      return nil if baseline < @min_baseline
 
-      return :analytics_traffic_drop if current <= baseline_hourly * DROP_RATIO
-      return :analytics_traffic_spike if current >= baseline_hourly * SPIKE_RATIO
+      return :analytics_traffic_drop if current <= baseline * DROP_RATIO
+      return :analytics_traffic_spike if current >= baseline * SPIKE_RATIO
 
       nil
+    end
+
+    # Media delle visite nella stessa fascia oraria dei giorni precedenti. I giorni senza storia contano
+    # zero: un progetto nuovo ha una media più bassa e resta più facilmente sotto MIN_BASELINE.
+    def same_slot_average(project)
+      total = (1..BASELINE_DAYS).sum do |days_ago|
+        slot_end = @now - days_ago.days
+        pageviews_in(project, slot_end - WINDOW, slot_end)
+      end
+      total / BASELINE_DAYS.to_f
     end
 
     # Solo i veri pageview (name = "pageview"): i custom event alimentano i goal, non il traffico.
