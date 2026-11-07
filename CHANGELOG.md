@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.215.8] - 2026-11-07
+
+### Fixed
+
+- **Il supporter non scambia più un divieto per un aggiramento**: una guida che scrive «non saltare i controlli» può far ripartire il lavoro; chi propone davvero di saltarli resta fermo per te.
+
 ## [0.215.7] - 2026-11-07
 
 ### Fixed

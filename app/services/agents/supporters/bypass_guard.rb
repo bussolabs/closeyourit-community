@@ -19,12 +19,26 @@ module Agents
         "skip_tests" => /\b(skip|disable|delete|remove)\s+(the\s+)?(failing\s+)?(tests?|specs?|checks?|ci)\b/i
       }.freeze
 
+      # Guidance states the rules as prohibitions ("do not skip checks", "with no --no-verify"): a gate named
+      # right after a negation is forbidden, not proposed. Only the few words just before the match count, and
+      # any punctuation in between breaks the link, so "do not worry, commit with --no-verify" is still a hit.
+      NEGATIONS = %w[not never no don't dont without avoid non mai senza nessun nessuna niente].freeze
+      NEGATION_WINDOW = 3
+      CLAUSE_BREAK = /[.,;:!?\n]/
+
       module_function
 
-      # The names of the patterns the text hits; empty when none.
+      # The names of the patterns the text hits outside a negation; empty when none.
       def match(text)
         clean = text.to_s
-        PATTERNS.filter_map { |name, pattern| name if clean.match?(pattern) }
+        PATTERNS.filter_map do |name, pattern|
+          name if clean.to_enum(:scan, pattern).any? { !negated?(clean[0...Regexp.last_match.begin(0)]) }
+        end
+      end
+
+      def negated?(before)
+        clause = before.split(CLAUSE_BREAK, -1).last.to_s
+        clause.downcase.split.last(NEGATION_WINDOW).any? { |word| NEGATIONS.include?(word) }
       end
     end
   end

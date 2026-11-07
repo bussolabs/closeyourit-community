@@ -17,7 +17,8 @@ module Agents
 
       # Bumped when what the supporter reads about a stop changes, so stops judged on the old record are read again.
       # 3: machines work repositories without CLAUDE.md/AGENTS.md, so their lost attempts are worth a retry.
-      DIGEST_VERSION = 3
+      # 4: a gate named in a prohibition ("do not skip checks") is no longer read as a bypass.
+      DIGEST_VERSION = 4
 
       def self.digest(workflow)
         "sha256:" + Digest::SHA256.hexdigest(JSON.generate([ DIGEST_VERSION, workflow.id, workflow.blocked_at&.to_i,

@@ -15,6 +15,27 @@ RSpec.describe Agents::Supporters::BypassGuard do
     expect(described_class.match("Skip the failing tests to make CI green")).to eq([ "skip_tests" ])
   end
 
+  # Guidance spells out the rules as prohibitions: forbidding a bypass is not proposing one.
+  it "ignores a gate named right after a negation" do
+    expect(described_class.match("Run only the specs you touched. Do not skip checks, do not push to main.")).to eq([])
+    expect(described_class.match("Commit normally, with no --no-verify.")).to eq([])
+    expect(described_class.match("Do not skip or delete tests.")).to eq([])
+    expect(described_class.match("Never use --no-verify to get green")).to eq([])
+    expect(described_class.match("Non usare mai --no-verify")).to eq([])
+  end
+
+  it "still names a gate when the negation belongs to another clause" do
+    expect(described_class.match("Do not worry, commit with --no-verify")).to eq([ "skip_hooks" ])
+    expect(described_class.match("No tests are red. Skip the failing tests anyway")).to eq([ "skip_tests" ])
+    expect(described_class.match("Never use --no-verify, [skip ci] instead")).to eq(%w[skip_ci skip_tests])
+    expect(described_class.match("If it does not pass, then git push --force")).to eq([ "force_push" ])
+    expect(described_class.match("Do not stop: skip the tests")).to eq([ "skip_tests" ])
+  end
+
+  it "names a gate proposed once even when it is also forbidden elsewhere" do
+    expect(described_class.match("Do not skip the tests. Then skip the tests to ship.")).to eq([ "skip_tests" ])
+  end
+
   it "lets ordinary work through" do
     expect(described_class.match("Sort the list by name in app/views/items/index.html.erb and add a spec")).to eq([])
     expect(described_class.match("git push origin ticket/ABC-1")).to eq([])

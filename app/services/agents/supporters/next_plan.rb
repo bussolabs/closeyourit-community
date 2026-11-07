@@ -9,7 +9,8 @@ module Agents
       # Bumped when the supporter's options change, so plans judged under the old rules are read once more.
       # 2: the supporter can send a plan back to the planner (CYRA-1197).
       # 3: a change customers see is no longer maximum risk by itself (CYRA-1197).
-      DIGEST_VERSION = 3
+      # 4: a gate named in a prohibition ("do not skip checks") is no longer read as a bypass.
+      DIGEST_VERSION = 4
 
       def self.digest(plan)
         "sha256:" + Digest::SHA256.hexdigest(JSON.generate([ DIGEST_VERSION, plan.id, plan.version, document(plan) ]))
