@@ -12,7 +12,7 @@ module Agents
 
       CONFIDENT = %w[medium high].freeze
       # CYRA-1197 — how many times the supporter may send a plan back before a person decides.
-      MAX_REVISIONS = 2
+      MAX_REVISIONS = 3
 
       def initialize(host:, plan_id:, payload:)
         @host = host

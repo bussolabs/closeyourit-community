@@ -33,7 +33,7 @@ RSpec.describe "Api::V1::AgentHost::SupporterConsults", type: :request do
 
     get "/api/v1/agent_host/supporter_consult", headers: headers
     item = response.parsed_body["data"]
-    expect(item).to include("workflow_id" => workflow.id, "project_key" => project.key, "autonomous_max" => 6)
+    expect(item).to include("workflow_id" => workflow.id, "project_key" => project.key, "autonomous_max" => 8)
     expect(item["stop"]).to include("kind" => "agent_blocked", "phase" => "autopilot")
 
     post "/api/v1/agent_host/supporter_consults/#{workflow.id}/verdict", headers: headers, as: :json, params: {

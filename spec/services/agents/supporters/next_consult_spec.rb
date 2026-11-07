@@ -23,7 +23,7 @@ RSpec.describe Agents::Supporters::NextConsult do
 
     item = described_class.call(host:).value
 
-    expect(item).to include(workflow_id: older.id, project_key: project.key, autonomous_max: 6)
+    expect(item).to include(workflow_id: older.id, project_key: project.key, autonomous_max: 8)
     expect(item[:stop]).to include(kind: "agent_blocked", phase: "autopilot", reason: "agent_blocked: reason")
     expect(item[:stop][:attempts].first).to include(status: "failed", failure_reason: "tests red")
     expect(newer).to be_present

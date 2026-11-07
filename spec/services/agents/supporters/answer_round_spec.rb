@@ -3,7 +3,7 @@
 require "rails_helper"
 
 # CYAU-235 — the supporter proposes; the server decides. It answers a round only when every open question
-# passes: risk 1-6 after the server's own raises, no reserved topic, and enough confidence for its sources.
+# passes: risk 1-8 after the server's own raises, no reserved topic, and enough confidence for its sources.
 RSpec.describe Agents::Supporters::AnswerRound do
   let(:organization) { create(:organization) }
   let(:project) { create(:project, organization:, supporter_enabled: true) }
@@ -45,8 +45,8 @@ RSpec.describe Agents::Supporters::AnswerRound do
     expect(Agents::SupporterDecision.to_review.where(outcome: "answered").count).to eq(2)
   end
 
-  it "hands the whole round to a person when one question is above 6" do
-    result = call([ answer(questions[0], choice: 2), answer(questions[1], text: "x", risk_score: 7) ])
+  it "hands the whole round to a person when one question is above 8" do
+    result = call([ answer(questions[0], choice: 2), answer(questions[1], text: "x", risk_score: 9) ])
 
     expect(result.value[:outcome]).to eq("escalated")
     expect(questions.map { |q| q.reload.answers.count }).to eq([ 0, 0 ])

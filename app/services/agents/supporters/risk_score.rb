@@ -2,14 +2,14 @@
 
 module Agents
   module Supporters
-    # CYAU-235 — how risky a question or a plan is, from 1 to 10. Up to 6 the supporter may decide alone;
-    # from 7 a person decides. The score only goes up: triage proposes it, the server raises it with fixed
+    # CYAU-235 — how risky a question or a plan is, from 1 to 10. Up to 8 the supporter may decide alone;
+    # from 9 a person decides. The score only goes up: triage proposes it, the server raises it with fixed
     # rules that do not trust the model, and nothing lowers it again.
     module RiskScore
       RANGE = (1..10)
-      AUTONOMOUS_MAX = 6
+      AUTONOMOUS_MAX = 8
       RESERVED = 10
-      SENSITIVE_PATH = 8
+      SENSITIVE_PATH = 9
       # Database, release, CI and access code: a plan that touches them is never routine.
       SENSITIVE_PATHS = [
         %r{\Adb/}, %r{(\A|/)migrations?/}, %r{\A\.github/}, %r{\A\.gitlab-ci}, %r{\A\.kamal/},

@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-# CYAU-235 — the supporter decides alone only up to 6, and a score never goes down.
+# CYAU-235 — the supporter decides alone only up to 8, and a score never goes down.
 RSpec.describe Agents::Supporters::RiskScore do
   describe ".resolve" do
     it "keeps a valid proposed score when nothing raises it" do
@@ -24,11 +24,11 @@ RSpec.describe Agents::Supporters::RiskScore do
       expect(described_class.resolve(previous: nil, proposed: 2, reserved: true)).to eq(10)
     end
 
-    it "raises to at least 8 when a sensitive path is touched" do
-      expect(described_class.resolve(previous: nil, proposed: 2, paths: [ "db/migrate/20261006_add_x.rb" ])).to eq(8)
-      expect(described_class.resolve(previous: nil, proposed: 2, paths: [ ".github/workflows/ci.yml" ])).to eq(8)
-      expect(described_class.resolve(previous: nil, proposed: 9, paths: [ "config/deploy.yml" ])).to eq(9)
-      expect(described_class.resolve(previous: nil, proposed: 2, paths: [ "app/controllers/auth/sessions_controller.rb" ])).to eq(8)
+    it "raises to at least 9 when a sensitive path is touched, above what the supporter decides alone" do
+      expect(described_class.resolve(previous: nil, proposed: 2, paths: [ "db/migrate/20261006_add_x.rb" ])).to eq(9)
+      expect(described_class.resolve(previous: nil, proposed: 2, paths: [ ".github/workflows/ci.yml" ])).to eq(9)
+      expect(described_class.resolve(previous: nil, proposed: 10, paths: [ "config/deploy.yml" ])).to eq(10)
+      expect(described_class.resolve(previous: nil, proposed: 2, paths: [ "app/controllers/auth/sessions_controller.rb" ])).to eq(9)
     end
 
     it "leaves ordinary code paths alone" do
@@ -37,15 +37,15 @@ RSpec.describe Agents::Supporters::RiskScore do
   end
 
   describe ".autonomous?" do
-    it "lets the supporter decide alone only from 1 to 6" do
-      expect((1..10).select { |score| described_class.autonomous?(score) }).to eq([ 1, 2, 3, 4, 5, 6 ])
+    it "lets the supporter decide alone only from 1 to 8" do
+      expect((1..10).select { |score| described_class.autonomous?(score) }).to eq([ 1, 2, 3, 4, 5, 6, 7, 8 ])
       expect(described_class.autonomous?(nil)).to be(false)
     end
   end
 
   describe ".risk_level" do
     it "maps the score onto the plan risk levels" do
-      expect([ 1, 3, 4, 6, 7, 10 ].map { |score| described_class.risk_level(score) })
+      expect([ 1, 3, 4, 8, 9, 10 ].map { |score| described_class.risk_level(score) })
         .to eq(%w[low low medium medium high high])
     end
   end

@@ -46,7 +46,7 @@ RSpec.describe Agents::Supporters::JudgePlan do
   it "raises the score on database paths and leaves the plan to a person" do
     result = judge(touched_paths: [ "db/migrate/20261104000000_add_rank.rb" ])
 
-    expect(result.value).to include(outcome: "escalated", risk_score: 8)
+    expect(result.value).to include(outcome: "escalated", risk_score: 9)
     expect(result.value[:reasons]).to include("risk_above_threshold")
     expect(workflow.reload.approved_at).to be_nil
   end
@@ -85,8 +85,17 @@ RSpec.describe Agents::Supporters::JudgePlan do
     expect(workflow.reload).to have_attributes(planned_at: nil, approved_at: nil, blocked_at: nil)
   end
 
-  it "leaves the plan to a person after two revisions asked by the supporter" do
+  it "still sends a plan back after two revisions" do
     2.times do |i|
+      Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
+                                        target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 5)
+    end
+
+    expect(judge(recommendation: "revise").value[:outcome]).to eq("retried")
+  end
+
+  it "leaves the plan to a person after three revisions asked by the supporter" do
+    3.times do |i|
       Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
                                         target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 5)
     end

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.216.0] - 2026-11-07
+
+### Changed
+
+- **Il supporter approva da solo fino al rischio 8**: prima si fermava al 6, e può rimandare un piano al pianificatore 3 volte invece di 2. Database, CI, rilascio e accessi salgono a rischio 9 e restano a una persona, come i temi riservati. (CYRA-1197)
+
 ## [0.215.10] - 2026-11-07
 
 ### Fixed

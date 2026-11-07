@@ -97,7 +97,7 @@ RSpec.describe Agents::Supporters::JudgeConsult do
   it "leaves the work to a person on low confidence or high risk" do
     expect(judge(confidence: "low").value[:reasons]).to eq([ "low_confidence" ])
     workflow.update!(blocked_reason: "agent_blocked: changed")
-    expect(judge(risk_score: 8).value[:reasons]).to eq([ "risk_above_threshold" ])
+    expect(judge(risk_score: 9).value[:reasons]).to eq([ "risk_above_threshold" ])
   end
 
   it "stops the workflow for safety, and no machine path can release it" do

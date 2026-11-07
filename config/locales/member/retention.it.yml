@@ -74,7 +74,7 @@ it:
       secret_approval_enabled_label: Approvazione in due per i secret
       secret_approval_enabled_hint: Attiva la richiesta di conferma da un secondo responsabile per le modifiche ai secret negli ambienti protetti.
       supporter_section: Supporter
-      supporter_hint: Il supporter risponde alle domande delle macchine e approva i piani fino a rischio 6 su 10. Ogni sua decisione resta nel ticket.
+      supporter_hint: Il supporter risponde alle domande delle macchine e approva i piani fino a rischio 8 su 10. Ogni sua decisione resta nel ticket.
       supporter_enabled_label: Supporter attivo
       supporter_enabled_hint: Spento, tutte le domande e i piani arrivano a una persona, come oggi.
       supporter_reserved_topics_label: Temi riservati del progetto

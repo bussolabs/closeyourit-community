@@ -33,7 +33,7 @@ RSpec.describe "Api::V1::AgentHost::SupporterPlans", type: :request do
 
     get "/api/v1/agent_host/supporter_plan", headers: headers
     item = response.parsed_body["data"]
-    expect(item).to include("plan_id" => plan.id, "project_key" => project.key, "autonomous_max" => 6)
+    expect(item).to include("plan_id" => plan.id, "project_key" => project.key, "autonomous_max" => 8)
     expect(item["plan"]).to include("version" => plan.version)
     expect(item["plan"]["document"]).to include("Sort the list", "The list is sorted")
 

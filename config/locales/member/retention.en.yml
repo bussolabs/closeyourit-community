@@ -72,7 +72,7 @@ en:
       secret_approval_enabled_label: Two-person approval for secrets
       secret_approval_enabled_hint: Requires a second approver to confirm secret changes in protected environments.
       supporter_section: Supporter
-      supporter_hint: The supporter answers the machines' questions and approves plans up to risk 6 of 10. Every decision it takes stays on the ticket.
+      supporter_hint: The supporter answers the machines' questions and approves plans up to risk 8 of 10. Every decision it takes stays on the ticket.
       supporter_enabled_label: Supporter on
       supporter_enabled_hint: When off, every question and plan goes to a person, as today.
       supporter_reserved_topics_label: Project reserved topics
