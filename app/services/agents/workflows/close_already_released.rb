@@ -46,15 +46,24 @@ module Agents
       end
 
       # A release proved in production carries its commit. Projects proved by "merge" record releases
-      # without one: for them the latest stable tag is the evidence, read from GitHub.
+      # without one: for them the latest stable tag is the evidence, read from GitHub. Projects that
+      # never recorded a release at all (a CLI, a daemon) still ship through stable tags: the highest wins.
       def released_code
         proved = production_releases.where.not(proved_at: nil).where.not(sha: nil).order(proved_at: :desc).first
         return [ proved.version, proved.sha ] if proved
 
         latest = production_releases.order(created_at: :desc).first
-        return [ nil, nil ] unless latest&.version&.match?(/\Av?\d+\.\d+\.\d+\z/)
+        version = latest ? latest.version : highest_stable_tag
+        return [ nil, nil ] unless version&.match?(/\Av?\d+\.\d+\.\d+\z/)
 
-        [ latest.version, client.tag_commit(installation_id, candidate.repository_full_name, latest.version) ]
+        [ version, client.tag_commit(installation_id, candidate.repository_full_name, version) ]
+      end
+
+      def highest_stable_tag
+        stable = Agents::Releases::NextVersion::STABLE
+        client.tags(installation_id, candidate.repository_full_name)
+              .select { |name| stable.match?(name) }
+              .max_by { |name| stable.match(name).captures.map(&:to_i) }
       end
 
       def installation_id = candidate.repository.github_installation_id

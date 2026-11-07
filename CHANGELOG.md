@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.215.7] - 2026-11-07
+
+### Fixed
+
+- **Il lavoro già uscito con un tag stabile si chiude da solo anche nei progetti senza rilasci registrati**: per una CLI o un daemon la prova è l'ultimo tag stabile su GitHub.
+
 ## [0.215.6] - 2026-11-06
 
 ### Fixed

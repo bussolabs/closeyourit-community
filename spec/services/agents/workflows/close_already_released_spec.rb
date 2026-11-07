@@ -77,6 +77,29 @@ RSpec.describe Agents::Workflows::CloseAlreadyReleased do
     expect(c).to have_received(:tag_commit).with(repository.installation.installation_id, "bussolabs/app", "v1.4.0")
   end
 
+  # Projects that never recorded a release (a CLI, a daemon) still ship through stable tags.
+  it "reads the highest stable tag on GitHub when the project recorded no release at all" do
+    project.releases.delete_all
+    c = client(contained: true)
+    allow(c).to receive(:tags).and_return(%w[v1.10.0-beta.1 v1.9.0 v1.10.0 v1.2.0])
+    allow(c).to receive(:tag_commit).and_return(release_sha)
+
+    described_class.call(workflow:, client: c)
+
+    expect(workflow.reload.completed_at).to be_present
+    expect(c).to have_received(:tag_commit).with(repository.installation.installation_id, "bussolabs/app", "v1.10.0")
+  end
+
+  it "leaves the workflow alone when the project has neither a recorded release nor a stable tag" do
+    project.releases.delete_all
+    c = client(contained: true)
+    allow(c).to receive(:tags).and_return(%w[v1.0.0-beta.1])
+
+    described_class.call(workflow:, client: c)
+
+    expect(workflow.reload.completed_at).to be_nil
+  end
+
   it "ignores a beta tag recorded as the latest release" do
     project.releases.update_all(proved_at: nil, sha: nil, version: "v1.5.0-beta.1")
     c = instance_double(Github::Client)
