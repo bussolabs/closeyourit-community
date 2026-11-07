@@ -38,7 +38,10 @@ module Agents
           next if plan.nil? || plan.approved_at? || plan.change_request.present?
 
           digest = self.class.digest(plan)
-          return Result.ok(item(workflow, plan, digest)) unless judged.include?([ plan.id, digest ])
+          next if judged.include?([ plan.id, digest ]) || OfferLimit.resting?(@host, digest)
+
+          OfferLimit.offered!(@host, digest)
+          return Result.ok(item(workflow, plan, digest))
         end
         Result.ok(nil)
       end

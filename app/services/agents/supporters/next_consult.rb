@@ -65,7 +65,10 @@ module Agents
           next if retries.fetch(workflow.id, 0) >= MAX_RETRIES
 
           digest = self.class.digest(workflow)
-          return Result.ok(item(workflow, digest)) unless judged.include?([ workflow.id, digest ])
+          next if judged.include?([ workflow.id, digest ]) || OfferLimit.resting?(@host, digest)
+
+          OfferLimit.offered!(@host, digest)
+          return Result.ok(item(workflow, digest))
         end
         Result.ok(nil)
       end

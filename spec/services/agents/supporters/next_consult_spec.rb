@@ -83,4 +83,18 @@ RSpec.describe Agents::Supporters::NextConsult do
 
     expect(described_class.call(host:).value[:workflow_id]).to eq(other.id)
   end
+
+  it "serves the next stop when the machine keeps failing to judge the oldest one" do
+    original = Rails.cache
+    Rails.cache = ActiveSupport::Cache::MemoryStore.new
+    stuck = stopped(at: 1.hour.ago)
+    other = stopped(at: 1.minute.ago)
+
+    served = Array.new(Agents::Supporters::OfferLimit::MAX_OFFERS) { described_class.call(host:).value[:workflow_id] }
+
+    expect(served).to all(eq(stuck.id))
+    expect(described_class.call(host:).value[:workflow_id]).to eq(other.id)
+  ensure
+    Rails.cache = original
+  end
 end

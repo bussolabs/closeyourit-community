@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.215.9] - 2026-11-07
+
+### Fixed
+
+- **Un piano che il supporter non riesce a giudicare non ferma più gli altri**: dopo tre tentativi senza risposta resta da parte per un'ora e il supporter passa al successivo.
+
 ## [0.215.8] - 2026-11-07
 
 ### Fixed
