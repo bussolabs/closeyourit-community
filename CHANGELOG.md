@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.220.0] - 2026-11-08
+
+### Changed
+
+- **Un lavoro fermo riparte con la stessa sicurezza delle altre decisioni**: per rimandarlo all'agente basta che il supporter sia abbastanza sicuro, anche se il testo contiene una parola come «permission». Il lavoro ripassa comunque da revisione, CI e prova in staging. (CYRA-1197)
+
 ## [0.219.0] - 2026-11-08
 
 ### Changed

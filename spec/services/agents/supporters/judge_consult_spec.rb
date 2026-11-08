@@ -83,7 +83,8 @@ RSpec.describe Agents::Supporters::JudgeConsult do
   it "leaves the work to a person when the stop hits a reserved topic the supporter did not clear" do
     workflow.update!(blocked_reason: "agent_blocked: the invoice totals are unclear")
 
-    expect(judge(confidence: "medium").value[:reasons]).to include("reserved_topic")
+    expect(judge(confidence: "low").value[:reasons]).to include("reserved_topic")
+    expect(judge(recommendation: "escalate").value[:reasons]).to include("reserved_topic")
     expect(workflow.reload.blocked_at).to be_present
   end
 
@@ -102,6 +103,14 @@ RSpec.describe Agents::Supporters::JudgeConsult do
 
     expect(judge.value).to include(outcome: "retried", risk_score: 3)
     expect(workflow.reload.blocked_at).to be_nil
+  end
+
+  # A retry still goes through review, CI and the staging quarantine: medium confidence, the same bar every other
+  # supporter decision uses, is enough to clear a built-in word.
+  it "clears a built-in reserved word on a retry the supporter judged with medium confidence" do
+    workflow.update!(blocked_reason: "candidate_check: checks_failing, the permission spec is red")
+
+    expect(judge(confidence: "medium").value).to include(outcome: "retried")
   end
 
   it "never retries on guidance that skips the system's gates" do

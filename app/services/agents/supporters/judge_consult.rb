@@ -71,10 +71,10 @@ module Agents
       end
 
       # CYRA-1197 — as for plans: a built-in word in the text is cleared when the supporter checked the stop and
-      # sends it back with high confidence. Topics the organization or the project added, and the bypass guard,
-      # always stay in front.
+      # sends it back with the confidence every decision needs. A retry still goes through review, CI and the
+      # staging quarantine. Topics the organization or the project added, and the bypass guard, stay in front.
       def cleared?(entry)
-        entry.source == :built_in && verdict["recommendation"] == "retry" && verdict["confidence"] == "high"
+        entry.source == :built_in && verdict["recommendation"] == "retry" && CONFIDENT.include?(verdict["confidence"])
       end
 
       def reasons(score, reserved, bypass)
