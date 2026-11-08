@@ -6,6 +6,7 @@ module Seo
   # Solo i rilievi GRAVI, e solo quelli NUOVI. Un cockpit che avvisa a ogni immagine senza
   # descrizione insegna a ignorare i suoi avvisi, e allora tace anche il giorno che la home passa
   # `noindex`. Il resto si guarda dalla pagina, che è lì apposta.
+  # A finding that reopens by itself counts as new: the problem is back (CYRA-1169).
   #
   # Separato dalla scrittura di proposito: i rilievi devono finire nel database anche se l'alerting
   # è configurato male, e questo pezzo si prova senza toccare la rete.

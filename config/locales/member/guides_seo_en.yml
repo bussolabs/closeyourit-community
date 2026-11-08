@@ -19,6 +19,7 @@ en:
         step_wait_body: The system starts from the home page and the sitemap, follows internal links and stops at the page limit you set.
         step_triage_title: Decide what to do
         step_triage_body: Every finding can be ignored (if you want to live with it) or turned into a ticket. When the problem disappears from the site, the finding closes itself.
+        step_triage_auto_close: "A finding closes by itself when the check reads the page again and the problem is gone, or when a check that reached the end no longer finds the page. If the check stops early, at the page limit or for time, the findings of the pages it did not see stay open. If the problem comes back, the finding opens again and, if it is severe, you get the alert again. A finding you ignored stays ignored."
         manners_title: How it behaves towards sites
         manners_body: "It always honours robots.txt, stays on the address you gave it, identifies itself as CloseYourItBot and waits half a second between pages. The page limit is yours to set."
         limits_body: "It reads pages as the server sends them, before the browser runs any code: that is what a search engine sees on the first pass. It does not use Google Search Console and does not judge how well the text is written — those are two other things, and they will come."

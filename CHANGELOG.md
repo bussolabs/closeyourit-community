@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.218.0] - 2026-11-08
+
+### Changed
+
+- **Rilievi SEO che si chiudono e si riaprono da soli**: quando un controllo arriva in fondo al sito, i rilievi delle pagine che non trova più si chiudono da soli. Se un problema chiuso ricompare, il rilievo torna aperto e, se è grave, ricevi di nuovo l'avviso. ([SEO](/member/monitoring/seo))
+
 ## [0.217.0] - 2026-11-08
 
 ### Changed

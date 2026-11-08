@@ -9135,7 +9135,7 @@
       "level": 3,
       "parent": "seo_flow_audit",
       "kind": "step",
-      "summary": "Parte dalla home e dalla mappa del sito, segue solo i link interni, rispetta sempre robots.txt. Una visita alla volta per sito.",
+      "summary": "Parte dalla home e dalla mappa del sito, segue solo i link interni, rispetta sempre robots.txt. Una visita alla volta per sito. Dice se è arrivata in fondo: non lo è se si ferma al tetto di pagine, per tempo o senza la mappa del sito.",
       "files": [
         "app/jobs/seo/audit_site_job.rb",
         "app/services/seo/crawl.rb",
@@ -9163,7 +9163,7 @@
       "level": 3,
       "parent": "seo_flow_audit",
       "kind": "step",
-      "summary": "Problemi nuovi si aprono, quelli ancora presenti si confermano, quelli spariti si chiudono da soli e si riaprono se tornano. Una visita fallita non chiude niente. Se cambia l'indirizzo del sito, si chiudono i problemi delle pagine rimaste fuori.",
+      "summary": "Problemi nuovi si aprono, quelli ancora presenti si confermano, quelli spariti si chiudono da soli. Una visita arrivata in fondo chiude anche i problemi delle pagine che non trova più; una fermata prima non li tocca. Un problema chiuso da solo che ricompare torna aperto. Una visita fallita non chiude niente. Se cambia l'indirizzo del sito, si chiudono i problemi delle pagine rimaste fuori.",
       "files": [
         "app/services/seo/record_audit.rb"
       ]
@@ -9174,7 +9174,7 @@
       "level": 3,
       "parent": "seo_flow_audit",
       "kind": "step",
-      "summary": "Solo i problemi nuovi e gravi fanno partire un avviso. Chi ha la scheda del sito aperta la vede aggiornarsi.",
+      "summary": "Solo i problemi gravi nuovi o tornati aperti fanno partire un avviso. Chi ha la scheda del sito aperta la vede aggiornarsi.",
       "files": [
         "app/services/seo/notify_issues.rb",
         "app/services/seo/broadcast.rb"

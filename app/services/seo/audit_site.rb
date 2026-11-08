@@ -29,7 +29,8 @@ module Seo
       report = Seo::RecordAudit.call(site: @site, audit:, crawl:, candidates:, now: @now)
       finish(last_error: nil)
       # Dopo la scrittura, mai durante: un guasto dell'alerting non deve far perdere il giro.
-      Seo::NotifyIssues.call(issues: report.opened)
+      # A severe problem that comes back is announced like a new one (CYRA-1169).
+      Seo::NotifyIssues.call(issues: report.opened + report.reopened)
       report
     rescue StandardError => e
       fail_audit(audit, e.class.name.demodulize.underscore) if audit

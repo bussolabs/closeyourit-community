@@ -25,8 +25,9 @@ RSpec.describe Seo::RecordAudit, type: :service do
     Seo::Analyze::Candidate.new(check_key:, url:, evidence:)
   end
 
-  def record(pages:, candidates:, interrupted: false)
-    crawl = Seo::Crawl::Result.new(pages:, sitemap_urls: pages.map { |page| page[:url] }, interrupted:)
+  def record(pages:, candidates:, interrupted: false, complete: false)
+    crawl = Seo::Crawl::Result.new(pages:, sitemap_urls: pages.map { |page| page[:url] }, interrupted:,
+                                   complete:)
     described_class.call(site:, audit:, crawl:, candidates:, now:)
   end
 
@@ -82,20 +83,6 @@ RSpec.describe Seo::RecordAudit, type: :service do
     expect(report.resolved.size).to eq(1)
   end
 
-  it "reopens a resolved issue when the problem comes back (CYRA-1169)" do
-    record(pages: [ crawled_page ], candidates: [ candidate("missing_h1") ])
-    record(pages: [ crawled_page ], candidates: [])
-    site.reload # each real round loads the site afresh
-    report = record(pages: [ crawled_page ], candidates: [ candidate("missing_h1") ])
-
-    issue = site.issues.reload.sole
-    expect(issue).to be_status_open
-    expect(issue.resolved_at).to be_nil
-    expect(issue.last_seen_at).to eq(now)
-    expect(report.opened).to eq([ issue ])
-    expect(report.reconfirmed).to be_empty
-  end
-
   it "non riapre ciò che qualcuno ha deciso di ignorare" do
     record(pages: [ crawled_page ], candidates: [ candidate("missing_h1") ])
     site.issues.sole.update!(status: :ignored)
@@ -105,18 +92,105 @@ RSpec.describe Seo::RecordAudit, type: :service do
     expect(site.issues.reload.sole).to be_status_ignored
   end
 
-  it "non dichiara risolto un rilievo su una pagina che stavolta non ha guardato" do
+  # CYRA-1169 — an incomplete round (page cap, time) has not seen the pages it left out.
+  it "non dichiara risolto un rilievo su una pagina che un giro incompleto non ha guardato" do
     altra = crawled_page(path: "/altra")
     record(pages: [ crawled_page, altra ], candidates: [
              candidate("missing_h1"),
              candidate("missing_h1", url: "https://sito.test/altra", evidence: { "url" => "https://sito.test/altra" })
            ])
 
-    # Secondo giro: il tetto di pagine (o un menu cambiato) lascia fuori /altra.
-    record(pages: [ crawled_page ], candidates: [ candidate("missing_h1") ])
+    # Secondo giro: il tetto di pagine lascia fuori /altra.
+    record(pages: [ crawled_page ], candidates: [ candidate("missing_h1") ], complete: false)
 
     ignorata = site.issues.joins(:page).find_by(seo_pages: { path: "/altra" })
     expect(ignorata).to be_status_open
+  end
+
+  # CYRA-1169 — a complete round reached every page the site still has: one it did not find is gone.
+  describe "pages a complete round no longer finds" do
+    def other_page = crawled_page(path: "/other")
+
+    def other_candidate(check_key = "missing_h1")
+      candidate(check_key, url: "https://sito.test/other", evidence: { "url" => "https://sito.test/other" })
+    end
+
+    def other_issue = site.issues.joins(:page).find_by(seo_pages: { path: "/other" })
+
+    before { record(pages: [ crawled_page, other_page ], candidates: [ other_candidate ]) }
+
+    it "resolves the open issues of a page that left the site" do
+      report = record(pages: [ crawled_page ], candidates: [], complete: true)
+
+      expect(other_issue).to be_status_resolved
+      expect(other_issue.resolved_at).to eq(now)
+      expect(report.resolved).to include(other_issue)
+      expect(report.open_count).to eq(0)
+    end
+
+    it "keeps them open when the round stopped for time" do
+      record(pages: [ crawled_page ], candidates: [], interrupted: true, complete: false)
+
+      expect(other_issue).to be_status_open
+    end
+
+    it "leaves an ignored issue of a vanished page ignored" do
+      other_issue.update!(status: :ignored)
+
+      record(pages: [ crawled_page ], candidates: [], complete: true)
+
+      expect(other_issue).to be_status_ignored
+    end
+
+    it "opens the issue again when the page comes back with the same problem" do
+      record(pages: [ crawled_page ], candidates: [], complete: true)
+
+      report = record(pages: [ crawled_page, other_page ], candidates: [ other_candidate ], complete: true)
+
+      expect(other_issue).to be_status_open
+      expect(other_issue.resolved_at).to be_nil
+      expect(report.reopened).to eq([ other_issue ])
+      expect(site.issues.count).to eq(1)
+    end
+  end
+
+  # CYRA-1169 — an issue the scan closed by itself is the same problem when it comes back.
+  describe "a resolved issue found again" do
+    before do
+      record(pages: [ crawled_page ], candidates: [ candidate("missing_h1") ])
+      record(pages: [ crawled_page ], candidates: [])
+    end
+
+    it "opens again instead of staying hidden" do
+      report = record(pages: [ crawled_page ], candidates: [ candidate("missing_h1") ])
+
+      issue = site.issues.reload.sole
+      expect(issue).to be_status_open
+      expect(issue.resolved_at).to be_nil
+      expect(issue.last_seen_at).to eq(now)
+      expect(report.opened).to be_empty
+      expect(report.reconfirmed).to be_empty
+      expect(report.reopened).to eq([ issue ])
+      expect(report.resolved).to be_empty
+      expect(report.open_count).to eq(1)
+    end
+
+    it "takes the current severity of the check" do
+      site.issues.sole.update!(severity: :low)
+
+      record(pages: [ crawled_page ], candidates: [ candidate("missing_h1") ])
+
+      expect(site.issues.reload.sole).to be_severity_high
+    end
+
+    it "keeps the ticket it was promoted to" do
+      ticket = create(:ticket, project: site.project)
+      site.issues.sole.update!(ticket:)
+
+      record(pages: [ crawled_page ], candidates: [ candidate("missing_h1") ])
+
+      expect(site.issues.reload.sole.ticket).to eq(ticket)
+    end
   end
 
   describe "when the site moves to another address (CYRA-1093)" do

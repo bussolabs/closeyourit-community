@@ -6,8 +6,8 @@ module Seo
   # Il cuore è il confronto fra ciò che il giro ha trovato e ciò che era già aperto:
   # - candidato nuovo            → si apre il rilievo;
   # - candidato già noto         → si riconferma (data e prova aggiornate, stato intatto);
+  # - known candidate the scan had resolved → it opens again, counted apart as reopened;
   # - rilievo aperto non trovato → si chiude da solo, perché il problema non c'è più.
-  # - resolved issue found again → reopens, because the problem came back (CYRA-1169).
   #
   # Un rilievo `ignored` non partecipa: non si riapre e non si richiude. Chi ha deciso di
   # conviverci ha già dato la sua risposta, e ridargliela ogni giorno sarebbe solo rumore.
@@ -17,7 +17,7 @@ module Seo
   # timeout non è sparito, è solo smesso di osservare — e chiuderlo farebbe migliorare l'elenco dei
   # problemi proprio quando il controllo peggiora.
   class RecordAudit < ApplicationService
-    Report = Data.define(:opened, :reconfirmed, :resolved, :pages_count, :open_count,
+    Report = Data.define(:opened, :reconfirmed, :reopened, :resolved, :pages_count, :open_count,
                          :unverified_count)
 
     def initialize(site:, audit:, crawl:, candidates:, now: Time.current)
@@ -31,16 +31,17 @@ module Seo
     def call
       ActiveRecord::Base.transaction do
         pages_by_url = upsert_pages
-        opened, reconfirmed = sync_issues(pages_by_url)
-        resolved = close_disappeared(opened + reconfirmed, pages_by_url) + close_out_of_scope(pages_by_url)
+        opened, reconfirmed, reopened = sync_issues(pages_by_url)
+        resolved = close_disappeared(opened + reconfirmed + reopened, pages_by_url) +
+                   close_out_of_scope(pages_by_url) + close_unvisited(pages_by_url)
         open_count = @site.issues.status_open.count
         unverified_count = unread_pages.size
 
         @audit.update!(status: :completed, finished_at: @now, pages_count: pages_by_url.size,
                        issues_open_count: open_count, pages_unverified_count: unverified_count)
 
-        Report.new(opened:, reconfirmed:, resolved:, pages_count: pages_by_url.size, open_count:,
-                   unverified_count:)
+        Report.new(opened:, reconfirmed:, reopened:, resolved:, pages_count: pages_by_url.size,
+                   open_count:, unverified_count:)
       end
     end
 
@@ -89,23 +90,22 @@ module Seo
     end
 
     def sync_issues(pages_by_url)
-      existing = @site.issues.index_by { |issue| [ issue.check_key, issue.page_id ] }
+      # A fresh read, not the site's loaded association: a copy from an earlier round would still
+      # say open for an issue closed since, and it would never reopen.
+      existing = Seo::Issue.where(site: @site).index_by { |issue| [ issue.check_key, issue.page_id ] }
       opened = []
       reconfirmed = []
+      reopened = []
 
       @candidates.each do |candidate|
         page = candidate.url && pages_by_url[candidate.url]
         key = [ candidate.check_key, page&.id ]
         severity = Seo::Check.find(candidate.check_key)&.severity || :medium
 
-        if (issue = existing[key])&.status_resolved?
-          # A resolved issue seen again is a problem that came back: open again and notify (CYRA-1169).
-          issue.update!(status: :open, resolved_at: nil, last_seen_at: @now, severity:,
-                        evidence: candidate.evidence.presence || issue.evidence)
-          opened << issue
-        elsif issue
+        if (issue = existing[key])
+          was_resolved = issue.status_resolved?
           issue.touch_seen!(@now, candidate.evidence, severity)
-          reconfirmed << issue
+          (was_resolved ? reopened : reconfirmed) << issue
         else
           opened << @site.issues.create!(page:, check_key: candidate.check_key, severity:,
                                          evidence: candidate.evidence, first_seen_at: @now,
@@ -113,7 +113,7 @@ module Seo
         end
       end
 
-      [ opened, reconfirmed ]
+      [ opened, reconfirmed, reopened ]
     end
 
     # Chiude ciò che il giro non ha più trovato — ma solo dove ha davvero guardato, e solo per i
@@ -124,6 +124,7 @@ module Seo
     # 1. ABBIAMO APERTO QUESTA PAGINA? Restano intoccati i rilievi di pagine che stavolta non sono
     #    finite nel giro: col tetto di `max_pages` o un menu cambiato una pagina può semplicemente
     #    non essere stata visitata. Per la stessa ragione, un giro senza pagine non chiude niente.
+    #    A complete round is the exception: see close_unvisited.
     #
     # 2. SIAMO ARRIVATI ABBASTANZA IN FONDO PER DIRLO? È la parte che mancava (CYRA-808). Una
     #    pagina in timeout, vietata da robots.txt o che risponde con un PDF finisce comunque in
@@ -158,6 +159,16 @@ module Seo
       host = URI.parse(@site.base_url).host
       stale = @site.issues.status_open.where.not(page_id: nil).includes(:page)
                    .reject { |issue| URI.parse(issue.page.url).host == host }
+      stale.each { |issue| issue.update!(status: :resolved, resolved_at: @now) }
+    end
+
+    # A complete round reached every page the site still links or lists: a page it did not find is
+    # gone, and so are its open issues. A capped or timed-out round closes none of these (CYRA-1169).
+    def close_unvisited(pages_by_url)
+      return [] if pages_by_url.empty? || !@crawl.complete?
+
+      stale = @site.issues.status_open.where.not(page_id: nil)
+                   .where.not(page_id: pages_by_url.values.map(&:id)).to_a
       stale.each { |issue| issue.update!(status: :resolved, resolved_at: @now) }
     end
 

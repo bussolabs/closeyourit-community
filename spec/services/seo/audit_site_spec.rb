@@ -97,6 +97,22 @@ RSpec.describe Seo::AuditSite, type: :service do
     expect(site.audits.recent.first.pages_unverified_count).to eq(1)
   end
 
+  # CYRA-1169 — a severe problem that comes back after closing by itself is announced like a new one.
+  it "alerts again when a severe issue the scan had resolved comes back" do
+    without_h1 = crawler_returning(Seo::Crawl::Result.new(pages: [ page_fact ], sitemap_urls: [ "https://sito.test/" ], complete: true))
+    with_h1 = crawler_returning(Seo::Crawl::Result.new(pages: [ page_fact(attributes: page_fact[:attributes].merge(h1s: [ "Titolo" ])) ],
+                                                       sitemap_urls: [ "https://sito.test/" ], complete: true))
+    described_class.call(site:, now:, crawler: without_h1)
+    described_class.call(site:, now: now + 1.day, crawler: with_h1)
+    issue = site.issues.find_by!(check_key: "missing_h1")
+    expect(issue).to be_status_resolved
+
+    expect { described_class.call(site:, now: now + 2.days, crawler: without_h1) }
+      .to have_enqueued_job(Alerting::EvaluateJob)
+      .with(hash_including(event_type: "seo_issue_new", subject_id: issue.id))
+    expect(issue.reload).to be_status_open
+  end
+
   # CYRA-824 — chi ha la scheda aperta deve vedere l'esito senza ricaricarla a mano. Il segnale
   # parte da qui, dove il giro finisce davvero, e non dalla scrittura delle singole pagine: un sito
   # da cento pagine manderebbe cento segnali per un solo esito.

@@ -60,6 +60,17 @@ RSpec.describe Seo::Issue, type: :model do
       expect(issue.reload).to be_status_ignored
       expect(issue).to be_severity_low
     end
+
+    # CYRA-1169 — the scan closed it by itself, and the problem is back.
+    it "opens again an issue the scan had resolved, with the current severity" do
+      issue = create(:seo_issue, severity: :low, status: :resolved, resolved_at: 1.day.ago)
+
+      issue.touch_seen!(Time.current, { "url" => "https://example.com/" }, :critical)
+
+      expect(issue.reload).to be_status_open
+      expect(issue.resolved_at).to be_nil
+      expect(issue).to be_severity_critical
+    end
   end
 
   it "ordina mettendo davanti ciò che fa più male" do

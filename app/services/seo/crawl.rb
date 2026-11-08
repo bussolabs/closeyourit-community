@@ -22,14 +22,18 @@ module Seo
     MAX_DURATION = 2.hours
 
     # `interrupted`: il giro si è fermato per tempo, con pagine ancora da visitare.
+    # `complete`: the round ran out of pages to visit — no page cap, no deadline, sitemap read.
+    # Only then may a page it did not find be called gone (CYRA-1169).
     Result = Data.define(:pages, :sitemap_urls, :sitemap_reachable, :robots_reachable, :error,
-                         :interrupted) do
+                         :interrupted, :complete) do
       def initialize(pages: [], sitemap_urls: [], sitemap_reachable: true, robots_reachable: true, error: nil,
-                     interrupted: false)
+                     interrupted: false, complete: false)
         super
       end
 
       def interrupted? = interrupted
+
+      def complete? = complete
     end
 
     def initialize(site:, fetcher: Seo::Fetch, pause: REQUEST_PAUSE, max_duration: MAX_DURATION)
@@ -42,6 +46,7 @@ module Seo
     def call
       @deadline = clock + @max_duration.to_f
       @interrupted = false
+      @capped = false
       robots = load_robots
       sitemap = load_sitemap(robots)
       seeds = build_seeds(sitemap.urls)
@@ -50,7 +55,8 @@ module Seo
       log_interruption(pages) if @interrupted
 
       Result.new(pages:, sitemap_urls: sitemap.urls, sitemap_reachable: sitemap.reachable,
-                 robots_reachable: @robots_reachable, interrupted: @interrupted)
+                 robots_reachable: @robots_reachable, interrupted: @interrupted,
+                 complete: !@interrupted && !@capped && sitemap.reachable)
     rescue StandardError => e
       Result.new(error: e.class.name.demodulize.underscore)
     end
@@ -109,7 +115,11 @@ module Seo
       pages = []
 
       while (entry = queue.shift)
-        break if pages.size >= @site.max_pages
+        # A page still queued at the cap was never seen: the round is not complete (CYRA-1169).
+        if pages.size >= @site.max_pages
+          @capped = true
+          break
+        end
 
         if expired?
           @interrupted = true

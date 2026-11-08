@@ -19,6 +19,7 @@ it:
         step_wait_body: Il sistema parte dalla home e dalla mappa del sito, segue i collegamenti interni e si ferma al numero di pagine che hai indicato.
         step_triage_title: Decidi cosa farne
         step_triage_body: Ogni rilievo si può ignorare (se ci vuoi convivere) o trasformare in un ticket. Quando il problema sparisce dal sito, il rilievo si chiude da solo.
+        step_triage_auto_close: "Un rilievo si chiude da solo quando il controllo rilegge la pagina e il problema non c'è più, oppure quando un controllo arrivato in fondo non trova più la pagina. Se il controllo si ferma prima, per il tetto di pagine o per tempo, i rilievi delle pagine non viste restano aperti. Se il problema ricompare, il rilievo torna aperto e, se è grave, ricevi di nuovo l'avviso. Un rilievo che hai ignorato resta ignorato."
         manners_title: Come si comporta con i siti
         manners_body: "Rispetta sempre il file robots.txt, resta sull'indirizzo che gli hai dato senza uscire, si presenta con il nome CloseYourItBot e lascia mezzo secondo fra una pagina e l'altra. Il tetto di pagine lo decidi tu."
         limits_body: "Legge le pagine come arrivano dal server, prima che il browser esegua il codice: è quello che un motore di ricerca vede al primo colpo. Non usa Google Search Console e non giudica se il testo è scritto bene — quelle sono altre due cose, e verranno."

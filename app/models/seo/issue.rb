@@ -50,13 +50,14 @@ module Seo
     # congelata nella prova. Un rilievo che non sa più di cosa parlava non serve a nessuno.
     def url = page&.url || evidence["url"]
 
-    # Riconferma alla visita successiva: il problema c'è ancora. Non tocca lo stato — un `ignored`
-    # riconfermato resta ignorato — ma aggiorna la prova, che nel frattempo può essere cambiata
-    # (un title duplicato oggi lo è con pagine diverse da ieri).
+    # Riconferma alla visita successiva: il problema c'è ancora. Un `ignored` riconfermato resta
+    # ignorato, ma la prova si aggiorna (un title duplicato oggi lo è con pagine diverse da ieri).
+    # A finding the scan had closed by itself opens again: the problem is back (CYRA-1169).
     def touch_seen!(instant, evidence_payload = nil, severity_now = nil)
       attributes = { last_seen_at: instant }
       attributes[:evidence] = evidence_payload if evidence_payload.present?
-      attributes[:severity] = severity_now if severity_now.present? && status_open?
+      attributes[:severity] = severity_now if severity_now.present? && !status_ignored?
+      attributes.merge!(status: :open, resolved_at: nil) if status_resolved?
       update!(attributes)
     end
   end

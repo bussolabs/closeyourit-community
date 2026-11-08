@@ -169,6 +169,70 @@ RSpec.describe Seo::Crawl, type: :service do
     end
   end
 
+  # CYRA-1169 — only a round that ran out of pages may call a page it did not find gone.
+  describe "complete round" do
+    def stub_sitemap(*paths)
+      locs = paths.map { |path| "<url><loc>https://sito.test#{path}</loc></url>" }.join
+      stub_request(:get, "https://sito.test/sitemap.xml")
+        .to_return(status: 200, body: %(<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">#{locs}</urlset>))
+    end
+
+    it "is complete when every page to visit was visited" do
+      stub_sitemap("/a")
+      stub_page("/", links: %w[/b])
+      stub_page("/a")
+      stub_page("/b")
+
+      expect(crawl).to be_complete
+    end
+
+    it "is complete when the last page fills the cap exactly" do
+      site.max_pages = 2
+      stub_sitemap
+      stub_page("/", links: %w[/a])
+      stub_page("/a")
+
+      expect(crawl).to be_complete
+    end
+
+    it "is not complete when it stops at the page cap" do
+      site.max_pages = 2
+      stub_sitemap
+      stub_page("/", links: %w[/a /b])
+      stub_page("/a")
+      stub_page("/b")
+
+      expect(crawl).not_to be_complete
+    end
+
+    it "is not complete when it stops for time" do
+      stub_sitemap
+      stub_page("/", links: %w[/dopo])
+      stub_page("/dopo")
+
+      expect(described_class.call(site:, pause: 0.6, max_duration: 0.5)).not_to be_complete
+    end
+
+    it "is not complete when the sitemap could not be read" do
+      stub_page("/")
+
+      expect(crawl).not_to be_complete
+    end
+
+    it "is complete without a sitemap when the site does not use one" do
+      site.follow_sitemap = false
+      stub_page("/")
+
+      expect(crawl).to be_complete
+    end
+
+    it "a failed round is not complete" do
+      allow(Seo::Fetch).to receive(:call).and_raise(StandardError)
+
+      expect(crawl).not_to be_complete
+    end
+  end
+
   # CYRA-808 — il fatto grezzo dice fin dove siamo arrivati su quella pagina. È l'informazione che
   # più a valle distingue «il problema non c'è più» da «non l'abbiamo guardato».
   describe "quanto siamo riusciti a osservare" do
