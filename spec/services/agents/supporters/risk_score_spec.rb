@@ -24,11 +24,19 @@ RSpec.describe Agents::Supporters::RiskScore do
       expect(described_class.resolve(previous: nil, proposed: 2, reserved: true)).to eq(10)
     end
 
-    it "raises to at least 9 when a sensitive path is touched, above what the supporter decides alone" do
-      expect(described_class.resolve(previous: nil, proposed: 2, paths: [ "db/migrate/20261006_add_x.rb" ])).to eq(9)
+    it "raises to at least 9 when a guarded path is touched, above what the supporter decides alone" do
       expect(described_class.resolve(previous: nil, proposed: 2, paths: [ ".github/workflows/ci.yml" ])).to eq(9)
-      expect(described_class.resolve(previous: nil, proposed: 10, paths: [ "config/deploy.yml" ])).to eq(10)
+      expect(described_class.resolve(previous: nil, proposed: 2, paths: [ ".kamal/secrets" ])).to eq(9)
+      expect(described_class.resolve(previous: nil, proposed: 2, paths: [ "config/credentials.yml.enc" ])).to eq(9)
       expect(described_class.resolve(previous: nil, proposed: 2, paths: [ "app/controllers/auth/sessions_controller.rb" ])).to eq(9)
+    end
+
+    # CYRA-1197 — database, deploy and release files: the supporter judges the content, the score stays in its range.
+    it "raises to 7 on database, deploy and release paths, which the supporter may still decide" do
+      expect(described_class.resolve(previous: nil, proposed: 2, paths: [ "db/migrate/20261006_add_x.rb" ])).to eq(7)
+      expect(described_class.resolve(previous: nil, proposed: 2, paths: [ "config/deploy.yml" ])).to eq(7)
+      expect(described_class.resolve(previous: nil, proposed: 2, paths: [ "scripts/release/tag.sh" ])).to eq(7)
+      expect(described_class.resolve(previous: nil, proposed: 10, paths: [ "config/deploy.yml" ])).to eq(10)
     end
 
     it "leaves ordinary code paths alone" do

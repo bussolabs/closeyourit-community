@@ -10,11 +10,16 @@ module Agents
       AUTONOMOUS_MAX = 8
       RESERVED = 10
       SENSITIVE_PATH = 9
-      # Database, release, CI and access code: a plan that touches them is never routine.
+      # CI, secrets and access code: a plan that touches them goes to a person.
       SENSITIVE_PATHS = [
-        %r{\Adb/}, %r{(\A|/)migrations?/}, %r{\A\.github/}, %r{\A\.gitlab-ci}, %r{\A\.kamal/},
-        %r{\Aconfig/deploy}, %r{(\A|/)deploy/}, %r{(\A|/)Dockerfile}, %r{(\A|/)auth(/|_|\.|\z)},
-        %r{\Aconfig/credentials}, %r{\Ascripts/release}
+        %r{\A\.github/}, %r{\A\.gitlab-ci}, %r{\A\.kamal/}, %r{(\A|/)auth(/|_|\.|\z)}, %r{\Aconfig/credentials}
+      ].freeze
+      # CYRA-1197 — database, deploy and release files are never trivial, but what decides is the content the
+      # supporter checked (an added column, a version bump), so the floor stays inside its range.
+      ROUTINE_SENSITIVE_PATH = 7
+      ROUTINE_SENSITIVE_PATHS = [
+        %r{\Adb/}, %r{(\A|/)migrations?/}, %r{\Aconfig/deploy}, %r{(\A|/)deploy/}, %r{(\A|/)Dockerfile},
+        %r{\Ascripts/release}
       ].freeze
 
       module_function
@@ -24,6 +29,7 @@ module Agents
         scores = [ previous, readable(proposed) || RANGE.max ]
         scores << RESERVED if reserved
         scores << SENSITIVE_PATH if paths.any? { |path| sensitive?(path) }
+        scores << ROUTINE_SENSITIVE_PATH if paths.any? { |path| sensitive?(path, ROUTINE_SENSITIVE_PATHS) }
         scores.compact.max
       end
 
@@ -38,9 +44,9 @@ module Agents
 
       def readable(score) = (score if score.is_a?(Integer) && RANGE.cover?(score))
 
-      def sensitive?(path)
+      def sensitive?(path, patterns = SENSITIVE_PATHS)
         clean = path.to_s.delete_prefix("./").delete_prefix("/")
-        SENSITIVE_PATHS.any? { |pattern| clean.match?(pattern) }
+        patterns.any? { |pattern| clean.match?(pattern) }
       end
     end
   end

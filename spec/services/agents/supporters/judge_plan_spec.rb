@@ -43,19 +43,55 @@ RSpec.describe Agents::Supporters::JudgePlan do
     expect(workflow.reload.approved_at).to be_nil
   end
 
-  it "raises the score on database paths and leaves the plan to a person" do
-    result = judge(touched_paths: [ "db/migrate/20261104000000_add_rank.rb" ])
+  it "raises the score on CI and secrets paths and leaves the plan to a person" do
+    result = judge(touched_paths: [ ".kamal/secrets-common" ])
 
     expect(result.value).to include(outcome: "escalated", risk_score: 9)
     expect(result.value[:reasons]).to include("risk_above_threshold")
     expect(workflow.reload.approved_at).to be_nil
   end
 
-  it "leaves the plan to a person when it hits a reserved topic" do
+  # CYRA-1197 — the content decides: an additive migration the supporter checked is not a reason by itself.
+  it "lets the supporter approve a plan that touches database paths" do
+    result = judge(touched_paths: [ "db/migrate/20261104000000_add_rank.rb" ])
+
+    expect(result.value).to include(outcome: "approved", risk_score: 7)
+  end
+
+  it "leaves the plan to a person when it hits a reserved topic the supporter did not clear" do
     ticket.update!(title: "Change the invoice totals")
+
+    expect(judge(recommendation: "escalate").value[:reasons]).to include("reserved_topic")
+    expect(judge(confidence: "medium").value[:reasons]).to be_present
+    expect(workflow.reload.approved_at).to be_nil
+  end
+
+  it "leaves the plan to a person when the reserved topic is in a file it touches" do
+    project.update!(supporter_reserved_topics: "app/models/billing/")
+
+    result = judge(touched_paths: [ "app/models/billing/invoice.rb" ])
+
+    expect(result.value).to include(outcome: "escalated", risk_score: 10)
+    expect(result.value[:reasons]).to include("reserved_topic")
+  end
+
+  it "leaves the plan to a person when the text hits a topic the project reserved" do
+    project.update!(supporter_reserved_topics: "sorting")
+    ticket.update!(title: "Change the sorting of the list")
 
     expect(judge.value[:reasons]).to include("reserved_topic")
     expect(workflow.reload.approved_at).to be_nil
+  end
+
+  # CYRA-1197 — a built-in word in the text ("billing", "pagamento") does not stop a plan the supporter read and
+  # approved with high confidence: it judged the content, and the word alone is not a change to money.
+  it "approves a plan whose text only mentions a built-in reserved word when the supporter clears it" do
+    ticket.update!(title: "Billing page shows a 0 € offer that cannot exist")
+
+    result = judge
+
+    expect(result.value).to include(outcome: "approved", risk_score: 3)
+    expect(Agents::SupporterDecision.find_by!(target_id: plan.id).evidence["reserved_matches"]).to include("billing")
   end
 
   # CYRA-1197

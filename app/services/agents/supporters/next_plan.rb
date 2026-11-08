@@ -11,7 +11,7 @@ module Agents
       # 3: a change customers see is no longer maximum risk by itself (CYRA-1197).
       # 4: a gate named in a prohibition ("do not skip checks") is no longer read as a bypass.
       # 5: the supporter decides alone up to risk 8; sensitive paths rise to 9 (CYRA-1197).
-      DIGEST_VERSION = 5
+      DIGEST_VERSION = 6
 
       def self.digest(plan)
         "sha256:" + Digest::SHA256.hexdigest(JSON.generate([ DIGEST_VERSION, plan.id, plan.version, document(plan) ]))

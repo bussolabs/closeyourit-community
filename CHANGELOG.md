@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.217.0] - 2026-11-08
+
+### Changed
+
+- **Il supporter giudica il contenuto, non la parola**: una parola come «pagamento» nel testo non ferma più un piano che il supporter ha verificato e approva con sicurezza alta. Database e deploy restano nel suo campo; CI, segreti, accessi e i temi aggiunti dal progetto restano a una persona. (CYRA-1197)
+
 ## [0.216.0] - 2026-11-07
 
 ### Changed

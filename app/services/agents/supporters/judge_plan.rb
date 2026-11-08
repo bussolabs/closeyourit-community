@@ -62,10 +62,20 @@ module Agents
       def judgement
         paths = (Array(verdict["touched_paths"]) + plan_paths).map(&:to_s).uniq
         text = [ ticket.title, ticket.description, NextPlan.document(plan) ].join("\n")
-        reserved = ReservedTopics.new(organization: project.organization, project: project).match(text: text, paths: paths)
+        matches = ReservedTopics.new(organization: project.organization, project: project).match(text: text, paths: paths)
+        reserved = matches.reject { |entry| cleared?(entry) }
         score = RiskScore.resolve(previous: nil, proposed: verdict["risk_score"], reserved: reserved.any?, paths: paths)
         bypass = BypassGuard.match(NextPlan.document(plan))
-        { score:, reserved: reserved.map(&:value), bypass:, reasons: reasons(score, reserved, bypass) }
+        { score:, reserved: matches.map(&:value), bypass:, reasons: reasons(score, reserved, bypass) }
+      end
+
+      # CYRA-1197 — a built-in word found only in the text ("billing", "pagamento") is cleared when the supporter
+      # read the plan against the code and approves it with high confidence: the word alone is not a change to
+      # money or data. A reserved path, a topic the organization or the project added, and the bypass guard
+      # always stay in front.
+      def cleared?(entry)
+        entry.source == :built_in && !entry.path? && verdict["recommendation"] == "approve" &&
+          verdict["confidence"] == "high"
       end
 
       # The files the plan itself names, so a supporter that forgets one cannot hide it.
