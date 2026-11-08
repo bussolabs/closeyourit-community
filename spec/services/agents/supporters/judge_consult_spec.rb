@@ -80,11 +80,28 @@ RSpec.describe Agents::Supporters::JudgeConsult do
     expect(workflow.reload.blocked_at).to be_present
   end
 
-  it "leaves the work to a person when the stop hits a reserved topic" do
+  it "leaves the work to a person when the stop hits a reserved topic the supporter did not clear" do
     workflow.update!(blocked_reason: "agent_blocked: the invoice totals are unclear")
+
+    expect(judge(confidence: "medium").value[:reasons]).to include("reserved_topic")
+    expect(workflow.reload.blocked_at).to be_present
+  end
+
+  it "leaves the work to a person when the stop hits a topic the project reserved" do
+    project.update!(supporter_reserved_topics: "badge")
+    workflow.update!(blocked_reason: "agent_blocked: the badge count is unclear")
 
     expect(judge.value[:reasons]).to include("reserved_topic")
     expect(workflow.reload.blocked_at).to be_present
+  end
+
+  # CYRA-1197 — a built-in word in the text ("billing") does not hold a retry the supporter checked with high
+  # confidence: it judged what the retry does.
+  it "sends the work back when the text only mentions a built-in reserved word the supporter cleared" do
+    workflow.update!(blocked_reason: "agent_blocked: the billing tab badge count is wrong")
+
+    expect(judge.value).to include(outcome: "retried", risk_score: 3)
+    expect(workflow.reload.blocked_at).to be_nil
   end
 
   it "never retries on guidance that skips the system's gates" do

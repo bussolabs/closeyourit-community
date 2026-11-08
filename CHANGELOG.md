@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.219.0] - 2026-11-08
+
+### Changed
+
+- **Il supporter fa ripartire anche i lavori con la CI rossa**: dopo il giro di correzione automatico legge l'errore e rimanda il lavoro all'agente con le istruzioni, al massimo 2 volte. Anche sui lavori fermi una parola come «billing» non basta più a passarli a una persona. (CYRA-1197)
+
 ## [0.218.0] - 2026-11-08
 
 ### Changed

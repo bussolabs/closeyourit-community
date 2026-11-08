@@ -63,10 +63,18 @@ module Agents
 
       def judgement
         text = [ ticket.title, ticket.description, workflow.blocked_reason, guidance ].join("\n")
-        reserved = ReservedTopics.new(organization: project.organization, project: project).match(text: text)
+        matches = ReservedTopics.new(organization: project.organization, project: project).match(text: text)
+        reserved = matches.reject { |entry| cleared?(entry) }
         bypass = BypassGuard.match([ workflow.blocked_reason, guidance ].join("\n"))
         score = RiskScore.resolve(previous: nil, proposed: verdict["risk_score"], reserved: reserved.any?)
-        { score:, reserved: reserved.map(&:value), bypass:, reasons: reasons(score, reserved, bypass) }
+        { score:, reserved: matches.map(&:value), bypass:, reasons: reasons(score, reserved, bypass) }
+      end
+
+      # CYRA-1197 — as for plans: a built-in word in the text is cleared when the supporter checked the stop and
+      # sends it back with high confidence. Topics the organization or the project added, and the bypass guard,
+      # always stay in front.
+      def cleared?(entry)
+        entry.source == :built_in && verdict["recommendation"] == "retry" && verdict["confidence"] == "high"
       end
 
       def reasons(score, reserved, bypass)

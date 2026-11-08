@@ -31,10 +31,17 @@ RSpec.describe Agents::Supporters::NextConsult do
 
   it "skips stops a person or a safety stop holds, and projects with the supporter off" do
     stopped(kind: "held_by_person")
-    stopped(kind: "candidate_check")
     stopped(project: create(:project, organization:, supporter_enabled: false))
 
     expect(described_class.call(host:).value).to be_nil
+  end
+
+  # CYRA-1197 — a proposal whose CI stays red after its fix round: the supporter reads the failure and may send
+  # it back to the agent with guidance, within the same retry limit.
+  it "serves a red proposal that already had its fix round" do
+    red = stopped(kind: "candidate_check")
+
+    expect(described_class.call(host:).value).to include(workflow_id: red.id)
   end
 
   it "serves again a stop judged on an older record" do

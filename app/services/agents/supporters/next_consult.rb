@@ -7,8 +7,9 @@ module Agents
     # judged at this stop, and with retries left. The digest pins the stop it read: a verdict on a workflow that
     # moved meanwhile is refused.
     class NextConsult < ApplicationService
-      # A red proposal already had its fix round (CYRA-1195), and a held release waits for the person who held it.
-      CONSULTABLE_KINDS = %w[agent_blocked attempt_limit release_probe].freeze
+      # A held release waits for the person who held it. CYRA-1197 — a red proposal that already had its fix round
+      # (CYRA-1195) is served too: the supporter reads the failure and may send it back with guidance.
+      CONSULTABLE_KINDS = %w[agent_blocked attempt_limit release_probe candidate_check].freeze
       MAX_RETRIES = 2
       ATTEMPTS_SHOWN = 3
       TEXT_LIMIT = 800
@@ -19,7 +20,7 @@ module Agents
       # 3: machines work repositories without CLAUDE.md/AGENTS.md, so their lost attempts are worth a retry.
       # 4: a gate named in a prohibition ("do not skip checks") is no longer read as a bypass.
       # 5: the supporter decides alone up to risk 8; sensitive paths rise to 9 (CYRA-1197).
-      DIGEST_VERSION = 6
+      DIGEST_VERSION = 7
 
       def self.digest(workflow)
         "sha256:" + Digest::SHA256.hexdigest(JSON.generate([ DIGEST_VERSION, workflow.id, workflow.blocked_at&.to_i,
