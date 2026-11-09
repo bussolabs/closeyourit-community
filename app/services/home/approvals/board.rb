@@ -72,6 +72,8 @@ module Home
       # `total` = quante righe ha la plancia intera.
       # CYRA-899 — `phase_counts` = { step => rows sitting on it }, counted BEFORE the phase filter so
       # the counters keep saying where the work piles up; `phase` = the step filter, validated, or nil.
+      # CYRA-1194 — and BEFORE the state filter too: they count the rows of project and agent, so a
+      # state that empties the board no longer turns every counter into 0.
       Plan = Data.define(:page, :groups, :total, :phase_counts, :phase) do
         def any? = total.positive?
       end
@@ -95,12 +97,16 @@ module Home
       end
 
       def call
-        all_rows = build_rows(@batch.items)
-        rows = @phase ? all_rows.select { |row| row.step == @phase } : all_rows
+        # The rows of the open state are still the batch items: past the cap the scope could miss some.
+        built = build_rows((@batch.scope_items + @batch.items).uniq(&:key))
+        shown = @batch.items.to_set(&:key)
+        counted = @batch.scope_items.to_set(&:key)
+        state_rows = built.select { |row| shown.include?(row.key) }
+        rows = @phase ? state_rows.select { |row| row.step == @phase } : state_rows
         page = Pagination.from_array(rows, page: @page, per: @per)
 
         Plan.new(page: page, groups: group(page.records), total: rows.size,
-                 phase_counts: phase_counts(all_rows), phase: @phase)
+                 phase_counts: phase_counts(built.select { |row| counted.include?(row.key) }), phase: @phase)
       end
 
       private

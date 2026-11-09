@@ -85,11 +85,11 @@ module Home
       # filtro toglierebbe dal menu la strada per spegnerlo. CYRA-790
       EMPTY_SOURCE = { items: [], totals: {}, agents: [] }.freeze
 
-      # `items` già ordinati, filtrati e tagliati; `total` = conteggio pieno della vista aperta (non
-      # scende accendendo un filtro di stato); `totals` = conteggio per stato; `filter` = lo stato
-      # acceso, validato contro FILTERABLE_STATES, o nil; `projects` e `agents` = le scelte dei menu;
-      # `project`/`agent` = il filtro acceso, validato contro il perimetro, o nil. CYRA-319, CYRA-448
-      Batch = Data.define(:items, :total, :totals, :filter, :projects, :project, :agents, :agent) do
+      # `items` ordinati, filtrati e tagliati; `scope_items` = le stesse righe PRIMA del filtro di stato
+      # (la plancia ci conta le fasi); `total` = conteggio pieno, `totals` = per stato; `filter`,
+      # `project`, `agent` = i filtri accesi, validati, o nil; `projects`/`agents` = le scelte dei menu.
+      # CYRA-319, CYRA-448, CYRA-1194
+      Batch = Data.define(:items, :scope_items, :total, :totals, :filter, :projects, :project, :agents, :agent) do
         def any? = total.positive?
 
         # Le decisioni che aspettano proprio chi guarda: tutta la coda meno le righe in cui la palla è a
@@ -131,8 +131,9 @@ module Home
         # una query sua. CYRA-317, CYRA-630
         totals.delete(RETRYING_STATE)
         items = items.reject { |item| item.state == RETRYING_STATE }
-        visible = @filter ? items.select { |item| item.state == @filter } : items
-        Batch.new(items: order(visible).first(@limit), total: totals.values.sum,
+        scope = order(items)
+        visible = @filter ? scope.select { |item| item.state == @filter } : scope
+        Batch.new(items: visible.first(@limit), scope_items: scope.first(@limit), total: totals.values.sum,
                   totals: totals, filter: @filter,
                   projects: choosable_projects(sources), project: project_filter&.key,
                   agents: choosable_agents(sources), agent: agent_filter&.id&.to_s)

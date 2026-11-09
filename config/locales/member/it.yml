@@ -922,6 +922,20 @@ it:
         retrying: Riprova da sola
         empty: Niente in questo stato
         show_all: Vedi tutto
+        # CYRA-1194 — il filtro (spesso ricordato) che svuota la plancia: lo nomina, dice quanto nasconde
+        # col numero del menu e lo azzera davvero.
+        hidden:
+          title:
+            one: "Niente con il filtro %{filters}"
+            other: "Niente con i filtri %{filters}"
+          awaiting:
+            zero: Nasconde la coda, ma nessuna decisione aspetta te.
+            one: Nasconde 1 decisione che aspetta te.
+            other: "Nasconde %{count} decisioni che aspettano te."
+          others:
+            one: "Più 1 voce in attesa della risposta di altri."
+            other: "Più %{count} voci in attesa della risposta di altri."
+          reset: Azzera i filtri
       actions:
         ask: Chiedi precisazioni
         reassess: Rivaluta

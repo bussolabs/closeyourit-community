@@ -825,6 +825,111 @@ RSpec.describe "Member::Home::Approvals", type: :request do
       expect(stato.at_css("option[selected]")["value"]).to eq("secret_change")
       expect(response.body).to include('data-test="approvals-board-empty"')
       expect(response.body).not_to include('data-test="approvals-board-row"')
+      # CYRA-1194 — the notice names the filter and says what it hides, with the menu number.
+      avviso = Nokogiri::HTML(response.body).at_css("[data-test='approvals-board-empty']")
+      expect(avviso.text).to include("«#{I18n.t('member.approvals.filters.secret_change')}»")
+      expect(avviso.text).to include(I18n.t("member.approvals.filters.hidden.awaiting", count: 1))
+      expect(avviso.at_css("[data-test='approvals-board-reset']")["href"])
+        .to eq(member_home_approvals_path(RememberableFilters::MARKER_PARAM => 1))
+    end
+
+    # CYRA-1194 — what the empty filter hides, from the outside.
+    describe "il filtro che svuota la plancia" do
+      def doc = Nokogiri::HTML(response.body)
+      def avviso = doc.at_css("[data-test='approvals-board-empty']")
+
+      it "il numero è quello del menu, e le voci in attesa di altri si contano a parte" do
+        review_ticket
+        chiesto = review_ticket
+        comment = chiesto.comments.create!(body: "Serve un chiarimento", author: owner)
+        Ticketing::Event.create!(organization: org, ticket: chiesto, actor: owner, actor_name: owner.name,
+                                 action: Home::Approvals::Decide::ASK_ACTION, data: { "comment_id" => comment.id })
+        sign_in(owner)
+
+        get member_home_approvals_path(state: "secret_change")
+
+        menu = Home::Approvals::Queue.awaiting_count(account: owner, organization: org,
+                                                     visible_projects: Projects::Project.where(organization_id: org.id),
+                                                     visible_tickets: Ticketing::Ticket.where(project_id: org.projects.select(:id)))
+        expect(menu).to eq(1)
+        expect(avviso.text).to include(I18n.t("member.approvals.filters.hidden.awaiting", count: 1))
+        expect(avviso.text).to include(I18n.t("member.approvals.filters.hidden.others", count: 1))
+      end
+
+      it "azzerato, il filtro ricordato non torna riaprendo dal menu" do
+        ticket = review_ticket
+        sign_in(owner)
+        get member_home_approvals_path(state: "secret_change")
+
+        get member_home_approvals_path
+        expect(response).to redirect_to(member_home_approvals_path(state: "secret_change"))
+
+        follow_redirect!
+        get avviso.at_css("[data-test='approvals-board-reset']")["href"]
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(ticket.code)
+
+        get member_home_approvals_path
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(ticket.code)
+        expect(response.body).not_to include('data-test="approvals-board-empty"')
+      end
+
+      it "un progetto senza decisioni non dice che la coda è vuota" do
+        review_ticket
+        quieto = create(:project, organization: org, name: "Quieto", key: "QUIE")
+        sign_in(owner)
+
+        get member_home_approvals_path(project: quieto.key)
+
+        expect(response.body).not_to include('data-test="approvals-empty"')
+        expect(avviso.text).to include("«QUIE · Quieto»")
+        expect(avviso.text).to include(I18n.t("member.approvals.filters.hidden.awaiting", count: 1))
+      end
+
+      it "un agente senza decisioni non dice che la coda è vuota" do
+        review_ticket
+        host = create(:agent_host, organization: org, hostname: "mac-fermo")
+        sign_in(owner)
+
+        get member_home_approvals_path(agent_id: host.id)
+
+        expect(response.body).not_to include('data-test="approvals-empty"')
+        expect(avviso.text).to include("«mac-fermo»")
+        expect(avviso.text).to include(I18n.t("member.approvals.filters.hidden.awaiting", count: 1))
+      end
+
+      it "un passaggio vuoto lo dice con il suo nome" do
+        review_ticket
+        sign_in(owner)
+
+        get member_home_approvals_path(phase: "plan_to_approve")
+
+        expect(avviso).to be_present
+        expect(avviso.text).to include(I18n.t("member.approvals.filters.hidden.awaiting", count: 1))
+        expect(doc.css("[data-test='approvals-board-row']")).to be_empty
+      end
+
+      it "con la coda davvero vuota dice che non c'è niente da decidere, senza avvisi sul filtro" do
+        sign_in(owner)
+
+        get member_home_approvals_path(state: "secret_change")
+
+        expect(response.body).to include('data-test="approvals-empty"')
+        expect(response.body).not_to include('data-test="approvals-board-empty"')
+      end
+
+      it "in inglese avviso e pulsante sono in inglese, con lo stesso numero" do
+        owner.update!(locale: "en")
+        review_ticket
+        sign_in(owner)
+
+        get member_home_approvals_path(state: "secret_change")
+
+        expect(avviso.text).to include(I18n.t("member.approvals.filters.hidden.awaiting", count: 1, locale: :en))
+        expect(avviso.at_css("[data-test='approvals-board-reset']").text)
+          .to include(I18n.t("member.approvals.filters.hidden.reset", locale: :en))
+      end
     end
 
     it "uno stato inventato vale come «Tutte»" do
@@ -1393,7 +1498,7 @@ RSpec.describe "Member::Home::Approvals", type: :request do
 
       counter = doc.at_css("[data-test='approvals-phase-counter-plan_to_approve']")
       expect(counter.text).to include("2")
-      expect(counter["href"]).to eq(member_home_approvals_path(phase: "plan_to_approve"))
+      expect(counter["href"]).to eq(member_home_approvals_path(phase: "plan_to_approve", RememberableFilters::MARKER_PARAM => 1))
       expect(doc.css("[data-test^='approvals-phase-counter-']").size)
         .to eq(Agents::Workflows::PhaseResolver::STEPS.size)
     end
@@ -1410,7 +1515,28 @@ RSpec.describe "Member::Home::Approvals", type: :request do
       expect(doc.css("[data-test='approvals-board-row']").size).to eq(1)
       counter = doc.at_css("[data-test='approvals-phase-counter-in_progress']")
       expect(counter["aria-current"]).to eq("true")
-      expect(counter["href"]).to eq(member_home_approvals_path)
+      expect(counter["href"]).to eq(member_home_approvals_path(RememberableFilters::MARKER_PARAM => 1))
+    end
+
+    # CYRA-1194 — with a state on, the counters still count every state; choosing a step drops the
+    # state (and only it), so the board shows the rows the counter promised.
+    it "with a state on counts every step, and a counter drops the state but keeps the project" do
+      allow_n_plus_one { 2.times { planned } }
+      review_ticket
+      sign_in(owner)
+
+      get member_home_approvals_path(state: "review", project: project.key)
+
+      counter = doc.at_css("[data-test='approvals-phase-counter-plan_to_approve']")
+      expect(counter.text).to include("2")
+      expect(counter["href"]).to eq(member_home_approvals_path(project: project.key, phase: "plan_to_approve",
+                                                               RememberableFilters::MARKER_PARAM => 1))
+
+      get counter["href"]
+      expect(doc.css("[data-test='approvals-board-row']").size).to eq(2)
+
+      get member_home_approvals_path
+      expect(response).to redirect_to(member_home_approvals_path(project: project.key))
     end
 
     it "offers Approve on the row only where approving in bulk is allowed" do

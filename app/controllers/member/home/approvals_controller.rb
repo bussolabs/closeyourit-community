@@ -77,6 +77,7 @@ module Member
         # rese non convivono di proposito: la pila di sinistra era il terzo elenco della stessa coda.
         @batch = queue(limit: (BOARD_LIMIT unless @card))
         @board = board unless @card
+        @unfiltered = unfiltered_queue if filters_empty_board?
         render_work_frame
       end
 
@@ -295,6 +296,18 @@ module Member
         ::Home::Approvals::Board.call(batch: @batch, page: params[:page], phase: params[:phase], sort: params[:sort],
                                       per: params[:per] || Pagination::DEFAULT_PER)
       end
+
+      # CYRA-1194 — a filter on (state, project, agent or step) and not one row on the board: the
+      # remembered filter is hiding the work, and the board has to say so.
+      def filters_empty_board?
+        return false unless @board&.page&.records&.empty?
+
+        [ @batch.filter, @batch.project, @batch.agent, @board.phase ].any?(&:present?)
+      end
+
+      # The whole queue, with the same call and limit as the number next to Approvals in the menu:
+      # what the empty filter hides is exactly that number, and two counts would give two numbers.
+      def unfiltered_queue = ::Home::Approvals::Queue.call(**scope_args)
 
       # CYRA-319 — la sigla del progetto accesa nella riga dei filtri. La validazione contro i progetti
       # che hanno davvero righe in coda vive nella Queue (che li conosce): qui basta portarla avanti

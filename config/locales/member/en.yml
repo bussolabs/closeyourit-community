@@ -894,6 +894,20 @@ en:
         retrying: Retrying
         empty: Nothing in this state
         show_all: Show all
+        # CYRA-1194 — the (often remembered) filter that empties the board: name it, say how much it
+        # hides with the menu number, and really clear it.
+        hidden:
+          title:
+            one: "Nothing with the filter %{filters}"
+            other: "Nothing with the filters %{filters}"
+          awaiting:
+            zero: It hides the queue, but no decision is waiting for you.
+            one: It hides 1 decision waiting for you.
+            other: "It hides %{count} decisions waiting for you."
+          others:
+            one: "Plus 1 item waiting for someone else's reply."
+            other: "Plus %{count} items waiting for someone else's reply."
+          reset: Clear the filters
       actions:
         ask: Ask for clarification
         reassess: Re-assess

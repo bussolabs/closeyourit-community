@@ -261,6 +261,16 @@ RSpec.describe "Plancia delle approvazioni", type: :system do
     expect(workflow.reload.approved_at).to be_present
     expect(page).to have_current_path(member_home_approvals_path(state: "awaiting_approval"))
     expect_test "approvals-board-empty"
+
+    # CYRA-1194 — the notice says what the filter hides, and one click clears it for good.
+    within_test("approvals-board-empty") do
+      expect(page).to have_content(I18n.t("member.approvals.filters.hidden.awaiting", count: 1))
+    end
+    click_on_test "approvals-board-reset"
+    expect(page).to have_content("Da revisionare")
+    visit member_home_approvals_path
+    expect(page).to have_current_path(member_home_approvals_path)
+    expect(page).to have_content("Da revisionare")
   end
 
   it "col filtro acceso si accetta in blocco e si torna nello stesso stato" do

@@ -219,6 +219,27 @@ RSpec.describe Home::Approvals::Board do
       expect(plan.phase_counts["in_progress"]).to eq(1)
     end
 
+    # CYRA-1194 — a state filter used to turn every counter into 0: the counters count the queue.
+    it "with a state filter on, counts every state while keeping only that state's rows" do
+      2.times { planned_workflow }
+      ticket = create_ticket(status: review_status, reviewer: account)
+
+      plan = described_class.call(batch: batch(state: "review"))
+
+      expect(plan.page.records.map(&:key)).to eq([ "review:#{ticket.id}" ])
+      expect(plan.phase_counts["plan_to_approve"]).to eq(2)
+      expect(plan.phase_counts["to_review"]).to eq(1)
+    end
+
+    it "keeps the counters when the state filter finds nothing" do
+      2.times { planned_workflow }
+
+      plan = described_class.call(batch: batch(state: "secret_change"))
+
+      expect(plan.page.records).to be_empty
+      expect(plan.phase_counts["plan_to_approve"]).to eq(2)
+    end
+
     it "counts a review without a workflow on the review step, and keeps it under that filter" do
       ticket = create_ticket(status: review_status, reviewer: account)
 

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.221.6] - 2026-11-09
+
+### Fixed
+
+- **Un filtro ricordato non nasconde più il lavoro in silenzio**: se il filtro delle approvazioni non trova niente, la pagina lo nomina e dice quante decisioni ti aspettano. «Azzera i filtri» lo toglie davvero. I conteggi dei passaggi in alto contano tutta la coda. ([Approvazioni](/member/home/approvals)) (CYRA-1194)
+
 ## [0.221.5] - 2026-11-09
 
 ### Changed

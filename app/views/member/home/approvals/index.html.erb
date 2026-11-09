@@ -63,12 +63,16 @@
         <% header.with_counts do %>
           <%# CYRA-1059 — a frame of its own: after a row action only the counters reload. %>
           <%= turbo_frame_tag Member::Home::ApprovalsController::COUNTS_FRAME, target: "_top", class: "contents" do %>
+          <%# CYRA-1194 — the counters count every state, so choosing a step drops the state filter (it
+              would show fewer rows than the counter says, or none). Project and agent stay; `ft` says
+              the filters are declared, or the remembered state would come back on a bare address. %>
           <% @board.phase_counts.each do |step, count| %>
             <% active = @board.phase == step %>
             <%= render Ui::StatLabelComponent.new(label: approval_phase_name(step), value: count,
                   value_color: (busiest.positive? && count == busiest ? :red : :neutral),
-                  href: member_home_approvals_path(state: @batch.filter, project: @batch.project, agent_id: @batch.agent,
-                                                   phase: (step unless active)),
+                  href: member_home_approvals_path(state: (@batch.filter if active), project: @batch.project,
+                                                   agent_id: @batch.agent, phase: (step unless active),
+                                                   RememberableFilters::MARKER_PARAM => 1),
                   active: active, test_id: "approvals-phase-counter-#{step}",
                   title: t(active ? "member.approvals.board.phase_counters.clear" : "member.approvals.board.phase_counters.filter",
                            phase: approval_phase_name(step))) %>
@@ -145,8 +149,10 @@
     <%# La plancia si mostra finché in coda c'è qualcosa: un filtro che non pesca righe NON è una coda
         vuota, e annunciare «non c'è più niente da decidere» sopra una chip accesa che ne conta dieci
         sarebbe la pagina che si contraddice da sola. Il vuoto del filtro lo dice la plancia. %>
-    <% elsif @batch.any? %>
-      <%= render "member/home/approvals/board", batch: @batch, plan: @board,
+    <%# CYRA-1194 — also when project or agent empty the queue but the rest of it has work: the board
+        says what the filter hides, instead of «nothing left to decide». %>
+    <% elsif @batch.any? || @unfiltered&.any? %>
+      <%= render "member/home/approvals/board", batch: @batch, plan: @board, unfiltered: @unfiltered,
             frame: Member::Home::ApprovalsController::WORK_FRAME %>
     <% else %>
       <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">

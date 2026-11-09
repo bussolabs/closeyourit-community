@@ -61,7 +61,25 @@
       <% end %>
 
       <%# Filtro acceso su uno stato che si è svuotato: lo si dice, invece di mostrare una tabella muta. %>
-      <% if plan.page.records.empty? %>
+      <%# CYRA-1194 — the filter is often a remembered one: the notice names it, says how much of the
+          queue it hides (the menu number, then what waits on others) and clears it for good — the
+          reset of Ui::NoResultsComponent carries `ft`, so the menu does not bring it back. %>
+      <% unfiltered = local_assigns[:unfiltered] %>
+      <% if plan.page.records.empty? && unfiltered %>
+        <% project = batch.projects.find { |ref| ref.key == batch.project } %>
+        <% names = [ (t("member.approvals.filters.#{batch.filter}") if batch.filter),
+                     (project ? "#{project.key} · #{project.name}" : batch.project),
+                     batch.agents.find { |ref| ref.id.to_s == batch.agent }&.name,
+                     (approval_phase_name(plan.phase) if plan.phase) ].compact_blank %>
+        <% others = unfiltered.totals[Home::Approvals::Queue::WAITING_STATE].to_i %>
+        <%= render Ui::NoResultsComponent.new(reset_href: member_home_approvals_path, icon: "filter",
+              title: t("member.approvals.filters.hidden.title", count: names.size,
+                       filters: names.map { |name| "«#{name}»" }.join(", ")),
+              body: safe_join([ t("member.approvals.filters.hidden.awaiting", count: unfiltered.awaiting_viewer),
+                                (t("member.approvals.filters.hidden.others", count: others) if others.positive?) ].compact, " "),
+              reset_label: t("member.approvals.filters.hidden.reset"), reset_test_id: "approvals-board-reset",
+              test_id: "approvals-board-empty") %>
+      <% elsif plan.page.records.empty? %>
         <div class="px-4 py-6 text-center" data-test="approvals-board-empty">
           <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.approvals.filters.empty") %></p>
           <%= link_to t("member.approvals.filters.show_all"), member_home_approvals_path,
