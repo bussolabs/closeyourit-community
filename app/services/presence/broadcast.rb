@@ -39,12 +39,15 @@ module Presence
       return if fingerprint == Realtime::Presence.last_fingerprint(@organization, viewer)
 
       Realtime::Presence.store_fingerprint(@organization, viewer, fingerprint)
-      Turbo::StreamsChannel.broadcast_replace_to(
-        Realtime::Streams.presence_for(@organization, viewer),
-        target: "presence_list",
-        partial: "member/presence/list",
-        locals: { accounts: accounts, viewer: viewer }
-      )
+      # Fuori dal controller nessuno sceglie la lingua: senza questo «Solo tu» usciva in inglese (CYRA-1115).
+      I18n.with_locale(viewer.effective_locale) do
+        Turbo::StreamsChannel.broadcast_replace_to(
+          Realtime::Streams.presence_for(@organization, viewer),
+          target: "presence_list",
+          partial: "member/presence/list",
+          locals: { accounts: accounts, viewer: viewer }
+        )
+      end
     end
   end
 end

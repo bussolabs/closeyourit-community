@@ -117,6 +117,55 @@ RSpec.describe Presence::Broadcast, type: :service do
     end
   end
 
+  # Il servizio gira fuori dal controller che sceglie la lingua: ogni viewer deve ricevere il testo
+  # nella SUA lingua, non in quella di default né in quella di chi ha scatenato il broadcast (CYRA-1115).
+  describe "lingua del destinatario" do
+    let(:peer) { member("Peer") }
+
+    before do
+      account.update!(locale: "it")
+      peer.update!(locale: "en")
+      Realtime::Presence.add(organization, account)
+      Realtime::Presence.add(organization, peer)
+    end
+
+    it "da solo, il viewer italiano legge «Solo tu» e quello inglese «Only you»" do
+      expect { call }.to have_broadcasted_to(presence_for(account)).with(a_string_including("Solo tu"))
+        .and have_broadcasted_to(presence_for(peer)).with(a_string_including("Only you"))
+    end
+
+    it "il viewer italiano non riceve il testo inglese" do
+      expect { call }.not_to have_broadcasted_to(presence_for(account)).with(a_string_including("Only you"))
+    end
+
+    it "il viewer inglese non riceve il testo italiano" do
+      expect { call }.not_to have_broadcasted_to(presence_for(peer)).with(a_string_including("Solo tu"))
+    end
+
+    it "quando condividono un progetto, ognuno riceve il conteggio nella propria lingua" do
+      project = create(:project, organization: organization)
+      create(:project_membership, account: account, project: project)
+      create(:project_membership, account: peer,    project: project)
+
+      expect { call }.to have_broadcasted_to(presence_for(account)).with(a_string_including("2 utenti online"))
+        .and have_broadcasted_to(presence_for(peer)).with(a_string_including("2 users online"))
+    end
+
+    it "il broadcast non lascia cambiata la lingua corrente" do
+      expect { call }.not_to(change { I18n.locale })
+    end
+
+    it "la lingua di chi scatena il broadcast non arriva agli altri" do
+      expect { I18n.with_locale(:it) { call } }.to have_broadcasted_to(presence_for(peer))
+        .with(a_string_including("Only you"))
+    end
+
+    it "senza lingua scelta il viewer riceve l'inglese (effective_locale)" do
+      peer.update!(locale: nil)
+      expect { call }.to have_broadcasted_to(presence_for(peer)).with(a_string_including("Only you"))
+    end
+  end
+
   describe "insieme vuoto" do
     it "non broadcasta a nessuno (nessun viewer online)" do
       expect { call }.not_to have_broadcasted_to(presence_for(account))

@@ -62,6 +62,59 @@ RSpec.describe PresenceChannel, type: :channel do
     end
   end
 
+  # Il canale non passa dal controller che sceglie la lingua: lo snapshot e il broadcast del
+  # subscribe devono uscire nella lingua di chi apre la pagina, non in inglese (CYRA-1115).
+  describe "#subscribed — lingua di chi entra" do
+    before { stub_connection(live_account: account, current_account: account, current_organization: organization) }
+
+    it "con lingua italiana lo snapshot mostra «Solo tu»" do
+      account.update!(locale: "it")
+      subscribe
+      snapshot = transmissions.find { |t| t["type"] == "snapshot" }
+      expect(snapshot["stream"]).to include("Solo tu")
+      expect(snapshot["stream"]).not_to include("Only you")
+    end
+
+    it "con lingua italiana anche il broadcast sul proprio stream mostra «Solo tu»" do
+      account.update!(locale: "it")
+      expect { subscribe }.to have_broadcasted_to(own_stream).with(a_string_including("Solo tu"))
+    end
+
+    it "con lingua inglese lo snapshot mostra «Only you», come oggi" do
+      account.update!(locale: "en")
+      subscribe
+      snapshot = transmissions.find { |t| t["type"] == "snapshot" }
+      expect(snapshot["stream"]).to include("Only you")
+      expect(snapshot["stream"]).not_to include("Solo tu")
+    end
+
+    it "senza lingua scelta lo snapshot ricade sull'inglese (effective_locale)" do
+      account.update!(locale: nil)
+      subscribe
+      snapshot = transmissions.find { |t| t["type"] == "snapshot" }
+      expect(snapshot["stream"]).to include("Only you")
+    end
+
+    it "lo snapshot non lascia cambiata la lingua corrente" do
+      account.update!(locale: "it")
+      expect { subscribe }.not_to(change { I18n.locale })
+    end
+
+    it "una persona inglese che entra non cambia la lingua di quella italiana già collegata" do
+      italian = create(:account, name: "Alice", locale: "it")
+      create(:membership, account: italian, organization: organization)
+      project = create(:project, organization: organization)
+      create(:project_membership, account: account,  project: project)
+      create(:project_membership, account: italian, project: project)
+      Realtime::Presence.add(organization, italian)
+      account.update!(locale: "en")
+
+      expect { subscribe }.to have_broadcasted_to(Realtime::Streams.presence_for(organization, italian))
+        .with(a_string_including("2 utenti online"))
+        .and have_broadcasted_to(own_stream).with(a_string_including("2 users online"))
+    end
+  end
+
   describe "#subscribed — senza organizzazione" do
     before { stub_connection(live_account: account, current_account: account, current_organization: nil) }
 

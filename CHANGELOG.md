@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.221.3] - 2026-11-09
+
+### Fixed
+
+- **L'indicatore di chi è online parla la tua lingua**: prima, chi usa l'italiano leggeva «Only you» appena la pagina si collegava. Ora vede «Solo tu», anche dopo ogni aggiornamento. Con persone di lingue diverse, ognuna legge il testo nella propria. ([Progetti](/member/projects)) (CYRA-1115)
+
 ## [0.221.2] - 2026-11-09
 
 ### Fixed

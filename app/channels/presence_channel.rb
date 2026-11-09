@@ -49,13 +49,14 @@ class PresenceChannel < ApplicationCable::Channel
     visible = Presence::Cohort.visible_online(current_organization, current_account)
     # Graffe esplicite: senza, Ruby 4.0 interpreta l'hash a chiavi-stringa come keyword args
     # (transmit ha `via:`) → 0 positional → ArgumentError. Le graffe lo forzano a Hash posizionale.
-    transmit({
-      "type" => "snapshot",
-      "stream" => ApplicationController.render(
+    # Nella lingua di chi entra, come i broadcast: il canale non passa dal controller che la sceglie (CYRA-1115).
+    stream = I18n.with_locale(current_account.effective_locale) do
+      ApplicationController.render(
         partial: "member/presence/snapshot",
         formats: [ :turbo_stream ],
         locals: { accounts: visible, viewer: current_account }
       )
-    })
+    end
+    transmit({ "type" => "snapshot", "stream" => stream })
   end
 end
