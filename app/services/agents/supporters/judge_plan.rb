@@ -13,6 +13,12 @@ module Agents
       CONFIDENT = %w[medium high].freeze
       # CYRA-1197 — how many times the supporter may send a plan back before a person decides.
       MAX_REVISIONS = 3
+      # CYRA-1197 — after the last revision a plan up to this risk is approved and its remaining gaps travel to the
+      # implementer as notes: review, CI and the staging soak still stand before production.
+      ACCEPT_WITH_NOTES_MAX = 5
+      # A built-in word in the text is cleared with medium confidence only up to this risk.
+      MEDIUM_CLEAR_MAX = 2
+      NOTES_MAX = 4_000
 
       def initialize(host:, plan_id:, payload:)
         @host = host
@@ -74,8 +80,24 @@ module Agents
       # money or data. A reserved path, a topic the organization or the project added, and the bypass guard
       # always stay in front.
       def cleared?(entry)
-        entry.source == :built_in && !entry.path? && verdict["recommendation"] == "approve" &&
-          verdict["confidence"] == "high"
+        entry.source == :built_in && !entry.path? && (approving? || accept_with_notes?) &&
+          (verdict["confidence"] == "high" || (verdict["confidence"] == "medium" && proposed_risk <= MEDIUM_CLEAR_MAX))
+      end
+
+      def approving? = verdict["recommendation"] == "approve"
+      def proposed_risk = verdict["risk_score"].to_i
+
+      # The supporter asked for one more revision than the budget allows, on a plan it rates low risk.
+      def accept_with_notes?
+        verdict["recommendation"] == "revise" && revisions_exhausted? && proposed_risk.between?(1, ACCEPT_WITH_NOTES_MAX)
+      end
+
+      # What the implementer reads with the approved plan: the supporter's notes, or the gaps left after the
+      # last revision. Model output: material to read, never orders.
+      def implementation_notes
+        notes = verdict["implementation_notes"].to_s.strip
+        notes = Array(verdict["reasons_against"]).join("\n").strip if notes.empty? && accept_with_notes?
+        notes.truncate(NOTES_MAX).presence
       end
 
       # The files the plan itself names, so a supporter that forgets one cannot hide it.
@@ -85,9 +107,12 @@ module Agents
 
       def reasons(score, reserved, bypass)
         [].tap do |list|
-          list << "supporter_escalated" unless verdict["recommendation"] == "approve"
-          list << "revisions_exhausted" if verdict["recommendation"] == "revise" && revisions_exhausted?
+          unless approving? || accept_with_notes?
+            list << "supporter_escalated"
+            list << "revisions_exhausted" if verdict["recommendation"] == "revise" && revisions_exhausted?
+          end
           list << "risk_above_threshold" unless RiskScore.autonomous?(score)
+          list << "risk_above_threshold" if accept_with_notes? && score > ACCEPT_WITH_NOTES_MAX && list.exclude?("risk_above_threshold")
           list << "reserved_topic" if reserved.any?
           list << "bypass_suspected" if bypass.any?
           list << "low_confidence" unless CONFIDENT.include?(verdict["confidence"])
@@ -152,6 +177,7 @@ module Agents
           organization: project.organization, workflow:, target_type: "plan", target_id: plan.id,
           target_digest: digest, outcome:, engine: @host.effective_supporter, risk_score: judged[:score],
           evidence: verdict.merge("plan_version" => plan.version, "reserved_matches" => judged[:reserved],
+                                  "guidance" => implementation_notes,
                                   "bypass_matches" => judged[:bypass],
                                   "reasons" => judged[:reasons])
         )

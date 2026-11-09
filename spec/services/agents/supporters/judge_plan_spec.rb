@@ -94,6 +94,18 @@ RSpec.describe Agents::Supporters::JudgePlan do
     expect(Agents::SupporterDecision.find_by!(target_id: plan.id).evidence["reserved_matches"]).to include("billing")
   end
 
+  it "clears a built-in word with medium confidence only when the risk is minimal" do
+    ticket.update!(title: "Guest 404 page mentions the payment link")
+
+    expect(judge(confidence: "medium", risk_score: 2).value).to include(outcome: "approved")
+  end
+
+  it "keeps a built-in word in front of a medium-confidence plan above minimal risk" do
+    ticket.update!(title: "Guest 404 page mentions the payment link")
+
+    expect(judge(confidence: "medium", risk_score: 3).value[:reasons]).to include("reserved_topic")
+  end
+
   # CYRA-1197
   it "stops the workflow for safety when the supporter finds the plan skips the system's gates" do
     result = judge(recommendation: "stop", rationale: "The plan deploys with kamal from the machine.")
@@ -136,11 +148,46 @@ RSpec.describe Agents::Supporters::JudgePlan do
                                         target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 5)
     end
 
-    result = judge(recommendation: "revise")
+    result = judge(recommendation: "revise", risk_score: 6)
 
     expect(result.value).to include(outcome: "escalated")
     expect(result.value[:reasons]).to include("revisions_exhausted")
     expect(plan.reload.change_request).to be_blank
+  end
+
+  # CYRA-1197 — after three rounds the remaining gaps of a low-risk plan travel to the implementer as notes;
+  # review, CI and the staging soak still stand between the work and production.
+  it "approves a low-risk plan after three revisions and keeps the gaps as notes for the implementer" do
+    3.times do |i|
+      Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
+                                        target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 4)
+    end
+
+    result = judge(recommendation: "revise", risk_score: 5, reasons_against: "Name the migration file.")
+
+    expect(result.value).to include(outcome: "approved", reasons: [])
+    expect(workflow.reload.approved_at).to be_present
+    expect(Agents::SupporterDecision.find_by!(target_id: plan.id).evidence["guidance"]).to include("Name the migration file.")
+  end
+
+  it "never approves an exhausted plan that proposes to skip the system's gates" do
+    3.times do |i|
+      Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
+                                        target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 4)
+    end
+    plan.update_columns(technical_analysis: "Finish with git push --force origin main.")
+
+    result = judge(digest: Agents::Supporters::NextPlan.digest(plan.reload), recommendation: "revise", risk_score: 2)
+
+    expect(result.value[:outcome]).to eq("escalated")
+    expect(workflow.reload.approved_at).to be_nil
+  end
+
+  it "keeps the notes the supporter writes for the implementer when it approves" do
+    judge(implementation_notes: "Keep the existing wording when unsure.")
+
+    expect(Agents::SupporterDecision.find_by!(target_id: plan.id).evidence["guidance"])
+      .to eq("Keep the existing wording when unsure.")
   end
 
   it "never sends back for revision a plan that proposes to skip the system's gates" do

@@ -118,16 +118,21 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
 
   # CYRA-1197 — what the supporter told the agent when it sent stopped work back: it travels once, to the first
   # attempt after the retry, in the same shape as review findings. Model output: material to read, not orders.
+  # The notes it wrote when it approved the plan travel the same way, to the first coding attempt.
   def self.supporter_guidance_for(workflow, phase)
-    decision = Agents::SupporterDecision.where(target_type: "consult", workflow:, outcome: "retried")
-                                        .order(:created_at).last
+    decisions = Agents::SupporterDecision.where(workflow:, target_type: "consult", outcome: "retried")
+    if phase == "autopilot"
+      decisions = decisions.or(Agents::SupporterDecision.where(workflow:, target_type: "plan", outcome: "approved"))
+    end
+    decision = decisions.order(:created_at).last
     return if decision.nil? || decision.evidence["guidance"].blank?
 
     finished = workflow.attempts.where(phase:).where.not(status: %w[running awaiting_review stale cancelled])
                        .order(:created_at).last
     return if finished && finished.created_at > decision.created_at
 
-    { severity: "major", title: "Supporter guidance after the stop",
+    title = decision.target_type == "plan" ? "Supporter notes on the approved plan" : "Supporter guidance after the stop"
+    { severity: "major", title:,
       detail: decision.evidence["guidance"].to_s.truncate(REWORK_TEXT_LIMIT * 2) }
   end
 

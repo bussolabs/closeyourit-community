@@ -12,7 +12,9 @@ module Agents
       # 4: a gate named in a prohibition ("do not skip checks") is no longer read as a bypass.
       # 5: the supporter decides alone up to risk 8; sensitive paths rise to 9 (CYRA-1197).
       # 7: a gate listed after a forbidden one ("do not use --no-verify or [skip ci]") is no longer a bypass.
-      DIGEST_VERSION = 7
+      # 8: a plan that changes CI workflow files goes back to the planner instead of to a person (CYRA-1197).
+      # 9: low-risk plans are approved after the last revision, with the gaps as notes (CYRA-1197).
+      DIGEST_VERSION = 9
 
       def self.digest(plan)
         "sha256:" + Digest::SHA256.hexdigest(JSON.generate([ DIGEST_VERSION, plan.id, plan.version, document(plan) ]))

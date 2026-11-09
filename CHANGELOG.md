@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.221.5] - 2026-11-09
+
+### Changed
+
+- **I lavori fermi vengono riletti una volta.** Il supporter li rigiudica dopo le correzioni alle macchine. (CYRA-1197)
+- **Un piano a rischio basso parte dopo tre revisioni.** Le lacune rimaste arrivano come note a chi scrive il codice; revisione, CI e prova in staging restano. Le note del supporter sui piani approvati arrivano all'agente. (CYRA-1197)
+- **I piani in attesa vengono riletti una volta.** Il supporter li giudica con la regola nuova sui file della CI. (CYRA-1197)
+
 ## [0.221.4] - 2026-11-09
 
 ### Fixed

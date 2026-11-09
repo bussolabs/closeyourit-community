@@ -262,6 +262,19 @@ RSpec.describe AgentTicketCandidateSerializer do
       expect(described_class.new(ticket.reload).as_json.dig("workflow", :rework)).to be_nil
     end
 
+    # CYRA-1197 — the notes the supporter wrote when it approved the plan reach the first coding attempt.
+    it "carries the supporter's notes on the approved plan to the first coding attempt" do
+      org = ticket.project.organization
+      Agents::SupporterDecision.create!(organization: org, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
+                                        target_digest: "sha256:p", outcome: "approved", engine: "codex", risk_score: 4,
+                                        evidence: { "guidance" => "Add the migration that only adds the column." })
+      create(:agent_attempt, organization: org, workflow:, phase: "autopilot", status: "running")
+
+      rework = described_class.new(ticket.reload).as_json.dig("workflow", :rework)
+      expect(rework[:findings]).to eq([ { severity: "major", title: "Supporter notes on the approved plan",
+                                          detail: "Add the migration that only adds the column." } ])
+    end
+
     it "carries nothing when the latest attempt of the phase was not rejected by its review" do
       create(:agent_attempt, organization: ticket.project.organization, workflow:, phase: "autopilot",
                              status: "running", review_status: nil, review: {})

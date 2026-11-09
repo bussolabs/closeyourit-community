@@ -24,7 +24,8 @@ module Agents
       # 5: the supporter decides alone up to risk 8; sensitive paths rise to 9 (CYRA-1197).
       # 9: a gate listed after a forbidden one ("do not use --no-verify or [skip ci]") is no longer a bypass.
       # 10: a workflow may be sent back after four stops, not two (CYRA-1197).
-      DIGEST_VERSION = 10
+      # 11: stops left by unreadable reports, review refusals and missing local databases are read once more (CYRA-1197).
+      DIGEST_VERSION = 11
 
       def self.digest(workflow)
         "sha256:" + Digest::SHA256.hexdigest(JSON.generate([ DIGEST_VERSION, workflow.id, workflow.blocked_at&.to_i,

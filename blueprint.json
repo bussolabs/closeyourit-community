@@ -6183,7 +6183,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo i piani a rischio fino a 8, senza temi riservati né tentativi di aggirare i controlli; un controllo citato in un divieto («non usare --no-verify o [skip ci]») non conta come tentativo. Un piano con lacune torna al pianificatore con le osservazioni, al massimo tre volte; gli altri restano a una persona.",
+      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo i piani a rischio fino a 8, senza temi riservati né tentativi di aggirare i controlli; un controllo citato in un divieto («non usare --no-verify o [skip ci]») non conta come tentativo. Un piano con lacune, o che cambia i file della CI che le macchine non possono consegnare, torna al pianificatore con le osservazioni, al massimo tre volte; dopo, se il rischio è fino a 5, parte e le lacune arrivano come note a chi scrive il codice; gli altri restano a una persona.",
       "files": [
         "app/controllers/api/v1/agent_host/supporter_plans_controller.rb",
         "app/controllers/api/v1/agent_host/supporter_plan_verdicts_controller.rb",
