@@ -2167,6 +2167,12 @@ it:
             unblock: Fai ripartire la lavorazione, oppure fermala.
             nothing: "Niente: la lavorazione va avanti da sola."
             finished: "Niente: la lavorazione è finita."
+        # CYRA-1114 — il passo in corso nella riga dei passi, con la stessa regola di «Cosa serve da te».
+        # «In attesa di te» resta anche in member.approvals.phase_state: lì decide sempre chi legge.
+        current_step:
+          waiting_for_you: In attesa di te
+          waiting_for_decision: In attesa di una decisione
+          in_progress: In corso
         effective_cto: Chi decide
         no_cto: Non configurato
         running_on: In lavorazione su

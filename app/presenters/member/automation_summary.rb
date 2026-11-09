@@ -155,13 +155,28 @@ module Member
     def needs_person?
       return true if @pending_questions.positive?
 
+      awaits_decision? && @decides
+    end
+
+    # A decision is pending in this phase, whoever has to take it.
+    def awaits_decision?
       key = NEEDS_KEYS[@workflow.phase]
-      key.present? && key != "finished" && !retrying? && @decides
+      key.present? && key != "finished" && !retrying?
     end
 
     # CYRA-877 — a rejected step with budget left is already being redone by the queue: nothing to decide, and
     # no restart button exists. Only `blocked_at` means the work stopped and calls a person.
     def retrying? = @workflow.phase == "review_blocked" && !@workflow.blocked_at?
+
+    # CYRA-1114 — the current step's tab said «In attesa di te» on every run, under a summary saying
+    # nothing was needed. It now reads the same rule as the «what you need» row: the reader acts, another
+    # person decides, or the work carries on by itself.
+    def current_step_label
+      return current_step_t("waiting_for_you") if needs_person?
+      return current_step_t("waiting_for_decision") if awaits_decision?
+
+      current_step_t("in_progress")
+    end
 
     # La decisione da mettere in evidenza, o nil. Il ticket chiedeva una CTA che cambiasse con lo
     # stato; la risposta del cliente (2026-08-17) l'ha ristretta ad approva/rifiuta — «un bottone che
@@ -268,5 +283,7 @@ module Member
     end
 
     def t(key, **) = I18n.t("member.tickets.automation.summary.#{key}", **)
+
+    def current_step_t(key) = I18n.t("member.tickets.automation.current_step.#{key}")
   end
 end

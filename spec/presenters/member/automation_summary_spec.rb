@@ -357,4 +357,47 @@ RSpec.describe Member::AutomationSummary do
       expect(summary.needs_person?).to be(false)
     end
   end
+
+  # CYRA-1114 — the current step tab read «In attesa di te» while the summary said nothing was needed.
+  describe "current step label" do
+    def label(key) = I18n.t("member.tickets.automation.current_step.#{key}")
+
+    it "says «In attesa di te» when the decision belongs to the reader" do
+      allow(workflow).to receive(:phase).and_return("awaiting_approval")
+
+      expect(summary.current_step_label).to eq(label(:waiting_for_you))
+      expect(summary.current_step_label).to eq("In attesa di te")
+    end
+
+    it "says «In attesa di te» while a question waits for an answer" do
+      allow(workflow).to receive(:phase).and_return("triage_queued")
+
+      expect(summary(decides: false, pending_questions: 1).current_step_label).to eq(label(:waiting_for_you))
+    end
+
+    it "says it waits for a decision when another person decides" do
+      allow(workflow).to receive(:phase).and_return("awaiting_approval")
+
+      expect(summary(decides: false).current_step_label).to eq("In attesa di una decisione")
+    end
+
+    it "says «In corso» while the work carries on by itself, like the «what you need» row" do
+      allow(workflow).to receive(:phase).and_return("autopilot")
+
+      expect(summary.current_step_label).to eq("In corso")
+      expect(summary.needs).to eq(I18n.t("member.tickets.automation.summary.needs.nothing"))
+    end
+
+    it "says «In corso» while a rejected step is redone by the queue" do
+      allow(workflow).to receive(:phase).and_return("review_blocked")
+
+      expect(summary.current_step_label).to eq(label(:in_progress))
+    end
+
+    it "reads «In progress» in English" do
+      allow(workflow).to receive(:phase).and_return("autopilot")
+
+      I18n.with_locale(:en) { expect(summary.current_step_label).to eq("In progress") }
+    end
+  end
 end

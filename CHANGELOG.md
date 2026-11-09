@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.221.4] - 2026-11-09
+
+### Fixed
+
+- **Il passo in corso dice chi deve agire**: nella scheda Automazione del ticket il passo in corso dice «In attesa di te» solo quando la decisione spetta a te. Se decide un'altra persona dice «In attesa di una decisione», altrimenti «In corso». ([Ticket](/member/tickets)) (CYRA-1114)
+
 ## [0.221.3] - 2026-11-09
 
 ### Fixed

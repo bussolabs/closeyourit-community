@@ -640,6 +640,49 @@ RSpec.describe "Member ticket automation tab", type: :request do
     end
   end
 
+  # CYRA-1114 — the current step tab said «Waiting for you» on every run, under a summary saying nothing
+  # was needed. Tooltip and screen-reader text now follow the «what you need» row.
+  describe "the current step tab" do
+    def current_tab
+      Nokogiri::HTML(response.body).at_css("[data-test='automation-step-tabs'] [data-test='approval-phase-current']")
+    end
+
+    def expect_current_label(text)
+      tab = current_tab
+      expect(tab["title"]).to eq(text)
+      expect(tab.at_css(".sr-only").text.strip).to eq("— #{text}")
+    end
+
+    it "says «In progress» while the work carries on by itself, like the summary" do
+      get member_ticket_path(ticket, tab: "automation")
+
+      expect_current_label("In progress")
+      expect(Nokogiri::HTML(response.body).at_css("[data-test='automation-summary-needs']").text)
+        .to include(I18n.t("member.tickets.automation.summary.needs.nothing"))
+      expect(current_tab["title"]).not_to eq(I18n.t("member.approvals.phase_state.current"))
+    end
+
+    it "says «Waiting for you» when the plan waits for the reader's decision" do
+      workflow.update!(triage_started_at: 3.hours.ago, triaged_at: 2.hours.ago, planned_at: 1.hour.ago)
+
+      get member_ticket_path(ticket, tab: "automation")
+
+      expect_current_label(I18n.t("member.tickets.automation.current_step.waiting_for_you"))
+      expect(current_tab["title"]).to eq("Waiting for you")
+      expect(Nokogiri::HTML(response.body).at_css("[data-test='automation-summary-needs']").text)
+        .to include(I18n.t("member.tickets.automation.summary.needs.approve_plan"))
+    end
+
+    it "says it waits for a decision when another person decides the plan" do
+      project.update_column(:cto_id, create(:account, name: "Marta").id)
+      workflow.update!(triage_started_at: 3.hours.ago, triaged_at: 2.hours.ago, planned_at: 1.hour.ago)
+
+      get member_ticket_path(ticket, tab: "automation")
+
+      expect_current_label("Waiting for a decision")
+    end
+  end
+
   describe "summary card" do
     it "lists who decides as the first row and drops the repeated sentence below" do
       get member_ticket_path(ticket, tab: "automation")

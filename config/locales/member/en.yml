@@ -2105,6 +2105,11 @@ en:
             unblock: Get the work going again, or stop it.
             nothing: "Nothing: the work carries on by itself."
             finished: "Nothing: the work is over."
+        # CYRA-1114 — the current step in the step row, with the same rule as «What it needs from you».
+        current_step:
+          waiting_for_you: Waiting for you
+          waiting_for_decision: Waiting for a decision
+          in_progress: In progress
         effective_cto: Who decides
         no_cto: Not configured
         running_on: Running on

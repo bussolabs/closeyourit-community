@@ -147,6 +147,19 @@ RSpec.describe "Member::Home::Approvals#show", type: :request do
       expect(response.body).to include('data-test="approval-phase-current"')
     end
 
+    # CYRA-1114 — the ticket's step tabs now read the summary's rule; here the reader decides, and the
+    # current step keeps saying so.
+    it "says «Waiting for you» on the current step" do
+      workflow = planned_workflow(title: "Col piano pronto")
+      sign_in(owner)
+
+      show_workflow(workflow)
+
+      corrente = Nokogiri::HTML(response.body).at_css("[data-test='approval-phase-strip'] [data-test='approval-phase-current']")
+      expect(corrente["title"]).to eq("Waiting for you")
+      expect(corrente.at_css(".sr-only").text.strip).to eq("— Waiting for you")
+    end
+
     # Su una lavorazione ferma la fase non è «corrente», è respinta: dire «sei qui» dove invece si è
     # inciampato racconta la cosa sbagliata.
     it "su una lavorazione ferma la fase è segnata come respinta, non come corrente" do
