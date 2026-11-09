@@ -10,7 +10,9 @@ module Agents
       # A held release waits for the person who held it. CYRA-1197 — a red proposal that already had its fix round
       # (CYRA-1195) is served too: the supporter reads the failure and may send it back with guidance.
       CONSULTABLE_KINDS = %w[agent_blocked attempt_limit release_probe candidate_check].freeze
-      MAX_RETRIES = 2
+      # Counted over the workflow's life. Each stop is judged once, so this is how many separate stops the
+      # supporter may send back: enough for a conflict, then a red CI, then a review, without looping forever.
+      MAX_RETRIES = 4
       ATTEMPTS_SHOWN = 3
       TEXT_LIMIT = 800
       STALE_REASON = "stale: the machine lost this attempt (restart or lease timeout) before it reported; " \
@@ -21,7 +23,8 @@ module Agents
       # 4: a gate named in a prohibition ("do not skip checks") is no longer read as a bypass.
       # 5: the supporter decides alone up to risk 8; sensitive paths rise to 9 (CYRA-1197).
       # 9: a gate listed after a forbidden one ("do not use --no-verify or [skip ci]") is no longer a bypass.
-      DIGEST_VERSION = 9
+      # 10: a workflow may be sent back after four stops, not two (CYRA-1197).
+      DIGEST_VERSION = 10
 
       def self.digest(workflow)
         "sha256:" + Digest::SHA256.hexdigest(JSON.generate([ DIGEST_VERSION, workflow.id, workflow.blocked_at&.to_i,

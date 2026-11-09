@@ -6197,7 +6197,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Prima di chiamare una persona, il supporter legge perché un agente si è fermato. Il server decide: rimanda il lavoro all'agente con le indicazioni (al massimo 2 volte), lo lascia a una persona, oppure lo ferma per sicurezza se l'agente ha provato ad aggirare i controlli o a toccare la produzione. Un fermo di sicurezza lo toglie solo una persona. Un controllo citato in un divieto, anche in un elenco («non usare --no-verify o [skip ci]»), non conta come tentativo. Il supporter legge anche il motivo del revisore; se la macchina ha perso tutti i tentativi il lavoro riparte da solo; i ticket già chiusi vengono saltati.",
+      "summary": "Prima di chiamare una persona, il supporter legge perché un agente si è fermato. Il server decide: rimanda il lavoro all'agente con le indicazioni (al massimo 4 volte, una per ogni fermata), lo lascia a una persona, oppure lo ferma per sicurezza se l'agente ha provato ad aggirare i controlli o a toccare la produzione. Un fermo di sicurezza lo toglie solo una persona. Un controllo citato in un divieto, anche in un elenco («non usare --no-verify o [skip ci]»), non conta come tentativo. Il supporter legge anche il motivo del revisore; se la macchina ha perso tutti i tentativi il lavoro riparte da solo; i ticket già chiusi vengono saltati.",
       "files": [
         "app/controllers/api/v1/agent_host/supporter_consults_controller.rb",
         "app/controllers/api/v1/agent_host/supporter_consult_verdicts_controller.rb",

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.221.2] - 2026-11-09
+
+### Fixed
+
+- **Il supporter fa ripartire un lavoro anche dopo la seconda fermata**: un lavoro fermo per un conflitto, poi per la CI rossa, poi per la revisione può tornare all'agente fino a 4 volte, una per ogni fermata nuova. Prima dopo 2 restava a una persona. (CYRA-1197)
+
 ## [0.221.1] - 2026-11-09
 
 ### Fixed

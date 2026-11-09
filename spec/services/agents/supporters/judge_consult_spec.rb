@@ -152,7 +152,8 @@ RSpec.describe Agents::Supporters::JudgeConsult do
     expect(workflow.reload.blocked_at).to be_nil
   end
 
-  it "stops retrying after the limit" do
+  # A new stop is a new problem: one stop is judged once, so the limit counts stops, not tries on one stop.
+  it "retries a third stop after two earlier stops were retried" do
     judge
     2.times do |i|
       workflow.reload.update!(blocked_at: Time.current, blocked_phase: "autopilot", blocked_kind: "agent_blocked",
@@ -160,7 +161,19 @@ RSpec.describe Agents::Supporters::JudgeConsult do
       judge
     end
 
-    expect(Agents::SupporterDecision.where(target_type: "consult", outcome: "retried").count).to eq(2)
+    expect(Agents::SupporterDecision.where(target_type: "consult", outcome: "retried").count).to eq(3)
+  end
+
+  it "stops retrying after the limit" do
+    judge
+    Agents::Supporters::NextConsult::MAX_RETRIES.times do |i|
+      workflow.reload.update!(blocked_at: Time.current, blocked_phase: "autopilot", blocked_kind: "agent_blocked",
+                              blocked_reason: "agent_blocked: again #{i}", autopilot_started_at: Time.current)
+      judge
+    end
+
+    expect(Agents::SupporterDecision.where(target_type: "consult", outcome: "retried").count)
+      .to eq(Agents::Supporters::NextConsult::MAX_RETRIES)
     expect(workflow.reload.blocked_at).to be_present
     expect(Agents::Supporters::NextConsult.call(host:).value).to be_nil
   end
