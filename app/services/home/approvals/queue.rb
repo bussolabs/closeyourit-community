@@ -308,6 +308,7 @@ module Home
         # CYRA-998 — the version a rewritten plan has reached, one query for the whole page.
         plan_versions = ::Agents::Plan.where(workflow_id: shown.map { |workflow, _, _| workflow.id })
                                       .group(:workflow_id).maximum(:version)
+        split_sizes = plan_split_sizes(plan_versions)
         items = shown.map do |workflow, phase, state|
           ticket = workflow.ticket
           track_ticket("agent_plan:#{workflow.id}", ticket.id)
@@ -327,7 +328,8 @@ module Home
             # CYRA-610 — solo su un piano DA approvare: sulle altre fasi la decisione è già stata
             # presa (o congelata), e un avviso su qualcosa che non si sta più decidendo è rumore.
             freeze_warning: (plan_freeze_warning(ticket) if phase == "awaiting_approval"),
-            plan_version: plan_versions[workflow.id]
+            plan_version: plan_versions[workflow.id],
+            plan_split: (split_sizes[workflow.id] if phase == "awaiting_approval")
           )
         end
         # Conteggi su TUTTI i gated, non sui primi @limit: è l'unica sorgente che li ha già in memoria.
@@ -336,6 +338,21 @@ module Home
                          .map { |workflow, _, _| workflow[:gated_project_id] }.uniq,
           agents: in_queue(gated_agent_workflows(project: project_filter, agent: nil))
                     .filter_map { |workflow, phase, _| agent_ref_for(workflow, phase) }.uniq(&:id) }
+      end
+
+      # CYRA-1152 — { workflow_id => children proposed } for the rows whose latest plan splits an epic.
+      # One read for the page, and only the plans that carry a proposal.
+      def plan_split_sizes(plan_versions)
+        return {} if plan_versions.empty?
+
+        ::Agents::Plan.where(workflow_id: plan_versions.keys).where("content -> 'children' IS NOT NULL")
+                      .pluck(:workflow_id, :version, :content)
+                      .each_with_object({}) do |(workflow_id, version, content), sizes|
+          next unless plan_versions[workflow_id] == version
+
+          size = ::Agents::PlanSplit.new(content).size
+          sizes[workflow_id] = size if size.positive?
+        end
       end
 
       # Solo ciò che sta DAVVERO in coda: chi riprova da solo ne esce (CYRA-317), quindi non compare

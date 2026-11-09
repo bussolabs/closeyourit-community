@@ -42,6 +42,12 @@ module Agents
           "$defs" => CONTRACT_SCHEMAS.fetch(2).fetch("$defs"), "$ref" => "#/$defs/review_envelope" },
         regexp_resolver: "ecma"
       )
+      # CYRA-1152 — an epic's `plan.children` is not in the vendored contract yet (Agents::PlanSplit::CONTRACT).
+      PLAN_CHILDREN_VALIDATOR = JSONSchemer.schema(
+        Agents::PlanSplit::CONTRACT.merge("$schema" => CONTRACT_SCHEMAS.fetch(2).fetch("$schema"),
+                                          "$defs" => CONTRACT_SCHEMAS.fetch(2).fetch("$defs")),
+        regexp_resolver: "ecma"
+      )
 
       def initialize(attempt:, payload:)
         @attempt = attempt
@@ -215,8 +221,17 @@ module Agents
 
         # Oltre allo schema: le domande di chiarimento superano le regole del modello Clarification (no comandi/URL).
         return valid_clarification_questions?(result) if triage_clarification?(result)
+        return false unless split_fits_ticket?(result)
 
         delivery_within_frozen_scope?(result)
+      end
+
+      # CYRA-1152 — the schema caps the children; only the server knows the ticket is an epic and can
+      # walk the prerequisites. Rejected here, the plan goes back to the planner and no ticket is born.
+      def split_fits_ticket?(result)
+        return true unless @attempt.phase == "planner" && result["state"] == "submitted-for-approval"
+
+        Agents::PlanSplit.new(result["plan"]).problem(@attempt.workflow.ticket).nil?
       end
 
       # CYRA-612 — la proposta consegnata deve stare in uno dei progetti che sono stati FISSATI quando
@@ -248,7 +263,22 @@ module Agents
       def contract_valid?(result)
         definition = RESULT_DEFINITIONS[@attempt.phase] or return false
         version = result_contract_version(result) or return false
+        result = without_plan_children(result) if plan_children?(result, version)
+        return false if result.nil?
+
         RESULT_VALIDATORS.fetch(version).fetch(definition).valid?(result)
+      end
+
+      # CYRA-1152 — the planner's v2 plan may carry `children`: checked against the server's own shape,
+      # then taken out so the rest of the plan meets the vendored schema exactly as it is.
+      def plan_children?(result, version)
+        @attempt.phase == "planner" && version == 2 && result["plan"].is_a?(Hash) && result["plan"].key?("children")
+      end
+
+      def without_plan_children(result)
+        return unless PLAN_CHILDREN_VALIDATOR.valid?(result.dig("plan", "children"))
+
+        result.merge("plan" => result["plan"].except("children"))
       end
 
       def result_contract_version(result)

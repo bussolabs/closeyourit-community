@@ -24,6 +24,17 @@ RSpec.describe Agents::Supporters::BypassGuard do
     expect(described_class.match("Non usare mai --no-verify")).to eq([])
   end
 
+  # CYRA-1197 — "do not use --no-verify or [skip ci]": the second gate of the list shares the first one's negation.
+  it "ignores every gate of a list that follows a negation" do
+    expect(described_class.match("Do not use --no-verify or [skip ci].")).to eq([])
+    expect(described_class.match("Do not delete or skip tests, and do not use --no-verify or [skip ci]. Push to the ticket branch only.")).to eq([])
+  end
+
+  it "still names the gates of a list nobody forbids" do
+    expect(described_class.match("Use --no-verify or [skip ci]")).to eq(%w[skip_hooks skip_ci skip_tests])
+    expect(described_class.match("Don't hesitate to use --no-verify")).to eq([ "skip_hooks" ])
+  end
+
   it "still names a gate when the negation belongs to another clause" do
     expect(described_class.match("Do not worry, commit with --no-verify")).to eq([ "skip_hooks" ])
     expect(described_class.match("No tests are red. Skip the failing tests anyway")).to eq([ "skip_tests" ])

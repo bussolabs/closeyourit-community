@@ -163,6 +163,7 @@ Formato `R{HTTP_STATUS}-{DOMINIO}-{SEQ}` (rules/error-handling.md). Envelope API
 - `R409-WORKFLOW-015` — «Ferma» su una lavorazione che non sta aspettando la produzione (`Agents::Workflows::HoldProduction`, CYRA-871)
 - `R409-WORKFLOW-016` — «Riavvia» su una lavorazione che non è annullata (`Agents::Workflows::Restart`, CYRA-1070)
 - `R409-WORKFLOW-017` — «Rimanda allo staging» su una lavorazione che non è ferma in produzione (`Agents::Workflows::SendBackToStaging`, CYRA-1030): ferma nella prova, già conclusa, o già rimandata da un clic precedente
+- `R409-WORKFLOW-018` — la divisione proposta dal piano non vale più per il ticket al momento dell'approvazione (`Agents::Workflows::SplitEpic`, CYRA-1152): il ticket non è più un epic, o la proposta non regge. Non nasce nessun figlio
 - `R403-WORKFLOW-003` — solo admin e owner riavviano una lavorazione annullata (`Agents::Workflows::Restart`, CYRA-1070)
 - `R422-REGISTRY-001` — nome del pacchetto o versione fuori dall'alfabeto della loro famiglia (`Agents::Registries::Client`, CYRA-625): si rifiuta PRIMA che parta qualunque chiamata, perché un nome che è a sua volta un indirizzo cambierebbe lo scaffale interrogato
 - `R502-REGISTRY-001` — il registro pubblico non ha risposto o ha risposto con un errore suo (CYRA-625): linea storta, si riprova

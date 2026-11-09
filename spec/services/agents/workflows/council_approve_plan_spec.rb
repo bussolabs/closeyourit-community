@@ -63,6 +63,24 @@ RSpec.describe Agents::Workflows::CouncilApprovePlan do
     expect(workflow.reload.approved_at).to be_nil
   end
 
+  # CYRA-1152 — approving a split creates tickets: it stays in the queue for a person.
+  it "leaves an epic's split to a person, even on a council ticket with the council on" do
+    epic = create(:ticket, :epic, organization:, project:, with_agent_workflow: true)
+    epic_workflow = epic.agent_workflow.tap { |w| w.update!(triaged_at: 2.minutes.ago, planned_at: 1.minute.ago) }
+    children = %w[CH-1 CH-2].map do |id|
+      { "id" => id, "title" => "Child #{id}", "description" => "Work.", "dependencies" => [],
+        "scenarios" => [ { "id" => "SC-1", "title" => "Works", "given" => "a", "when" => "b", "then" => "c", "expected" => "d" } ] }
+    end
+    Agents::Plan.create!(workflow: epic_workflow, attempt: create(:agent_attempt, organization:, workflow: epic_workflow),
+                         contract_version: 2, technical_analysis: "Split", scenarios: [], definition_of_done: [ "RSpec" ],
+                         notes: [], ticket_snapshot_digest: "snapshot", content: { "summary" => "Split", "children" => children })
+    create(:agent_council_proposal, ticket: epic, outcome: "ticket")
+
+    expect(described_class.call(workflow: epic_workflow).value).to be_nil
+    expect(epic_workflow.reload).to have_attributes(approved_at: nil, phase: "awaiting_approval")
+    expect(epic.children).to be_empty
+  end
+
   it "does nothing when the council is off" do
     organization.automator_setting.update!(council_mode: "off")
     create(:agent_council_proposal, ticket:, outcome: "ticket")

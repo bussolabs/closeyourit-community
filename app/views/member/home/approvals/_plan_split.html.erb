@@ -1,0 +1,15 @@
+<%# locals: (split:) %>
+<%# CYRA-1152 — the children an epic's plan proposes, in the order they can start, and what each waits for. %>
+<div class="px-4 py-3.5 border-b border-stone-100 dark:border-zinc-800" data-test="approvals-plan-split">
+  <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400 mb-1"><%= t("member.approvals.split.title", count: split.size) %></p>
+  <p class="text-[12px] text-gray-500 dark:text-zinc-400 mb-2.5"><%= t("member.approvals.split.hint") %></p>
+  <ol class="space-y-2">
+    <% (split.ordered || split.children).each do |child| %>
+      <li class="border-l-2 border-indigo-100 dark:border-indigo-500/20 pl-3" data-test="approvals-plan-split-child">
+        <div class="flex items-baseline gap-2"><span class="font-mono text-[10px] text-indigo-600 dark:text-indigo-400"><%= child.id %></span><h4 class="font-display text-[13.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= child.title %></h4></div>
+        <%= render Ui::MarkdownComponent.new(text: child.description, class: "mt-1 text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed") %>
+        <p class="mt-1 text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="approvals-plan-split-waits"><%= child.dependencies.any? ? t("member.approvals.split.waits", ids: child.dependencies.join(", ")) : t("member.approvals.split.free") %></p>
+      </li>
+    <% end %>
+  </ol>
+</div>

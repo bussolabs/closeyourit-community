@@ -51,6 +51,10 @@ module Agents
 
     def document = PlanDocument.new(self)
 
+    # CYRA-1152 — the child tickets this plan proposes for its epic; empty on every other plan.
+    def split = PlanSplit.for(self)
+    def split? = split.any?
+
     # `deploy_smoke` è l'unica prova che ha bisogno di una coordinata in più: senza l'ambiente di
     # produzione non si sa DOVE andare a guardare se il rilascio è in piedi. Il modello e il database
     # già impediscono quella scelta senza l'ambiente, quindi qui la coordinata c'è per costruzione.
@@ -69,6 +73,9 @@ module Agents
     validates :technical_analysis, :ticket_snapshot_digest, presence: true
     validates :contract_version, inclusion: { in: [ 1, 2 ] }
     validate :structured_content_matches_contract
+    # CYRA-1152 — only an epic splits, and the prerequisites among children never go round. On create
+    # only: the approval writes this row again, and re-checks the ticket itself (Workflows::SplitEpic).
+    validate :split_fits_ticket, on: :create
     validates :version, numericality: { only_integer: true, greater_than: 0 },
                         uniqueness: { scope: :workflow_id }
     before_validation :assign_version, on: :create
@@ -85,6 +92,11 @@ module Agents
       return if contract_version == 2 && content.is_a?(Hash) && content.present?
 
       errors.add(:content, "non corrisponde alla versione del contratto")
+    end
+
+    def split_fits_ticket
+      problem = split.problem(workflow&.ticket)
+      errors.add(:content, :invalid_split, message: "propone una divisione non valida (#{problem})") if problem
     end
 
     # Fuori dalla guardia restano `update_all`, `update_columns` e l'SQL grezzo, che saltano le

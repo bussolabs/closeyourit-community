@@ -92,6 +92,8 @@ module Agents
           list << "bypass_suspected" if bypass.any?
           list << "low_confidence" unless CONFIDENT.include?(verdict["confidence"])
           list << "ticket_concluded" if concluded_ticket?
+          # CYRA-1152 — approving a split creates tickets: always a person's yes.
+          list << "epic_split" if plan.split?
         end
       end
 

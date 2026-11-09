@@ -38,10 +38,14 @@ module Agents
           # non erano componibili: è l'identità di ciò che è stato approvato, e non dipende da come è
           # configurato il progetto. Chi eseguirà dovrà dichiarare di lavorare su QUESTA.
           FreezePlan.call(workflow: @workflow, plan:, actor: @actor, now:)
+          # CYRA-1152 — an epic's split creates its children instead of moving on to writing code.
+          SplitEpic.call(workflow: @workflow, plan:, actor: @actor, now:) if plan.split?
         end
         Result.ok(@workflow)
       rescue ActiveRecord::RecordNotFound
         stale
+      rescue SplitEpic::Failed => e
+        Result.err(e.error)
       end
 
       private

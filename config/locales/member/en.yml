@@ -766,6 +766,16 @@ en:
       no_plan: The run stopped before producing a plan. You can put it back in the queue or close it.
       no_plan_retrying: The review rejected an attempt before a plan existed. The run retries on its own — if that is not enough, you can close it.
       requeue: Put back in the queue
+      split:
+        title:
+          one: Epic split into 1 ticket
+          other: "Epic split into %{count} tickets"
+        hint: On approval these tickets are created under the epic in your name, with their prerequisites. The epic does not move on to writing code.
+        free: Can start right away
+        waits: "Waits for: %{ids}"
+        badge:
+          one: splits into 1 ticket
+          other: "splits into %{count} tickets"
       attempt:
         title: Last rejected attempt
         phase: Phase

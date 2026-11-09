@@ -25,6 +25,8 @@ module Agents
       NEGATIONS = %w[not never no don't dont without avoid non mai senza nessun nessuna niente].freeze
       NEGATION_WINDOW = 3
       CLAUSE_BREAK = /[.,;:!?\n]/
+      # CYRA-1197 — "do not use --no-verify or [skip ci]": a gate listed right after another gate shares its fate.
+      LIST_LINK = /\s+(?:or|nor|and|o|né|e)\s*\[?\z/i
 
       module_function
 
@@ -38,7 +40,21 @@ module Agents
 
       def negated?(before)
         clause = before.split(CLAUSE_BREAK, -1).last.to_s
-        clause.downcase.split.last(NEGATION_WINDOW).any? { |word| NEGATIONS.include?(word) }
+        return true if clause.downcase.split.last(NEGATION_WINDOW).any? { |word| NEGATIONS.include?(word) }
+
+        head = clause.sub(LIST_LINK, "")
+        return false if head == clause
+
+        previous = previous_gate(head.rstrip)
+        previous ? negated?(head[0...previous]) : false
+      end
+
+      # Where a gate ending exactly at the end of the text starts, or nil when the text does not end with one.
+      def previous_gate(text)
+        PATTERNS.each_value do |pattern|
+          text.to_enum(:scan, pattern).each { return Regexp.last_match.begin(0) if Regexp.last_match.end(0) == text.length }
+        end
+        nil
       end
     end
   end

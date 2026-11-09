@@ -71,6 +71,7 @@
   </div>
 <% end %>
 
+<%= render("member/home/approvals/plan_split", split: card.split) if card.split %>
 <% if card.plan && compact %>
   <%= render "member/home/approvals/plan_compact", card: card %>
 <% elsif card.plan %>

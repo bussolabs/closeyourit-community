@@ -776,6 +776,17 @@ it:
       no_plan: La lavorazione si è fermata prima di produrre un piano. Puoi rimetterla in coda o chiuderla.
       no_plan_retrying: "La revisione ha respinto un tentativo prima che nascesse un piano. La lavorazione riprova da sola: se non basta, puoi chiuderla."
       requeue: Rimetti in coda
+      # CYRA-1152 — il piano di un epic che propone i suoi ticket figli.
+      split:
+        title:
+          one: Divisione dell'epic in 1 ticket
+          other: "Divisione dell'epic in %{count} ticket"
+        hint: Approvando, questi ticket nascono sotto l'epic a tuo nome, con i loro prerequisiti. L'epic non passa alla scrittura del codice.
+        free: Può partire subito
+        waits: "Aspetta: %{ids}"
+        badge:
+          one: divide in 1 ticket
+          other: "divide in %{count} ticket"
       # CYRA-317 — l'elenco separato delle lavorazioni che riprovano da sole: non aspettano una
       # decisione, quindi non stanno nella coda né nel suo totale. Si guardano se si vuole, e chi ne
       # trova una impiantata la chiude da qui.

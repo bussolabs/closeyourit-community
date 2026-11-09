@@ -53,7 +53,9 @@ module Home
     # prossimo lettore avrebbe provato a riempire.
     Item = Data.define(:kind, :icon, :tone, :title, :subtitle, :meta, :url, :sort_at, :dom_id, :key,
                        :waiting_since, :actions, :bulk_approvable, :state, :ticket_status,
-                       :code, :project, :agent, :freeze_warning, :no_report, :plan_version)
+                       :code, :project, :agent, :freeze_warning, :no_report, :plan_version, :plan_split)
+
+    # `plan_split` (CYRA-1152) = how many child tickets the epic's plan to approve proposes; nil elsewhere.
 
     # `freeze_warning` (CYRA-610) = l'avviso, in chiaro, quando approvare quel piano NON riuscirebbe a
     # fissare dove il lavoro può nascere e come si prova che è finito. Vive sull'item e non solo nella
@@ -70,11 +72,13 @@ module Home
     # Costruttore con i default: chi compone un Item passa solo ciò che ha davvero.
     def self.item(actions: [], key: nil, waiting_since: nil,
                   bulk_approvable: false, state: nil, ticket_status: nil, code: nil,
-                  project: nil, agent: nil, freeze_warning: nil, no_report: false, plan_version: nil, **attributes)
+                  project: nil, agent: nil, freeze_warning: nil, no_report: false, plan_version: nil,
+                  plan_split: nil, **attributes)
       Item.new(actions: actions, key: key, waiting_since: waiting_since,
                bulk_approvable: bulk_approvable, state: state, ticket_status: ticket_status,
                code: code, project: project, agent: agent,
-               freeze_warning: freeze_warning, no_report: no_report, plan_version: plan_version, **attributes)
+               freeze_warning: freeze_warning, no_report: no_report, plan_version: plan_version,
+               plan_split: plan_split, **attributes)
     end
   end
 end

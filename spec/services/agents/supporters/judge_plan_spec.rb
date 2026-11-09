@@ -156,6 +156,19 @@ RSpec.describe Agents::Supporters::JudgePlan do
     expect(judge(confidence: "low").value[:reasons]).to eq([ "low_confidence" ])
   end
 
+  # CYRA-1152 — approving an epic's split creates tickets: always a person's yes.
+  it "leaves an epic's split to a person" do
+    ticket.update!(kind: :epic)
+    children = %w[CH-1 CH-2].map do |id|
+      { "id" => id, "title" => "Child #{id}", "description" => "Work.", "dependencies" => [],
+        "scenarios" => [ { "id" => "SC-1", "title" => "Works", "given" => "a", "when" => "b", "then" => "c", "expected" => "d" } ] }
+    end
+    plan.update_columns(contract_version: 2, content: { "summary" => "Split", "children" => children })
+
+    expect(judge.value).to include(outcome: "escalated", reasons: [ "epic_split" ])
+    expect(workflow.reload.approved_at).to be_nil
+  end
+
   it "refuses a verdict on a version it did not read" do
     result = judge(digest: "sha256:old")
 

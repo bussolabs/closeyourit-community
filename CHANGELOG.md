@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.221.1] - 2026-11-09
+
+### Fixed
+
+- **Il supporter non scambia più i suoi divieti per tentativi di aggirare i controlli.** In una frase come «non usare --no-verify o [skip ci]» anche il secondo controllo è vietato. I lavori fermi per questo vengono riletti una volta. (CYRA-1197)
+
+## [0.221.0] - 2026-11-08
+
+### Added
+
+- **Un epic si divide in ticket figli**: per un epic, il piano può proporre i ticket figli e cosa aspetta cosa. Li vedi nelle approvazioni e nascono solo quando approvi, a tuo nome, con il testo che hai letto. I figli liberi partono insieme, gli altri aspettano i loro prerequisiti. ([Approvazioni](/member/home/approvals)) (CYRA-1152)
+
 ## [0.220.0] - 2026-11-08
 
 ### Changed

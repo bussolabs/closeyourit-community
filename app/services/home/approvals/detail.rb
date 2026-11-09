@@ -76,6 +76,13 @@ module Home
         # Il ramo review è per definizione una consegna da giudicare: il ticket è in uno status
         # review-gate, quindi qualcuno (persona o automa) ha dichiarato finito il lavoro.
         def delivered_work? = kind == "review" || DELIVERED_PHASES.include?(phase)
+
+        # CYRA-1152 — the children an epic's plan proposes, where that plan is the one being decided.
+        def split
+          return unless kind == "agent_plan" && phase == "awaiting_approval" && plan
+
+          plan.split if plan.split?
+        end
       end
 
       # A whole selection with one read per family instead of one per key, through the same builders

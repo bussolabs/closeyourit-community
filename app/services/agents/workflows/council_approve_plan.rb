@@ -19,6 +19,8 @@ module Agents
           @workflow.lock!
           plan = @workflow.plans.reorder(version: :desc).lock.first
           next false unless plan && @workflow.planned_at? && plan.approved_at.nil? && plan.change_request.blank?
+          # CYRA-1152 — approving an epic's split creates tickets: that waits for a person.
+          next false if plan.split?
 
           FreezePlan.call(workflow: @workflow, plan:, actor: nil, now: Time.current)
           record_activity!

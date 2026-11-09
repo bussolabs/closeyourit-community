@@ -6153,11 +6153,12 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "La macchina scrive un piano con scenari e definizione di fatto, e il server avvisa che è pronto. Se il lavoro risulta già fatto, il ticket si chiude.",
+      "summary": "La macchina scrive un piano con scenari e definizione di fatto, e il server avvisa che è pronto. Su un epic il piano può proporre i ticket figli e cosa aspetta cosa. Se il lavoro risulta già fatto, il ticket si chiude.",
       "files": [
         "app/services/agents/attempts/effects/planner.rb",
         "app/models/agents/plan.rb",
         "app/models/agents/plan_document.rb",
+        "app/models/agents/plan_split.rb",
         "app/jobs/agents/plan_ready_notification_job.rb"
       ]
     },
@@ -6167,9 +6168,10 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Il responsabile tecnico approva o chiede modifiche. Approvando si fissano il repository su cui lavorare e la prova che dirà «fatto».",
+      "summary": "Il responsabile tecnico approva o chiede modifiche. Approvando si fissano il repository su cui lavorare e la prova che dirà «fatto». Se il piano divide un epic, nascono i figli con i loro prerequisiti e l'epic non passa allo sviluppo.",
       "files": [
         "app/services/agents/workflows/approve_plan.rb",
+        "app/services/agents/workflows/split_epic.rb",
         "app/services/agents/workflows/request_plan_changes.rb",
         "app/services/agents/workflows/cto_gate.rb",
         "app/controllers/member/tickets/automation/approvals_controller.rb"
@@ -6181,7 +6183,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo solo i piani a rischio fino a 6, senza temi riservati. Un piano con lacune torna al pianificatore con le osservazioni, al massimo due volte; gli altri restano a una persona.",
+      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo i piani a rischio fino a 8, senza temi riservati né tentativi di aggirare i controlli; un controllo citato in un divieto («non usare --no-verify o [skip ci]») non conta come tentativo. Un piano con lacune torna al pianificatore con le osservazioni, al massimo tre volte; gli altri restano a una persona.",
       "files": [
         "app/controllers/api/v1/agent_host/supporter_plans_controller.rb",
         "app/controllers/api/v1/agent_host/supporter_plan_verdicts_controller.rb",
@@ -6195,7 +6197,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Prima di chiamare una persona, il supporter legge perché un agente si è fermato. Il server decide: rimanda il lavoro all'agente con le indicazioni (al massimo 2 volte), lo lascia a una persona, oppure lo ferma per sicurezza se l'agente ha provato ad aggirare i controlli o a toccare la produzione. Un fermo di sicurezza lo toglie solo una persona. Il supporter legge anche il motivo del revisore; se la macchina ha perso tutti i tentativi il lavoro riparte da solo; i ticket già chiusi vengono saltati.",
+      "summary": "Prima di chiamare una persona, il supporter legge perché un agente si è fermato. Il server decide: rimanda il lavoro all'agente con le indicazioni (al massimo 2 volte), lo lascia a una persona, oppure lo ferma per sicurezza se l'agente ha provato ad aggirare i controlli o a toccare la produzione. Un fermo di sicurezza lo toglie solo una persona. Un controllo citato in un divieto, anche in un elenco («non usare --no-verify o [skip ci]»), non conta come tentativo. Il supporter legge anche il motivo del revisore; se la macchina ha perso tutti i tentativi il lavoro riparte da solo; i ticket già chiusi vengono saltati.",
       "files": [
         "app/controllers/api/v1/agent_host/supporter_consults_controller.rb",
         "app/controllers/api/v1/agent_host/supporter_consult_verdicts_controller.rb",

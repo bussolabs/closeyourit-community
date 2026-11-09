@@ -1,0 +1,105 @@
+{
+  "contract_version": 2,
+  "code": "CYRA-700",
+  "state": "submitted-for-approval",
+  "plan": {
+    "summary": "Dividere l'epic in tre ticket figli: due in parallelo e uno che li aspetta.",
+    "work_items": [
+      {
+        "id": "WI-1",
+        "title": "Proporre la divisione",
+        "description": "Il lavoro si divide in tre figli con i loro prerequisiti.",
+        "files": [
+          {
+            "path": "app/models/ticketing/ticket.rb",
+            "line": 51,
+            "reason": "Il legame fra epic e figlio esiste già."
+          }
+        ],
+        "dependencies": []
+      }
+    ],
+    "rationale": [
+      "Due parti indipendenti possono procedere insieme."
+    ],
+    "risks": [],
+    "open_points": [],
+    "sources": [
+      {
+        "path": "app/models/connections/ticket_dependency.rb",
+        "reason": "I prerequisiti fra ticket esistono già."
+      }
+    ],
+    "children": [
+      {
+        "id": "CH-1",
+        "title": "Salvare le preferenze",
+        "description": "Le preferenze dell'utente si salvano sul server.",
+        "scenarios": [
+          {
+            "id": "SC-1",
+            "title": "Preferenza salvata",
+            "given": "un utente con una preferenza",
+            "when": "la cambia",
+            "then": "il server la conserva",
+            "expected": "la ritrova al prossimo accesso"
+          }
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "CH-2",
+        "title": "Mostrare le preferenze",
+        "description": "La pagina del profilo mostra le preferenze.",
+        "scenarios": [
+          {
+            "id": "SC-1",
+            "title": "Preferenza visibile",
+            "given": "un utente con una preferenza",
+            "when": "apre il profilo",
+            "then": "vede la preferenza",
+            "expected": "il valore è quello scelto"
+          }
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "CH-3",
+        "title": "Modificare le preferenze dal profilo",
+        "description": "Dal profilo si cambiano le preferenze e si salvano.",
+        "scenarios": [
+          {
+            "id": "SC-1",
+            "title": "Modifica dal profilo",
+            "given": "un utente sul profilo",
+            "when": "cambia una preferenza",
+            "then": "la modifica si salva",
+            "expected": "la pagina mostra il nuovo valore"
+          }
+        ],
+        "dependencies": [
+          "CH-1",
+          "CH-2"
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "SC-1",
+      "title": "Divisione approvata",
+      "given": "un epic con tre figli proposti",
+      "when": "la persona responsabile approva",
+      "then": "nascono tre figli sotto l'epic",
+      "expected": "con i loro prerequisiti"
+    }
+  ],
+  "definition_of_done": [
+    {
+      "id": "DOD-1",
+      "text": "I figli e i prerequisiti nascono all'approvazione"
+    }
+  ],
+  "mixed_parts": null,
+  "notes": []
+}

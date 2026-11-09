@@ -36,6 +36,13 @@
     <%# CYRA-610 — l'avviso sta ANCHE qui, non solo nella scheda di dettaglio: da questo elenco si
         approvano dieci piani in una volta senza aprirne nessuno, e se l'avviso vivesse solo nel
         dettaglio l'unico gesto che approva in blocco sarebbe anche l'unico fatto alla cieca. %>
+    <%# CYRA-1152 — approving this plan creates tickets: the row says so before it is opened. %>
+    <% if row.item.plan_split %>
+      <span class="mt-0.5 flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400" data-test="approvals-board-plan-split">
+        <%= render Ui::IconComponent.new(name: "network", class: "text-[10px]") %>
+        <%= t("member.approvals.split.badge", count: row.item.plan_split) %>
+      </span>
+    <% end %>
     <% if row.item.freeze_warning.present? %>
       <span class="mt-0.5 flex items-center gap-1 text-[11px] text-red-600 dark:text-red-400" data-test="approvals-board-freeze-warning"
             title="<%= row.item.freeze_warning %>">

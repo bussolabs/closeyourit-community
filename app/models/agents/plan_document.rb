@@ -64,6 +64,11 @@ module Agents
         heading = [ item["id"], item["title"] ].compact_blank.join(" · ")
         [ "#### #{heading}", item["description"], files(item["files"]), dependencies(item["dependencies"]) ]
       end
+      # CYRA-1152 — an epic's plan may propose its child tickets.
+      section(lines, "Figli proposti", Array(data["children"])) do |child|
+        heading = [ child["id"], child["title"] ].compact_blank.join(" · ")
+        [ "#### #{heading}", child["description"], child_scenarios(child["scenarios"]), dependencies(child["dependencies"]) ]
+      end
       simple_section(lines, "Perché", data["rationale"])
       section(lines, "Rischi", Array(data["risks"])) do |risk|
         [ "- **#{[ risk["id"], risk["title"] ].compact_blank.join(" · ")}** — #{risk["impact"]}",
@@ -114,6 +119,15 @@ module Agents
           file = file.to_h.deep_stringify_keys
           "- `#{coordinate(file)}` — #{file["reason"]}"
         end ].join("\n")
+      end
+
+      def child_scenarios(items)
+        return if Array(items).blank?
+
+        Array(items).map do |scenario|
+          scenario = scenario.to_h.deep_stringify_keys
+          "- #{scenario["title"]}: #{scenario.values_at("given", "when", "then", "expected").compact_blank.join(" / ")}"
+        end.join("\n")
       end
 
       def dependencies(items)
