@@ -58,6 +58,19 @@ RSpec.describe Agents::StagingProofJob do
     expect(Rails.logger).to have_received(:error).with(/StagingProofJob: #{prima.id} RuntimeError: GitHub non risponde/)
   end
 
+  # CYRA-1278 — a switch turned on later still stops the releases already waiting for production.
+  it "asks for the production go-ahead of the releases already waiting" do
+    waiting = create(:agent_workflow).tap do |w|
+      w.update!(closer_staging_completed_at: 3.hours.ago, closer_staging_verified_at: 3.hours.ago)
+    end
+    waiting.ticket.project.update!(production_approval_required: true)
+    allow(Agents::Staging::VerifyMerge).to receive(:call)
+
+    described_class.perform_now
+
+    expect(waiting.reload.blocked_kind).to eq("production_approval")
+  end
+
   it "prende al massimo un lotto per volta" do
     expect(described_class::BATCH).to eq(25)
   end

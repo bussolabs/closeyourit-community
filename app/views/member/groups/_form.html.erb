@@ -32,6 +32,18 @@
             </label>
             <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.groups.form.council_hint") %></p>
           </div>
+
+          <%# CYRA-1278 — switched on for the group, production waits for a person in every project of it. %>
+          <div class="md:col-span-2">
+            <input type="hidden" name="production_approval_required" value="0">
+            <label class="inline-flex items-center gap-2 text-[12.5px] text-zinc-900 dark:text-zinc-100">
+              <input type="checkbox" name="production_approval_required" value="1" data-test="group-production-approval"
+                     class="h-4 w-4 rounded border-stone-300 dark:border-zinc-700 text-indigo-600 dark:text-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400"
+                     <%= "checked" if group.production_approval_required? %>>
+              <%= t("member.groups.form.production_approval") %>
+            </label>
+            <p class="mt-1 text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.groups.form.production_approval_hint") %></p>
+          </div>
         </div>
       </div>
     </div>

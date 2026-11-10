@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## [0.222.0] - 2026-11-10
+
+### Added
+
+- **La produzione può aspettare una persona**: su un progetto o su un gruppo puoi chiedere che il lavoro degli agenti si fermi dopo la prova in staging. Va in produzione solo quando il responsabile dà il via libera, un lavoro alla volta. ([Approvazioni](/member/home/approvals)) (CYRA-1278)
+
+### Changed
+
+- **Email con un nuovo servizio di invio**: avvisi, riepiloghi e inviti partono ora da un servizio di posta più affidabile. Il mittente resta lo stesso e non devi cambiare niente.
+
+## [0.221.8] - 2026-11-10
+
+### Fixed
+
+- **Un problema di prestazioni ignorato non avvisa più**: i nuovi campioni oltre la soglia non mandano avvisi, nemmeno quelli già in coda. Riaprendo il problema, il primo campione oltre la soglia avvisa subito. ([Prestazioni](/member/projects)) (CYRA-1214)
+
+## [0.221.7] - 2026-11-10
+
+### Fixed
+
+- **L'avviso di una macchina parte sul limite che vedi in pagina**: se hai dato a una macchina una soglia più bassa di quella generale per processore, memoria o disco, l'avviso ora parte appena il valore la supera. Prima restava muto finché non si superava anche la soglia generale. Le macchine senza soglia propria si comportano come prima. (CYRA-1209)
+
 ## [0.221.6] - 2026-11-09
 
 ### Fixed

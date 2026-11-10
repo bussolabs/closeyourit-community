@@ -205,6 +205,64 @@ RSpec.describe Metrics::Ingest::Record do
         end
       end
     end
+
+    # CYRA-1214: un gruppo ignored è muto per scelta dell'operatore (come gli errori). Il gruppo nasce
+    # sotto soglia, poi la soglia scende a 1: ogni campione successivo la attraversa.
+    describe "stato del gruppo (CYRA-1214)" do
+      before { allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new) }
+
+      let(:start) { Time.utc(2026, 6, 1, 12) }
+
+      def seed_group(status)
+        project.update!(performance_alert_threshold: 100)
+        described_class.call(project: project, payload: perf_payload("sample_id" => "seed"))
+        group = project.metric_groups.sole
+        group.update!(status: status)
+        project.update!(performance_alert_threshold: 1)
+        group
+      end
+
+      def ingest(sample_id)
+        described_class.call(project: project, payload: perf_payload("sample_id" => sample_id))
+      end
+
+      it "un gruppo ignorato oltre soglia non accoda alert, neanche dopo il cooldown" do
+        travel_to(start) { seed_group(:ignored) }
+
+        travel_to(start) { expect { ingest("i1") }.not_to have_enqueued_job(Alerting::EvaluateJob) }
+        travel_to(start + Metrics::Constants::THRESHOLD_ALERT_COOLDOWN + 1.second) do
+          expect { ingest("i2") }.not_to have_enqueued_job(Alerting::EvaluateJob)
+        end
+      end
+
+      it "un gruppo aperto oltre soglia accoda l'alert" do
+        travel_to(start) do
+          seed_group(:unresolved)
+          expect { ingest("o1") }.to have_enqueued_job(Alerting::EvaluateJob)
+            .with(hash_including(event_type: "metric_threshold", subject_type: "Metrics::Group")).exactly(:once)
+        end
+      end
+
+      it "un gruppo risolto continua ad avvisare (comportamento invariato)" do
+        travel_to(start) do
+          seed_group(:resolved)
+          expect { ingest("r1") }.to have_enqueued_job(Alerting::EvaluateJob)
+            .with(hash_including(event_type: "metric_threshold")).exactly(:once)
+        end
+      end
+
+      it "riaperto dopo campioni da ignorato, avvisa al primo campione oltre soglia senza attendere il cooldown" do
+        travel_to(start) do
+          group = seed_group(:ignored)
+          expect { ingest("x1") }.not_to have_enqueued_job(Alerting::EvaluateJob)
+
+          Metrics::Triage.call(group: group, action: "reopen")
+
+          expect { ingest("x2") }.to have_enqueued_job(Alerting::EvaluateJob)
+            .with(hash_including(event_type: "metric_threshold", subject_id: group.id)).exactly(:once)
+        end
+      end
+    end
   end
 
   describe "race concorrenti (rescue RecordNotUnique)" do

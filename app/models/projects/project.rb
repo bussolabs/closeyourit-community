@@ -348,6 +348,15 @@ module Projects
 
     def council_active? = council_enabled? || group&.council_enabled? || false
 
+    # Production waits for a person's go-ahead when the project or its group asks for it (CYRA-1278).
+    scope :production_approval_required_active, lambda {
+      left_joins(:group).where("projects.production_approval_required OR projects_groups.production_approval_required")
+    }
+
+    def production_approval_required_active?
+      production_approval_required? || group&.production_approval_required? || false
+    end
+
     has_many :project_environments,
              class_name: "Connections::ProjectEnvironment",
              foreign_key: :project_id,

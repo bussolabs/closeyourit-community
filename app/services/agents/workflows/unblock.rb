@@ -20,6 +20,9 @@ module Agents
       include CtoGate
       include ConcludedTicketGate
 
+      # Stops only a person lifts: the supporter's retry never does (CYRA-1197, CYRA-1278).
+      PERSON_ONLY_KINDS = [ SafetyStop::KIND, RequestProductionApproval::KIND ].freeze
+
       # CYRA-1197 — `by_supporter:` is the supporter's retry, decided by Agents::Supporters::JudgeConsult under
       # the server's own checks: it skips the CTO gate, and it can never release a safety stop.
       def initialize(workflow:, actor:, by_supporter: false)
@@ -35,13 +38,14 @@ module Agents
         ApplicationRecord.transaction do
           @workflow.lock!
           return terminal if @workflow.terminal?
-          return safety_stopped if @by_supporter && @workflow.blocked_kind == SafetyStop::KIND
+          return safety_stopped if @by_supporter && PERSON_ONLY_KINDS.include?(@workflow.blocked_kind)
 
           # CYRA-598 — quando a fermare è stata la macchina, la fase da riaprire è quella SCRITTA NEL
           # BLOCCO, non quella dedotta dagli attempt. La regola sta su Agents::Workflow
           # (#stopped_execution_phase) perché la legge anche #reassessable?: due copie divergono.
           stalled = @workflow.stopped_execution_phase
           rearm = @workflow.blocked_kind == "candidate_check"
+          go_ahead = @workflow.blocked_kind == RequestProductionApproval::KIND
           # Non è un errore sbloccare ciò che non è bloccato: due click ravvicinati sono la stessa
           # decisione presa una volta, non un conflitto da mostrare a chi l'ha presa.
           # CYRA-1197 — a person releasing a safety stop is the one way out of it.
@@ -52,11 +56,20 @@ module Agents
           # fa il recovery degli orfani — è la stessa fase interrotta, con un'altra causa.
           @workflow.reload if stalled && @workflow.reopen_execution_phase!(stalled)
           rearm_candidate! if rearm
+          settle_production_approval(go_ahead)
         end
         Result.ok(@workflow)
       end
 
       private
+
+      # CYRA-1278 — lifting the wait for production IS the go-ahead: who and when stay on the workflow.
+      # Lifting any other stop asks for it again while it is still owed.
+      def settle_production_approval(go_ahead)
+        return RequestProductionApproval.call(workflow: @workflow) unless go_ahead
+
+        @workflow.update!(closer_production_approved_by: @actor, closer_production_approved_at: Time.current)
+      end
 
       # CYRA-761 — un blocco del controllo della proposta lascia il candidato «rifiutato», che non è
       # fra gli stati ritentabili e non ha un prossimo controllo: togliere il cartello senza riarmarlo

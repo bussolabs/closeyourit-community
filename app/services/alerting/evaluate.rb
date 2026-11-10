@@ -295,8 +295,11 @@ module Alerting
     # - verdetti duration-based: scattano solo se il campione dura almeno threshold_ms; senza durata
     #   nell'evento → conservativo, no alert.
     # Per il filtro event_type in matching_rules, qui il subject è sempre un Metrics::Group.
+    # CYRA-1214: un gruppo ignorato dopo l'accodamento non avvisa — subject è letto all'invio, lo
+    # stato è quello corrente.
     def threshold_match?(rule)
       return true unless rule.event_metric_threshold?
+      return false if subject.is_a?(Metrics::Group) && subject.status_ignored?
       return true if subject.count_based?
       return true if rule.threshold_ms.nil?
       return false if @duration_ms.nil?

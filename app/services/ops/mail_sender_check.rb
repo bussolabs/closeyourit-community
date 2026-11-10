@@ -1,121 +1,113 @@
 # frozen_string_literal: true
 
 module Ops
-  # Il mittente configurato è davvero abilitato a spedire? (CYRA-233)
+  # Is the configured sender really allowed to send? (CYRA-233)
   #
-  # Ogni email del prodotto — avvisi, riepiloghi, inviti, reimpostazione password — parte dal `from` di
-  # ApplicationMailer. Resend rifiuta la spedizione da un dominio che non risulta verificato nel proprio
-  # account, e il rifiuto NON si vede da nessuna parte: l'invio è dentro un job, il fallimento resta un
-  # job fallito fra gli altri, e il destinatario semplicemente non riceve niente. È rimasto così finché
-  # non l'ha notato una persona a mano — il percorso «qualcosa si rompe → arriva l'avviso» era interrotto
-  # proprio nel tratto che avrebbe dovuto avvisare.
+  # Every product email (alerts, digests, invitations, password resets) leaves from ApplicationMailer's
+  # `from`. Amazon SES refuses to send from an identity that is not verified in the account, and the refusal
+  # shows up nowhere: the send runs inside a job, the failure is one failed job among others, and the
+  # recipient simply gets nothing. It stayed that way until a person noticed by hand: the "something
+  # breaks -> an alert arrives" path was broken exactly in the stretch that should have raised the alert.
   #
-  # Questo controllo chiude l'anello: interroga l'elenco domini del fornitore e confronta col dominio del
-  # mittente reale. Sola OSSERVAZIONE — non manda email (sarebbe il canale rotto a doversi denunciare da
-  # solo), non spedisce niente di prova, non ripara. Chi lo chiama ne fa un segnale:
-  # Ops::MailSenderCheckJob lo lascia nei log, Valhalla::ProbeServices lo mostra su /valhalla/health.
+  # This check closes the loop: it asks SES for the identity of the real sender's domain. OBSERVATION only:
+  # it sends no email (the broken channel would have to report itself), sends nothing as a test, repairs
+  # nothing. Callers turn it into a signal: Ops::MailSenderCheckJob logs it, Valhalla::ProbeServices shows
+  # it on /valhalla/health.
   #
-  # Non solleva MAI: il chiamante è un giro ricorrente, e un'eccezione lo farebbe ritentare a vuoto
-  # trasformando un guasto del fornitore in rumore nella coda.
+  # It NEVER raises: the caller is a recurring run, and an exception would make it retry for nothing,
+  # turning a provider outage into queue noise.
   class MailSenderCheck < ApplicationService
-    # verified   → il dominio del mittente è verificato: le email possono partire.
-    # unverified → dominio presente ma non verificato (record DNS mancanti o non ancora propagati).
-    # unknown_domain → il dominio non risulta affatto all'elenco: è il guasto di CYRA-233.
-    # unconfigured   → nessuna chiave del fornitore. In produzione l'app spegne l'invio
-    #                  (config/environments/production.rb): non parte una mail nemmeno col DNS perfetto.
-    # invalid_sender → il mittente configurato non è un indirizzo email leggibile.
-    # error          → il fornitore non risponde: lo stato del mittente resta ignoto.
-    # restricted_key → il fornitore RIFIUTA la lettura: la chiave è abilitata al solo invio (CYRA-771).
-    #                  Lo stato del mittente resta ignoto, e il rifiuto non dice niente su di esso.
+    # verified       -> the sender's domain is verified and enabled for sending: emails can leave.
+    # unverified     -> the identity exists but is not verified or not enabled for sending (missing or
+    #                   not yet propagated DNS records, sending paused).
+    # unknown_domain -> the domain is not an SES identity at all: the CYRA-233 failure.
+    # unconfigured   -> no SES credentials. In production the app turns delivery off
+    #                   (config/environments/production.rb): not one mail leaves, even with perfect DNS.
+    # invalid_sender -> the configured sender is not a readable email address.
+    # error          -> SES does not answer: the sender's state stays unknown.
+    # restricted_key -> SES REFUSES the read: the credentials may send but not read identities (CYRA-771).
+    #                   The sender's state stays unknown, and the refusal says nothing about it.
     Result = Data.define(:status, :from, :domain, :detail) do
       def deliverable? = status == :verified
 
-      # «Non posso controllare» non è «il mittente non spedisce» (CYRA-771). In produzione i due casi
-      # finivano nello stesso rosso: la chiave abilitata al solo invio faceva fallire la lettura, il
-      # rescue la traduceva in :error e la scheda salute mostrava la posta giù mentre le email
-      # partivano davvero. Un allarme che grida al lupo insegna a ignorare quelli veri.
+      # "I cannot check" is not "the sender does not send" (CYRA-771). Both cases used to end in the same
+      # red: send-only credentials made the read fail, the rescue turned it into :error and the health card
+      # showed mail down while emails were really leaving. An alarm that cries wolf teaches people to
+      # ignore the real ones.
       #
-      # Solo :restricted_key, MAI :error: il rifiuto è una risposta esplicita e circoscritta del
-      # fornitore, mentre :error è il cesto di tutto ciò che non sappiamo — dentro c'è il timeout di
-      # rete passeggero ma anche la chiave revocata o invalida, che ferma DAVVERO la spedizione
-      # perché è la stessa che usa ApplicationMailer. Chiamare «non lo so» anche quello nasconderebbe
-      # un guasto vero dietro un colore tranquillo, cioè il difetto di questo ticket al contrario.
+      # Only :restricted_key, NEVER :error: the refusal is an explicit, narrow answer from the provider,
+      # while :error is the bucket of everything we do not know, from a passing network timeout to revoked
+      # or invalid credentials, which REALLY stop delivery because ApplicationMailer sends with them.
       def unverifiable? = status == :restricted_key
     end
 
-    # Lo status che Resend considera buono per spedire. Gli altri (`pending`, `failed`,
-    # `temporary_failure`, `not_started`) valgono tutti «oggi non spedisce».
-    VERIFIED = "verified"
+    # The identity status SES considers good for sending. The others (PENDING, FAILED, TEMPORARY_FAILURE,
+    # NOT_STARTED) all mean "it does not send today".
+    VERIFIED = "SUCCESS"
 
-    # Nessun argomento = il mittente che useranno DAVVERO le email. Non rilegge MAIL_FROM per conto suo:
-    # il default di ApplicationMailer è già quel valore (o il fallback), e leggere da due posti diversi
-    # è il modo per controllare un mittente e spedirne un altro.
+    # Same region as the delivery settings in config/environments/production.rb.
+    REGION = "eu-central-1"
+
+    # No argument = the sender the emails will REALLY use. It does not read MAIL_FROM on its own:
+    # ApplicationMailer's default already holds that value (or the fallback), and reading from two places
+    # is how you check one sender and send from another.
     def initialize(from: ApplicationMailer.default[:from])
       @from = from.to_s
     end
 
     def call
       domain = sender_domain
-      return result(:invalid_sender, nil, "mittente non interpretabile come indirizzo: #{@from.inspect}") if domain.blank?
+      return result(:invalid_sender, nil, "sender is not a parsable address: #{@from.inspect}") if domain.blank?
+      return result(:unconfigured, domain, "no provider credentials: delivery is off") if credentials.nil?
 
-      # `Resend.api_key` e non ENV: è il valore che userebbe la spedizione vera (lo imposta
-      # config/initializers/resend.rb dalla stessa variabile che decide `perform_deliveries`).
-      return result(:unconfigured, domain, "nessuna chiave del fornitore: l'invio è spento") if Resend.api_key.blank?
+      identity = client.get_email_identity(email_identity: domain)
+      return result(:verified, domain, nil) if identity.verification_status == VERIFIED && identity.verified_for_sending_status
 
-      entry = find_domain(domain)
-      return result(:unknown_domain, domain, "il dominio #{domain} non risulta fra quelli configurati presso il fornitore") if entry.nil?
-
-      status = entry_status(entry)
-      return result(:verified, domain, nil) if status == VERIFIED
-
-      result(:unverified, domain, "il dominio #{domain} risulta in stato #{status.presence || "sconosciuto"}, non verificato")
+      result(:unverified, domain,
+             "domain #{domain} is in status #{identity.verification_status.presence || "unknown"} " \
+             "(sending enabled: #{identity.verified_for_sending_status.inspect}), not verified")
+    rescue Aws::SESV2::Errors::NotFoundException
+      result(:unknown_domain, domain, "domain #{domain} is not among the identities configured at the provider")
     rescue StandardError => e
-      return restricted_key_result if restricted_key?(e)
+      return restricted_key_result if access_denied?(e)
 
-      # Il messaggio del fornitore può citare la richiesta ma mai la chiave (viaggia in un header, che
-      # non finisce nel messaggio d'errore della gem): resta comunque solo classe + messaggio.
+      # The SDK error message never carries the credentials (they travel signed in headers): only class +
+      # message ends up in the result anyway.
       result(:error, sender_domain, "#{e.class}: #{e.message}")
     end
 
     private
 
-    # Si riconosce dal MESSAGGIO perché la gem non lascia altro: `Resend::Error` espone soltanto
-    # `headers` (nessun lettore per il codice HTTP) e mappa 400, 401 e 422 tutti sulla stessa
-    # InvalidRequestError, quindi la classe non distingue «non ti è permesso» da «richiesta
-    # sbagliata». Il nome dell'errore (`restricted_api_key`) arriva nel corpo ma la gem lo scarta:
-    # tiene solo `message`. Il testo è quello documentato, e un fornitore che lo riscrivesse
-    # riporterebbe il caso su :error — stesso colore neutro, dettaglio meno esplicito.
-    RESTRICTED_KEY_MESSAGE = /restricted to only send/i
+    # Same ENV pair the delivery method reads in config/environments/production.rb.
+    def credentials
+      access_key_id = ENV["AWS_SES_ACCESS_KEY_ID"]
+      secret_access_key = ENV["AWS_SES_SECRET_ACCESS_KEY"]
+      return if access_key_id.blank? || secret_access_key.blank?
 
-    def restricted_key?(error) = error.message.to_s.match?(RESTRICTED_KEY_MESSAGE)
+      Aws::Credentials.new(access_key_id, secret_access_key)
+    end
+
+    def client = Aws::SESV2::Client.new(region: REGION, credentials:)
+
+    # The SESv2 model declares no AccessDeniedException class: the SDK builds it on the fly from the error
+    # code, so the code is what we match.
+    def access_denied?(error)
+      error.is_a?(Aws::SESV2::Errors::ServiceError) && error.code == "AccessDeniedException"
+    end
 
     def restricted_key_result
       result(:restricted_key, sender_domain,
-             "la chiave del fornitore è abilitata al solo invio: l'elenco dei domini non le è " \
-             "accessibile, lo stato del mittente resta ignoto")
+             "the provider credentials are not allowed to read identities: the sender's state stays unknown")
     end
 
-    # `Mail::Address` è il parser che usa ActionMailer stesso, quindi legge esattamente ciò che leggerà
-    # la spedizione: nome visualizzato, commenti fra parentesi (il mittente di staging ne ha uno),
-    # indirizzo nudo. Un valore non interpretabile solleva: qui diventa `nil` e più su :invalid_sender.
+    # `Mail::Address` is the parser ActionMailer itself uses, so it reads exactly what delivery will read:
+    # display name, comments in parentheses (the staging sender has one), bare address. An unparsable value
+    # raises: here it becomes `nil` and, above, :invalid_sender.
     def sender_domain
       Mail::Address.new(@from).domain.presence
     rescue StandardError
       nil
     end
-
-    # Match ESATTO sul nome del dominio: Resend spedisce dal dominio registrato, non dai suoi
-    # sottodomini (`notifications.esempio.it` va aggiunto a parte anche se `esempio.it` è verificato).
-    # Accettare il padre darebbe un verde falso, cioè di nuovo il silenzio che ha lasciato passare
-    # CYRA-233: meglio un allarme di troppo che un allarme mancato.
-    def find_domain(domain)
-      Array(Resend::Domains.list[:data]).find { |entry| entry_name(entry).casecmp?(domain) }
-    end
-
-    # La gem simbolizza solo le chiavi di PRIMO livello della risposta: dentro `data` restano stringhe.
-    # Le voci sono lette con entrambe le forme perché un domani la gem potrebbe simbolizzare in profondità.
-    def entry_name(entry) = (entry["name"] || entry[:name]).to_s
-    def entry_status(entry) = (entry["status"] || entry[:status]).to_s
 
     def result(status, domain, detail) = Result.new(status:, from: @from, domain:, detail:)
   end

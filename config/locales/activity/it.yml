@@ -49,4 +49,5 @@ it:
       supporter_enabled: supporter attivo
       automator_live_code_enabled: "codice in diretta dell'automator"
       council_enabled: Consiglio attivo
+      production_approval_required: Via libera prima della produzione
       supporter_reserved_topics: temi riservati del supporter

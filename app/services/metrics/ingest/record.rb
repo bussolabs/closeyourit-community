@@ -203,8 +203,11 @@ module Metrics
       # se perform_later fallisce (es. coda irraggiungibile) il gruppo non resta silenziato per sempre —
       # alla scadenza il prossimo campione oltre soglia riprova. Il throttle/dedup fine dell'invio vive
       # comunque in Alerting::Evaluate (bucket throttle_seconds).
+      # CYRA-1214: un gruppo ignored è muto per scelta dell'operatore (come gli errori). Il controllo
+      # precede il flag di cooldown: un gruppo ignorato non lo consuma, quindi il reopen avvisa subito.
       def enqueue_threshold_alert(group, environment:, duration_ms:)
         return if group.reload.samples_count < @project.performance_alert_threshold
+        return if group.status_ignored?
         return unless Rails.cache.write("metrics:threshold:#{group.id}", 1, unless_exist: true,
                                         expires_in: Metrics::Constants::THRESHOLD_ALERT_COOLDOWN)
 

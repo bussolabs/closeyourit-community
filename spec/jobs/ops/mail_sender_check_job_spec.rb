@@ -89,10 +89,14 @@ RSpec.describe Ops::MailSenderCheckJob do
       expect(Rails.logger).not_to have_received(:warn)
     end
 
-    # Il giro è osservazione: un guasto del fornitore non deve far fallire e ritentare il controllo.
-    it "non solleva quando il fornitore è irraggiungibile davvero" do
-      allow(Resend).to receive(:api_key).and_return("re_test_key")
-      stub_request(:get, "https://api.resend.com/domains").to_timeout
+    # The run is observation: a provider outage must not make the check fail and retry.
+    it "does not raise when the provider is really unreachable" do
+      ses = Aws::SESV2::Client.new(stub_responses: true)
+      ses.stub_responses(:get_email_identity,
+                         Seahorse::Client::NetworkingError.new(Timeout::Error.new("execution expired")))
+      allow(Aws::SESV2::Client).to receive(:new).and_return(ses)
+      stub_const("ENV", ENV.to_h.merge("AWS_SES_ACCESS_KEY_ID" => "AKIATESTKEY",
+                                       "AWS_SES_SECRET_ACCESS_KEY" => "ses_test_secret"))
 
       expect { described_class.perform_now }.not_to raise_error
       expect(Rails.logger).to have_received(:warn).with(a_string_including("Ops::MailSenderCheckJob"))

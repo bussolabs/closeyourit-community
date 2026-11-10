@@ -84,7 +84,7 @@ module Member
     end
 
     def group_params
-      params.permit(:name, :color, :icon, :icon_image, :council_enabled)
+      params.permit(:name, :color, :icon, :icon_image, :council_enabled, :production_approval_required)
     end
 
     # Lettura (index/show): gata da project_groups.view; chi gestisce (project_groups.manage) vede sempre.

@@ -2,40 +2,56 @@
 
 require "rails_helper"
 
-# CYRA-233: il mittente di TUTTE le email (avvisi, riepiloghi, inviti, reimpostazione password) stava su
-# un dominio senza alcuna configurazione di spedizione. Nessuno se n'era accorto perché il guasto non
-# lascia traccia dove si guarda. Questo controllo è l'occhio che mancava.
+# CYRA-233: the sender of ALL emails (alerts, digests, invitations, password resets) sat on a domain with no
+# sending setup at all. Nobody noticed because the failure leaves no trace where people look.
 RSpec.describe Ops::MailSenderCheck, type: :service do
-  # La chiave vera del vault non deve decidere il ramo atteso, e la risposta finta non deve dipendere
-  # dall'ordine degli esempi: chiave nota per ogni esempio, valore originale ripristinato dopo.
+  let(:ses) { Aws::SESV2::Client.new(stub_responses: true) }
+
+  # The real vault credentials must not pick the expected branch: known values for every example, the
+  # original ones restored afterwards.
   around do |example|
-    original = Resend.api_key
-    Resend.api_key = "re_test_key"
+    original = %w[AWS_SES_ACCESS_KEY_ID AWS_SES_SECRET_ACCESS_KEY].index_with { |key| ENV[key] }
+    ENV["AWS_SES_ACCESS_KEY_ID"] = "AKIATESTKEY"
+    ENV["AWS_SES_SECRET_ACCESS_KEY"] = "ses_test_secret"
     example.run
-    Resend.api_key = original
+    original.each { |key, value| ENV[key] = value }
   end
 
-  def stub_domains(*entries, status: 200)
-    stub_request(:get, "https://api.resend.com/domains")
-      .to_return(status: status, body: { data: entries }.to_json,
-                 headers: { "Content-Type" => "application/json" })
+  before { allow(Aws::SESV2::Client).to receive(:new).and_return(ses) }
+
+  def stub_identity(verification_status: "SUCCESS", sending: true)
+    ses.stub_responses(:get_email_identity,
+                       { verification_status:, verified_for_sending_status: sending })
   end
 
-  describe "mittente spedibile" do
-    it "verified quando il dominio del mittente è verificato presso il fornitore" do
-      stub_domains({ id: "d1", name: "notifications.example.test", status: "verified" })
+  def requested_identities = ses.api_requests.map { |request| request[:params][:email_identity] }
+
+  describe "deliverable sender" do
+    it "is verified when the sender's domain is a verified identity enabled for sending" do
+      stub_identity
 
       result = described_class.call(from: "CloseYourIt <noreply@notifications.example.test>")
 
       expect(result.status).to eq(:verified)
       expect(result.deliverable?).to be(true)
       expect(result.domain).to eq("notifications.example.test")
+      expect(requested_identities).to eq([ "notifications.example.test" ])
     end
 
-    # Il mittente di staging porta un commento RFC fra parentesi: se il parsing dell'indirizzo si
-    # rompesse lì, il controllo darebbe :invalid su una configurazione perfettamente valida.
-    it "legge il dominio anche da un mittente con commento fra parentesi (staging)" do
-      stub_domains({ id: "d1", name: "notifications.example.test", status: "verified" })
+    it "asks SES in eu-central-1 with the AWS_SES_* credentials" do
+      stub_identity
+
+      described_class.call(from: "noreply@notifications.example.test")
+
+      expect(Aws::SESV2::Client).to have_received(:new)
+        .with(region: "eu-central-1",
+              credentials: having_attributes(access_key_id: "AKIATESTKEY", secret_access_key: "ses_test_secret"))
+    end
+
+    # The staging sender carries an RFC comment in parentheses: if address parsing broke there, the check
+    # would answer :invalid_sender on a perfectly valid setup.
+    it "reads the domain from a sender with a comment in parentheses (staging)" do
+      stub_identity
 
       result = described_class.call(from: "CloseYourIt (staging) <noreply@notifications.example.test>")
 
@@ -43,158 +59,134 @@ RSpec.describe Ops::MailSenderCheck, type: :service do
       expect(result.domain).to eq("notifications.example.test")
     end
 
-    it "accetta anche un mittente senza nome visualizzato" do
-      stub_domains({ id: "d1", name: "notifications.example.test", status: "verified" })
+    it "accepts a sender without a display name" do
+      stub_identity
 
       expect(described_class.call(from: "noreply@notifications.example.test").status).to eq(:verified)
     end
   end
 
-  describe "mittente non spedibile" do
-    # Il guasto di CYRA-233 in una riga: il dominio del mittente non risulta proprio all'elenco.
-    it "unknown_domain quando il dominio del mittente non è fra quelli configurati" do
-      stub_domains({ id: "d1", name: "altro.example.test", status: "verified" })
+  describe "undeliverable sender" do
+    # The CYRA-233 failure in one line: the sender's domain is not an identity at all.
+    it "is unknown_domain when the sender's domain is not an SES identity" do
+      ses.stub_responses(:get_email_identity, "NotFoundException")
 
       result = described_class.call(from: "CloseYourIt <noreply@notifications.example.test>")
 
       expect(result.status).to eq(:unknown_domain)
       expect(result.deliverable?).to be(false)
       expect(result.detail).to include("notifications.example.test")
-      # Qui il fornitore ha risposto: il mittente NON spedisce. Non è un «non lo so» (CYRA-771).
+      # SES answered here: the sender does NOT send. It is not an "I don't know" (CYRA-771).
       expect(result.unverifiable?).to be(false)
     end
 
-    # Un dominio aggiunto ma con i record DNS non ancora propagati non spedisce: vale come guasto.
-    it "unverified quando il dominio c'è ma non è verificato" do
-      stub_domains({ id: "d1", name: "notifications.example.test", status: "pending" })
+    # An identity whose DNS records have not propagated yet does not send: it counts as a failure.
+    it "is unverified when the identity exists but is not verified" do
+      stub_identity(verification_status: "PENDING", sending: false)
 
       result = described_class.call(from: "noreply@notifications.example.test")
 
       expect(result.status).to eq(:unverified)
       expect(result.deliverable?).to be(false)
-      expect(result.detail).to include("pending")
+      expect(result.detail).to include("PENDING")
     end
 
-    # Il match è ESATTO: Resend spedisce dal dominio registrato, non dai suoi sottodomini. Accettare il
-    # padre darebbe un verde falso — lo stesso silenzio che ha lasciato passare CYRA-233.
-    it "unknown_domain quando è verificato soltanto il dominio padre" do
-      stub_domains({ id: "d1", name: "example.test", status: "verified" })
+    it "is unverified when the identity is verified but not enabled for sending" do
+      stub_identity(sending: false)
 
-      expect(described_class.call(from: "noreply@notifications.example.test").status).to eq(:unknown_domain)
+      expect(described_class.call(from: "noreply@notifications.example.test").status).to eq(:unverified)
     end
   end
 
-  describe "configurazione assente o malformata" do
-    # Senza chiave, in produzione l'app spegne l'invio (config/environments/production.rb): non parte
-    # una mail nemmeno col DNS perfetto. È un guasto quanto il dominio morto, e va detto.
-    it "unconfigured senza chiave del fornitore, senza fare alcuna richiesta" do
-      Resend.api_key = nil
+  describe "missing or malformed configuration" do
+    # Without credentials production turns delivery off (config/environments/production.rb): not one mail
+    # leaves, even with perfect DNS. It is a failure as much as a dead domain, and it must be said.
+    %w[AWS_SES_ACCESS_KEY_ID AWS_SES_SECRET_ACCESS_KEY].each do |key|
+      it "is unconfigured without #{key}, without calling SES" do
+        ENV.delete(key)
 
-      result = described_class.call(from: "noreply@notifications.example.test")
+        result = described_class.call(from: "noreply@notifications.example.test")
 
-      expect(result.status).to eq(:unconfigured)
-      expect(result.deliverable?).to be(false)
-      expect(WebMock).not_to have_requested(:get, /api\.resend\.com/)
+        expect(result.status).to eq(:unconfigured)
+        expect(result.deliverable?).to be(false)
+        expect(Aws::SESV2::Client).not_to have_received(:new)
+      end
     end
 
-    it "invalid_sender quando il mittente configurato non è un indirizzo" do
+    it "is invalid_sender when the configured sender is not an address" do
       result = described_class.call(from: "CloseYourIt")
 
       expect(result.status).to eq(:invalid_sender)
-      expect(WebMock).not_to have_requested(:get, /api\.resend\.com/)
+      expect(Aws::SESV2::Client).not_to have_received(:new)
     end
 
-    it "invalid_sender quando il mittente è vuoto" do
+    it "is invalid_sender when the sender is blank" do
       expect(described_class.call(from: "  ").status).to eq(:invalid_sender)
     end
   end
 
-  # CYRA-771: in produzione la card della posta era ROSSA mentre le email partivano. La chiave usata
-  # per spedire è ristretta al solo invio, quindi il fornitore RIFIUTA la lettura dell'elenco domini:
-  # il rifiuto finiva nel rescue generico, diventava :error e la pagina di salute lo dipingeva come
-  # «mittente rotto». Un allarme che grida al lupo insegna a ignorare quelli veri.
-  describe "chiave ristretta al solo invio" do
-    def stub_restricted_key
-      stub_request(:get, "https://api.resend.com/domains")
-        .to_return(status: 401,
-                   body: { statusCode: 401, name: "restricted_api_key",
-                           message: "This API key is restricted to only send emails" }.to_json,
-                   headers: { "Content-Type" => "application/json" })
-    end
+  # CYRA-771: credentials allowed to send but not to read identities must not paint mail as down.
+  describe "credentials not allowed to read identities" do
+    before { ses.stub_responses(:get_email_identity, "AccessDeniedException") }
 
-    it "restricted_key, non error, quando il fornitore rifiuta la lettura dei domini" do
-      stub_restricted_key
-
+    it "is restricted_key, not error, when SES refuses the identity read" do
       result = described_class.call(from: "noreply@notifications.example.test")
 
       expect(result.status).to eq(:restricted_key)
-      expect(result.detail).to include("solo invio")
+      expect(result.detail).to include("not allowed to read")
     end
 
-    # Il cuore del ticket: «non posso controllare» NON è «non spedisce». Il mittente resta ignoto,
-    # e chi legge il risultato deve poter distinguere le due cose senza guardare il testo del dettaglio.
-    it "non è spedibile ma è dichiarato non verificabile" do
-      stub_restricted_key
-
+    # "I cannot check" is NOT "it does not send": whoever reads the result must tell the two apart without
+    # parsing the detail text.
+    it "is not deliverable but declared unverifiable" do
       result = described_class.call(from: "noreply@notifications.example.test")
 
       expect(result.deliverable?).to be(false)
       expect(result.unverifiable?).to be(true)
     end
 
-    it "non solleva e non lascia trapelare la chiave" do
-      stub_restricted_key
-
+    it "does not raise and does not leak the credentials" do
       result = nil
       expect { result = described_class.call(from: "noreply@notifications.example.test") }.not_to raise_error
-      expect(result.to_h.values.join).not_to include("re_test_key")
+      expect(result.to_h.values.join).not_to include("AKIATESTKEY", "ses_test_secret")
     end
   end
 
-  describe "fornitore non raggiungibile" do
-    # Il controllo osserva, non rompe: un guasto dell'API non deve sollevare (il chiamante è un job
-    # ricorrente, e un raise lo farebbe ritentare a vuoto).
-    it "error senza sollevare quando l'API risponde male" do
-      stub_request(:get, "https://api.resend.com/domains")
-        .to_return(status: 401, body: { statusCode: 401, message: "API key is invalid" }.to_json,
-                   headers: { "Content-Type" => "application/json" })
+  describe "provider unreachable" do
+    # The check observes, it does not break: an API failure must not raise (the caller is a recurring job,
+    # and a raise would make it retry for nothing).
+    it "is error without raising when SES rejects the credentials" do
+      ses.stub_responses(:get_email_identity, "UnrecognizedClientException")
 
       result = nil
       expect { result = described_class.call(from: "noreply@notifications.example.test") }.not_to raise_error
       expect(result.status).to eq(:error)
       expect(result.deliverable?).to be(false)
-      # NON è un «non posso controllare» (CYRA-771): in :error ci finisce anche la chiave revocata,
-      # che è la stessa che spedisce — lì la posta è giù per davvero e il rosso va tenuto.
+      # NOT an "I cannot check" (CYRA-771): revoked credentials land in :error, and they are the ones that
+      # send, so mail is really down and the red stays.
       expect(result.unverifiable?).to be(false)
     end
 
-    it "error senza sollevare quando l'API non risponde affatto" do
-      stub_request(:get, "https://api.resend.com/domains").to_timeout
+    it "is error without raising when SES does not answer at all" do
+      ses.stub_responses(:get_email_identity,
+                         Seahorse::Client::NetworkingError.new(Timeout::Error.new("execution expired")))
 
       result = described_class.call(from: "noreply@notifications.example.test")
 
       expect(result.status).to eq(:error)
       expect(result.detail).to be_present
-    end
-
-    # Il dettaglio finisce nei log e nella pagina di salute: la chiave non ci deve mai comparire.
-    it "non espone mai la chiave del fornitore nel risultato" do
-      stub_request(:get, "https://api.resend.com/domains").to_timeout
-
-      result = described_class.call(from: "noreply@notifications.example.test")
-
-      expect(result.to_h.values.join).not_to include("re_test_key")
+      # The detail lands in logs and on the health page: the credentials must never show up there.
+      expect(result.to_h.values.join).not_to include("AKIATESTKEY", "ses_test_secret")
     end
   end
 
-  describe "mittente di default" do
-    # Nessun argomento = il mittente che useranno davvero le email: MAIL_FROM se c'è, altrimenti il
-    # default di ApplicationMailer. Se questi due divergessero, il controllo guarderebbe un altro posto.
-    it "senza argomenti controlla il mittente di ApplicationMailer" do
-      stub_domains({ id: "d1", name: Mail::Address.new(ApplicationMailer.default[:from]).domain,
-                     status: "verified" })
+  describe "default sender" do
+    # No argument = the sender the emails will really use. If the two diverged, the check would look elsewhere.
+    it "checks ApplicationMailer's sender when called without arguments" do
+      stub_identity
 
       expect(described_class.call.status).to eq(:verified)
+      expect(requested_identities).to eq([ Mail::Address.new(ApplicationMailer.default[:from]).domain ])
     end
   end
 end

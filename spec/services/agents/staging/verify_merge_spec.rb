@@ -67,6 +67,18 @@ RSpec.describe Agents::Staging::VerifyMerge do
     expect(workflow.phase).to eq("closer_production_queued")
   end
 
+  # CYRA-1278 — where the project asks for it, the verified merge stops before production for a person.
+  it "stops before production when the project asks for a go-ahead" do
+    project.update!(production_approval_required: true)
+    dichiara
+
+    described_class.call(workflow:, client: client_che_risponde(true, true))
+
+    expect(workflow.reload).to have_attributes(closer_staging_verified_at: be_present,
+                                               blocked_phase: "closer_production",
+                                               blocked_kind: "production_approval")
+  end
+
   # CYRA-1050 — the code is in staging now: the ticket reads «in review» until production proves it.
   it "puts the ticket on the review status once the merge is verified" do
     in_review = create(:ticket_status, :in_review, organization:)

@@ -205,6 +205,80 @@ RSpec.describe Servers::Ingest::Record do
           .with(hash_including(event_type: "server_cpu"))
       end
 
+      # CYRA-1209: il pre-check usa la soglia della macchina quando c'è (come Alerting::Evaluate), così
+      # l'avviso parte sul limite mostrato in pagina. Valori del payload: cpu 12.34, mem 39.9, disco 54.68.
+      context "con soglia per-macchina" do
+        {
+          "server_cpu" => [ :cpu_threshold, 12.34 ],
+          "server_mem" => [ :mem_threshold, 39.9 ],
+          "server_disk" => [ :disk_threshold, 54.68 ]
+        }.each do |event_type, (column, value)|
+          context event_type do
+            let!(:rule) do
+              create(:alerting_rule, organization: host.organization, event_type: event_type,
+                     name: "Soglia org", threshold: 85)
+            end
+
+            it "più bassa dell'org, valore fra le due soglie → job col valore" do
+              host.update!(column => 10)
+
+              expect { described_class.call(host:, payload:) }
+                .to have_enqueued_job(Alerting::EvaluateJob)
+                .with(hash_including(event_type: event_type, value: value))
+            end
+
+            it "più bassa dell'org ma sopra il valore → nessun job" do
+              host.update!(column => value + 1)
+
+              expect { described_class.call(host:, payload:) }
+                .not_to have_enqueued_job(Alerting::EvaluateJob)
+                .with(hash_including(event_type: event_type))
+            end
+
+            it "più alta dell'org, valore fra le due soglie → nessun job" do
+              rule.update!(threshold: 5)
+              host.update!(column => 95)
+
+              expect { described_class.call(host:, payload:) }
+                .not_to have_enqueued_job(Alerting::EvaluateJob)
+                .with(hash_including(event_type: event_type))
+            end
+
+            it "assente, soglia org sopra il valore → nessun job come prima" do
+              expect(host.public_send(column)).to be_nil
+
+              expect { described_class.call(host:, payload:) }
+                .not_to have_enqueued_job(Alerting::EvaluateJob)
+                .with(hash_including(event_type: event_type))
+            end
+
+            it "assente, soglia org sotto il valore → job come prima" do
+              rule.update!(threshold: 5)
+
+              expect { described_class.call(host:, payload:) }
+                .to have_enqueued_job(Alerting::EvaluateJob)
+                .with(hash_including(event_type: event_type, value: value))
+            end
+
+            it "a 0 conta come soglia (non ricade sull'org) → job" do
+              host.update!(column => 0)
+
+              expect { described_class.call(host:, payload:) }
+                .to have_enqueued_job(Alerting::EvaluateJob)
+                .with(hash_including(event_type: event_type, value: value))
+            end
+          end
+        end
+
+        it "senza regole org con soglia → nessun job anche con soglia per-macchina" do
+          host.update!(cpu_threshold: 1, mem_threshold: 1, disk_threshold: 1)
+
+          expect { described_class.call(host:, payload:) }
+            .not_to have_enqueued_job(Alerting::EvaluateJob)
+            .with(hash_including(event_type: a_string_matching(/\Aserver_(cpu|mem|disk)\z/)))
+        end
+      end
+
       it "regola disabled o di un'altra org non conta" do
         create(:alerting_rule, :disabled, organization: host.organization,
                event_type: :server_cpu, name: "off", threshold: 1)

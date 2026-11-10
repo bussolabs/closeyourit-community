@@ -5,19 +5,16 @@ require "rails_helper"
 RSpec.describe Valhalla::ProbeServices, type: :service do
   include_context "valhalla service health cache"
 
-  # ENV pulita per ogni esempio: la probe legge le stesse variabili dei client di dominio, e i valori
-  # reali (vault in CI/dev) non devono trapelare nello snapshot né decidere il branch atteso qui.
+  # Clean ENV for every example: the probe reads the same variables as the domain clients, and the real
+  # values (vault in CI/dev) must not leak into the snapshot nor pick the expected branch here.
   around do |example|
     keys = %w[AI_API_KEY EMBED_BASE_URL AI_BASE_URL CHAT_BASE_URL
-              TELEGRAM_BOT_TOKEN GH_APP_ID GH_APP_PRIVATE_KEY]
+              TELEGRAM_BOT_TOKEN GH_APP_ID GH_APP_PRIVATE_KEY
+              AWS_SES_ACCESS_KEY_ID AWS_SES_SECRET_ACCESS_KEY]
     original = keys.index_with { |key| ENV[key] }
     keys.each { |key| ENV.delete(key) }
-    # Il mittente email non passa da una ENV ma dalla chiave del client Resend: stessa igiene.
-    original_api_key = Resend.api_key
-    Resend.api_key = nil
     example.run
     original.each { |key, value| ENV[key] = value }
-    Resend.api_key = original_api_key
   end
 
   def snapshot_for(key)
@@ -38,27 +35,26 @@ RSpec.describe Valhalla::ProbeServices, type: :service do
   # CYRA-233: il mittente delle email stava su un dominio senza configurazione di spedizione e la cosa
   # non si vedeva da nessuna parte. Ora si vede qui, accanto agli altri servizi esterni.
   describe "email" do
-    before { Resend.api_key = "re_test_key" }
+    let(:ses) { Aws::SESV2::Client.new(stub_responses: true) }
 
-    def stub_domains(*entries)
-      stub_request(:get, "https://api.resend.com/domains")
-        .to_return(status: 200, body: { data: entries }.to_json,
-                   headers: { "Content-Type" => "application/json" })
+    before do
+      ENV["AWS_SES_ACCESS_KEY_ID"] = "AKIATESTKEY"
+      ENV["AWS_SES_SECRET_ACCESS_KEY"] = "ses_test_secret"
+      allow(Aws::SESV2::Client).to receive(:new).and_return(ses)
     end
 
-    it "up quando il dominio del mittente è verificato, senza esporre la chiave nello snapshot" do
-      stub_domains({ id: "d1", name: Mail::Address.new(ApplicationMailer.default[:from]).domain,
-                     status: "verified" })
+    it "is up when the sender's domain is verified, without exposing the credentials in the snapshot" do
+      ses.stub_responses(:get_email_identity, { verification_status: "SUCCESS", verified_for_sending_status: true })
 
       described_class.call
 
       entry = snapshot_for(:email)
       expect(entry[:status]).to eq(:up)
-      expect(entry.values.join).not_to include("re_test_key")
+      expect(entry.values.join).not_to include("AKIATESTKEY", "ses_test_secret")
     end
 
-    it "down quando il dominio del mittente non risulta configurato, col motivo in chiaro" do
-      stub_domains({ id: "d1", name: "un-altro-dominio.test", status: "verified" })
+    it "is down when the sender's domain is not an identity, with the reason spelled out" do
+      ses.stub_responses(:get_email_identity, "NotFoundException")
 
       described_class.call
 
@@ -67,10 +63,11 @@ RSpec.describe Valhalla::ProbeServices, type: :service do
       expect(entry[:detail]).to eq("unknown_domain")
     end
 
-    # Resta down anche dopo CYRA-771: nel fornitore che non risponde ci sta pure la chiave revocata,
-    # che è quella con cui si spedisce. Il colore tranquillo è riservato al rifiuto esplicito.
-    it "down quando il fornitore non risponde" do
-      stub_request(:get, "https://api.resend.com/domains").to_timeout
+    # Still down after CYRA-771: a provider that does not answer also covers revoked credentials, the ones
+    # that send. The calm colour is kept for the explicit refusal.
+    it "is down when the provider does not answer" do
+      ses.stub_responses(:get_email_identity,
+                         Seahorse::Client::NetworkingError.new(Timeout::Error.new("execution expired")))
 
       described_class.call
 
@@ -78,21 +75,17 @@ RSpec.describe Valhalla::ProbeServices, type: :service do
       expect(snapshot_for(:email)[:detail]).to eq("error")
     end
 
-    # Il guasto vero del ticket: la chiave di produzione spedisce ma non può leggere l'elenco domini,
-    # e la scheda salute gridava alla posta giù mentre le email partivano.
-    it "unverifiable quando la chiave è ristretta al solo invio, col motivo nello snapshot" do
-      stub_request(:get, "https://api.resend.com/domains")
-        .to_return(status: 401,
-                   body: { statusCode: 401, name: "restricted_api_key",
-                           message: "This API key is restricted to only send emails" }.to_json,
-                   headers: { "Content-Type" => "application/json" })
+    # The real failure of the ticket: the credentials send but cannot read the identity, and the health
+    # card cried mail down while emails were leaving.
+    it "is unverifiable when the credentials may not read identities, with the reason in the snapshot" do
+      ses.stub_responses(:get_email_identity, "AccessDeniedException")
 
       described_class.call
 
       entry = snapshot_for(:email)
       expect(entry[:status]).to eq(:unverifiable)
       expect(entry[:detail]).to eq("restricted_key")
-      expect(entry.values.join).not_to include("re_test_key")
+      expect(entry.values.join).not_to include("AKIATESTKEY", "ses_test_secret")
     end
   end
 

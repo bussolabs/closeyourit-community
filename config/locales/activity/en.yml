@@ -49,4 +49,5 @@ en:
       supporter_enabled: supporter on
       automator_live_code_enabled: automator live code
       council_enabled: Council enabled
+      production_approval_required: Go-ahead before production
       supporter_reserved_topics: supporter reserved topics

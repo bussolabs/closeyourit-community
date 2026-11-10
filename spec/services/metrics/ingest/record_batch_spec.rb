@@ -255,6 +255,56 @@ RSpec.describe Metrics::Ingest::Record, "#call_batch", type: :service do
       end.to have_enqueued_job(Alerting::EvaluateJob)
         .with(hash_including(event_type: "metric_threshold", subject_type: "Metrics::Group")).exactly(:once)
     end
+
+    # CYRA-1214: stesso risultato del campione singolo — un gruppo ignored non accoda alert dal batch,
+    # e il reopen avvisa al primo batch oltre soglia (il gruppo ignorato non consuma il cooldown).
+    describe "stato del gruppo (CYRA-1214)" do
+      before { allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new) }
+
+      def seed_group(status)
+        project.update!(performance_alert_threshold: 100)
+        described_class.call_batch(project: project, payloads: [ perf_payload("sample_id" => "seed") ])
+        group = project.metric_groups.sole
+        group.update!(status: status)
+        project.update!(performance_alert_threshold: 1)
+        group
+      end
+
+      def batch(prefix)
+        described_class.call_batch(project: project, payloads: Array.new(5) { |i| perf_payload("sample_id" => "#{prefix}#{i}") })
+      end
+
+      it "un gruppo ignorato non accoda alert da un batch oltre soglia, neanche dopo il cooldown" do
+        seed_group(:ignored)
+
+        expect { batch("i") }.not_to have_enqueued_job(Alerting::EvaluateJob)
+        travel(Metrics::Constants::THRESHOLD_ALERT_COOLDOWN + 1.second) do
+          expect { batch("j") }.not_to have_enqueued_job(Alerting::EvaluateJob)
+        end
+      end
+
+      it "un gruppo aperto accoda UN alert dal batch oltre soglia" do
+        seed_group(:unresolved)
+        expect { batch("o") }.to have_enqueued_job(Alerting::EvaluateJob)
+          .with(hash_including(event_type: "metric_threshold", subject_type: "Metrics::Group")).exactly(:once)
+      end
+
+      it "un gruppo risolto continua ad avvisare (comportamento invariato)" do
+        seed_group(:resolved)
+        expect { batch("r") }.to have_enqueued_job(Alerting::EvaluateJob)
+          .with(hash_including(event_type: "metric_threshold")).exactly(:once)
+      end
+
+      it "riaperto dopo un batch da ignorato, avvisa al batch successivo senza attendere il cooldown" do
+        group = seed_group(:ignored)
+        expect { batch("x") }.not_to have_enqueued_job(Alerting::EvaluateJob)
+
+        Metrics::Triage.call(group: group, action: "reopen")
+
+        expect { batch("y") }.to have_enqueued_job(Alerting::EvaluateJob)
+          .with(hash_including(event_type: "metric_threshold", subject_id: group.id)).exactly(:once)
+      end
+    end
   end
 
   describe "broadcast realtime" do

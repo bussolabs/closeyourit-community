@@ -70,6 +70,8 @@ module Agents
         # CYRA-1193 — production always follows, even when the merge is the proof of done: a beta tag
         # is not a release, and closing the work here left the stable release undone.
         Agents::Workflows::StatusProjection.call(workflow: @workflow)
+        # CYRA-1278 — where the project asks for it, production now waits for a person.
+        Agents::Workflows::RequestProductionApproval.call(workflow: @workflow)
         Result.ok(@workflow)
       end
 

@@ -108,21 +108,19 @@ module Valhalla
       end
     end
 
-    # Unico servizio la cui probe NON è una GET diretta: qui non interessa che il fornitore risponda, ma
-    # che il MITTENTE sia abilitato a spedire — un account Resend perfettamente raggiungibile con un
-    # dominio non verificato non manda una sola email (CYRA-233). La domanda vive in Ops::MailSenderCheck,
-    # che è anche il controllo giornaliero: un posto solo, stessa risposta in pagina e nei log.
-    # `detail` porta lo stato preciso (unknown_domain/unverified/invalid_sender/error/restricted_key),
-    # mai un segreto.
+    # The only service whose probe is NOT a direct GET: what matters is not that the provider answers but
+    # that the SENDER is enabled to send. A perfectly reachable Amazon SES account with an unverified
+    # domain sends not one email (CYRA-233). The question lives in Ops::MailSenderCheck, which is also the
+    # daily check: one place, same answer on the page and in the logs. `detail` carries the precise state
+    # (unknown_domain/unverified/invalid_sender/error/restricted_key), never a secret.
     #
-    # Tre esiti, non due (CYRA-771): fra «spedisce» e «non spedisce» c'è «non lo so», ed è la
-    # condizione normale in produzione — la chiave è abilitata al solo invio e il fornitore rifiuta
-    # la lettura dell'elenco domini, mentre le email partono. Dipingere di rosso un mittente che non
-    # abbiamo potuto guardare insegna a ignorare il rosso quando conta.
+    # Three outcomes, not two (CYRA-771): between "sends" and "does not send" there is "I don't know",
+    # when the credentials may send but SES refuses to read the identity. Painting red a sender we could
+    # not look at teaches people to ignore red when it matters.
     #
-    # «Non lo so» è SOLO il rifiuto esplicito (Result#unverifiable?, cioè :restricted_key): il
-    # fornitore che non risponde resta :down, perché in quel cesto ci sta anche la chiave revocata,
-    # che ferma la spedizione per davvero.
+    # "I don't know" is ONLY the explicit refusal (Result#unverifiable?, i.e. :restricted_key): a provider
+    # that does not answer stays :down, because that bucket also holds revoked credentials, which really
+    # stop delivery.
     def probe_email(checked_at)
       result = Ops::MailSenderCheck.call
       return unconfigured(:email, checked_at) if result.status == :unconfigured

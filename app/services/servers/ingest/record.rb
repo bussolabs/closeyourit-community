@@ -437,6 +437,9 @@ module Servers
 
       # Pre-check: una EvaluateJob per event_type SOLO se almeno una regola org ha la soglia superata
       # (niente job no-op ogni minuto). Evaluate poi ri-filtra regola per regola.
+      # CYRA-1209: come Alerting::Evaluate#effective_threshold, la soglia per-macchina (cpu/mem/disco)
+      # sostituisce la minima delle regole org — anche se più bassa, o l'avviso non partirebbe sul limite
+      # mostrato in pagina. Solo nil ricade sulla minima org: una soglia per-macchina a 0 conta.
       def notify_thresholds(normalized)
         thresholds = Alerting::Rule.enabled
                                    .where(organization_id: @host.organization_id, event_type: THRESHOLD_EVENTS.keys)
@@ -447,7 +450,9 @@ module Servers
         sample = normalized.sample_attrs
         thresholds.each do |event_type, min_threshold|
           value = sample[THRESHOLD_EVENTS.fetch(event_type)]
-          next if value.nil? || value < min_threshold
+          threshold = @host.threshold_for(event_type)
+          threshold = min_threshold if threshold.nil?
+          next if value.nil? || value < threshold
 
           enqueue_alert(event_type, value: value.to_f)
         end

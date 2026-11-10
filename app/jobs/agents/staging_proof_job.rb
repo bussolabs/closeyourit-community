@@ -22,9 +22,17 @@ module Agents
       rescue StandardError => e
         Rails.logger.error("Agents::StagingProofJob: #{workflow.id} #{e.class}: #{e.message}")
       end
+      request_production_approvals unless workflow_id
     end
 
     private
+
+    # CYRA-1278 — a switch turned on after the staging check still stops the releases already waiting.
+    def request_production_approvals
+      Agents::Workflows::RequestProductionApproval.for_projects(Projects::Project.production_approval_required_active)
+    rescue StandardError => e
+      Rails.logger.error("Agents::StagingProofJob: production approvals #{e.class}: #{e.message}")
+    end
 
     def due_records
       Agents::Workflow.where.not(closer_staging_completed_at: nil)

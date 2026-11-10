@@ -217,6 +217,7 @@ module Member
       if hold[:reason] == "staging_soak"
         return t("stopped.production_soak", at: I18n.l(hold[:until], format: :short))
       end
+      return t("stopped.production_approval") if hold[:reason] == ::Agents::Workflows::RequestProductionApproval::KIND
       return t("stopped.production_staging_error_anonymous") unless @decides
 
       t("stopped.production_staging_error", title: Errors::Group.find(hold[:error_group_id]).title)
@@ -253,6 +254,10 @@ module Member
       # posto sbagliato.
       return t("stopped.release_probe", reason: agent_reason) if @workflow.blocked_kind == "release_probe"
       return t("stopped.held_by_person", name: @workflow.held_by_name) if @workflow.held_by_name
+      # CYRA-1278 — the project or its group wants a person's go-ahead before production.
+      if @workflow.blocked_kind == ::Agents::Workflows::RequestProductionApproval::KIND
+        return t("stopped.production_approval")
+      end
       # CYRA-1197 — an agent tried to skip the gates or to touch production: only a person releases it.
       if @workflow.blocked_kind == ::Agents::Workflows::SafetyStop::KIND
         return t("stopped.safety_stop", reason: @workflow.blocked_reason.to_s.delete_prefix("safety_stop: "))

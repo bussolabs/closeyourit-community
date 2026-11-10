@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module Ticketing
-  # Email di una notifica ticket (assegnazione/cambio stato/...). La view vive sotto
+  # Email of a ticket notification (assignment/status change/...). The view lives under
   # app/views/mails/ticketing/ticket_notifications_mailer/ (template_path proc in ApplicationMailer).
-  # In dev parte via letter_opener; in prod dipende dal cablaggio Resend.
+  # In dev it goes through letter_opener; in prod it depends on the Amazon SES wiring.
   class TicketNotificationsMailer < ApplicationMailer
     def notify(notification)
       @notification = notification

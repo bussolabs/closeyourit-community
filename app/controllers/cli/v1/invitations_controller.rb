@@ -38,10 +38,9 @@ module Cli
         @invitation = Current.organization.invitations.find(params[:id])
       end
 
-      # accept_url (token firmato) + email_delivery: la CLI stampava sempre "Email delivery is not
-      # wired in production", una frase fissa che non guardava niente e che quindi non distingueva la
-      # posta spenta da quella funzionante. Solo il server lo sa: perform_deliveries è false quando
-      # RESEND_API_KEY manca (config/environments/production.rb).
+      # accept_url (signed token) + email_delivery: the CLI used to print a fixed "Email delivery is not
+      # wired in production" that could not tell mail off from mail working. Only the server knows: perform_deliveries
+      # is false when neither the AWS_SES_* credentials nor SMTP_ADDRESS are set (config/environments/production.rb).
       def render_invited(invitation)
         accept_url = "#{request.base_url}#{edit_invitation_path(invitation.generate_token_for(:invitation))}"
         render json: { data: InvitationSerializer.new(invitation).as_json

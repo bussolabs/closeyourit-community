@@ -18,4 +18,18 @@
     <%= render Ui::IconComponent.new(name: "hourglass", class: "text-[12px] text-gray-400 dark:text-zinc-500") %>
     <span class="text-[12.5px] text-zinc-700 dark:text-zinc-300"><%= t("member.project_settings.production_hold_effective", count: Agents::Workflows::ProductionHold.hours(@project)) %></span>
   </div>
+
+  <%# CYRA-1278 — production waits for a person's go-ahead. A group switched on covers the project already. %>
+  <% if @project.group&.production_approval_required? %>
+    <p class="text-[12.5px] text-gray-600 dark:text-zinc-400" data-test="project-production-approval-by-group">
+      <%= t("member.project_settings.production_approval_by_group", group: @project.group.name) %>
+    </p>
+  <% else %>
+    <%= render Ui::SwitchComponent.new(
+          name: "production_approval_required", url: member_project_settings_path(@project),
+          checked: @project.production_approval_required?, icon: "hand",
+          label: t("member.project_settings.production_approval_label"),
+          hint: t("member.project_settings.production_approval_hint"),
+          test_id: "project-production-approval-toggle") %>
+  <% end %>
 <% end %>

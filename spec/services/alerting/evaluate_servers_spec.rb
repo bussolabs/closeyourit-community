@@ -111,6 +111,19 @@ RSpec.describe Alerting::Evaluate do
         expect(evaluate(event_type: "server_cpu", value: 95.0).value).to be > 0
       end
     end
+
+    # CYRA-1209: anche una soglia per-macchina PIÙ BASSA di quella della regola vale per questa macchina.
+    context "con soglia per-macchina più bassa di quella della regola" do
+      before { host.update!(cpu_threshold: 70) }
+
+      it "il valore fra soglia-macchina e soglia-regola scatta (78 >= 70)" do
+        expect(evaluate(event_type: "server_cpu", value: 78.0).value).to be > 0
+      end
+
+      it "sotto la soglia della macchina non scatta (60 < 70)" do
+        expect(evaluate(event_type: "server_cpu", value: 60.0).value).to eq(0)
+      end
+    end
   end
 
   # CYRA-181: gli eventi del database passano dallo stesso branch org-scoped (subject = host).

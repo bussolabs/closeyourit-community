@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_05_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -670,9 +670,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_210000) do
     t.index ["target_type", "target_id", "target_digest"], name: "index_agents_supporter_decisions_on_target", unique: true
     t.index ["workflow_id"], name: "index_agents_supporter_decisions_on_workflow_id"
     t.check_constraint "engine::text = ANY (ARRAY['claude'::character varying::text, 'codex'::character varying::text, 'opencode'::character varying::text])", name: "agents_supporter_decisions_engine_valid"
-    t.check_constraint "outcome::text = ANY (ARRAY['answered'::character varying, 'approved'::character varying, 'escalated'::character varying, 'retried'::character varying, 'stopped'::character varying]::text[])", name: "agents_supporter_decisions_outcome_valid"
+    t.check_constraint "outcome::text = ANY (ARRAY['answered'::character varying::text, 'approved'::character varying::text, 'escalated'::character varying::text, 'retried'::character varying::text, 'stopped'::character varying::text])", name: "agents_supporter_decisions_outcome_valid"
     t.check_constraint "risk_score >= 1 AND risk_score <= 10", name: "agents_supporter_decisions_risk_score_range"
-    t.check_constraint "target_type::text = ANY (ARRAY['question'::character varying, 'plan'::character varying, 'consult'::character varying]::text[])", name: "agents_supporter_decisions_target_type_valid"
+    t.check_constraint "target_type::text = ANY (ARRAY['question'::character varying::text, 'plan'::character varying::text, 'consult'::character varying::text])", name: "agents_supporter_decisions_target_type_valid"
   end
 
   create_table "agents_ticket_queue_deferrals", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -819,7 +819,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_210000) do
     t.index ["triage_by_host_id"], name: "idx_agents_workflows_triage_by_host"
     t.index ["triage_by_service_account_id"], name: "idx_agents_workflows_triage_by_sa"
     t.check_constraint "blocked_at IS NULL OR blocked_kind IS NOT NULL", name: "agents_workflows_blocco_ha_un_autore"
-    t.check_constraint "blocked_kind IS NULL OR (blocked_kind::text = ANY (ARRAY['attempt_limit'::character varying, 'agent_blocked'::character varying, 'candidate_check'::character varying, 'release_probe'::character varying, 'held_by_person'::character varying, 'safety_stop'::character varying]::text[]))", name: "agents_workflows_blocked_kind_valido"
+    t.check_constraint "blocked_kind IS NULL OR (blocked_kind::text = ANY (ARRAY['attempt_limit'::character varying, 'agent_blocked'::character varying, 'candidate_check'::character varying, 'release_probe'::character varying, 'held_by_person'::character varying, 'safety_stop'::character varying, 'production_approval'::character varying]::text[]))", name: "agents_workflows_blocked_kind_valido"
     t.check_constraint "candidate_rejections_count >= 0", name: "agents_workflows_candidate_rejections_count_non_negative"
     t.check_constraint "closer_staging_checks_count >= 0", name: "agents_workflows_staging_checks_count_non_negative"
   end
@@ -2853,6 +2853,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_210000) do
     t.uuid "owner_id"
     t.boolean "council_enabled", default: false, null: false
     t.boolean "automator_live_code_enabled", default: false, null: false
+    t.boolean "production_approval_required", default: false, null: false
     t.index ["created_by_id"], name: "index_projects_on_created_by_id"
     t.index ["cto_id"], name: "index_projects_on_cto_id"
     t.index ["default_assignee_id"], name: "index_projects_on_default_assignee_id"
@@ -2902,6 +2903,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_210000) do
     t.uuid "organization_id", null: false
     t.datetime "updated_at", null: false
     t.boolean "council_enabled", default: false, null: false
+    t.boolean "production_approval_required", default: false, null: false
     t.index ["created_by_id"], name: "index_projects_groups_on_created_by_id"
     t.index ["organization_id", "name"], name: "index_projects_groups_on_organization_id_and_name"
     t.index ["organization_id"], name: "index_projects_groups_on_organization_id"

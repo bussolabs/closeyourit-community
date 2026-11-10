@@ -1702,6 +1702,18 @@ RSpec.describe "Member::Home::Approvals", type: :request do
         expect(flash[:notice]).to include(I18n.t("member.approvals.bulk.retry_skipped", count: 1))
       end
 
+      # CYRA-1278 — a go-ahead to production is given one release at a time.
+      it "leaves a release waiting for the production go-ahead alone" do
+        waiting = blocked
+        waiting.update!(blocked_phase: "closer_production", blocked_kind: "production_approval")
+        sign_in(owner)
+
+        post member_home_approvals_bulk_retry_path, params: { keys: [ "agent_plan:#{waiting.id}" ] }
+
+        expect(waiting.reload.blocked_at).to be_present
+        expect(flash[:notice]).to include(I18n.t("member.approvals.bulk.retry_skipped", count: 1))
+      end
+
       it "touches nothing outside the account's organization" do
         other = create(:organization)
         foreign = create(:agent_workflow, ticket: create(:ticket, organization: other, project: create(:project, organization: other)),

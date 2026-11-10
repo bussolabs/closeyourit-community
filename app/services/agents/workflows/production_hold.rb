@@ -29,13 +29,15 @@ module Agents
 
       # True when the hold is released, for the outer agents_workflows + ticketing_tickets row.
       # `window` is the project's: the queue runs on one project at a time.
-      def self.released_sql(now:, window:)
+      # `approval_required` is the project's too: with it on, the go-ahead of a person is also needed (CYRA-1278).
+      def self.released_sql(now:, window:, approval_required: false)
         verified = if window.positive?
           ActiveRecord::Base.sanitize_sql_array([ "agents_workflows.closer_staging_verified_at <= ?", now - window ])
         else
           "agents_workflows.closer_staging_verified_at IS NOT NULL"
         end
-        "#{verified} AND NOT #{staging_errors_sql}"
+        approved = approval_required ? " AND agents_workflows.closer_production_approved_at IS NOT NULL" : ""
+        "#{verified} AND NOT #{staging_errors_sql}#{approved}"
       end
 
       # True when a new, still open staging error appeared after the staging check.
@@ -55,7 +57,9 @@ module Agents
 
         group_id = new_staging_errors(project: workflow.ticket.project_id, since: verified_at)
                    .order(:first_seen_at).pick(:id)
-        { reason: "staging_errors", error_group_id: group_id } if group_id
+        return { reason: "staging_errors", error_group_id: group_id } if group_id
+
+        { reason: RequestProductionApproval::KIND } if RequestProductionApproval.pending?(workflow)
       end
 
       # With 0 hours there is no wait and no time to show: only the error check remains.

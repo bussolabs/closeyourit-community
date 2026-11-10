@@ -56,11 +56,15 @@ Rails.application.configure do
   config.active_job.queue_adapter = :solid_queue
   config.solid_queue.connects_to = { database: { writing: :queue } }
 
-  # Email transazionale via Resend (HTTP API). Attiva SOLO con RESEND_API_KEY (CloseYourIt).
-  # Senza key (Fase 0b non ancora cablata): nessun invio reale, gli enqueue restano no-op → niente crash.
+  # Transactional email through Amazon SES (shared mail account, common-infra/commons/mail), on only with
+  # both AWS_SES_* credentials. Without them nothing is really sent: enqueued mails stay no-ops, no crash.
   # Any SMTP server works too, for self-hosted installs (CYRA-916): SMTP_ADDRESS turns it on.
-  if ENV["RESEND_API_KEY"].present?
-    config.action_mailer.delivery_method = :resend
+  if ENV["AWS_SES_ACCESS_KEY_ID"].present? && ENV["AWS_SES_SECRET_ACCESS_KEY"].present?
+    config.action_mailer.delivery_method = :ses_v2
+    config.action_mailer.ses_v2_settings = {
+      region: "eu-central-1",
+      credentials: Aws::Credentials.new(ENV["AWS_SES_ACCESS_KEY_ID"], ENV["AWS_SES_SECRET_ACCESS_KEY"])
+    }
     config.action_mailer.perform_deliveries = true
     config.action_mailer.raise_delivery_errors = true
   elsif ENV["SMTP_ADDRESS"].present?

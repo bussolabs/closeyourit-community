@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module Secrets
-  # Email di una notifica del vault (CYRA-138, Fase 4: rotazione A2, cancellazione/sync falliti pezzo
-  # B). La view vive sotto app/views/mails/secrets/secret_notifications_mailer/ (template_path proc in
-  # ApplicationMailer). In dev parte via letter_opener; in prod dipende dal cablaggio Resend.
+  # Email of a vault notification (CYRA-138, phase 4: A2 rotation, part B failed deletion/sync). The
+  # view lives under app/views/mails/secrets/secret_notifications_mailer/ (template_path proc in
+  # ApplicationMailer). In dev it goes through letter_opener; in prod it depends on the Amazon SES wiring.
   #
   # Il subject della notifica è polimorfico: Secrets::Variable per la rotazione (A2, ancora viva) o
   # Projects::Project per cancellazione/sync falliti (B, nessuna variabile viva). @variable resta nil

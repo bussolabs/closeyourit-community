@@ -6393,6 +6393,7 @@
         "app/services/agents/workflows/reassess.rb",
         "app/services/agents/workflows/cancel.rb",
         "app/services/agents/workflows/hold_production.rb",
+        "app/services/agents/workflows/request_production_approval.rb",
         "app/services/agents/probes/mark_released.rb"
       ]
     },

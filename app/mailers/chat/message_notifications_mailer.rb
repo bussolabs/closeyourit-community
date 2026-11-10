@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module Chat
-  # Email di una notifica di chat (nuovo messaggio / menzione). La view vive sotto
+  # Email of a chat notification (new message / mention). The view lives under
   # app/views/mails/chat/message_notifications_mailer/ (template_path proc in ApplicationMailer). In
-  # dev parte via letter_opener; in prod dipende dal cablaggio Resend.
+  # dev it goes through letter_opener; in prod it depends on the Amazon SES wiring.
   class MessageNotificationsMailer < ApplicationMailer
     def notify(notification)
       @notification = notification

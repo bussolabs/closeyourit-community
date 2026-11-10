@@ -10,6 +10,13 @@ en:
         one: "In force: %{count} hour of staging trial"
         other: "In force: %{count} hours of staging trial"
         zero: "In force: no wait, the check for new staging errors stays"
+      production_approval_label: Production waits for a person
+      production_approval_hint: After the staging trial the work stops. It goes to production only when the person in charge gives the go-ahead.
+      production_approval_by_group: Production already waits for a person in every project of the %{group} group. Switch it off from the group.
+    groups:
+      form:
+        production_approval: Production waits for a person, in every project
+        production_approval_hint: No work of the group's projects goes to production without the go-ahead of the person in charge.
     organization:
       sections:
         production: Wait before production

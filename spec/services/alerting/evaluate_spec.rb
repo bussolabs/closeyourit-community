@@ -277,6 +277,27 @@ RSpec.describe Alerting::Evaluate do
       expect { evaluate_metric }.not_to change(Alerting::Notification, :count)
     end
 
+    # CYRA-1214: l'alert accodato prima che il gruppo venga ignorato non parte all'invio, su nessun
+    # canale; un gruppo aperto o risolto avvisa come prima.
+    describe "stato del gruppo all'invio (CYRA-1214)" do
+      it "un gruppo ignorato dopo l'accodamento non notifica (in-app, email, Telegram)" do
+        create(:alerting_rule, organization: organization, event_type: :metric_threshold)
+        metric_group.update!(status: :ignored)
+        allow(Alerting::Deliver).to receive(:in_app).and_call_original
+        result = nil
+
+        expect { result = evaluate_metric }.not_to change(Alerting::Notification, :count)
+        expect(result.value).to eq(0) # nessuna consegna, su nessun canale
+        expect(Alerting::Deliver).not_to have_received(:in_app)
+      end
+
+      it "un gruppo risolto continua a notificare" do
+        create(:alerting_rule, organization: organization, event_type: :metric_threshold)
+        metric_group.update!(status: :resolved)
+        expect { evaluate_metric }.to change(Alerting::Notification.where(via: :in_app), :count).by(1)
+      end
+    end
+
     it "threshold_ms su una regola NON metric_threshold è ignorato" do
       create(:alerting_rule, organization: organization, event_type: :error_new, threshold_ms: 500)
       expect { evaluate_error }.to change(Alerting::Notification.where(via: :in_app), :count).by(1)

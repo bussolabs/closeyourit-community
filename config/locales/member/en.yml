@@ -2085,6 +2085,7 @@ en:
             candidate_check: "It stopped while checking the pull request: \"%{reason}\" It will not retry on its own."
             release_probe: "It stopped while checking the release: «%{reason}» It will not retry by itself."
             held_by_person: "Held before production: %{name} stopped it. No release of this repository goes to production until it resumes."
+            production_approval: "Waiting for the go-ahead to production: this project asks for it. Retry gives the go-ahead. No release of this repository goes to production until it resumes."
             safety_stop: "Stopped for safety: «%{reason}» An agent tried to skip the checks or to touch production. It resumes only when a person releases it."
             retrying: "The last step was rejected and is already retrying."
             verifying_candidate: "The system is opening the pull request and reading the checks on that code."

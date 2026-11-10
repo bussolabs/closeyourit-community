@@ -45,8 +45,10 @@ module Home
       private
 
       # Detail offers approve on a blocked plan only when the work is really stopped (#blocked_decisions).
+      # CYRA-1278 — a go-ahead to production is given one release at a time, never in a batch.
       def retryable?(card)
-        card && card.kind == "agent_plan" && card.phase == "review_blocked" && card.can?(:approve)
+        card && card.kind == "agent_plan" && card.phase == "review_blocked" && card.can?(:approve) &&
+          card.record.blocked_kind != ::Agents::Workflows::RequestProductionApproval::KIND
       end
 
       def safe_unblock(card, key)

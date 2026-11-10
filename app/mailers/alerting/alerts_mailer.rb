@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module Alerting
-  # Email di un alert. La view vive sotto app/views/mails/alerting/alerts_mailer/ (template_path proc
-  # in ApplicationMailer). In dev parte via letter_opener; in prod dipende dal cablaggio Resend.
+  # Email of an alert. The view lives under app/views/mails/alerting/alerts_mailer/ (template_path proc
+  # in ApplicationMailer). In dev it goes through letter_opener; in prod it depends on the Amazon SES wiring.
   class AlertsMailer < ApplicationMailer
     # CYRA-480: il nome dell'evento arriva dal catalogo unico (Notifications::Catalog), lo stesso che
     # usano le regole e le impostazioni personali — nell'email non può comparire un terzo vocabolario.

@@ -2147,6 +2147,7 @@ it:
             candidate_check: "Si è fermata sul controllo della proposta: «%{reason}» Non riprova più da sola."
             release_probe: "Si è fermata sul controllo del rilascio: «%{reason}» Non riprova più da sola."
             held_by_person: "Ferma prima della produzione: l'ha fermata %{name}. Nessun rilascio di questo repository va in produzione finché non riparte."
+            production_approval: "Aspetta il via libera per la produzione: questo progetto lo richiede. Riprova dà il via libera. Nessun rilascio di questo repository va in produzione finché non riparte."
             safety_stop: "Fermata per sicurezza: «%{reason}» Un agente ha provato ad aggirare i controlli o a toccare la produzione. Riparte solo se una persona la sblocca."
             retrying: "L'ultimo passo è stato respinto ed è già in un nuovo tentativo."
             verifying_candidate: "Il sistema sta aprendo la proposta e leggendo i controlli su quel codice."
