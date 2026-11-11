@@ -1,4 +1,5 @@
-<div class="contents" data-controller="ui--dialog" data-ui--dialog-open-value="<%= params[:new].present? || @puck.nil? %>">
+<%# A page with no Puck in focus (the office) passes open: false, or the dialog would open by itself. %>
+<div class="contents" data-controller="ui--dialog" data-ui--dialog-open-value="<%= local_assigns.fetch(:open) { params[:new].present? || @puck.nil? } %>" data-test="coworkers-new-wrapper">
   <%# F24: the standard modal shell; the form wraps header and panel so Create in the header submits it.
       Wide size: the presets browser sits beside the form (CYRA-992). %>
   <%= render Ui::ModalComponent.new(title: t("member.coworkers.new_puck"), size: :lg, padded: false, test_id: "coworkers-new-dialog",

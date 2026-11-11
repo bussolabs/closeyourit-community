@@ -64,7 +64,7 @@ module Navigation
       # superficie trasversale, raggiungibile da qualsiasi punto dalla barra comandi e senza un'area
       # propria. Non e' esente dalla guardia — ha rotta (/search) e vista, quindi ci si atterra e senza
       # nodo la briciola salterebbe il livello dell'area.
-      "home" => %w[home member/home/cards member/quick_add member/coworkers member/coworker_runs member/coworker_activity member/coworker_proposals
+      "home" => %w[home member/home/cards member/quick_add member/coworkers member/coworker_runs member/coworker_activity member/coworker_office member/coworker_proposals
                    member/coworker_rules member/coworker_schedules member/coworker_watches member/coworker_memory_notes
                    member/coworker_budgets member/coworker_controls member/coworker_procedures member/coworker_connections
                    member/coworker_sites member/coworker_devices member/preferences member/referral_prompts member/saved_views

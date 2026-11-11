@@ -1,0 +1,40 @@
+<% content_for :title, t("member.coworkers.office_page.title") %>
+<%# CYRA-1283 — a Puck is busy while its newest run is queued or running; the others walk outside as decoration. %>
+<% office = @puckies.map { |puck| { id: puck.id, name: puck.name, mascotKey: "coworkers:mascot:#{puck.organization_id}:#{puck.account_id}:#{puck.id}", busy: @latest_runs[puck.id]&.active? || false } } %>
+<%# No page header (DESIGN.md B18): the scene says what the page is, and the sidebar already lists the Puckies. %>
+<div class="flex h-full min-h-0 flex-col p-7">
+  <% if @puckies.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.coworkers.office_page.empty"), body: t("member.coworkers.office_page.empty_body"), icon: "building-2", framed: true, test_id: "coworkers-office-empty") %>
+  <% else %>
+    <div class="flex min-h-0 flex-1" data-test="coworkers-office" data-controller="coworker-office"
+         data-coworker-office-discoveries-value="<%= t("member.coworkers.office_page.discoveries.messages").to_json %>"
+         data-coworker-office-puckies-value="<%= office.to_json %>"
+         data-coworker-office-rooms-value="<%= @office_rooms.to_json %>"
+         data-coworker-office-places-value="<%= t("member.coworkers.office_page.places").to_json %>">
+      <%# Every control floats over the scene: the overlay boxes let pointer events through, only the controls catch them, so dragging still rotates the office. %>
+      <div class="relative min-h-[480px] min-w-0 flex-1 overflow-hidden rounded-lg border border-stone-200 bg-stone-100 dark:border-zinc-800 dark:bg-zinc-950"
+           role="group" aria-label="<%= t("member.coworkers.office_page.stage") %>" data-coworker-office-target="stage" data-test="coworkers-office-stage">
+        <p hidden class="absolute inset-0 grid place-items-center p-4 text-center text-[13px] text-gray-500 dark:text-zinc-400" data-coworker-office-target="fallback"><%= t("member.coworkers.office_page.fallback") %></p>
+        <div class="pointer-events-none absolute left-3 top-3 z-10 flex max-w-[calc(100%-9rem)] flex-col items-start gap-2" aria-live="polite">
+          <div class="flex flex-wrap items-center gap-2" role="group" aria-label="<%= t("member.coworkers.office_page.views") %>">
+            <%= render Ui::ButtonComponent.new(label: t("member.coworkers.office_page.follow"), variant: :secondary, size: :sm, disabled: true, class: "pointer-events-auto min-h-11", aria: { pressed: false }, data: { action: "coworker-office#follow", coworker_office_target: "follow" }) %>
+          </div>
+        </div>
+        <%= render Ui::ButtonComponent.new(label: t("member.coworkers.office_page.reset"), icon: "rotate-ccw", variant: :secondary, size: :sm, class: "absolute right-3 top-3 z-10",
+              data: { action: "coworker-office#reset" }) %>
+        <div class="pointer-events-none absolute inset-x-3 bottom-16 z-10 md:inset-x-auto md:right-3 md:top-16 md:bottom-16 md:w-72 md:overflow-y-auto" aria-live="polite">
+          <% @puckies.each do |puck| %>
+            <%= render "member/coworker_office/puck", puck: puck, run: @latest_runs[puck.id] %>
+          <% end %>
+        </div>
+        <div class="pointer-events-none absolute inset-x-3 bottom-3 z-10 flex flex-wrap items-center gap-2">
+          <p class="pointer-events-auto rounded-md bg-white/90 px-2 py-1 text-[13px] text-gray-600 dark:bg-zinc-900/90 dark:text-zinc-300" data-coworker-office-target="hint"><%= t("member.coworkers.office_page.hint") %></p>
+          <p hidden class="pointer-events-auto rounded-md bg-white/90 px-2 py-1 text-[13px] text-gray-700 dark:bg-zinc-900/90 dark:text-zinc-200" role="status" data-coworker-office-target="discoveryStatus"></p>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+<%# The sidebar's New Puck and pencil buttons open these dialogs, so every page with that sidebar carries them. %>
+<%= render "member/coworkers/new_puck", open: false %>
+<%= render partial: "member/coworkers/edit_puck", collection: @puckies, as: :puck %>

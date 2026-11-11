@@ -7432,15 +7432,19 @@
       "level": 2,
       "parent": "area_coworkers",
       "kind": "page",
-      "summary": "Elenco e scheda di ogni Puck con la sua chat, attività, regole, compiti a orario, budget, app, siti, procedure e computer collegati.",
+      "summary": "Elenco e scheda di ogni Puck con la sua chat, attività, regole, compiti a orario, budget, app, siti, procedure e computer collegati. La vista Ufficio mostra i Puck come personaggi in un ufficio 3D, con forme e accessori della mascotte scelta nella galleria del browser, animali reattivi nel giardino, soste su sedie e panchine, pause caffè e ombrelloni che si aprono al loro arrivo. Il prato uniforme continua con colline, alberi, fiori e una strada collegata all’ingresso. Sette piccoli segreti reagiscono al clic; archivio, osservatorio e laboratorio compaiono in base al ruolo Ricercatore, ai controlli periodici e alle app collegate ai Puck visibili. Include viste rapide, inseguimento del Puck selezionato e illuminazione automatica secondo l’ora locale, con override giorno/sera.",
       "files": [
         "app/controllers/member/coworkers_controller.rb",
         "app/controllers/member/coworker_activity_controller.rb",
+        "app/controllers/member/coworker_office_controller.rb",
         "app/controllers/member/coworker_rules_controller.rb",
         "app/controllers/member/coworker_schedules_controller.rb",
         "app/controllers/member/coworker_budgets_controller.rb",
         "app/views/member/coworkers/**",
-        "app/views/member/coworker_activity/**"
+        "app/views/member/coworker_activity/**",
+        "app/views/member/coworker_office/**",
+        "app/javascript/controllers/coworker_office_controller.js",
+        "app/javascript/coworker_office/**"
       ]
     },
     {

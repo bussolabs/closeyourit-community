@@ -1,0 +1,17 @@
+<%# CYRA-1283 — one Puck's card; the office controller shows the card of the Puck that was picked. %>
+<% rows = [ [ "status", run ? t("member.coworkers.status.#{run.status}") : t("member.coworkers.office_page.never") ],
+            [ "where", t("member.coworkers.office_page.#{run&.active? ? 'at_desk' : 'free'}") ] ] %>
+<% rows.push([ "last", l(run.created_at, format: :short) ], [ "request", run.input.squish.truncate(140) ]) if run %>
+<section hidden class="pointer-events-auto space-y-3 rounded-lg border border-stone-200 bg-white/95 p-4 dark:border-zinc-800 dark:bg-zinc-900/95" data-coworker-office-target="panel" data-puck-id="<%= puck.id %>" data-test="coworkers-office-puck-<%= puck.id %>">
+  <div class="flex justify-center py-4 [&_img]:size-40">
+    <%= render "member/coworkers/mascot", puck: puck, large: true %>
+  </div>
+  <h2 class="text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= puck.name %></h2>
+  <dl class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-[13px]">
+    <% rows.each do |key, value| %>
+      <dt class="text-gray-500 dark:text-zinc-400"><%= t("member.coworkers.office_page.#{key}") %></dt>
+      <dd class="min-w-0 break-words text-zinc-900 dark:text-zinc-100"><%= value %></dd>
+    <% end %>
+  </dl>
+  <%= render Ui::ButtonComponent.new(label: t("member.coworkers.office_page.open_chat"), href: member_coworker_path(puck), icon: "message-square", variant: :secondary, size: :sm, test_id: "coworkers-office-open-chat") %>
+</section>

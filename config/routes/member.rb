@@ -6,6 +6,7 @@
 namespace :member do
   # Before the resources: "activity" must not be read as a Puck id (CYRA-1026).
   get "coworkers/activity", to: "coworker_activity#index", as: :coworker_activity
+  get "coworkers/office", to: "coworker_office#index", as: :coworker_office
   resources :coworkers, only: %i[index show create update] do
     resources :runs, only: %i[create update], controller: "coworker_runs" do
       post :approve, on: :member

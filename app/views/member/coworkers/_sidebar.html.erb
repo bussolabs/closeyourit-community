@@ -9,8 +9,9 @@
   </div>
   <div class="px-2">
     <%= render Ui::NavLinkComponent.new(label: t("member.coworkers.activity_page.title"), path: member_coworker_activity_path, icon: "list", size: :top) %>
+    <%= render Ui::NavLinkComponent.new(label: t("member.coworkers.office_page.title"), path: member_coworker_office_path, icon: "building-2", size: :top) %>
   </div>
-  <nav aria-label="<%= t("member.coworkers.puckies") %>" class="flex-1 p-2 space-y-0.5">
+  <nav aria-label="<%= t("member.coworkers.puckies") %>" class="mt-2 flex-1 border-t border-stone-200 p-2 space-y-0.5 dark:border-zinc-800">
     <% @puckies.each do |puck| %>
       <%= render "member/coworkers/puck_link", puck: puck %>
     <% end %>

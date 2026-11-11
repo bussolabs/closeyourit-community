@@ -1,0 +1,46 @@
+it:
+  member:
+    coworkers:
+      office_page:
+        discoveries:
+          title: "Piccoli segreti"
+          hint: "Tocca gli oggetti curiosi nella scena, oppure esplora da qui."
+          labels:
+            lucky_cat: "Un saluto in reception"
+            paper_plane: "Pronto al decollo"
+            tiny_arcade: "Pausa gioco"
+            cookie_tin: "L'ultimo biscotto"
+            garden_snail: "Con calma"
+            server_robot: "Il custode dei server"
+            secret_book: "Un libro diverso"
+          messages:
+            lucky_cat: "Il gatto della reception ti augura una giornata fortunata."
+            paper_plane: "La riunione ha preso il volo: qualcuno ha piegato gli appunti."
+            tiny_arcade: "Una partita veloce tra un compito e l'altro. Il record è dei Puck!"
+            cookie_tin: "C'è ancora un biscotto. Qualcuno lo aveva nascosto bene."
+            garden_snail: "Anche la lumaca ha una missione. Nessuna fretta, però."
+            server_robot: "Il piccolo custode controlla che tutti i server stiano bene."
+            secret_book: "Tra i manuali c'è un passaggio segreto… per una pausa lettura."
+en:
+  member:
+    coworkers:
+      office_page:
+        discoveries:
+          title: "Little secrets"
+          hint: "Tap curious objects in the scene, or explore from here."
+          labels:
+            lucky_cat: "A reception greeting"
+            paper_plane: "Ready for takeoff"
+            tiny_arcade: "Game break"
+            cookie_tin: "The last cookie"
+            garden_snail: "Take it slow"
+            server_robot: "The server keeper"
+            secret_book: "An unusual book"
+          messages:
+            lucky_cat: "The reception cat wishes you a lucky day."
+            paper_plane: "This meeting took flight: someone folded the notes."
+            tiny_arcade: "A quick game between tasks. The Puckies hold the record!"
+            cookie_tin: "There is one cookie left. Someone hid it well."
+            garden_snail: "The snail has a mission too. There is no rush, though."
+            server_robot: "The little keeper checks that all the servers are doing well."
+            secret_book: "Among the manuals is a secret passage… to a reading break."

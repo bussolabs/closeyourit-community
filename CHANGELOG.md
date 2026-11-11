@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.223.1] - 2026-11-11
+
+### Fixed
+
+- **L'Ufficio dei Puck ha il suo posto nel menu**: aprendo la pagina Ufficio il menu evidenzia Coworkers e la briciola di pane mostra l'area giusta. (CYRA-1283)
+
+## [0.223.0] - 2026-11-11
+
+### Added
+
+- **L'ufficio dei Puck**: in Coworkers la nuova pagina Ufficio mostra i Puck come personaggi in un ufficio 3D. Chi lavora siede alla scrivania, gli altri passeggiano. Tocchi un Puck per vedere cosa sta facendo, trascini per ruotare la scena. (CYRA-1283)
+
 ## [0.222.0] - 2026-11-10
 
 ### Added

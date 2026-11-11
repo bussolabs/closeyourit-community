@@ -19,6 +19,12 @@ module Coworkers
     validates :input, presence: true, length: { maximum: 8000 }
     validates :output, length: { maximum: 128000 }
     scope :active, -> { where(status: %w[queued running]) }
+
+    # The newest run of each Puck, keyed by Puck id: one query however many Puckies there are.
+    def self.latest_by_puck(puck_ids)
+      where(puck_id: puck_ids).select("DISTINCT ON (puck_id) coworkers_runs.*").order(:puck_id, created_at: :desc).index_by(&:puck_id)
+    end
+
     CHANNELS = %w[web telegram slack app].freeze
     # The latest screen of the task's browser and the proof video of a reproduction (CYRA-1016, CYRA-1028).
     has_one_attached :screen

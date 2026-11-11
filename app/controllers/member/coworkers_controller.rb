@@ -48,8 +48,7 @@ module Member
 
     def load_puckies
       @puckies = visible.coworker_puckies.order(:created_at).to_a
-      @latest_runs = Coworkers::Run.where(puck_id: @puckies.map(&:id)).select("DISTINCT ON (puck_id) coworkers_runs.*")
-                                   .order(:puck_id, created_at: :desc).index_by(&:puck_id)
+      @latest_runs = Coworkers::Run.latest_by_puck(@puckies.map(&:id))
     end
 
     # The conversation opens on the last PAGE messages; older pages load in a frame above them.
