@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.227.0] - 2026-11-13
+
+### Added
+
+- **Accesso di prova per progetto**: nelle impostazioni di ogni progetto c'è la sezione Test, con link, utente e password dell'account con cui si prova il lavoro in staging. La password resta cifrata tra i segreti e non si rilegge. [Progetti](/member/projects)
+
+### Changed
+
+- **Lavoro automatico solo con l'account di prova**: un progetto con uno staging viene lavorato dagli agenti solo quando la sezione Test ha link, utente e password. Chi non ha una pagina dove entrare lo dichiara lì. I progetti senza staging non cambiano. [Progetti](/member/projects)
+
 ## [0.226.0] - 2026-11-12
 
 ### Added

@@ -14,7 +14,7 @@ module Member
                        automator_live_code_enabled production_approval_required].freeze
     # The panels that save with their own form: a save returns to the panel it came from. It travels as
     # `?section=`, not `#anchor`: a fragment in a redirect is lost by the fetch that follows it.
-    FORM_SECTIONS = %w[ingest tickets retention thresholds production delivery supporter dashboard].freeze
+    FORM_SECTIONS = %w[ingest tickets retention thresholds production delivery test supporter dashboard].freeze
 
     before_action :set_project
     # CYRA-883 — the page also holds the ingest tokens: whoever manages them (the default Maintainer,
@@ -38,14 +38,31 @@ module Member
 
     # Form impostazioni (HTML): retention (1..365 / blank = eredita) + assegnatario di default dei ticket.
     def update_retention
-      if @project.update(settings_params)
+      if @project.update(settings_params) && save_test_password
         redirect_to member_project_settings_path(@project, section: saved_section), notice: t("member.project_settings.updated")
       else
-        @errors = @project.errors.to_hash
+        @errors = @project.errors.to_hash.merge(@test_password_error.to_h)
         @section = saved_section
         load_settings
         render :show, status: :unprocessable_content
       end
+    end
+
+    # CYRA-1303 — the test account's password is a secret: it goes in the vault, and only who manages the
+    # project's secrets may write it. A blank field leaves the stored one alone.
+    def save_test_password
+      password = params[:test_access_password].to_s
+      return true if password.empty?
+
+      key = if !can?("secrets.manage", scope: @project)
+        "test_access_password_forbidden"
+      elsif Projects::TestAccess::SavePassword.call(project: @project, password:, actor: Current.account).err?
+        "test_access_password_no_staging"
+      end
+      return true if key.nil?
+
+      @test_password_error = { test_access_password: [ t("member.project_settings.#{key}") ] }
+      false
     end
 
     # Switch funzionalità (JSON): persiste il singolo flag booleano con update_column, così un
@@ -81,7 +98,7 @@ module Member
       # CYRA-341: performance_fast_ms/performance_slow_ms = soglie di colore delle durate (Metrics::Thresholds).
       params.permit(:logs_retention_days, :analytics_retention_days, :errors_retention_days,
                     :performance_retention_days, :uptime_retention_days, :traces_retention_days, :artifacts_retention_days, :crashes_retention_days, :session_health_retention_days, :measurements_retention_days,
-                    :performance_fast_ms, :performance_slow_ms, :production_hold_hours, :delivery_scope_check, :triage_risk_floor, :staging_deploy_proof, :production_watch, :strict_caps, :fast_lane, :light_phase_engine, :browser_proof_go_ahead,
+                    :performance_fast_ms, :performance_slow_ms, :production_hold_hours, :delivery_scope_check, :triage_risk_floor, :staging_deploy_proof, :production_watch, :strict_caps, :fast_lane, :light_phase_engine, :browser_proof_go_ahead, :test_access_url, :test_access_username, :test_access_not_needed,
                     :default_assignee_id, :cto_id, :owner_id, :allowed_origins, :supporter_reserved_topics)
     end
 

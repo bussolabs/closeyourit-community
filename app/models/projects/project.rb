@@ -400,7 +400,8 @@ module Projects
     store_accessor :preferences, :artifacts_retention_days, :crashes_retention_days, :session_health_retention_days, :measurements_retention_days, :traces_retention_days, :logs_retention_days, :analytics_retention_days, :performance_alert_threshold, :replay_retention_days,
                    :errors_retention_days, :performance_retention_days, :uptime_retention_days,
                    :performance_fast_ms, :performance_slow_ms,
-                   :workspace_path, :vulnerability_auto_ticket, :production_hold_hours, :delivery_scope_check, :triage_risk_floor, :staging_deploy_proof, :production_watch, :strict_caps, :fast_lane, :light_phase_engine, :browser_proof_go_ahead
+                   :workspace_path, :vulnerability_auto_ticket, :production_hold_hours, :delivery_scope_check, :triage_risk_floor, :staging_deploy_proof, :production_watch, :strict_caps, :fast_lane, :light_phase_engine, :browser_proof_go_ahead,
+                   :test_access_url, :test_access_username, :test_access_not_needed
 
     # Ticket automatico per le vulnerabilità gravi (CYRA-506): acceso salvo scelta contraria. Vive
     # nelle preferenze e non in una colonna perché è un interruttore, non un dato del progetto — e
@@ -487,6 +488,24 @@ module Projects
     end
 
     def browser_proof_go_ahead? = ActiveModel::Type::Boolean.new.cast(browser_proof_go_ahead) || false
+
+    # CYRA-1303 — where and as whom the work is tried on staging: blank → nil. The password is not here: it
+    # lives in the project's vault (Projects::TestAccess::SavePassword).
+    def test_access_url=(value)
+      super(value.to_s.strip.presence)
+    end
+
+    def test_access_username=(value)
+      super(value.to_s.strip.presence)
+    end
+
+    # CYRA-1304 — a project with a staging environment and nothing to sign in to (a CLI, a daemon, an
+    # infrastructure repo) declares it here and is worked without a test account. Off unless switched on.
+    def test_access_not_needed=(value)
+      super(ActiveModel::Type::Boolean.new.cast(value.presence) || false)
+    end
+
+    def test_access_not_needed? = ActiveModel::Type::Boolean.new.cast(test_access_not_needed) || false
 
     # CYRA-1293 — whether the triage's risk is the floor when the supporter decides: blank → nil → off.
     def triage_risk_floor=(value)
@@ -591,6 +610,9 @@ module Projects
     validates :delivery_scope_check, inclusion: { in: Agents::Candidates::ScopeCheck::MODES }, allow_nil: true
     validates :fast_lane, inclusion: { in: Agents::Plans::FastLane::MODES }, allow_nil: true
     validates :light_phase_engine, inclusion: { in: Agents::PhaseEngine::OPTIONS }, allow_nil: true
+    validates :test_access_url, length: { maximum: 500 },
+                                format: { with: %r{\Ahttps?://[^\s]+\z}, message: :test_access_url }, allow_nil: true
+    validates :test_access_username, length: { maximum: 200 }, allow_nil: true
     validates :triage_risk_floor, inclusion: { in: Agents::Supporters::TriageRisk::MODES }, allow_nil: true
     validate :duration_thresholds_ordered
     validate :group_must_match_organization

@@ -259,6 +259,111 @@ RSpec.describe "Member::ProjectSettings", type: :request do
       expect(project.reload).not_to be_production_watch
     end
 
+    # CYRA-1303 — the test account of the project: link and user on the project, password in the vault.
+    describe "the test access" do
+      def declare_staging
+        create(:environment, organization: org, code: "staging", label: "Staging").tap { |environment| project.environments << environment }
+      end
+
+      it "saves the link and the user, and stores the password in the staging vault without showing it" do
+        staging = declare_staging
+
+        patch member_project_settings_path(project), params: {
+          test_access_url: "https://staging.example.com/login", test_access_username: "tester@example.com",
+          test_access_password: "S3cret-pass", section: "test"
+        }
+
+        expect(response).to redirect_to(member_project_settings_path(project, section: "test"))
+        expect(project.reload).to have_attributes(test_access_url: "https://staging.example.com/login",
+                                                  test_access_username: "tester@example.com")
+        expect(project.preferences.to_json).not_to include("S3cret-pass")
+        expect(project.secret_variables.find_by!(environment: staging, name: "TEST_ACCESS_PASSWORD").value).to eq("S3cret-pass")
+
+        get member_project_settings_path(project)
+        expect(response.body).to include("tester@example.com")
+        expect(response.body).not_to include("S3cret-pass")
+        expect(response.body).to include(I18n.t("member.project_settings.test_access_password_set"))
+      end
+
+      # CYRA-1304 — a project with staging and no page to sign in to opts out of the test account.
+      it "stops asking for the test account once the project declares it has no sign-in to try" do
+        declare_staging
+        get member_project_settings_path(project)
+        expect(response.body).to include("project-test-access-required")
+
+        patch member_project_settings_path(project), params: { test_access_not_needed: "1", section: "test" }
+        expect(project.reload).to be_test_access_not_needed
+
+        get member_project_settings_path(project)
+        expect(response.body).not_to include("project-test-access-required")
+        expect(response.body).to include("project-test-access-not-needed")
+
+        patch member_project_settings_path(project), params: { test_access_not_needed: "0", section: "test" }
+        expect(project.reload).not_to be_test_access_not_needed
+      end
+
+      # CYRA-1304 — the section says when automatic work is stopped for lack of the test account.
+      it "says automatic work is stopped while a project with staging has no test account" do
+        get member_project_settings_path(project)
+        expect(response.body).not_to include("project-test-access-required")
+        expect(response.body).to include("project-test-access-optional")
+
+        declare_staging
+        get member_project_settings_path(project)
+        expect(response.body).to include("project-test-access-required")
+
+        patch member_project_settings_path(project), params: {
+          test_access_url: "https://staging.example.com/login", test_access_username: "tester@example.com",
+          test_access_password: "S3cret-pass", section: "test"
+        }
+        get member_project_settings_path(project)
+        expect(response.body).not_to include("project-test-access-required")
+      end
+
+      it "keeps the stored password when the field is left blank" do
+        declare_staging
+        patch member_project_settings_path(project), params: { test_access_password: "S3cret-pass", section: "test" }
+
+        patch member_project_settings_path(project), params: { test_access_username: "other@example.com", test_access_password: "", section: "test" }
+
+        expect(project.reload.test_access_username).to eq("other@example.com")
+        expect(project.secret_variables.find_by!(name: "TEST_ACCESS_PASSWORD").value).to eq("S3cret-pass")
+      end
+
+      it "refuses the password, and says why, when the project has no staging environment" do
+        patch member_project_settings_path(project), params: { test_access_password: "S3cret-pass", section: "test" }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include(I18n.t("member.project_settings.test_access_password_no_staging"))
+        expect(response.body).not_to include("S3cret-pass")
+        expect(project.secret_variables.count).to eq(0)
+      end
+
+      it "refuses the password from who can edit the project but not manage its secrets" do
+        declare_staging
+        editor = create(:account)
+        create(:membership, account: editor, organization: org, role: :member)
+        create(:project_membership, account: editor, project:)
+        role = create(:role, organization: org, name: "Editor")
+        create(:role_permission, role:, permission_key: "projects.edit")
+        create(:account_role, account: editor, organization: org, role:)
+        sign_in(editor)
+
+        patch member_project_settings_path(project), params: { test_access_password: "S3cret-pass", section: "test" }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include(CGI.escapeHTML(I18n.t("member.project_settings.test_access_password_forbidden")))
+        expect(project.secret_variables.count).to eq(0)
+      end
+
+      it "refuses a link that is not a web address" do
+        patch member_project_settings_path(project), params: { test_access_url: "javascript:alert(1)", section: "test" }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(project.reload.test_access_url).to be_nil
+      end
+    end
+
     # CYRA-1302 — a plan with a proof in a browser waits for a person before production.
     it "switches the go-ahead for the proofs in a browser on and off" do
       patch member_project_settings_path(project), params: { browser_proof_go_ahead: "1", section: "production" }

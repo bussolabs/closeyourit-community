@@ -27,7 +27,8 @@
         <% { "ingest" => "ingest_section", "tickets" => "assignee_section",
              "retention" => "retention_section", "thresholds" => "thresholds_section",
              "production" => "production_hold_section",
-             "delivery" => "delivery_check_section" }.each do |anchor, partial| %>
+             "delivery" => "delivery_check_section",
+             "test" => "test_access_section" }.each do |anchor, partial| %>
           <%= form_with url: member_project_settings_path(@project), method: :patch,
                 data: { test: "project-settings-form-#{anchor}", section_panels_target: "panel", anchor: anchor } do %>
             <%= render "member/project_settings/#{partial}" %>

@@ -46,6 +46,10 @@ module Agents
       # Workflow#ready_execution_phase e farebbe restituire NULL per un ticket bloccato — cioè
       # "nessuna fase pronta", che è falso (la fase è pronta, è il ticket a non essere lavorabile).
       def relation
+        # CYRA-1304 — a project with a staging environment and no test account hands out nothing: nobody
+        # could try the work there. It is a property of the project, so it stays out of the per-row CASE.
+        return @project.tickets.none if Projects::TestAccess::Requirement.missing?(@project)
+
         @project.tickets
                 .joins(:status, :priority, :agent_workflow)
                 .left_joins(:agent_lease)

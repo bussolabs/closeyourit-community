@@ -1,0 +1,54 @@
+<%# CYRA-1303 — where and as whom the work is tried on staging. The password is written to the vault and
+    never read back: the page only says whether one is stored. %>
+<% password_set = Projects::TestAccess::SavePassword.set?(@project) %>
+<%= render Ui::SectionComponent.new(title: t("member.project_settings.test_access_section"), id: "test",
+      class: "scroll-mt-20", body_class: "px-4 py-4 space-y-4", test_id: "project-test-access-section") do |section| %>
+  <% section.with_actions do %><%= render "member/project_settings/save_action", anchor: "test" %><% end %>
+  <%# CYRA-1304 — with a staging environment the agents work the project only once the test account is complete. %>
+  <% if Projects::TestAccess::Requirement.missing?(@project) %>
+    <div class="flex items-start gap-2 rounded-md border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950 px-3 py-2" role="status" data-test="project-test-access-required">
+      <%= render Ui::IconComponent.new(name: "triangle-alert", class: "mt-0.5 text-[12px] text-amber-600 dark:text-amber-400") %>
+      <span class="text-[12.5px] text-amber-900 dark:text-amber-200"><%= t("member.project_settings.test_access_required") %></span>
+    </div>
+  <% elsif @project.test_access_not_needed? %>
+    <p class="text-[12.5px] text-gray-600 dark:text-zinc-400" data-test="project-test-access-not-needed"><%= t("member.project_settings.test_access_not_needed_state") %></p>
+  <% elsif !Projects::TestAccess::Requirement.required?(@project) %>
+    <p class="text-[12.5px] text-gray-600 dark:text-zinc-400" data-test="project-test-access-optional"><%= t("member.project_settings.test_access_optional") %></p>
+  <% end %>
+  <%= render Ui::GridComponent.new(cols: 1, md: 2, gap: 5) do %>
+    <%= render Ui::InputComponent.new(
+          name: "test_access_url", type: "url",
+          label: t("member.project_settings.test_access_url_label"),
+          test_id: "project-test-access-url", value: @project.test_access_url,
+          placeholder: "https://staging.example.com/login",
+          hint: t("member.project_settings.test_access_url_hint"),
+          error: @errors&.dig(:test_access_url)&.first) %>
+    <%= render Ui::InputComponent.new(
+          name: "test_access_username", type: "text",
+          label: t("member.project_settings.test_access_username_label"),
+          test_id: "project-test-access-username", value: @project.test_access_username,
+          hint: t("member.project_settings.test_access_username_hint"),
+          error: @errors&.dig(:test_access_username)&.first) %>
+    <%= render Ui::InputComponent.new(
+          name: "test_access_password", type: "password", autocomplete: "new-password",
+          label: t("member.project_settings.test_access_password_label"),
+          test_id: "project-test-access-password", value: nil,
+          placeholder: (password_set ? t("member.project_settings.test_access_password_keep") : nil),
+          hint: t("member.project_settings.test_access_password_hint"),
+          error: @errors&.dig(:test_access_password)&.first) %>
+    <%# CYRA-1304 — a project with staging and no sign-in to try opts out of the test account here. %>
+    <%= render Ui::SelectComponent.new(
+          name: "test_access_not_needed",
+          label: t("member.project_settings.test_access_not_needed_label"),
+          options: [ [ t("member.project_settings.test_access_not_needed_off"), "0" ],
+                     [ t("member.project_settings.test_access_not_needed_on"), "1" ] ],
+          selected: @project.test_access_not_needed? ? "1" : "0",
+          hint: t("member.project_settings.test_access_not_needed_hint"),
+          test_id: "project-test-access-not-needed-select") %>
+  <% end %>
+
+  <div class="flex items-center gap-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2" data-test="project-test-access-password-state">
+    <%= render Ui::IconComponent.new(name: (password_set ? "lock" : "lock-open"), class: "text-[12px] text-gray-400 dark:text-zinc-500") %>
+    <span class="text-[12.5px] text-zinc-700 dark:text-zinc-300"><%= t("member.project_settings.test_access_password_#{password_set ? "set" : "missing"}") %></span>
+  </div>
+<% end %>

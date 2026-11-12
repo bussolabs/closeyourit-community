@@ -4417,6 +4417,8 @@
       "kind": "page",
       "summary": "Conservazione dei dati, assegnatario di default, funzioni attive, ambienti, piattaforme e documenti allegati. Si sceglie se i passi in diretta dell'automator tengono anche il codice. Nella sezione Dashboard si collega il servizio: indirizzo, chiave mostrata una volta, ultima lettura, pausa, leggi adesso, scollega.",
       "files": [
+        "app/services/projects/test_access/requirement.rb",
+        "app/services/projects/test_access/save_password.rb",
         "app/controllers/member/project_settings_controller.rb",
         "app/controllers/member/project_dashboard_feed_controller.rb",
         "app/controllers/member/project_environments_controller.rb",

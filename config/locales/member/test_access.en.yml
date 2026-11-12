@@ -1,0 +1,29 @@
+en:
+  member:
+    project_settings:
+      test_access_section: Test
+      test_access_required: Automatic work on this project is stopped. The project has a staging environment, so the test account's link, user and password are needed.
+      test_access_optional: This project has no staging environment, so the test account is not required.
+      test_access_not_needed_state: This project declared it has no sign-in to try, so the test account is not required.
+      test_access_not_needed_label: Sign-in to try
+      test_access_not_needed_off: There is a sign-in to try
+      test_access_not_needed_on: No sign-in to try
+      test_access_not_needed_hint: For projects with a staging environment but no page to sign in to. With "No sign-in" the agents work without a test account.
+      test_access_url_label: Sign-in link
+      test_access_url_hint: The staging page you sign in from to try the work.
+      test_access_username_label: User
+      test_access_username_hint: The test account, never a person's own.
+      test_access_password_label: Password
+      test_access_password_hint: It is kept encrypted among the project's staging secrets. Leave blank to keep the stored one.
+      test_access_password_keep: Leave blank to keep the stored one
+      test_access_password_set: A password is stored among the staging secrets. It cannot be read here.
+      test_access_password_missing: No password stored.
+      test_access_password_forbidden: Saving the password needs the permission to manage the project's secrets.
+      test_access_password_no_staging: The project has no staging environment. Add it, then save the password.
+  activerecord:
+    errors:
+      models:
+        projects/project:
+          attributes:
+            test_access_url:
+              test_access_url: must be an address starting with http:// or https://

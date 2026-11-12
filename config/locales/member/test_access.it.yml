@@ -1,0 +1,29 @@
+it:
+  member:
+    project_settings:
+      test_access_section: Test
+      test_access_required: Il lavoro automatico su questo progetto è fermo. Il progetto ha uno staging, quindi servono link, utente e password dell'account di prova.
+      test_access_optional: Questo progetto non ha un ambiente di staging, quindi l'account di prova non è richiesto.
+      test_access_not_needed_state: Questo progetto ha dichiarato di non avere un accesso da provare, quindi l'account di prova non è richiesto.
+      test_access_not_needed_label: Accesso da provare
+      test_access_not_needed_off: C'è un accesso da provare
+      test_access_not_needed_on: Nessun accesso da provare
+      test_access_not_needed_hint: Per i progetti con uno staging ma senza una pagina dove entrare. Con «Nessun accesso» gli agenti lavorano anche senza account di prova.
+      test_access_url_label: Link di accesso
+      test_access_url_hint: La pagina di staging da cui si entra per provare il lavoro.
+      test_access_username_label: Utente
+      test_access_username_hint: L'account di prova, mai quello di una persona.
+      test_access_password_label: Password
+      test_access_password_hint: Viene custodita cifrata tra i segreti di staging del progetto. Lascia vuoto per non cambiarla.
+      test_access_password_keep: Lascia vuoto per tenere quella salvata
+      test_access_password_set: Una password è salvata tra i segreti di staging. Qui non si rilegge.
+      test_access_password_missing: Nessuna password salvata.
+      test_access_password_forbidden: Per salvare la password serve il permesso di gestire i segreti del progetto.
+      test_access_password_no_staging: Il progetto non ha un ambiente di staging. Aggiungilo, poi salva la password.
+  activerecord:
+    errors:
+      models:
+        projects/project:
+          attributes:
+            test_access_url:
+              test_access_url: deve essere un indirizzo che inizia con http:// o https://
