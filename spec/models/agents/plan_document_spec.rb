@@ -131,4 +131,37 @@ RSpec.describe Agents::PlanDocument do
       expect(described_class.new(v2_plan).decision_card["risk_level"]).to eq("high")
     end
   end
+  # CYRA-1298 — a criterion may say how it is proven; an older plan says nothing and reads as before.
+  describe "how a criterion is verified" do
+    let(:criteria) do
+      [ { "id" => "DOD-1", "text" => "La scheda usa una frase leggibile",
+          "verification" => { "kind" => "test", "how" => "bundle exec rspec spec/models/agents/plan_spec.rb" } },
+        { "id" => "DOD-2", "text" => "I piani storici restano leggibili" },
+        { "id" => "DOD-3", "text" => "Forma sbagliata", "verification" => "a parole" } ]
+    end
+
+    it "keeps a well-formed verification and drops anything else" do
+      document = described_class.new(plan(definition_of_done: criteria))
+
+      expect(document.definition_of_done.map { |criterion| criterion["verification"] }).to eq(
+        [ { "kind" => "test", "how" => "bundle exec rspec spec/models/agents/plan_spec.rb" }, nil, nil ]
+      )
+      expect(document.definition_of_done.second.keys).to eq(%w[id text])
+    end
+
+    it "writes it under the criterion in the Markdown" do
+      markdown = Agents::Plans::Markdown.call(plan: plan(definition_of_done: criteria), ticket: workflow.ticket)
+
+      expect(markdown).to include("- [ ] **DOD-1** — La scheda usa una frase leggibile\n  - Verifica (test): bundle exec rspec spec/models/agents/plan_spec.rb")
+      expect(markdown).to include("- [ ] **DOD-2** — I piani storici restano leggibili\n")
+    end
+
+    it "hands it to the supporter, and leaves a plan without it exactly as it read before" do
+      with = Agents::Supporters::NextPlan.document(plan(definition_of_done: criteria))
+      without = Agents::Supporters::NextPlan.document(plan(definition_of_done: [ criteria.second ], version: 2))
+
+      expect(with).to include("- La scheda usa una frase leggibile (verified by test: bundle exec rspec spec/models/agents/plan_spec.rb)")
+      expect(without).to end_with("### Definition of Done\n- I piani storici restano leggibili")
+    end
+  end
 end

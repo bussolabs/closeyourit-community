@@ -232,6 +232,92 @@ RSpec.describe Ticketing::ActivityPresenter do
     end
   end
 
+  # CYRA-1291 — the check on the files a delivery really changed says which files, not just that it fired.
+  describe "delivery scope check" do
+    it "names the files that left the delivery to a person" do
+      event = build(:ticket_event, action: "delivery_scope_stopped", actor: nil, actor_name: "System",
+                                   data: { "reasons" => %w[data_change], "data" => %w[db/migrate/1_add.rb] })
+
+      expect(described_class.new(event).sentence).to include("db/migrate/1_add.rb")
+    end
+
+    it "says the file list could not be read instead of showing an empty one" do
+      event = build(:ticket_event, action: "delivery_scope_stopped", actor: nil, actor_name: "System",
+                                   data: { "reasons" => %w[files_unknown] })
+
+      expect(described_class.new(event).sentence)
+        .to include(I18n.t("member.tickets.activity.scope_files_unknown"))
+    end
+
+    it "names the files a dry run would have stopped on" do
+      event = build(:ticket_event, action: "delivery_scope_would_stop", actor: nil, actor_name: "System",
+                                   data: { "sensitive" => %w[.github/workflows/ci.yml] })
+
+      expect(described_class.new(event).sentence).to include(".github/workflows/ci.yml")
+    end
+
+    it "names the test files the delivery deleted" do
+      event = build(:ticket_event, action: "delivery_scope_tests_removed", actor: nil, actor_name: "System",
+                                   data: { "tests_removed" => %w[spec/models/user_spec.rb], "tests_delta" => -40 })
+
+      expect(described_class.new(event).sentence).to include("spec/models/user_spec.rb")
+    end
+
+    it "counts the test lines lost when no test file was deleted" do
+      event = build(:ticket_event, action: "delivery_scope_tests_removed", actor: nil, actor_name: "System",
+                                   data: { "tests_removed" => [], "tests_delta" => -10 })
+
+      expect(described_class.new(event).sentence).to include("10")
+    end
+
+    it "names the criteria without a full proof and the tests that failed" do
+      event = build(:ticket_event, action: "delivery_evidence_stopped", actor: nil, actor_name: "System",
+                                   data: { "reasons" => %w[evidence_incomplete tests_failed tests_not_run],
+                                           "incomplete" => %w[DOD-2], "absent" => %w[DOD-3], "tests_failed" => 1 })
+
+      expect(described_class.new(event).sentence)
+        .to include("DOD-2", "DOD-3", "1", I18n.t("member.tickets.activity.evidence_tests_not_run"))
+    end
+
+    it "names the required checks that did not pass" do
+      event = build(:ticket_event, action: "delivery_checks_stopped", actor: nil, actor_name: "System",
+                                   data: { "reasons" => %w[required_checks_missing], "missing" => %w[migration-versions] })
+
+      expect(described_class.new(event).sentence).to include("migration-versions")
+    end
+
+    it "says how small a fast-lane plan is, and how large the delivery that lost the lane" do
+      approved = build(:ticket_event, action: "plan_fast_lane_approved", actor: nil, actor_name: "System",
+                                      data: { "files" => 2, "plan_id" => "x" })
+      stopped = build(:ticket_event, action: "delivery_fast_lane_stopped", actor: nil, actor_name: "System",
+                                     data: { "reasons" => %w[too_many_lines], "files" => 2, "lines" => 140 })
+
+      expect(described_class.new(approved).sentence).to include("2 file")
+      expect(described_class.new(stopped).sentence).to include("140")
+    end
+
+    it "names the engine that both wrote and re-read a delivery" do
+      event = build(:ticket_event, action: "delivery_review_stopped", actor: nil, actor_name: "System",
+                                   data: { "reasons" => %w[self_review], "engine" => "codex" })
+
+      expect(described_class.new(event).sentence).to include("codex")
+    end
+
+    it "says the repository declares no required checks" do
+      event = build(:ticket_event, action: "delivery_checks_would_stop", actor: nil, actor_name: "System",
+                                   data: { "reasons" => %w[required_checks_undeclared], "missing" => [] })
+
+      expect(described_class.new(event).sentence).to include(I18n.t("member.tickets.activity.checks_undeclared"))
+    end
+
+    it "counts the files changed outside the plan" do
+      event = build(:ticket_event, action: "delivery_scope_outside_plan", actor: nil, actor_name: "System",
+                                   data: { "outside_plan" => %w[app/a.rb app/b.rb], "outside_plan_count" => 2 })
+
+      expect(described_class.new(event).sentence).to include("2", "app/a.rb")
+    end
+  end
+
   describe "#icon" do
     it "mappa ogni action della allow-list a un'icona non vuota" do
       Ticketing::Event::ACTIONS.each do |action|

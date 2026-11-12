@@ -202,4 +202,80 @@ RSpec.describe Agents::Staging::VerifyMerge do
 
     expect(workflow.reload.closer_staging_verified_at).to eq(prima)
   end
+
+  # CYRA-1294 — where the project asks for it, the merge is not enough: the trial release must have gone through.
+  describe "waiting for the trial release" do
+    def job(name, conclusion) = { "name" => name, "conclusion" => conclusion }
+
+    def client_with_run(conclusion, jobs)
+      client_che_risponde(true, true).tap do |client|
+        allow(client).to receive(:workflow_runs).and_return(conclusion ? [ { "id" => 1, "conclusion" => conclusion } ] : [])
+        allow(client).to receive(:workflow_run_jobs).and_return(jobs)
+      end
+    end
+
+    let(:green_jobs) { [ job("ci / deploy-staging", "success"), job("ci / smoke-staging", "success") ] }
+
+    # A frozen proof is written once: each example picks its kind before the plan is frozen.
+    let(:proof) { { kind: "deploy_smoke", environment_id: SecureRandom.uuid } }
+
+    before do
+      congela_piano!(workflow, **proof)
+      dichiara
+    end
+
+    it "verifies on the merge alone while the rule is off" do
+      client = client_with_run(nil, [])
+
+      described_class.call(workflow:, client:)
+
+      expect(workflow.reload.closer_staging_verified_at).to be_present
+      expect(client).not_to have_received(:workflow_runs)
+    end
+
+    context "when the project switched the rule on" do
+      before { project.update!(staging_deploy_proof: "1") }
+
+      it "verifies once the deploy and the smoke check succeeded" do
+        described_class.call(workflow:, client: client_with_run("success", green_jobs))
+
+        expect(workflow.reload.closer_staging_verified_at).to be_present
+      end
+
+      it "waits while the trial release has not finished" do
+        described_class.call(workflow:, client: client_with_run(nil, []))
+
+        expect(workflow.reload).to have_attributes(closer_staging_verified_at: nil, blocked_at: nil,
+                                                   closer_staging_last_error_code: "staging_run_pending")
+        expect(workflow.closer_staging_next_check_at).to be_within(5.seconds).of(3.minutes.from_now)
+      end
+
+      it "calls a person when the trial release failed" do
+        failed = [ job("ci / deploy-staging", "success"), job("ci / smoke-staging", "failure") ]
+
+        described_class.call(workflow:, client: client_with_run("failure", failed))
+
+        expect(workflow.reload.closer_staging_verified_at).to be_nil
+        expect(workflow.blocked_reason).to include("staging_run_failed")
+      end
+
+      it "calls a person when the trial release never shows up" do
+        workflow.update!(closer_staging_completed_at: 91.minutes.ago)
+
+        described_class.call(workflow:, client: client_with_run(nil, []))
+
+        expect(workflow.reload.blocked_reason).to include("staging_not_deployed")
+      end
+
+      context "when the merge is the proof of done" do
+        let(:proof) { { kind: "merge" } }
+
+        it "does not wait for a trial release" do
+          described_class.call(workflow:, client: client_with_run(nil, []))
+
+          expect(workflow.reload.closer_staging_verified_at).to be_present
+        end
+      end
+    end
+  end
 end

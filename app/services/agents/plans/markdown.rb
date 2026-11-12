@@ -84,6 +84,9 @@ module Agents
           criteria.each do |criterion|
             label = criterion["id"].present? ? "**#{criterion["id"]}** — " : ""
             lines << "- [ ] #{label}#{criterion["text"]}"
+            # CYRA-1298 — how the criterion is proven, when the plan declares it.
+            verification = criterion["verification"]
+            lines << "  - Verifica (#{verification["kind"]}): #{verification["how"]}" if verification
           end
         end
       end

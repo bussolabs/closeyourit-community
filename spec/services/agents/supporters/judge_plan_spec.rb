@@ -38,6 +38,46 @@ RSpec.describe Agents::Supporters::JudgePlan do
     expect(Ticketing::Event.where(ticket:, action: "plan_supporter_approved").count).to eq(1)
   end
 
+  # CYRA-1293 — the triage's risk is the floor under the supporter's score, when the project switches it on.
+  describe "the risk the triage set" do
+    def triage_said(result)
+      create(:agent_attempt, organization:, workflow:, phase: "triage", result:, created_at: 5.minutes.ago)
+    end
+
+    it "is ignored while the rule is off" do
+      triage_said({ "risk" => "high" })
+
+      expect(judge.value).to include(outcome: "approved", risk_score: 3)
+    end
+
+    it "leaves the plan of a high-risk ticket to a person" do
+      project.update!(triage_risk_floor: "on")
+      triage_said({ "risk" => "high" })
+
+      result = judge
+
+      expect(result.value).to include(outcome: "escalated", risk_score: 9)
+      expect(result.value[:reasons]).to include("risk_above_threshold", "triage_risk")
+      expect(workflow.reload.approved_at).to be_nil
+    end
+
+    it "raises the score of a medium-risk ticket and still approves" do
+      project.update!(triage_risk_floor: "on")
+      triage_said({ "risk" => "medium" })
+
+      expect(judge.value).to include(outcome: "approved", risk_score: 4)
+    end
+
+    it "approves in a dry run and writes what the rule would have set" do
+      project.update!(triage_risk_floor: "dry_run")
+      triage_said({ "risk" => "high" })
+
+      expect(judge.value).to include(outcome: "approved", risk_score: 3)
+      expect(Agents::SupporterDecision.find_by!(target_type: "plan", target_id: plan.id).evidence)
+        .to include("triage_floor" => 9, "triage_floor_mode" => "dry_run")
+    end
+  end
+
   it "leaves the plan to a person when the supporter escalates" do
     expect(judge(recommendation: "escalate").value).to include(outcome: "escalated", reasons: [ "supporter_escalated" ])
     expect(workflow.reload.approved_at).to be_nil
@@ -168,6 +208,20 @@ RSpec.describe Agents::Supporters::JudgePlan do
     expect(result.value).to include(outcome: "approved", reasons: [])
     expect(workflow.reload.approved_at).to be_present
     expect(Agents::SupporterDecision.find_by!(target_id: plan.id).evidence["guidance"]).to include("Name the migration file.")
+  end
+
+  # CYRA-1299 — a project with strict caps keeps that plan for a person.
+  it "leaves an exhausted low-risk plan to a person when the project has strict caps" do
+    project.update!(strict_caps: "1")
+    3.times do |i|
+      Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
+                                        target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 4)
+    end
+
+    result = judge(recommendation: "revise", risk_score: 5, reasons_against: "Name the migration file.")
+
+    expect(result.value[:outcome]).to eq("escalated")
+    expect(workflow.reload.approved_at).to be_nil
   end
 
   it "never approves an exhausted plan that proposes to skip the system's gates" do

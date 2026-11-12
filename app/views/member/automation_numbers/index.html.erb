@@ -1,0 +1,78 @@
+<% content_for :title, t("member.automation_numbers.index.title") %>
+<% dash = tag.span("—", class: "text-gray-500 dark:text-zinc-400") %>
+<% percent = ->(value) { value.nil? ? dash : "#{value}%" } %>
+
+<div class="p-7 space-y-6" data-test="member-automation-numbers">
+  <%= render Ui::PageHeaderComponent.new(
+        title: t("member.automation_numbers.index.title"),
+        subtitle: t(".subtitle"),
+        breadcrumb: [ { label: t("member.automation_numbers.index.title") } ],
+        counts_test_id: "automation-numbers-counts") do |h| %>
+    <% h.with_counts do %>
+      <%= render Ui::StatLabelComponent.new(label: t(".stat_completed", count: @completed), value: @completed, test_id: "automation-numbers-stat-completed") %>
+    <% end %>
+  <% end %>
+
+  <% if !@any_project %>
+    <%= render Ui::EmptyStateComponent.new(title: t(".empty"), body: t(".empty_body"), example: t(".empty_example"),
+          icon: "chart-column", framed: true, test_id: "automation-numbers-empty") %>
+  <% else %>
+    <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="automation-numbers-table">
+      <%= render Ui::TableToolbarComponent.new(framed: true, url: member_automation_numbers_path, query: params[:q],
+            search_placeholder: t(".search"), search_test_id: "automation-numbers-search",
+            test_id: "automation-numbers-toolbar") %>
+      <% if @rows.empty? %>
+        <%= render Ui::NoResultsComponent.new(query: params[:q].presence, reset_href: member_automation_numbers_path,
+              icon: "chart-column", test_id: "automation-numbers-no-match", reset_test_id: "automation-numbers-reset") %>
+      <% else %>
+        <%= render(Ui::TableComponent.new(stacked: true, label: t("member.automation_numbers.index.title"))) do |table| %>
+          <% table.with_head do %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t(".col_project"), sort: "project") %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t(".col_completed"), sort: "completed", initial: :desc, align: :right) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t(".col_hands_off"), sort: "hands_off", initial: :desc, align: :right) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t(".col_first_pass"), sort: "first_pass", initial: :desc, align: :right) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t(".col_attempts"), sort: "attempts", initial: :desc, align: :right) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t(".col_plans"), sort: "plans", initial: :desc, align: :right) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t(".col_lead"), sort: "lead", initial: :desc, align: :right) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t(".col_cost"), sort: "cost", initial: :desc, align: :right) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t(".col_failures"), sort: "failures", initial: :desc, align: :right) %>
+            <%= render Ui::TableComponent::HeaderComponent.new(label: t("ui.table.open_column"), label_hidden: true) %>
+          <% end %>
+          <% @rows.each do |row| %>
+            <% numbers = row.numbers %>
+            <%= render Ui::TableComponent::RowComponent.new(href: member_project_path(row.project), link_label: row.project.name, test_id: "automation-numbers-row") do %>
+              <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+                <span class="block text-[13px] font-semibold text-zinc-900 dark:text-zinc-100" data-test="automation-numbers-project"><%= row.project.name %></span>
+              <% end %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t(".col_completed"), mono: true, align: :right)) do %>
+                <span data-test="automation-numbers-completed"><%= numbers.completed %></span>
+              <% end %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t(".col_hands_off"), mono: true, align: :right)) do %>
+                <span data-test="automation-numbers-hands-off"><%= percent.call(numbers.hands_off_rate) %></span>
+              <% end %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t(".col_first_pass"), mono: true, align: :right)) do %>
+                <span data-test="automation-numbers-first-pass"><%= percent.call(numbers.first_pass_rate) %></span>
+              <% end %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t(".col_attempts"), mono: true, align: :right)) do %>
+                <span data-test="automation-numbers-attempts"><%= numbers.attempts_per_ticket.nil? ? dash : number_with_precision(numbers.attempts_per_ticket, precision: 1) %></span>
+              <% end %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t(".col_plans"), mono: true, align: :right)) do %>
+                <span data-test="automation-numbers-plans"><%= percent.call(numbers.plans_approved_rate) %></span>
+              <% end %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t(".col_lead"), mono: true, align: :right)) do %>
+                <span data-test="automation-numbers-lead"><%= numbers.lead_hours.nil? ? dash : t(".hours", value: number_with_precision(numbers.lead_hours, precision: 1)) %></span>
+              <% end %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t(".col_cost"), mono: true, align: :right)) do %>
+                <span data-test="automation-numbers-cost"><%= numbers.cost_per_ticket.nil? ? dash : number_to_currency(numbers.cost_per_ticket, unit: "$", precision: 2) %></span>
+              <% end %>
+              <%= render(Ui::TableComponent::CellComponent.new(label: t(".col_failures"), mono: true, align: :right)) do %>
+                <span data-test="automation-numbers-failures"><%= numbers.failures_per_hundred.nil? ? dash : numbers.failures_per_hundred %></span>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+        <%= render Ui::PaginationComponent.new(pagination: @pagination, test_id: "automation-numbers-pagination") %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

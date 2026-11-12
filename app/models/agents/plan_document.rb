@@ -42,10 +42,12 @@ module Agents
       end
     end
 
+    VERIFICATION_KINDS = %w[test command browser manual].freeze
+
     def definition_of_done
       Array(plan.definition_of_done).filter_map do |criterion|
         case criterion
-        when Hash then criterion.deep_stringify_keys.slice("id", "text")
+        when Hash then done_criterion(criterion.deep_stringify_keys)
         when String then { "id" => nil, "text" => criterion }
         end
       end
@@ -144,6 +146,13 @@ module Agents
     private
 
     def array(key) = Array(plan.content[key])
+
+    # CYRA-1298 — a criterion may say how it is proven: kept only when it is a known kind with a sentence.
+    def done_criterion(criterion)
+      verification = criterion["verification"]
+      sound = verification.is_a?(Hash) && VERIFICATION_KINDS.include?(verification["kind"]) && verification["how"].present?
+      criterion.slice("id", "text").merge(sound ? { "verification" => verification.slice("kind", "how") } : {})
+    end
 
     def raised_risk_level(stated)
       levels = [ RISK_LEVELS.index(stated).to_i ]

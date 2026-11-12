@@ -397,7 +397,7 @@ module Projects
     store_accessor :preferences, :artifacts_retention_days, :crashes_retention_days, :session_health_retention_days, :measurements_retention_days, :traces_retention_days, :logs_retention_days, :analytics_retention_days, :performance_alert_threshold, :replay_retention_days,
                    :errors_retention_days, :performance_retention_days, :uptime_retention_days,
                    :performance_fast_ms, :performance_slow_ms,
-                   :workspace_path, :vulnerability_auto_ticket, :production_hold_hours
+                   :workspace_path, :vulnerability_auto_ticket, :production_hold_hours, :delivery_scope_check, :triage_risk_floor, :staging_deploy_proof, :production_watch, :strict_caps, :fast_lane
 
     # Ticket automatico per le vulnerabilità gravi (CYRA-506): acceso salvo scelta contraria. Vive
     # nelle preferenze e non in una colonna perché è un interruttore, non un dato del progetto — e
@@ -435,6 +435,49 @@ module Projects
     def production_hold_hours=(value)
       super(value.presence && (Integer(value.to_s, 10, exception: false) || value))
     end
+
+    # CYRA-1291 — whether a delivery's real files are checked before it moves on by itself: blank → nil → off.
+    def delivery_scope_check=(value)
+      super(value.presence)
+    end
+
+    def delivery_scope_check_mode = delivery_scope_check.presence || Agents::Candidates::ScopeCheck::MODE_OFF
+
+    # CYRA-1294 — staging counts as verified only after its trial release went through. Off unless switched on.
+    def staging_deploy_proof=(value)
+      super(ActiveModel::Type::Boolean.new.cast(value.presence) || false)
+    end
+
+    def staging_deploy_proof? = ActiveModel::Type::Boolean.new.cast(staging_deploy_proof) || false
+
+    # CYRA-1295 — a new open error born in the live release holds the next production release. Off unless on.
+    def production_watch=(value)
+      super(ActiveModel::Type::Boolean.new.cast(value.presence) || false)
+    end
+
+    def production_watch? = ActiveModel::Type::Boolean.new.cast(production_watch) || false
+
+    # CYRA-1300 — whether a small low-risk plan is approved the moment it is delivered: blank → nil → off.
+    def fast_lane=(value)
+      super(value.presence)
+    end
+
+    def fast_lane_mode = fast_lane.presence || Agents::Plans::FastLane::MODE_OFF
+
+    # CYRA-1299 — a plan still to fix after its last revision, and a ticket found already done, wait for a
+    # person instead of moving on by themselves. Off unless switched on.
+    def strict_caps=(value)
+      super(ActiveModel::Type::Boolean.new.cast(value.presence) || false)
+    end
+
+    def strict_caps? = ActiveModel::Type::Boolean.new.cast(strict_caps) || false
+
+    # CYRA-1293 — whether the triage's risk is the floor when the supporter decides: blank → nil → off.
+    def triage_risk_floor=(value)
+      super(value.presence)
+    end
+
+    def triage_risk_floor_mode = triage_risk_floor.presence || Agents::Supporters::TriageRisk::MODE_OFF
 
     # CYRA-341 — soglie (ms) che decidono il colore di una durata: sotto `fast` è verde, fino a
     # `slow` ambra, oltre rosso. Blank → valore di sistema (Metrics::Thresholds).
@@ -529,6 +572,9 @@ module Projects
     validates :performance_slow_ms, numericality: { only_integer: true, in: 1..600_000 }, allow_nil: true
     validates :production_hold_hours, numericality: { only_integer: true, in: Agents::Workflows::ProductionHold::HOURS_RANGE,
                                                       message: :production_hold_hours }, allow_nil: true
+    validates :delivery_scope_check, inclusion: { in: Agents::Candidates::ScopeCheck::MODES }, allow_nil: true
+    validates :fast_lane, inclusion: { in: Agents::Plans::FastLane::MODES }, allow_nil: true
+    validates :triage_risk_floor, inclusion: { in: Agents::Supporters::TriageRisk::MODES }, allow_nil: true
     validate :duration_thresholds_ordered
     validate :group_must_match_organization
     validate :default_assignee_belongs_to_organization

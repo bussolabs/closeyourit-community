@@ -1014,6 +1014,8 @@ namespace :member do
   # il result. Per-progetto (lettura = progetti visibili, anti-BOLA; gestione gated datasets.manage).
   # Controller flat Member::DatasetsController; sub-risorse Member::Datasets::* (righe/training/
   # predizioni) aggiunte nelle fasi successive.
+  # The numbers of the automatic round, per project, over the last 30 days. Read-only, gated agents.view.
+  get "automation/numbers", to: "automation_numbers#index", as: :automation_numbers
   resources :datasets do
     # Righe di dati (valori scalari + celle foto). Controller Member::Datasets::RowsController.
     resources :rows, only: %i[new create edit update destroy], module: :datasets

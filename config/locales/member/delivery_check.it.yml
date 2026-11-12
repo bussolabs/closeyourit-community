@@ -1,0 +1,14 @@
+# CYRA-1291 — il controllo sui file che una consegna ha cambiato davvero, scelto sul progetto.
+it:
+  member:
+    project_settings:
+      delivery_check_section: Controllo sulle modifiche consegnate
+      delivery_check_label: Controllo sui file cambiati
+      delivery_check_hint: In prova non ferma niente e scrive nella storia del ticket cosa avrebbe fermato. Acceso, lascia la decisione a una persona.
+      delivery_check_rules: "Quando è acceso, un lavoro consegnato non va avanti da solo se cambia la struttura dei dati, oppure se tocca accessi, segreti, rilasci o argomenti riservati che il piano approvato non nominava. Si ferma anche se una prova del «fatto quando» manca o è parziale, o se i test sono falliti o non eseguiti, o se il repository non dichiara i controlli obbligatori o la proposta non li ha superati tutti, o se lo ha riletto lo stesso motore che lo ha scritto. Gli altri file fuori dal piano e i test tolti vengono solo annotati."
+      fast_lane_label: Corsia veloce
+      fast_lane_hint: Accesa, un piano che tocca al massimo 3 file non delicati, su un ticket che il triage segna a basso rischio, parte subito senza aspettare nessuno. Alla consegna la perde se le modifiche vere superano 3 file o 60 righe, o escono dal piano. In prova scrive solo quali piani sarebbero passati.
+      delivery_check_modes:
+        "off": Spento
+        dry_run: In prova
+        "on": Acceso

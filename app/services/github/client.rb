@@ -223,6 +223,33 @@ module Github
       }
     end
 
+    # CYRA-1291 — the files a pull request changed, read from GitHub and not from the agent's report. A renamed
+    # file counts under both names. Past the page cap the list is `truncated`: the caller must not read it as whole.
+    # `files` keeps status and line counts, to see deleted or shrunk tests (CYRA-1292).
+    FILES_PAGE_SIZE = 100
+    FILES_MAX_PAGES = 10
+
+    def pull_request_files(installation_id, repo_full_name, number)
+      paths = []
+      files = []
+      truncated = false
+      (1..FILES_MAX_PAGES).each do |page_number|
+        batch = Array(token_request(
+          Net::HTTP::Get, installation_id,
+          "/repos/#{repo_full_name}/pulls/#{number.to_i}/files?per_page=#{FILES_PAGE_SIZE}&page=#{page_number}"
+        ))
+        batch.each do |file|
+          paths.push(file["filename"], file["previous_filename"])
+          files << { path: file["filename"], status: file["status"], additions: file["additions"].to_i,
+                     deletions: file["deletions"].to_i }
+        end
+        break if batch.size < FILES_PAGE_SIZE
+
+        truncated = page_number == FILES_MAX_PAGES
+      end
+      { paths: paths.compact.uniq, truncated:, files: }
+    end
+
     # CYRA-621 — i tag del repository, dal più recente. Serve a sapere qual è l'ultimo numero di
     # versione DAVVERO uscito, chiesto sul momento a chi lo sa: non a quello che la macchina si
     # ricorda, e nemmeno all'archivio interno delle versioni, che su sette progetti su otto è vuoto.

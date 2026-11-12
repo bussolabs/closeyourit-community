@@ -57,6 +57,23 @@ module Ticketing
       # The supporter sent stopped work back to the agent, or stopped an agent for safety (CYRA-1197).
       "workflow_supporter_retried" => "rotate-ccw",
       "agent_safety_stopped" => "shield-alert",
+      # The check on the files a delivery really changed (CYRA-1291).
+      "delivery_scope_stopped" => "file-warning",
+      "delivery_scope_would_stop" => "flask-conical",
+      "delivery_scope_outside_plan" => "file-diff",
+      "delivery_scope_tests_removed" => "flask-conical-off",
+      # The check on the proofs a delivery declares (CYRA-1292).
+      "delivery_evidence_stopped" => "clipboard-x",
+      "delivery_evidence_would_stop" => "clipboard-list",
+      "delivery_checks_stopped" => "shield-x",
+      "delivery_checks_would_stop" => "shield-question",
+      # The check on who re-read a delivery (CYRA-1297).
+      "delivery_review_stopped" => "user-x",
+      "delivery_review_would_stop" => "user-search",
+      # The fast lane for small low-risk plans (CYRA-1300).
+      "plan_fast_lane_approved" => "zap",
+      "plan_fast_lane_would_approve" => "flask-conical",
+      "delivery_fast_lane_stopped" => "zap-off",
       # A person sent a release cancelled after staging back to its closers (CYRA-1285).
       "release_resumed" => "play"
     }.freeze
@@ -101,6 +118,8 @@ module Ticketing
       return reporter_sentence if @event.action == "reporter_changed"
       return created_on_behalf_sentence if @event.action == "created" && @event.data["on_behalf_of"].present?
       return agent_eligibility_sentence if @event.action.start_with?("agent_eligibility_")
+      return delivery_gate_sentence if @event.action.start_with?("delivery_scope_", "delivery_evidence_", "delivery_checks_", "delivery_review_",
+                                                             "delivery_fast_lane_", "plan_fast_lane_")
 
       I18n.t("member.tickets.activity.#{@event.action}", **interpolations)
     end
@@ -250,6 +269,58 @@ module Ticketing
       return shown.join(" · ") if paths.size <= limit
 
       "#{shown.join(" · ")} #{I18n.t("member.tickets.activity.more_files", count: paths.size - limit)}"
+    end
+
+    # CYRA-1291, CYRA-1292 — what a delivery gate saw: which files, which proofs, which tests.
+    def delivery_gate_sentence
+      I18n.t("member.tickets.activity.#{@event.action}", **delivery_gate_details)
+    end
+
+    def delivery_gate_details
+      case @event.action
+      when "delivery_scope_outside_plan"
+        { count: @event.data["outside_plan_count"].to_i, files: activity_file_list(Array(@event.data["outside_plan"])) }
+      when "delivery_scope_tests_removed" then { files: removed_tests_summary }
+      when "delivery_evidence_stopped", "delivery_evidence_would_stop" then { details: evidence_summary }
+      when "delivery_checks_stopped", "delivery_checks_would_stop" then { details: required_checks_summary }
+      when "delivery_review_stopped", "delivery_review_would_stop" then { engine: @event.data["engine"] }
+      when "plan_fast_lane_approved", "plan_fast_lane_would_approve" then { count: @event.data["files"].to_i }
+      when "delivery_fast_lane_stopped" then { count: @event.data["files"].to_i, lines: @event.data["lines"].to_i }
+      else { files: scope_flagged_files }
+      end
+    end
+
+    # Deleted test files by name; with none deleted, how many test lines went away.
+    def removed_tests_summary
+      removed = Array(@event.data["tests_removed"])
+      return activity_file_list(removed) if removed.any?
+
+      I18n.t("member.tickets.activity.scope_test_lines", count: -@event.data["tests_delta"].to_i)
+    end
+
+    # The required checks that did not pass; with none declared, that the repository names none.
+    def required_checks_summary
+      missing = Array(@event.data["missing"])
+      return I18n.t("member.tickets.activity.checks_undeclared") if missing.empty?
+
+      I18n.t("member.tickets.activity.checks_missing", checks: activity_file_list(missing))
+    end
+
+    # The criteria without a full proof, then the tests that failed or never ran.
+    def evidence_summary
+      criteria = (Array(@event.data["incomplete"]) + Array(@event.data["absent"])).uniq
+      failed = @event.data["tests_failed"].to_i
+      parts = []
+      parts << I18n.t("member.tickets.activity.evidence_criteria", criteria: criteria.join(" · ")) if criteria.any?
+      parts << I18n.t("member.tickets.activity.evidence_tests_failed", count: failed) if failed.positive?
+      parts << I18n.t("member.tickets.activity.evidence_tests_not_run") if Array(@event.data["reasons"]).include?("tests_not_run")
+      parts.join(" · ")
+    end
+
+    # An unreadable file list flags nothing by name: the sentence says so instead of showing an empty list.
+    def scope_flagged_files
+      paths = %w[sensitive data reserved].flat_map { |key| Array(@event.data[key]) }.uniq
+      paths.any? ? activity_file_list(paths) : I18n.t("member.tickets.activity.scope_files_unknown")
     end
 
     def dig(*keys)

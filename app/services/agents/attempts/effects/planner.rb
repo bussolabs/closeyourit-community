@@ -8,11 +8,16 @@ module Agents
       # quattro campi. Nel momento esatto in cui il contratto accetta `blocked` — che quei campi non
       # li ha — la prima consegna bloccata solleva KeyError dentro la transazione della consegna.
       class Planner < Base
+        # How much of the agent's summary a stop reason carries: the whole of it stays in the Automation tab.
+        ALREADY_DONE_SUMMARY_MAX = 300
+
         def after_commit
           return unless @plan
 
           # CYRA-1133 — a council ticket's plan approves itself; nobody needs to be told it waits.
           approved = Agents::Workflows::CouncilApprovePlan.call(workflow: @plan.workflow).value
+          # CYRA-1300 — a small low-risk plan takes the fast lane: approved here, nobody is told it waits.
+          approved ||= Agents::Plans::FastLane.call(workflow: @plan.workflow, plan: @plan)
           Agents::PlanReadyNotificationJob.perform_later(@plan.id) unless approved
         end
 
@@ -50,6 +55,10 @@ module Agents
         # bloccati da Attempts::Deliver#lock_scope!.
         def apply_already_done!
           ticket = workflow.ticket
+          # CYRA-1299 — a project with strict caps lets a person confirm: the summary and its sources stay in
+          # the Automation tab, the ticket stays open.
+          return confirm_already_done! if ticket.project.strict_caps?
+
           status = done_status
           # Un'organizzazione senza uno stato conclusivo attivo non è un caso da ignorare in silenzio: il
           # lavoro è finito e il ticket resterebbe aperto per sempre, riproposto al planner a ogni giro.
@@ -82,6 +91,14 @@ module Agents
         # lavoro e ha guardato davvero — ma il ticket non si sposta e una persona viene chiamata: fra il
         # dire «è già fatto» e il poterlo dichiarare concluso c'è di mezzo la configurazione del
         # progetto, che non è colpa di chi ha guardato.
+        def confirm_already_done!
+          Agents::Workflows::Block.call(
+            workflow: workflow, phase: "planner", kind: "agent_blocked",
+            reason: "agent_blocked: il lavoro risulta già fatto; serve la conferma di una persona — " \
+                    "#{already_done.fetch("summary").to_s.truncate(ALREADY_DONE_SUMMARY_MAX)}"
+          )
+        end
+
         def block_already_done!(reason)
           Agents::Workflows::Block.call(
             workflow: workflow, phase: "planner", kind: "agent_blocked",

@@ -16,6 +16,7 @@ it:
         retry_hint: "Il sistema non riesce a leggere una cosa su GitHub (%{code}). Riprova alle %{at}. Da te non serve niente."
         production_soak: "In prova in staging. Se non compaiono errori nuovi, va in produzione dalle %{at}."
         production_staging_errors: "Ferma prima della produzione: in staging è comparso un errore nuovo."
+        production_live_errors: "Ferma prima della produzione: la versione in linea ha portato un errore nuovo."
         production_hold: Ferma
         production_hold_confirm: "Fermare questo rilascio? Il codice è già su main: finché resta fermo, nessun rilascio di questo repository va in produzione."
         filters:

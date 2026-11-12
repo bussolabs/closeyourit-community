@@ -239,6 +239,10 @@ module Agents
         ::Agents::Workflow.joins(:ticket).where(id: past.map(&:id))
                           .where(ProductionHold.staging_errors_sql).pluck(:id)
                           .each { |id| holds[id] = { reason: "staging_errors" } }
+        # CYRA-1295 — where the project watches production, a new error born in the live release holds too.
+        watched = past.select { |workflow| workflow.ticket.project.production_watch? }.map(&:id) - holds.keys
+        ::Agents::Workflow.joins(:ticket).where(id: watched).where(ProductionHold.production_errors_sql).pluck(:id)
+                          .each { |id| holds[id] = { reason: "production_errors" } }
         holds
       end
 

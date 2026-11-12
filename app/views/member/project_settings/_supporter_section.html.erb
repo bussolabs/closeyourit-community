@@ -24,6 +24,27 @@
     <% if (error = @errors&.dig(:supporter_reserved_topics)&.first) %>
       <p class="mt-1.5 text-[11px] text-red-600 dark:text-red-400"><%= error %></p>
     <% end %>
+    <%# CYRA-1293 — the triage's risk as the floor under the supporter's score: off, dry run or on. %>
+    <div class="mt-4 max-w-sm">
+      <%= render Ui::SelectComponent.new(
+            name: "triage_risk_floor",
+            label: t("member.project_settings.triage_risk_floor_label"),
+            options: Agents::Supporters::TriageRisk::MODES.map { |mode| [ t("member.project_settings.triage_risk_floor_modes.#{mode}"), mode ] },
+            selected: @project.triage_risk_floor_mode,
+            hint: t("member.project_settings.triage_risk_floor_hint"),
+            test_id: "project-triage-risk-floor",
+            error: @errors&.dig(:triage_risk_floor)&.first) %>
+    </div>
+    <%# CYRA-1299 — strict caps: a plan still to fix after its last revision, and an already-done ticket, wait for a person. %>
+    <div class="mt-4 max-w-sm">
+      <%= render Ui::SelectComponent.new(
+            name: "strict_caps",
+            label: t("member.project_settings.strict_caps_label"),
+            options: [ [ t("member.project_settings.strict_caps_off"), "0" ], [ t("member.project_settings.strict_caps_on"), "1" ] ],
+            selected: @project.strict_caps? ? "1" : "0",
+            hint: t("member.project_settings.strict_caps_hint"),
+            test_id: "project-strict-caps") %>
+    </div>
     <div class="mt-3 flex justify-end"><%= render "member/project_settings/save_action", anchor: "supporter" %></div>
   <% end %>
 <% end %>

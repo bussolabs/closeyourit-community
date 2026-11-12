@@ -23,7 +23,11 @@ module Agents
       # What the supporter reads: the plan as the person approving it reads it, with its Definition of Done.
       def self.document(plan)
         doc = plan.document
-        done = doc.definition_of_done.map { |criterion| "- #{criterion["text"]}" }
+        # CYRA-1298 — a criterion that says how it is proven is judged with its proof; one that does not reads as before.
+        done = doc.definition_of_done.map do |criterion|
+          proof = criterion["verification"]
+          "- #{criterion["text"]}#{" (verified by #{proof["kind"]}: #{proof["how"]})" if proof}"
+        end
         [ doc.technical_analysis.to_s, (done.any? ? "### Definition of Done\n#{done.join("\n")}" : nil) ].compact.join("\n\n")
       end
 

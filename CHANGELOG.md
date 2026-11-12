@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [0.225.0] - 2026-11-12
+
+### Added
+
+- **Corsia veloce**: ogni progetto può far partire subito i lavori piccoli e a basso rischio, senza aspettare l'approvazione del piano. Se le modifiche vere superano 3 file o 60 righe, o escono dal piano, decide una persona. [Progetti](/member/projects)
+- **Tetti stretti**: ogni progetto può chiedere che un piano ancora da correggere dopo tre revisioni vada a una persona, e che un ticket trovato già fatto non venga chiuso da solo. [Progetti](/member/projects)
+- **Controllo sulle modifiche consegnate**: ogni progetto può far guardare i file che un lavoro ha cambiato davvero. Se toccano i dati o file delicati che il piano non nominava, decide una persona. In prova non ferma niente e scrive solo cosa avrebbe fermato. [Progetti](/member/projects)
+- **Prove complete prima di andare avanti**: con il controllo acceso, un lavoro non passa da solo se una prova del «fatto quando» manca o è parziale, o se i test sono falliti o non eseguiti. I test tolti dalle modifiche compaiono nella storia del ticket. [Progetti](/member/projects)
+- **Controlli obbligatori dichiarati**: con il controllo acceso, un lavoro passa da solo soltanto se il repository dichiara quali controlli automatici contano e la proposta li ha superati tutti. Prima bastava che nessuno fosse rosso. [Progetti](/member/projects)
+- **Il rischio del triage conta**: ogni progetto può decidere che un ticket segnato ad alto rischio dal triage non venga mai deciso da solo dal supporter. In prova non cambia nessuna decisione e lascia scritto cosa sarebbe successo. [Progetti](/member/projects)
+- **Staging verificato per davvero**: ogni progetto può chiedere che lo staging conti come verificato solo dopo un rilascio di prova riuscito, con il suo controllo finale. Se il rilascio fallisce o non arriva, la produzione non parte e decide una persona. [Progetti](/member/projects)
+- **Sorveglianza dopo il rilascio**: ogni progetto può far fermare i rilasci successivi quando la versione in linea porta un errore nuovo. Ripartono da soli appena l'errore viene risolto o ignorato. [Progetti](/member/projects)
+- **Rilettura da un motore diverso**: con il controllo acceso, un lavoro riletto dallo stesso motore che lo ha scritto non passa da solo e aspetta una persona. [Progetti](/member/projects)
+- **Come si verifica ogni «fatto quando»**: la scheda del piano e il suo Markdown mostrano, sotto ogni condizione, come si dimostra, quando il piano lo dichiara. Lo legge anche il supporter che giudica il piano. [Ticket](/member/tickets)
+- **Numeri del giro automatico**: una pagina nuova mostra, per progetto e sugli ultimi 30 giorni, quanti ticket si chiudono senza una persona, quanti al primo colpo, quanto tempo e spesa chiedono e quanti rilasci portano un errore nuovo. [Numeri](/member/automation/numbers)
+
 ## [0.224.1] - 2026-11-12
 
 ### Changed

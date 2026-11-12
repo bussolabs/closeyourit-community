@@ -13,6 +13,7 @@ en:
         retry_hint: "The system cannot read something on GitHub (%{code}). It retries at %{at}. Nothing is needed from you."
         production_soak: "Being tried on staging. If no new errors show up, it goes to production from %{at}."
         production_staging_errors: "Held before production: a new error showed up on staging."
+        production_live_errors: "Held before production: the live release brought a new error."
         production_hold: Stop
         production_hold_confirm: "Stop this release? The code is already on main: while it stays stopped, no release of this repository goes to production."
         filters:

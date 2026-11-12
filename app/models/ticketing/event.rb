@@ -36,6 +36,11 @@ module Ticketing
       question_asked question_answered question_closed
       autopilot_auto_approved plan_council_approved plan_supporter_approved
       workflow_supporter_retried agent_safety_stopped release_resumed
+      delivery_scope_stopped delivery_scope_would_stop delivery_scope_outside_plan
+      delivery_scope_tests_removed delivery_evidence_stopped delivery_evidence_would_stop
+      delivery_checks_stopped delivery_checks_would_stop
+      delivery_review_stopped delivery_review_would_stop
+      plan_fast_lane_approved plan_fast_lane_would_approve delivery_fast_lane_stopped
     ].freeze
 
     belongs_to :organization, class_name: "Organizations::Organization"

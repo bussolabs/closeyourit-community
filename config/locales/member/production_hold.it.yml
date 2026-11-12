@@ -10,6 +10,12 @@ it:
         one: "In vigore: %{count} ora di prova in staging"
         other: "In vigore: %{count} ore di prova in staging"
         zero: "In vigore: nessuna attesa, resta il controllo sugli errori nuovi in staging"
+      staging_deploy_proof_label: Prova del rilascio in staging
+      staging_deploy_proof_off: Spenta
+      staging_deploy_proof_on: Accesa
+      staging_deploy_proof_hint: Accesa, lo staging risulta verificato solo dopo che il rilascio di prova e il suo controllo finale sono finiti bene. Se falliscono, o non arrivano entro 90 minuti, decide una persona.
+      production_watch_label: Sorveglianza dopo il rilascio
+      production_watch_hint: Accesa, un errore nuovo e ancora aperto nato nella versione in linea tiene fermi i rilasci successivi in produzione. Ripartono quando l'errore viene risolto o ignorato.
       production_approval_label: La produzione aspetta una persona
       production_approval_hint: Dopo la prova in staging il lavoro si ferma. Va in produzione solo quando il responsabile dà il via libera.
       production_approval_by_group: La produzione aspetta già una persona per tutti i progetti del gruppo %{group}. Si spegne dal gruppo.

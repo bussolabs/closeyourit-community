@@ -1,0 +1,25 @@
+it:
+  member:
+    nav:
+      automation_numbers: Numeri
+    automation_numbers:
+      index:
+        title: Numeri
+        subtitle: Come va il giro automatico, per progetto, negli ultimi 30 giorni.
+        stat_completed:
+          one: ticket chiuso
+          other: ticket chiusi
+        search: Cerca un progetto
+        empty: Nessun progetto da misurare
+        empty_body: Qui vedi quanto il giro automatico fa da solo e quanto sbaglia, progetto per progetto.
+        empty_example: "Esempio: 12 ticket chiusi, 75% senza una persona, 2 guasti ogni 100 rilasci."
+        col_project: Progetto
+        col_completed: Ticket chiusi
+        col_hands_off: Senza una persona
+        col_first_pass: Al primo colpo
+        col_attempts: Tentativi per ticket
+        col_plans: Piani passati da soli
+        col_lead: Ore per chiudere
+        col_cost: Spesa per ticket
+        col_failures: Guasti ogni 100 rilasci
+        hours: "%{value} h"

@@ -62,7 +62,7 @@ module Agents
         body, choice = chosen(question, proposal)
         text = [ ticket.title, ticket.description, question.body, body ].join("\n")
         reserved = topics.match(text: text)
-        score = RiskScore.resolve(previous: nil, proposed: proposal["risk_score"], reserved: reserved.any?)
+        score = RiskScore.resolve(previous: triage.applied, proposed: proposal["risk_score"], reserved: reserved.any?)
         { question:, proposal:, body:, choice:, score:, reserved: reserved.map(&:value),
           reasons: reasons(question, proposal, body, choice, score, reserved) }
       end
@@ -95,6 +95,9 @@ module Agents
 
       def topics = @topics ||= ReservedTopics.new(organization: project.organization, project: project)
 
+      # CYRA-1293 — what the triage said about the ticket: the floor under the supporter's own score.
+      def triage = @triage ||= TriageRisk.for(round.workflow)
+
       def settle!(verdicts)
         answers = round.questions.order(:position, :created_at).map do |question|
           verdict = verdicts.find { |v| v[:question].id == question.id }
@@ -111,7 +114,7 @@ module Agents
           target_id: verdict[:question].id, target_digest: digest, outcome: outcome,
           engine: @host.effective_supporter, risk_score: verdict[:score],
           evidence: verdict[:proposal].merge("reserved_matches" => verdict[:reserved], "reasons" => verdict[:reasons],
-                                             "answer" => verdict[:body])
+                                             "answer" => verdict[:body], **triage.evidence)
         )
       end
 

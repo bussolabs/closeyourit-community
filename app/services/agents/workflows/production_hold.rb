@@ -15,6 +15,7 @@ module Agents
       DEFAULT_HOURS = 2
       HOURS_RANGE = 0..72
       STAGING = "staging"
+      PRODUCTION = "production"
 
       # The project's wait in hours: nil inherits, 0 is a choice. Callers rendering many rows pass the
       # organization and the platform settings already loaded.
@@ -30,14 +31,22 @@ module Agents
       # True when the hold is released, for the outer agents_workflows + ticketing_tickets row.
       # `window` is the project's: the queue runs on one project at a time.
       # `approval_required` is the project's too: with it on, the go-ahead of a person is also needed (CYRA-1278).
-      def self.released_sql(now:, window:, approval_required: false)
+      # `production_watch` is the project's as well: with it on, a new open error born in the live release holds
+      # the next one (CYRA-1295).
+      def self.released_sql(now:, window:, approval_required: false, production_watch: false)
         verified = if window.positive?
           ActiveRecord::Base.sanitize_sql_array([ "agents_workflows.closer_staging_verified_at <= ?", now - window ])
         else
           "agents_workflows.closer_staging_verified_at IS NOT NULL"
         end
         approved = approval_required ? " AND agents_workflows.closer_production_approved_at IS NOT NULL" : ""
-        "#{verified} AND NOT #{staging_errors_sql}#{approved}"
+        watched = production_watch ? " AND NOT #{production_errors_sql}" : ""
+        "#{verified} AND NOT #{staging_errors_sql}#{approved}#{watched}"
+      end
+
+      # True when a new, still open error was born in the release now live in production (CYRA-1295).
+      def self.production_errors_sql
+        "EXISTS (#{live_release_errors(project: Ticketing::Ticket.arel_table[:project_id]).select(1).to_sql})"
       end
 
       # True when a new, still open staging error appeared after the staging check.
@@ -59,8 +68,18 @@ module Agents
                    .order(:first_seen_at).pick(:id)
         return { reason: "staging_errors", error_group_id: group_id } if group_id
 
+        live_error = live_release_error_id(workflow.ticket.project)
+        return { reason: "production_errors", error_group_id: live_error } if live_error
+
         { reason: RequestProductionApproval::KIND } if RequestProductionApproval.pending?(workflow)
       end
+
+      def self.live_release_error_id(project)
+        return unless project.production_watch?
+
+        live_release_errors(project: project.id).order(:first_seen_at).pick(:id)
+      end
+      private_class_method :live_release_error_id
 
       # With 0 hours there is no wait and no time to show: only the error check remains.
       def self.soaking?(verified_at, now:, window:)
@@ -80,6 +99,22 @@ module Agents
                      .where(staging_events.arel.exists)
       end
       private_class_method :new_staging_errors
+
+      # The open error groups first seen in the release that is live in production, with a production event.
+      # The link is the release itself, not a time window: an error born before it does not count.
+      def self.live_release_errors(project:)
+        groups = Errors::Group.arel_table
+        events = Errors::Event.arel_table
+        releases = Projects::Release.arel_table
+        live = Projects::Release.where(releases[:project_id].eq(groups[:project_id]))
+                                .where(environment: PRODUCTION, current: true).select(:version)
+        production_events = Errors::Event.where(events[:group_id].eq(groups[:id])).where(environment: PRODUCTION)
+        Errors::Group.status_unresolved
+                     .where(groups[:project_id].eq(project))
+                     .where(groups[:first_seen_release].in(live.arel))
+                     .where(production_events.arel.exists)
+      end
+      private_class_method :live_release_errors
     end
   end
 end

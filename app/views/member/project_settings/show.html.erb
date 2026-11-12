@@ -26,7 +26,8 @@
             CYRA-1000 — the wait before a release goes to production. %>
         <% { "ingest" => "ingest_section", "tickets" => "assignee_section",
              "retention" => "retention_section", "thresholds" => "thresholds_section",
-             "production" => "production_hold_section" }.each do |anchor, partial| %>
+             "production" => "production_hold_section",
+             "delivery" => "delivery_check_section" }.each do |anchor, partial| %>
           <%= form_with url: member_project_settings_path(@project), method: :patch,
                 data: { test: "project-settings-form-#{anchor}", section_panels_target: "panel", anchor: anchor } do %>
             <%= render "member/project_settings/#{partial}" %>

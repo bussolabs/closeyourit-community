@@ -1,0 +1,10 @@
+# CYRA-1293 — the risk the triage set as the floor when the supporter decides, chosen on the project.
+en:
+  member:
+    project_settings:
+      triage_risk_floor_label: The triage's risk counts
+      triage_risk_floor_hint: Switched on, a ticket the triage marks as high risk or asks a person for is never decided by the supporter alone. In dry run it changes no decision and writes down what would have happened.
+      triage_risk_floor_modes:
+        "off": "Off"
+        dry_run: Dry run
+        "on": "On"

@@ -5,6 +5,8 @@
     <p class="text-[11.5px] text-gray-500 dark:text-zinc-400">
       <% if row.production_hold[:reason] == "staging_soak" %>
         <%= t("member.approvals.in_flight.production_soak", at: l(row.production_hold[:until], format: :short)) %>
+      <% elsif row.production_hold[:reason] == "production_errors" %>
+        <%= t("member.approvals.in_flight.production_live_errors") %>
       <% else %>
         <%= t("member.approvals.in_flight.production_staging_errors") %>
       <% end %>

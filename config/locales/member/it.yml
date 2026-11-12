@@ -2172,6 +2172,8 @@ it:
             production_soak: "Il codice è in prova in staging. Se non compaiono errori nuovi, va in produzione dalle %{at}."
             production_staging_error: "Ferma prima della produzione: in staging è comparso un errore nuovo, «%{title}». Risolvilo o ignoralo e il rilascio riparte da solo."
             production_staging_error_anonymous: "Ferma prima della produzione: in staging è comparso un errore nuovo. Il rilascio riparte quando viene risolto o ignorato."
+            production_live_error: "Ferma prima della produzione: la versione in linea ha portato un errore nuovo, «%{title}». Risolvilo o ignoralo e il rilascio riparte da solo."
+            production_live_error_anonymous: "Ferma prima della produzione: la versione in linea ha portato un errore nuovo. Il rilascio riparte quando viene risolto o ignorato."
             working: "Ci sta lavorando adesso."
           needs:
             label: Cosa serve da te
@@ -2420,6 +2422,11 @@ it:
             then: allora
             expected: mi aspetto
           definition_of_done: Definizione di fatto
+          verification_kinds:
+            test: Con un test
+            command: Con un comando
+            browser: Nel browser
+            manual: A mano
           notes: Note
           change_request: "Modifiche richieste:"
           # CYRA-630 — le stesse parole della scheda della lavorazione: era lo stesso service
@@ -2599,6 +2606,36 @@ it:
         plan_supporter_approved: "Il supporter ha approvato questo piano a rischio basso: nessuno ha dovuto firmarlo"
         workflow_supporter_retried: "Il supporter ha guardato perché la lavorazione si era fermata e l'ha rimandata all'agente con le sue indicazioni"
         agent_safety_stopped: "Lavorazione fermata per sicurezza: un agente ha provato ad aggirare i controlli o a toccare la produzione. Riparte solo se una persona la sblocca: il motivo è nella scheda Automazione."
+        delivery_scope_stopped: "Il lavoro consegnato aspetta una persona: le modifiche toccano %{files}"
+        delivery_scope_would_stop: "Controllo in prova: questa consegna si sarebbe fermata, perché le modifiche toccano %{files}"
+        delivery_scope_outside_plan: "Il lavoro consegnato cambia %{count} file che il piano non nominava (%{files})"
+        scope_files_unknown: "un elenco di file che non si è riusciti a leggere"
+        delivery_scope_tests_removed: "Il lavoro consegnato toglie dei test: %{files}"
+        scope_test_lines:
+          one: "%{count} riga di test in meno"
+          other: "%{count} righe di test in meno"
+        delivery_evidence_stopped: "Il lavoro consegnato aspetta una persona: %{details}"
+        delivery_evidence_would_stop: "Controllo in prova: questa consegna si sarebbe fermata. %{details}"
+        evidence_criteria: "condizioni senza una prova completa: %{criteria}"
+        evidence_tests_failed:
+          one: "%{count} test fallito"
+          other: "%{count} test falliti"
+        evidence_tests_not_run: "test non eseguiti"
+        delivery_checks_stopped: "Il lavoro consegnato aspetta una persona: %{details}"
+        delivery_checks_would_stop: "Controllo in prova: questa consegna si sarebbe fermata. %{details}"
+        plan_fast_lane_approved:
+          one: "Corsia veloce: piano approvato subito, tocca %{count} file e il triage lo segna a basso rischio"
+          other: "Corsia veloce: piano approvato subito, tocca %{count} file e il triage lo segna a basso rischio"
+        plan_fast_lane_would_approve:
+          one: "Corsia veloce in prova: questo piano sarebbe passato subito (%{count} file, basso rischio)"
+          other: "Corsia veloce in prova: questo piano sarebbe passato subito (%{count} file, basso rischio)"
+        delivery_fast_lane_stopped:
+          one: "Corsia veloce tolta: le modifiche vere sono più grandi del previsto (%{count} file, %{lines} righe) o fuori dal piano. Decide una persona"
+          other: "Corsia veloce tolta: le modifiche vere sono più grandi del previsto (%{count} file, %{lines} righe) o fuori dal piano. Decide una persona"
+        delivery_review_stopped: "Il lavoro consegnato aspetta una persona: l'ha riletto lo stesso motore che l'ha scritto (%{engine})"
+        delivery_review_would_stop: "Controllo in prova: questa consegna si sarebbe fermata. L'ha riletta lo stesso motore che l'ha scritta (%{engine})"
+        checks_undeclared: "il repository non dichiara quali controlli sono obbligatori"
+        checks_missing: "controlli obbligatori non superati: %{checks}"
         more_files: "e altri %{count}"
         dependency_added: "%{actor} ha aggiunto la dipendenza dal ticket %{ticket}"
         dependency_removed: "%{actor} ha rimosso la dipendenza dal ticket %{ticket}"

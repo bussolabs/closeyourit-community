@@ -5945,7 +5945,7 @@
       "level": 3,
       "parent": "agt_flow_claim",
       "kind": "step",
-      "summary": "La macchina deve essere viva, certificata e adatta alla fase. In produzione va un rilascio alla volta per repository, dopo l'attesa in staging scelta su progetto, organizzazione o piattaforma e senza errori nuovi; un ticket rimandato resta fermo fino alla sua ora. Un ticket il cui piano tocca file che un altro ticket del progetto sta cambiando aspetta, e riparte da solo quando quel lavoro finisce.",
+      "summary": "La macchina deve essere viva, certificata e adatta alla fase. In produzione va un rilascio alla volta per repository, dopo l'attesa in staging scelta su progetto, organizzazione o piattaforma e senza errori nuovi; un ticket rimandato resta fermo fino alla sua ora. Un ticket il cui piano tocca file che un altro ticket del progetto sta cambiando aspetta, e riparte da solo quando quel lavoro finisce. Dove il progetto ha acceso la sorveglianza, anche un errore nuovo nato nella versione in linea tiene fermo il rilascio successivo.",
       "files": [
         "app/services/agents/hosts/eligibility.rb",
         "app/services/agents/hosts/project_scope.rb",
@@ -6183,12 +6183,13 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo i piani a rischio fino a 8, senza temi riservati né tentativi di aggirare i controlli; un controllo citato in un divieto («non usare --no-verify o [skip ci]») non conta come tentativo. Un piano con lacune, o che cambia i file della CI che le macchine non possono consegnare, torna al pianificatore con le osservazioni, al massimo tre volte; dopo, se il rischio è fino a 5, parte e le lacune arrivano come note a chi scrive il codice; gli altri restano a una persona.",
+      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo i piani a rischio fino a 8, senza temi riservati né tentativi di aggirare i controlli; un controllo citato in un divieto («non usare --no-verify o [skip ci]») non conta come tentativo. Un piano con lacune, o che cambia i file della CI che le macchine non possono consegnare, torna al pianificatore con le osservazioni, al massimo tre volte; dopo, se il rischio è fino a 5, parte e le lacune arrivano come note a chi scrive il codice; gli altri restano a una persona. Se il progetto lo accende, il rischio segnato dal triage fa da minimo: un ticket ad alto rischio non viene mai approvato da solo. Con i tetti stretti accesi, dopo tre revisioni un piano ancora da correggere va sempre a una persona.",
       "files": [
         "app/controllers/api/v1/agent_host/supporter_plans_controller.rb",
         "app/controllers/api/v1/agent_host/supporter_plan_verdicts_controller.rb",
         "app/services/agents/supporters/next_plan.rb",
-        "app/services/agents/supporters/judge_plan.rb"
+        "app/services/agents/supporters/judge_plan.rb",
+        "app/services/agents/supporters/triage_risk.rb"
       ]
     },
     {
@@ -6228,9 +6229,19 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Con controlli verdi, rilettura accettata e proposta invariata la consegna passa da sola. Al primo controllo rosso il lavoro torna all'agente; al secondo decide una persona.",
+      "summary": "Con controlli verdi, rilettura accettata e proposta invariata la consegna passa da sola. Al primo controllo rosso il lavoro torna all'agente; al secondo decide una persona. Se il progetto ha acceso il controllo sulle modifiche consegnate, il server legge da GitHub i file cambiati davvero: una modifica ai dati, o un file delicato che il piano non nominava, lascia la decisione a una persona. Lo stesso vale per una prova del «fatto quando» mancante o parziale e per test falliti o non eseguiti. Lo stesso vale per un lavoro riletto dallo stesso motore che lo ha scritto. Un piano piccolo e a basso rischio può passare dalla corsia veloce senza che nessuno lo approvi: alla consegna la perde se le modifiche vere superano 3 file o 60 righe, o escono dal piano. I test tolti dalle modifiche vengono annotati nella storia del ticket.",
       "files": [
         "app/services/agents/workflows/auto_approve.rb",
+        "app/services/agents/candidates/delivery_gate.rb",
+        "app/services/agents/candidates/scope_gate.rb",
+        "app/services/agents/candidates/scope_check.rb",
+        "app/services/agents/candidates/evidence_gate.rb",
+        "app/services/agents/candidates/evidence_check.rb",
+        "app/services/agents/candidates/required_checks_gate.rb",
+        "app/services/agents/candidates/required_checks.rb",
+        "app/services/agents/candidates/reviewer_gate.rb",
+        "app/services/agents/candidates/fast_lane_gate.rb",
+        "app/services/agents/plans/fast_lane.rb",
         "app/services/agents/workflows/approve_autopilot.rb",
         "app/services/ticketing/approve_review.rb"
       ]
@@ -6241,10 +6252,11 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "La macchina unisce il codice. Il server verifica su GitHub che sia davvero entrato nel ramo principale; solo allora si apre la produzione.",
+      "summary": "La macchina unisce il codice. Il server verifica su GitHub che sia davvero entrato nel ramo principale; solo allora si apre la produzione. Se il progetto lo chiede, aspetta anche che il rilascio di prova e il suo controllo finale siano finiti bene.",
       "files": [
         "app/services/agents/attempts/effects/closer_staging.rb",
         "app/services/agents/staging/verify_merge.rb",
+        "app/services/agents/staging/deploy_run.rb",
         "app/jobs/agents/staging_proof_job.rb"
       ]
     },
@@ -6333,6 +6345,19 @@
         "app/services/agents/hosts/comparison.rb",
         "app/services/agents/hosts/worked_tickets.rb",
         "app/services/agents/hosts/broadcast.rb"
+      ]
+    },
+    {
+      "id": "agt_page_numbers",
+      "name": "Numeri del giro automatico",
+      "level": 2,
+      "parent": "area_agents",
+      "kind": "page",
+      "summary": "Per ogni progetto, sugli ultimi 30 giorni: ticket chiusi, quanti senza una persona, quanti al primo colpo, tentativi per ticket, piani passati da soli, ore per chiudere, spesa per ticket e guasti ogni 100 rilasci. Dove manca il dato compare un trattino.",
+      "files": [
+        "app/controllers/member/automation_numbers_controller.rb",
+        "app/views/member/automation_numbers/**",
+        "app/services/agents/numbers/per_project.rb"
       ]
     },
     {

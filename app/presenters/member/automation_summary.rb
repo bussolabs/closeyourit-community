@@ -218,9 +218,12 @@ module Member
         return t("stopped.production_soak", at: I18n.l(hold[:until], format: :short))
       end
       return t("stopped.production_approval") if hold[:reason] == ::Agents::Workflows::RequestProductionApproval::KIND
-      return t("stopped.production_staging_error_anonymous") unless @decides
 
-      t("stopped.production_staging_error", title: Errors::Group.find(hold[:error_group_id]).title)
+      # CYRA-1295 — a staging error or one born in the live release: same sentence shape, another place.
+      key = hold[:reason] == "production_errors" ? "production_live_error" : "production_staging_error"
+      return t("stopped.#{key}_anonymous") unless @decides
+
+      t("stopped.#{key}", title: Errors::Group.find(hold[:error_group_id]).title)
     end
 
     def cancelled_line

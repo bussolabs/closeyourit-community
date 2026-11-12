@@ -32,6 +32,7 @@ module Agents
         # CYRA-1133 — the council approved its own plan: its delivery always goes to a person.
         return Result.ok(nil) if Agents::CouncilProposal.exists?(ticket_id: @workflow.ticket_id)
         return Result.ok(nil) unless all_green?
+        return Result.ok(nil) if delivery_gates_stop?
 
         outcome = ApproveAutopilot.call(workflow: @workflow, actor: nil, client: @client)
         return outcome if outcome.err?
@@ -41,6 +42,17 @@ module Agents
       end
 
       private
+
+      # CYRA-1291, CYRA-1292, CYRA-1297 — the files really changed, the proofs declared, the checks the repository
+      # requires and who re-read the work can still ask for a person. Every gate runs, none short-circuits: in a dry run each must leave
+      # its own record.
+      DELIVERY_GATES = [ Agents::Candidates::ScopeGate, Agents::Candidates::EvidenceGate,
+                         Agents::Candidates::RequiredChecksGate, Agents::Candidates::ReviewerGate,
+                         Agents::Candidates::FastLaneGate ].freeze
+
+      def delivery_gates_stop?
+        DELIVERY_GATES.map { |gate| gate.stops?(workflow: @workflow, candidate: @candidate, client: @client) }.any?
+      end
 
       def all_green?
         @candidate.state_verified_passing? && review_accepted? && closer_pipeline?

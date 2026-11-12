@@ -10,6 +10,12 @@ en:
         one: "In force: %{count} hour of staging trial"
         other: "In force: %{count} hours of staging trial"
         zero: "In force: no wait, the check for new staging errors stays"
+      staging_deploy_proof_label: Proof of the staging release
+      staging_deploy_proof_off: "Off"
+      staging_deploy_proof_on: "On"
+      staging_deploy_proof_hint: Switched on, staging counts as verified only after the trial release and its final check finished well. If they fail, or do not show up within 90 minutes, a person decides.
+      production_watch_label: Watch after the release
+      production_watch_hint: Switched on, a new and still open error born in the live release holds the next production releases. They resume once the error is resolved or ignored.
       production_approval_label: Production waits for a person
       production_approval_hint: After the staging trial the work stops. It goes to production only when the person in charge gives the go-ahead.
       production_approval_by_group: Production already waits for a person in every project of the %{group} group. Switch it off from the group.

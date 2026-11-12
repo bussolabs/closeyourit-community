@@ -1,0 +1,8 @@
+# CYRA-1299 — i tetti stretti del supporter e del planner, scelti sul progetto.
+it:
+  member:
+    project_settings:
+      strict_caps_label: Tetti stretti
+      strict_caps_off: Spenti
+      strict_caps_on: Accesi
+      strict_caps_hint: Accesi, un piano che il supporter voleva ancora correggere dopo tre revisioni va a una persona, e un ticket che il planner trova già fatto non viene chiuso da solo.

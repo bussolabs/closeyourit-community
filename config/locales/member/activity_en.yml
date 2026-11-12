@@ -54,6 +54,19 @@ en:
           plan_supporter_approved: Plan approved by the supporter
           workflow_supporter_retried: Work sent back to the agent by the supporter
           agent_safety_stopped: Work stopped for safety
+          delivery_scope_stopped: Delivery stopped by the file check
+          delivery_scope_would_stop: File check in dry run
+          delivery_scope_outside_plan: Files changed outside the plan
+          delivery_scope_tests_removed: Tests taken away by the delivery
+          delivery_evidence_stopped: Delivery stopped by the proofs check
+          delivery_evidence_would_stop: Proofs check in dry run
+          delivery_checks_stopped: Delivery stopped by the required checks
+          delivery_checks_would_stop: Required checks in dry run
+          delivery_review_stopped: Delivery stopped by the re-reading check
+          delivery_review_would_stop: Re-reading check in dry run
+          plan_fast_lane_approved: Plan passed through the fast lane
+          plan_fast_lane_would_approve: Fast lane in dry run
+          delivery_fast_lane_stopped: Fast lane taken away at delivery
           release_resumed: Release resumed
           linked: Linked
           branch_created: Branch created

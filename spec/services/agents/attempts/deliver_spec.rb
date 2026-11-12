@@ -384,6 +384,27 @@ RSpec.describe Agents::Attempts::Deliver do
     expect(workflow.plans.sole).to have_attributes(version: 1, ticket_snapshot_digest: "snapshot")
   end
 
+  # CYRA-1300 — a small low-risk plan takes the fast lane the moment it is delivered.
+  it "approves a small low-risk plan through the fast lane and skips the plan-ready notification" do
+    project.update!(fast_lane: "on")
+    ticket.update!(title: "Fix the label of the save button", description: "The button reads Sav.")
+    create(:agent_attempt, organization:, workflow:, phase: "triage", status: :approved,
+                           result: { "risk" => "low", "requires_human_approval" => false })
+    scope = build_delivery_scope(phase: "planner", organization:, project:, ticket:, workflow:)
+    workflow.update!(triage_started_at: nil, triaged_at: Time.current, ticket_snapshot_digest: "snapshot")
+    result = JSON.parse(Rails.root.join("contracts/agent-result/v2/fixtures/valid/planner_verification.json").read)
+                 .merge("code" => ticket.code)
+
+    expect do
+      expect(described_class.call(organization:, host: scope[:host], attempt: scope[:attempt],
+                                  payload: { runtime: "claude", reviewer_runtime: "codex", result:,
+                                             review: review_for("planner") })).to be_ok
+    end.not_to have_enqueued_job(Agents::PlanReadyNotificationJob)
+    expect(workflow.reload).to have_attributes(approved_at: be_present, approved_by_id: nil)
+    expect(ticket.events.where(action: "plan_fast_lane_approved").count).to eq(1)
+    expect(workflow.plans.sole.document.definition_of_done.first["verification"]).to include("kind" => "test")
+  end
+
   it "approves the plan of a council ticket by itself and skips the plan-ready notification" do
     create(:agent_automator_setting, organization:, council_mode: "on")
     create(:agent_council_proposal, ticket:, outcome: "ticket")
@@ -469,6 +490,17 @@ RSpec.describe Agents::Attempts::Deliver do
       expect(ticket.reload.status).to eq(done_status)
       expect(workflow.reload).to have_attributes(completed_at: be_present, planned_at: nil, phase: "completed")
       expect(workflow.plans).to be_empty
+    end
+
+    # CYRA-1299 — a project with strict caps lets a person confirm instead of closing by itself.
+    it "stops for a person and leaves the ticket open when the project has strict caps" do
+      project.update!(strict_caps: "1")
+
+      expect(consegna(already_done_result)).to be_ok
+
+      expect(ticket.reload.status).not_to eq(done_status)
+      expect(workflow.reload).to have_attributes(completed_at: nil, blocked_kind: "agent_blocked", blocked_phase: "planner")
+      expect(workflow.blocked_reason).to include("serve la conferma di una persona", "Il gate dei duplicati esiste già")
     end
 
     # Il commento è la riga che legge chi apre il ticket; le prove restano nella cronologia, con i

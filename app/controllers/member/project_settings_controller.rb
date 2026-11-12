@@ -14,7 +14,7 @@ module Member
                        automator_live_code_enabled production_approval_required].freeze
     # The panels that save with their own form: a save returns to the panel it came from. It travels as
     # `?section=`, not `#anchor`: a fragment in a redirect is lost by the fetch that follows it.
-    FORM_SECTIONS = %w[ingest tickets retention thresholds production supporter dashboard].freeze
+    FORM_SECTIONS = %w[ingest tickets retention thresholds production delivery supporter dashboard].freeze
 
     before_action :set_project
     # CYRA-883 — the page also holds the ingest tokens: whoever manages them (the default Maintainer,
@@ -81,7 +81,7 @@ module Member
       # CYRA-341: performance_fast_ms/performance_slow_ms = soglie di colore delle durate (Metrics::Thresholds).
       params.permit(:logs_retention_days, :analytics_retention_days, :errors_retention_days,
                     :performance_retention_days, :uptime_retention_days, :traces_retention_days, :artifacts_retention_days, :crashes_retention_days, :session_health_retention_days, :measurements_retention_days,
-                    :performance_fast_ms, :performance_slow_ms, :production_hold_hours,
+                    :performance_fast_ms, :performance_slow_ms, :production_hold_hours, :delivery_scope_check, :triage_risk_floor, :staging_deploy_proof, :production_watch, :strict_caps, :fast_lane,
                     :default_assignee_id, :cto_id, :owner_id, :allowed_origins, :supporter_reserved_topics)
     end
 

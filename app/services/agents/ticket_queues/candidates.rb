@@ -176,7 +176,8 @@ module Agents
         <<~SQL.squish
           (#{ready_phase_sql}) <> 'closer_production'
           OR (#{Agents::Workflows::ProductionHold.released_sql(
-            now: @now, window:, approval_required: @project.production_approval_required_active?
+            now: @now, window:, approval_required: @project.production_approval_required_active?,
+            production_watch: @project.production_watch?
           )})
         SQL
       end

@@ -1,0 +1,28 @@
+<%# CYRA-1291 — the check on the files a delivery really changed: off, dry run (records only) or on. %>
+<%= render Ui::SectionComponent.new(title: t("member.project_settings.delivery_check_section"), id: "delivery",
+      class: "scroll-mt-20", body_class: "px-4 py-4 space-y-4", test_id: "project-delivery-check-section") do |section| %>
+  <% section.with_actions do %><%= render "member/project_settings/save_action", anchor: "delivery" %><% end %>
+  <%= render Ui::GridComponent.new(cols: 1, md: 2, gap: 5) do %>
+    <%= render Ui::SelectComponent.new(
+          name: "delivery_scope_check",
+          label: t("member.project_settings.delivery_check_label"),
+          options: Agents::Candidates::ScopeCheck::MODES.map { |mode| [ t("member.project_settings.delivery_check_modes.#{mode}"), mode ] },
+          selected: @project.delivery_scope_check_mode,
+          hint: t("member.project_settings.delivery_check_hint"),
+          test_id: "project-delivery-check-mode",
+          error: @errors&.dig(:delivery_scope_check)&.first) %>
+    <%# CYRA-1300 — the fast lane for small low-risk plans: off, dry run (records only) or on. %>
+    <%= render Ui::SelectComponent.new(
+          name: "fast_lane",
+          label: t("member.project_settings.fast_lane_label"),
+          options: Agents::Plans::FastLane::MODES.map { |mode| [ t("member.project_settings.delivery_check_modes.#{mode}"), mode ] },
+          selected: @project.fast_lane_mode,
+          hint: t("member.project_settings.fast_lane_hint"),
+          test_id: "project-fast-lane-mode",
+          error: @errors&.dig(:fast_lane)&.first) %>
+  <% end %>
+
+  <p class="text-[12.5px] text-gray-600 dark:text-zinc-400" data-test="project-delivery-check-rules">
+    <%= t("member.project_settings.delivery_check_rules") %>
+  </p>
+<% end %>

@@ -73,6 +73,21 @@ RSpec.describe "Member ticket automation plan", type: :request do
     expect(page.css("[data-test='automation-plan-criterion-id']").map { |node| node.text.strip }).to eq([ "DOD-1" ])
   end
 
+  it "says under a done-criterion how it is verified, when the plan declares it" do
+    create_plan
+    workflow.plans.last.update_columns(definition_of_done: [
+      { "id" => "DOD-1", "text" => "La scheda mostra le foto",
+        "verification" => { "kind" => "browser", "how" => "Aprire la scheda del locale e contare le foto" } },
+      { "id" => "DOD-2", "text" => "Le foto si possono cambiare" }
+    ])
+
+    get member_ticket_path(ticket, tab: "automation")
+
+    page = Nokogiri::HTML(response.body)
+    shown = page.css("[data-test='automation-plan-criterion-verification']").map { |node| node.text.squish }
+    expect(shown).to eq([ "Nel browser: Aprire la scheda del locale e contare le foto" ])
+  end
+
   it "scarica un Markdown generato dallo stesso piano" do
     create_plan
 

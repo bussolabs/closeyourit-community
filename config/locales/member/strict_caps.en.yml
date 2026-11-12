@@ -1,0 +1,8 @@
+# CYRA-1299 — the strict caps of the supporter and the planner, chosen on the project.
+en:
+  member:
+    project_settings:
+      strict_caps_label: Strict caps
+      strict_caps_off: "Off"
+      strict_caps_on: "On"
+      strict_caps_hint: When on, a plan the supporter still wanted fixed after three revisions goes to a person, and a ticket the planner finds already done is not closed by itself.

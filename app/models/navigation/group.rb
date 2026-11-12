@@ -109,7 +109,7 @@ module Navigation
                              member/monitoring/cluster_workloads member/monitoring/cluster_problems
                              member/monitoring/cluster_namespaces],
       "alerts" => %w[member/alerting_rules member/alerting_notifications member/alerting_channels],
-      "automation" => %w[member/datasets member/agents member/skill_bundles],
+      "automation" => %w[member/datasets member/agents member/skill_bundles member/automation_numbers],
       # Analytics era uno spazio intero per una pagina sola (CYRA-455), poi un nodo di primo livello
       # per la stessa pagina sola: da CYRA-535 è una voce dentro SEO. `member/monitoring/analytics`
       # copre per prefisso anche analytics/goals e analytics/shares.

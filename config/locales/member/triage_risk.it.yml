@@ -1,0 +1,10 @@
+# CYRA-1293 — il rischio segnato dal triage come minimo quando decide il supporter, scelto sul progetto.
+it:
+  member:
+    project_settings:
+      triage_risk_floor_label: Il rischio del triage conta
+      triage_risk_floor_hint: Acceso, un ticket che il triage segna ad alto rischio o per cui chiede una persona non viene mai deciso da solo dal supporter. In prova non cambia nessuna decisione e lascia scritto cosa sarebbe successo.
+      triage_risk_floor_modes:
+        "off": Spento
+        dry_run: In prova
+        "on": Acceso

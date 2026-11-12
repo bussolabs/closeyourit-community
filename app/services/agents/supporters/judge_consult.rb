@@ -66,7 +66,8 @@ module Agents
         matches = ReservedTopics.new(organization: project.organization, project: project).match(text: text)
         reserved = matches.reject { |entry| cleared?(entry) }
         bypass = BypassGuard.match([ workflow.blocked_reason, guidance ].join("\n"))
-        score = RiskScore.resolve(previous: nil, proposed: verdict["risk_score"], reserved: reserved.any?)
+        score = RiskScore.resolve(previous: TriageRisk.for(workflow).applied, proposed: verdict["risk_score"],
+                                  reserved: reserved.any?)
         { score:, reserved: matches.map(&:value), bypass:, reasons: reasons(score, reserved, bypass) }
       end
 

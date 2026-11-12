@@ -55,6 +55,19 @@ it:
           plan_supporter_approved: Piano approvato dal supporter
           workflow_supporter_retried: Lavorazione rimandata all'agente dal supporter
           agent_safety_stopped: Lavorazione fermata per sicurezza
+          delivery_scope_stopped: Consegna fermata dal controllo sui file
+          delivery_scope_would_stop: Controllo sui file in prova
+          delivery_scope_outside_plan: File cambiati fuori dal piano
+          delivery_scope_tests_removed: Test tolti dalla consegna
+          delivery_evidence_stopped: Consegna fermata dal controllo sulle prove
+          delivery_evidence_would_stop: Controllo sulle prove in prova
+          delivery_checks_stopped: Consegna fermata dai controlli obbligatori
+          delivery_checks_would_stop: Controlli obbligatori in prova
+          delivery_review_stopped: Consegna fermata dal controllo sulla rilettura
+          delivery_review_would_stop: Controllo sulla rilettura in prova
+          plan_fast_lane_approved: Piano passato dalla corsia veloce
+          plan_fast_lane_would_approve: Corsia veloce in prova
+          delivery_fast_lane_stopped: Corsia veloce tolta alla consegna
           release_resumed: Rilascio ripreso
           linked: Collegato
           branch_created: Ramo creato

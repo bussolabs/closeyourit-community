@@ -2110,6 +2110,8 @@ en:
             production_soak: "The code is being tried on staging. If no new errors show up, it goes to production from %{at}."
             production_staging_error: "Held before production: a new error showed up on staging, “%{title}”. Resolve or ignore it and the release resumes on its own."
             production_staging_error_anonymous: "Held before production: a new error showed up on staging. The release resumes once it is resolved or ignored."
+            production_live_error: "Held before production: the live release brought a new error, “%{title}”. Resolve or ignore it and the release resumes on its own."
+            production_live_error_anonymous: "Held before production: the live release brought a new error. The release resumes once it is resolved or ignored."
             working: "It is working on it right now."
           needs:
             label: What it needs from you
@@ -2347,6 +2349,11 @@ en:
             then: then
             expected: I expect
           definition_of_done: Definition of done
+          verification_kinds:
+            test: With a test
+            command: With a command
+            browser: In the browser
+            manual: By hand
           notes: Notes
           change_request: "Changes requested:"
           # CYRA-630 — same words as the run card: it was the same service under two names.
@@ -2520,6 +2527,36 @@ en:
         plan_supporter_approved: "The supporter approved this low-risk plan: no one had to sign it"
         workflow_supporter_retried: "The supporter looked at why the work stopped and sent it back to the agent with its guidance"
         agent_safety_stopped: "Work stopped for safety: an agent tried to skip the checks or to touch production. It resumes only when a person releases it: the reason is in the Automation tab."
+        delivery_scope_stopped: "The delivered work waits for a person: the changes touch %{files}"
+        delivery_scope_would_stop: "Check in dry run: this delivery would have stopped, because the changes touch %{files}"
+        delivery_scope_outside_plan: "The delivered work changes %{count} files the plan did not name (%{files})"
+        scope_files_unknown: "a list of files that could not be read"
+        delivery_scope_tests_removed: "The delivered work takes tests away: %{files}"
+        scope_test_lines:
+          one: "%{count} test line fewer"
+          other: "%{count} test lines fewer"
+        delivery_evidence_stopped: "The delivered work waits for a person: %{details}"
+        delivery_evidence_would_stop: "Check in dry run: this delivery would have stopped. %{details}"
+        evidence_criteria: "criteria without a full proof: %{criteria}"
+        evidence_tests_failed:
+          one: "%{count} failed test"
+          other: "%{count} failed tests"
+        evidence_tests_not_run: "tests not run"
+        delivery_checks_stopped: "The delivered work waits for a person: %{details}"
+        delivery_checks_would_stop: "Check in dry run: this delivery would have stopped. %{details}"
+        plan_fast_lane_approved:
+          one: "Fast lane: plan approved at once, it touches %{count} file and the triage rates it low risk"
+          other: "Fast lane: plan approved at once, it touches %{count} files and the triage rates it low risk"
+        plan_fast_lane_would_approve:
+          one: "Fast lane in dry run: this plan would have passed at once (%{count} file, low risk)"
+          other: "Fast lane in dry run: this plan would have passed at once (%{count} files, low risk)"
+        delivery_fast_lane_stopped:
+          one: "Fast lane taken away: the real changes are larger than promised (%{count} file, %{lines} lines) or outside the plan. A person decides"
+          other: "Fast lane taken away: the real changes are larger than promised (%{count} files, %{lines} lines) or outside the plan. A person decides"
+        delivery_review_stopped: "The delivered work waits for a person: the engine that wrote it also re-read it (%{engine})"
+        delivery_review_would_stop: "Check in dry run: this delivery would have stopped. The engine that wrote it also re-read it (%{engine})"
+        checks_undeclared: "the repository does not declare which checks are required"
+        checks_missing: "required checks not passed: %{checks}"
         more_files: "and %{count} more"
         dependency_added: "%{actor} added a dependency on ticket %{ticket}"
         dependency_removed: "%{actor} removed the dependency on ticket %{ticket}"

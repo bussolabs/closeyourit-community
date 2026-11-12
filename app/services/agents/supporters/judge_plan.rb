@@ -70,10 +70,13 @@ module Agents
         text = [ ticket.title, ticket.description, NextPlan.document(plan) ].join("\n")
         matches = ReservedTopics.new(organization: project.organization, project: project).match(text: text, paths: paths)
         reserved = matches.reject { |entry| cleared?(entry) }
-        score = RiskScore.resolve(previous: nil, proposed: verdict["risk_score"], reserved: reserved.any?, paths: paths)
+        score = RiskScore.resolve(previous: triage.applied, proposed: verdict["risk_score"], reserved: reserved.any?, paths: paths)
         bypass = BypassGuard.match(NextPlan.document(plan))
         { score:, reserved: matches.map(&:value), bypass:, reasons: reasons(score, reserved, bypass) }
       end
+
+      # CYRA-1293 — what the triage said about the ticket: the floor under the supporter's own score.
+      def triage = @triage ||= TriageRisk.for(workflow)
 
       # CYRA-1197 — a built-in word found only in the text ("billing", "pagamento") is cleared when the supporter
       # read the plan against the code and approves it with high confidence: the word alone is not a change to
@@ -89,6 +92,9 @@ module Agents
 
       # The supporter asked for one more revision than the budget allows, on a plan it rates low risk.
       def accept_with_notes?
+        # CYRA-1299 — a project with strict caps never approves a plan the supporter still wanted fixed.
+        return false if project.strict_caps?
+
         verdict["recommendation"] == "revise" && revisions_exhausted? && proposed_risk.between?(1, ACCEPT_WITH_NOTES_MAX)
       end
 
@@ -112,6 +118,7 @@ module Agents
             list << "revisions_exhausted" if verdict["recommendation"] == "revise" && revisions_exhausted?
           end
           list << "risk_above_threshold" unless RiskScore.autonomous?(score)
+          list << "triage_risk" if triage.stops?
           list << "risk_above_threshold" if accept_with_notes? && score > ACCEPT_WITH_NOTES_MAX && list.exclude?("risk_above_threshold")
           list << "reserved_topic" if reserved.any?
           list << "bypass_suspected" if bypass.any?
@@ -179,7 +186,7 @@ module Agents
           evidence: verdict.merge("plan_version" => plan.version, "reserved_matches" => judged[:reserved],
                                   "guidance" => implementation_notes,
                                   "bypass_matches" => judged[:bypass],
-                                  "reasons" => judged[:reasons])
+                                  "reasons" => judged[:reasons], **triage.evidence)
         )
       end
 

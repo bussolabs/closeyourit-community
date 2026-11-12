@@ -230,6 +230,97 @@ RSpec.describe "CYRA-871 — il freno prima della produzione" do
       expect(coda).to eq(ticket.id)
     end
   end
+
+  # CYRA-1295 — where the project watches production, a new open error born in the live release holds the next one.
+  describe "the watch on the live release" do
+    def live_release(version = "v1.0.0")
+      create(:release, project:, version:, environment: "production", current: true)
+    end
+
+    def error_born_in(version, environment: "production", target: project, **attributes)
+      group = create(:error_group, project: target, first_seen_at: 10.minutes.ago, first_seen_release: version,
+                                   **attributes)
+      create(:error_event, group:, environment:, occurred_at: 10.minutes.ago)
+      group
+    end
+
+    def claim(ticket)
+      token = Agents::TicketQueues::Selection.issue(ticket:, host:)
+      Agents::TicketQueues::Claim.call(organization:, host:, selection_token: token,
+                                       params: { host_id: host.id, run_id: "run-1", ttl_seconds: 3600 })
+    end
+
+    before { live_release }
+
+    it "offers production as before while the watch is off" do
+      ticket = provato_in_staging(da: 3.hours.ago)
+      error_born_in("v1.0.0")
+
+      expect(coda).to eq(ticket.id)
+    end
+
+    context "when the project switched the watch on" do
+      before { project.update!(production_watch: "1") }
+
+      it "does not offer production while an error born in the live release is open" do
+        provato_in_staging(da: 3.hours.ago)
+        error_born_in("v1.0.0")
+
+        expect(coda).to be_nil
+      end
+
+      it "offers it again once the error is resolved or ignored" do
+        ticket = provato_in_staging(da: 3.hours.ago)
+        resolved = error_born_in("v1.0.0")
+        ignored = error_born_in("v1.0.0")
+        expect(coda).to be_nil
+
+        resolved.update!(status: :resolved)
+        ignored.update!(status: :ignored)
+
+        expect(coda).to eq(ticket.id)
+      end
+
+      it "does not count an error born in an older release" do
+        ticket = provato_in_staging(da: 3.hours.ago)
+        error_born_in("v0.9.0")
+
+        expect(coda).to eq(ticket.id)
+      end
+
+      it "does not count an error of the live release seen only on staging" do
+        ticket = provato_in_staging(da: 3.hours.ago)
+        error_born_in("v1.0.0", environment: "staging", first_seen_at: 4.hours.ago)
+
+        expect(coda).to eq(ticket.id)
+      end
+
+      it "does not count an error of another project" do
+        ticket = provato_in_staging(da: 3.hours.ago)
+        other = create(:project, organization:)
+        create(:release, project: other, version: "v1.0.0", environment: "production", current: true)
+        error_born_in("v1.0.0", target: other)
+
+        expect(coda).to eq(ticket.id)
+      end
+
+      it "refuses the claim with its own reason when the error shows up meanwhile" do
+        ticket = provato_in_staging(da: 3.hours.ago)
+        token = Agents::TicketQueues::Selection.issue(ticket:, host:)
+        group = error_born_in("v1.0.0")
+
+        outcome = Agents::TicketQueues::Claim.call(organization:, host:, selection_token: token,
+                                                   params: { host_id: host.id, run_id: "run-1", ttl_seconds: 3600 })
+
+        expect(outcome).to be_err
+        expect(outcome.error.details).to include(reason: "production_errors", error_group_id: group.id)
+      end
+
+      it "claims as usual when the live release brought no error" do
+        expect(claim(provato_in_staging(da: 3.hours.ago))).to be_ok
+      end
+    end
+  end
 end
 
 RSpec.describe Agents::Workflows::ProductionHold do
@@ -417,5 +508,17 @@ RSpec.describe Member::AutomationSummary, "il motivo del freno" do
     create(:error_event, group:, environment: "staging", occurred_at: 30.seconds.ago)
 
     expect(frase(ticket)).to eq(testo("production_staging_error", title: group.title))
+  end
+
+  # CYRA-1295 — the hold names the error the live release brought.
+  it "names the error born in the live release when the project watches production" do
+    project.update!(production_watch: "1")
+    create(:release, project:, version: "v1.0.0", environment: "production", current: true)
+    ticket = provato_in_staging(da: 3.hours.ago)
+    group = create(:error_group, project:, first_seen_at: 10.minutes.ago, first_seen_release: "v1.0.0")
+    create(:error_event, group:, environment: "production", occurred_at: 10.minutes.ago)
+
+    expect(frase(ticket)).to eq(testo("production_live_error", title: group.title))
+    expect(frase(ticket, decides: false)).to eq(testo("production_live_error_anonymous"))
   end
 end

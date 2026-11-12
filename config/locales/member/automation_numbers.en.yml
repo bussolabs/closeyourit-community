@@ -1,0 +1,25 @@
+en:
+  member:
+    nav:
+      automation_numbers: Numbers
+    automation_numbers:
+      index:
+        title: Numbers
+        subtitle: How the automatic round is doing, per project, over the last 30 days.
+        stat_completed:
+          one: ticket closed
+          other: tickets closed
+        search: Search a project
+        empty: No project to measure
+        empty_body: Here you see how much the automatic round does alone and how often it is wrong, project by project.
+        empty_example: "Example: 12 tickets closed, 75% without a person, 2 failures per 100 releases."
+        col_project: Project
+        col_completed: Tickets closed
+        col_hands_off: Without a person
+        col_first_pass: First pass
+        col_attempts: Attempts per ticket
+        col_plans: Plans passed alone
+        col_lead: Hours to close
+        col_cost: Cost per ticket
+        col_failures: Failures per 100 releases
+        hours: "%{value} h"

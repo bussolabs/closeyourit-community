@@ -182,6 +182,71 @@ RSpec.describe "Member::ProjectSettings", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
     end
 
+    # CYRA-1291 — the check on the files a delivery really changed: off, dry run or on.
+    it "saves the delivery check mode and returns to its panel" do
+      patch member_project_settings_path(project), params: { delivery_scope_check: "dry_run", section: "delivery" }
+
+      expect(response).to redirect_to(member_project_settings_path(project, section: "delivery"))
+      expect(project.reload.delivery_scope_check_mode).to eq("dry_run")
+    end
+
+    it "refuses a delivery check mode that does not exist" do
+      patch member_project_settings_path(project), params: { delivery_scope_check: "always", section: "delivery" }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(project.reload.delivery_scope_check_mode).to eq("off")
+    end
+
+    # CYRA-1293 — the triage's risk as the floor under the supporter's score: off, dry run or on.
+    it "saves the triage risk rule and returns to the supporter panel" do
+      patch member_project_settings_path(project), params: { triage_risk_floor: "on", section: "supporter" }
+
+      expect(response).to redirect_to(member_project_settings_path(project, section: "supporter"))
+      expect(project.reload.triage_risk_floor_mode).to eq("on")
+    end
+
+    it "refuses a triage risk rule that does not exist" do
+      patch member_project_settings_path(project), params: { triage_risk_floor: "sometimes", section: "supporter" }
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
+    # CYRA-1294 — staging counts as verified only after its trial release went through.
+    it "switches the staging release proof on and off" do
+      patch member_project_settings_path(project), params: { staging_deploy_proof: "1", section: "production" }
+      expect(project.reload).to be_staging_deploy_proof
+
+      patch member_project_settings_path(project), params: { staging_deploy_proof: "0", section: "production" }
+      expect(project.reload).not_to be_staging_deploy_proof
+    end
+
+    # CYRA-1300 — the fast lane for small low-risk plans.
+    it "saves the fast lane mode and refuses an unknown one" do
+      patch member_project_settings_path(project), params: { fast_lane: "dry_run", section: "delivery" }
+      expect(project.reload.fast_lane_mode).to eq("dry_run")
+
+      patch member_project_settings_path(project), params: { fast_lane: "sometimes", section: "delivery" }
+      expect(project.reload.fast_lane_mode).to eq("dry_run")
+    end
+
+    # CYRA-1299 — strict caps for the supporter and the planner.
+    it "switches the strict caps on and off" do
+      patch member_project_settings_path(project), params: { strict_caps: "1", section: "supporter" }
+      expect(project.reload).to be_strict_caps
+
+      patch member_project_settings_path(project), params: { strict_caps: "0", section: "supporter" }
+      expect(project.reload).not_to be_strict_caps
+    end
+
+    # CYRA-1295 — a new open error born in the live release holds the next production release.
+    it "switches the watch after the release on and off" do
+      patch member_project_settings_path(project), params: { production_watch: "1", section: "production" }
+      expect(project.reload).to be_production_watch
+
+      patch member_project_settings_path(project), params: { production_watch: "0", section: "production" }
+      expect(project.reload).not_to be_production_watch
+    end
+
     # CYRA-1000 — the wait before production: 0..72 whole hours, blank inherits, 0 stays 0.
     it "saves the wait before production, including 0" do
       patch member_project_settings_path(project), params: { production_hold_hours: "0", section: "production" }

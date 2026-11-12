@@ -21,6 +21,10 @@ module Agents
       # grazia non è più «non ancora», è «non è arrivato».
       RETRY_EVERY = 1.minute
       GRACE_WINDOW = 15.minutes
+      # CYRA-1294 — the trial release runs the whole suite before it deploys: it is looked at less often, and
+      # past this window from the delivery a person is called.
+      DEPLOY_RETRY_EVERY = 3.minutes
+      DEPLOY_GRACE_WINDOW = 90.minutes
 
       def initialize(workflow:, client: nil, now: Time.current)
         @workflow = workflow
@@ -36,7 +40,7 @@ module Agents
         declared = declared_commit
         return escalate_to_human("staging_evidence_missing") if candidate.nil? || declared.blank?
 
-        landed?(candidate, declared) ? verified! : not_yet(candidate)
+        landed?(candidate, declared) ? after_merge(candidate, declared) : not_yet(candidate)
       rescue Github::Client::Error => e
         e.transient? ? retry_later(e.code) : escalate_to_human("staging_unreadable")
       end
@@ -62,6 +66,27 @@ module Agents
         client.commit_contained?(installation, candidate.repository_full_name, base, declared) &&
           client.commit_contained?(installation, candidate.repository_full_name, declared, candidate.head_sha)
       end
+
+      # CYRA-1294 — where the project asks for it, the merge is not enough: the trial release must have gone
+      # through. A failed one calls a person at once; one that never shows up, past the window.
+      def after_merge(candidate, declared)
+        return verified! unless deploy_proof_required?(candidate)
+
+        case DeployRun.outcome(client:, installation: candidate.repository.github_installation_id,
+                               repository: candidate.repository_full_name, commit: declared)
+        when DeployRun::RELEASED then verified!
+        when DeployRun::FAILED then escalate_to_human("staging_run_failed")
+        else deploy_overdue? ? escalate_to_human("staging_not_deployed") : retry_later("staging_run_pending", every: DEPLOY_RETRY_EVERY)
+        end
+      end
+
+      # Only work whose frozen proof of done is a deploy has a trial release to look at.
+      def deploy_proof_required?(candidate)
+        @workflow.ticket.project.staging_deploy_proof? && candidate.repository.present? &&
+          @workflow.frozen_plan&.completion_probe.to_h["kind"] == "deploy_smoke"
+      end
+
+      def deploy_overdue? = @workflow.closer_staging_completed_at < @now - DEPLOY_GRACE_WINDOW
 
       def verified!
         @workflow.update!(closer_staging_verified_at: @now, closer_staging_next_check_at: nil,
@@ -90,8 +115,8 @@ module Agents
 
       # Il servizio non risponde: si aspetta e si riprova da soli. Non si chiede niente a nessuno e la
       # lavorazione non risulta ferma — «non ho potuto guardare» non è «non è arrivato».
-      def retry_later(code)
-        @workflow.update!(closer_staging_next_check_at: @now + RETRY_EVERY,
+      def retry_later(code, every: RETRY_EVERY)
+        @workflow.update!(closer_staging_next_check_at: @now + every,
                           closer_staging_last_error_code: code,
                           closer_staging_checks_count: @workflow.closer_staging_checks_count + 1)
         Result.ok(@workflow)

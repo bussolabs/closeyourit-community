@@ -80,7 +80,16 @@
       <% document.definition_of_done.each do |criterion| %>
         <li class="flex items-start gap-2 text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed">
           <% if criterion["id"].present? %><%= render Ui::BadgeComponent.new(label: criterion["id"], color: :indigo, size: :sm, class: "font-mono shrink-0 mt-0.5", test_id: "automation-plan-criterion-id") %><% else %><%= render Ui::IconComponent.new(name: "minus", class: "text-gray-300 dark:text-zinc-600 text-[11px] mt-1") %><% end %>
-          <%= render Ui::MarkdownComponent.new(text: criterion["text"], inline: true) %>
+          <div class="min-w-0">
+            <%= render Ui::MarkdownComponent.new(text: criterion["text"], inline: true) %>
+            <%# CYRA-1298 — how the criterion is proven, when the plan declares it. %>
+            <% if criterion["verification"] %>
+              <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400" data-test="automation-plan-criterion-verification">
+                <span class="font-medium"><%= t("member.tickets.automation.plan.verification_kinds.#{criterion["verification"]["kind"]}") %>:</span>
+                <span class="font-mono text-[11.5px]"><%= criterion["verification"]["how"] %></span>
+              </p>
+            <% end %>
+          </div>
         </li>
       <% end %>
     </ul>

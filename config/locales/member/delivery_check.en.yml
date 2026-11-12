@@ -1,0 +1,14 @@
+# CYRA-1291 — the check on the files a delivery really changed, chosen on the project.
+en:
+  member:
+    project_settings:
+      delivery_check_section: Check on delivered changes
+      delivery_check_label: Check on changed files
+      delivery_check_hint: In dry run it stops nothing and writes in the ticket history what it would have stopped. Switched on, it leaves the decision to a person.
+      delivery_check_rules: "When switched on, delivered work does not move on by itself if it changes the data structure, or if it touches access, secrets, releases or reserved topics the approved plan did not name. It also stops if a proof of a done-when is missing or partial, or if tests failed or did not run, or if the repository declares no required checks or the pull request did not pass them all, or if the engine that wrote it also re-read it. Other files outside the plan and removed tests are only noted."
+      fast_lane_label: Fast lane
+      fast_lane_hint: When on, a plan that touches at most 3 non-sensitive files, on a ticket the triage rates low risk, starts at once without waiting for anyone. At delivery it loses the lane if the real changes exceed 3 files or 60 lines, or leave the plan. In a dry run it only records which plans would have passed.
+      delivery_check_modes:
+        "off": "Off"
+        dry_run: Dry run
+        "on": "On"

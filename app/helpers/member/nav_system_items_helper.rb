@@ -101,7 +101,10 @@ module Member
         # Skill bundle versions are an admin form, not a menu entry: reached from the agents page (CYRA-453).
         { label: "member.nav.agents", path: member_agents_path, icon: "bot",
           test: "member-nav-agents", visible: agents_nav_visible?,
-          active: (cp.start_with?("member/agents") && cp != "member/agents/live_sessions") || cp.start_with?("member/skill_bundles") }
+          active: (cp.start_with?("member/agents") && cp != "member/agents/live_sessions") || cp.start_with?("member/skill_bundles") },
+        { label: "member.nav.automation_numbers", path: member_automation_numbers_path, icon: "chart-column",
+          test: "member-nav-automation-numbers", visible: agents_nav_visible?,
+          active: cp == "member/automation_numbers" }
       ]
     end
 
