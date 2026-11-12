@@ -81,7 +81,7 @@ module Member
       # CYRA-341: performance_fast_ms/performance_slow_ms = soglie di colore delle durate (Metrics::Thresholds).
       params.permit(:logs_retention_days, :analytics_retention_days, :errors_retention_days,
                     :performance_retention_days, :uptime_retention_days, :traces_retention_days, :artifacts_retention_days, :crashes_retention_days, :session_health_retention_days, :measurements_retention_days,
-                    :performance_fast_ms, :performance_slow_ms, :production_hold_hours, :delivery_scope_check, :triage_risk_floor, :staging_deploy_proof, :production_watch, :strict_caps, :fast_lane,
+                    :performance_fast_ms, :performance_slow_ms, :production_hold_hours, :delivery_scope_check, :triage_risk_floor, :staging_deploy_proof, :production_watch, :strict_caps, :fast_lane, :light_phase_engine, :browser_proof_go_ahead,
                     :default_assignee_id, :cto_id, :owner_id, :allowed_origins, :supporter_reserved_topics)
     end
 

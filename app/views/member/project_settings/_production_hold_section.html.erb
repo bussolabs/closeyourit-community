@@ -30,6 +30,15 @@
           selected: @project.production_watch? ? "1" : "0",
           hint: t("member.project_settings.production_watch_hint"),
           test_id: "project-production-watch") %>
+    <%# CYRA-1302 — a plan that declares a proof in a browser waits for a person before production. %>
+    <%= render Ui::SelectComponent.new(
+          name: "browser_proof_go_ahead",
+          label: t("member.project_settings.browser_proof_label"),
+          options: [ [ t("member.project_settings.staging_deploy_proof_off"), "0" ],
+                     [ t("member.project_settings.staging_deploy_proof_on"), "1" ] ],
+          selected: @project.browser_proof_go_ahead? ? "1" : "0",
+          hint: t("member.project_settings.browser_proof_hint"),
+          test_id: "project-browser-proof") %>
   <% end %>
 
   <div class="flex items-center gap-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2" data-test="project-settings-production-hold-effective">

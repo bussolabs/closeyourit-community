@@ -33,13 +33,21 @@ module Agents
       # `approval_required` is the project's too: with it on, the go-ahead of a person is also needed (CYRA-1278).
       # `production_watch` is the project's as well: with it on, a new open error born in the live release holds
       # the next one (CYRA-1295).
-      def self.released_sql(now:, window:, approval_required: false, production_watch: false)
+      # `browser_proof` is the project's too: with it on, only a plan that declares a proof in a browser needs
+      # that go-ahead (CYRA-1302).
+      def self.released_sql(now:, window:, approval_required: false, production_watch: false, browser_proof: false)
         verified = if window.positive?
           ActiveRecord::Base.sanitize_sql_array([ "agents_workflows.closer_staging_verified_at <= ?", now - window ])
         else
           "agents_workflows.closer_staging_verified_at IS NOT NULL"
         end
-        approved = approval_required ? " AND agents_workflows.closer_production_approved_at IS NOT NULL" : ""
+        approved = if approval_required
+          " AND agents_workflows.closer_production_approved_at IS NOT NULL"
+        elsif browser_proof
+          " AND (agents_workflows.closer_production_approved_at IS NOT NULL OR NOT #{BrowserProof.declared_sql})"
+        else
+          ""
+        end
         watched = production_watch ? " AND NOT #{production_errors_sql}" : ""
         "#{verified} AND NOT #{staging_errors_sql}#{approved}#{watched}"
       end

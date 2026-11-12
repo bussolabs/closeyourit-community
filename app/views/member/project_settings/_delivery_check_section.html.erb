@@ -20,6 +20,16 @@
           hint: t("member.project_settings.fast_lane_hint"),
           test_id: "project-fast-lane-mode",
           error: @errors&.dig(:fast_lane)&.first) %>
+    <%# CYRA-1301 — the engine and model for triage and releases; blank keeps the machine's engine. %>
+    <%= render Ui::SelectComponent.new(
+          name: "light_phase_engine",
+          label: t("member.project_settings.light_phase_engine_label"),
+          options: [ [ t("member.project_settings.light_phase_engine_machine"), "" ] ] +
+                   Agents::PhaseEngine::OPTIONS.map { |option| [ option.tr(":", " · "), option ] },
+          selected: @project.light_phase_engine.to_s,
+          hint: t("member.project_settings.light_phase_engine_hint"),
+          test_id: "project-light-phase-engine",
+          error: @errors&.dig(:light_phase_engine)&.first) %>
   <% end %>
 
   <p class="text-[12.5px] text-gray-600 dark:text-zinc-400" data-test="project-delivery-check-rules">

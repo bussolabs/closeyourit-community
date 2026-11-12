@@ -68,6 +68,16 @@ RSpec.describe Agents::TicketQueues::Claim do
       )
     end
 
+    # CYRA-1301 — the project's engine for the light phases reaches the attempt the machine runs.
+    it "starts a triage with the engine and model the project chose for the light phases" do
+      host.update!(runtimes: [ { "name" => "claude", "present" => true }, { "name" => "codex", "present" => true } ])
+      project.update!(light_phase_engine: "claude:claude-sonnet-5-5")
+
+      attempt = claim.send(:ensure_attempt!, context, selection)
+
+      expect(attempt).to have_attributes(runtime: "claude", work_model: "claude-sonnet-5-5", expected_reviewer: "codex")
+    end
+
     it "è idempotente sul replay (stessa host+phase+ticket+run) senza creare un secondo tentativo" do
       first = claim.send(:ensure_attempt!, context, selection)
 

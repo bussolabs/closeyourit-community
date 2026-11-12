@@ -229,6 +229,18 @@ RSpec.describe "Member::ProjectSettings", type: :request do
       expect(project.reload.fast_lane_mode).to eq("dry_run")
     end
 
+    # CYRA-1301 — the engine for triage and releases.
+    it "saves the engine for the light phases, clears it and refuses an unknown one" do
+      patch member_project_settings_path(project), params: { light_phase_engine: "claude:claude-sonnet-5-5", section: "delivery" }
+      expect(project.reload.light_phase_engine).to eq("claude:claude-sonnet-5-5")
+
+      patch member_project_settings_path(project), params: { light_phase_engine: "claude:made-up", section: "delivery" }
+      expect(project.reload.light_phase_engine).to eq("claude:claude-sonnet-5-5")
+
+      patch member_project_settings_path(project), params: { light_phase_engine: "", section: "delivery" }
+      expect(project.reload.light_phase_engine).to be_nil
+    end
+
     # CYRA-1299 — strict caps for the supporter and the planner.
     it "switches the strict caps on and off" do
       patch member_project_settings_path(project), params: { strict_caps: "1", section: "supporter" }
@@ -245,6 +257,17 @@ RSpec.describe "Member::ProjectSettings", type: :request do
 
       patch member_project_settings_path(project), params: { production_watch: "0", section: "production" }
       expect(project.reload).not_to be_production_watch
+    end
+
+    # CYRA-1302 — a plan with a proof in a browser waits for a person before production.
+    it "switches the go-ahead for the proofs in a browser on and off" do
+      patch member_project_settings_path(project), params: { browser_proof_go_ahead: "1", section: "production" }
+      expect(project.reload).to be_browser_proof_go_ahead
+      expect(Projects::Project.browser_proof_go_ahead).to include(project)
+
+      patch member_project_settings_path(project), params: { browser_proof_go_ahead: "0", section: "production" }
+      expect(project.reload).not_to be_browser_proof_go_ahead
+      expect(Projects::Project.browser_proof_go_ahead).not_to include(project)
     end
 
     # CYRA-1000 — the wait before production: 0..72 whole hours, blank inherits, 0 stays 0.

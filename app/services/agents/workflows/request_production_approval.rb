@@ -31,7 +31,8 @@ module Agents
       # The go-ahead is still owed: staging is proved, nobody said yes, production has not started.
       def self.pending?(workflow)
         !workflow.terminal? && workflow.closer_staging_verified_at? && !workflow.closer_production_approved_at? &&
-          !workflow.closer_production_started_at? && workflow.ticket.project.production_approval_required_active?
+          !workflow.closer_production_started_at? &&
+          (workflow.ticket.project.production_approval_required_active? || BrowserProof.owed?(workflow))
       end
     end
   end

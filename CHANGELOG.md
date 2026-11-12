@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.226.0] - 2026-11-12
+
+### Added
+
+- **Motore per le fasi leggere**: ogni progetto può scegliere un motore e un modello più leggero per il triage e per i rilasci. Piano e codice restano sul motore della macchina. [Progetti](/member/projects)
+- **Prove in browser**: ogni progetto può chiedere che un lavoro con una prova da fare in un browser si fermi dopo lo staging. Va in produzione quando una persona ha fatto la prova e dà il via libera. [Progetti](/member/projects)
+
 ## [0.225.0] - 2026-11-12
 
 ### Added

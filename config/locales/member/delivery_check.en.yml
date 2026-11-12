@@ -8,6 +8,9 @@ en:
       delivery_check_rules: "When switched on, delivered work does not move on by itself if it changes the data structure, or if it touches access, secrets, releases or reserved topics the approved plan did not name. It also stops if a proof of a done-when is missing or partial, or if tests failed or did not run, or if the repository declares no required checks or the pull request did not pass them all, or if the engine that wrote it also re-read it. Other files outside the plan and removed tests are only noted."
       fast_lane_label: Fast lane
       fast_lane_hint: When on, a plan that touches at most 3 non-sensitive files, on a ticket the triage rates low risk, starts at once without waiting for anyone. At delivery it loses the lane if the real changes exceed 3 files or 60 lines, or leave the plan. In a dry run it only records which plans would have passed.
+      light_phase_engine_label: Engine for the light phases
+      light_phase_engine_machine: The machine's own
+      light_phase_engine_hint: It applies to triage and to the two releases. The plan and the code stay on the machine's engine. A machine without the chosen engine uses its own.
       delivery_check_modes:
         "off": "Off"
         dry_run: Dry run

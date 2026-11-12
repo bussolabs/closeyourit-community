@@ -30,6 +30,8 @@ module Agents
     # CYRA-1278 — a switch turned on after the staging check still stops the releases already waiting.
     def request_production_approvals
       Agents::Workflows::RequestProductionApproval.for_projects(Projects::Project.production_approval_required_active)
+      # CYRA-1302 — the same for the plans that declare a proof in a browser.
+      Agents::Workflows::RequestProductionApproval.for_projects(Projects::Project.browser_proof_go_ahead)
     rescue StandardError => e
       Rails.logger.error("Agents::StagingProofJob: production approvals #{e.class}: #{e.message}")
     end

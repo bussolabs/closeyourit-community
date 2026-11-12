@@ -353,6 +353,9 @@ module Projects
       left_joins(:group).where("projects.production_approval_required OR projects_groups.production_approval_required")
     }
 
+    # CYRA-1302 — the projects that ask a person's go-ahead for the plans proven in a browser.
+    scope :browser_proof_go_ahead, -> { where("projects.preferences @> ?", { browser_proof_go_ahead: true }.to_json) }
+
     def production_approval_required_active?
       production_approval_required? || group&.production_approval_required? || false
     end
@@ -397,7 +400,7 @@ module Projects
     store_accessor :preferences, :artifacts_retention_days, :crashes_retention_days, :session_health_retention_days, :measurements_retention_days, :traces_retention_days, :logs_retention_days, :analytics_retention_days, :performance_alert_threshold, :replay_retention_days,
                    :errors_retention_days, :performance_retention_days, :uptime_retention_days,
                    :performance_fast_ms, :performance_slow_ms,
-                   :workspace_path, :vulnerability_auto_ticket, :production_hold_hours, :delivery_scope_check, :triage_risk_floor, :staging_deploy_proof, :production_watch, :strict_caps, :fast_lane
+                   :workspace_path, :vulnerability_auto_ticket, :production_hold_hours, :delivery_scope_check, :triage_risk_floor, :staging_deploy_proof, :production_watch, :strict_caps, :fast_lane, :light_phase_engine, :browser_proof_go_ahead
 
     # Ticket automatico per le vulnerabilità gravi (CYRA-506): acceso salvo scelta contraria. Vive
     # nelle preferenze e non in una colonna perché è un interruttore, non un dato del progetto — e
@@ -464,6 +467,11 @@ module Projects
 
     def fast_lane_mode = fast_lane.presence || Agents::Plans::FastLane::MODE_OFF
 
+    # CYRA-1301 — the engine and model for triage and releases, as "engine:model": blank → nil → the machine's.
+    def light_phase_engine=(value)
+      super(value.presence)
+    end
+
     # CYRA-1299 — a plan still to fix after its last revision, and a ticket found already done, wait for a
     # person instead of moving on by themselves. Off unless switched on.
     def strict_caps=(value)
@@ -471,6 +479,14 @@ module Projects
     end
 
     def strict_caps? = ActiveModel::Type::Boolean.new.cast(strict_caps) || false
+
+    # CYRA-1302 — a plan that declares a proof in a browser waits for a person before production. Off unless
+    # switched on.
+    def browser_proof_go_ahead=(value)
+      super(ActiveModel::Type::Boolean.new.cast(value.presence) || false)
+    end
+
+    def browser_proof_go_ahead? = ActiveModel::Type::Boolean.new.cast(browser_proof_go_ahead) || false
 
     # CYRA-1293 — whether the triage's risk is the floor when the supporter decides: blank → nil → off.
     def triage_risk_floor=(value)
@@ -574,6 +590,7 @@ module Projects
                                                       message: :production_hold_hours }, allow_nil: true
     validates :delivery_scope_check, inclusion: { in: Agents::Candidates::ScopeCheck::MODES }, allow_nil: true
     validates :fast_lane, inclusion: { in: Agents::Plans::FastLane::MODES }, allow_nil: true
+    validates :light_phase_engine, inclusion: { in: Agents::PhaseEngine::OPTIONS }, allow_nil: true
     validates :triage_risk_floor, inclusion: { in: Agents::Supporters::TriageRisk::MODES }, allow_nil: true
     validate :duration_thresholds_ordered
     validate :group_must_match_organization

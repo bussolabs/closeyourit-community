@@ -5991,6 +5991,7 @@
       "kind": "step",
       "summary": "Nasce la scheda del tentativo con macchina, fase e regole d'uso congelate. Per i rilasci il server assegna qui il numero di versione.",
       "files": [
+        "app/services/agents/phase_engine.rb",
         "app/services/agents/ticket_queues/claim.rb",
         "app/services/agents/releases/assign.rb",
         "app/models/agents/attempt.rb",
@@ -6419,6 +6420,7 @@
         "app/services/agents/workflows/cancel.rb",
         "app/services/agents/workflows/resume_release.rb",
         "app/services/agents/workflows/hold_production.rb",
+        "app/services/agents/workflows/browser_proof.rb",
         "app/services/agents/workflows/request_production_approval.rb",
         "app/services/agents/probes/mark_released.rb"
       ]
