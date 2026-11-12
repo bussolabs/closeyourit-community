@@ -1,0 +1,12 @@
+<%# locals: (ticket:) %>
+<%# With the agent's short card on top the page says each thing once: the long report, the per-criterion
+    proofs, the files and the request are one link away, on the ticket. CYRA-1287 %>
+<div class="px-4 py-3.5 space-y-1.5" data-test="approvals-delivery-more">
+  <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400"><%= t("member.approvals.delivery_more.title") %></p>
+  <ul class="space-y-1 text-[12.5px]">
+    <li><%= link_to t("member.approvals.delivery_more.report"), member_ticket_path(ticket, tab: "report"),
+              class: "text-indigo-600 dark:text-indigo-400 hover:underline" %></li>
+    <li><%= link_to t("member.approvals.delivery_more.request"), member_ticket_path(ticket),
+              class: "text-indigo-600 dark:text-indigo-400 hover:underline" %></li>
+  </ul>
+</div>

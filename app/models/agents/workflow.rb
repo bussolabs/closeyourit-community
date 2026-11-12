@@ -346,6 +346,10 @@ module Agents
 
     def closing? = autopilot_approved_at? && !terminal?
 
+    # CYRA-1285 — cancelled after staging proved the code and before production got it: the ticket sits
+    # in review with code no customer runs.
+    def release_interrupted? = cancelled_at? && closer_staging_verified_at? && !closer_production_completed_at?
+
     # «DAVVERO in corso»: avviata da una macchina, non finita e non abbandonata. È il predicato che
     # decide chi puo' spostare lo stato del ticket. NON e' «workflow non terminale» (ogni ticket nasce
     # con una lavorazione, li bloccherebbe quasi tutti) e non e' «avviata e mai conclusa», che non

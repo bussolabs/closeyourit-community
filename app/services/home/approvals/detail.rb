@@ -64,7 +64,8 @@ module Home
         # decide se mostrare la casella.
         NON_BULK_PHASES = %w[review_blocked].freeze
 
-        def bulk_approvable? = can?(:approve) && NON_BULK_PHASES.exclude?(phase)
+        # CYRA-1285 — on an interrupted release the yes resumes it: not the dry go-ahead of a selection.
+        def bulk_approvable? = can?(:approve) && NON_BULK_PHASES.exclude?(phase) && !workflow&.release_interrupted?
 
         # CYRA-557 — le fasi in cui il lavoro è GIÀ STATO CONSEGNATO e la decisione è su quello: lì il
         # resoconto è la cosa che si sta approvando, e la sua assenza va dichiarata (decidere senza è

@@ -18,9 +18,22 @@ module Member
           result = Ticketing::Questions::Reply.call(
             question: question, author: Current.account, body: params[:body], choice: params[:choice]
           )
-          redirect_to member_ticket_path(ticket, tab: params[:return_tab] == "automation" ? "automation" : "questions"),
+          redirect_to after_answer_path(ticket),
                       result.ok? ? { notice: t("member.tickets.questions.answered") }
                                  : { alert: result.error.message }
+        end
+
+        private
+
+        # CYRA-1288 — answered from an approval card, back to that card: only a card key is a way back.
+        APPROVAL_KEY = /\A(review|agent_plan):(\h{8}-\h{4}-\h{4}-\h{4}-\h{12})\z/
+
+        def after_answer_path(ticket)
+          if (card = params[:approval].to_s.match(APPROVAL_KEY))
+            return member_home_approvals_item_path(kind: card[1], id: card[2])
+          end
+
+          member_ticket_path(ticket, tab: params[:return_tab] == "automation" ? "automation" : "questions")
         end
       end
     end

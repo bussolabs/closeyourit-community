@@ -38,6 +38,8 @@
                 member_home_approvals_item_path(kind: card.kind, id: card.id),
                 class: "text-indigo-600 dark:text-indigo-400 hover:underline" %>
   </div>
+<% elsif delivery_decision_card(card.delivery_attempt) %>
+  <%= render "member/home/approvals/delivery_more", ticket: card.ticket %>
 <% else %>
 <% if card.delivery_attempt %>
   <div class="px-4 py-3.5 border-b border-stone-100 dark:border-zinc-800">

@@ -16,7 +16,11 @@
 <% end %>
 <% if card.delivered_work? %>
   <%= render "member/home/approvals/delivery_evidence", attempt: card.delivery_attempt %>
-  <%= render "member/home/approvals/delivered_work", report: card.report %>
+  <% if !compact && delivery_decision_card(card.delivery_attempt) %>
+    <%= render "member/home/approvals/delivery_more", ticket: card.ticket %>
+  <% else %>
+    <%= render "member/home/approvals/delivered_work", report: card.report %>
+  <% end %>
 <% end %>
 
 <%# A blocked workflow with no plan says so. The requeue button sits under the attempt's reason

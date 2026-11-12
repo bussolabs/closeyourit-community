@@ -24,15 +24,32 @@ en:
         awaiting_autopilot_approval: "Then the work moves on to closing, starting with staging."
         review_blocked: "The work restarts from the step where it stopped."
         review: "The ticket is closed as done."
+        release_interrupted: "The code is in staging only. The machine takes it to production, then closes the ticket."
         secret_change: "The change is applied to the secret right away."
       decision_card:
         risk_levels:
           none: No risk
           low: Low risk
           high: High risk
+      delivery_questions:
+        counter: "%{current} of %{total}"
+        all_answered: You answered them all.
+        missing:
+          one: 1 answer missing
+          other: "%{count} answers missing"
+      delivery_more:
+        title: To go deeper
+        report: Full report, proofs and changed files
+        request: Request and criteria
       evidence:
         criteria: "%{done}/%{total} criteria"
         tests: "%{done}/%{total} tests passed"
+        tests_failed:
+          one: "1 failed"
+          other: "%{count} failed"
+        tests_not_run:
+          one: "1 not run"
+          other: "%{count} not run"
         deviations:
           zero: "no deviations"
           one: "1 deviation"

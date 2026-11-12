@@ -753,6 +753,7 @@ en:
         current: Waiting for you
         failed: Rejected
         pending: Not started yet
+        cancelled: Cancelled here
       kinds:
         agent_plan: Automated run
         review: Work to review
@@ -916,6 +917,7 @@ en:
           awaiting_autopilot_approval: Accept the work
           review_blocked: Unblock and retry
           review: Accept
+          release_interrupted: Resume the release
           secret_change: Accept the change
         reject:
           awaiting_approval: Reject
@@ -1757,6 +1759,7 @@ en:
         invalid_status: Invalid status.
         workflow_owns_status: The automated run owns this ticket's status until it finishes. To move it by hand, take the ticket over from its page; if a machine is working on it, cancel the run first.
         closing_run_owns_review: "The machine is still releasing this ticket: it resolves itself once the release is up in production."
+        release_not_interrupted: "This release is not on hold: there is nothing to resume."
         invalid_milestone: Invalid milestone.
         not_in_review: The ticket is not in review.
         approval_needs_a_person: "A person signs off the delivered work. You are using the identity %{account}, which belongs to a machine: sign off again with your own account."
@@ -2185,6 +2188,13 @@ en:
               minor: Minor
               info: Note
           failure_no_reason: The machine reported a failure without a reason.
+          # CYRA-1113 — why the server closed the attempt as abandoned (code in failure_reason).
+          stale_no_reason: Closed as abandoned without a delivery.
+          stale_reasons:
+            lease_released: "The machine left the ticket without delivering: lease released on %{at}, %{minutes} minutes after the start."
+            lease_expired: "The lease expired on %{at}, %{minutes} minutes after the start, with no delivery."
+            lease_taken_by_other_run: "Another run took the ticket on %{at}, %{minutes} minutes after this one started."
+            lease_missing: "The lease was gone and no trace of its release remains: closed on %{at}, %{minutes} minutes after the start."
           # CYRA-384 — consecutive attempts with the same outcome folded into a single row: in a row
           # they buried the rest of the card, and reaching the plan meant scrolling past every one.
           group: "%{attempts} %{outcome} between %{from} and %{to}"
@@ -2501,6 +2511,7 @@ en:
         question_asked: "%{actor} asked a question"
         question_answered: "%{actor} answered a question"
         question_closed: "%{actor} withdrew a question"
+        release_resumed: "%{actor} resumed the release: the code was in staging only"
         work_context_captured: "Work context captured on pickup"
         dependency_blocked: "Automated work stopped: %{count} prerequisites are not finished yet (%{dependencies})"
         already_done: "The work was already written in the code: the ticket closes without planning (%{files})"

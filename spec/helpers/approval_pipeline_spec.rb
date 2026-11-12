@@ -118,6 +118,28 @@ RSpec.describe HomeHelper, type: :helper do
     end
   end
 
+  # CYRA-1286 — cancelling is an exit: it must not erase the steps the work already went through.
+  describe "a cancelled run" do
+    it "keeps the finished steps as done and marks the step where it was cancelled" do
+      workflow = create(:agent_workflow, :closer_staging_completed, ticket:, cancelled_at: Time.current)
+
+      expect(stati(card_for(workflow, phase: nil))).to eq(
+        "to_plan" => "done", "plan_to_approve" => "done", "in_progress" => "done", "to_review" => "done",
+        "closing" => "cancelled", "done" => "pending"
+      )
+    end
+
+    it "marks the first step when the run was cancelled before any plan" do
+      workflow = create(:agent_workflow, ticket:, cancelled_at: Time.current)
+
+      expect(stati(card_for(workflow, phase: nil)).values).to eq(%w[cancelled pending pending pending pending pending])
+    end
+
+    it "has a readable text for the cancelled step" do
+      expect(I18n.t("member.approvals.phase_state.cancelled", default: "")).to be_present
+    end
+  end
+
   it "senza una lavorazione automatica dietro non c'è nessuna striscia da mostrare" do
     card = Home::Approvals::Detail::Card.new(
       kind: "secret_change", key: "secret_change:#{SecureRandom.uuid}", record: nil, ticket: nil,

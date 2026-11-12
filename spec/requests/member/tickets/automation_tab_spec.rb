@@ -135,6 +135,21 @@ RSpec.describe "Member ticket automation tab", type: :request do
       expect(response.body).not_to match(/definizione di fatto\s*<span[^>]*>0</)
     end
 
+    # CYRA-1113 — il passo chiuso come abbandonato dice perché, invece di restare vuoto.
+    it "un tentativo chiuso come abbandonato mostra il motivo della chiusura" do
+      create(:agent_attempt, organization:, workflow:, host:, phase: "triage", status: :stale,
+                             started_at: 20.minutes.ago, finished_at: 10.minutes.ago, result: {}, review: {},
+                             failure_reason: "lease_released at=#{17.minutes.ago.utc.iso8601} minutes=3")
+
+      get member_ticket_path(ticket, tab: "automation")
+
+      text = Nokogiri::HTML(response.body).css("[data-test='automation-step-text']").map(&:text).join(" ")
+      # La frase segue la lingua di chi legge: la si confronta con la traduzione, attorno all'ora.
+      before_time, after_time = I18n.t("member.tickets.automation.steps.stale_reasons.lease_released",
+                                       at: "|AT|", minutes: 3).split("|AT|")
+      expect(text).to include(before_time, after_time)
+    end
+
     # Dal passo alla scheda dell'host: senza il collegamento, per sapere com'è messa la macchina che ha
     # eseguito il tentativo (online, quanto lavora, come le va) bisogna ripescarla a mano nell'elenco.
     it "il nome della macchina porta alla sua scheda" do

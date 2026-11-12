@@ -239,4 +239,22 @@ RSpec.describe Agents::Workflows::PhaseResolver do
       expect(described_class.step_of_execution_phase(nil)).to be_nil
     end
   end
+  # CYRA-1286 — one road, two readers: the step read from the milestones is the step of the phase.
+  describe ".reached_step" do
+    it "matches the stage of the phase on every run that has not left the road" do
+      ticket = create(:ticket)
+      runs = [
+        create(:agent_workflow, ticket:),
+        create(:agent_workflow, ticket: create(:ticket), triaged_at: 1.day.ago, planned_at: Time.current),
+        create(:agent_workflow, ticket: create(:ticket), triaged_at: 2.days.ago, planned_at: 1.day.ago, approved_at: Time.current),
+        create(:agent_workflow, ticket: create(:ticket), triaged_at: 2.days.ago, planned_at: 1.day.ago, approved_at: 1.day.ago,
+                                autopilot_started_at: 1.day.ago, autopilot_completed_at: Time.current, candidate_verified_at: Time.current),
+        create(:agent_workflow, :closer_staging_completed, ticket: create(:ticket))
+      ]
+
+      runs.each do |run|
+        expect(described_class.reached_step(run)).to eq(described_class.stage(described_class.phase(run, nil)))
+      end
+    end
+  end
 end

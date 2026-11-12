@@ -9,7 +9,8 @@ require "rails_helper"
 RSpec.describe Agents::Attempts::MarkStale do
   let(:organization) { create(:organization) }
   let(:host) { create(:agent_host, organization:) }
-  let(:now) { Time.current }
+  # Al secondo: il motivo salvato porta l'ora in ISO 8601, senza frazioni.
+  let(:now) { Time.current.change(usec: 0) }
   let(:grace) { Agents::Constants::ATTEMPT_STALE_GRACE }
 
   # Una lavorazione = un attempt + il lease del suo ticket, legati dal run_id.
@@ -129,6 +130,91 @@ RSpec.describe Agents::Attempts::MarkStale do
 
       expect(run.value).to eq(0)
       expect(attempt.reload).to be_status_awaiting_review
+    end
+  end
+
+  # CYRA-1113 — una lavorazione chiusa come abbandonata non diceva perché: il passo restava muto e chi
+  # indagava doveva ricostruire la prenotazione a mano. Ora il motivo è un codice stabile con ora e minuti.
+  describe "scrive il motivo della chiusura" do
+    def reason_of(attempt) = attempt.reload.failure_reason
+    def iso(time) = time.utc.iso8601
+
+    it "una valutazione di 50 minuti con la prenotazione valida resta in corso per 10 giri" do
+      started_at = now - 50.minutes
+      workflow = create(:agent_workflow, organization:)
+      attempt = create(:agent_attempt, workflow:, organization:, host:, phase: "triage",
+                                       external_run_id: "run-lunga", started_at:)
+      create(:agent_lease, :host_first, host:, organization:, ticket: workflow.ticket,
+                                        run_id: "run-lunga", expires_at: started_at + 1.hour)
+
+      10.times do |giro|
+        expect(described_class.call(now: started_at + (5 * (giro + 1)).minutes).value).to eq(0)
+      end
+
+      expect(attempt.reload).to be_status_running
+      expect(attempt.failure_reason).to be_nil
+    end
+
+    it "una macchina che rilascia dopo 3 minuti: chiusa con lease_released, l'ora del rilascio e i minuti" do
+      attempt = lavorazione(started_ago: 8.minutes, lease: :none, run_id: "run-breve")
+      released_at = attempt.started_at + 3.minutes
+      Agents::Leases::Tombstone.create!(organization:, ticket: attempt.workflow.ticket, host:,
+                                        run_id: "run-breve", released_at:)
+
+      expect(run.value).to eq(1)
+      expect(attempt.reload).to be_status_stale
+      expect(reason_of(attempt)).to eq("lease_released at=#{iso(released_at)} minutes=3")
+    end
+
+    it "una prenotazione scaduta: chiusa con lease_expired e l'ora della scadenza" do
+      attempt = lavorazione(started_ago: 66.minutes, lease: :none, run_id: "run-scaduta")
+      expires_at = now - 6.minutes
+      create(:agent_lease, :host_first, host:, organization:, ticket: attempt.workflow.ticket,
+                                        run_id: "run-scaduta", expires_at:)
+
+      expect(run.value).to eq(1)
+      expect(reason_of(attempt)).to eq("lease_expired at=#{iso(expires_at)} minutes=60")
+    end
+
+    it "un ticket preso da un'altra esecuzione: chiusa con lease_taken_by_other_run e quando" do
+      attempt = lavorazione(started_ago: 20.minutes, lease: :none, run_id: "run-mia")
+      taken_at = now - 12.minutes
+      create(:agent_lease, :host_first, host:, organization:, ticket: attempt.workflow.ticket,
+                                        run_id: "run-altra", expires_at: now + 1.hour, created_at: taken_at)
+
+      expect(run.value).to eq(1)
+      expect(reason_of(attempt)).to eq("lease_taken_by_other_run at=#{iso(taken_at)} minutes=8")
+    end
+
+    it "una prenotazione sparita senza traccia: chiusa con lease_missing" do
+      attempt = lavorazione(started_ago: 65.minutes, lease: :none)
+
+      freeze_time do
+        expect(run.value).to eq(1)
+        expect(reason_of(attempt)).to eq("lease_missing at=#{iso(Time.current)} " \
+                                         "minutes=#{((Time.current - attempt.started_at) / 60).floor}")
+      end
+    end
+
+    # La traccia è per titolare: il rilascio di un'ALTRA macchina con lo stesso run_id non è il nostro.
+    it "non scambia per suo il rilascio di un altro host" do
+      attempt = lavorazione(started_ago: 8.minutes, lease: :none, run_id: "run-condiviso")
+      Agents::Leases::Tombstone.create!(organization:, ticket: attempt.workflow.ticket,
+                                        host: create(:agent_host, organization:),
+                                        run_id: "run-condiviso", released_at: now - 5.minutes)
+
+      run
+
+      expect(reason_of(attempt)).to start_with("lease_missing ")
+    end
+
+    it "consegna al blocco ogni tentativo chiuso, dopo la chiusura" do
+      attempt = lavorazione
+      closed = []
+
+      described_class.call(now:) { |chiuso| closed << [ chiuso.id, chiuso.status, chiuso.failure_reason ] }
+
+      expect(closed).to eq([ [ attempt.id, "stale", attempt.reload.failure_reason ] ])
     end
   end
 

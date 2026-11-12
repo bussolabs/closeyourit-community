@@ -87,6 +87,35 @@ RSpec.describe Ticketing::ApproveReview do
                             runtimes: [ { "name" => "claude", "present" => true } ] }.merge(host_attributes))
   end
 
+  # CYRA-1285 — code that reached staging only: approving must not resolve what production never got.
+  describe "a release interrupted by a cancelled run" do
+    before do
+      ticket.agent_workflow.destroy!
+      create(:agent_workflow, :closer_staging_completed, ticket:, cancelled_at: 1.hour.ago,
+                              cancelled_by: actor, cancellation_reason: "Waits for the human review")
+      ticket.reload
+    end
+
+    it "resumes the release instead of resolving the ticket" do
+      configure_closer_pipeline
+
+      result = approve
+
+      expect(result).to be_ok
+      expect(ticket.reload.status).to eq(in_review)
+      expect(ticket.agent_workflow.reload).to have_attributes(cancelled_at: nil, cancelled_by: nil, cancellation_reason: nil,
+                                                              phase: "closer_production_queued")
+      actions = Ticketing::Event.where(ticket:).pluck(:action)
+      expect(actions).to include("release_resumed")
+      expect(actions).not_to include("review_approved")
+    end
+
+    it "still resolves the ticket where no machine can release it" do
+      expect(approve).to be_ok
+      expect(ticket.reload.status).to eq(resolved)
+    end
+  end
+
   describe "gate post-autopilot (B.4)" do
     let!(:in_progress) { create(:ticket_status, :in_progress, organization: org, position: 1) }
 

@@ -13,6 +13,8 @@ module Member
       # del fallimento riportato dalla macchina. Va letto prima del ramo per fase, che si aspetta il
       # result del contratto e uscirebbe a vuoto (result blank → nessun testo).
       return failure_considerations(attempt) if attempt.status_failed?
+      # CYRA-1113 — gemello per la chiusura come abbandonata: il motivo lo scrive il server (MarkStale).
+      return stale_considerations(attempt) if attempt.status_stale?
 
       result = attempt.result.presence
       # Un tentativo interrotto non ha consegnato niente: senza questa uscita il planner mostrerebbe
@@ -47,6 +49,28 @@ module Member
     def failure_considerations(attempt)
       { text: attempt.failure_reason.presence || t("member.tickets.automation.steps.failure_no_reason"),
         chips: [], counts: {} }
+    end
+
+    # Il motivo della chiusura come abbandonata (CYRA-1113). Il server salva un codice stabile con l'ora e
+    # i minuti dall'inizio ("lease_released at=… minutes=3"): qui diventa una frase nella lingua di chi legge.
+    # I record precedenti non hanno motivo e dicono solo che è stata chiusa; un codice sconosciuto resta
+    # leggibile così com'è invece di sparire.
+    def stale_considerations(attempt)
+      reason = attempt.failure_reason.to_s.strip
+      return { text: t("member.tickets.automation.steps.stale_no_reason"), chips: [], counts: {} } if reason.blank?
+
+      code, *pairs = reason.split
+      params = pairs.filter_map { |pair| pair.split("=", 2) if pair.include?("=") }.to_h
+      at = stale_reason_time(params["at"])
+      text = t("member.tickets.automation.steps.stale_reasons.#{code}",
+               at: at ? l(at, format: :short) : "?", minutes: params["minutes"] || "?", default: reason)
+      { text:, chips: [], counts: {} }
+    end
+
+    def stale_reason_time(value)
+      Time.zone.parse(value) if value.present?
+    rescue ArgumentError
+      nil
     end
 
     # The triage is laid out, not printed: an alert when it needs an answer, then area, risk and skills

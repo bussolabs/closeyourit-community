@@ -101,6 +101,16 @@ module Agents
 
       module_function
 
+      # CYRA-1286 — the step a run got to, read from its milestones alone: the exits (cancelled, blocked)
+      # hide it in `phase`, and a strip that forgets the road already travelled says nothing was done.
+      def reached_step(workflow)
+        return "closing" if workflow.autopilot_approved_at?
+        return "to_review" if workflow.autopilot_completed_at? && workflow.candidate_verified_at?
+        return "in_progress" if workflow.approved_at?
+
+        workflow.planned_at? ? "plan_to_approve" : "to_plan"
+      end
+
       # La fase di UN workflow, dato l'insieme delle sue phase con almeno un tentativo respinto in
       # revisione. L'insieme può mancare (una lista lo passa solo per i workflow che compaiono nella
       # pluck): assente vale nessuna bocciatura.

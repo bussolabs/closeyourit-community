@@ -13,7 +13,13 @@
         <%= render Ui::BadgeComponent.new(label: t("member.approvals.evidence.criteria", done: evidence.criteria_done, total: evidence.criteria_total),
                                           color: evidence.criteria_done == evidence.criteria_total ? "emerald" : "amber", dot: true) %>
         <%= render Ui::BadgeComponent.new(label: t("member.approvals.evidence.tests", done: evidence.tests_done, total: evidence.tests_total),
-                                          color: evidence.tests_done == evidence.tests_total ? "emerald" : "red", dot: true) %>
+                                          color: { "passed" => "emerald", "not_run" => "amber", "failed" => "red" }.fetch(evidence.tests_state), dot: true) %>
+        <% if evidence.tests_failed.positive? %>
+          <%= render Ui::BadgeComponent.new(label: t("member.approvals.evidence.tests_failed", count: evidence.tests_failed), color: "red", dot: true) %>
+        <% end %>
+        <% if evidence.tests_not_run.positive? %>
+          <%= render Ui::BadgeComponent.new(label: t("member.approvals.evidence.tests_not_run", count: evidence.tests_not_run), color: "amber", dot: true) %>
+        <% end %>
         <%= render Ui::BadgeComponent.new(label: t("member.approvals.evidence.deviations", count: evidence.deviations.size),
                                           color: evidence.deviations.empty? ? "emerald" : "amber", dot: true) %>
         <span class="font-mono text-[10.5px] uppercase tracking-[0.08em] text-amber-700 dark:text-amber-300"><%= t("member.approvals.evidence.reported") %></span>

@@ -7,7 +7,8 @@
 <% by_step = automation_attempts_by_step(attempts) %>
 <% open = automation_open_step(pipeline, by_step) %>
 <% state_icons = { "done" => [ "circle-check", "text-emerald-600 dark:text-emerald-400" ], "current" => [ "circle-dot", "text-indigo-600 dark:text-indigo-400" ],
-                   "failed" => [ "circle-x", "text-red-600 dark:text-red-400" ], "pending" => [ "circle", "text-gray-300 dark:text-zinc-600" ] } %>
+                   "failed" => [ "circle-x", "text-red-600 dark:text-red-400" ], "pending" => [ "circle", "text-gray-300 dark:text-zinc-600" ],
+                   "cancelled" => [ "circle-minus", "text-gray-500 dark:text-zinc-400" ] } %>
 <div class="space-y-6" data-controller="tabs" data-tabs-index-value="<%= steps.index(open) %>" data-test="automation-step-tabs">
   <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
     <ol class="flex items-center gap-5 overflow-x-auto scrollbar-none px-4" role="tablist" aria-label="<%= t("member.tickets.automation.steps.tabs") %>" data-test="approval-phase-strip">

@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## [0.224.1] - 2026-11-12
+
+### Changed
+
+- **La scheda di una consegna si legge in pochi secondi**: quando l'agente scrive il riepilogo breve, la scheda mostra solo quello e i controlli. Resoconto completo, prove e richiesta sono a un link, sul ticket. [Approvazioni](/member/home/approvals) (CYRA-1287)
+- **Alle domande di una consegna rispondi dalla scheda**: le domande lasciate sul ticket compaiono accanto ad Approva, una alla volta, con le risposte proposte. Rispondi e arriva la successiva; vedi sempre quante ne mancano. [Approvazioni](/member/home/approvals) (CYRA-1288)
+
+### Fixed
+
+- **Un test non eseguito non sembra più un test fallito**: nella scheda di approvazione i test saltati dall'agente compaiono in giallo come «non eseguiti». Il rosso resta solo per i test davvero falliti, con il loro numero. [Approvazioni](/member/home/approvals) (CYRA-1284)
+- **Il percorso resta visibile dopo un annullamento**: quando una lavorazione automatica viene annullata, la striscia delle fasi continua a mostrare le tappe già fatte e segna quella in cui si è fermata. Prima le mostrava tutte come non iniziate. [Approvazioni](/member/home/approvals) (CYRA-1286)
+- **Un ticket solo in prova non si chiude per sbaglio**: se la lavorazione è stata annullata dopo il rilascio in prova, il pulsante diventa «Riprendi il rilascio». La macchina porta il codice in produzione e poi chiude il ticket. [Approvazioni](/member/home/approvals) (CYRA-1285)
+
+## [0.223.3] - 2026-11-12
+
+### Changed
+
+- **Si sa perché un tentativo è stato chiuso come abbandonato**: nella scheda del ticket il passo dice se la macchina ha lasciato il ticket senza consegnare, se la prenotazione è scaduta, se un'altra esecuzione ha preso il ticket o se la prenotazione non c'era più, con l'ora e i minuti dall'inizio. Il registro del server ha una riga per ogni chiusura. (CYRA-1113)
+
 ## [0.223.2] - 2026-11-11
 
 ### Fixed

@@ -1,11 +1,16 @@
 # frozen_string_literal: true
 
 module HomeHelper
+  include Home::DeliveryHelper
+
   # Suffisso i18n dei pulsanti di decisione (CYRA-262). Per un'analisi dell'automa il verbo giusto
   # dipende dalla FASE — approvare un piano, approvare il lavoro consegnato e sbloccare una review
   # ferma sono tre decisioni diverse, e chiamarle tutte "Approva" mentirebbe su cosa succede dopo.
   # Per le altre famiglie basta il tipo.
   def approval_variant(card)
+    # CYRA-1285 — on code that reached staging only, the yes resumes the release: the button says so.
+    return "release_interrupted" if card.kind == "review" && card.workflow&.release_interrupted?
+
     card.kind == "agent_plan" ? card.phase : card.kind
   end
 
@@ -28,12 +33,23 @@ module HomeHelper
     workflow = card.workflow
     return nil if workflow.blank?
 
+    return cancelled_pipeline(workflow) if approval_phase_of(card, workflow) == "cancelled"
+
     stopped_step = Agents::Workflows::PhaseResolver.step_of_execution_phase(approval_failed_phase(card, workflow))
     current_step = approval_current_step(approval_phase_of(card, workflow))
     index = Agents::Workflows::PhaseResolver::STEPS.index(current_step)
 
     Agents::Workflows::PhaseResolver::STEPS.each_with_index.map do |step, position|
       { phase: step, state: approval_step_state(step, position, index, stopped_step) }
+    end
+  end
+
+  # CYRA-1286 — a cancelled run keeps the steps it went through; the one it stopped in says so.
+  def cancelled_pipeline(workflow)
+    steps = Agents::Workflows::PhaseResolver::STEPS
+    reached = steps.index(Agents::Workflows::PhaseResolver.reached_step(workflow))
+    steps.each_with_index.map do |step, position|
+      { phase: step, state: position < reached ? "done" : (position == reached ? "cancelled" : "pending") }
     end
   end
 
@@ -94,28 +110,6 @@ module HomeHelper
   # number on the home and the one on the filter always match. At most three states; the others are
   # summed into the remainder.
   QUEUE_BREAKDOWN_LIMIT = 3
-
-  # CYRA-886 — what a delivery claims, counted from the agent's work report. Every number is stated by
-  # the agent (`reported`), never verified here, and the page says so.
-  DeliveryEvidence = Data.define(:criteria_done, :criteria_total, :tests_done, :tests_total, :deviations)
-
-  def delivery_evidence(attempt)
-    report = attempt&.result.to_h["work_report"]
-    return unless report.is_a?(Hash)
-
-    criteria = Array(report["acceptance_evidence"])
-    tests = Array(report["tests"])
-    DeliveryEvidence.new(criteria_done: criteria.count { |item| item.to_h["status"] == "verified" },
-                         criteria_total: criteria.size,
-                         tests_done: tests.count { |item| item.to_h["status"] == "passed" },
-                         tests_total: tests.size,
-                         deviations: Array(report["deviations"]).map(&:to_h))
-  end
-
-  def delivery_decision_card(attempt)
-    card = attempt&.result.to_h["decision_card"]
-    card if card.is_a?(Hash) && card["headline"].present?
-  end
 
   # CYRA-887 — proposed answers per question, by position. CYRA-1033: read from the question rows,
   # which keep them since then (up to four, with the reason of the recommended one). An empty list

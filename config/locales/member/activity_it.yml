@@ -55,6 +55,7 @@ it:
           plan_supporter_approved: Piano approvato dal supporter
           workflow_supporter_retried: Lavorazione rimandata all'agente dal supporter
           agent_safety_stopped: Lavorazione fermata per sicurezza
+          release_resumed: Rilascio ripreso
           linked: Collegato
           branch_created: Ramo creato
           pull_request_opened: Proposta di modifica aperta

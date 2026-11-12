@@ -56,7 +56,9 @@ module Ticketing
       "plan_supporter_approved" => "life-buoy",
       # The supporter sent stopped work back to the agent, or stopped an agent for safety (CYRA-1197).
       "workflow_supporter_retried" => "rotate-ccw",
-      "agent_safety_stopped" => "shield-alert"
+      "agent_safety_stopped" => "shield-alert",
+      # A person sent a release cancelled after staging back to its closers (CYRA-1285).
+      "release_resumed" => "play"
     }.freeze
 
     # Ordine canonico dei campi nella frase `updated`: il jsonb NON preserva l'insertion order,

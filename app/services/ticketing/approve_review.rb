@@ -74,7 +74,8 @@ module Ticketing
         return Result.ok(@ticket)
       end
 
-      return closing_run if workflow&.closing?
+      release = release_in_charge(workflow)
+      return release if release
 
       target = target_status
       if target.nil?
@@ -110,6 +111,23 @@ module Ticketing
     end
 
     private
+
+    # The release owns the review while it runs, and gets it back when it was cut short: with the code
+    # in staging only, the yes sends it to production instead of resolving. Nil when neither. CYRA-1285
+    def release_in_charge(workflow)
+      return if workflow.nil?
+      return closing_run if workflow.closing?
+
+      resume_release(workflow) if workflow.release_interrupted? && closer_pipeline_configured?
+    end
+
+    def resume_release(workflow)
+      resumed = Agents::Workflows::ResumeRelease.call(workflow:, actor: @actor)
+      return resumed if resumed.err?
+
+      broadcast_status_change(ticket: @ticket, dependents: @broadcast_dependents)
+      Result.ok(@ticket)
+    end
 
     def closing_run
       Result.err(AppError.new(I18n.t("member.tickets.errors.closing_run_owns_review"),

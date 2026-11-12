@@ -36,6 +36,46 @@ RSpec.describe Member::AutomationHelper, type: :helper do
       expect(considerations[:text]).to eq(I18n.t("member.tickets.automation.steps.failure_no_reason"))
     end
 
+    # CYRA-1113 — il passo chiuso come abbandonato restava vuoto: ora dice perché, nella lingua di chi legge.
+    it "mostra il motivo della chiusura come abbandonata, in italiano e in inglese" do
+      attempt = build_stubbed(:agent_attempt, status: :stale,
+                                              failure_reason: "lease_released at=2026-11-12T10:03:00Z minutes=3")
+
+      it_text = I18n.with_locale(:it) { helper.automation_considerations(attempt)[:text] }
+      en_text = I18n.with_locale(:en) { helper.automation_considerations(attempt)[:text] }
+
+      expect(it_text).to include("La macchina ha lasciato il ticket senza consegnare", "3 minuti")
+      expect(en_text).to include("The machine left the ticket without delivering", "3 minutes")
+    end
+
+    it "traduce tutti e quattro i motivi di chiusura" do
+      %w[lease_released lease_expired lease_taken_by_other_run lease_missing].each do |code|
+        attempt = build_stubbed(:agent_attempt, status: :stale,
+                                                failure_reason: "#{code} at=2026-11-12T10:03:00Z minutes=8")
+        %i[it en].each do |locale|
+          text = I18n.with_locale(locale) { helper.automation_considerations(attempt)[:text] }
+
+          expect(text).to eq(I18n.t("member.tickets.automation.steps.stale_reasons.#{code}", locale:,
+                                    at: I18n.l(Time.zone.parse("2026-11-12T10:03:00Z"), format: :short, locale:),
+                                    minutes: "8"))
+        end
+      end
+    end
+
+    it "per i tentativi chiusi prima del motivo usa un testo generico" do
+      attempt = build_stubbed(:agent_attempt, status: :stale, failure_reason: nil)
+
+      considerations = helper.automation_considerations(attempt)
+
+      expect(considerations[:text]).to eq(I18n.t("member.tickets.automation.steps.stale_no_reason"))
+    end
+
+    it "lascia leggibile un motivo di chiusura che non conosce" do
+      attempt = build_stubbed(:agent_attempt, status: :stale, failure_reason: "chiuso_a_mano")
+
+      expect(helper.automation_considerations(attempt)[:text]).to eq("chiuso_a_mano")
+    end
+
     it "non confonde un tentativo fallito con uno che ha consegnato un risultato" do
       attempt = build_stubbed(:agent_attempt, status: :approved, phase: "planner",
                                               result: { "technical_analysis" => "Analisi" })

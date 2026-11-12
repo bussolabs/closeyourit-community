@@ -24,15 +24,32 @@ it:
         awaiting_autopilot_approval: "Poi il lavoro passa in chiusura, a partire da staging."
         review_blocked: "La lavorazione riparte dal passaggio in cui si era fermata."
         review: "Il ticket si chiude come fatto."
+        release_interrupted: "Il codice è solo in prova. La macchina lo porta in produzione e poi chiude il ticket."
         secret_change: "La modifica viene applicata subito al segreto."
       decision_card:
         risk_levels:
           none: Rischio nessuno
           low: Rischio basso
           high: Rischio alto
+      delivery_questions:
+        counter: "%{current} di %{total}"
+        all_answered: Hai risposto a tutte.
+        missing:
+          one: Manca 1 risposta
+          other: "Mancano %{count} risposte"
+      delivery_more:
+        title: Per approfondire
+        report: Resoconto completo, prove e file toccati
+        request: Richiesta e criteri
       evidence:
         criteria: "%{done}/%{total} criteri"
         tests: "%{done}/%{total} test passati"
+        tests_failed:
+          one: "1 fallito"
+          other: "%{count} falliti"
+        tests_not_run:
+          one: "1 non eseguito"
+          other: "%{count} non eseguiti"
         deviations:
           zero: "nessuna deviazione"
           one: "1 deviazione"

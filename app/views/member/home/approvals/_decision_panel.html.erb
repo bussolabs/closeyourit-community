@@ -27,6 +27,8 @@
 <% variant = approval_variant(card) %>
 <%# On a short window the column scrolls on its own, or its last buttons stay out of reach. CYRA-998 %>
 <aside class="lg:col-span-1 lg:sticky lg:top-[calc(var(--page-header-h,0px)+0.5rem)] lg:max-h-[calc(100dvh-12rem)] lg:overflow-y-auto space-y-6" data-test="approvals-decision">
+  <% questions = delivery_questions(card) %>
+  <%= render("member/home/approvals/delivery_questions", card: card, questions: questions) if questions.any? %>
   <% if card.can?(:approve) %>
     <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
       <%= form_with url: member_home_approvals_decision_path(**filters), method: :post, class: "space-y-2.5",
@@ -48,8 +50,11 @@
         <% end %>
         <%= render Ui::ButtonComponent.new(label: t("member.approvals.actions.approve.#{variant}"),
               type: "submit", variant: :success, size: :sm, icon: "check", test_id: "approvals-approve") %>
+        <% if questions.any?(&:open?) %>
+          <p class="text-[12px] text-amber-700 dark:text-amber-300" data-test="approvals-questions-missing"><%= t("member.approvals.delivery_questions.missing", count: questions.count(&:open?)) %></p>
+        <% end %>
         <%# On the home, one line says what happens after the yes; twin of reject_hint. CYRA-884 %>
-        <% if collapse && I18n.exists?("member.approvals.approve_hint.#{variant}") %>
+        <% if (collapse || variant == "release_interrupted") && I18n.exists?("member.approvals.approve_hint.#{variant}") %>
           <p class="text-[12px] text-gray-500 dark:text-zinc-400 leading-relaxed" data-test="approvals-approve-hint"><%= t("member.approvals.approve_hint.#{variant}") %></p>
         <% end %>
       <% end %>

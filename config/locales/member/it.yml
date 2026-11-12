@@ -763,6 +763,7 @@ it:
         current: In attesa di te
         failed: Respinto
         pending: Non ancora iniziato
+        cancelled: Annullata qui
       kinds:
         agent_plan: Lavorazione automatica
         review: Lavoro da rivedere
@@ -944,6 +945,7 @@ it:
           awaiting_autopilot_approval: Approva il lavoro
           review_blocked: Sblocca e riprova
           review: Approva
+          release_interrupted: Riprendi il rilascio
           secret_change: Approva la modifica
         reject:
           awaiting_approval: Respingi
@@ -1810,6 +1812,7 @@ it:
         invalid_status: Stato non valido.
         workflow_owns_status: Lo stato di questo ticket lo decide la lavorazione automatica finché non è conclusa. Per spostarlo a mano prendi in carico il ticket dalla sua pagina; se una macchina ci sta lavorando, annulla prima la lavorazione.
         closing_run_owns_review: "La macchina sta ancora rilasciando questo ticket: si risolve da solo quando il rilascio è in piedi in produzione."
+        release_not_interrupted: "Questo rilascio non è fermo: non c'è niente da riprendere."
         invalid_milestone: Milestone non valida.
         not_in_review: Il ticket non è in revisione.
         approval_needs_a_person: "L'approvazione del lavoro la firma una persona. Stai usando l'identità %{account}, che è di una macchina: rifai l'approvazione col tuo accesso personale."
@@ -2254,6 +2257,13 @@ it:
               minor: Minore
               info: Nota
           failure_no_reason: La macchina ha segnalato un guasto senza indicarne il motivo.
+          # CYRA-1113 — perché il server ha chiuso il tentativo come abbandonato (codice in failure_reason).
+          stale_no_reason: Chiuso come abbandonato senza consegna.
+          stale_reasons:
+            lease_released: "La macchina ha lasciato il ticket senza consegnare: prenotazione rilasciata il %{at}, %{minutes} minuti dopo l'inizio."
+            lease_expired: "La prenotazione è scaduta il %{at}, %{minutes} minuti dopo l'inizio, senza nessuna consegna."
+            lease_taken_by_other_run: "Un'altra esecuzione ha preso il ticket il %{at}, %{minutes} minuti dopo l'inizio di questa."
+            lease_missing: "La prenotazione non c'era più e non resta traccia del suo rilascio: chiuso il %{at}, %{minutes} minuti dopo l'inizio."
           # CYRA-384 — i tentativi consecutivi con lo stesso esito raccolti in una riga sola: in fila
           # coprivano tutto il resto della scheda, e per arrivare al piano bisognava scorrerli uno per uno.
           group: "%{attempts} %{outcome} fra %{from} e %{to}"
@@ -2580,6 +2590,7 @@ it:
         question_asked: "%{actor} ha fatto una domanda"
         question_answered: "%{actor} ha risposto a una domanda"
         question_closed: "%{actor} ha ritirato una domanda"
+        release_resumed: "%{actor} ha fatto riprendere il rilascio: il codice era solo in prova"
         work_context_captured: "Contesto di lavoro fotografato alla presa in carico"
         dependency_blocked: "La lavorazione automatica si è fermata: %{count} prerequisiti non ancora conclusi (%{dependencies})"
         already_done: "Il lavoro era già scritto nel codice: il ticket si chiude senza pianificare (%{files})"

@@ -1,0 +1,47 @@
+<%# locals: (card:, questions:) %>
+<%# The questions a delivery left open, one at a time: answer one and the card comes back on the next.
+    The answered ones stay above with what was answered. Same pills as the ticket's Questions tab. CYRA-1288 %>
+<% current = questions.find(&:open?) %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 space-y-2.5" data-test="approvals-delivery-questions">
+  <div class="flex items-baseline justify-between gap-3">
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-amber-600 dark:text-amber-400"><%= t("member.approvals.questions") %></p>
+    <p class="font-mono text-[11px] text-gray-400 dark:text-zinc-500" data-test="approvals-question-counter">
+      <%= t("member.approvals.delivery_questions.counter", current: (current ? questions.index(current) + 1 : questions.size), total: questions.size) %>
+    </p>
+  </div>
+  <ol class="space-y-1.5">
+    <% questions.reject(&:open?).each do |question| %>
+      <li class="grid grid-cols-[14px_minmax(0,1fr)] gap-x-2 text-[12.5px] leading-relaxed text-gray-500 dark:text-zinc-400" data-test="approvals-question-answered">
+        <span class="font-mono text-[11px] text-gray-400 dark:text-zinc-500"><%= questions.index(question) + 1 %>.</span>
+        <span><%= question.body %> <span class="font-medium text-indigo-700 dark:text-indigo-300"><%= question.resolved_answer&.body %></span></span>
+      </li>
+    <% end %>
+  </ol>
+  <% if current %>
+    <div class="space-y-1.5" data-test="approvals-question-current">
+      <p class="grid grid-cols-[14px_minmax(0,1fr)] gap-x-2 text-[13px] leading-relaxed text-zinc-700 dark:text-zinc-300">
+        <span class="font-mono text-[11px] text-gray-400 dark:text-zinc-500 mt-0.5"><%= questions.index(current) + 1 %>.</span>
+        <span><%= current.body %></span>
+      </p>
+      <div class="ml-[22px] flex flex-wrap gap-1.5">
+        <% current.choice_options.each.with_index(1) do |option, number| %>
+          <%= render Ui::ButtonComponent.new(label: option["label"], href: member_ticket_question_answers_path(card.ticket, current),
+                method: :post, params: { choice: number, approval: card.key },
+                variant: option["recommended"] ? :tinted_outline : :secondary, size: :sm,
+                test_id: "approvals-question-choice-#{number}") %>
+        <% end %>
+      </div>
+      <%= form_with url: member_ticket_question_answers_path(card.ticket, current), method: :post, class: "relative ml-[22px]" do %>
+        <%= hidden_field_tag :approval, card.key %>
+        <%= text_field_tag :body, nil, id: "approvals-question-body", maxlength: Ticketing::Constants::ANSWER_MAX_CHARS,
+              placeholder: t(current.choice_options.any? ? "member.tickets.questions.other_placeholder" : "member.tickets.questions.answer_placeholder"),
+              class: "w-full h-[34px] rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-3 pr-10 text-[12.5px] placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-400",
+              data: { test: "approvals-question-body" } %>
+        <%= render Ui::ButtonComponent.new(label: t("member.tickets.questions.answer_submit"), type: "submit", icon: "arrow-right", icon_only: true,
+              variant: :primary, size: :sm, class: "absolute right-[3px] top-1/2 -translate-y-1/2", test_id: "approvals-question-submit") %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="text-[12.5px] text-gray-500 dark:text-zinc-400" data-test="approvals-questions-done"><%= t("member.approvals.delivery_questions.all_answered") %></p>
+  <% end %>
+</div>
