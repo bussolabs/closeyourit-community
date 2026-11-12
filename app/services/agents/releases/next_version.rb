@@ -26,9 +26,18 @@ module Agents
         @client = client
       end
 
+      # CYRA-1092 — il numero di prova più alto di `version` fra i tag del deposito, 0 se non ce n'è
+      # nessuno. Conta anche le prove fatte a mano, che il server non ha mai assegnato.
+      def self.highest_beta(tags, version)
+        prefix = "#{version}-beta."
+        Array(tags).filter_map { |name| name.delete_prefix(prefix)[/\A\d+\z/] if name.start_with?(prefix) }
+                   .map(&:to_i).max.to_i
+      end
+
       def call
+        @tags = client.tags(@repository.github_installation_id, @repository.full_name)
         baseline = last_stable
-        return Result.ok(version: FIRST_VERSION, baseline_tag: nil) if baseline.nil?
+        return Result.ok(version: FIRST_VERSION, baseline_tag: nil, tags: @tags) if baseline.nil?
 
         major, minor, patch = STABLE.match(baseline).captures.map(&:to_i)
         next_version = if fixes_only?
@@ -36,7 +45,8 @@ module Agents
         else
                      "v#{major}.#{minor + 1}.0"
         end
-        Result.ok(version: next_version, baseline_tag: baseline)
+        # CYRA-1092 — l'elenco letto torna a chi assegna il numero di prova, che così non lo rilegge.
+        Result.ok(version: next_version, baseline_tag: baseline, tags: @tags)
       rescue Github::Client::Error => e
         # Senza sapere da dove si parte non si sceglie un numero: inventarne uno vorrebbe dire
         # rischiare di riusare un nome già uscito, che è il difetto peggiore che questo pezzo può fare.
@@ -51,9 +61,8 @@ module Agents
       # Il più alto fra i tag stabili, confrontati come numeri e non come testo: «v0.9.0» e «v0.10.0»
       # in ordine alfabetico escono al contrario.
       def last_stable
-        client.tags(@repository.github_installation_id, @repository.full_name)
-              .select { |name| STABLE.match?(name) }
-              .max_by { |name| STABLE.match(name).captures.map(&:to_i) }
+        @tags.select { |name| STABLE.match?(name) }
+             .max_by { |name| STABLE.match(name).captures.map(&:to_i) }
       end
 
       def fixes_only?

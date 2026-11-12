@@ -181,6 +181,7 @@ RSpec.describe "Member ticket automation actions", type: :request do
   describe "rimanda allo staging" do
     before do
       create(:github_repository, project:)
+      versioni_uscite("v0.88.0")
       pronta_per!(workflow, "closer_production")
       workflow.update!(closer_production_started_at: Time.current)
     end

@@ -148,6 +148,25 @@ RSpec.describe Agents::Releases::Assign do
     expect(seconda.value.version).to eq("v1.4.4-beta.1")
   end
 
+  # CYRA-1092 — una prova creata a mano nel repository non passa dal server: il numero scelto deve
+  # comunque superarla, o la pubblicazione verrebbe respinta e staging e mail mostrerebbero un doppione.
+  it "la prova supera quelle già nel repository, anche fatte a mano" do
+    versioni_uscite("v1.4.2", "v1.4.3-beta.2", "v1.4.4-beta.7")
+
+    expect(assign("closer_staging").value.version).to eq("v1.4.3-beta.3")
+  end
+
+  it "le prove di un altro repository non cambiano il numero" do
+    altro_progetto = create(:project, organization:)
+    create(:github_repository, project: altro_progetto)
+    %w[v1.4.3-beta.1 v1.4.3-beta.2].each do |version|
+      altro = create(:ticket, organization:, project: altro_progetto, kind: :bug, with_agent_workflow: true)
+      assigned_version(altro.agent_workflow, "closer_staging", version:)
+    end
+
+    expect(assign("closer_staging").value.version).to eq("v1.4.3-beta.1")
+  end
+
   # La versione definitiva pubblica il commit che il sistema ha VISTO atterrare, non quello che la
   # macchina dichiara: è la cosa che si sta smettendo di credere sulla parola.
   it "la definitiva porta il punto di codice verificato" do

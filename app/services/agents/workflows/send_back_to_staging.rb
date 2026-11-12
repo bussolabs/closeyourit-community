@@ -29,15 +29,23 @@ module Agents
         closer_staging_last_error_code: nil, closer_staging_checks_count: 0
       }.freeze
 
-      def initialize(workflow:, actor:, now: Time.current)
+      def initialize(workflow:, actor:, now: Time.current, client: nil)
         @workflow = workflow
         @actor = actor
         @now = now
+        @client = client
       end
 
       def call
         return forbidden unless authorized_cto?
         return concluded_ticket if concluded_ticket?
+        return not_stopped unless @workflow.stopped_in_production?
+
+        # CYRA-1092 — le versioni del deposito si leggono PRIMA di bloccare la lavorazione: una lettura
+        # lenta non deve tenerla ferma per gli altri. Senza, il numero di prova non si sceglie: potrebbe
+        # ricadere su una prova fatta a mano, e il rilascio sarebbe respinto.
+        @tags = published_tags
+        return tags_unreadable if @tags.nil?
 
         sent_back = false
         ApplicationRecord.transaction do
@@ -101,13 +109,27 @@ module Agents
       end
 
       # Il successivo al più alto già preso per quella versione, non solo al proprio: un nome già
-      # assegnato altrove violerebbe l'indice unico del repository.
+      # assegnato altrove violerebbe l'indice unico del repository. CYRA-1092 — e al più alto già nel
+      # deposito, anche fatto a mano: quel tag esiste già e la pubblicazione verrebbe respinta.
       def next_beta(staging)
         base = staging.version.sub(/-beta\.\d+\z/, "")
         taken = Agents::ReleaseAssignment.where(github_repository_id: staging.github_repository_id)
                                          .where("version LIKE ?", "#{base}-beta.%").pluck(:version)
                                          .map { |version| version[/-beta\.(\d+)\z/, 1].to_i }
-        "#{base}-beta.#{taken.max.to_i + 1}"
+        published = Agents::Releases::NextVersion.highest_beta(@tags, base)
+        "#{base}-beta.#{[ taken.max.to_i, published ].max + 1}"
+      end
+
+      # I tag del repository del progetto; nil se GitHub non risponde. Nessun repository collegato:
+      # niente da leggere, e nessun numero di prova da avanzare.
+      def published_tags
+        repository = @workflow.ticket.project.github_repository
+        return [] if repository.nil?
+
+        (@client || Github::Client.new).tags(repository.github_installation_id, repository.full_name)
+      rescue Github::Client::Error => e
+        @github_error = e.code
+        nil
       end
 
       # Una prova del rilascio ancora aperta verrebbe riusata (Probes::Bind) col vecchio codice. Si
@@ -133,6 +155,12 @@ module Agents
       def not_stopped
         Result.err(AppError.new("La lavorazione non è ferma in produzione",
                                 code: "R409-WORKFLOW-017", status: :conflict))
+      end
+
+      # Lo stesso errore di Releases::NextVersion: la lavorazione resta ferma e il rimando si riprova.
+      def tags_unreadable
+        Result.err(AppError.new("Non è stato possibile leggere le versioni già uscite",
+                                code: "R409-WORKFLOW-008", status: :conflict, details: { github: @github_error }))
       end
 
       def number_taken

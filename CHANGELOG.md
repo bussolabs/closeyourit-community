@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.223.2] - 2026-11-11
+
+### Fixed
+
+- **Numeri delle versioni di prova sempre nuovi**: il numero di una versione di prova supera ora anche quelle create a mano nel codice del progetto, e non conta più le prove di altri progetti. Vale anche quando un rilascio torna alla prova. (CYRA-1092)
+
 ## [0.223.1] - 2026-11-11
 
 ### Fixed

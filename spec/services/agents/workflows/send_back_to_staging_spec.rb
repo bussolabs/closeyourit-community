@@ -16,7 +16,10 @@ RSpec.describe Agents::Workflows::SendBackToStaging do
     end
   end
 
-  before { organization.update!(cto:) }
+  before do
+    organization.update!(cto:)
+    versioni_uscite("v0.88.0", "v0.89.0-beta.1")
+  end
 
   # La macchina ha preso la produzione col codice sigillato e si è fermata lì.
   def ferma_in_produzione(staging: "v0.89.0-beta.1", production: "v0.89.0")
@@ -72,6 +75,42 @@ RSpec.describe Agents::Workflows::SendBackToStaging do
 
     expect(Agents::ReleaseAssignment.find_by(workflow:, execution_phase: "closer_staging").version)
       .to eq("v0.89.0-beta.3")
+  end
+
+  # CYRA-1092 — una prova fatta a mano nel repository non è assegnata dal server, ma il tag esiste già.
+  it "supera le prove già nel repository, anche fatte a mano" do
+    versioni_uscite("v0.88.0", "v0.89.0-beta.1", "v0.89.0-beta.4")
+    workflow = ferma_in_produzione(staging: "v0.89.0-beta.1")
+
+    expect(described_class.call(workflow:, actor: cto)).to be_ok
+    expect(Agents::ReleaseAssignment.find_by(workflow:, execution_phase: "closer_staging").version)
+      .to eq("v0.89.0-beta.5")
+  end
+
+  it "le prove di un altro repository non cambiano il numero" do
+    altro_progetto = create(:project, organization:)
+    create(:github_repository, project: altro_progetto)
+    altro = create(:ticket, :agent_workable, organization:, project: altro_progetto, with_agent_workflow: true)
+    assigned_version(altro.agent_workflow, "closer_staging", version: "v0.89.0-beta.7")
+    workflow = ferma_in_produzione(staging: "v0.89.0-beta.1")
+
+    described_class.call(workflow:, actor: cto)
+
+    expect(Agents::ReleaseAssignment.find_by(workflow:, execution_phase: "closer_staging").version)
+      .to eq("v0.89.0-beta.2")
+  end
+
+  # Senza le versioni del repository il numero potrebbe ricadere su una prova fatta a mano: la
+  # lavorazione resta ferma in produzione e il rimando si riprova.
+  it "se non riesce a leggere le versioni del repository non rimanda niente" do
+    workflow = ferma_in_produzione
+    allow(Github::Client.new).to receive(:tags).and_raise(Github::Client::Error.new("giù", code: "R502-GITHUB-001"))
+
+    result = described_class.call(workflow:, actor: cto)
+
+    expect(result.error.code).to eq("R409-WORKFLOW-008")
+    expect(workflow.reload).to have_attributes(blocked_phase: "closer_production", closer_staging_verified_at: be_present)
+    expect(Agents::ReleaseAssignment.where(workflow:).pluck(:version)).to contain_exactly("v0.89.0-beta.1", "v0.89.0")
   end
 
   # DOD-4: il numero resta quello la cui intestazione è già sulla linea principale; Releases::Assign lo

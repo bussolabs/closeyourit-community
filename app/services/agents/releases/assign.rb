@@ -56,7 +56,7 @@ module Agents
 
           Result.ok(Agents::ReleaseAssignment.create!(
                       workflow: @workflow, github_repository: repository,
-                      execution_phase: @execution_phase, version: version_number(computed.value),
+                      execution_phase: @execution_phase, version: version_number(repository, computed.value),
                       sha:, baseline_tag: computed.value[:baseline_tag]
                     ))
         rescue ActiveRecord::RecordNotUnique
@@ -129,15 +129,18 @@ module Agents
 
       def parse(version) = version.delete_prefix("v").split(".").map(&:to_i)
 
-      # La prova porta il suffisso: è la stessa versione, provata prima di uscire. Il contatore parte
-      # da quante prove di QUELLA versione sono già state assegnate, così due giri sulla stessa
-      # versione non si contendono lo stesso nome.
-      def version_number(computed)
+      # La prova porta il suffisso: è la stessa versione, provata prima di uscire. CYRA-1092 — il
+      # contatore parte dalla prova più alta di QUELLA versione fra quelle assegnate in questo
+      # repository (un numero promesso può non essere ancora pubblicato) e quelle già nel deposito
+      # (anche fatte a mano). Le prove di altri repository non c'entrano.
+      def version_number(repository, computed)
         return computed[:version] if @execution_phase == "closer_production"
 
-        already_done = Agents::ReleaseAssignment.for_phase("closer_staging")
-                                             .where("version LIKE ?", "#{computed[:version]}-beta.%").count
-        "#{computed[:version]}-beta.#{already_done + 1}"
+        assigned = Agents::ReleaseAssignment.for_phase("closer_staging").where(github_repository: repository)
+                                            .where("version LIKE ?", "#{computed[:version]}-beta.%").pluck(:version)
+                                            .map { |version| version[/-beta\.(\d+)\z/, 1].to_i }
+        published = Agents::Releases::NextVersion.highest_beta(computed[:tags], computed[:version])
+        "#{computed[:version]}-beta.#{[ assigned.max.to_i, published ].max + 1}"
       end
 
       # Il commit che il sistema ha visto atterrare sulla linea principale (CYRA-620): non quello che

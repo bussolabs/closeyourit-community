@@ -19,7 +19,7 @@ RSpec.describe Agents::Releases::NextVersion do
   it "solo correzioni: cambia l'ultima cifra" do
     esito = calcolo([ ticket(:bug) ], %w[v1.4.2 v1.4.1])
 
-    expect(esito.value).to eq(version: "v1.4.3", baseline_tag: "v1.4.2")
+    expect(esito.value).to eq(version: "v1.4.3", baseline_tag: "v1.4.2", tags: %w[v1.4.2 v1.4.1])
   end
 
   it "una novità: cambia la cifra di mezzo e azzera l'ultima" do
@@ -56,7 +56,21 @@ RSpec.describe Agents::Releases::NextVersion do
   it "nessuna versione uscita: si parte dalla prima" do
     esito = calcolo([ ticket(:bug) ], [])
 
-    expect(esito.value).to eq(version: "v0.1.0", baseline_tag: nil)
+    expect(esito.value).to eq(version: "v0.1.0", baseline_tag: nil, tags: [])
+  end
+
+  # CYRA-1092 — chi assegna il numero di prova riusa l'elenco già letto, senza chiederlo di nuovo.
+  it "restituisce anche le versioni lette, prove comprese" do
+    esito = calcolo([ ticket(:bug) ], %w[v1.4.2 v1.4.3-beta.2])
+
+    expect(esito.value[:tags]).to eq(%w[v1.4.2 v1.4.3-beta.2])
+  end
+
+  it "trova la prova più alta di una versione, ignorando le altre versioni" do
+    tags = %w[v0.8.0-beta.2 v0.8.0-beta.10 v0.8.0 v0.8.1-beta.7 v0.8.0-beta.x v10.8.0-beta.9]
+
+    expect(described_class.highest_beta(tags, "v0.8.0")).to eq(10)
+    expect(described_class.highest_beta(tags, "v1.4.3")).to eq(0)
   end
 
   # La prima cifra non si cambia mai da sola: quello resta un salto che decide una persona, e
