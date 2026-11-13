@@ -5,6 +5,7 @@ module Agents
     # CYRA-1292 — reads the proofs a delivery declares against the "done when" of its plan. A proof that is
     # partial or missing, a criterion with no proof, a failed or skipped test: a person decides.
     # Pure. It reads what the agent reported: it says what is missing, it does not prove what is claimed.
+    # A criterion the Tester saw pass (CYAU-329) is attested: it is complete whatever the agent declared.
     class EvidenceCheck
       COMPLETE = "verified"
 
@@ -15,9 +16,10 @@ module Agents
 
       def self.call(...) = new(...).call
 
-      def initialize(work_report:, criterion_ids:)
+      def initialize(work_report:, criterion_ids:, attested_ids: [])
         @report = work_report.is_a?(Hash) ? work_report : {}
         @criterion_ids = Array(criterion_ids).compact
+        @attested_ids = Array(attested_ids).compact
       end
 
       def call
@@ -39,10 +41,10 @@ module Agents
       def tests = @tests ||= Array(@report["tests"]).map(&:to_h)
 
       def incomplete
-        @incomplete ||= evidence.reject { |item| item["status"] == COMPLETE }.filter_map { |item| item["criterion_id"] }
+        @incomplete ||= evidence.reject { |item| item["status"] == COMPLETE }.filter_map { |item| item["criterion_id"] } - @attested_ids
       end
 
-      def absent = @absent ||= @criterion_ids - evidence.filter_map { |item| item["criterion_id"] }
+      def absent = @absent ||= @criterion_ids - evidence.filter_map { |item| item["criterion_id"] } - @attested_ids
 
       def tests_failed = tests.count { |item| item["status"] == "failed" }
       def tests_not_run = tests.count { |item| item["status"] == "not_run" }

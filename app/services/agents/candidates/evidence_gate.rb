@@ -10,7 +10,19 @@ module Agents
       private
 
       def read_verdict
-        EvidenceCheck.call(work_report: @candidate.attempt&.result.to_h["work_report"], criterion_ids:)
+        EvidenceCheck.call(work_report: @candidate.attempt&.result.to_h["work_report"], criterion_ids:, attested_ids:)
+      end
+
+      # CYAU-329 — what the Tester saw pass, when its outcome clears the delivery: on the delivered commit, by
+      # an engine other than the writer's, with the project's Tester not off.
+      def attested_ids
+        attempt = @candidate.attempt
+        report = attempt&.tester_report
+        return [] if report.nil? || project.tester_mode == ScopeCheck::MODE_OFF
+        return [] unless report.moment == Tester::Report::MOMENT_DELIVERY && report.commit == @candidate.head_sha &&
+                         report.engine != attempt.runtime
+
+        report.passed_ids
       end
 
       # The "done when" of the approved plan that carry an id. An older plan lists plain sentences: none to match.

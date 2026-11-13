@@ -40,6 +40,8 @@ module Ticketing
       delivery_scope_tests_removed delivery_evidence_stopped delivery_evidence_would_stop
       delivery_checks_stopped delivery_checks_would_stop
       delivery_review_stopped delivery_review_would_stop
+      delivery_tester_stopped delivery_tester_would_stop
+      delivery_tester_release_passed delivery_tester_release_missing
       plan_fast_lane_approved plan_fast_lane_would_approve delivery_fast_lane_stopped
     ].freeze
 

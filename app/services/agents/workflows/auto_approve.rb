@@ -43,12 +43,12 @@ module Agents
 
       private
 
-      # CYRA-1291, CYRA-1292, CYRA-1297 — the files really changed, the proofs declared, the checks the repository
-      # requires and who re-read the work can still ask for a person. Every gate runs, none short-circuits: in a dry run each must leave
+      # CYRA-1291, CYRA-1292, CYRA-1297, CYAU-329 — the files really changed, the proofs declared, the checks the
+      # repository requires, who re-read the work and what the Tester ran can still ask for a person. Every gate runs, none short-circuits: in a dry run each must leave
       # its own record.
       DELIVERY_GATES = [ Agents::Candidates::ScopeGate, Agents::Candidates::EvidenceGate,
                          Agents::Candidates::RequiredChecksGate, Agents::Candidates::ReviewerGate,
-                         Agents::Candidates::FastLaneGate ].freeze
+                         Agents::Candidates::FastLaneGate, Agents::Candidates::TesterGate ].freeze
 
       def delivery_gates_stop?
         DELIVERY_GATES.map { |gate| gate.stops?(workflow: @workflow, candidate: @candidate, client: @client) }.any?

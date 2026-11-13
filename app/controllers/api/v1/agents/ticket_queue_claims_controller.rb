@@ -22,7 +22,9 @@ module Api
             "attempt_id" => outcome.attempt.id, "review_mode" => outcome.attempt.review_mode, "reviewer" => outcome.attempt.reviewer, "reviewer_model" => outcome.attempt.reviewer_model,
             "work_engine" => outcome.attempt.runtime,
             # CYRA-1133: the model the council chose; missing = the model the automator pins.
-            "work_model" => outcome.attempt.work_model
+            "work_model" => outcome.attempt.work_model,
+            # CYAU-329: this machine tries the plan's browser proofs on staging before the production tag.
+            "browser_proof" => ::Agents::Workflows::BrowserProof.machine_runs?(outcome.attempt)
           )
           render json: { data: }, status: outcome.fresh_acquisition ? :created : :ok
         end

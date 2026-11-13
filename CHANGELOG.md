@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.228.0] - 2026-11-13
+
+### Added
+
+- **Tester**: un agente separato esegue le prove del piano. Con la scelta accesa nella sezione Test del progetto, un lavoro passa da solo solo se le ha superate tutte, e il rilascio in produzione di un piano con prove in browser va a una macchina che ha il browser. Parte spento. [Progetti](/member/projects)
+
 ## [0.227.0] - 2026-11-13
 
 ### Added

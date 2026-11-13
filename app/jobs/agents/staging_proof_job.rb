@@ -32,6 +32,8 @@ module Agents
       Agents::Workflows::RequestProductionApproval.for_projects(Projects::Project.production_approval_required_active)
       # CYRA-1302 — the same for the plans that declare a proof in a browser.
       Agents::Workflows::RequestProductionApproval.for_projects(Projects::Project.browser_proof_go_ahead)
+      # CYAU-329 — and for the projects whose Tester is on, where no machine has the browser to run that proof.
+      Agents::Workflows::RequestProductionApproval.for_projects(Projects::Project.tester_on)
     rescue StandardError => e
       Rails.logger.error("Agents::StagingProofJob: production approvals #{e.class}: #{e.message}")
     end

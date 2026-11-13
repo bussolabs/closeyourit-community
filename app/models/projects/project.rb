@@ -356,6 +356,9 @@ module Projects
     # CYRA-1302 — the projects that ask a person's go-ahead for the plans proven in a browser.
     scope :browser_proof_go_ahead, -> { where("projects.preferences @> ?", { browser_proof_go_ahead: true }.to_json) }
 
+    # CYAU-329 — the projects whose Tester is on.
+    scope :tester_on, -> { where("projects.preferences @> ?", { tester: Agents::Candidates::ScopeCheck::MODE_ON }.to_json) }
+
     def production_approval_required_active?
       production_approval_required? || group&.production_approval_required? || false
     end
@@ -401,7 +404,7 @@ module Projects
                    :errors_retention_days, :performance_retention_days, :uptime_retention_days,
                    :performance_fast_ms, :performance_slow_ms,
                    :workspace_path, :vulnerability_auto_ticket, :production_hold_hours, :delivery_scope_check, :triage_risk_floor, :staging_deploy_proof, :production_watch, :strict_caps, :fast_lane, :light_phase_engine, :browser_proof_go_ahead,
-                   :test_access_url, :test_access_username, :test_access_not_needed
+                   :test_access_url, :test_access_username, :test_access_not_needed, :tester
 
     # Ticket automatico per le vulnerabilità gravi (CYRA-506): acceso salvo scelta contraria. Vive
     # nelle preferenze e non in una colonna perché è un interruttore, non un dato del progetto — e
@@ -446,6 +449,13 @@ module Projects
     end
 
     def delivery_scope_check_mode = delivery_scope_check.presence || Agents::Candidates::ScopeCheck::MODE_OFF
+
+    # CYAU-329 — whether the Tester's outcome is asked of a delivery and of a production release: blank → nil → off.
+    def tester=(value)
+      super(value.presence)
+    end
+
+    def tester_mode = tester.presence || Agents::Candidates::ScopeCheck::MODE_OFF
 
     # CYRA-1294 — staging counts as verified only after its trial release went through. Off unless switched on.
     def staging_deploy_proof=(value)
@@ -608,6 +618,7 @@ module Projects
     validates :production_hold_hours, numericality: { only_integer: true, in: Agents::Workflows::ProductionHold::HOURS_RANGE,
                                                       message: :production_hold_hours }, allow_nil: true
     validates :delivery_scope_check, inclusion: { in: Agents::Candidates::ScopeCheck::MODES }, allow_nil: true
+    validates :tester, inclusion: { in: Agents::Candidates::ScopeCheck::MODES }, allow_nil: true
     validates :fast_lane, inclusion: { in: Agents::Plans::FastLane::MODES }, allow_nil: true
     validates :light_phase_engine, inclusion: { in: Agents::PhaseEngine::OPTIONS }, allow_nil: true
     validates :test_access_url, length: { maximum: 500 },

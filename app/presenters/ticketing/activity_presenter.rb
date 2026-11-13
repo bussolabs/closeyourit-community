@@ -70,6 +70,11 @@ module Ticketing
       # The check on who re-read a delivery (CYRA-1297).
       "delivery_review_stopped" => "user-x",
       "delivery_review_would_stop" => "user-search",
+      # The check on what the Tester ran (CYAU-329).
+      "delivery_tester_stopped" => "test-tube-diagonal",
+      "delivery_tester_would_stop" => "test-tubes",
+      "delivery_tester_release_passed" => "monitor-check",
+      "delivery_tester_release_missing" => "monitor-x",
       # The fast lane for small low-risk plans (CYRA-1300).
       "plan_fast_lane_approved" => "zap",
       "plan_fast_lane_would_approve" => "flask-conical",
@@ -118,7 +123,7 @@ module Ticketing
       return reporter_sentence if @event.action == "reporter_changed"
       return created_on_behalf_sentence if @event.action == "created" && @event.data["on_behalf_of"].present?
       return agent_eligibility_sentence if @event.action.start_with?("agent_eligibility_")
-      return delivery_gate_sentence if @event.action.start_with?("delivery_scope_", "delivery_evidence_", "delivery_checks_", "delivery_review_",
+      return delivery_gate_sentence if @event.action.start_with?("delivery_scope_", "delivery_evidence_", "delivery_checks_", "delivery_review_", "delivery_tester_",
                                                              "delivery_fast_lane_", "plan_fast_lane_")
 
       I18n.t("member.tickets.activity.#{@event.action}", **interpolations)
@@ -284,6 +289,8 @@ module Ticketing
       when "delivery_evidence_stopped", "delivery_evidence_would_stop" then { details: evidence_summary }
       when "delivery_checks_stopped", "delivery_checks_would_stop" then { details: required_checks_summary }
       when "delivery_review_stopped", "delivery_review_would_stop" then { engine: @event.data["engine"] }
+      when "delivery_tester_stopped", "delivery_tester_would_stop" then { details: tester_summary }
+      when "delivery_tester_release_passed", "delivery_tester_release_missing" then { criteria: Array(@event.data["criteria"]).join(" · ") }
       when "plan_fast_lane_approved", "plan_fast_lane_would_approve" then { count: @event.data["files"].to_i }
       when "delivery_fast_lane_stopped" then { count: @event.data["files"].to_i, lines: @event.data["lines"].to_i }
       else { files: scope_flagged_files }
@@ -315,6 +322,14 @@ module Ticketing
       parts << I18n.t("member.tickets.activity.evidence_tests_failed", count: failed) if failed.positive?
       parts << I18n.t("member.tickets.activity.evidence_tests_not_run") if Array(@event.data["reasons"]).include?("tests_not_run")
       parts.join(" · ")
+    end
+
+    # CYAU-329 — why the Tester's outcome did not clear the delivery, one clause per reason.
+    def tester_summary
+      Array(@event.data["reasons"]).map do |reason|
+        ids = Array(@event.data[reason == "tester_failed" ? "failed" : "missing"]).join(" · ")
+        I18n.t("member.tickets.activity.tester_reasons.#{reason}", criteria: ids, engine: @event.data["engine"])
+      end.join(" · ")
     end
 
     # An unreadable file list flags nothing by name: the sentence says so instead of showing an empty list.

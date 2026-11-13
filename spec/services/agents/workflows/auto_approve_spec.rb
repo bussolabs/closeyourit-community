@@ -532,6 +532,139 @@ RSpec.describe Agents::Workflows::AutoApprove do
     end
   end
 
+  # CYAU-329 — a plan that names proofs to run moves on by itself only with the Tester's outcome.
+  describe "checking what the Tester ran" do
+    def tester_events = Ticketing::Event.where(ticket:).where("action LIKE 'delivery_tester_%'")
+
+    def quiet_client
+      client_su(candidate.head_sha).tap do |fake|
+        allow(fake).to receive(:pull_request_files).and_return({ paths: [], truncated: false, files: [] })
+      end
+    end
+
+    def freeze_plan(*criteria)
+      plan = Agents::Plan.create!(
+        workflow:, attempt: create(:agent_attempt, workflow:, organization:, phase: "planner"),
+        technical_analysis: "Plan", scenarios: [], notes: [], ticket_snapshot_digest: "snapshot", contract_version: 2,
+        definition_of_done: criteria, content: { "summary" => "Plan", "work_items" => [] }
+      )
+      workflow.update!(frozen_plan: plan, plan_frozen_at: Time.current)
+    end
+
+    def criterion(id, kind) = { "id" => id, "text" => "Done when #{id}", "verification" => { "kind" => kind, "how" => "Run it and read the result." } }
+
+    def deliver_tester(**overrides)
+      block = { "moment" => "delivery", "status" => "passed", "engine" => "codex", "commit" => candidate.head_sha,
+                "summary" => "All proofs passed.",
+                "results" => [ { "criterion_id" => "DOD-1", "kind" => "test", "status" => "passed", "evidence" => "12 examples, 0 failures" } ] }
+              .merge(overrides.transform_keys(&:to_s))
+      attempt.update_columns(review: attempt.review.merge("tester" => block))
+    end
+
+    before { freeze_plan(criterion("DOD-1", "test"), criterion("DOD-2", "manual")) }
+
+    it "moves on and says nothing while the Tester is off" do
+      auto_approve(client: quiet_client)
+
+      expect(workflow.reload.autopilot_approved_at).to be_present
+      expect(tester_events).to be_empty
+    end
+
+    it "moves on with the Tester on when every proof to run passed" do
+      project.update!(tester: "on")
+      deliver_tester
+
+      auto_approve(client: quiet_client)
+
+      expect(workflow.reload.autopilot_approved_at).to be_present
+      expect(tester_events).to be_empty
+    end
+
+    it "moves on with the Tester on when the plan names no proof to run" do
+      project.update!(tester: "on")
+      freeze_plan(criterion("DOD-1", "browser"), criterion("DOD-2", "manual"))
+
+      auto_approve(client: quiet_client)
+
+      expect(workflow.reload.autopilot_approved_at).to be_present
+      expect(tester_events).to be_empty
+    end
+
+    it "moves on in a dry run and records what it would have stopped" do
+      project.update!(tester: "dry_run")
+
+      auto_approve(client: quiet_client)
+
+      expect(workflow.reload.autopilot_approved_at).to be_present
+      expect(tester_events.sole).to have_attributes(action: "delivery_tester_would_stop")
+      expect(tester_events.sole.data).to include("reasons" => %w[tester_absent], "mode" => "dry_run")
+    end
+
+    it "leaves the delivery to a person when the Tester left no outcome" do
+      project.update!(tester: "on")
+
+      auto_approve(client: quiet_client)
+
+      expect(workflow.reload.autopilot_approved_at).to be_nil
+      expect(tester_events.sole).to have_attributes(action: "delivery_tester_stopped")
+    end
+
+    it "leaves the delivery to a person when a proof failed" do
+      project.update!(tester: "on")
+      deliver_tester(status: "failed", results: [ { "criterion_id" => "DOD-1", "kind" => "test", "status" => "failed", "evidence" => "1 failure" } ])
+
+      auto_approve(client: quiet_client)
+
+      expect(workflow.reload.autopilot_approved_at).to be_nil
+      expect(tester_events.sole.data).to include("reasons" => %w[tester_failed], "failed" => %w[DOD-1])
+    end
+
+    it "leaves the delivery to a person when the engine that wrote the work tested it" do
+      project.update!(tester: "on")
+      deliver_tester(engine: attempt.runtime)
+
+      auto_approve(client: quiet_client)
+
+      expect(workflow.reload.autopilot_approved_at).to be_nil
+      expect(tester_events.sole.data).to include("reasons" => %w[tester_same_engine])
+    end
+
+    it "leaves the delivery to a person when the proofs ran on another commit" do
+      project.update!(tester: "on")
+      deliver_tester(commit: "f" * 40)
+
+      auto_approve(client: quiet_client)
+
+      expect(workflow.reload.autopilot_approved_at).to be_nil
+      expect(tester_events.sole.data).to include("reasons" => %w[tester_stale])
+    end
+
+    it "takes a proof the Tester saw pass as attested in the check on the declared proofs" do
+      project.update!(tester: "on", delivery_scope_check: "on")
+      freeze_plan(criterion("DOD-1", "test"))
+      attempt.update_columns(result: attempt.result.to_h.merge("work_report" => {
+        "acceptance_evidence" => [ { "criterion_id" => "DOD-1", "status" => "partial", "evidence" => "half", "source" => "reported" } ],
+        "tests" => [ { "name" => "rspec", "status" => "passed" } ]
+      }))
+      deliver_tester
+
+      auto_approve(client: quiet_client)
+
+      expect(workflow.reload.autopilot_approved_at).to be_present
+      expect(Ticketing::Event.where(ticket:).where("action LIKE 'delivery_evidence_%'")).to be_empty
+    end
+
+    it "does not read an outcome outside the contract" do
+      project.update!(tester: "on")
+      deliver_tester(status: "green")
+
+      auto_approve(client: quiet_client)
+
+      expect(workflow.reload.autopilot_approved_at).to be_nil
+      expect(tester_events.sole.data).to include("reasons" => %w[tester_absent])
+    end
+  end
+
   # CYRA-1292 — "no red check" proves nothing until the repository says which checks count.
   describe "checking the checks the repository requires" do
     def checks_events = Ticketing::Event.where(ticket:).where("action LIKE 'delivery_checks_%'")

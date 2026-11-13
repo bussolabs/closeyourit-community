@@ -21,6 +21,10 @@ module Agents
     def reviewer_model = expected_reviewer ? expected_reviewer_model : host.effective_reviewer_model
     # What automators that predate the named reviewer read: with two engines, "cross" is the other one.
     def review_mode = reviewer == runtime ? "same" : "cross"
+
+    # CYAU-329 — the Tester's outcome the machine delivered. It sits beside the review it was delivered with
+    # (`review["tester"]`): both are what the machine attests, and the attempt has no column of its own for it.
+    def tester_report = Agents::Tester::Report.parse(review.to_h["tester"])
     belongs_to :workflow, class_name: "Agents::Workflow", inverse_of: :attempts
     belongs_to :host, class_name: "Agents::Host"
     # Host-first: il service account dell'host che ha eseguito la fase. Le FK legacy verso agente, comando,

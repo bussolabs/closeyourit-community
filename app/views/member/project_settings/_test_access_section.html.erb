@@ -45,6 +45,15 @@
           selected: @project.test_access_not_needed? ? "1" : "0",
           hint: t("member.project_settings.test_access_not_needed_hint"),
           test_id: "project-test-access-not-needed-select") %>
+    <%# CYAU-329 — whether the Tester's outcome is asked of a delivery and of a production release. %>
+    <%= render Ui::SelectComponent.new(
+          name: "tester",
+          label: t("member.project_settings.tester_label"),
+          options: Agents::Candidates::ScopeCheck::MODES.map { |mode| [ t("member.project_settings.delivery_check_modes.#{mode}"), mode ] },
+          selected: @project.tester_mode,
+          hint: t("member.project_settings.tester_hint"),
+          test_id: "project-tester-mode",
+          error: @errors&.dig(:tester)&.first) %>
   <% end %>
 
   <div class="flex items-center gap-2 rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2" data-test="project-test-access-password-state">

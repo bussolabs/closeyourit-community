@@ -34,6 +34,16 @@ RSpec.describe Agents::Candidates::EvidenceCheck do
     expect(verdict.absent).to eq(%w[DOD-2])
   end
 
+  # CYAU-329 — the Tester saw the criterion pass: what the agent declared about it no longer decides.
+  it "takes a criterion the Tester saw pass as complete, declared partial or not declared at all" do
+    verdict = described_class.call(
+      work_report: { "acceptance_evidence" => [ evidence("DOD-1", "partial") ], "tests" => [ test_run("passed") ] },
+      criterion_ids: %w[DOD-1 DOD-2], attested_ids: %w[DOD-1 DOD-2]
+    )
+
+    expect(verdict).to have_attributes(review?: false, reasons: [])
+  end
+
   it "asks for a person when the delivery carries no work report" do
     expect(check(nil).reasons).to eq(%w[evidence_absent tests_not_run])
     expect(check(nil).absent).to eq(%w[DOD-1 DOD-2])

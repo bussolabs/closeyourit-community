@@ -181,7 +181,8 @@ module Agents
           (#{ready_phase_sql}) <> 'closer_production'
           OR (#{Agents::Workflows::ProductionHold.released_sql(
             now: @now, window:, approval_required: @project.production_approval_required_active?,
-            production_watch: @project.production_watch?, browser_proof: @project.browser_proof_go_ahead?
+            production_watch: @project.production_watch?,
+            browser_proof: Agents::Workflows::BrowserProof.go_ahead_for?(@project, @host)
           )})
         SQL
       end

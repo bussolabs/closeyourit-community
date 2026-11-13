@@ -35,14 +35,16 @@ RSpec.describe Agents::Workflows::BrowserProof do
     )
   end
 
-  def ready_host
+  def ready_host(browser: false)
     service_account = Accounts::Service::Create.call(organization:, name: "Host SA #{SecureRandom.hex(3)}",
                                                      project_ids: [ project.id ]).value
+    runtimes = [ { "name" => "claude", "present" => true } ]
+    runtimes << { "name" => "tester-browser", "present" => true } if browser
     create(:agent_host, organization:, service_account:, last_heartbeat_at: Time.current,
-                        repositories: [ project.key ], runtimes: [ { "name" => "claude", "present" => true } ])
+                        repositories: [ project.key ], runtimes:)
   end
 
-  def queue_head = Agents::TicketQueues::Candidates.new(project:, host: ready_host).head_id
+  def queue_head(host: ready_host) = Agents::TicketQueues::Candidates.new(project:, host:).head_id
 
   before { project.update!(production_hold_hours: 0) }
 
@@ -91,6 +93,125 @@ RSpec.describe Agents::Workflows::BrowserProof do
 
       expect(workflow.reload.blocked_kind).to eq("production_approval")
     end
+  end
+
+  # CYAU-329 — with the Tester on, the machine proves it in a browser: only a machine that has one takes the
+  # production release, and a person decides only where no machine can.
+  context "with the Tester on" do
+    before { project.update!(tester: "on") }
+
+    it "hands the release only to a machine that has the browser" do
+      workflow = waiting_for_production(kinds: [ "browser" ])
+      with_browser = ready_host(browser: true)
+
+      expect(queue_head(host: ready_host)).to be_nil
+      expect(queue_head(host: with_browser)).to eq(workflow.ticket_id)
+      expect(described_class.owed?(workflow)).to be(false)
+      expect(described_class.host_blocked?(workflow, with_browser)).to be(false)
+    end
+
+    it "refuses the claim of a machine without the browser" do
+      workflow = waiting_for_production(kinds: [ "browser" ])
+      ready_host(browser: true)
+
+      expect(described_class.host_blocked?(workflow, ready_host)).to be(true)
+    end
+
+    def claim(workflow, host)
+      token = Agents::TicketQueues::Selection.issue(ticket: workflow.ticket, host:)
+      Agents::TicketQueues::Claim.call(organization:, host:, selection_token: token,
+                                       params: { host_id: host.id, run_id: "run-1", ttl_seconds: 3600 })
+    end
+
+    it "re-checks the browser when the release is claimed" do
+      workflow = waiting_for_production(kinds: [ "browser" ])
+      with_browser = ready_host(browser: true)
+
+      refused = claim(workflow, ready_host)
+
+      expect(refused).to be_err
+      expect(refused.error.code).to eq("R409-QUEUE-007")
+      expect(refused.error.details).to include(reason: "tester_browser")
+      expect(claim(workflow, with_browser)).to be_ok
+    end
+
+    it "tells the machine that takes the release to run the browser proofs first" do
+      workflow = waiting_for_production(kinds: [ "browser" ])
+
+      attempt = claim(workflow, ready_host(browser: true)).value.attempt
+
+      expect(attempt.phase).to eq("closer_production")
+      expect(described_class.machine_runs?(attempt)).to be(true)
+    end
+
+    it "does not ask the machine once a person gave the go-ahead" do
+      workflow = waiting_for_production(kinds: [ "browser" ])
+      workflow.update!(closer_production_approved_at: Time.current)
+
+      attempt = claim(workflow.reload, ready_host(browser: true)).value.attempt
+
+      expect(described_class.machine_runs?(attempt)).to be(false)
+    end
+
+    it "does not ask the machine for a plan with no browser proof" do
+      workflow = waiting_for_production(kinds: [ "test" ])
+
+      attempt = claim(workflow, ready_host(browser: true)).value.attempt
+
+      expect(described_class.machine_runs?(attempt)).to be(false)
+    end
+
+    it "asks a person when no machine has the browser" do
+      workflow = waiting_for_production(kinds: [ "browser" ])
+      ready_host
+
+      expect(described_class.owed?(workflow)).to be(true)
+      Agents::StagingProofJob.perform_now
+
+      expect(workflow.reload.blocked_kind).to eq("production_approval")
+    end
+
+    it "does not count a revoked machine as one that has the browser" do
+      workflow = waiting_for_production(kinds: [ "browser" ])
+      ready_host(browser: true).update!(revoked_at: Time.current)
+
+      expect(described_class.owed?(workflow)).to be(true)
+    end
+
+    it "lets any machine take it once a person gave the go-ahead" do
+      workflow = waiting_for_production(kinds: [ "browser" ])
+      workflow.update!(closer_production_approved_at: Time.current)
+      without_browser = ready_host
+
+      expect(queue_head(host: without_browser)).to eq(workflow.ticket_id)
+      expect(described_class.host_blocked?(workflow.reload, without_browser)).to be(false)
+    end
+
+    it "leaves alone a plan with no browser proof" do
+      workflow = waiting_for_production(kinds: [ "test", nil ])
+      without_browser = ready_host
+
+      expect(queue_head(host: without_browser)).to eq(workflow.ticket_id)
+      expect(described_class.host_blocked?(workflow, without_browser)).to be(false)
+    end
+
+    it "still asks a person where the project wants the go-ahead on every browser proof" do
+      project.update!(browser_proof_go_ahead: true)
+      workflow = waiting_for_production(kinds: [ "browser" ])
+
+      expect(described_class.owed?(workflow)).to be(true)
+      expect(queue_head(host: ready_host(browser: true))).to be_nil
+    end
+  end
+
+  it "does not ask for the browser while the Tester is only in a dry run" do
+    project.update!(tester: "dry_run")
+    workflow = waiting_for_production(kinds: [ "browser" ])
+    without_browser = ready_host
+
+    expect(queue_head(host: without_browser)).to eq(workflow.ticket_id)
+    expect(described_class.host_blocked?(workflow, without_browser)).to be(false)
+    expect(described_class.owed?(workflow)).to be(false)
   end
 
   it "changes nothing while the switch is off" do

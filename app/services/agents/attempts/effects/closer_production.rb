@@ -33,6 +33,8 @@ module Agents
           return unless result_state == "production-released"
 
           workflow.update!(closer_production_completed_at: Time.current)
+          # CYAU-329 — the ticket says whether the browser proofs of the plan ran on staging before this tag.
+          Agents::Tester::ReleaseRecord.call(workflow:, block: payload["tester"], commit: payload.dig("result", "commit"))
           # CYRA-1193 — with the merge as proof of done there is nothing to observe: the stable
           # release is the last step, so the work is done here.
           return complete_on_merge! if merge_is_the_proof?

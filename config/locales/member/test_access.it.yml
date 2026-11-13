@@ -9,6 +9,8 @@ it:
       test_access_not_needed_off: C'è un accesso da provare
       test_access_not_needed_on: Nessun accesso da provare
       test_access_not_needed_hint: Per i progetti con uno staging ma senza una pagina dove entrare. Con «Nessun accesso» gli agenti lavorano anche senza account di prova.
+      tester_label: Tester
+      tester_hint: Un agente separato esegue le prove del piano. Acceso, un lavoro con prove da eseguire passa da solo solo se le ha superate tutte. In prova, scrive nella storia cosa avrebbe fermato.
       test_access_url_label: Link di accesso
       test_access_url_hint: La pagina di staging da cui si entra per provare il lavoro.
       test_access_username_label: Utente

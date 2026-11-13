@@ -9,6 +9,8 @@ en:
       test_access_not_needed_off: There is a sign-in to try
       test_access_not_needed_on: No sign-in to try
       test_access_not_needed_hint: For projects with a staging environment but no page to sign in to. With "No sign-in" the agents work without a test account.
+      tester_label: Tester
+      tester_hint: A separate agent runs the proofs of the plan. On, work with proofs to run moves on by itself only when all of them passed. In a dry run, it records what it would have stopped.
       test_access_url_label: Sign-in link
       test_access_url_hint: The staging page you sign in from to try the work.
       test_access_username_label: User

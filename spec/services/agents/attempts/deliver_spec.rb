@@ -1445,6 +1445,37 @@ RSpec.describe Agents::Attempts::Deliver do
       expect(scope[:attempt].reload.observed_head_sha).to eq(AgentReviewAttestation::OBSERVED_HEAD_SHA)
     end
 
+    # CYAU-329 — the Tester's outcome is kept beside the review of an accepted delivery.
+    describe "the Tester's outcome" do
+      let(:tester_block) do
+        { moment: "delivery", status: "passed", engine: "codex", commit: AgentReviewAttestation::OBSERVED_HEAD_SHA,
+          summary: "All proofs passed.",
+          results: [ { criterion_id: "DOD-1", kind: "test", status: "passed", evidence: "12 examples, 0 failures" } ] }
+      end
+
+      it "is kept when it follows the contract" do
+        scope, result = consegna_autopilot(observed: observed_head, tester: tester_block)
+
+        expect(result).to be_ok
+        expect(scope[:attempt].reload.tester_report).to have_attributes(status: "passed", engine: "codex", passed_ids: %w[DOD-1])
+      end
+
+      it "is dropped when it is outside the contract, and the delivery still passes" do
+        scope, result = consegna_autopilot(observed: observed_head, tester: tester_block.merge(status: "green"))
+
+        expect(result).to be_ok
+        expect(scope[:attempt].reload.tester_report).to be_nil
+        expect(scope[:attempt].review).not_to have_key("tester")
+      end
+
+      it "is not read from inside the delivered review" do
+        scope, result = consegna_autopilot(observed: observed_head, review: review_for("autopilot").merge(tester: tester_block))
+
+        expect(result).to be_ok
+        expect(scope[:attempt].reload.tester_report).to be_nil
+      end
+    end
+
     it "rifiuta la fase che scrive codice senza dire quale codice aveva in mano" do
       scope, result = consegna_autopilot({})
 

@@ -285,6 +285,18 @@ RSpec.describe "Member::ProjectSettings", type: :request do
         expect(response.body).to include(I18n.t("member.project_settings.test_access_password_set"))
       end
 
+      # CYAU-329 — the Tester is chosen per project: off, dry run or on.
+      it "saves the Tester mode and refuses a value outside the three" do
+        patch member_project_settings_path(project), params: { tester: "dry_run", section: "test" }
+        expect(project.reload.tester_mode).to eq("dry_run")
+
+        get member_project_settings_path(project)
+        expect(response.body).to include("project-tester-mode")
+
+        patch member_project_settings_path(project), params: { tester: "always", section: "test" }
+        expect(project.reload.tester_mode).to eq("dry_run")
+      end
+
       # CYRA-1304 — a project with staging and no page to sign in to opts out of the test account.
       it "stops asking for the test account once the project declares it has no sign-in to try" do
         declare_staging

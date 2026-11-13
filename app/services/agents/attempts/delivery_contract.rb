@@ -80,7 +80,14 @@ module Agents
       # host che non dichiara il campo. Sul ramo bocciato il payload resta invece tale e quale (vedi
       # Attempts::Deliver#call): è la prova di ciò che l'host ha dichiarato, e riscriverla col valore dovuto
       # cancellerebbe proprio il motivo del rifiuto.
-      def reviewed_review = @payload.fetch("review").merge("depth" => effective_review_depth)
+      def reviewed_review
+        @payload.fetch("review").except("tester").merge("depth" => effective_review_depth).merge(delivered_tester)
+      end
+
+      # CYAU-329 — the Tester's outcome rides with the review, only when it has the shape of the contract. A
+      # block outside it is dropped, never a reason to refuse the delivery: the gates that ask for the Tester
+      # then find none and leave the work to a person. A `tester` key inside the delivered review is not one.
+      def delivered_tester = { "tester" => Agents::Tester::Report.parse(@payload["tester"])&.to_h }.compact
 
       private
 

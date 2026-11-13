@@ -65,6 +65,10 @@ it:
           delivery_checks_would_stop: Controlli obbligatori in prova
           delivery_review_stopped: Consegna fermata dal controllo sulla rilettura
           delivery_review_would_stop: Controllo sulla rilettura in prova
+          delivery_tester_stopped: Consegna fermata dal Tester
+          delivery_tester_would_stop: Tester in prova
+          delivery_tester_release_passed: Prove in browser superate in staging
+          delivery_tester_release_missing: Rilascio senza le prove in browser
           plan_fast_lane_approved: Piano passato dalla corsia veloce
           plan_fast_lane_would_approve: Corsia veloce in prova
           delivery_fast_lane_stopped: Corsia veloce tolta alla consegna

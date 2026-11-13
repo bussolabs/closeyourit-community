@@ -88,6 +88,11 @@ module Agents
               claim_result = production_held(hold)
               raise ActiveRecord::Rollback
             end
+            # CYAU-329 — the plan is proven in a browser and the Tester is on: this machine has no browser.
+            if Agents::Workflows::BrowserProof.host_blocked?(context.workflow, @host)
+              claim_result = production_held({ reason: "tester_browser" })
+              raise ActiveRecord::Rollback
+            end
           end
           active_deferral = Agents::TicketQueueDeferral.active_for(
             host: @host, ticket: context.ticket, execution_phase: execution_phase(context),

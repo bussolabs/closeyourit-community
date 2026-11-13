@@ -99,6 +99,13 @@ module Agents
     def revoked? = revoked_at.present?
 
     def follows_organization? = work_engine.nil? && supporter.nil?
+
+    # CYAU-329 — the machine declares, among what it has installed, the browser its Tester drives.
+    BROWSER_TESTER = "tester-browser"
+
+    def browser_tester?
+      runtimes.any? { |runtime| runtime.is_a?(Hash) && runtime["present"] == true && runtime["name"] == BROWSER_TESTER }
+    end
     def effective_work_engine = work_engine || organization_choice.work_engine
     def effective_reviewer = reviewer || organization_choice.reviewer
     def effective_supporter = supporter || organization_choice.supporter

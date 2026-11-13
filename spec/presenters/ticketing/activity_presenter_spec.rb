@@ -303,6 +303,20 @@ RSpec.describe Ticketing::ActivityPresenter do
       expect(described_class.new(event).sentence).to include("codex")
     end
 
+    it "says which proofs the Tester saw fail and which it did not run" do
+      event = build(:ticket_event, action: "delivery_tester_stopped", actor: nil, actor_name: "System",
+                                   data: { "reasons" => %w[tester_failed tester_incomplete], "failed" => %w[DOD-1], "missing" => %w[DOD-3] })
+
+      expect(described_class.new(event).sentence).to include("DOD-1").and include("DOD-3")
+    end
+
+    it "says the Tester left no outcome" do
+      event = build(:ticket_event, action: "delivery_tester_would_stop", actor: nil, actor_name: "System",
+                                   data: { "reasons" => %w[tester_absent], "failed" => [], "missing" => [] })
+
+      expect(described_class.new(event).sentence).to include(I18n.t("member.tickets.activity.tester_reasons.tester_absent"))
+    end
+
     it "says the repository declares no required checks" do
       event = build(:ticket_event, action: "delivery_checks_would_stop", actor: nil, actor_name: "System",
                                    data: { "reasons" => %w[required_checks_undeclared], "missing" => [] })

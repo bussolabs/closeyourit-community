@@ -53,6 +53,8 @@ module Api
             "work_engine" => outcome.attempt.runtime,
             # CYRA-1133: the model the council chose; missing = the model the automator pins.
             "work_model" => outcome.attempt.work_model,
+            # CYAU-329: this machine tries the plan's browser proofs on staging before the production tag.
+            "browser_proof" => ::Agents::Workflows::BrowserProof.machine_runs?(outcome.attempt),
             "candidate" => AgentTicketCandidateSerializer.new(outcome.ticket).as_json
           )
         end
