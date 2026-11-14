@@ -67,6 +67,7 @@ it:
           delivery_review_would_stop: Controllo sulla rilettura in prova
           delivery_tester_stopped: Consegna fermata dal Tester
           delivery_tester_would_stop: Tester in prova
+          delivery_tester_ran: Prove eseguite dal Tester
           delivery_tester_release_passed: Prove in browser superate in staging
           delivery_tester_release_missing: Rilascio senza le prove in browser
           plan_fast_lane_approved: Piano passato dalla corsia veloce

@@ -2636,6 +2636,11 @@ it:
         delivery_review_would_stop: "Controllo in prova: questa consegna si sarebbe fermata. L'ha riletta lo stesso motore che l'ha scritta (%{engine})"
         delivery_tester_stopped: "Il lavoro consegnato aspetta una persona: %{details}"
         delivery_tester_would_stop: "Tester in prova: questa consegna si sarebbe fermata. %{details}"
+        delivery_tester_ran: "Il Tester (%{engine}) ha eseguito le prove del piano sul lavoro consegnato. %{details}"
+        tester_outcomes:
+          passed: "superate: %{criteria}"
+          failed: "fallite: %{criteria}"
+          not_run: "non eseguite: %{criteria}"
         delivery_tester_release_passed: "Il Tester ha superato in staging le prove in browser del piano prima del rilascio (%{criteria})"
         delivery_tester_release_missing: "Rilascio in produzione senza le prove in browser del Tester (%{criteria}). Nessuna persona aveva dato il via libera"
         tester_reasons:

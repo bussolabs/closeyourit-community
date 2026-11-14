@@ -1460,6 +1460,14 @@ RSpec.describe Agents::Attempts::Deliver do
         expect(scope[:attempt].reload.tester_report).to have_attributes(status: "passed", engine: "codex", passed_ids: %w[DOD-1])
       end
 
+      it "is written in the ticket history when the project has the Tester in dry run" do
+        project.update!(tester: "dry_run")
+        consegna_autopilot(observed: observed_head, tester: tester_block)
+
+        event = Ticketing::Event.where(ticket:, action: "delivery_tester_ran").sole
+        expect(event.data).to include("engine" => "codex", "passed" => %w[DOD-1], "failed" => [], "not_run" => [])
+      end
+
       it "is dropped when it is outside the contract, and the delivery still passes" do
         scope, result = consegna_autopilot(observed: observed_head, tester: tester_block.merge(status: "green"))
 

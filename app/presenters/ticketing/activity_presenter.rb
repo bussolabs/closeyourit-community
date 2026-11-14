@@ -73,6 +73,7 @@ module Ticketing
       # The check on what the Tester ran (CYAU-329).
       "delivery_tester_stopped" => "test-tube-diagonal",
       "delivery_tester_would_stop" => "test-tubes",
+      "delivery_tester_ran" => "test-tube",
       "delivery_tester_release_passed" => "monitor-check",
       "delivery_tester_release_missing" => "monitor-x",
       # The fast lane for small low-risk plans (CYRA-1300).
@@ -290,6 +291,7 @@ module Ticketing
       when "delivery_checks_stopped", "delivery_checks_would_stop" then { details: required_checks_summary }
       when "delivery_review_stopped", "delivery_review_would_stop" then { engine: @event.data["engine"] }
       when "delivery_tester_stopped", "delivery_tester_would_stop" then { details: tester_summary }
+      when "delivery_tester_ran" then { engine: @event.data["engine"], details: tester_outcome }
       when "delivery_tester_release_passed", "delivery_tester_release_missing" then { criteria: Array(@event.data["criteria"]).join(" · ") }
       when "plan_fast_lane_approved", "plan_fast_lane_would_approve" then { count: @event.data["files"].to_i }
       when "delivery_fast_lane_stopped" then { count: @event.data["files"].to_i, lines: @event.data["lines"].to_i }
@@ -329,6 +331,14 @@ module Ticketing
       Array(@event.data["reasons"]).map do |reason|
         ids = Array(@event.data[reason == "tester_failed" ? "failed" : "missing"]).join(" · ")
         I18n.t("member.tickets.activity.tester_reasons.#{reason}", criteria: ids, engine: @event.data["engine"])
+      end.join(" · ")
+    end
+
+    # What the Tester measured at delivery, proof by proof: passed, failed, not run.
+    def tester_outcome
+      %w[passed failed not_run].filter_map do |status|
+        ids = Array(@event.data[status])
+        I18n.t("member.tickets.activity.tester_outcomes.#{status}", criteria: ids.join(" · ")) if ids.any?
       end.join(" · ")
     end
 

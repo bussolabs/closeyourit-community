@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.229.0] - 2026-11-14
+
+### Added
+
+- **Esito del Tester nella storia del ticket.** A ogni consegna la storia dice quali prove del piano il Tester ha superato, quali sono fallite e quali non ha eseguito. Con il Tester «in prova» la macchina misura senza rimandare indietro il lavoro. [Ticket](/member/tickets)
+
 ## [0.228.0] - 2026-11-13
 
 ### Added

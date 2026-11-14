@@ -24,7 +24,9 @@ module Api
             # CYRA-1133: the model the council chose; missing = the model the automator pins.
             "work_model" => outcome.attempt.work_model,
             # CYAU-329: this machine tries the plan's browser proofs on staging before the production tag.
-            "browser_proof" => ::Agents::Workflows::BrowserProof.machine_runs?(outcome.attempt)
+            "browser_proof" => ::Agents::Workflows::BrowserProof.machine_runs?(outcome.attempt),
+            # CYAU-329: the project's choice for the Tester. Off: the machine skips it. Dry run: it runs and never sends work back.
+            "tester" => outcome.attempt.workflow.ticket.project.tester_mode
           )
           render json: { data: }, status: outcome.fresh_acquisition ? :created : :ok
         end

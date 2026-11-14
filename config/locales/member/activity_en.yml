@@ -66,6 +66,7 @@ en:
           delivery_review_would_stop: Re-reading check in dry run
           delivery_tester_stopped: Delivery stopped by the Tester
           delivery_tester_would_stop: Tester in dry run
+          delivery_tester_ran: Proofs run by the Tester
           delivery_tester_release_passed: Browser proofs passed on staging
           delivery_tester_release_missing: Release without the browser proofs
           plan_fast_lane_approved: Plan passed through the fast lane

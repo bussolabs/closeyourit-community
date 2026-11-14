@@ -86,6 +86,16 @@ RSpec.describe "Api::V1::AgentTicketQueueNextClaims (automator)", type: :request
     expect(response.parsed_body.fetch("data")).to include("reviewer_model" => nil)
   end
 
+  # CYAU-329
+  it "tells the machine the project's choice for the Tester" do
+    create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true)
+    project.update!(tester: "dry_run")
+
+    post path, params:, headers:, as: :json
+
+    expect(response.parsed_body.fetch("data")).to include("tester" => "dry_run")
+  end
+
   # CYRA-1133
   it "uses the engine and model the council chose for the ticket" do
     host.update!(runtimes: [ { "name" => "claude", "present" => true }, { "name" => "codex", "present" => true } ])

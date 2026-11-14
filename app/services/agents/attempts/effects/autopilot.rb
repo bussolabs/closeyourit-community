@@ -38,6 +38,8 @@ module Agents
           # `reopen_execution_phase!` legge. Senza, un host morto a metà riapre l'autopilot e la macchina
           # apre una SECONDA proposta sullo stesso lavoro.
           record_delivery_candidate!
+          # CYAU-329 — the ticket says what the Tester measured, whoever decides on the delivery afterwards.
+          Agents::Tester::DeliveryRecord.call(workflow:, block: payload["tester"])
           workflow.update!(autopilot_completed_at: Time.current, conflict_resolution_requested_at: nil)
         end
 

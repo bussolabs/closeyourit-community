@@ -55,6 +55,8 @@ module Api
             "work_model" => outcome.attempt.work_model,
             # CYAU-329: this machine tries the plan's browser proofs on staging before the production tag.
             "browser_proof" => ::Agents::Workflows::BrowserProof.machine_runs?(outcome.attempt),
+            # CYAU-329: the project's choice for the Tester. Off: the machine skips it. Dry run: it runs and never sends work back.
+            "tester" => outcome.attempt.workflow.ticket.project.tester_mode,
             "candidate" => AgentTicketCandidateSerializer.new(outcome.ticket).as_json
           )
         end

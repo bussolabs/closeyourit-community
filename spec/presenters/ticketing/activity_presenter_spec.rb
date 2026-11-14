@@ -310,6 +310,15 @@ RSpec.describe Ticketing::ActivityPresenter do
       expect(described_class.new(event).sentence).to include("DOD-1").and include("DOD-3")
     end
 
+    it "says what the Tester measured on a delivery, proof by proof" do
+      event = build(:ticket_event, action: "delivery_tester_ran", actor: nil, actor_name: "System",
+                                   data: { "engine" => "codex", "passed" => %w[DOD-1], "failed" => [], "not_run" => %w[DOD-3] })
+
+      sentence = described_class.new(event).sentence
+      expect(sentence).to include("codex").and include("DOD-1").and include("DOD-3")
+      expect(sentence).not_to include(I18n.t("member.tickets.activity.tester_outcomes.failed", criteria: ""))
+    end
+
     it "says the Tester left no outcome" do
       event = build(:ticket_event, action: "delivery_tester_would_stop", actor: nil, actor_name: "System",
                                    data: { "reasons" => %w[tester_absent], "failed" => [], "missing" => [] })
