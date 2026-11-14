@@ -3737,11 +3737,14 @@
       "level": 3,
       "parent": "tkt_page_detail",
       "kind": "step",
-      "summary": "Ogni cambio lascia una riga in cronologia con chi l'ha fatto. Il resoconto di lavorazione non si modifica: ogni nuova stesura diventa una versione.",
+      "summary": "Ogni cambio lascia una riga in cronologia con chi l'ha fatto. Ogni modifica si apre su cosa c'era prima e cosa c'è dopo, anche da riga di comando, per chi può leggere la cronologia. Il resoconto di lavorazione non si modifica: ogni nuova stesura diventa una versione.",
       "files": [
         "app/services/ticketing/record_activity.rb",
         "app/services/ticketing/record_report.rb",
-        "app/controllers/member/tickets/report_versions_controller.rb"
+        "app/controllers/member/tickets/report_versions_controller.rb",
+        "app/presenters/ticketing/event_changes.rb",
+        "app/views/member/tickets/_event_changes.html.erb",
+        "app/controllers/cli/v1/tickets/events_controller.rb"
       ]
     },
     {

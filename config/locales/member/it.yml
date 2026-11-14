@@ -2572,6 +2572,7 @@ it:
         created_on_behalf: "%{actor} ha creato il ticket per conto di %{reporter}"
         updated: "%{actor} ha modificato: %{fields}"
         updated_generic: "%{actor} ha modificato il ticket"
+        show_changes: "Vedi cosa è cambiato"
         status_changed: "%{actor} ha cambiato lo stato da %{from} a %{to}"
         assigned: "%{actor} ha assegnato il ticket a %{to}"
         unassigned: "%{actor} ha rimosso l'assegnatario"
@@ -2676,6 +2677,7 @@ it:
           milestone: milestone
           parent: epic
           platforms: piattaforme
+          due_at: scadenza
       children:
         title: Ticket sotto questo epic
         progress: "%{closed}/%{total} chiusi"

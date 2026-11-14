@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.230.0] - 2026-11-14
+
+### Added
+
+- **Cosa è cambiato in un ticket**: nella cronologia di un ticket ogni modifica si apre e mostra cosa c'era scritto prima e cosa c'è adesso. Così un testo riscritto non va più perso. [Ticket](/member/tickets)
+
 ## [0.229.0] - 2026-11-14
 
 ### Added

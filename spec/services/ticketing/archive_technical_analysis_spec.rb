@@ -58,6 +58,16 @@ RSpec.describe Ticketing::ArchiveTechnicalAnalysis do
       expect { archive }.to change { ticket.reload.analysis_recomposed_at }.from(nil)
     end
 
+    # CYRA-1309 — the summary overwrites the field: the history keeps what it replaced.
+    it "records the overwritten analysis in the history, signed by the system" do
+      expect { archive }.to change { ticket.events.where(action: "updated").count }.by(1)
+
+      event = ticket.events.find_by(action: "updated")
+      expect(event.actor).to be_nil
+      expect(event.actor_name).to eq(I18n.t("member.tickets.activity.system.analysis"))
+      expect(event.data["technical_analysis"]).to eq([ analisi, ticket.reload.technical_analysis ])
+    end
+
     it "riaccoda l'embedding, che qui non passa da UpdateTicket" do
       expect { archive }.to have_enqueued_job(Ticketing::EmbedTicketJob)
     end

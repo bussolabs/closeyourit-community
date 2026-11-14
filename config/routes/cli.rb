@@ -380,6 +380,7 @@ namespace :cli do
         # Audit della presa in carico (CYRA-76): snapshot immutabile della Guidance consegnata al claim.
         # Singleton in sola lettura (uno per ticket); "work_context" è composto → controller esplicito.
         resource  :work_context, only: :show, module: :tickets, controller: "work_context" # GET snapshot (gate tickets.audit.view)
+        resources :events,    only: :index, module: :tickets                   # GET history with full before/after (gate tickets.audit.view, CYRA-1309)
         resource  :vote,      only: %i[update destroy], module: :tickets       # PUT vota / DELETE rimuovi voto
         resource  :watch,     only: %i[update destroy], module: :tickets       # PUT segui / DELETE smetti di seguire
         resource  :eligibility, only: :update, module: :tickets                # PUT override gate agenti (gate tickets.edit)

@@ -171,6 +171,8 @@ module Member
         @history = Pagination.call(@ticket.events.reorder(created_at: :desc, id: :desc)
                                            .includes(:actor, :true_actor), page: params[:page], per: params[:per].presence || 50)
         @visible_event_ticket_ids = visible_event_ticket_ids(@history.records)
+        # What an edit replaced is audit material, as on the CLI. CYRA-1309
+        @show_event_changes = can?("tickets.audit.view", scope: @ticket.project)
         render :history, layout: turbo_frame_request? ? false : "member"
       end
 

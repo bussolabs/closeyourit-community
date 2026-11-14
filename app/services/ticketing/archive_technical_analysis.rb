@@ -84,7 +84,7 @@ module Ticketing
       return Result.err(too_long_error) if summary.length > Ticketing::Constants::TECHNICAL_ANALYSIS_MAX_CHARS
 
       previous = Ticketing::EmbeddingText.checksum(ticket: @ticket)
-      @ticket.update!(technical_analysis: summary, analysis_recomposed_at: Time.current)
+      replace_analysis(summary)
       # Il re-embed non arriva da solo: qui non si passa da Ticketing::UpdateTicket, che è il posto
       # dove normalmente vive questa decisione.
       if Ticketing::EmbeddingText.checksum(ticket: @ticket) != previous
@@ -112,6 +112,18 @@ module Ticketing
       Rails.logger.warn("[analysis-archive] #{@ticket.code}: troncato invece di spiegato " \
                         "(#{result.error.code}) — il testo integrale è in #{attachment_name}")
       Ticketing::SummarizeAnalysis.fallback(body: body, attachment_name: attachment_name)
+    end
+
+    # The overwrite and its history row go together, in the shape UpdateTicket#log_changes writes,
+    # signed by the system: no person decided it. CYRA-1309
+    def replace_analysis(summary)
+      before = @ticket.technical_analysis
+      ApplicationRecord.transaction do
+        @ticket.update!(technical_analysis: summary, analysis_recomposed_at: Time.current)
+        Ticketing::RecordActivity.call(ticket: @ticket, action: "updated",
+                                       actor_name: I18n.t("member.tickets.activity.system.analysis"),
+                                       data: { "technical_analysis" => [ before, summary ] })
+      end
     end
 
     def full_text(groups)

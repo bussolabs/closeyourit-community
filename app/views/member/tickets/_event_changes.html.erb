@@ -1,0 +1,20 @@
+<%# locals: (event:) %>
+<%# CYRA-1309 — what an edit replaced, closed until asked for: per field, removed lines in red and
+    added lines in green, unchanged lines left out (same reading as the report comparison). %>
+<% changes = Ticketing::EventChanges.call(event) %>
+<% if changes.any? %>
+  <details class="mx-4 mb-3 sm:ml-[52px] rounded-lg border border-stone-200 dark:border-zinc-800" data-test="member-ticket-event-changes-<%= event.id %>">
+    <summary class="list-none cursor-pointer px-3 py-1.5 flex items-center gap-2 text-[12px] font-medium text-indigo-600 dark:text-indigo-400 hover:bg-stone-50 dark:hover:bg-zinc-800 rounded-lg [&::-webkit-details-marker]:hidden">
+      <%= render Ui::IconComponent.new(name: "git-compare", class: "text-[11px]") %>
+      <%= t("member.tickets.activity.show_changes") %>
+    </summary>
+    <div class="border-t border-stone-100 dark:border-zinc-800 px-3 py-2.5 space-y-3">
+      <% changes.each do |change| %>
+        <div data-test="ticket-event-change-<%= change.field %>">
+          <p class="mb-1 text-[11px] font-medium first-letter:uppercase text-gray-500 dark:text-zinc-400"><%= t("member.tickets.activity.field.#{change.field}", default: change.field) %></p>
+          <%= render "member/tickets/event_change_lines", change: change %>
+        </div>
+      <% end %>
+    </div>
+  </details>
+<% end %>

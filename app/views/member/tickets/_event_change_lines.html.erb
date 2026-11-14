@@ -1,0 +1,10 @@
+<%# locals: (change:) %>
+<%# CYRA-1309 — one field's removed and added lines, as written. %>
+<ul class="space-y-1 font-mono text-[11.5px] leading-relaxed">
+  <% report_changes(change.before, change.after).each do |kind, line| %>
+    <li class="px-2 py-0.5 rounded [overflow-wrap:anywhere] <%= kind == :added ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-800 dark:text-emerald-200" : "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-300" %>"
+        data-test="ticket-event-change-<%= kind %>">
+      <span class="sr-only"><%= t("member.tickets.show.report_change_#{kind}") %></span><%= kind == :added ? "+" : "−" %> <%= line %>
+    </li>
+  <% end %>
+</ul>
