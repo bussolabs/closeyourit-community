@@ -66,6 +66,20 @@ RSpec.describe "Api::V1::Agents::AttemptResults", type: :request do
     expect(attempt.result).not_to have_key("cost_usd")
   end
 
+  # CYAU-329 — the endpoint dropped the Tester's block before the delivery saw it: the machine measured,
+  # sent, and nothing reached the attempt or the ticket history.
+  it "passes the Tester's block on to the delivery" do
+    tester = { moment: "delivery", status: "passed", engine: "codex", commit: "a" * 40, summary: "All proofs passed.",
+               results: [ { criterion_id: "DOD-1", kind: "command", status: "passed", evidence: "exit 0" } ] }
+    expect(Agents::Attempts::Deliver).to receive(:call).with(
+      hash_including(payload: hash_including("tester" => tester.deep_stringify_keys))
+    ).and_call_original
+
+    put path, params: payload.merge(tester:), headers:, as: :json
+
+    expect(response).to have_http_status(:ok)
+  end
+
   it "rifiuta un host differente e non produce effetti" do
     foreign_registration = Agents::Hosts::Register.call(
       organization:, fingerprint: SecureRandom.hex(12), hostname: "other", platform: "linux", arch: "amd64"

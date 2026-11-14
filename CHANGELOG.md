@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.230.1] - 2026-11-14
+
+### Fixed
+
+- **L'esito del Tester arriva davvero al ticket.** Il server lo scartava all'ingresso: nella storia non compariva mai e i controlli che lo chiedono non lo vedevano.
+
 ## [0.230.0] - 2026-11-14
 
 ### Added

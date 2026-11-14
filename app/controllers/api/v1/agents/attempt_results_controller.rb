@@ -27,7 +27,9 @@ module Api
           # CYAU-178: `observed` è ciò che l'host ha MISURATO sulla propria copia di lavoro, non ciò
           # che l'agente dichiara. Permesso come chiave annidata; QUALI fasi devono portarlo lo decide
           # Attempts::Deliver, l'unico che conosce la fase reclamata.
-          params.permit(:runtime, :reviewer_runtime, :cost_usd, :model, result: {}, review: {}, observed: {}).to_h
+          # CYAU-329: `tester` is what the machine's Tester measured. Without it here the block was dropped
+          # before Attempts::Deliver, which reads it only when it follows the contract.
+          params.permit(:runtime, :reviewer_runtime, :cost_usd, :model, result: {}, review: {}, observed: {}, tester: {}).to_h
         end
       end
     end
