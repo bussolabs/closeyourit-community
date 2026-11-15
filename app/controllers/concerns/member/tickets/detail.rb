@@ -316,7 +316,7 @@ module Member
           workflow: @workflow, attempts: @attempts, decides: cto.present? && cto == Current.account,
           pending_questions: @pending_questions, cto_name: cto&.name,
           blocking_codes: blocking[:codes], blocking_count: blocking[:count],
-          retry_hint: external_failure(@workflow)
+          retry_hint: external_failure(@workflow), set_aside: !@ticket.status&.review_gate?
         )
       end
 

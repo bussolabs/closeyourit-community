@@ -2162,6 +2162,7 @@ it:
             cancelled: "Una persona l'ha fermata: %{reason}"
             dependencies: "È trattenuta da %{codes}: quel lavoro deve venire prima. La coda non la prende finché non è a posto."
             dependencies_anonymous: "È trattenuta da un prerequisito su un progetto che non puoi vedere. La coda non la prende finché non è a posto."
+            set_aside: "Una persona ha messo da parte il lavoro consegnato: il ticket non è più in revisione e la macchina non lo riprende."
             missing_release_probe: "Non può partire: il progetto non dichiara come si capisce che un suo rilascio è riuscito, e senza quel dato la macchina non sa dove aprire la proposta né quando dirsi finita. Si imposta dalla scheda GitHub del progetto, poi riparte da sola."
             cancelled_no_reason: Una persona l'ha fermata, senza indicare il motivo.
             completed: "È arrivata in fondo."
@@ -2184,6 +2185,7 @@ it:
             decided_by: "Deve decidere %{name}."
             no_decider: "Nessuno può decidere: sul progetto non è indicato chi decide."
             review_delivery: Rileggi il lavoro consegnato e decidi in cima al ticket.
+            set_aside: "Portalo avanti a mano. Per ridarlo alla macchina rimetti il ticket in revisione e scegli «Rimanda all'agente»."
             set_release_probe: "Imposta sul progetto, nella scheda GitHub, come si capisce che un rilascio è riuscito: poi riparte da sola."
             unblock: Fai ripartire la lavorazione, oppure fermala.
             nothing: "Niente: la lavorazione va avanti da sola."

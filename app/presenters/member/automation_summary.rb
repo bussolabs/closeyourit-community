@@ -55,7 +55,7 @@ module Member
     # CYRA-626 — `retry_hint` è quello che il sistema non riesce a leggere e quando ci riprova,
     # letto dalla riga che lo ha scritto. Lo compone il controller: qui non si tocca il database.
     def initialize(workflow:, attempts:, decides:, pending_questions: 0, cto_name: nil,
-                   blocking_codes: [], blocking_count: 0, retry_hint: nil)
+                   blocking_codes: [], blocking_count: 0, retry_hint: nil, set_aside: false)
       @workflow = workflow
       @attempts = attempts
       @decides = decides
@@ -64,6 +64,9 @@ module Member
       @blocking_codes = Array(blocking_codes)
       @blocking_count = blocking_count.to_i
       @retry_hint = retry_hint
+      # CYRA-1308 — the delivery was rejected «for a person»: the ticket left the review status, so nobody
+      # can decide on it from the ticket any more. The controller reads the status; no query here.
+      @set_aside = set_aside && workflow.phase == "awaiting_autopilot_approval"
     end
 
     def done
@@ -78,6 +81,7 @@ module Member
     def stopped
       return cancelled_line if @workflow.cancelled_at?
       return blocked_line if @workflow.phase == "review_blocked"
+      return t("stopped.set_aside") if @set_aside
       # An open question holds the ticket out of the queue: «waits for a free machine» would be false.
       return t("stopped.waiting_answer", count: @pending_questions) if @pending_questions.positive?
       # Prima della mappa delle fasi: la fase dice «in coda», ma da quella coda il ticket non esce
@@ -135,6 +139,7 @@ module Member
       # CYRA-1308 — the phase says «queued», so the map below answers «nothing»: but the work never starts
       # until someone declares the release rule on the project.
       return t("needs.set_release_probe") if missing_release_probe?
+      return t("needs.set_aside") if @set_aside
 
       key = NEEDS_KEYS[@workflow.phase]
       return t("needs.nothing") if key.nil? || retrying?
@@ -164,7 +169,7 @@ module Member
     # A decision is pending in this phase, whoever has to take it.
     def awaits_decision?
       key = NEEDS_KEYS[@workflow.phase]
-      key.present? && key != "finished" && !retrying?
+      key.present? && key != "finished" && !retrying? && !@set_aside
     end
 
     # CYRA-877 — a rejected step with budget left is already being redone by the queue: nothing to decide, and

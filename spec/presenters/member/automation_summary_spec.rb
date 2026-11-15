@@ -21,10 +21,10 @@ RSpec.describe Member::AutomationSummary do
   # legge la scheda, non in quella di default della suite.
   around { |example| I18n.with_locale(:it) { example.run } }
 
-  def summary(decides: true, pending_questions: 0, blocking_codes: [], blocking_count: 0)
+  def summary(decides: true, pending_questions: 0, blocking_codes: [], blocking_count: 0, set_aside: false)
     described_class.new(workflow: workflow.reload, attempts: workflow.attempts.order(:started_at).to_a,
                         decides:, pending_questions:, cto_name: "Alessio",
-                        blocking_codes:, blocking_count:)
+                        blocking_codes:, blocking_count:, set_aside:)
   end
 
   describe "cosa ha fatto" do
@@ -149,6 +149,27 @@ RSpec.describe Member::AutomationSummary do
       workflow.update!(cancelled_at: 1.minute.ago, cancellation_reason: "Il ticket è un duplicato.")
 
       expect(summary.stopped).to include("Il ticket è un duplicato.")
+    end
+  end
+
+  # CYRA-1308 — a delivery rejected «for a person» leaves the review status: the ticket has no decision
+  # buttons any more, and the page still asked to «re-read the work and decide at the top of the ticket».
+  describe "a delivery a person set aside" do
+    before do
+      workflow.update!(triage_started_at: 4.hours.ago, triaged_at: 3.hours.ago, planned_at: 2.hours.ago,
+                       approved_at: 2.hours.ago, autopilot_started_at: 90.minutes.ago,
+                       autopilot_completed_at: 1.hour.ago, candidate_verified_at: 1.hour.ago)
+    end
+
+    it "asks for the review while the ticket is still in review" do
+      expect(workflow.reload.phase).to eq("awaiting_autopilot_approval")
+      expect(summary.needs).to eq(I18n.t("member.tickets.automation.summary.needs.review_delivery"))
+    end
+
+    it "says a person took it over, and asks for no decision that cannot be taken" do
+      expect(summary(set_aside: true).stopped).to eq(I18n.t("member.tickets.automation.summary.stopped.set_aside"))
+      expect(summary(set_aside: true).needs).to eq(I18n.t("member.tickets.automation.summary.needs.set_aside"))
+      expect(summary(set_aside: true).needs_person?).to be(false)
     end
   end
 

@@ -2100,6 +2100,7 @@ en:
             cancelled: "A person stopped it: %{reason}"
             dependencies: "Held by %{codes}: that work has to come first. The queue leaves it alone until it is sorted."
             dependencies_anonymous: "Held by a prerequisite on a project you cannot see. The queue leaves it alone until it is sorted."
+            set_aside: "A person set the delivered work aside: the ticket is no longer in review and the machine does not pick it up again."
             missing_release_probe: "It cannot start: the project does not declare how one can tell that a release of its own succeeded, and without that the machine does not know where to open the proposal nor when to call itself done. Set it from the project's GitHub panel, then it starts again on its own."
             cancelled_no_reason: A person stopped it, without giving a reason.
             completed: "It reached the end."
@@ -2122,6 +2123,7 @@ en:
             decided_by: "%{name} has to decide."
             no_decider: "Nobody can decide: the project does not say who decides."
             review_delivery: Read the delivered work and decide at the top of the ticket.
+            set_aside: "Carry it on by hand. To hand it back to the machine put the ticket in review again and choose «Send back to the agent»."
             set_release_probe: "Set on the project, in its GitHub tab, how we know a release landed: then it restarts by itself."
             unblock: Get the work going again, or stop it.
             nothing: "Nothing: the work carries on by itself."

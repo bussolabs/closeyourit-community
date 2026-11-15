@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.230.4] - 2026-11-15
+
+### Fixed
+
+- **Un lavoro messo da parte per una persona non chiede più una decisione impossibile.** La scheda Automazione diceva di rileggere e decidere in cima al ticket, dove i pulsanti non c'erano più. (CYRA-1308)
+
 ## [0.230.3] - 2026-11-15
 
 ### Fixed
