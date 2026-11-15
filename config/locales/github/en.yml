@@ -4,8 +4,9 @@ en:
       label: How we know a release actually landed
       undeclared: Not declared — a person decides
       hint: >-
-        Without this choice a person closes the work, exactly as today: nothing breaks and nothing
-        stalls. With it, the system says «done» by looking at a fact instead of asking you. «The
+        Without this choice the automatic work stops after the plan is approved: the machine does not
+        know where to open the proposal or when to call itself done. With it, the system says «done» by
+        looking at a fact instead of asking you. «The
         production release is up» needs the production environment above: without it no live release
         would ever be recorded.
       options:

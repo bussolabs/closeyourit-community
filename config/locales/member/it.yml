@@ -2184,6 +2184,7 @@ it:
             decided_by: "Deve decidere %{name}."
             no_decider: "Nessuno può decidere: sul progetto non è indicato chi decide."
             review_delivery: Rileggi il lavoro consegnato e decidi in cima al ticket.
+            set_release_probe: "Imposta sul progetto, nella scheda GitHub, come si capisce che un rilascio è riuscito: poi riparte da sola."
             unblock: Fai ripartire la lavorazione, oppure fermala.
             nothing: "Niente: la lavorazione va avanti da sola."
             finished: "Niente: la lavorazione è finita."

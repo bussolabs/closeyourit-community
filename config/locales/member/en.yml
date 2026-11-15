@@ -2122,6 +2122,7 @@ en:
             decided_by: "%{name} has to decide."
             no_decider: "Nobody can decide: the project does not say who decides."
             review_delivery: Read the delivered work and decide at the top of the ticket.
+            set_release_probe: "Set on the project, in its GitHub tab, how we know a release landed: then it restarts by itself."
             unblock: Get the work going again, or stop it.
             nothing: "Nothing: the work carries on by itself."
             finished: "Nothing: the work is over."

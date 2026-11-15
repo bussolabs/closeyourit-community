@@ -4,9 +4,9 @@ it:
       label: Come si capisce che un rilascio è arrivato davvero
       undeclared: Non dichiarato — decide una persona
       hint: >-
-        Senza questa scelta la chiusura del lavoro la decide una persona, come oggi: niente si rompe
-        e niente si blocca. Con la scelta fatta, il sistema dirà «fatto» guardando un fatto invece di
-        chiederlo a te. «Il rilascio in produzione è in piedi» ha bisogno dell'ambiente di produzione
+        Senza questa scelta il lavoro automatico si ferma dopo l'approvazione del piano: la macchina non
+        sa dove aprire la proposta né quando dirsi finita. Con la scelta fatta, il sistema dirà «fatto»
+        guardando un fatto invece di chiederlo a te. «Il rilascio in produzione è in piedi» ha bisogno dell'ambiente di produzione
         qui sopra: senza, nessun rilascio vivo verrebbe mai registrato.
       options:
         deploy_smoke: Il rilascio in produzione è in piedi

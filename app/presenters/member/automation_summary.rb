@@ -132,6 +132,9 @@ module Member
     # sbagliata.
     def needs
       return t("needs.answer_questions", count: @pending_questions) if @pending_questions.positive?
+      # CYRA-1308 — the phase says «queued», so the map below answers «nothing»: but the work never starts
+      # until someone declares the release rule on the project.
+      return t("needs.set_release_probe") if missing_release_probe?
 
       key = NEEDS_KEYS[@workflow.phase]
       return t("needs.nothing") if key.nil? || retrying?
@@ -153,7 +156,7 @@ module Member
     # The «what you need» row is highlighted only when a person has to act: an open question, or a
     # decision that belongs to the one reading.
     def needs_person?
-      return true if @pending_questions.positive?
+      return true if @pending_questions.positive? || missing_release_probe?
 
       awaits_decision? && @decides
     end

@@ -236,6 +236,14 @@ RSpec.describe Member::AutomationSummary do
                        frozen_plan: plan, plan_frozen_at: 30.minutes.ago)
     end
 
+    # CYRA-1308 — the «stopped» row told the truth while «what it needs from you» still said «nothing».
+    it "asks for the release rule instead of saying that nothing is needed" do
+      piano_approvato(congelato: false)
+
+      expect(summary.needs).to eq(I18n.t("member.tickets.automation.summary.needs.set_release_probe"))
+      expect(summary.needs_person?).to be(true)
+    end
+
     it "lo dice, invece di far credere che stia aspettando il suo turno" do
       piano_approvato(congelato: false)
 

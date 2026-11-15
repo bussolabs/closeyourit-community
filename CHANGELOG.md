@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.230.3] - 2026-11-15
+
+### Fixed
+
+- **La scheda Automazione chiede la regola di rilascio quando manca.** Diceva «niente» mentre il lavoro era fermo, e la scheda GitHub del progetto diceva che senza la scelta niente si blocca. (CYRA-1308)
+
 ## [0.230.2] - 2026-11-15
 
 ### Fixed
