@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.230.2] - 2026-11-15
+
+### Fixed
+
+- **La storia del ticket dice perché una prova del Tester non è passata.** Prima diceva solo quali prove erano fallite o non eseguite: il motivo restava nei registri della macchina.
+
 ## [0.230.1] - 2026-11-14
 
 ### Fixed

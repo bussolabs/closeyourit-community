@@ -39,6 +39,12 @@ RSpec.describe Agents::Tester::DeliveryRecord do
                                           "passed" => %w[DOD-1], "failed" => %w[DOD-2], "not_run" => %w[DOD-3])
     end
 
+    it "keeps why each proof failed or did not run, and nothing for the ones that passed" do
+      record(block)
+
+      expect(events.sole.data["reasons"]).to eq("DOD-2" => "exit 1", "DOD-3" => "no command")
+    end
+
     it "writes nothing without an outcome, or for one that is not a delivery" do
       record(nil)
       record(block(moment: "staging"))

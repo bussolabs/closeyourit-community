@@ -23,7 +23,7 @@ module Agents
         # No actor, a system name: a program wrote this row, not a person (CYRA-406).
         Ticketing::RecordActivity.call(
           ticket: @workflow.ticket, action: ACTION, actor_name: I18n.t("member.tickets.activity.system.autopilot"),
-          data: { engine: @report.engine, commit: @report.commit, mode: project.tester_mode, **by_status }
+          data: { engine: @report.engine, commit: @report.commit, mode: project.tester_mode, **by_status, reasons: }
         )
       end
 
@@ -35,6 +35,12 @@ module Agents
         %w[passed failed not_run].index_with do |status|
           @report.results.select { |entry| entry["status"] == status }.map { |entry| entry["criterion_id"] }
         end.symbolize_keys
+      end
+
+      # Why a proof failed or did not run: without it the cause lives only in the machine's logs.
+      def reasons
+        @report.results.reject { |entry| entry["status"] == Report::PASSED }
+               .to_h { |entry| [ entry["criterion_id"], entry["evidence"].to_s ] }
       end
     end
   end
