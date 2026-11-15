@@ -392,6 +392,10 @@ module Agents
     # → conta come aperta, fail-closed. CYRA-280
     def open_review_failure?(failed_phases)
       failed_phases.any? do |phase|
+        # A rejected autopilot belongs to the plan approved back then. With the plan sent back there is
+        # nothing left to retry: the phase is planning, or a new plan waiting for a person.
+        next false if phase == "autopilot" && approved_at.blank?
+
         column = PHASE_DONE_COLUMNS[phase]
         column.nil? || self[column].blank?
       end

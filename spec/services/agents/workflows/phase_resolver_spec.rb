@@ -105,6 +105,35 @@ RSpec.describe Agents::Workflows::PhaseResolver do
       expect(fase_in_blocco(workflow)).to eq("review_blocked")
     end
 
+    # A rejected autopilot attempt belongs to the plan that was approved back then. Once the
+    # plan is sent back, the new one waits for a person and the old rejection must not hide it.
+    it "says awaiting_approval when a new plan waits and the rejected autopilot belongs to the old plan" do
+      workflow = workflow_con(triage_started_at: 5.hours.ago, triaged_at: 4.hours.ago, planned_at: 1.hour.ago,
+                              approved_at: nil, autopilot_started_at: nil)
+      boccia!(workflow, "autopilot")
+
+      expect(workflow.phase).to eq("awaiting_approval")
+      expect(fase_in_blocco(workflow)).to eq("awaiting_approval")
+    end
+
+    it "says planning while the plan is being redone after a rejected autopilot" do
+      workflow = workflow_con(triage_started_at: 5.hours.ago, triaged_at: 4.hours.ago, planned_at: nil,
+                              approved_at: nil, autopilot_started_at: nil)
+      boccia!(workflow, "autopilot")
+
+      expect(workflow.phase).to eq("planning")
+      expect(fase_in_blocco(workflow)).to eq("planning")
+    end
+
+    it "still says review_blocked on a rejected autopilot of the plan in force" do
+      workflow = workflow_con(triaged_at: 4.hours.ago, planned_at: 3.hours.ago, approved_at: 2.hours.ago,
+                              autopilot_started_at: 1.hour.ago)
+      boccia!(workflow, "autopilot")
+
+      expect(workflow.phase).to eq("review_blocked")
+      expect(fase_in_blocco(workflow)).to eq("review_blocked")
+    end
+
     # Un insieme non passato non deve far esplodere il gemello: le liste lo chiamano anche per
     # workflow che nella pluck non compaiono affatto (nessun tentativo bocciato).
     it "tratta un insieme di bocciature assente come nessuna bocciatura" do

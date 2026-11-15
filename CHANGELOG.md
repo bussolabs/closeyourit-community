@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.230.6] - 2026-11-15
+
+### Fixed
+
+- **Un piano nuovo che aspetta l'approvazione non resta più nascosto.** Se la macchina rimandava indietro il piano dopo una consegna bocciata, la scheda diceva «riprova da sola» e non mostrava il pulsante per approvare. (CYRA-1306)
+
 ## [0.230.5] - 2026-11-15
 
 ### Fixed
