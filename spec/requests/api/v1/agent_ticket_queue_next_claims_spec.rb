@@ -124,6 +124,21 @@ RSpec.describe "Api::V1::AgentTicketQueueNextClaims (automator)", type: :request
     expect(data.dig("candidate", "workflow", "conflict_resolution")).to be(true)
   end
 
+  # Seen on AAC-13: the mark outlived its round, and a planning session was told to resolve a conflict it cannot touch.
+  it "does not carry the conflict resolution into a phase other than the work" do
+    host.update!(runtimes: [ { "name" => "claude", "present" => true }, { "name" => "codex", "present" => true } ])
+    ticket = create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true)
+    pronta_per!(ticket.agent_workflow, "planner")
+    ticket.agent_workflow.update!(conflict_resolution_requested_at: 1.minute.ago)
+
+    post path, params:, headers:, as: :json
+
+    expect(response).to have_http_status(:created)
+    data = response.parsed_body.fetch("data")
+    expect(data.fetch("work_engine")).to eq("claude")
+    expect(data.dig("candidate", "workflow", "conflict_resolution")).to be(false)
+  end
+
   it "keeps the machine's engine for a resolution when the machine has no Codex" do
     ticket = create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true)
     pronta_per!(ticket.agent_workflow, "autopilot")

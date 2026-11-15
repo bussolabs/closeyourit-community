@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.230.5] - 2026-11-15
+
+### Fixed
+
+- **L'ordine «risolvi il conflitto» arriva solo alla fase di lavoro.** Restava attivo anche quando il ticket tornava alla pianificazione, che non può scrivere e si fermava. (CYRA-1306)
+
 ## [0.230.4] - 2026-11-15
 
 ### Fixed

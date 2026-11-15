@@ -223,7 +223,7 @@ module Agents
       def ensure_attempt!(context, selection)
         profile = Agents::PhaseProfile.fetch(execution_phase(context))
 
-        choice = Agents::ConflictResolution.choice_for(workflow: context.workflow, host: @host) ||
+        choice = Agents::ConflictResolution.choice_for(workflow: context.workflow, host: @host, phase: profile.phase) ||
                  Agents::Council::WorkChoice.for(ticket: context.ticket, host: @host) ||
                  Agents::PhaseEngine.choice_for(phase: profile.phase, project: context.ticket.project, host: @host)
         attempt = Agents::Attempt.find_or_create_by!(organization: @organization, idempotency_key: attempt_key(context)) do |record|
