@@ -52,6 +52,24 @@ RSpec.describe Agents::Candidates::Verify do
 
   # ── Controlli verdi ───────────────────────────────────────────────────────────────────────────
 
+
+  # Seen on AAC-13: the work was redone and delivered again while the workflow still pointed at the check of
+  # the first delivery. The new check failed every minute on the write-once pointer, nobody saw it, and the
+  # ticket never entered the review status.
+  it "a redone delivery replaces the check of the old one and reaches a person" do
+    old = create(:agent_delivery_candidate, workflow:, repository:, organization:,
+                                            repository_full_name: "bussolabs/closeyourit-rails", number: 7)
+    described_class.call(candidate: old, client: client_con(risposta(checks: [], head_sha: "b" * 40)))
+    expect(workflow.reload.review_candidate_id).to eq(old.id)
+    ticket.update!(status: create(:ticket_status, :in_progress, organization:))
+
+    described_class.call(candidate:, client: client_con(risposta(checks: [], head_sha: "c" * 40)))
+
+    expect(candidate.reload).to be_state_verified_none_configured
+    expect(workflow.reload.review_candidate_id).to eq(candidate.id)
+    expect(ticket.reload.status).to eq(in_review)
+  end
+
   it "controlli verdi: congela il codice letto e mette il lavoro davanti a una persona" do
     described_class.call(candidate:, client: client_con(risposta(checks: [ check_run("SUCCESS") ])))
 

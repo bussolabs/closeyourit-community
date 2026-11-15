@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.230.7] - 2026-11-15
+
+### Fixed
+
+- **Un lavoro rifatto dopo un rifiuto torna in revisione.** Restava il segno del controllo sulla consegna vecchia: il controllo nuovo falliva ogni minuto e il ticket non arrivava davanti a una persona. (CYRA-1306)
+
 ## [0.230.6] - 2026-11-15
 
 ### Fixed

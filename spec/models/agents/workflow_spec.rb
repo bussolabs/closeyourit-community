@@ -560,6 +560,22 @@ RSpec.describe Agents::Workflow, type: :model do
       expect(workflow.autopilot_by_service_account_id).to be_nil
     end
 
+    # Seen on AAC-13: the rework was delivered and reviewed, but the old check mark made the workflow jump
+    # straight to "waiting for a person" on code the system had never looked at, and the ticket never
+    # entered the review status.
+    it "forgets the check of the delivered code when the work phase is sent back" do
+      workflow = create(:agent_workflow, **through(*autopilot_done), candidate_verified_at: Time.current)
+      expect(workflow.phase).to eq("awaiting_autopilot_approval")
+
+      expect(workflow.send_phase_back_to_work!("autopilot")).to be true
+      workflow.reload
+      expect(workflow.candidate_verified_at).to be_nil
+      expect(workflow.review_candidate_id).to be_nil
+
+      workflow.update!(autopilot_started_at: Time.current, autopilot_completed_at: Time.current)
+      expect(workflow.phase).to eq("verifying_candidate")
+    end
+
     it "vale anche su una fase avviata e non ancora conclusa" do
       workflow = create(:agent_workflow, **through(:triage_started_at))
 

@@ -229,6 +229,10 @@ module Agents
       # visto comunque, e fermarla vorrebbe dire buttare via il lavoro appena fatto.
       def promote!
         workflow = @candidate.workflow
+        # A redone delivery: the pointer still names the check of the old one. It moves through empty, as
+        # the workflow asks; kept, this check failed every minute and the work never reached a person.
+        stale = workflow.review_candidate_id.present? && workflow.review_candidate_id != @candidate.id
+        workflow.update!(candidate_verified_at: nil, review_candidate_id: nil) if stale
         workflow.update!(candidate_verified_at: @now, review_candidate_id: @candidate.id)
         Agents::Workflows::StatusProjection.call(workflow:)
       end

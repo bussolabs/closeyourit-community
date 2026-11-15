@@ -211,9 +211,16 @@ module Agents
                        columns[:done] => nil,
                        "#{phase}_by_host_id" => nil,
                        "#{phase}_by_service_account_id" => nil,
+                       **stale_delivery_check(phase),
                        updated_at: Time.current
                      )
       affected.positive?
+    end
+
+    # The check of the delivered code belongs to the delivery being redone: kept, the next delivery would
+    # count as already looked at, and the ticket would never enter the review status.
+    def stale_delivery_check(phase)
+      phase.to_s == "autopilot" ? { candidate_verified_at: nil, review_candidate_id: nil } : {}
     end
 
     # CYRA-1030 — ferma sulla produzione: è la condizione di «Rimanda allo staging», e la leggono il
