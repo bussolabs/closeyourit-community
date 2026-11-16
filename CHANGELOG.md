@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.230.8] - 2026-11-16
+
+### Fixed
+
+- **Il motivo di un rifiuto arriva alla macchina che rifà il lavoro.** Respingendo una consegna con «Rimanda all'agente», la macchina riceveva solo il piano e riconsegnava lo stesso lavoro. (CYRA-1306)
+
 ## [0.230.7] - 2026-11-15
 
 ### Fixed

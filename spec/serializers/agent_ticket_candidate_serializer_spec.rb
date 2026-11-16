@@ -275,6 +275,57 @@ RSpec.describe AgentTicketCandidateSerializer do
                                           detail: "Add the migration that only adds the column." } ])
     end
 
+    # CYRA-1306 — a person rejected a delivery the automatic review had accepted and sent it back to the
+    # agent: without the reason the next round only had the plan, and delivered the same commit again.
+    describe "a person's rejection sent back to the agent" do
+      let(:org) { ticket.project.organization }
+
+      def reject(mode:, reason: "Add one more test case: calling it twice gives the same result.")
+        Ticketing::RecordActivity.call(ticket:, action: "review_rejected",
+                                       data: { reason:, mode:, status: { from: "In Review", to: "In Progress" } })
+      end
+
+      it "carries the reason to the first attempt after the rejection" do
+        create(:agent_attempt, organization: org, workflow:, phase: "autopilot", status: "approved",
+                               review_status: "accepted", created_at: 10.minutes.ago)
+        reject(mode: "rework")
+        create(:agent_attempt, organization: org, workflow:, phase: "autopilot", status: "running")
+
+        rework = described_class.new(ticket.reload).as_json.dig("workflow", :rework)
+
+        expect(rework).to include(phase: "autopilot")
+        expect(rework[:findings]).to eq([ { severity: "major",
+                                            title: "A person rejected the delivery and asked for this change",
+                                            detail: "Add one more test case: calling it twice gives the same result." } ])
+      end
+
+      it "carries it once: not after an attempt that already answered it" do
+        reject(mode: "rework")
+        create(:agent_attempt, organization: org, workflow:, phase: "autopilot", status: "approved",
+                               review_status: "accepted", created_at: 1.minute.from_now)
+
+        expect(described_class.new(ticket.reload).as_json.fetch("workflow")).not_to have_key(:rework)
+      end
+
+      it "does not carry the reason of a rejection set aside for a person" do
+        create(:agent_attempt, organization: org, workflow:, phase: "autopilot", status: "approved",
+                               review_status: "accepted", created_at: 10.minutes.ago)
+        reject(mode: "hold")
+
+        expect(described_class.new(ticket.reload).as_json.fetch("workflow")).not_to have_key(:rework)
+      end
+
+      it "travels next to the findings of an automatic review that also rejected" do
+        create(:agent_attempt, organization: org, workflow:, phase: "autopilot", status: "review_failed",
+                               review_status: "changes_requested", created_at: 10.minutes.ago,
+                               review: review([ { "severity" => "major", "title" => "Bug", "detail" => "Fix it" } ]))
+        reject(mode: "rework")
+
+        titles = described_class.new(ticket.reload).as_json.dig("workflow", :rework, :findings).pluck(:title)
+        expect(titles).to eq([ "Bug", "A person rejected the delivery and asked for this change" ])
+      end
+    end
+
     it "carries nothing when the latest attempt of the phase was not rejected by its review" do
       create(:agent_attempt, organization: ticket.project.organization, workflow:, phase: "autopilot",
                              status: "running", review_status: nil, review: {})

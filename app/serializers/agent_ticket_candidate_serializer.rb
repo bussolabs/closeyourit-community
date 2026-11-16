@@ -93,6 +93,7 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
     return ci_fix if ci_fix
 
     guidance = supporter_guidance_for(workflow, phase)
+    human = human_rejection_for(workflow, phase)
 
     # The claim creates the new attempt BEFORE this payload is built, so "the last attempt" is the one
     # just started: skip attempts still open and those that ended without a verdict (stale, cancelled).
@@ -102,7 +103,8 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
     # `changes_requested` (LAB-70 had `unavailable` next to two major findings): what matters is that the
     # attempt was rejected and its review left blocking findings.
     rejected = last && (last.status == "review_failed" || last.review_status == "changes_requested")
-    return guidance && { phase:, attempt_id: last&.id, findings: [ guidance ] } unless rejected
+    extras = [ guidance, human ].compact
+    return extras.presence && { phase:, attempt_id: last&.id, findings: extras } unless rejected
 
     findings = Array(last.review&.dig("findings")).filter_map do |finding|
       next unless finding.is_a?(Hash) && finding["severity"].present? && finding["severity"] != "info"
@@ -110,10 +112,26 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
       { severity: finding["severity"].to_s, title: finding["title"].to_s.truncate(REWORK_TEXT_LIMIT),
         detail: finding["detail"].to_s.truncate(REWORK_TEXT_LIMIT) }
     end.first(REWORK_FINDINGS_LIMIT)
-    findings << guidance if guidance
+    findings.concat(extras)
     return if findings.empty?
 
     { phase:, attempt_id: last.id, findings: }
+  end
+
+  # CYRA-1306 — what a person wrote when they rejected a delivery and sent it back to the agent. The automatic
+  # review had accepted that delivery, so no finding said what to change: the next round only had the plan and
+  # delivered the same commit again. It travels once, to the first attempt after the rejection, in the same
+  # shape as review findings. A rejection set aside for a person (`hold`) is not work for the machine.
+  def self.human_rejection_for(workflow, phase)
+    event = Ticketing::Event.where(ticket_id: workflow.ticket_id, action: "review_rejected").order(:created_at).last
+    return if event.nil? || event.data["mode"] != "rework" || event.data["reason"].blank?
+
+    finished = workflow.attempts.where(phase:).where.not(status: %w[running awaiting_review stale cancelled])
+                       .order(:created_at).last
+    return if finished && finished.created_at > event.created_at
+
+    { severity: "major", title: "A person rejected the delivery and asked for this change",
+      detail: event.data["reason"].to_s.truncate(REWORK_TEXT_LIMIT * 4) }
   end
 
   # CYRA-1197 — what the supporter told the agent when it sent stopped work back: it travels once, to the first
