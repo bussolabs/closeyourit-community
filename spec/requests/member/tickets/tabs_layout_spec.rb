@@ -69,17 +69,29 @@ RSpec.describe "Member ticket tabs layout", type: :request do
   end
 
   describe "scenarios on the detail" do
-    it "writes each scenario as one block: number and title on top, the four clauses as rows" do
+    it "writes the scenarios as one table: a row per case, the four clauses as columns" do
       create(:ticketing_scenario, ticket:, title: "Checkout", step_given: "a cart", step_when: "I pay", step_then: "it hangs", step_expected: "it pays")
 
       get member_ticket_path(ticket)
 
-      block = page_html.at_css('[data-test="ticket-scenarios"] [data-test="ticket-scenario"]')
-      expect(block["class"]).to include("rounded-md", "border")
-      expect(block.at_css('[data-test="ticket-scenario-number"]').text.strip).to eq("1")
-      expect(block.css('[data-test^="ticket-scenario-step-"]').map { it["data-test"] })
+      table = page_html.at_css('[data-test="ticket-scenarios"] table')
+      expect(table.css("thead th").map { it.text.strip })
+        .to eq([ I18n.t("member.tickets.show.scenario_case") ] + %w[given when then expected].map { I18n.t("member.tickets.show.steps.#{it}") })
+      row = table.css('[data-test="ticket-scenario"]').find { it.text.include?("Checkout") }
+      expect(row.name).to eq("tr")
+      expect(row.at_css('[data-test="ticket-scenario-number"]').text.strip).to match(/\A\d+\z/)
+      expect(row.css('[data-test^="ticket-scenario-step-"]').map { it["data-test"] })
         .to eq(%w[ticket-scenario-step-given ticket-scenario-step-when ticket-scenario-step-then ticket-scenario-step-expected])
-      expect(block.at_css('[data-test="ticket-scenario-step-expected"]')["class"]).to include("bg-indigo-50")
+      expect(row.at_css('[data-test="ticket-scenario-step-expected"]')["class"]).to include("bg-indigo-50")
+    end
+
+    it "shows a dash for an empty clause, so the columns stay aligned" do
+      create(:ticketing_scenario, ticket:, title: "Edge", step_given: "", step_when: "I retry", step_then: "error 500", step_expected: "")
+
+      get member_ticket_path(ticket)
+
+      row = page_html.css('[data-test="ticket-scenario"]').find { it.text.include?("Edge") }
+      expect(row.at_css('[data-test="ticket-scenario-step-given"]').text.strip).to eq("—")
     end
   end
 

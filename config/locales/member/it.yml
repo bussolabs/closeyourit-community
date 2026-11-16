@@ -1976,6 +1976,7 @@ it:
       show:
         back: Torna ai ticket
         scenarios: Scenari
+        scenario_case: Caso
         scenario_n: "Scenario %{n}"
         conditions: Criteri di accettazione
         advice: Consigli

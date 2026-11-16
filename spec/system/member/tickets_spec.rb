@@ -142,10 +142,10 @@ RSpec.describe "Member tickets", type: :system do
       # Valore mostrato accanto alla sua label.
       expect(page).to have_css("[data-test='ticket-scenario-step-given']", text: "Safari 17 con carrello")
       expect(page).to have_css("[data-test='ticket-scenario-step-expected']", text: "vado al pagamento")
-      # Gli step vuoti del secondo scenario sono saltati: given/expected 1 sola volta, when/then 2.
-      expect(page).to have_css("[data-test='ticket-scenario-step-given']", count: 1)
-      expect(page).to have_css("[data-test='ticket-scenario-step-when']", count: 2)
-      expect(page).to have_css("[data-test='ticket-scenario-step-expected']", count: 1)
+      # Empty steps of the second scenario keep their cell, filled with a dash.
+      expect(page).to have_css("[data-test='ticket-scenario-step-given']", count: 2)
+      expect(page).to have_css("[data-test='ticket-scenario-step-given']", text: "—", count: 1)
+      expect(page).to have_css("[data-test='ticket-scenario-step-expected']", text: "—", count: 1)
     end
   end
 

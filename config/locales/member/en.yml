@@ -1921,6 +1921,7 @@ en:
       show:
         back: Back to tickets
         scenarios: Scenarios
+        scenario_case: Case
         scenario_n: "Scenario %{n}"
         conditions: Definition of Done
         advice: Advice

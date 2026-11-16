@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.231.0] - 2026-11-16
+
+### Changed
+
+- **Scenari in tabella**: nel ticket gli scenari sono una tabella, una riga per caso e una colonna per Given, When, Then ed Expected. Su telefono ogni caso diventa una scheda.
+
 ## [0.230.8] - 2026-11-16
 
 ### Fixed
