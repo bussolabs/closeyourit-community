@@ -1992,10 +1992,12 @@ en:
         blocked: For a person only
         not_evaluated_yet: Nobody has decided yet whether an agent can work on this ticket. Until a person decides, no agent picks it up.
         advice:
-          summary: "AI opinion: %{verdict}. A person still decides."
+          summary: "AI opinion: %{verdict}."
+          summary_pending: "AI opinion: %{verdict}. A person decides."
           allowed: an agent could take it
           blocked: better keep it with a person
           evaluated_at: "Opinion given on %{when}"
+        decided_by_ai: "Decided by the AI on %{when}"
         decided_by: "Decided by %{name} on %{when}"
         switch:
           label: Who works it

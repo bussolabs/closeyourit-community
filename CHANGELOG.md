@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.231.1] - 2026-11-16
+
+### Fixed
+
+- **Pannello Agenti senza ripetizioni**: quando l'AI decide da sola, il motivo compare una volta sola, con la data della decisione. «Decide una persona» compare solo finché nessuno ha deciso. [Ticket](/member/tickets)
+
 ## [0.231.0] - 2026-11-16
 
 ### Changed

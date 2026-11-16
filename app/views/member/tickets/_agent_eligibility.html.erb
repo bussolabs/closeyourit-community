@@ -24,20 +24,26 @@
 
   <%# Su un ticket su cui nessuno ha deciso non c'è niente da attribuire: niente paragrafo, così non
       resta una riga vuota a spingere in giù i pulsanti. %>
-  <% if ticket.agent_eligibility_source_human? && ticket.agent_eligibility_decided_at %>
+  <%# When the AI decided on its own, its reason is the decision's reason: said once, with no advice box below. %>
+  <% decided_by_ai = ticket.agent_eligibility_source_automatic? && !ticket.agent_eligibility_pending? %>
+  <% if ticket.agent_eligibility_decided_at && (decided_by_ai || ticket.agent_eligibility_source_human?) %>
     <p class="text-[11.5px] text-gray-500 dark:text-zinc-400" data-test="agent-eligibility-attribution">
-      <%= t("member.tickets.agent_eligibility.decided_by",
-            name: ticket.agent_eligibility_decided_by&.name || t("member.tickets.agent_eligibility.unknown_actor"),
-            when: l(ticket.agent_eligibility_decided_at, format: :long)) %>
+      <% if decided_by_ai %>
+        <%= t("member.tickets.agent_eligibility.decided_by_ai", when: l(ticket.agent_eligibility_decided_at, format: :long)) %>
+      <% else %>
+        <%= t("member.tickets.agent_eligibility.decided_by",
+              name: ticket.agent_eligibility_decided_by&.name || t("member.tickets.agent_eligibility.unknown_actor"),
+              when: l(ticket.agent_eligibility_decided_at, format: :long)) %>
+      <% end %>
     </p>
   <% end %>
 
   <%# Il parere dell'AI. Nessun badge: un badge accanto a quello della decisione tornerebbe a
       leggersi come un secondo stato, ed è esattamente l'equivoco che questo ticket chiude. %>
-  <% unless ticket.agent_eligibility_advice_unknown? %>
+  <% unless ticket.agent_eligibility_advice_unknown? || decided_by_ai %>
     <div class="rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800 px-3 py-2 space-y-1" data-test="agent-eligibility-advice">
       <p class="text-[12px] text-gray-700 dark:text-zinc-300">
-        <%= t("member.tickets.agent_eligibility.advice.summary",
+        <%= t("member.tickets.agent_eligibility.advice.#{ticket.agent_eligibility_pending? ? "summary_pending" : "summary"}",
               verdict: t("member.tickets.agent_eligibility.advice.#{ticket.agent_eligibility_advice}")) %>
       </p>
       <% if ticket.agent_eligibility_advice_reason.present? %>

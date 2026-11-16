@@ -2051,10 +2051,12 @@ it:
         blocked: Solo per una persona
         not_evaluated_yet: Nessuno ha ancora deciso se un agente può lavorare questo ticket. Finché non lo decide una persona, nessun agente lo prende in carico.
         advice:
-          summary: "Parere dell'AI: %{verdict}. Decide comunque una persona."
+          summary: "Parere dell'AI: %{verdict}."
+          summary_pending: "Parere dell'AI: %{verdict}. Decide una persona."
           allowed: lo lascerei fare a un agente
           blocked: lo terrei a una persona
           evaluated_at: "Parere dato il %{when}"
+        decided_by_ai: "Deciso dall'AI il %{when}"
         decided_by: "Deciso da %{name} il %{when}"
         switch:
           label: Chi lo lavora

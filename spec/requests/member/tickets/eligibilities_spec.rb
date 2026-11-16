@@ -114,6 +114,45 @@ RSpec.describe "Member::Tickets::Eligibilities", type: :request do
     end
   end
 
+  describe "each thing said once" do
+    let(:ai_reason) { "Ordinary, reversible development work." }
+
+    it "shows the reason once when the AI decided on its own, without the advice box" do
+      decided = create(:ticket, :agent_advice_allowed, organization:, project:,
+                                agent_eligibility_advice_reason: ai_reason, agent_eligibility: :allowed,
+                                agent_eligibility_source: :automatic, agent_eligibility_reason: ai_reason,
+                                agent_eligibility_decided_at: Time.zone.local(2026, 11, 16, 21, 2))
+
+      get member_ticket_path(decided)
+
+      expect(response.body.scan(ai_reason).size).to eq(1)
+      expect(response.body).not_to include('data-test="agent-eligibility-advice"')
+      attribution = Nokogiri::HTML(response.body).at_css('[data-test="agent-eligibility-attribution"]').text
+      expect(attribution).to include(I18n.t("member.tickets.agent_eligibility.decided_by_ai", when: "").strip)
+    end
+
+    it "says a person decides only while nobody has decided" do
+      pending_ticket = create(:ticket, :agent_advice_allowed, organization:, project:)
+
+      get member_ticket_path(pending_ticket)
+
+      expect(response.body).to include(I18n.t("member.tickets.agent_eligibility.advice.summary_pending",
+                                              verdict: I18n.t("member.tickets.agent_eligibility.advice.allowed")))
+    end
+
+    it "keeps the AI advice next to a person's decision, without saying a person still decides" do
+      overridden = create(:ticket, :agent_blocked, :agent_advice_allowed, organization:, project:)
+
+      get member_ticket_path(overridden)
+
+      advice = Nokogiri::HTML(response.body).at_css('[data-test="agent-eligibility-advice"]').text
+      expect(advice).to include(I18n.t("member.tickets.agent_eligibility.advice.summary",
+                                       verdict: I18n.t("member.tickets.agent_eligibility.advice.allowed")))
+      expect(advice).not_to include(I18n.t("member.tickets.agent_eligibility.advice.summary_pending",
+                                           verdict: I18n.t("member.tickets.agent_eligibility.advice.allowed")))
+    end
+  end
+
   describe "effetto sulla coda agenti" do
     it "un ticket sbloccato a mano torna disponibile per gli agenti" do
       create(:github_repository, project:)
