@@ -426,6 +426,42 @@ RSpec.describe Agents::Attempts::Deliver do
     expect(workflow.reload).to have_attributes(approved_at: be_present, approved_by_id: nil)
   end
 
+  describe "a plan the automator cannot deliver (CYRA-1323)" do
+    def deliver_plan_touching(*paths)
+      scope = build_delivery_scope(phase: "planner", organization:, project:, ticket:, workflow:)
+      workflow.update!(triage_started_at: nil, triaged_at: Time.current, ticket_snapshot_digest: "snapshot")
+      result = JSON.parse(Rails.root.join("contracts/agent-result/v2/fixtures/valid/planner.json").read)
+      result["code"] = ticket.code
+      result["plan"]["work_items"].first["files"] = paths.map { |path| { "path" => path, "reason" => "CI" } }
+      described_class.call(organization:, host: scope[:host], attempt: scope[:attempt],
+                           payload: { runtime: "claude", reviewer_runtime: "codex", result:,
+                                      review: review_for("planner") })
+    end
+
+    it "stops a plan that only changes .github/workflows and asks a person" do
+      expect(deliver_plan_touching(".github/workflows/ci.yml", ".github/workflows/release.yml")).to be_ok
+
+      expect(workflow.reload).to have_attributes(blocked_phase: "planner", blocked_kind: "candidate_check",
+                                                 blocked_reason: include(".github/workflows"), approved_at: nil)
+      expect(workflow.plans.count).to eq(1)
+    end
+
+    it "does not let the council approve the stopped plan by itself" do
+      create(:agent_automator_setting, organization:, council_mode: "on")
+      create(:agent_council_proposal, ticket:, outcome: "ticket")
+
+      deliver_plan_touching(".github/workflows/ci.yml")
+
+      expect(workflow.reload).to have_attributes(approved_at: nil, blocked_kind: "candidate_check")
+    end
+
+    it "lets a plan that also changes other files go on" do
+      deliver_plan_touching(".github/workflows/ci.yml", "app/models/ticket.rb")
+
+      expect(workflow.reload.blocked_at).to be_nil
+    end
+  end
+
   it "conserva un piano v2 strutturato e genera la proiezione leggibile" do
     scope = build_delivery_scope(phase: "planner", organization:, project:, ticket:, workflow:)
     workflow.update!(triage_started_at: nil, triaged_at: Time.current, ticket_snapshot_digest: "snapshot")

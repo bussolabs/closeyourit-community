@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.236.0] - 2026-11-17
+
+### Security
+
+- **Server web e lettura dei dati aggiornati**: chiuse le falle segnalate oggi in Puma e msgpack.
+
+### Fixed
+
+- **Un piano che cambia solo i workflow di GitHub si ferma subito**: l'automator non può consegnarli, quindi il piano chiama una persona appena arriva, invece di fallire dopo giorni di tentativi. [Ticket](/member/tickets)
+
 ## [0.235.0] - 2026-11-17
 
 ### Fixed
