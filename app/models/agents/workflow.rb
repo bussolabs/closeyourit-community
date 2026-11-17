@@ -374,6 +374,9 @@ module Agents
     def someone_working?
       return true if ticket.agent_lease&.active_at?(Time.current)
       return true if attempts.where.not(status: Agents::Attempt::TERMINAL_STATUSES).exists?
+      # The server itself declared the last attempt dead (its machine stopped renewing) and reopened the
+      # phase for the queue: that is an abandonment, not a pause between phases.
+      return false if attempts.order(:created_at).last&.status_stale?
 
       # Nessun titolare e nessun tentativo in volo NON significa ancora abbandono: fra una fase e
       # l'altra il lease e' rilasciato e i tentativi sono tutti conclusi, e in quella finestra la
@@ -382,10 +385,10 @@ module Agents
     end
 
     # Solo i segni che riguardano il LAVORO: l'ultimo tentativo, o l'avvio se tentativi non ce ne
-    # sono ancora. `updated_at` del workflow no — cambia per motivi che col lavoro non c'entrano
-    # (una revisione, un campo di servizio) e terrebbe vivo un abbandono a ogni sfioramento.
+    # sono ancora. `updated_at` del workflow no — cambia per motivi che col lavoro non c'entrano.
+    # A stale attempt is no sign either: the recovery job closes it long after its machine stopped.
     def last_sign_of_life
-      [ attempts.maximum(:updated_at), triage_started_at ].compact.max
+      [ attempts.where.not(status: :stale).maximum(:updated_at), triage_started_at ].compact.max
     end
 
     # Stessa domanda, altro uso: quando il lavoro è in corso il CORPO del ticket non si tocca più,

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.235.0] - 2026-11-17
+
+### Fixed
+
+- **Un ticket lasciato da una macchina spenta si libera subito**: quando il sistema scopre che la macchina non lavora più, il ticket torna spostabile, invece di restare bloccato per un giorno intero. [Ticket](/member/tickets)
+
 ## [0.234.0] - 2026-11-17
 
 ### Changed

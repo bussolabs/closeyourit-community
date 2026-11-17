@@ -74,6 +74,45 @@ RSpec.describe Agents::Workflow, "#work_in_progress?" do
     end
   end
 
+  # A machine that dies mid-phase leaves an attempt the server later closes as stale. Closing it touches the
+  # attempt, and that touch used to count as a sign of life: the ticket stayed locked another 24 hours.
+  context "when the server closed the latest attempt as stale (dead machine)" do
+    before do
+      workflow.update!(triage_started_at: 2.hours.ago)
+      create(:agent_attempt, workflow: workflow, phase: "planning", status: :stale,
+                             finished_at: Time.current, created_at: 90.minutes.ago)
+    end
+
+    it "is not in progress, so a person can move the ticket right away" do
+      expect(workflow.reload.work_in_progress?).to be(false)
+    end
+  end
+
+  context "when a stale attempt is older than the last finished one" do
+    before do
+      create(:agent_attempt, workflow: workflow, phase: "planning", status: :stale, created_at: 5.days.ago)
+      create(:agent_attempt, workflow: workflow, phase: "autopilot", status: :approved, created_at: 4.days.ago)
+      workflow.attempts.status_approved.each { it.update_columns(updated_at: 4.days.ago) }
+      # Closed today by the recovery job: the closing must not read as recent work.
+      workflow.attempts.status_stale.each { it.update_columns(updated_at: Time.current) }
+    end
+
+    it "does not count the stale closing as a sign of life" do
+      expect(workflow.reload.work_in_progress?).to be(false)
+    end
+  end
+
+  context "when a phase finished an hour ago and the next one has not started" do
+    before do
+      create(:agent_attempt, workflow: workflow, phase: "planning", status: :approved)
+      workflow.attempts.each { it.update_columns(updated_at: 1.hour.ago) }
+    end
+
+    it "keeps the pause between phases protected" do
+      expect(workflow.reload.work_in_progress?).to be(true)
+    end
+  end
+
   it "una lavorazione mai avviata non e' in corso, come prima" do
     workflow.update!(triage_started_at: nil)
     expect(workflow.reload.work_in_progress?).to be(false)
