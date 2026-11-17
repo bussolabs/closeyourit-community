@@ -32,7 +32,14 @@ RSpec.describe Agents::Workflows::BrowserProof do
       content: { "summary" => "Change one label.", "work_items" => [], "rationale" => [], "risks" => [],
                  "open_points" => [], "sources" => [] },
       definition_of_done: done, ticket_snapshot_digest: "snapshot", approved_at: (Time.current if approved)
-    )
+    ).tap { |created| freeze(workflow, created) if approved }
+  end
+
+  # As ApprovePlan does: the approved plan becomes the frozen one and keeps the work constraint.
+  def freeze(workflow, created)
+    previous = workflow.frozen_plan
+    created.update!(candidate_items: previous&.candidate_items, completion_probe: previous&.completion_probe)
+    workflow.update!(frozen_plan: created)
   end
 
   def ready_host(browser: false)
@@ -84,6 +91,23 @@ RSpec.describe Agents::Workflows::BrowserProof do
 
       expect(described_class.owed?(workflow.reload)).to be(false)
       expect(queue_head).to eq(workflow.ticket_id)
+    end
+
+    it "reads the plan frozen at approval, not a later approved one (CYRA-1313)" do
+      workflow = waiting_for_production(kinds: [ "browser" ])
+      frozen = workflow.frozen_plan
+      plan(workflow, kinds: [ "test" ])
+      workflow.update!(frozen_plan: frozen)
+
+      expect(described_class.owed?(workflow.reload)).to be(true)
+      expect(queue_head).not_to eq(workflow.ticket_id)
+    end
+
+    it "owes nothing once the frozen plan is gone, even if an approved plan declares a browser proof" do
+      workflow = waiting_for_production(kinds: [ "browser" ])
+      workflow.update!(frozen_plan: nil)
+
+      expect(described_class.owed?(workflow.reload)).to be(false)
     end
 
     it "stops the work already waiting when the job runs" do

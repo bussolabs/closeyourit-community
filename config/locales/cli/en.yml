@@ -28,3 +28,6 @@ en:
         impersonating: "You cannot authorize a CLI while impersonating another account."
         invalid_organization: "You are not a member of that organization."
         grant_expired: "This request has expired or was already answered. Start the login again from your terminal."
+    tickets:
+      errors:
+        mixed_items: "Send the acceptance items as one list, or as scenarios and conditions, not both."

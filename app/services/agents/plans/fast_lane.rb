@@ -52,6 +52,7 @@ module Agents
           list << "reserved_topic" if reserved?
           list << "bypass_suspected" if Agents::Supporters::BypassGuard.match(document_text).any?
           list << "epic_split" if @plan.split?
+          list << "ticket_items_need_person" if @plan.needs_person_for_items?
           list << "council_ticket" if Agents::CouncilProposal.exists?(ticket_id: ticket.id)
         end
       end

@@ -1,0 +1,28 @@
+<%# locals: (items:) %>
+<%# CYRA-1318 — what must be true at the end, one row per item with its code (AC-N). A case shows its four
+    clauses as columns: Expected is the wanted outcome, Then what happens today, and the tint tells them
+    apart; an empty clause shows a dash so the columns stay aligned. A plain criterion spans the row.
+    Below 768px each row stacks into a card (C73). %>
+<%= render Ui::SectionComponent.new(title: t("member.tickets.show.acceptance_items"), heading_size: :md,
+      body_class: nil, test_id: "ticket-acceptance-items") do %>
+  <%= render(Ui::TableComponent.new(stacked: true, label: t("member.tickets.show.acceptance_items"))) do |table| %>
+    <% table.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tickets.show.scenario_case"), classes: "w-1/5") %>
+      <% %w[given when then expected].each do |key| %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tickets.show.steps.#{key}"), classes: "w-1/5") %>
+      <% end %>
+    <% end %>
+    <% items.each do |item| %>
+      <%= render Ui::TableComponent::RowComponent.new(test_id: item.scenario? ? "ticket-scenario" : "ticket-condition") do %>
+        <% if item.scenario? %>
+          <%= render "member/tickets/acceptance_case", item: %>
+        <% else %>
+          <%= render Ui::TableComponent::CellComponent.new(header: true, colspan: 5, class: "align-top", test_id: "ticket-condition-text") do %>
+            <span class="mr-2 font-mono text-[11px] tabular-nums text-gray-400 dark:text-zinc-500" data-test="ticket-item-code"><%= item.code %></span>
+            <span class="text-[13px] text-zinc-800 dark:text-zinc-200"><%= render Ui::MarkdownComponent.new(text: item.text, inline: true) %></span>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

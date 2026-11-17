@@ -1864,16 +1864,18 @@ en:
           expected: Expected
         body_hint: A description alone is enough to save — or add at least one scenario. Technical detail
           goes in the Technical analysis field below.
+        acceptance_items: Acceptance criteria
+        acceptance_items_hint: "What must be true at the end. Write it as a plain sentence or as a case: given, when, then, expected. The agent proves every item."
         scenarios: Scenarios
         scenarios_hint: Describe one or more scenarios (happy path, edge case, error). Keep it simple and human.
-        scenario_add: Add scenario
+        scenario_add: Add as a case
         scenario_remove: Remove scenario
         scenario_title: Scenario
         scenario_title_placeholder: Short label, e.g. "I buy and no email arrives"
         conditions: Definition of Done
         conditions_hint: Simple, checkable lines that say when the work is done. Optional.
         condition: Condition
-        condition_add: Add condition
+        condition_add: Add criterion
         condition_remove: Remove condition
         condition_placeholder: e.g. The confirmation email is delivered
         technical_analysis: Technical analysis
@@ -1922,6 +1924,8 @@ en:
         back: Back to tickets
         scenarios: Scenarios
         scenario_case: Case
+        acceptance_items: Acceptance criteria
+        scenario_untitled: Untitled case
         scenario_n: "Scenario %{n}"
         conditions: Definition of Done
         advice: Advice
@@ -2355,6 +2359,9 @@ en:
             then: then
             expected: I expect
           definition_of_done: Definition of done
+          acceptance_items: Acceptance criteria and how to prove them
+          item_new: new
+          item_uncovered: "No proof given: a person checks this item."
           verification_kinds:
             test: With a test
             command: With a command
@@ -2532,6 +2539,7 @@ en:
         autopilot_auto_approved: "The delivered work moved on by itself: %{count} checks passed (%{checks}) and the code re-read is positive"
         plan_council_approved: "The council approved this plan: no one had to sign it"
         plan_supporter_approved: "The supporter approved this low-risk plan: no one had to sign it"
+        plan_reopened_items_changed: "The acceptance items changed after the plan was approved: planning again"
         workflow_supporter_retried: "The supporter looked at why the work stopped and sent it back to the agent with its guidance"
         agent_safety_stopped: "Work stopped for safety: an agent tried to skip the checks or to touch production. It resumes only when a person releases it: the reason is in the Automation tab."
         delivery_scope_stopped: "The delivered work waits for a person: the changes touch %{files}"

@@ -52,6 +52,7 @@ en:
           autopilot_auto_approved: Delivery moved on by itself
           plan_council_approved: Plan approved by the council
           plan_supporter_approved: Plan approved by the supporter
+          plan_reopened_items_changed: Planning again, acceptance items changed
           workflow_supporter_retried: Work sent back to the agent by the supporter
           agent_safety_stopped: Work stopped for safety
           delivery_scope_stopped: Delivery stopped by the file check

@@ -28,3 +28,6 @@ it:
         impersonating: "Non puoi autorizzare una CLI mentre impersoni un altro account."
         invalid_organization: "Non fai parte di questa organizzazione."
         grant_expired: "Questa richiesta è scaduta o ha già avuto risposta. Rifai il login dal terminale."
+    tickets:
+      errors:
+        mixed_items: "Invia le voci di accettazione come una lista sola, oppure come scenari e condizioni, non tutte e due."

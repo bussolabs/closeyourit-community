@@ -6,8 +6,8 @@ module Agents
     # runs that proof on staging (CYAU-329), a person does: where the project asks for it, such a plan waits
     # for the go-ahead before production, like a project that asks for it on every release (CYRA-1278).
     #
-    # The plan read is the latest approved one. Like ProductionHold, the predicate is SQL for the queue and
-    # Ruby for the claim.
+    # The plan read is the one frozen at approval, like every other delivery check (CYRA-1313). Like
+    # ProductionHold, the predicate is SQL for the queue and Ruby for the claim.
     #
     # CYAU-329 — with the project's Tester on, the machine runs that proof before it tags production. So the
     # release goes only to a machine that declares a browser, and a person is asked only where no machine of
@@ -52,21 +52,16 @@ module Agents
       end
 
       def self.declared?(workflow)
-        plan = workflow.plans.where.not(approved_at: nil).reorder(version: :desc).first
-        Array(plan&.definition_of_done).any? { |criterion| criterion.is_a?(Hash) && criterion.dig("verification", "kind") == KIND }
+        Array(workflow.frozen_plan&.definition_of_done).any? { |criterion| criterion.is_a?(Hash) && criterion.dig("verification", "kind") == KIND }
       end
 
-      # True for the outer agents_workflows row whose latest approved plan declares a browser proof.
+      # True for the outer agents_workflows row whose frozen plan declares a browser proof.
       def self.declared_sql
         criterion = ActiveRecord::Base.connection.quote(CRITERION)
         <<~SQL.squish
           EXISTS (
             SELECT 1 FROM agents_plans browser_plans
-            WHERE browser_plans.workflow_id = agents_workflows.id
-              AND browser_plans.version = (
-                SELECT MAX(approved_plans.version) FROM agents_plans approved_plans
-                WHERE approved_plans.workflow_id = agents_workflows.id AND approved_plans.approved_at IS NOT NULL
-              )
+            WHERE browser_plans.id = agents_workflows.frozen_plan_id
               AND browser_plans.definition_of_done @> #{criterion}::jsonb
           )
         SQL

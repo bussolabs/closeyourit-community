@@ -1,0 +1,16 @@
+<%# locals: (item:) %>
+<%= render Ui::TableComponent::CellComponent.new(header: true, class: "align-top", test_id: "ticket-scenario-title") do %>
+  <span class="mr-2 font-mono text-[11px] tabular-nums text-gray-400 dark:text-zinc-500" data-test="ticket-item-code"><%= item.code %></span>
+  <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= item.title.presence || t("member.tickets.show.scenario_untitled") %></span>
+<% end %>
+<% [ %w[given step_given], %w[when step_when], %w[then step_then], %w[expected step_expected] ].each do |key, field| %>
+  <% text = item.public_send(field) %>
+  <%= render Ui::TableComponent::CellComponent.new(label: t("member.tickets.show.steps.#{key}"), test_id: "ticket-scenario-step-#{key}",
+        class: "align-top text-zinc-700 dark:text-zinc-300 #{"bg-indigo-50 dark:bg-indigo-500/15" if key == "expected"}") do %>
+    <% if text.present? %>
+      <%= render Ui::MarkdownComponent.new(text:, inline: true) %>
+    <% else %>
+      <span class="text-gray-500 dark:text-zinc-400">—</span>
+    <% end %>
+  <% end %>
+<% end %>

@@ -16,6 +16,14 @@ RSpec.describe TicketSerializer do
     expect(json["priority_color"]).to eq(ticket.priority&.color)
   end
 
+  it "exposes the acceptance items as one list with their codes and revisions (CYRA-1318)" do
+    ticket = create(:ticket, description: "Body.", conditions_attributes: [ { text: "Templates inspected" } ])
+    json = JSON.parse(TicketSerializer.new(ticket.reload).serialize)
+
+    expect(json["acceptance_items"]).to eq([ { "code" => "AC-1", "revision" => 1, "format" => "text",
+                                               "text" => "Templates inspected" } ])
+  end
+
   it "espone la scadenza (due_at), stesso formato di created_at" do
     ticket = create(:ticket, due_at: Time.zone.local(2026, 8, 1, 17, 0))
     json = JSON.parse(TicketSerializer.new(ticket).serialize)

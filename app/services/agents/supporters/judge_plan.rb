@@ -111,6 +111,12 @@ module Agents
         plan.document.work_items.flat_map { |item| Array(item.to_h["files"]) }.filter_map { |file| file.to_h["path"].presence }
       end
 
+      # What the plan itself asks of a person: a split creates tickets (CYRA-1152); new acceptance items, or an
+      # item left unproven, change what the ticket asks (CYRA-1319).
+      def shape_reasons
+        [ ("epic_split" if plan.split?), ("ticket_items_need_person" if plan.needs_person_for_items?) ].compact
+      end
+
       def reasons(score, reserved, bypass)
         [].tap do |list|
           unless approving? || accept_with_notes?
@@ -124,8 +130,7 @@ module Agents
           list << "bypass_suspected" if bypass.any?
           list << "low_confidence" unless CONFIDENT.include?(verdict["confidence"])
           list << "ticket_concluded" if concluded_ticket?
-          # CYRA-1152 — approving a split creates tickets: always a person's yes.
-          list << "epic_split" if plan.split?
+          list.concat(shape_reasons)
         end
       end
 

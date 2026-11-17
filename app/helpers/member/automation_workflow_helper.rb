@@ -76,6 +76,12 @@ module Member
       report.deep_stringify_keys if report.is_a?(Hash)
     end
 
+    # CYRA-1314 — the evidence names a criterion by code; its text lives in the plan frozen at approval.
+    def work_report_criterion_text(attempt, criterion_id)
+      criteria = Array(attempt&.workflow&.frozen_plan&.definition_of_done)
+      criteria.find { |criterion| criterion.is_a?(Hash) && criterion["id"] == criterion_id }&.dig("text").presence
+    end
+
     # The phase strip of the home reads a decision card; on the ticket there is only the workflow. CYRA-883
     PipelineSource = Data.define(:workflow, :phase, :attempt)
 

@@ -12,13 +12,14 @@ module Cli
 
       before_action :set_project!, except: :ask
       before_action :set_ticket, only: %i[show update destroy]
+      before_action :reject_mixed_items, only: %i[create update]
 
       def index
         # includes speculare agli attributi del serializer (status/priority/persone/milestone/platforms):
         # senza, la lista paginata fa N+1 per riga.
         scope = @project.tickets
                         .includes(:status, :priority, :assignee, :reporter, :reviewer, :milestone, :platforms,
-                                  :scenarios, :conditions)
+                                  :scenarios, :conditions, :acceptance_items)
                         .order(created_at: :desc)
         # Filtro opzionale sul gate agenti (CYRA-184): serve a rispondere a "cosa devo ancora
         # esaminare?" senza scorrere l'intero backlog. Valori fuori enum → ArgumentError gestito
@@ -115,11 +116,22 @@ module Cli
       end
 
       def ticket_params
-        params.permit(:title, :kind, :description, :technical_analysis, :weight, :due_at,
-                      :status_id, :priority_id, :assignee_id, :milestone_id, :parent_id, platform_ids: [],
-                      scenarios_attributes: %i[id title position step_given step_when step_then step_expected _destroy],
-                      conditions_attributes: %i[id text position _destroy])
-              .merge(project_id: @project.id)
+        permitted = params.permit(:title, :kind, :description, :technical_analysis, :weight, :due_at,
+                                  :status_id, :priority_id, :assignee_id, :milestone_id, :parent_id, platform_ids: [],
+                                  scenarios_attributes: %i[id title position step_given step_when step_then step_expected _destroy],
+                                  conditions_attributes: %i[id text position _destroy],
+                                  acceptance_items: %i[code format title text step_given step_when step_then step_expected])
+        items = permitted.delete(:acceptance_items)
+        return permitted.merge(project_id: @project.id) unless items
+
+        permitted.to_h.merge(Ticketing::AcceptanceItem.nested_attributes_for(@ticket, items), project_id: @project.id)
+      end
+
+      # CYRA-1318 — one list or the two old ones, never both: mixing them would say two things about the same items.
+      def reject_mixed_items
+        return unless params.key?(:acceptance_items) && (params.key?(:scenarios_attributes) || params.key?(:conditions_attributes))
+
+        render_error("R422-TICKET-024", I18n.t("cli.tickets.errors.mixed_items"), status: :unprocessable_content)
       end
     end
   end

@@ -73,6 +73,26 @@ RSpec.describe "Member ticket automation plan", type: :request do
     expect(page.css("[data-test='automation-plan-criterion-id']").map { |node| node.text.strip }).to eq([ "DOD-1" ])
   end
 
+  it "marks on a v3 plan the items it adds to the ticket and the ones nothing will prove (CYRA-1320)" do
+    create_plan
+    workflow.plans.last.update_columns(contract_version: 3, scenarios: [], definition_of_done: [
+      { "id" => "AC-1", "revision" => 1, "text" => "La scheda mostra le foto",
+        "verification" => { "kind" => "browser", "how" => "Aprire la scheda del locale" } },
+      { "id" => "AC-2", "revision" => 1, "text" => "Le foto si possono cambiare" },
+      { "id" => "NEW-1", "proposed" => true, "text" => "Le foto si ordinano per data",
+        "verification" => { "kind" => "test", "how" => "Uno spec di richiesta" } }
+    ])
+
+    get member_ticket_path(ticket, tab: "automation")
+
+    page = Nokogiri::HTML(response.body)
+    rows = page.css("[data-test='automation-plan-criterion-id']").map { |node| node.text.strip }
+    expect(rows).to eq(%w[AC-1 AC-2 NEW-1])
+    expect(page.css("[data-test='automation-plan-criterion-new']").size).to eq(1)
+    expect(page.css("[data-test='automation-plan-criterion-uncovered']").size).to eq(1)
+    expect(response.body).to include(I18n.t("member.tickets.automation.plan.acceptance_items", locale: :it))
+  end
+
   it "says under a done-criterion how it is verified, when the plan declares it" do
     create_plan
     workflow.plans.last.update_columns(definition_of_done: [

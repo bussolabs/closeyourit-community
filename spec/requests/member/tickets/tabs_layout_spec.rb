@@ -69,17 +69,21 @@ RSpec.describe "Member ticket tabs layout", type: :request do
   end
 
   describe "scenarios on the detail" do
-    it "writes the scenarios as one table: a row per case, the four clauses as columns" do
+    it "writes the acceptance items as one table: a row per item with its code, a case's clauses as columns (CYRA-1318)" do
       create(:ticketing_scenario, ticket:, title: "Checkout", step_given: "a cart", step_when: "I pay", step_then: "it hangs", step_expected: "it pays")
+      condition = create(:ticketing_condition, ticket:, text: "Templates inspected")
 
       get member_ticket_path(ticket)
 
-      table = page_html.at_css('[data-test="ticket-scenarios"] table')
+      table = page_html.at_css('[data-test="ticket-acceptance-items"] table')
+      plain = table.at_css('[data-test="ticket-condition"]')
+      expect(plain.text).to include(condition.code, "Templates inspected")
+      expect(plain.at_css("[colspan]")["colspan"]).to eq("5")
       expect(table.css("thead th").map { it.text.strip })
         .to eq([ I18n.t("member.tickets.show.scenario_case") ] + %w[given when then expected].map { I18n.t("member.tickets.show.steps.#{it}") })
       row = table.css('[data-test="ticket-scenario"]').find { it.text.include?("Checkout") }
       expect(row.name).to eq("tr")
-      expect(row.at_css('[data-test="ticket-scenario-number"]').text.strip).to match(/\A\d+\z/)
+      expect(row.at_css('[data-test="ticket-item-code"]').text.strip).to match(/\AAC-\d+\z/)
       expect(row.css('[data-test^="ticket-scenario-step-"]').map { it["data-test"] })
         .to eq(%w[ticket-scenario-step-given ticket-scenario-step-when ticket-scenario-step-then ticket-scenario-step-expected])
       expect(row.at_css('[data-test="ticket-scenario-step-expected"]')["class"]).to include("bg-indigo-50")
@@ -224,6 +228,27 @@ RSpec.describe "Member ticket tabs layout", type: :request do
       expect(tally).to include("1/2", "1/1", "1 open risk")
       expect(page_html.at_css('[data-test="automation-work-report-tests"] [data-status="passed"] svg[data-icon="circle-check"]')).to be_present
       expect(page_html.at_css('[data-test="automation-work-report-criteria"] [data-status="missing"] svg[data-icon="circle-x"]')).to be_present
+    end
+
+    it "names each proven criterion with its text from the approved plan, not only its code (CYRA-1314)" do
+      plan = Agents::Plan.create!(
+        workflow:, attempt: create(:agent_attempt, organization:, workflow:, phase: "planner"), contract_version: 2,
+        technical_analysis: "Add the export.", scenarios: [], notes: [], ticket_snapshot_digest: "snapshot",
+        content: { "summary" => "Add the export.", "work_items" => [] }, approved_at: Time.current,
+        definition_of_done: [ { "id" => "DOD-1", "text" => "The export button downloads a CSV" } ]
+      )
+      workflow.update!(frozen_plan: plan)
+      create(:agent_attempt, organization:, workflow:, phase: "autopilot", status: :approved,
+                             result: { "work_report" => {
+                               "summary" => "Export added.", "changed_files" => [], "tests" => [], "risks" => [], "deviations" => [],
+                               "acceptance_evidence" => [ { "criterion_id" => "DOD-1", "status" => "verified", "evidence" => "Clicked it.", "source" => "reported" },
+                                                          { "criterion_id" => "DOD-9", "status" => "missing", "evidence" => "Not in the plan.", "source" => "reported" } ]
+                             } })
+
+      get member_ticket_path(ticket, tab: "report")
+
+      texts = page_html.css('[data-test="automation-work-report-criterion-text"]').map { it.text.strip }
+      expect(texts).to eq([ "The export button downloads a CSV" ])
     end
 
     it "keeps reassess and close on one row, with the reason behind a click" do

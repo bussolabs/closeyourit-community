@@ -25,14 +25,14 @@ RSpec.describe "Ui::TooltipComponent — il pannello resta dentro lo schermo", :
 
   # CYRA-883 — member headers no longer carry the info bubble; the ticket form still does.
   def open_title_tooltip
-    find("[data-test='help-scenarios'] button").hover
-    expect(page).to have_css("[data-test='help-scenarios'] span[role='tooltip']", visible: :all, wait: 4)
+    find("[data-test='help-acceptance-items'] button").hover
+    expect(page).to have_css("[data-test='help-acceptance-items'] span[role='tooltip']", visible: :all, wait: 4)
   end
 
   def panel_geometry
     page.evaluate_script(<<~JS)
       (() => {
-        const p = document.querySelector("[data-test='help-scenarios'] span[role='tooltip']");
+        const p = document.querySelector("[data-test='help-acceptance-items'] span[role='tooltip']");
         const r = p.getBoundingClientRect();
         return { left: r.left, right: r.right, top: r.top, bottom: r.bottom,
                  clippedX: p.scrollWidth - p.clientWidth, clippedY: p.scrollHeight - p.clientHeight,

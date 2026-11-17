@@ -21,6 +21,8 @@ module Agents
           next false unless plan && @workflow.planned_at? && plan.approved_at.nil? && plan.change_request.blank?
           # CYRA-1152 — approving an epic's split creates tickets: that waits for a person.
           next false if plan.split?
+          # CYRA-1319 — new acceptance items, or an item left unproven: a person's yes.
+          next false if plan.needs_person_for_items?
 
           FreezePlan.call(workflow: @workflow, plan:, actor: nil, now: Time.current)
           record_activity!

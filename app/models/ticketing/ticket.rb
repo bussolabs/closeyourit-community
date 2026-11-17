@@ -211,13 +211,12 @@ module Ticketing
     has_many :subscribers, through: :subscriptions, source: :account
 
     # Scenari BDD del ticket: N Given/When/Then/Expected ordinati, human-simple, tutti i kind
-    # (sostituiscono le 4 colonne step_* piatte). Cadono col ticket.
+    # (sostituiscono le 4 colonne step_* piatte). Cadono col ticket via foreign key (CYRA-1317).
     has_many :scenarios,
              -> { order(:position, :created_at) },
              class_name: "Ticketing::Scenario",
              foreign_key: :ticket_id,
-             inverse_of: :ticket,
-             dependent: :destroy
+             inverse_of: :ticket
 
     # Domande poste sul ticket (CYRA-779), con le loro risposte. Cadono col ticket: sono la memoria
     # di uno scambio su QUESTO lavoro, come i commenti, e non hanno senso senza di esso.
@@ -233,8 +232,14 @@ module Ticketing
              -> { order(:position, :created_at) },
              class_name: "Ticketing::Condition",
              foreign_key: :ticket_id,
-             inverse_of: :ticket,
-             dependent: :destroy
+             inverse_of: :ticket
+
+    # CYRA-1317 — the one list: scenarios and conditions above are its two formats, on the same table.
+    has_many :acceptance_items,
+             -> { order(:position, :created_at) },
+             class_name: "Ticketing::AcceptanceItem",
+             foreign_key: :ticket_id,
+             inverse_of: :ticket
 
     # Nested attributes per il form (repeater) e i service condivisi. reject_if scarta le righe vuote:
     # uno scenario senza alcuno step, una condizione senza testo — così "aggiungi riga" a vuoto non crea record.
@@ -314,6 +319,7 @@ module Ticketing
     # mantiene l'invariante senza duplicare la logica nei service. Non è normalizzazione di input
     # (rules/rails/models.md): è stato derivato dal dominio, mai scrivibile dal form.
     before_save :sync_closed_at, if: :status_id_changed?
+    before_save :number_new_acceptance_items
 
     # Candidati del gate duplicati: aperti/in lavorazione sempre, chiusi solo dentro la finestra
     # (Ticketing::Constants::DUPLICATE_CLOSED_WINDOW). Componibile con la scope di visibilità.
@@ -433,6 +439,29 @@ module Ticketing
       end
     end
 
+    # CYRA-1318 — items built with the ticket get their codes in list order, not in the order the two formats
+    # are saved. The counter moves atomically on a saved ticket; items created on their own number themselves.
+    def number_new_acceptance_items
+      fresh = (association(:scenarios).target + association(:conditions).target)
+              .select { it.new_record? && it.code.blank? && !it.marked_for_destruction? }
+      return if fresh.empty?
+
+      last = new_record? ? last_acceptance_item_number + fresh.size : reserve_acceptance_numbers(fresh.size)
+      self.last_acceptance_item_number = last if new_record?
+      fresh.each_with_index.sort_by { |item, index| [ item.position.to_i, index ] }
+           .each_with_index { |(item, _), offset| item.code = "AC-#{last - fresh.size + 1 + offset}" }
+    end
+
+    def reserve_acceptance_numbers(count)
+      last = self.class.connection.select_value(self.class.sanitize_sql_array([ <<~SQL.squish, count, id ]))
+        UPDATE ticketing_tickets SET last_acceptance_item_number = last_acceptance_item_number + ?
+        WHERE id = ? RETURNING last_acceptance_item_number
+      SQL
+      write_attribute(:last_acceptance_item_number, last)
+      clear_attribute_change(:last_acceptance_item_number)
+      last
+    end
+
     # Numero progressivo per progetto, monotòno (sopravvive ai delete): lock sulla riga
     # del progetto per serializzare i create concorrenti ed evitare numeri duplicati.
     def assign_number
@@ -450,6 +479,8 @@ module Ticketing
     def requires_some_body
       return if description.present?
       return if scenarios.reject(&:marked_for_destruction?).any?(&:steps?)
+      # CYRA-1318 — a plain acceptance item says what the work is as well as a case does.
+      return if conditions.reject(&:marked_for_destruction?).any? { it.text.present? }
 
       errors.add(:description, :body_required)
     end

@@ -68,7 +68,7 @@
             <% icon, color = work_report_status_icon(item["status"]) %>
             <li class="px-4 py-2.5 grid grid-cols-[14px_minmax(0,1fr)_auto] gap-2.5 items-start text-[12.5px] text-zinc-700 dark:text-zinc-300" data-status="<%= item["status"] %>">
               <%= render Ui::IconComponent.new(name: icon, label: t("member.tickets.automation.work_report.criterion_status.#{item["status"]}", default: item["status"].to_s), class: "text-[13px] mt-0.5 #{color}") %>
-              <span class="min-w-0"><%= item["evidence"] %>
+              <span class="min-w-0"><% if (criterion = work_report_criterion_text(attempt, item["criterion_id"])) %><span class="block font-medium text-zinc-900 dark:text-zinc-100" data-test="automation-work-report-criterion-text"><%= criterion %></span><% end %><%= item["evidence"] %>
                 <% if item["source"] == "attested" %><%= render Ui::BadgeComponent.new(label: t("member.tickets.automation.work_report.attested"), color: :emerald, class: "ml-1") %><% end %></span>
               <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= item["criterion_id"] %></span>
             </li>

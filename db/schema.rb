@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_231000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -594,7 +594,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_140000) do
     t.check_constraint "(candidate_items IS NULL) = (completion_probe IS NULL)", name: "agents_plans_frozen_decision_together"
     t.check_constraint "candidate_items IS NULL OR jsonb_typeof(candidate_items) = 'array'::text AND jsonb_array_length(candidate_items) > 0", name: "agents_plans_candidate_items_non_empty_array"
     t.check_constraint "completion_probe IS NULL OR jsonb_typeof(completion_probe) = 'object'::text", name: "agents_plans_completion_probe_object"
-    t.check_constraint "contract_version = ANY (ARRAY[1, 2])", name: "agents_plans_contract_version_supported"
+    t.check_constraint "contract_version = ANY (ARRAY[1, 2, 3])", name: "agents_plans_contract_version_supported"
     t.check_constraint "jsonb_typeof(content) = 'object'::text", name: "agents_plans_content_object"
   end
 
@@ -819,7 +819,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_140000) do
     t.index ["triage_by_host_id"], name: "idx_agents_workflows_triage_by_host"
     t.index ["triage_by_service_account_id"], name: "idx_agents_workflows_triage_by_sa"
     t.check_constraint "blocked_at IS NULL OR blocked_kind IS NOT NULL", name: "agents_workflows_blocco_ha_un_autore"
-    t.check_constraint "blocked_kind IS NULL OR (blocked_kind::text = ANY (ARRAY['attempt_limit'::character varying, 'agent_blocked'::character varying, 'candidate_check'::character varying, 'release_probe'::character varying, 'held_by_person'::character varying, 'safety_stop'::character varying, 'production_approval'::character varying]::text[]))", name: "agents_workflows_blocked_kind_valido"
+    t.check_constraint "blocked_kind IS NULL OR (blocked_kind::text = ANY (ARRAY['attempt_limit'::character varying::text, 'agent_blocked'::character varying::text, 'candidate_check'::character varying::text, 'release_probe'::character varying::text, 'held_by_person'::character varying::text, 'safety_stop'::character varying::text, 'production_approval'::character varying::text]))", name: "agents_workflows_blocked_kind_valido"
     t.check_constraint "candidate_rejections_count >= 0", name: "agents_workflows_candidate_rejections_count_non_negative"
     t.check_constraint "closer_staging_checks_count >= 0", name: "agents_workflows_staging_checks_count_non_negative"
   end
@@ -3985,6 +3985,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_140000) do
     t.index ["organization_id"], name: "index_teams_teams_on_organization_id"
   end
 
+  create_table "ticketing_acceptance_items", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "ticket_id", null: false
+    t.integer "position", default: 0, null: false
+    t.string "code", null: false
+    t.integer "revision", default: 1, null: false
+    t.string "format", null: false
+    t.string "title"
+    t.text "text"
+    t.text "step_given"
+    t.text "step_when"
+    t.text "step_then"
+    t.text "step_expected"
+    t.uuid "legacy_id"
+    t.index ["legacy_id"], name: "index_ticketing_acceptance_items_on_legacy_id", unique: true
+    t.index ["ticket_id", "code"], name: "index_ticketing_acceptance_items_on_ticket_id_and_code", unique: true
+    t.index ["ticket_id", "position"], name: "index_ticketing_acceptance_items_on_ticket_id_and_position"
+    t.index ["ticket_id"], name: "index_ticketing_acceptance_items_on_ticket_id"
+  end
+
   create_table "ticketing_answers", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "author_id", null: false
     t.text "body", null: false
@@ -4146,6 +4167,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_140000) do
     t.datetime "updated_at", null: false
     t.integer "votes_count", default: 0, null: false
     t.integer "weight"
+    t.integer "last_acceptance_item_number", default: 0, null: false
     t.index ["agent_eligibility_decided_by_id"], name: "index_ticketing_tickets_on_agent_eligibility_decided_by"
     t.index ["assignee_id"], name: "index_ticketing_tickets_on_assignee_id"
     t.index ["closed_at"], name: "index_ticketing_tickets_on_closed_at"
@@ -5200,6 +5222,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_140000) do
   add_foreign_key "teams_teams", "accounts", column: "created_by_id", on_delete: :nullify
   add_foreign_key "teams_teams", "accounts", column: "default_assignee_id", on_delete: :nullify
   add_foreign_key "teams_teams", "organizations", on_delete: :cascade
+  add_foreign_key "ticketing_acceptance_items", "ticketing_tickets", column: "ticket_id", on_delete: :cascade
   add_foreign_key "ticketing_answers", "accounts", column: "author_id"
   add_foreign_key "ticketing_answers", "ticketing_questions", column: "question_id", on_delete: :cascade
   add_foreign_key "ticketing_comments", "accounts", column: "author_id"

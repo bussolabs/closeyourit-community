@@ -74,7 +74,8 @@ module Ticketing
           relation.where(
             "ticketing_tickets.title ILIKE :like OR ticketing_tickets.description ILIKE :like " \
             "OR ticketing_tickets.technical_analysis ILIKE :like OR EXISTS (" \
-            "SELECT 1 FROM ticketing_scenarios sc WHERE sc.ticket_id = ticketing_tickets.id AND (" \
+            "SELECT 1 FROM ticketing_acceptance_items sc WHERE sc.ticket_id = ticketing_tickets.id AND " \
+            "sc.format = 'scenario' AND (" \
             "sc.title ILIKE :like OR sc.step_given ILIKE :like OR sc.step_when ILIKE :like " \
             "OR sc.step_then ILIKE :like OR sc.step_expected ILIKE :like))",
             like: like

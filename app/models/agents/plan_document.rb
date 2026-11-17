@@ -44,6 +44,9 @@ module Agents
 
     VERIFICATION_KINDS = %w[test command browser manual].freeze
 
+    # CYRA-1320 — a v3 plan lists the ticket's acceptance items, so an item with no proof is a gap to show.
+    def ticket_items? = Agents::Plans::TicketItems.v3?(plan)
+
     def definition_of_done
       Array(plan.definition_of_done).filter_map do |criterion|
         case criterion
@@ -151,7 +154,7 @@ module Agents
     def done_criterion(criterion)
       verification = criterion["verification"]
       sound = verification.is_a?(Hash) && VERIFICATION_KINDS.include?(verification["kind"]) && verification["how"].present?
-      criterion.slice("id", "text").merge(sound ? { "verification" => verification.slice("kind", "how") } : {})
+      criterion.slice("id", "text", "proposed", "added").merge(sound ? { "verification" => verification.slice("kind", "how") } : {})
     end
 
     def raised_risk_level(stated)

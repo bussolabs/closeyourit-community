@@ -30,7 +30,7 @@ module Member
         @tab = TABS.include?(params[:tab]) ? params[:tab] : "detail"
         # Preload allegati ticket + scenari/DoD + commenti (autore + allegati) + eventi (attori): no N+1.
         @ticket = visible.tickets.with_attached_files
-                                         .includes(:scenarios, :conditions, agent_lease: %i[account host])
+                                         .includes(:scenarios, :conditions, :acceptance_items, agent_lease: %i[account host])
                                          .find(params[:id])
         return render_history if params[:section] == "history"
 

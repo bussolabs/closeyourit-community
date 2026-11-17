@@ -1918,16 +1918,18 @@ it:
           expected: Expected
         body_hint: Basta una descrizione per salvare — oppure aggiungi almeno uno scenario. I dettagli
           tecnici vanno nel campo Analisi tecnica qui sotto.
+        acceptance_items: Criteri di accettazione
+        acceptance_items_hint: "Cosa deve essere vero alla fine. Scrivilo come frase semplice oppure come caso: dato, quando, allora, mi aspetto. L'agente proverà ogni voce."
         scenarios: Scenari
         scenarios_hint: Descrivi uno o più scenari (caso normale, caso limite, errore). Semplice e umano.
-        scenario_add: Aggiungi scenario
+        scenario_add: Aggiungi come caso
         scenario_remove: Rimuovi scenario
         scenario_title: Scenario
         scenario_title_placeholder: Etichetta breve, es. "Compro e non arriva la mail"
         conditions: Criteri di accettazione
         conditions_hint: Righe semplici e verificabili che dicono quando il lavoro è fatto. Opzionale.
         condition: Condizione
-        condition_add: Aggiungi condizione
+        condition_add: Aggiungi criterio
         condition_remove: Rimuovi condizione
         condition_placeholder: es. La mail di conferma viene consegnata
         technical_analysis: Analisi tecnica
@@ -1977,6 +1979,8 @@ it:
         back: Torna ai ticket
         scenarios: Scenari
         scenario_case: Caso
+        acceptance_items: Criteri di accettazione
+        scenario_untitled: Caso senza titolo
         scenario_n: "Scenario %{n}"
         conditions: Criteri di accettazione
         advice: Consigli
@@ -2428,6 +2432,9 @@ it:
             then: allora
             expected: mi aspetto
           definition_of_done: Definizione di fatto
+          acceptance_items: Criteri di accettazione e come provarli
+          item_new: nuova
+          item_uncovered: "Nessuna prova indicata: questa voce la controlla una persona."
           verification_kinds:
             test: Con un test
             command: Con un comando
@@ -2611,6 +2618,7 @@ it:
         autopilot_auto_approved: "Il lavoro consegnato è andato avanti da solo: %{count} controlli superati (%{checks}) e la rilettura del codice è positiva"
         plan_council_approved: "Il consiglio ha approvato questo piano: nessuno ha dovuto firmarlo"
         plan_supporter_approved: "Il supporter ha approvato questo piano a rischio basso: nessuno ha dovuto firmarlo"
+        plan_reopened_items_changed: "Le voci di accettazione sono cambiate dopo l'approvazione del piano: si ripianifica"
         workflow_supporter_retried: "Il supporter ha guardato perché la lavorazione si era fermata e l'ha rimandata all'agente con le sue indicazioni"
         agent_safety_stopped: "Lavorazione fermata per sicurezza: un agente ha provato ad aggirare i controlli o a toccare la produzione. Riparte solo se una persona la sblocca: il motivo è nella scheda Automazione."
         delivery_scope_stopped: "Il lavoro consegnato aspetta una persona: le modifiche toccano %{files}"

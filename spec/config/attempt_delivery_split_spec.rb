@@ -47,7 +47,7 @@ RSpec.describe "La consegna del risultato di un agente non fa tutto", type: :mod
   # La validazione del contratto è l'altra metà che riempiva il file: vive in un pezzo suo, ed è
   # quello che gli esempi del contratto interrogano.
   it "il contratto della consegna è un pezzo a parte" do
-    expect(Agents::Attempts::DeliveryContract::RESULT_VALIDATORS.keys).to contain_exactly(1, 2)
+    expect(Agents::Attempts::DeliveryContract::RESULT_VALIDATORS.keys).to contain_exactly(1, 2, 3)
   end
 
   # Le grafie che dicono «l'effetto è tornato nella consegna». Non sono divieti di stile: ognuna è il

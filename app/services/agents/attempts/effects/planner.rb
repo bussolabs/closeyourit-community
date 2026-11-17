@@ -28,17 +28,26 @@ module Agents
           return block_from_agent! unless result_state == "submitted-for-approval"
 
           result = payload.fetch("result")
-          structured = result["contract_version"] == 2
+          version = result["contract_version"].to_i.clamp(1, Agents::Plans::TicketItems::VERSION)
+          structured = version >= 2
           content = structured ? result.fetch("plan") : {}
           @plan = Agents::Plan.create!(
-            workflow: workflow, attempt: attempt, contract_version: structured ? 2 : 1, content:,
+            workflow: workflow, attempt: attempt, contract_version: version, content:,
             decision_brief: (result["decision_brief"] if structured),
             technical_analysis: structured ? Agents::PlanDocument.technical_analysis(content) : result.fetch("technical_analysis"),
-            scenarios: result.fetch("scenarios"),
-            definition_of_done: result.fetch("definition_of_done"), mixed_parts: result["mixed_parts"],
-            notes: result.fetch("notes"), ticket_snapshot_digest: workflow.ticket_snapshot_digest
+            mixed_parts: result["mixed_parts"], notes: result.fetch("notes"),
+            ticket_snapshot_digest: workflow.ticket_snapshot_digest, **acceptance(result, version)
           )
           workflow.update!(planned_at: Time.current)
+        end
+
+        # CYRA-1319 — a v3 plan keeps no list of its own: it records the ticket items it proves and the ones it proposes.
+        def acceptance(result, version)
+          if version == Agents::Plans::TicketItems::VERSION
+            { scenarios: [], definition_of_done: Agents::Plans::TicketItems.snapshot(workflow.ticket, result) }
+          else
+            { scenarios: result.fetch("scenarios"), definition_of_done: result.fetch("definition_of_done") }
+          end
         end
 
         # CYRA-675 — «era già fatto». Chi doveva pianificare è andato a guardare il codice di oggi e ha

@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## [0.232.1] - 2026-11-17
+
+### Added
+
+- **Criteri di accettazione in una lista sola**: nel ticket scenari e criteri diventano un'unica lista. Ogni voce è una frase o un caso, e ha un codice come AC-1, lo stesso che compare nel piano e nelle prove della consegna. [Ticket](/member/tickets)
+
+### Changed
+
+- **Il piano prova le voci del ticket**: l'agente non riscrive più scenari e criteri. Dice come provare ogni voce e propone solo quelle che mancano. Le voci nuove entrano nel ticket quando una persona approva il piano. [Approvazioni](/member/home/approvals)
+
+### Fixed
+
+- **Prove della consegna con il loro testo**: nel resoconto ogni prova mostra il testo del criterio, non solo il codice. I controlli leggono sempre il piano approvato. [Ticket](/member/tickets)
+
+## [0.232.0] - 2026-11-17
+
+### Fixed
+
+- **Rilascio non andato online.** Un test era rosso: le sue novità sono uscite con la 0.232.1.
+
 ## [0.231.1] - 2026-11-16
 
 ### Fixed

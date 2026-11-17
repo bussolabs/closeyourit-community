@@ -213,7 +213,7 @@ module Agents
                 # Stessa storia per `review_candidate` (il commit approvato che il serializer manda
                 # all'host): terza associazione, terza riga qui. Senza, la coda del progetto muore
                 # con 500 appena una consegna viene approvata — successo il 2026-09-03 alle 07:17.
-                .preload(:status, :priority, :milestone, :platforms, :scenarios, :conditions,
+                .preload(:status, :priority, :milestone, :platforms, :scenarios, :conditions, :acceptance_items,
                          { agent_workflow: [ { plans: :approved_by }, :frozen_plan, :review_candidate ] },
                          :assignee, :reporter, :reviewer, comments: :author,
                          project: :github_repository)

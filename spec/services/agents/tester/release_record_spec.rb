@@ -19,7 +19,7 @@ RSpec.describe Agents::Tester::ReleaseRecord do
       technical_analysis: "Change one label.", scenarios: [], notes: [], definition_of_done: done,
       content: { "summary" => "Change one label.", "work_items" => [] }, ticket_snapshot_digest: "snapshot",
       approved_at: Time.current
-    )
+    ).tap { |created| workflow.update!(frozen_plan: created) }
   end
 
   def block(**overrides)
@@ -74,6 +74,7 @@ RSpec.describe Agents::Tester::ReleaseRecord do
     end
 
     it "writes nothing for a plan with no browser proof" do
+      workflow.update!(frozen_plan: nil)
       workflow.plans.destroy_all
       plan(%w[test])
 

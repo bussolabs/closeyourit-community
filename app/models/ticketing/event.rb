@@ -34,7 +34,7 @@ module Ticketing
       work_context_captured dependency_added dependency_removed dependency_blocked
       pull_request_autoclose_declined already_done
       question_asked question_answered question_closed
-      autopilot_auto_approved plan_council_approved plan_supporter_approved
+      autopilot_auto_approved plan_council_approved plan_supporter_approved plan_reopened_items_changed
       workflow_supporter_retried agent_safety_stopped release_resumed
       delivery_scope_stopped delivery_scope_would_stop delivery_scope_outside_plan
       delivery_scope_tests_removed delivery_evidence_stopped delivery_evidence_would_stop

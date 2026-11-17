@@ -186,6 +186,53 @@ RSpec.describe "Cli::V1::Tickets", type: :request do
     expect(response.parsed_body["data"]["title"]).to eq("Crash al login")
   end
 
+  describe "acceptance items as one list (CYRA-1318)" do
+    let(:status) { create(:ticket_status, organization:) }
+    let(:priority) { create(:ticket_priority, organization:) }
+
+    def create_with(items)
+      post "/cli/v1/projects/#{project.id}/tickets", headers:, as: :json, params: {
+        title: "Link to the client area", kind: "task", status_id: status.id, priority_id: priority.id,
+        acceptance_items: items
+      }
+      response.parsed_body.dig("data", "code")
+    end
+
+    it "creates the items in order, as text or as a case, with their codes" do
+      code = create_with([ { format: "text", text: "Templates inspected" },
+                           { format: "scenario", title: "Link present", step_given: "a client", step_expected: "sees the link" } ])
+
+      expect(response).to have_http_status(:created)
+      items = response.parsed_body.dig("data", "acceptance_items")
+      expect(items.map { it.slice("code", "format") })
+        .to eq([ { "code" => "AC-1", "format" => "text" }, { "code" => "AC-2", "format" => "scenario" } ])
+      expect(code).to be_present
+    end
+
+    it "updates an item by code, keeps its code, and removes the items left out" do
+      code = create_with([ { format: "text", text: "Templates inspected" }, { format: "text", text: "Old one" } ])
+
+      patch "/cli/v1/projects/#{project.id}/tickets/#{code}", headers:, as: :json,
+                                                              params: { title: "Link to the client area", status_id: status.id, priority_id: priority.id,
+                                                                        acceptance_items: [ { code: "AC-1", text: "Templates inspected and listed" } ] }
+
+      expect(response).to have_http_status(:ok), response.body
+      items = response.parsed_body.dig("data", "acceptance_items")
+      expect(items).to eq([ { "code" => "AC-1", "revision" => 2, "format" => "text", "text" => "Templates inspected and listed" } ])
+    end
+
+    it "refuses the one list and the old ones together" do
+      create_with([ { format: "text", text: "A" } ])
+      post "/cli/v1/projects/#{project.id}/tickets", headers:, as: :json, params: {
+        title: "Mixed", status_id: status.id, priority_id: priority.id,
+        acceptance_items: [ { format: "text", text: "A" } ], conditions_attributes: [ { text: "B" } ]
+      }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body.dig("error", "code")).to eq("R422-TICKET-024")
+    end
+  end
+
   it "create → 201 con scenari multipli, DoD e analisi tecnica (parità piena col web)" do
     status = create(:ticket_status, organization:)
     priority = create(:ticket_priority, organization:)

@@ -246,6 +246,9 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
     end
   end
 
+  # CYRA-1318 — the one list a v3 plan proves, item by item, at the revision it read.
+  attribute(:acceptance_items) { |ticket| ticket.acceptance_items.map(&:to_payload) }
+
   attribute(:conditions) do |ticket|
     ticket.conditions.map { |condition| { text: condition.text } }
   end

@@ -1,7 +1,9 @@
 module Ticketing
   # Una condizione della Definition of Done (DoD) del ticket: una riga di testo human-simple che
   # dice "quando questo è fatto". Un ticket ha 0..N condizioni ordinate, sempre opzionali.
-  class Condition < ApplicationRecord
+  #
+  # CYRA-1317 — a plain-text acceptance item: same table and codes as the Given/When/Then ones.
+  class Condition < AcceptanceItem
     belongs_to :ticket,
                class_name: "Ticketing::Ticket",
                inverse_of: :conditions
@@ -11,7 +13,5 @@ module Ticketing
     normalizes :text, with: ->(value) { Text::ItalianOrthography.correct(value).strip }
 
     validates :text, presence: true
-
-    scope :ordered, -> { order(:position, :created_at) }
   end
 end

@@ -46,6 +46,9 @@ module Agents
         stale
       rescue SplitEpic::Failed => e
         Result.err(e.error)
+      rescue Agents::Plans::TicketItems::Stale
+        Result.err(AppError.new("Le voci di accettazione del ticket sono cambiate dopo il piano: va rifatto",
+                                code: "R409-WORKFLOW-019", status: :conflict))
       end
 
       private

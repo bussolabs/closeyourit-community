@@ -49,6 +49,8 @@ module Ticketing
       typed_change = nil
       ApplicationRecord.transaction do
         @ticket.save!
+        # The one list reads the same rows as the two formats just saved: drop what it had loaded (CYRA-1318).
+        @ticket.acceptance_items.reset
         log_changes(before)
         # Il test va fatto QUI: i service tipizzati fanno `update!` sullo stesso oggetto e azzererebbero
         # `saved_changes`. Re-embed SOLO se è cambiato il testo semantico (colonne watched OPPURE gli
@@ -66,6 +68,7 @@ module Ticketing
 
       # Fuori transazione, mai after_commit.
       Ticketing::EmbedTicketJob.perform_later(ticket_id: @ticket.id) if semantic_changed
+      Agents::Workflows::ReopenPlanForItems.call(ticket: @ticket) if items_changed?(before)
       # Rivalutazione del gate agenti (CYRA-184). La condizione è `stale?` e NON una seconda lista di
       # colonne osservate: quella di EmbeddingText esclude le condizioni DoD e ignora gli allegati,
       # e mantenerne due divergenti a mano sarebbe una fonte di buchi. Il checksum è già la sorgente
@@ -83,6 +86,12 @@ module Ticketing
     end
 
     private
+
+    # CYRA-1319 — the acceptance items as text, before and after: a change reopens a v3 plan not yet at work.
+    def items_changed?(before)
+      Ticketing::BodyText.scenarios(@ticket.scenarios.reload) != before[:scenarios] ||
+        Ticketing::BodyText.conditions(@ticket.conditions.reload) != before[:conditions]
+    end
 
     def enqueue_agent_eligibility
       Ticketing::AgentEligibilityQueue.enqueue(ticket: @ticket)

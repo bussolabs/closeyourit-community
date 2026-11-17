@@ -75,13 +75,18 @@
 
 <% if document.definition_of_done.present? %>
   <div class="px-4 py-3.5">
-    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400 mb-2"><%= t("member.tickets.automation.plan.definition_of_done") %></p>
+    <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400 mb-2"><%= t(document.ticket_items? ? "member.tickets.automation.plan.acceptance_items" : "member.tickets.automation.plan.definition_of_done") %></p>
     <ul class="space-y-1.5">
       <% document.definition_of_done.each do |criterion| %>
         <li class="flex items-start gap-2 text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed">
           <% if criterion["id"].present? %><%= render Ui::BadgeComponent.new(label: criterion["id"], color: :indigo, size: :sm, class: "font-mono shrink-0 mt-0.5", test_id: "automation-plan-criterion-id") %><% else %><%= render Ui::IconComponent.new(name: "minus", class: "text-gray-300 dark:text-zinc-600 text-[11px] mt-1") %><% end %>
           <div class="min-w-0">
             <%= render Ui::MarkdownComponent.new(text: criterion["text"], inline: true) %>
+            <%# CYRA-1320 — what approving changes on the ticket, and what nothing will prove. %>
+            <% if criterion["proposed"] || criterion["added"] %><%= render Ui::BadgeComponent.new(label: t("member.tickets.automation.plan.item_new"), color: :amber, size: :sm, class: "ml-1", test_id: "automation-plan-criterion-new") %><% end %>
+            <% if document.ticket_items? && !criterion["verification"] %>
+              <p class="mt-0.5 text-[12px] text-amber-700 dark:text-amber-400" data-test="automation-plan-criterion-uncovered"><%= t("member.tickets.automation.plan.item_uncovered") %></p>
+            <% end %>
             <%# CYRA-1298 — how the criterion is proven, when the plan declares it. %>
             <% if criterion["verification"] %>
               <p class="mt-0.5 text-[12px] text-gray-500 dark:text-zinc-400" data-test="automation-plan-criterion-verification">

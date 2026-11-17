@@ -18,7 +18,7 @@ module Agents
       def load(selection)
         project = @organization.projects.includes(:github_repository).find(selection[:project_id])
         ticket = project.tickets.preload(
-          :status, :priority, :milestone, :platforms, :scenarios, :conditions,
+          :status, :priority, :milestone, :platforms, :scenarios, :conditions, :acceptance_items,
           :assignee, :reporter, :reviewer, :agent_workflow, comments: :author
         ).find(selection[:ticket_id])
         repository = project.github_repository or raise ActiveRecord::RecordNotFound

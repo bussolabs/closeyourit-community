@@ -71,7 +71,7 @@ module Agents
     private_class_method :probe_for
 
     validates :technical_analysis, :ticket_snapshot_digest, presence: true
-    validates :contract_version, inclusion: { in: [ 1, 2 ] }
+    validates :contract_version, inclusion: { in: [ 1, 2, 3 ] }
     validate :structured_content_matches_contract
     # CYRA-1152 — only an epic splits, and the prerequisites among children never go round. On create
     # only: the approval writes this row again, and re-checks the ticket itself (Workflows::SplitEpic).
@@ -85,11 +85,14 @@ module Agents
     # solo al primo tentativo vero. Qui la regola è quella esatta: si scrive una volta, non zero.
     validate :frozen_decision_written_once, on: :update
 
+    # CYRA-1319 — a v3 plan that proposes items or leaves one unproven waits for a person.
+    def needs_person_for_items? = Agents::Plans::TicketItems.needs_person?(self)
+
     private
 
     def structured_content_matches_contract
       return if contract_version == 1 && content == {}
-      return if contract_version == 2 && content.is_a?(Hash) && content.present?
+      return if contract_version.to_i >= 2 && content.is_a?(Hash) && content.present?
 
       errors.add(:content, "non corrisponde alla versione del contratto")
     end

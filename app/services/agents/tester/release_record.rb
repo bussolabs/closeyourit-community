@@ -34,8 +34,7 @@ module Agents
 
       def criteria
         @criteria ||= begin
-          plan = @workflow.plans.where.not(approved_at: nil).reorder(version: :desc).first
-          Array(plan&.definition_of_done).filter_map do |criterion|
+          Array(@workflow.frozen_plan&.definition_of_done).filter_map do |criterion|
             next unless criterion.is_a?(Hash) && criterion.dig("verification", "kind") == Agents::Workflows::BrowserProof::KIND
 
             criterion["id"].presence

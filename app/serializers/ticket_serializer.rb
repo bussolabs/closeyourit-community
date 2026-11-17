@@ -50,6 +50,8 @@ class TicketSerializer < ApplicationSerializer
     end
   end
   attribute(:conditions) { |ticket| ticket.conditions.map { |condition| { text: condition.text } } }
+  # CYRA-1318 — the one list, with the codes plans and delivery evidence refer to.
+  attribute(:acceptance_items) { |ticket| ticket.acceptance_items.map(&:to_payload) }
 
   # Guidance risolta del progetto del ticket (CYRA-74): references + procedures composte org → gruppo →
   # progetto, ciascuna con la sua origine. Presente SOLO nel dettaglio (show), dove il controller la

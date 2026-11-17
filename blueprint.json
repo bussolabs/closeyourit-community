@@ -3678,7 +3678,7 @@
       "level": 2,
       "parent": "area_tickets",
       "kind": "page",
-      "summary": "Tutto su un ticket: descrizione, scenari, analisi tecnica, discussione, domande, prerequisiti, allegati, cronologia e stato dell'automazione.",
+      "summary": "Tutto su un ticket: descrizione, criteri di accettazione (una tabella sola, ogni voce col suo codice), analisi tecnica, discussione, domande, prerequisiti, allegati, cronologia e stato dell'automazione.",
       "files": [
         "app/controllers/concerns/member/tickets/detail.rb",
         "app/views/member/tickets/show.html.erb",
@@ -4267,7 +4267,7 @@
       "level": 2,
       "parent": "area_tickets",
       "kind": "data",
-      "summary": "Ticket, stati, commenti, cronologia, iscritti, domande, resoconti e legami fra ticket.",
+      "summary": "Ticket, voci di accettazione (una lista sola, scritte come testo o come caso Dato/Quando/Allora), stati, commenti, cronologia, iscritti, domande, resoconti e legami fra ticket.",
       "files": [
         "app/models/ticketing/**",
         "app/models/types/ticket_status.rb",
@@ -6159,13 +6159,14 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "La macchina scrive un piano con scenari e definizione di fatto, e il server avvisa che è pronto. Su un epic il piano può proporre i ticket figli e cosa aspetta cosa. Se il lavoro risulta già fatto, il ticket si chiude.",
+      "summary": "La macchina scrive un piano che dice come provare ogni voce di accettazione del ticket e può proporre voci che mancano; il server avvisa che è pronto. Su un epic il piano può proporre i ticket figli e cosa aspetta cosa. Se il lavoro risulta già fatto, il ticket si chiude.",
       "files": [
         "app/services/agents/attempts/effects/planner.rb",
         "app/models/agents/plan.rb",
         "app/models/agents/plan_document.rb",
         "app/models/agents/plan_split.rb",
-        "app/jobs/agents/plan_ready_notification_job.rb"
+        "app/jobs/agents/plan_ready_notification_job.rb",
+        "app/services/agents/plans/ticket_items.rb"
       ]
     },
     {
@@ -6174,13 +6175,15 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Il responsabile tecnico approva o chiede modifiche. Approvando si fissano il repository su cui lavorare e la prova che dirà «fatto». Se il piano divide un epic, nascono i figli con i loro prerequisiti e l'epic non passa allo sviluppo.",
+      "summary": "Il responsabile tecnico approva o chiede modifiche. Approvando si fissano il repository su cui lavorare e la prova che dirà «fatto», e le voci proposte dal piano entrano nel ticket. Se nel frattempo una voce del ticket è cambiata, il piano va rifatto; se cambia dopo l'approvazione e prima del lavoro, il ticket torna alla pianificazione. Se il piano divide un epic, nascono i figli con i loro prerequisiti e l'epic non passa allo sviluppo.",
       "files": [
         "app/services/agents/workflows/approve_plan.rb",
         "app/services/agents/workflows/split_epic.rb",
         "app/services/agents/workflows/request_plan_changes.rb",
         "app/services/agents/workflows/cto_gate.rb",
-        "app/controllers/member/tickets/automation/approvals_controller.rb"
+        "app/controllers/member/tickets/automation/approvals_controller.rb",
+        "app/services/agents/workflows/freeze_plan.rb",
+        "app/services/agents/workflows/reopen_plan_for_items.rb"
       ]
     },
     {
@@ -6189,7 +6192,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo i piani a rischio fino a 8, senza temi riservati né tentativi di aggirare i controlli; un controllo citato in un divieto («non usare --no-verify o [skip ci]») non conta come tentativo. Un piano con lacune, o che cambia i file della CI che le macchine non possono consegnare, torna al pianificatore con le osservazioni, al massimo tre volte; dopo, se il rischio è fino a 5, parte e le lacune arrivano come note a chi scrive il codice; gli altri restano a una persona. Se il progetto lo accende, il rischio segnato dal triage fa da minimo: un ticket ad alto rischio non viene mai approvato da solo. Con i tetti stretti accesi, dopo tre revisioni un piano ancora da correggere va sempre a una persona.",
+      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo i piani a rischio fino a 8, senza temi riservati né tentativi di aggirare i controlli; un controllo citato in un divieto («non usare --no-verify o [skip ci]») non conta come tentativo. Un piano con lacune, o che cambia i file della CI che le macchine non possono consegnare, torna al pianificatore con le osservazioni, al massimo tre volte; dopo, se il rischio è fino a 5, parte e le lacune arrivano come note a chi scrive il codice; gli altri restano a una persona. Se il progetto lo accende, il rischio segnato dal triage fa da minimo: un ticket ad alto rischio non viene mai approvato da solo. Con i tetti stretti accesi, dopo tre revisioni un piano ancora da correggere va sempre a una persona. Un piano che propone voci nuove o ne lascia una senza prova resta sempre a una persona.",
       "files": [
         "app/controllers/api/v1/agent_host/supporter_plans_controller.rb",
         "app/controllers/api/v1/agent_host/supporter_plan_verdicts_controller.rb",
@@ -6530,7 +6533,7 @@
       "level": 3,
       "parent": "agt_data",
       "kind": "data",
-      "summary": "Il piano scritto dalla macchina, a versioni. Approvandolo si fissano repository ammessi e prova di fatto; le richieste di modifica restano scritte.",
+      "summary": "Il piano scritto dalla macchina, a versioni. Tiene, in sola lettura, le voci del ticket che prova e come; approvandolo si fissano repository ammessi e prova di fatto; le richieste di modifica restano scritte.",
       "files": [
         "app/models/agents/plan.rb"
       ]
@@ -11200,7 +11203,7 @@
       "level": 3,
       "parent": "cli_fam_tickets",
       "kind": "step",
-      "summary": "Aprire un ticket basta vedere il progetto; modificare e cancellare chiedono il loro permesso. Il ticket si indica anche col codice, tipo DRFL-3.",
+      "summary": "Aprire un ticket basta vedere il progetto; modificare e cancellare chiedono il loro permesso. Il ticket si indica anche col codice, tipo DRFL-3. I criteri di accettazione si mandano come una lista sola: una voce col suo codice si aggiorna e lo tiene, una voce lasciata fuori si toglie.",
       "files": [
         "app/controllers/cli/v1/tickets_controller.rb"
       ]

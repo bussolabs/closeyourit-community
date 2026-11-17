@@ -135,7 +135,7 @@ RSpec.describe "Member tickets", type: :system do
     sign_in_as(account)
     visit member_ticket_path(ticket)
 
-    within_test("ticket-scenarios") do
+    within_test("ticket-acceptance-items") do
       # Label corte a sinistra (non più la copy lunga "Given — contesto").
       expect(page).to have_text("Given")
       expect(page).to have_no_text("Given — contesto")

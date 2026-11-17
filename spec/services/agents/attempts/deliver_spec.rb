@@ -442,6 +442,28 @@ RSpec.describe Agents::Attempts::Deliver do
     expect(workflow.plans.sole.technical_analysis).to include("Conservare il piano strutturato")
   end
 
+  it "records a v3 plan as the ticket's acceptance items with their proofs, no list of its own (CYRA-1319)" do
+    scope = build_delivery_scope(phase: "planner", organization:, project:, ticket:, workflow:)
+    workflow.update!(triage_started_at: nil, triaged_at: Time.current, ticket_snapshot_digest: "snapshot")
+    item = ticket.acceptance_items.first
+    result = JSON.parse(Rails.root.join("contracts/agent-result/v3/fixtures/valid/planner_proposed_items.json").read)
+    result["code"] = ticket.code
+    result["item_verifications"] = [ { "code" => item.code, "revision" => item.revision,
+                                       "verification" => { "kind" => "test", "how" => "A request spec." } } ]
+
+    delivered = described_class.call(
+      organization:, host: scope[:host], attempt: scope[:attempt],
+      payload: { runtime: "claude", reviewer_runtime: "codex", result:, review: review_for("planner") }
+    )
+
+    expect(delivered).to be_ok
+    plan = workflow.plans.sole
+    expect(plan).to have_attributes(contract_version: 3, scenarios: [])
+    expect(plan.definition_of_done.map { it["id"] }).to eq([ item.code, "NEW-1" ])
+    expect(plan.definition_of_done.last).to include("proposed" => true, "format" => "scenario")
+    expect(plan.needs_person_for_items?).to be(true)
+  end
+
   # CYRA-702 — il brief decisionale viaggia al top level del result (dentro `plan` lo schema lo
   # rifiuterebbe) e si persiste solo se c'è: i planner non aggiornati continuano a consegnare.
   it "persiste il brief decisionale quando il planner lo scrive, e resta nil quando manca" do

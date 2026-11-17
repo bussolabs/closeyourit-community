@@ -15,7 +15,7 @@ module Agents
       # La barriera server è esattamente lo schema pubblicato, senza drift tra la consegna e il contratto. Gli
       # stati non-avanzanti (waiting/escalated/blocked) sono accettati dallo schema ma non processati dagli
       # effetti (nessun avanzamento di coda): restano fermi per l'intervento umano.
-      CONTRACT_SCHEMAS = [ 1, 2 ].to_h do |version|
+      CONTRACT_SCHEMAS = [ 1, 2, 3 ].to_h do |version|
         [ version, JSON.parse(Rails.root.join("contracts/agent-result/v#{version}/schema.json").read).freeze ]
       end.freeze
       RESULT_DEFINITIONS = {
@@ -279,7 +279,7 @@ module Agents
       # CYRA-1152 — the planner's v2 plan may carry `children`: checked against the server's own shape,
       # then taken out so the rest of the plan meets the vendored schema exactly as it is.
       def plan_children?(result, version)
-        @attempt.phase == "planner" && version == 2 && result["plan"].is_a?(Hash) && result["plan"].key?("children")
+        @attempt.phase == "planner" && version >= 2 && result["plan"].is_a?(Hash) && result["plan"].key?("children")
       end
 
       def without_plan_children(result)
@@ -290,14 +290,14 @@ module Agents
 
       def result_contract_version(result)
         return 1 unless result.key?("contract_version")
-        return 2 if result["contract_version"] == 2
+        return result["contract_version"] if [ 2, 3 ].include?(result["contract_version"])
 
         nil
       end
 
       def valid_review_contract?
         result = @payload["result"]
-        return true unless result.is_a?(Hash) && result["contract_version"] == 2
+        return true unless result.is_a?(Hash) && [ 2, 3 ].include?(result["contract_version"])
 
         REVIEW_VALIDATOR_V2.valid?(@payload["review"])
       end
