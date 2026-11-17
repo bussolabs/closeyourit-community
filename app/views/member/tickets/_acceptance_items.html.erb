@@ -1,5 +1,6 @@
 <%# locals: (items:) %>
-<%# CYRA-1318 — the acceptance items stay one list with one code each (AC-N), but the page shows them in two
+<%# CYRA-1318 — the acceptance items stay one list with one code each (AC-N, kept for plans and proofs, not
+    shown to people), but the page shows them in two
     sections for two readers. Cases (Given/When/Then/Expected) are steps a tester runs in the app: one table
     row each, Expected tinted apart from Then (what happens today), an empty clause shown as a dash so the
     columns stay aligned; below 768px each row stacks into a card (C73). Plain criteria are what the
@@ -29,8 +30,7 @@
         body_class: nil, test_id: "ticket-acceptance-done") do %>
     <ul class="divide-y divide-stone-200 dark:divide-zinc-800">
       <% done.each do |item| %>
-        <li class="px-4 py-3 flex items-baseline gap-3" data-test="ticket-condition">
-          <span class="shrink-0 font-mono text-[11px] tabular-nums text-gray-400 dark:text-zinc-500" data-test="ticket-item-code"><%= item.code %></span>
+        <li class="px-4 py-3" data-test="ticket-condition">
           <%= render Ui::MarkdownComponent.new(text: item.text, inline: true, class: "text-[13px] text-zinc-800 dark:text-zinc-200 leading-relaxed") %>
         </li>
       <% end %>

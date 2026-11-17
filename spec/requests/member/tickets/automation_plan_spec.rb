@@ -63,14 +63,14 @@ RSpec.describe "Member ticket automation plan", type: :request do
     expect(response.body).to include(member_ticket_automation_plan_path(ticket))
   end
 
-  it "shows scenario and done-criterion ids as badges, so they read at a glance" do
+  it "shows scenario ids as badges and done criteria by their text alone" do
     create_plan
 
     get member_ticket_path(ticket, tab: "automation")
 
     page = Nokogiri::HTML(response.body)
     expect(page.css("[data-test='automation-plan-scenario-id']").map { |node| node.text.strip }).to eq([ "SC-1" ])
-    expect(page.css("[data-test='automation-plan-criterion-id']").map { |node| node.text.strip }).to eq([ "DOD-1" ])
+    expect(page.css("[data-test='automation-plan-criterion-id']")).to be_empty
   end
 
   it "marks on a v3 plan the items it adds to the ticket and the ones nothing will prove (CYRA-1320)" do
@@ -86,8 +86,10 @@ RSpec.describe "Member ticket automation plan", type: :request do
     get member_ticket_path(ticket, tab: "automation")
 
     page = Nokogiri::HTML(response.body)
-    rows = page.css("[data-test='automation-plan-criterion-id']").map { |node| node.text.strip }
-    expect(rows).to eq(%w[AC-1 AC-2 NEW-1])
+    expect(page.css("[data-test='automation-plan-criterion-id']")).to be_empty
+    criteria = page.css("[data-test='automation-plan-criterion-new']").first.ancestors("ul").first.text
+    expect(criteria).to include("La scheda mostra le foto", "Le foto si ordinano per data")
+    expect(criteria).not_to include("AC-1", "NEW-1")
     expect(page.css("[data-test='automation-plan-criterion-new']").size).to eq(1)
     expect(page.css("[data-test='automation-plan-criterion-uncovered']").size).to eq(1)
     expect(response.body).to include(I18n.t("member.tickets.automation.plan.acceptance_items", locale: :it))

@@ -79,7 +79,7 @@
     <ul class="space-y-1.5">
       <% document.definition_of_done.each do |criterion| %>
         <li class="flex items-start gap-2 text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed">
-          <% if criterion["id"].present? %><%= render Ui::BadgeComponent.new(label: criterion["id"], color: :indigo, size: :sm, class: "font-mono shrink-0 mt-0.5", test_id: "automation-plan-criterion-id") %><% else %><%= render Ui::IconComponent.new(name: "minus", class: "text-gray-300 dark:text-zinc-600 text-[11px] mt-1") %><% end %>
+          <%= render Ui::IconComponent.new(name: "minus", class: "text-gray-300 dark:text-zinc-600 text-[11px] mt-1") %>
           <div class="min-w-0">
             <%= render Ui::MarkdownComponent.new(text: criterion["text"], inline: true) %>
             <%# CYRA-1320 — what approving changes on the ticket, and what nothing will prove. %>

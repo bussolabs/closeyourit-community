@@ -81,7 +81,7 @@ RSpec.describe "Member ticket tabs layout", type: :request do
         .to eq([ I18n.t("member.tickets.show.scenario_case") ] + %w[given when then expected].map { I18n.t("member.tickets.show.steps.#{it}") })
       row = table.css('[data-test="ticket-scenario"]').find { it.text.include?("Checkout") }
       expect(row.name).to eq("tr")
-      expect(row.at_css('[data-test="ticket-item-code"]').text.strip).to match(/\AAC-\d+\z/)
+      expect(row.text).not_to match(/AC-\d/)
       expect(row.css('[data-test^="ticket-scenario-step-"]').map { it["data-test"] })
         .to eq(%w[ticket-scenario-step-given ticket-scenario-step-when ticket-scenario-step-then ticket-scenario-step-expected])
       expect(row.at_css('[data-test="ticket-scenario-step-expected"]')["class"]).to include("bg-indigo-50")
@@ -89,8 +89,8 @@ RSpec.describe "Member ticket tabs layout", type: :request do
       done = page_html.at_css('[data-test="ticket-acceptance-done"]')
       expect(done.css('[data-test="ticket-scenario"]')).to be_empty
       plain = done.at_css('[data-test="ticket-condition"]')
-      expect(plain.at_css('[data-test="ticket-item-code"]').text.strip).to eq(condition.code)
-      expect(plain.text).to include("Templates inspected")
+      expect(plain.text.strip).to eq("Templates inspected")
+      expect(page_html.css('[data-test="ticket-item-code"]')).to be_empty
     end
 
     it "leaves out a section with nothing in it" do
@@ -263,6 +263,9 @@ RSpec.describe "Member ticket tabs layout", type: :request do
 
       texts = page_html.css('[data-test="automation-work-report-criterion-text"]').map { it.text.strip }
       expect(texts).to eq([ "The export button downloads a CSV" ])
+      # The code shows only where the plan has no text to name the criterion with.
+      codes = page_html.css('[data-test="automation-work-report-criterion-code"]').map { it.text.strip }
+      expect(codes).to eq([ "DOD-9" ])
     end
 
     it "keeps reassess and close on one row, with the reason behind a click" do

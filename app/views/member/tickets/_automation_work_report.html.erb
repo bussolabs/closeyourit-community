@@ -70,7 +70,8 @@
               <%= render Ui::IconComponent.new(name: icon, label: t("member.tickets.automation.work_report.criterion_status.#{item["status"]}", default: item["status"].to_s), class: "text-[13px] mt-0.5 #{color}") %>
               <span class="min-w-0"><% if (criterion = work_report_criterion_text(attempt, item["criterion_id"])) %><span class="block font-medium text-zinc-900 dark:text-zinc-100" data-test="automation-work-report-criterion-text"><%= criterion %></span><% end %><%= item["evidence"] %>
                 <% if item["source"] == "attested" %><%= render Ui::BadgeComponent.new(label: t("member.tickets.automation.work_report.attested"), color: :emerald, class: "ml-1") %><% end %></span>
-              <span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400"><%= item["criterion_id"] %></span>
+              <%# The code names the criterion only when the plan has no text for it. %>
+              <% if criterion %><span></span><% else %><span class="font-mono text-[11px] text-gray-500 dark:text-zinc-400" data-test="automation-work-report-criterion-code"><%= item["criterion_id"] %></span><% end %>
             </li>
           <% end %>
         </ul>

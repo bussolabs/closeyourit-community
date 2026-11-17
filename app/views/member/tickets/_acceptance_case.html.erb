@@ -1,6 +1,5 @@
 <%# locals: (item:) %>
 <%= render Ui::TableComponent::CellComponent.new(header: true, class: "align-top", test_id: "ticket-scenario-title") do %>
-  <span class="mr-2 font-mono text-[11px] tabular-nums text-gray-400 dark:text-zinc-500" data-test="ticket-item-code"><%= item.code %></span>
   <span class="text-[13px] font-medium text-zinc-900 dark:text-zinc-100"><%= item.title.presence || t("member.tickets.show.scenario_untitled") %></span>
 <% end %>
 <% [ %w[given step_given], %w[when step_when], %w[then step_then], %w[expected step_expected] ].each do |key, field| %>

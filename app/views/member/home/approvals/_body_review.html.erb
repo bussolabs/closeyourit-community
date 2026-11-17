@@ -64,14 +64,14 @@
             class: "text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-[70ch]") %>
     </div>
   <% end %>
-  <%# CYRA-1320 — the ticket's acceptance items with the codes the proofs above refer to. %>
+  <%# CYRA-1320 — the ticket's acceptance items, by their text: the codes stay for plans and proofs. %>
   <% if card.ticket.acceptance_items.any? %>
     <div class="px-4 py-3.5">
       <p class="font-mono uppercase text-[9.5px] tracking-[1.2px] text-indigo-600 dark:text-indigo-400 mb-2"><%= t("member.tickets.show.acceptance_items") %></p>
       <ul class="space-y-1.5">
         <% card.ticket.acceptance_items.each do |item| %>
           <li class="flex items-start gap-2 text-[12.5px] text-zinc-700 dark:text-zinc-300 leading-relaxed" data-test="review-acceptance-item">
-            <span class="shrink-0 font-mono text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5"><%= item.code %></span><%= render Ui::MarkdownComponent.new(text: Agents::Plans::TicketItems.text_of(item), inline: true) %>
+            <%= render Ui::MarkdownComponent.new(text: Agents::Plans::TicketItems.text_of(item), inline: true) %>
           </li>
         <% end %>
       </ul>

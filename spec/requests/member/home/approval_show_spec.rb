@@ -309,14 +309,16 @@ RSpec.describe "Member::Home::Approvals#show", type: :request do
       ticket = create(:ticket, organization: org, project:,
                                status: create(:ticket_status, :in_review, organization: org), reviewer: owner,
                                description: "DESCRIZIONE-SONDA", technical_analysis: "ANALISI-SONDA")
-      create(:ticketing_condition, ticket:, text: "CRITERIO-SONDA")
+      condition = create(:ticketing_condition, ticket:, text: "CRITERIO-SONDA")
       sign_in(owner)
 
       get member_home_approvals_item_path(kind: "review", id: ticket.id)
 
       expect(response.body).to include("DESCRIZIONE-SONDA")
       expect(response.body).to include("ANALISI-SONDA")
-      expect(response.body).to include("CRITERIO-SONDA")
+      item = Nokogiri::HTML(response.body).at_css('[data-test="review-acceptance-item"]')
+      expect(item.text.strip).to eq("CRITERIO-SONDA")
+      expect(item.text).not_to include(condition.code)
     end
 
     # Approvare una modifica a un segreto senza sapere QUALE variabile, in quale ambiente e chi l'ha

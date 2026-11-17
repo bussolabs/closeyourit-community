@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.234.0] - 2026-11-17
+
+### Changed
+
+- **Criteri senza codici a vista**: nel ticket, nel piano, nelle approvazioni e nel resoconto i criteri si leggono solo con il loro testo. Le scritte come AC-1 non compaiono più. [Ticket](/member/tickets)
+
 ## [0.233.0] - 2026-11-17
 
 ### Changed
