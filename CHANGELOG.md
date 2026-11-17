@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.233.0] - 2026-11-17
+
+### Changed
+
+- **Casi da provare separati dalla definizione di fatto**: nel ticket i casi Given/When/Then/Expected stanno in una tabella per chi prova l'app, le frasi da verificare in un elenco a parte. I codici AC-N restano gli stessi. [Ticket](/member/tickets)
+
 ## [0.232.1] - 2026-11-17
 
 ### Added

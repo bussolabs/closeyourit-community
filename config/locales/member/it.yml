@@ -1980,6 +1980,8 @@ it:
         scenarios: Scenari
         scenario_case: Caso
         acceptance_items: Criteri di accettazione
+        acceptance_cases: Casi da provare
+        acceptance_done: Definizione di fatto
         scenario_untitled: Caso senza titolo
         scenario_n: "Scenario %{n}"
         conditions: Criteri di accettazione

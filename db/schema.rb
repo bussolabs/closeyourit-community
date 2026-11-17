@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_16_231000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_17_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -4034,16 +4034,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_231000) do
     t.index ["ticket_id"], name: "index_ticketing_comments_on_ticket_id"
   end
 
-  create_table "ticketing_conditions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.integer "position", default: 0, null: false
-    t.text "text", null: false
-    t.uuid "ticket_id", null: false
-    t.datetime "updated_at", null: false
-    t.index ["ticket_id", "position"], name: "index_ticketing_conditions_on_ticket_id_and_position"
-    t.index ["ticket_id"], name: "index_ticketing_conditions_on_ticket_id"
-  end
-
   create_table "ticketing_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "action", null: false
     t.uuid "actor_id"
@@ -4102,20 +4092,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_231000) do
     t.index ["source_comment_id"], name: "index_ticketing_reports_on_source_comment_id", unique: true, where: "(source_comment_id IS NOT NULL)"
     t.index ["ticket_id", "version"], name: "index_ticketing_reports_on_ticket_id_and_version", unique: true
     t.index ["ticket_id"], name: "index_ticketing_reports_on_ticket_id"
-  end
-
-  create_table "ticketing_scenarios", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.integer "position", default: 0, null: false
-    t.text "step_expected"
-    t.text "step_given"
-    t.text "step_then"
-    t.text "step_when"
-    t.uuid "ticket_id", null: false
-    t.string "title"
-    t.datetime "updated_at", null: false
-    t.index ["ticket_id", "position"], name: "index_ticketing_scenarios_on_ticket_id_and_position"
-    t.index ["ticket_id"], name: "index_ticketing_scenarios_on_ticket_id"
   end
 
   create_table "ticketing_subscriptions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -5227,7 +5203,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_231000) do
   add_foreign_key "ticketing_answers", "ticketing_questions", column: "question_id", on_delete: :cascade
   add_foreign_key "ticketing_comments", "accounts", column: "author_id"
   add_foreign_key "ticketing_comments", "ticketing_tickets", column: "ticket_id"
-  add_foreign_key "ticketing_conditions", "ticketing_tickets", column: "ticket_id", on_delete: :cascade
   add_foreign_key "ticketing_events", "accounts", column: "actor_id", on_delete: :nullify
   add_foreign_key "ticketing_events", "accounts", column: "true_actor_id", on_delete: :nullify
   add_foreign_key "ticketing_events", "organizations"
@@ -5240,7 +5215,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_231000) do
   add_foreign_key "ticketing_reports", "accounts", column: "author_id", on_delete: :nullify
   add_foreign_key "ticketing_reports", "ticketing_comments", column: "source_comment_id", on_delete: :nullify
   add_foreign_key "ticketing_reports", "ticketing_tickets", column: "ticket_id", on_delete: :cascade
-  add_foreign_key "ticketing_scenarios", "ticketing_tickets", column: "ticket_id", on_delete: :cascade
   add_foreign_key "ticketing_subscriptions", "accounts", on_delete: :cascade
   add_foreign_key "ticketing_subscriptions", "organizations", on_delete: :cascade
   add_foreign_key "ticketing_subscriptions", "ticketing_tickets", column: "ticket_id", on_delete: :cascade

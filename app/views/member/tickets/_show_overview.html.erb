@@ -27,7 +27,7 @@
   <% end %>
 <% end %>
 
-<%# CYRA-1318 — the acceptance items as one table, with the codes plans and delivery proofs refer to. %>
+<%# CYRA-1318 — the acceptance items, with the codes plans and delivery proofs refer to: cases to try, then the definition of done. %>
 <% if @ticket.acceptance_items.any? %>
   <%= render "member/tickets/acceptance_items", items: @ticket.acceptance_items %>
 <% end %>

@@ -1925,6 +1925,8 @@ en:
         scenarios: Scenarios
         scenario_case: Case
         acceptance_items: Acceptance criteria
+        acceptance_cases: Cases to try
+        acceptance_done: Definition of done
         scenario_untitled: Untitled case
         scenario_n: "Scenario %{n}"
         conditions: Definition of Done

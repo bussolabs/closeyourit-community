@@ -1,28 +1,39 @@
 <%# locals: (items:) %>
-<%# CYRA-1318 — what must be true at the end, one row per item with its code (AC-N). A case shows its four
-    clauses as columns: Expected is the wanted outcome, Then what happens today, and the tint tells them
-    apart; an empty clause shows a dash so the columns stay aligned. A plain criterion spans the row.
-    Below 768px each row stacks into a card (C73). %>
-<%= render Ui::SectionComponent.new(title: t("member.tickets.show.acceptance_items"), heading_size: :md,
-      body_class: nil, test_id: "ticket-acceptance-items") do %>
-  <%= render(Ui::TableComponent.new(stacked: true, label: t("member.tickets.show.acceptance_items"))) do |table| %>
-    <% table.with_head do %>
-      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tickets.show.scenario_case"), classes: "w-1/5") %>
-      <% %w[given when then expected].each do |key| %>
-        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tickets.show.steps.#{key}"), classes: "w-1/5") %>
+<%# CYRA-1318 — the acceptance items stay one list with one code each (AC-N), but the page shows them in two
+    sections for two readers. Cases (Given/When/Then/Expected) are steps a tester runs in the app: one table
+    row each, Expected tinted apart from Then (what happens today), an empty clause shown as a dash so the
+    columns stay aligned; below 768px each row stacks into a card (C73). Plain criteria are what the
+    reviewer checks on the delivery: the definition of done, one line each. A section with nothing in it
+    is left out. %>
+<% cases, done = items.partition(&:scenario?) %>
+<% if cases.any? %>
+  <%= render Ui::SectionComponent.new(title: t("member.tickets.show.acceptance_cases"), heading_size: :md,
+        body_class: nil, test_id: "ticket-acceptance-cases") do %>
+    <%= render(Ui::TableComponent.new(stacked: true, label: t("member.tickets.show.acceptance_cases"))) do |table| %>
+      <% table.with_head do %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tickets.show.scenario_case"), classes: "w-1/5") %>
+        <% %w[given when then expected].each do |key| %>
+          <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.tickets.show.steps.#{key}"), classes: "w-1/5") %>
+        <% end %>
       <% end %>
-    <% end %>
-    <% items.each do |item| %>
-      <%= render Ui::TableComponent::RowComponent.new(test_id: item.scenario? ? "ticket-scenario" : "ticket-condition") do %>
-        <% if item.scenario? %>
+      <% cases.each do |item| %>
+        <%= render Ui::TableComponent::RowComponent.new(test_id: "ticket-scenario") do %>
           <%= render "member/tickets/acceptance_case", item: %>
-        <% else %>
-          <%= render Ui::TableComponent::CellComponent.new(header: true, colspan: 5, class: "align-top", test_id: "ticket-condition-text") do %>
-            <span class="mr-2 font-mono text-[11px] tabular-nums text-gray-400 dark:text-zinc-500" data-test="ticket-item-code"><%= item.code %></span>
-            <span class="text-[13px] text-zinc-800 dark:text-zinc-200"><%= render Ui::MarkdownComponent.new(text: item.text, inline: true) %></span>
-          <% end %>
         <% end %>
       <% end %>
     <% end %>
+  <% end %>
+<% end %>
+<% if done.any? %>
+  <%= render Ui::SectionComponent.new(title: t("member.tickets.show.acceptance_done"), heading_size: :md,
+        body_class: nil, test_id: "ticket-acceptance-done") do %>
+    <ul class="divide-y divide-stone-200 dark:divide-zinc-800">
+      <% done.each do |item| %>
+        <li class="px-4 py-3 flex items-baseline gap-3" data-test="ticket-condition">
+          <span class="shrink-0 font-mono text-[11px] tabular-nums text-gray-400 dark:text-zinc-500" data-test="ticket-item-code"><%= item.code %></span>
+          <%= render Ui::MarkdownComponent.new(text: item.text, inline: true, class: "text-[13px] text-zinc-800 dark:text-zinc-200 leading-relaxed") %>
+        </li>
+      <% end %>
+    </ul>
   <% end %>
 <% end %>

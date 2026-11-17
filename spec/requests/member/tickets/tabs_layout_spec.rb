@@ -69,16 +69,14 @@ RSpec.describe "Member ticket tabs layout", type: :request do
   end
 
   describe "scenarios on the detail" do
-    it "writes the acceptance items as one table: a row per item with its code, a case's clauses as columns (CYRA-1318)" do
+    it "splits the acceptance items: cases to try as a table, plain criteria as the definition of done (CYRA-1318)" do
       create(:ticketing_scenario, ticket:, title: "Checkout", step_given: "a cart", step_when: "I pay", step_then: "it hangs", step_expected: "it pays")
       condition = create(:ticketing_condition, ticket:, text: "Templates inspected")
 
       get member_ticket_path(ticket)
 
-      table = page_html.at_css('[data-test="ticket-acceptance-items"] table')
-      plain = table.at_css('[data-test="ticket-condition"]')
-      expect(plain.text).to include(condition.code, "Templates inspected")
-      expect(plain.at_css("[colspan]")["colspan"]).to eq("5")
+      table = page_html.at_css('[data-test="ticket-acceptance-cases"] table')
+      expect(table.css('[data-test="ticket-condition"]')).to be_empty
       expect(table.css("thead th").map { it.text.strip })
         .to eq([ I18n.t("member.tickets.show.scenario_case") ] + %w[given when then expected].map { I18n.t("member.tickets.show.steps.#{it}") })
       row = table.css('[data-test="ticket-scenario"]').find { it.text.include?("Checkout") }
@@ -87,6 +85,22 @@ RSpec.describe "Member ticket tabs layout", type: :request do
       expect(row.css('[data-test^="ticket-scenario-step-"]').map { it["data-test"] })
         .to eq(%w[ticket-scenario-step-given ticket-scenario-step-when ticket-scenario-step-then ticket-scenario-step-expected])
       expect(row.at_css('[data-test="ticket-scenario-step-expected"]')["class"]).to include("bg-indigo-50")
+
+      done = page_html.at_css('[data-test="ticket-acceptance-done"]')
+      expect(done.css('[data-test="ticket-scenario"]')).to be_empty
+      plain = done.at_css('[data-test="ticket-condition"]')
+      expect(plain.at_css('[data-test="ticket-item-code"]').text.strip).to eq(condition.code)
+      expect(plain.text).to include("Templates inspected")
+    end
+
+    it "leaves out a section with nothing in it" do
+      plain_ticket = create(:ticket, organization:, project:, with_default_body: false, description: "Body")
+      create(:ticketing_condition, ticket: plain_ticket, text: "Templates inspected")
+
+      get member_ticket_path(plain_ticket)
+
+      expect(page_html.at_css('[data-test="ticket-acceptance-cases"]')).to be_nil
+      expect(page_html.at_css('[data-test="ticket-acceptance-done"]')).to be_present
     end
 
     it "shows a dash for an empty clause, so the columns stay aligned" do

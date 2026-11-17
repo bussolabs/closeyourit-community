@@ -37,7 +37,7 @@ RSpec.describe "Member::Tickets — verbale di consegna", type: :request do
 
     get member_ticket_path(ticket)
 
-    riga = Nokogiri::HTML(response.body).at_css('[data-test="ticket-acceptance-items"]')
+    riga = Nokogiri::HTML(response.body).at_css('[data-test="ticket-acceptance-done"]')
     expect(riga).to be_present
     expect(riga.to_html).not_to include("fa-square-check")
     expect(riga.to_html).not_to include("text-emerald")
