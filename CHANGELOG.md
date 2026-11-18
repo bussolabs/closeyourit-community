@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.237.1] - 2026-11-18
+
+### Fixed
+
+- **Password dell'account di prova solo sullo staging**: la password arriva allo staging, che ora crea davvero l'account di prova. La produzione non la riceve più, e il vault torna a sincronizzarsi.
+
 ## [0.237.0] - 2026-11-18
 
 ### Added
