@@ -181,6 +181,24 @@ if Rails.env.development?
   puts "  Empty organization: #{empty.slug} (owner: #{god.email})"
 end
 
+# The account the agents and the testers sign in with on staging (Projects::TestAccess). The password comes from
+# the vault, staging environment, so it is never in the code and production, which has none, gets no account.
+# Kept here so that a staging reset brings it back; a new password in the vault is picked up at the next boot.
+if (test_password = ENV["TEST_ACCESS_PASSWORD"].presence)
+  tester = Accounts::Account.find_or_initialize_by(email: "test-agent@closeyour.it")
+  tester.name = "Test Agent" if tester.new_record?
+  tester.password = test_password unless tester.persisted? && tester.authenticate(test_password)
+  tester.save!
+  test_org = Organizations::Organization.find_or_create_by!(slug: "test-access") do |organization|
+    organization.name = "Test Access"
+    organization.created_by = tester
+  end
+  Connections::Membership.find_or_create_by!(account: tester, organization: test_org) { |membership| membership.role = :owner }
+  Types::InstallDefaults.call(organization: test_org, created_by: tester)
+  Authorization::InstallDefaultRoles.call(organization: test_org, created_by: tester)
+  puts "  Test account: #{tester.email} (owner: #{test_org.slug})"
+end
+
 # Backfill RBAC (idempotente, ADDITIVO) per ogni org: ruoli default + team "Administrators" che
 # preserva la visibilità degli attuali admin sui progetti esistenti (nuovo regime: solo owner vede
 # tutto). Sicuro in ogni ambiente; non rimuove mai link/membri (preserva gli edit dell'owner).

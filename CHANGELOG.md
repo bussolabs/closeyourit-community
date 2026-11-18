@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.237.0] - 2026-11-18
+
+### Added
+
+- **Account di prova sullo staging**: lo staging crea da solo l'account con cui gli agenti provano il lavoro, con la password presa dal vault. In produzione l'account non esiste.
+
 ## [0.236.0] - 2026-11-17
 
 ### Security

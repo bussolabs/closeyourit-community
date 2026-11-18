@@ -84,3 +84,48 @@ RSpec.describe "db/seeds.rb in production" do
     expect(Accounts::Account.where(god: true).pluck(:email)).to eq([ "owner@my-company.test" ])
   end
 end
+
+# The test account the agents sign in with on staging. It lives in the seeds so that a staging reset brings it back;
+# its password comes from the vault (TEST_ACCESS_PASSWORD, staging), never from the code.
+RSpec.describe "db/seeds.rb test account" do
+  around do |example|
+    saved = ENV.values_at("GOD_PASSWORD", "TEST_ACCESS_PASSWORD")
+    ENV["GOD_PASSWORD"] = "Sup3r-Secret-Pass!"
+    example.run
+  ensure
+    ENV["GOD_PASSWORD"], ENV["TEST_ACCESS_PASSWORD"] = saved
+  end
+
+  def seed
+    allow(Rails).to receive(:env).and_return(ActiveSupport::EnvironmentInquirer.new("production"))
+    expect { load Rails.root.join("db/seeds.rb") }.to output.to_stdout
+  end
+
+  it "creates the test account, owner of its own organization, when the vault gives a password" do
+    ENV["TEST_ACCESS_PASSWORD"] = "Test-Access-Pass-1!"
+
+    seed
+
+    account = Accounts::Account.find_by!(email: "test-agent@closeyour.it")
+    expect(account.authenticate("Test-Access-Pass-1!")).to eq(account)
+    expect(account.god).to be(false)
+    expect(Connections::Membership.find_by!(account:).role).to eq("owner")
+  end
+
+  it "follows a new password from the vault and adds nothing twice" do
+    ENV["TEST_ACCESS_PASSWORD"] = "Test-Access-Pass-1!"
+    seed
+    ENV["TEST_ACCESS_PASSWORD"] = "Test-Access-Pass-2!"
+
+    expect { seed }.not_to change(Accounts::Account, :count)
+    expect(Accounts::Account.find_by!(email: "test-agent@closeyour.it").authenticate("Test-Access-Pass-2!")).to be_truthy
+  end
+
+  it "creates nothing where the vault gives no password, as in production" do
+    ENV.delete("TEST_ACCESS_PASSWORD")
+
+    seed
+
+    expect(Accounts::Account.find_by(email: "test-agent@closeyour.it")).to be_nil
+  end
+end
