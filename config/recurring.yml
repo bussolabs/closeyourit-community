@@ -332,6 +332,14 @@ production: &schedule
     queue: maintenance
     schedule: every minute
 
+  # Stessa rete per i fermi di server, cluster e lavori pianificati (CYRA-1228): il controllo segna
+  # lo stato prima dell'avviso e un fermo già segnato non viene più ripreso. Stessa grazia, finestra
+  # e tetto del giro uptime qui sopra.
+  reconcile_outage_alerts:
+    class: Alerting::ReconcileOutagesJob
+    queue: maintenance
+    schedule: every minute
+
   # Rollup uptime nella stessa tabella (granularity hourly/daily). `args` posizionale per evitare la
   # gotcha kwargs/positional dei recurring. Il daily gira PRIMA del prune (2am < 3am) così potando il
   # raw >3gg i giorni chiusi sono già aggregati.

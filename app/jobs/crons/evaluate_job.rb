@@ -18,11 +18,11 @@ module Crons
       Crons::Monitor.enabled.where.not(status: :missed).includes(project: :organization).find_each do |monitor|
         next unless monitor.overdue?(now)
 
-        monitor.update!(status: :missed, missed_alerted_at: now)
-        Alerting::EvaluateJob.perform_later(
-          event_type: "cron_missed", subject_type: "Crons::Monitor", subject_id: monitor.id,
-          project_id: monitor.project_id, environment_id: monitor.environment_id
-        )
+        # missed_alerted_at is written only once the alert is queued (CYRA-1228): a restart in between
+        # leaves missed + no mark, and Alerting::ReconcileOutages delivers it. The status change
+        # re-reads the row under lock: one already declared by a concurrent run is skipped.
+        next unless Alerting::AnnounceOutage.declare(subject: monitor, at: now).value
+
         # Live update for list/show viewers: row + labels per monitor...
         Crons::Broadcast.row(monitor)
         Crons::Broadcast.labels(monitor)

@@ -20,6 +20,43 @@ RSpec.describe Crons::EvaluateJob, type: :job do
     expect(monitor.missed_alerted_at).to be_within(1).of(now)
   end
 
+  # CYRA-1228 — missed_alerted_at si scrive solo dopo l'accodamento: un riavvio in mezzo lascia il
+  # monitor missed col segno vuoto, e il giro di recupero lo consegna una volta sola.
+  it "riavvio prima dell'avviso → missed senza segno, il recupero avvisa una volta" do
+    monitor = create(:cron_monitor, project:, expected_interval_minutes: 60, grace_minutes: 5,
+                                    status: :ok, last_check_in_at: now - 2.hours)
+    allow(Alerting::EvaluateJob).to receive(:perform_later).and_raise(StandardError, "riavvio")
+    expect { described_class.perform_now(now:) }.to raise_error(StandardError, "riavvio")
+    allow(Alerting::EvaluateJob).to receive(:perform_later).and_call_original
+
+    expect(monitor.reload).to be_status_missed
+    expect(monitor.missed_alerted_at).to be_nil
+    expect { described_class.perform_now(now: now + 1.minute) }.not_to have_enqueued_job(Alerting::EvaluateJob)
+
+    expect { Alerting::ReconcileOutages.call(at: now + 5.minutes) }
+      .to have_enqueued_job(Alerting::EvaluateJob)
+      .with(hash_including(event_type: "cron_missed", subject_id: monitor.id)).once
+    expect { Alerting::ReconcileOutages.call(at: now + 6.minutes) }.not_to have_enqueued_job(Alerting::EvaluateJob)
+  end
+
+  it "esecuzione concorrente che l'ha già dichiarato → non azzera il segno né riaccoda" do
+    monitor = create(:cron_monitor, project:, expected_interval_minutes: 60, grace_minutes: 5,
+                                    status: :ok, last_check_in_at: now - 2.hours)
+    rival = Crons::Monitor.find(monitor.id)
+    calls = 0
+    # Il giro ha già caricato il monitor ancora ok quando il rivale lo dichiara per primo.
+    allow(Alerting::AnnounceOutage).to receive(:declare).and_wrap_original do |original, **kwargs|
+      calls += 1
+      original.call(subject: rival, at: now) if calls == 1
+      original.call(**kwargs)
+    end
+
+    expect { described_class.perform_now(now:) }
+      .to have_enqueued_job(Alerting::EvaluateJob).with(hash_including(event_type: "cron_missed")).once
+    expect(monitor.reload).to be_status_missed
+    expect(monitor.missed_alerted_at).to be_within(1).of(now)
+  end
+
   it "monitor già missed → non ri-avvisa" do
     create(:cron_monitor, project:, status: :missed, last_check_in_at: now - 2.hours)
     expect { described_class.perform_now(now:) }.not_to have_enqueued_job(Alerting::EvaluateJob)

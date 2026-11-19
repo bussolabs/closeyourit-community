@@ -8,8 +8,10 @@ module Clusters
 
     def perform
       Clusters::Cluster.stale.find_each do |cluster|
-        cluster.update!(status: :down)
-        Clusters::Alerts.notify(:cluster_down, subject: cluster, cluster:)
+        # The mark is written only once the alert is queued (CYRA-1228): a restart in between leaves
+        # down + no mark, and Alerting::ReconcileOutages delivers it. The status change re-reads the
+        # row under lock: one already declared by a concurrent check is skipped.
+        Alerting::AnnounceOutage.declare(subject: cluster)
       end
     end
   end

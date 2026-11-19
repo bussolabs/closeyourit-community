@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_17_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_18_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -1413,6 +1413,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_090000) do
     t.string "color"
     t.datetime "created_at", null: false
     t.uuid "created_by_id"
+    t.datetime "down_alerted_at"
     t.string "kubernetes_version"
     t.datetime "last_snapshot_at"
     t.string "last_snapshot_id"
@@ -1428,6 +1429,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_090000) do
     t.boolean "truncated", default: false, null: false
     t.datetime "updated_at", null: false
     t.index ["created_by_id"], name: "index_clusters_clusters_on_created_by_id"
+    t.index ["last_snapshot_at"], name: "index_clusters_clusters_pending_down_alert", where: "((status = 2) AND (down_alerted_at IS NULL))"
     t.index ["organization_id", "name"], name: "index_clusters_clusters_on_organization_id_and_name", unique: true
     t.index ["organization_id"], name: "index_clusters_clusters_on_organization_id"
     t.index ["token_digest"], name: "index_clusters_clusters_on_token_digest", unique: true
@@ -2047,6 +2049,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_090000) do
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["environment_id"], name: "index_crons_monitors_on_environment_id"
+    t.index ["last_check_in_at"], name: "index_crons_monitors_pending_missed_alert", where: "((status = 3) AND (missed_alerted_at IS NULL))"
     t.index ["project_id", "slug"], name: "index_crons_monitors_on_project_id_and_slug", unique: true
     t.index ["project_id"], name: "index_crons_monitors_on_project_id"
     t.index ["status", "enabled"], name: "index_crons_monitors_on_status_and_enabled"
@@ -3729,6 +3732,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_090000) do
     t.jsonb "disk_forecast_state", default: {}, null: false
     t.decimal "disk_pct", precision: 5, scale: 2
     t.decimal "disk_threshold", precision: 5, scale: 2
+    t.datetime "down_alerted_at"
     t.datetime "enrollment_conflict_at"
     t.uuid "enrollment_token_id"
     t.jsonb "failed_services", default: [], null: false
@@ -3768,6 +3772,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_090000) do
     t.integer "updates_available"
     t.bigint "uptime_seconds"
     t.index ["enrollment_token_id"], name: "index_servers_hosts_on_enrollment_token_id"
+    t.index ["last_push_at"], name: "index_servers_hosts_pending_down_alert", where: "((status = 2) AND (down_alerted_at IS NULL))"
     t.index ["organization_id", "fingerprint"], name: "index_servers_hosts_on_organization_id_and_fingerprint", unique: true
     t.index ["organization_id", "status"], name: "index_servers_hosts_on_organization_id_and_status"
     t.index ["organization_id"], name: "index_servers_hosts_on_organization_id"

@@ -18,6 +18,64 @@ RSpec.describe Servers::CheckStaleJob, type: :job do
                            organization_id: host.organization_id, project_id: nil))
 
     expect(host.reload.status_down?).to be(true)
+    expect(host.down_alerted_at).to be_present
+  end
+
+  # CYRA-1228 — il riavvio fra il cambio di stato e l'avviso: la macchina resta giù col segno vuoto,
+  # il controllo non la riguarda più e il giro di recupero la consegna una volta sola.
+  describe "riavvio prima dell'avviso (CYRA-1228)" do
+    it "lascia down + segno vuoto, e il recupero manda l'avviso una volta sola" do
+      host = create(:server_host, status: :up, last_push_at: (threshold + 60).seconds.ago)
+      allow(Alerting::EvaluateJob).to receive(:perform_later).and_raise(StandardError, "riavvio")
+      expect { described_class.perform_now }.to raise_error(StandardError, "riavvio")
+      allow(Alerting::EvaluateJob).to receive(:perform_later).and_call_original
+
+      expect(host.reload.status_down?).to be(true)
+      expect(host.down_alerted_at).to be_nil
+      expect { described_class.perform_now }.not_to have_enqueued_job(Alerting::EvaluateJob)
+
+      travel(5.minutes) do
+        expect { Alerting::ReconcileOutages.call }
+          .to have_enqueued_job(Alerting::EvaluateJob)
+          .with(hash_including(event_type: "server_down", subject_id: host.id)).once
+        expect { Alerting::ReconcileOutages.call }.not_to have_enqueued_job(Alerting::EvaluateJob)
+      end
+    end
+
+    it "il controllo andato a buon fine non lascia niente al recupero" do
+      create(:server_host, status: :up, last_push_at: (threshold + 60).seconds.ago)
+      described_class.perform_now
+
+      travel(5.minutes) do
+        expect { Alerting::ReconcileOutages.call }.not_to have_enqueued_job(Alerting::EvaluateJob)
+      end
+    end
+
+    it "un esecutore concorrente che l'ha già dichiarata non azzera il segno né riaccoda" do
+      host = create(:server_host, status: :up, last_push_at: (threshold + 60).seconds.ago)
+      rival = Servers::Host.find(host.id)
+      calls = 0
+      # Il controllo ha già caricato la riga ancora up quando il rivale la dichiara per primo.
+      allow(Alerting::AnnounceOutage).to receive(:declare).and_wrap_original do |original, **kwargs|
+        calls += 1
+        original.call(subject: rival) if calls == 1
+        original.call(**kwargs)
+      end
+
+      expect { described_class.perform_now }
+        .to have_enqueued_job(Alerting::EvaluateJob).with(hash_including(event_type: "server_down")).once
+      expect(host.reload.status_down?).to be(true)
+      expect(host.down_alerted_at).to be_present
+    end
+
+    it "un fermo nuovo dopo un ritorno azzera il segno del fermo precedente" do
+      host = create(:server_host, status: :up, last_push_at: (threshold + 60).seconds.ago,
+                                  down_alerted_at: 1.day.ago)
+
+      expect { described_class.perform_now }
+        .to have_enqueued_job(Alerting::EvaluateJob).with(hash_including(event_type: "server_down"))
+      expect(host.reload.down_alerted_at).to be > 1.minute.ago
+    end
   end
 
   # CYRA-649 — la regressione da non far tornare mai: la corsia di ricezione in arretrato (i backfill
@@ -66,6 +124,22 @@ RSpec.describe Servers::CheckStaleJob, type: :job do
       expect { described_class.perform_now }
         .not_to have_enqueued_job(Alerting::EvaluateJob)
         .with(hash_including(event_type: "server_silent"))
+    end
+
+    # CYRA-1228 — la memoria si scrive dopo l'accodamento: un riavvio in mezzo non la brucia, e il
+    # giro successivo manda l'avviso.
+    it "accodamento saltato → memoria vuota, il giro dopo manda server_silent" do
+      host = create(:server_host, status: :up, last_push_at: 10.seconds.ago,
+                    last_seen_at: (silent_threshold + 60).seconds.ago)
+      allow(Alerting::EvaluateJob).to receive(:perform_later).and_raise(StandardError, "riavvio")
+      expect { described_class.perform_now }.to raise_error(StandardError, "riavvio")
+      allow(Alerting::EvaluateJob).to receive(:perform_later).and_call_original
+
+      expect(host.reload.silent_alerted_at).to be_nil
+      expect { described_class.perform_now }
+        .to have_enqueued_job(Alerting::EvaluateJob)
+        .with(hash_including(event_type: "server_silent", subject_id: host.id)).once
+      expect(host.reload.silent_alerted_at).to be_present
     end
 
     it "dati vecchi ma sotto la soglia d'allarme → silenzio (CYRA-649)" do

@@ -2980,10 +2980,11 @@
       "level": 2,
       "parent": "area_servers",
       "kind": "job",
-      "summary": "Ogni minuto segna giù le macchine che non scrivono da troppo e avvisa. Salta i gruppi di lavoro a cui il server ha rifiutato i dati.",
+      "summary": "Ogni minuto segna giù le macchine che non scrivono da troppo e avvisa. Salta i gruppi di lavoro a cui il server ha rifiutato i dati. Se l'avviso non parte, lo recupera il giro dedicato.",
       "files": [
         "app/jobs/servers/check_stale_job.rb",
         "app/services/servers/ingest_rejections.rb",
+        "app/services/alerting/announce_outage.rb",
         "config/recurring.yml"
       ]
     },
@@ -8186,6 +8187,20 @@
       ]
     },
     {
+      "id": "alr_job_reconcile_outages",
+      "name": "Recupero degli avvisi di fermo",
+      "level": 2,
+      "parent": "area_alerting",
+      "kind": "job",
+      "summary": "Ogni minuto cerca macchine, cluster e lavori pianificati fermi il cui avviso non è mai partito e lo manda. Ignora chi è già tornato attivo.",
+      "files": [
+        "app/jobs/alerting/reconcile_outages_job.rb",
+        "app/services/alerting/reconcile_outages.rb",
+        "app/services/alerting/announce_outage.rb",
+        "config/recurring.yml"
+      ]
+    },
+    {
       "id": "alr_step_match_rules",
       "name": "Trova le regole che valgono",
       "level": 3,
@@ -13343,6 +13358,26 @@
       "from": "srv_job_stale",
       "to": "area_alerting",
       "label": "avviso macchina giù"
+    },
+    {
+      "from": "srv_job_stale",
+      "to": "alr_job_reconcile_outages",
+      "label": "se l'avviso non parte"
+    },
+    {
+      "from": "srv_job_clusters",
+      "to": "alr_job_reconcile_outages",
+      "label": "se l'avviso non parte"
+    },
+    {
+      "from": "crn_job_evaluate",
+      "to": "alr_job_reconcile_outages",
+      "label": "se l'avviso non parte"
+    },
+    {
+      "from": "alr_job_reconcile_outages",
+      "to": "alr_flow_evaluate",
+      "label": "valuta l'avviso"
     },
     {
       "from": "srv_job_forecast",

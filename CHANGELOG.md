@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.237.3] - 2026-11-19
+
+### Fixed
+
+- **Gli avvisi di server, cluster e lavori fermi arrivano anche dopo un riavvio**: se il sistema si riavviava nel momento sbagliato l'avviso andava perso. Ora un giro ogni minuto recupera quelli rimasti indietro, una volta sola, e due controlli che girano insieme non mandano più lo stesso avviso due volte. (CYRA-1228)
+
 ## [0.237.2] - 2026-11-18
 
 ### Fixed

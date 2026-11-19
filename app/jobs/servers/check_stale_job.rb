@@ -18,11 +18,12 @@ module Servers
 
       touched_org_ids = []
       stale_hosts(suspended_org_ids).find_each do |host|
-        host.update!(status: :down)
-        Alerting::EvaluateJob.perform_later(
-          event_type: "server_down", subject_type: "Servers::Host", subject_id: host.id,
-          project_id: nil, organization_id: host.organization_id
-        )
+        # CYRA-1228 — prima lo stato (col segno azzerato: è un fermo nuovo), poi l'avviso, che scrive il
+        # segno solo dopo averlo accodato. Un riavvio in mezzo lascia down + segno vuoto, e il giro di
+        # recupero (Alerting::ReconcileOutages) lo consegna: qui la macchina non torna più. Il cambio di
+        # stato rilegge la riga sotto lock: già dichiarata da un altro esecutore → si salta.
+        next unless Alerting::AnnounceOutage.declare(subject: host).value
+
         # Il down deve arrivare live a chi guarda fleet/show: replace riga fleet + page-refresh show per host...
         Servers::Broadcast.row(host)
         Servers::Broadcast.refresh(host)
@@ -76,16 +77,19 @@ module Servers
     # memoria; l'ingest la azzera al primo dato fresco). La soglia larga da 15' evita di rifare i
     # falsi allarmi di CYRA-649 quando la corsia dei dati è semplicemente in arretrato di qualche
     # minuto.
+    #
+    # CYRA-1228 — la memoria si scrive DOPO l'accodamento: scritta prima, un riavvio in mezzo la
+    # lasciava a dire «avvisato» per un avviso mai partito. Così il giro dopo riprova da solo.
     def notify_silent_hosts(suspended_org_ids)
       now = Time.current
       candidates = silent_host_candidates(now:)
       candidates = candidates.where.not(organization_id: suspended_org_ids) if suspended_org_ids.any?
       candidates.find_each do |host|
-        host.update!(silent_alerted_at: now)
         Alerting::EvaluateJob.perform_later(
           event_type: "server_silent", subject_type: "Servers::Host", subject_id: host.id,
           project_id: nil, organization_id: host.organization_id
         )
+        host.update!(silent_alerted_at: now)
       end
     end
 
