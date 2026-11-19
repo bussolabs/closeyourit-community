@@ -63,6 +63,7 @@ Formato `R{HTTP_STATUS}-{DOMINIO}-{SEQ}` (rules/error-handling.md). Envelope API
 - `R413-METRIC-004` — batch di metriche troppo grande (oltre `Metrics::Constants::MAX_BATCH`, NUMERO di campioni)
 - `R422-METRIC-005` — azione di triage non valida (`Metrics::Triage`; CYRA-45, speculare a `R422-ERROR-002`)
 - `R413-METRIC-006` — batch di metriche oltre `Metrics::Constants::MAX_BYTES` (byte del batch, gate sulla dimensione dichiarata o, senza (chunked), sui byte ricevuti — CYRA-1124 — in testa alla catena via `prepend_before_action` → precede auth e parse; distinto da METRIC-004 che limita il NUMERO di campioni) — CYRA-112
+- `R422-METRIC-007` — `duration_ms` non valida in ingest: non un numero finito (Infinity/NaN, booleano, lista, oggetto, stringa non numerica). Scartato solo quel campione, gli altri del lotto si salvano; contato nel log di `Metrics::IngestJob` — CYRA-1216
 
 ### LOG — ingest log strutturati (`Api::V1::LogsController`, `Logs::Ingest::*`) + link manuale (`Logs::Links::*`)
 - `R422-LOG-001` — log malformato (body non parsabile)

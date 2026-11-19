@@ -18,13 +18,14 @@ module Metrics
                          key: :sample_id, counter: :samples_count
 
       # Esito del batch: accepted = sample realmente inseriti, rejected = codici errore dei campioni
-      # scartati (kind/subtype invalidi), per il logging aggregato del job.
+      # scartati (kind/subtype/durata invalidi), per il logging aggregato del job.
       Summary = Data.define(:accepted, :rejected)
 
       def call
         normalized = Normalize.call(payload: @payload)
         return invalid_kind if normalized.kind.nil?
         return missing_subtype if normalized.kind == "performance_issue" && normalized.subtype.blank?
+        return invalid_duration if normalized.duration_ms.nil?
 
         sample_id = normalized.sample_id
         fingerprint = Fingerprint.call(signature: normalized.signature)
@@ -50,7 +51,7 @@ module Metrics
         new(project: project).call_batch(payloads)
       end
 
-      # Normalizza tutti i campioni, scarta gli invalidi (kind/subtype), raggruppa i validi per
+      # Normalizza tutti i campioni, scarta gli invalidi (kind/subtype/durata), raggruppa i validi per
       # fingerprint e persiste ogni gruppo con UN solo UPDATE aggregato. track_source/alert/broadcast
       # avvengono UNA volta per batch/gruppo, FUORI dalle transazioni (come nel path per-campione).
       def call_batch(payloads)
@@ -77,6 +78,9 @@ module Metrics
       def classify(normalized)
         return [ nil, "R422-METRIC-002" ] if normalized.kind.nil?
         return [ nil, "R422-METRIC-003" ] if normalized.kind == "performance_issue" && normalized.subtype.blank?
+        # Durata non valida (CYRA-1216): fuori solo questo campione, prima di raggruppamento e aggregati —
+        # un Infinity in total/max non si toglie più, e correggerlo a 0 falserebbe le medie.
+        return [ nil, "R422-METRIC-007" ] if normalized.duration_ms.nil?
 
         [ normalized, nil ]
       end
@@ -183,6 +187,10 @@ module Metrics
 
       def missing_subtype
         Result.err(AppError.new("performance_issue senza subtype", code: "R422-METRIC-003", status: :unprocessable_content))
+      end
+
+      def invalid_duration
+        Result.err(AppError.new("Metrica con duration_ms non valida", code: "R422-METRIC-007", status: :unprocessable_content))
       end
 
       # Solo per i verdetti performance_issue: avvisa via metric_threshold quando il gruppo attraversa

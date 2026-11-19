@@ -45,4 +45,17 @@ RSpec.describe Metrics::IngestJob do
     ])
     expect(project.metric_samples.count).to eq(1)
   end
+
+  # CYRA-1216: una durata non valida non fa più fallire il job — scartato solo quel campione, contato
+  # nel log col suo codice.
+  it "logga 1 scarto R422-METRIC-007 per una durata non valida e salva gli altri campioni" do
+    project = create(:project)
+    expect(Rails.logger).to receive(:warn).once.with(/\AMetrics::IngestJob 1 .*: R422-METRIC-007 project_id=#{project.id}\z/)
+    described_class.perform_now(project_id: project.id, payload: [
+      { "kind" => "slow_query", "sample_id" => "ok1", "duration_ms" => 5, "sql" => "SELECT 1", "occurred_at" => Time.current.iso8601 },
+      { "kind" => "slow_query", "sample_id" => "ko", "duration_ms" => [ 1 ], "sql" => "SELECT 1", "occurred_at" => Time.current.iso8601 },
+      { "kind" => "slow_query", "sample_id" => "ok2", "duration_ms" => 7, "sql" => "SELECT 1", "occurred_at" => Time.current.iso8601 }
+    ])
+    expect(project.metric_samples.pluck(:sample_id)).to contain_exactly("ok1", "ok2")
+  end
 end

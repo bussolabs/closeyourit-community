@@ -147,6 +147,49 @@ RSpec.describe Metrics::Ingest::Normalize do
       end
     end
 
+    # CYRA-1216: stessa regola di Logs/Analytics (::Ingest::EpochTime).
+    it "epoch in millisecondi → convertito nella data giusta" do
+      travel_to(Time.utc(2026, 6, 1, 12)) do
+        sent = Time.utc(2026, 6, 1, 11, 30)
+        n = described_class.call(payload: {
+          "kind" => "slow_query", "sql" => "SELECT 1", "duration_ms" => 5,
+          "occurred_at" => (sent.to_f * 1000).to_i
+        })
+        expect(n.occurred_at).to be_within(1).of(sent)
+      end
+    end
+
+    it "epoch in secondi → resta quello inviato" do
+      travel_to(Time.utc(2026, 6, 1, 12)) do
+        sent = Time.utc(2026, 5, 31, 9)
+        n = described_class.call(payload: {
+          "kind" => "slow_query", "sql" => "SELECT 1", "duration_ms" => 5, "occurred_at" => sent.to_i
+        })
+        expect(n.occurred_at).to eq(sent)
+      end
+    end
+
+    it "data 2 giorni nel futuro → l'ora di arrivo (numerica e stringa)" do
+      travel_to(Time.utc(2026, 6, 1, 12)) do
+        [ 2.days.from_now.to_i, 2.days.from_now.iso8601 ].each do |future|
+          n = described_class.call(payload: {
+            "kind" => "slow_query", "sql" => "SELECT 1", "duration_ms" => 5, "occurred_at" => future
+          })
+          expect(n.occurred_at).to be_within(1).of(Time.current)
+        end
+      end
+    end
+
+    it "data entro l'ora di tolleranza nel futuro → resta quella inviata" do
+      travel_to(Time.utc(2026, 6, 1, 12)) do
+        sent = 30.minutes.from_now
+        n = described_class.call(payload: {
+          "kind" => "slow_query", "sql" => "SELECT 1", "duration_ms" => 5, "occurred_at" => sent.to_i
+        })
+        expect(n.occurred_at).to be_within(1).of(sent)
+      end
+    end
+
     it "assente → ripiega su Time.current (ramo else → nil)" do
       travel_to(Time.utc(2026, 6, 1, 12)) do
         n = described_class.call(payload: { "kind" => "slow_query", "sql" => "SELECT 1", "duration_ms" => 5 })
@@ -172,6 +215,32 @@ RSpec.describe Metrics::Ingest::Normalize do
     it "clampa duration_ms negativo a 0 (non avvelena min/avg del gruppo)" do
       n = described_class.call(payload: { "kind" => "slow_query", "sql" => "SELECT 1", "duration_ms" => -40 })
       expect(n.duration_ms).to eq(0.0)
+    end
+
+    # CYRA-1216: durata valida solo se numero finito; nil = non valida (Record scarta R422-METRIC-007).
+    def duration_for(value)
+      described_class.call(payload: { "kind" => "slow_query", "sql" => "SELECT 1", "duration_ms" => value }).duration_ms
+    end
+
+    it "durata assente → 0" do
+      n = described_class.call(payload: { "kind" => "slow_query", "sql" => "SELECT 1" })
+      expect(n.duration_ms).to eq(0.0)
+    end
+
+    it "durata numerica finita → float, intera compresa" do
+      expect(duration_for(12)).to eq(12.0)
+      expect(duration_for(12.5)).to eq(12.5)
+    end
+
+    it "durata come testo numerico → accettata con conversione stretta" do
+      expect(duration_for("12.5")).to eq(12.5)
+      expect(duration_for("-3")).to eq(0.0)
+    end
+
+    it "durata infinita, NaN, booleana, lista, oggetto o testo non numerico → nil (non valida), senza crash" do
+      [ Float::INFINITY, -Float::INFINITY, Float::NAN, true, false, [ 1 ], [], { "ms" => 1 }, {}, "abc", "12abc", "", "1e400" ].each do |bad|
+        expect(duration_for(bad)).to be_nil, "atteso nil per #{bad.inspect}"
+      end
     end
 
     it "templatize maschera i literal stringa (PII email/token) nel title/signature" do

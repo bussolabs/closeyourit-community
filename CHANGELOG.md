@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.237.2] - 2026-11-18
+
+### Fixed
+
+- **I problemi di prestazione restano in ordine e con numeri veri**: una data inviata in millisecondi ora viene letta giusta, e una data troppo nel futuro diventa l'ora di arrivo. Una misura con una durata impossibile viene scartata da sola: le altre dello stesso invio si salvano e medie e massimi restano corretti. (CYRA-1216)
+
 ## [0.237.1] - 2026-11-18
 
 ### Fixed

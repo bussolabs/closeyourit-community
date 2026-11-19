@@ -6,7 +6,7 @@ module Certification
   # Store only rejection codes and counts; full log messages may contain credentials.
   class Diagnostics
     MAX_BYTES = 128 * 1024
-    REJECTION = /\AMetrics::IngestJob (\d+) [^\n]{1,100}: (R422-METRIC-00[23]) project_id=([0-9a-f-]{36})\n?\z/
+    REJECTION = /\AMetrics::IngestJob (\d+) [^\n]{1,100}: (R422-METRIC-00[237]) project_id=([0-9a-f-]{36})\n?\z/
 
     def initialize(path)
       @path = path
@@ -36,7 +36,7 @@ module Certification
         file.each_line.map { |line| JSON.parse(line, symbolize_names: true) }
       end
       valid = rows.all? do |row|
-        row.is_a?(Hash) && %w[R422-METRIC-002 R422-METRIC-003].include?(row[:code]) &&
+        row.is_a?(Hash) && %w[R422-METRIC-002 R422-METRIC-003 R422-METRIC-007].include?(row[:code]) &&
           row[:count].is_a?(Integer) && row[:count].positive?
       end
       raise "Invalid certification diagnostic artifact" unless valid

@@ -158,6 +158,89 @@ RSpec.describe Metrics::Ingest::Record, "#call_batch", type: :service do
     expect(project.metric_samples.count).to eq(1)
   end
 
+  # CYRA-1216: una durata non valida scarta SOLO quel campione — prima un Infinity entrava per sempre in
+  # total/max del gruppo e un tipo sbagliato faceva fallire il job, perdendo l'intero lotto.
+  describe "durata non valida (R422-METRIC-007)" do
+    it "un lotto con 1 durata infinita e 2 valide salva le 2 valide e gli aggregati restano finiti" do
+      body = [
+        payload("sample_id" => "ok1", "duration_ms" => 100.0),
+        payload("sample_id" => "inf", "duration_ms" => Float::INFINITY),
+        payload("sample_id" => "ok2", "duration_ms" => 300.0)
+      ]
+      result = described_class.call_batch(project: project, payloads: body)
+
+      expect(result).to be_ok
+      expect(result.value.accepted).to eq(2)
+      expect(result.value.rejected).to eq([ "R422-METRIC-007" ])
+      expect(project.metric_samples.pluck(:sample_id)).to contain_exactly("ok1", "ok2")
+      group = project.metric_groups.sole
+      expect(group.samples_count).to eq(2)
+      expect(group.duration_total_ms).to eq(400.0)
+      expect(group.duration_min_ms).to eq(100.0)
+      expect(group.duration_max_ms).to eq(300.0)
+      expect(group.average_duration_ms).to eq(200.0)
+    end
+
+    [ true, false, [ 1, 2 ], { "ms" => 5 }, "abc", Float::NAN, -Float::INFINITY ].each do |bad|
+      it "scarta solo il campione con durata #{bad.inspect} e salva gli altri" do
+        body = [ payload("sample_id" => "ok", "duration_ms" => 50.0), payload("sample_id" => "ko", "duration_ms" => bad) ]
+        result = described_class.call_batch(project: project, payloads: body)
+
+        expect(result).to be_ok
+        expect(result.value.accepted).to eq(1)
+        expect(result.value.rejected).to eq([ "R422-METRIC-007" ])
+        expect(project.metric_samples.pluck(:sample_id)).to eq([ "ok" ])
+        expect(project.metric_groups.sole.duration_max_ms).to eq(50.0)
+      end
+    end
+
+    it "un lotto di sole durate non valide non crea alcun gruppo" do
+      result = described_class.call_batch(project: project, payloads: [ payload("duration_ms" => true) ])
+
+      expect(result.value.accepted).to eq(0)
+      expect(result.value.rejected).to eq([ "R422-METRIC-007" ])
+      expect(Metrics::Group.where(project_id: project.id).count).to eq(0)
+    end
+
+    it "una durata come testo numerico resta accettata" do
+      result = described_class.call_batch(project: project, payloads: [ payload("sample_id" => "s", "duration_ms" => "12.5") ])
+
+      expect(result.value.accepted).to eq(1)
+      expect(project.metric_groups.sole.duration_max_ms).to eq(12.5)
+    end
+  end
+
+  # CYRA-1216: date dei campioni con la regola di Logs/Analytics.
+  describe "data del campione" do
+    it "un epoch in millisecondi dà al gruppo la data giusta (non resta in cima all'elenco)" do
+      travel_to(Time.utc(2026, 6, 1, 12)) do
+        sent = Time.utc(2026, 6, 1, 11)
+        described_class.call_batch(project: project, payloads: [ payload("occurred_at" => (sent.to_f * 1000).to_i) ])
+
+        group = project.metric_groups.sole
+        expect(group.last_seen_at).to be_within(1).of(sent)
+        expect(project.metric_samples.sole.occurred_at).to be_within(1).of(sent)
+      end
+    end
+
+    it "una data 2 giorni nel futuro diventa l'ora di arrivo" do
+      travel_to(Time.utc(2026, 6, 1, 12)) do
+        described_class.call_batch(project: project, payloads: [ payload("occurred_at" => 2.days.from_now.to_i) ])
+
+        expect(project.metric_groups.sole.last_seen_at).to be_within(1).of(Time.current)
+      end
+    end
+
+    it "un epoch in secondi resta quello inviato" do
+      travel_to(Time.utc(2026, 6, 1, 12)) do
+        sent = Time.utc(2026, 5, 20, 8)
+        described_class.call_batch(project: project, payloads: [ payload("occurred_at" => sent.to_i) ])
+
+        expect(project.metric_groups.sole.last_seen_at).to be_within(1).of(sent)
+      end
+    end
+  end
+
   it "persiste per i campioni performance_issue tutti i campi ricchi (subtype/trace_id/payload jsonb)" do
     perf = {
       "kind" => "performance_issue", "subtype" => "n_plus_one", "sample_id" => "p-rich",

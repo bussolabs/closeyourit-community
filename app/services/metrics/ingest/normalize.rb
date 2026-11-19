@@ -6,6 +6,9 @@ module Metrics
     # grouping (SQL templatizzato per slow_query, label per slow_method). NON tocca il DB.
     class Normalize < ApplicationService
       include ::Ingest::PayloadCleaning
+      # Date del campione con la regola di Logs/Analytics (CYRA-1216): epoch in millisecondi riconosciuto
+      # e riportato in secondi, istante oltre un'ora nel futuro → adesso.
+      include ::Ingest::EpochTime
       # La ricorsione dello scrub e la redazione dei valori arrivano dal modulo condiviso (CYRA-735);
       # questo canale ne sovrascrive i DUE criteri, per il motivo scritto sotto le costanti.
       include ::Ingest::PiiScrubbing
@@ -53,7 +56,7 @@ module Metrics
         Normalized.new(
           kind: kind,
           sample_id: @payload["sample_id"].to_s.presence || SecureRandom.uuid,
-          duration_ms: [ @payload["duration_ms"].to_f, 0.0 ].max, # clamp: un duration negativo avvelena min/avg
+          duration_ms: duration_ms, # nil = durata non valida: Record scarta il campione (R422-METRIC-007)
           occurred_at: parse_time(@payload["occurred_at"]),
           environment: @payload["environment"].presence,
           title: (job_context&.fetch("name") || core_signature).presence&.truncate(TITLE_MAX) || "metric",
@@ -134,14 +137,19 @@ module Metrics
         parts.reject(&:blank?).join(" ")
       end
 
-      # Nessuna euristica secondi/millisecondi qui (a differenza di Logs/Analytics/Errors): il
-      # contratto SDK delle metriche dichiara i secondi. Del modulo condiviso serve la difesa dal
-      # numero impossibile — un epoch fuori dal calendario faceva morire il job e perdere il campione.
-      def parse_time(timestamp)
-        case timestamp
-        when Numeric then ::Ingest::Normalization.epoch_to_time(timestamp)
-        when String  then (Time.zone.parse(timestamp) rescue nil)
-        end || Time.current
+      # Durata in ms come numero finito, o nil se non valida (CYRA-1216). Assente → 0 e negativa → 0
+      # come prima (un negativo avvelena min/avg). Una stringa numerica ("12.5") resta accettata, ma con
+      # la conversione stretta: "abc" non diventa più 0. Infinito/NaN, booleani, liste e oggetti → nil:
+      # prima Infinity finiva per sempre in total/max del gruppo e un tipo sbagliato faceva fallire il job
+      # (e con lui l'intero lotto). Nessun tetto ai valori finiti.
+      def duration_ms
+        value = @payload["duration_ms"]
+        number = case value
+        when nil then 0.0
+        when Numeric then value.to_f
+        when String then (Float(value) rescue nil)
+        end
+        [ number, 0.0 ].max if number&.finite?
       end
 
       # Numeri/uuid/hex/literal → placeholder: stesso SQL con literal diversi = stessa signature.

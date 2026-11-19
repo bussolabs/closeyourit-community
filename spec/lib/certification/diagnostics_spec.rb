@@ -22,6 +22,11 @@ RSpec.describe Certification::Diagnostics do
     expect(File.read(@path)).not_to include("rejected samples")
   end
 
+  it "retains invalid-duration rejections (R422-METRIC-007)" do
+    sink.write("Metrics::IngestJob 1 campione/i scartato/i: R422-METRIC-007 project_id=#{project_id}\n")
+    expect(described_class.read(@path, project_id:)).to eq([ { code: "R422-METRIC-007", count: 1 } ])
+  end
+
   it "discards ordinary logs and credentials" do
     sink.write("Authorization: Bearer private-test-value\n")
     sink.write("An exception occurred with password=private-test-value\n")

@@ -27,6 +27,23 @@ RSpec.describe Metrics::Ingest::Record do
     expect(project.metric_groups.count).to eq(1)
   end
 
+  # CYRA-1216: stesso rifiuto del percorso a lotti, e nessun aggregato toccato.
+  it "ritorna err R422-METRIC-007 per una durata non valida, senza toccare il gruppo esistente" do
+    described_class.call(project: project, payload: payload("duration_ms" => 100.0, "sample_id" => "a"))
+
+    [ Float::INFINITY, true, [ 1 ], { "ms" => 1 }, "abc" ].each_with_index do |bad, index|
+      result = described_class.call(project: project, payload: payload("duration_ms" => bad, "sample_id" => "bad#{index}"))
+      expect(result).to be_err
+      expect(result.error.code).to eq("R422-METRIC-007")
+    end
+
+    group = project.metric_groups.sole
+    expect(project.metric_samples.count).to eq(1)
+    expect(group.samples_count).to eq(1)
+    expect(group.duration_total_ms).to eq(100.0)
+    expect(group.duration_max_ms).to eq(100.0)
+  end
+
   it "raggruppa query con la stessa signature (literal diversi)" do
     described_class.call(project: project, payload: payload("sql" => "SELECT * FROM users WHERE id = 1", "sample_id" => "a"))
     described_class.call(project: project, payload: payload("sql" => "SELECT * FROM users WHERE id = 999", "sample_id" => "b"))
