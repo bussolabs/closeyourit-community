@@ -154,4 +154,57 @@ RSpec.describe Agents::Attempts::ReportFailure do
       expect(result.error.code).to eq("R409-ATTEMPT-004")
     end
   end
+
+  # CYRA-1330 — a review that produced no verdict for a technical fault (an exhausted quota, a
+  # reviewer process that died) says nothing about the work: it must not spend the phase's attempts.
+  describe "a review that was never produced" do
+    let(:fault_reason) do
+      "review not produced by a technical fault (quota), not a rejection of the work: " \
+        "the reviewer's quota resets at 18:00"
+    end
+
+    def report(reason:, review_fault: nil)
+      described_class.call(host:, attempt:, reason:, review_fault:)
+    end
+
+    it "writes the declared fault beside the reason" do
+      report(reason: "the reviewer process died", review_fault: "transient")
+
+      expect(attempt.reload.review_fault).to eq("transient")
+    end
+
+    # The machines in the field send the reason only, and its shape is stable (the automator composes
+    # it in one place): without reading the sign from there the column would stay empty exactly on
+    # the machines this cap was written for.
+    it "reads the fault from the reason when the field is missing" do
+      report(reason: fault_reason)
+
+      expect(attempt.reload.review_fault).to eq("quota")
+    end
+
+    it "signs nothing on a plain failure" do
+      run
+
+      expect(attempt.reload.review_fault).to be_nil
+    end
+
+    # A kind nobody knows is not trusted into the column: the attempt stays a failure like any
+    # other, which is the safe answer — it counts, instead of granting a free retry.
+    it "ignores a kind nobody knows" do
+      report(reason: "something else entirely", review_fault: "whatever")
+
+      expect(attempt.reload.review_fault).to be_nil
+    end
+
+    # AC-1 — two faults in a row: nobody is called and the phase goes back to the queue.
+    it "leaves the work going after two faults in a row" do
+      create(:agent_attempt, workflow:, organization:, host:, phase: "triage", status: :failed,
+                             review_fault: "quota", created_at: 10.minutes.ago)
+
+      report(reason: fault_reason)
+
+      expect(workflow.reload.blocked_at).to be_nil
+      expect(workflow.ready_execution_phase).to eq("triage")
+    end
+  end
 end

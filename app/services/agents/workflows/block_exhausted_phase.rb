@@ -48,23 +48,54 @@ module Agents
         raise ArgumentError, "serve un attempt oppure workflow+phase+reason" if invalid_input?
         return true if @workflow.blocked_at?
         return block_observed_fact! if @attempt.nil?
+        return block_repeated_review_fault! if review_faults_exhausted?
 
-        count = failures_on_phase(@workflow).count
+        count = failures_on_phase.count
         return false if count < Agents::Constants::PHASE_REVIEW_LIMIT
 
         # La scrittura passa da Block: due punti che scrivono gli stessi quattro campi divergono, e
         # il campo che divergerebbe per primo è proprio `blocked_kind`, da cui dipende la frase che
         # legge chi deve decidere.
-        Agents::Workflows::Block.call(
+        blocked = Agents::Workflows::Block.call(
           workflow: @workflow, phase: @phase, kind: "attempt_limit",
           reason: "attempt_limit: #{@phase} failed #{count} times"
         )
+        # CYRA-1327 — the stop is the BRAKE (the phase must stop being offered), not the end of the
+        # story: right after the commit the budget is settled — over once on another engine, set aside
+        # the second time. Nothing is asked of a person any more.
+        Agents::Workflows::ExhaustedBudget.settle_later(@workflow)
+        blocked
       end
 
       private
 
       def invalid_input?
         @workflow.nil? || @phase.blank? || (@attempt.nil? && @reason.blank?)
+      end
+
+      # CYRA-1330 — the review produced no verdict for a technical fault, too many times in a row.
+      # Not the attempts cap and not to be told as one: that sentence names the review and counts
+      # rejections, which here are zero. No budget to settle (ExhaustedBudget) either — not one
+      # attempt was spent, and starting over on another engine does not make a dead reviewer answer.
+      def block_repeated_review_fault!
+        Agents::Workflows::Block.call(
+          workflow: @workflow, phase: @phase, kind: "review_fault",
+          reason: "review_fault: #{@phase} not judged #{technical_fault_streak} times"
+        )
+      end
+
+      def review_faults_exhausted?
+        technical_fault_streak >= Agents::Constants::PHASE_REVIEW_FAULT_LIMIT
+      end
+
+      # The faults IN A ROW, not the ones of a lifetime: an attempt that ended any other way breaks
+      # the series, as for the "I could not look" ones (Attempts::Effects::Base). Without that, this
+      # month's first fault would count as the third of the months before.
+      def technical_fault_streak
+        @technical_fault_streak ||=
+          within_review_budget(@workflow.attempts.where(phase: @phase, status: Agents::Attempt::TERMINAL_STATUSES))
+            .order(created_at: :desc).limit(Agents::Constants::PHASE_REVIEW_FAULT_LIMIT)
+            .take_while(&:review_fault_technical?).size
       end
 
       # Un fatto osservato che non torna: non si conta niente, si ferma e si chiama una persona. Il
@@ -76,14 +107,21 @@ module Agents
         )
       end
 
-      # Solo i fallimenti DOPO l'ultimo sblocco: gli attempt sono audit immutabile e restano lì per
+      # CYRA-1330 — out of the count go the attempts closed by a technical fault of the review: the
+      # work was never judged, so there is nothing to charge it for.
+      def failures_on_phase
+        within_review_budget(
+          @workflow.attempts.where(phase: @phase, status: COUNTED_STATUSES).without_technical_review_fault
+        )
+      end
+
+      # Solo i tentativi DOPO l'ultimo sblocco: gli attempt sono audit immutabile e restano lì per
       # sempre, quindi contando tutta la storia il tentativo concesso da un "riprova" sarebbe l'unico —
       # chiuso quello, il conteggio è già oltre il tetto e il blocco torna subito.
-      def failures_on_phase(workflow)
-        failures = workflow.attempts.where(phase: @phase, status: COUNTED_STATUSES)
-        return failures unless workflow.review_budget_from?
+      def within_review_budget(attempts)
+        return attempts unless @workflow.review_budget_from?
 
-        failures.where(created_at: workflow.review_budget_from..)
+        attempts.where(created_at: @workflow.review_budget_from..)
       end
     end
   end

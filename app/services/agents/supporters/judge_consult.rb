@@ -58,7 +58,12 @@ module Agents
 
         judged = judgement
         outcome = judged[:reasons].empty? && retry! ? "retried" : "escalated"
-        record!(digest, outcome, judged[:score], judged[:reasons], judged[:reserved], judged[:bypass])
+        decision = record!(digest, outcome, judged[:score], judged[:reasons], judged[:reserved], judged[:bypass])
+        # CYRA-1327 — the supporter wanted to send the work back and the retries are finished: the
+        # server settles the budget instead of calling a person. The verdict in the ledger stays what
+        # the supporter said.
+        Agents::Workflows::ExhaustedBudget.settle_later_if_only_the_budget(workflow:, reasons: judged[:reasons])
+        decision
       end
 
       def judgement

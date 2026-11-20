@@ -14,7 +14,8 @@ module Api
         def create
           attempt = ::Agents::Attempt.where(organization: Current.organization).find(params[:agent_attempt_id])
           result = ::Agents::Attempts::ReportFailure.call(
-            host: Current.agent_host, attempt:, reason: params[:reason]
+            host: Current.agent_host, attempt:, reason: params[:reason],
+            review_fault: params[:review_fault]
           )
           return render_error(result.error.code, result.error.message,
                               status: result.error.status, details: result.error.details) if result.err?

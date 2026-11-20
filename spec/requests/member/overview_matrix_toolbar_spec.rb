@@ -51,7 +51,7 @@ RSpec.describe "Member — area table bar", type: :request do
   it "automation: the project with a blocked automation comes first" do
     allow_n_plus_one do
       create(:agent_workflow, ticket: create(:ticket, project: quiet, organization:), blocked_at: 1.hour.ago,
-                              blocked_phase: "planner", blocked_kind: "attempt_limit")
+                              blocked_phase: "planner", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: planner failed 2 times")
     end
 
     get member_automation_path

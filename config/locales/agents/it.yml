@@ -36,6 +36,12 @@ it:
       already_merged: "La PR #%{number} approvata risulta già unita: il lavoro non va rifatto. Controlla se è già in un rilascio, poi chiudi la lavorazione."
     already_done:
       service_line: "Chi doveva pianificare ha trovato questo lavoro già fatto nel codice: il ticket si chiude senza pianificare. Cosa ha guardato è nella scheda Automazione."
+    # CYRA-1327 — i tentativi sono finiti due volte. Righe a lunghezza FISSA per lo stesso motivo
+    # della riga qui sopra: un commento ha un tetto di caratteri, il motivo tecnico no. Il motivo
+    # tecnico sta nella scheda Automazione.
+    exhausted_budget:
+      service_line: "Le macchine hanno finito i tentativi due volte: il ticket torna tra quelli da fare e non riparte da solo. Cosa è stato provato, e il pulsante per riavviare, sono nella scheda Automazione."
+      eligibility_reason: "Le macchine hanno finito i tentativi due volte su questo ticket. Per rimetterlo in lavorazione non basta consentirlo qui: va anche riavviato dalla scheda Automazione."
     clarifications:
       ask:
         # Riga di servizio: ANNUNCIA le domande, non le contiene. Le domande sono righe loro e si
@@ -45,3 +51,18 @@ it:
         service_line:
           one: "Serve una risposta: la domanda è nella scheda Automazione. Rispondi con un commento qui sotto e la lavorazione riprende da sola."
           other: "Servono risposte: le %{count} domande sono nella scheda Automazione. Rispondi con un commento qui sotto e la lavorazione riprende da sola."
+    # CYRA-1329 — perché una lavorazione è ferma, in una riga, per chi deve decidere (coda e
+    # terminale). Il motivo salvato è audit in una lingua sola: la frase si compone qui dai campi.
+    stop_reason:
+      attempt_limit: "Ha finito i tentativi sul passo «%{phase}»: non riprova più da sola."
+      # CYRA-1330 — la revisione non ha mai risposto: dire che ha finito i tentativi conterebbe
+      # bocciature che non ci sono.
+      review_fault: "La revisione del passo «%{phase}» non si è potuta fare per un guasto tecnico, più volte di fila: non riprova più da sola."
+      agent_blocked: "Si è fermata da sola sul passo «%{phase}»: %{reason}"
+      candidate_check: "Il controllo della proposta non è andato a buon fine: %{reason}"
+      release_probe: "Il controllo del rilascio non è andato a buon fine: %{reason}"
+      held_by_person: "L'ha fermata %{name} prima del rilascio sul sito vero."
+      production_approval: "Aspetta il via libera di una persona prima del rilascio sul sito vero."
+      safety_stop: "Fermata per sicurezza: %{reason} Riparte solo se una persona la sblocca."
+      stalled_review: "Il passo «%{phase}» è stato respinto e nessuno lo sta riprovando."
+      no_reason: "non ha scritto il motivo"

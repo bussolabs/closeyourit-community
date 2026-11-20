@@ -10,4 +10,8 @@ class ApprovalRowSerializer < ApplicationSerializer
   attribute(:project) { |item| item.project && { key: item.project.key, name: item.project.name } }
   attribute(:agent) { |item| item.agent && { id: item.agent.id, name: item.agent.name } }
   attribute(:deferred_until) { |item| params[:deferrals]&.[](item.key) }
+
+  # CYRA-1329 — why the work is stopped: without it the terminal listed stopped rows with nothing to
+  # act on. Nil where the row is not stopped. The queue resolves it, one read for the whole page.
+  attribute(:stop_reason) { |item| item.stop_reason&.to_h }
 end

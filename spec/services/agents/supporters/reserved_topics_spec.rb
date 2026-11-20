@@ -15,6 +15,18 @@ RSpec.describe Agents::Supporters::ReservedTopics do
     expect(topics.match(text: "Rename the helper to formatLabel")).to be_empty
   end
 
+  # CYRA-1326 — a person decides on money, secrets and deleting data, and on nothing else built in.
+  it "reserves money, security and deleting data" do
+    expect(topics.match(text: "Change the invoice totals").map(&:topic)).to include("money")
+    expect(topics.match(text: "Rotate the webhook token").map(&:topic)).to include("security")
+    expect(topics.match(text: "Purge the old rows").map(&:topic)).to include("data_deletion")
+  end
+
+  it "no longer reserves personal data or what customers see" do
+    expect(topics.match(text: "Reword the privacy page and the GDPR notice")).to be_empty
+    expect(topics.match(text: "Fix the customer-facing error message")).to be_empty
+  end
+
   it "matches words whole, in any case" do
     create(:agent_automator_setting, organization: organization, supporter_reserved_topics: "stripe")
     expect(topics.match(text: "Retry the STRIPE webhook")).to be_present

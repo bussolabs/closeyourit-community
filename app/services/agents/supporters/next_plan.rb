@@ -14,7 +14,8 @@ module Agents
       # 7: a gate listed after a forbidden one ("do not use --no-verify or [skip ci]") is no longer a bypass.
       # 8: a plan that changes CI workflow files goes back to the planner instead of to a person (CYRA-1197).
       # 9: low-risk plans are approved after the last revision, with the gaps as notes (CYRA-1197).
-      DIGEST_VERSION = 9
+      # 10: personal data and what customers see are no longer reserved topics (CYRA-1326).
+      DIGEST_VERSION = 10
 
       def self.digest(plan)
         "sha256:" + Digest::SHA256.hexdigest(JSON.generate([ DIGEST_VERSION, plan.id, plan.version, document(plan) ]))

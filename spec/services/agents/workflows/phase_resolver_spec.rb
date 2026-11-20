@@ -72,7 +72,7 @@ RSpec.describe Agents::Workflows::PhaseResolver do
     # Il ramo che il gemello non può dedurre dai soli timestamp: serve la pluck delle bocciature.
     it "dice review_blocked su una fermata dichiarata dall'agente, come il modello" do
       workflow = workflow_con(autopilot_started_at: 1.hour.ago, blocked_at: 30.minutes.ago,
-                              blocked_kind: "agent_blocked", blocked_phase: "autopilot")
+                              blocked_kind: "agent_blocked", blocked_reason: "agent_blocked: it cannot be done here", blocked_phase: "autopilot")
 
       expect(workflow.phase).to eq("review_blocked")
       expect(fase_in_blocco(workflow)).to eq("review_blocked")

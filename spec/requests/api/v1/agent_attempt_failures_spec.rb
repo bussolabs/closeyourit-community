@@ -72,4 +72,15 @@ RSpec.describe "Api::V1::Agents::AttemptFailures", type: :request do
 
     expect(response).to have_http_status(:unauthorized)
   end
+
+  # CYRA-1330 — whose fault it was when the review produced no verdict travels in a field of its
+  # own: a cap that decides whether a piece of work stops cannot be counted off a free-text line.
+  it "takes the declared review fault" do
+    post path, params: { reason: "the reviewer's quota is exhausted", review_fault: "quota" },
+               headers:, as: :json
+
+    expect(response).to have_http_status(:ok)
+    expect(attempt.reload.review_fault).to eq("quota")
+    expect(response.parsed_body.dig("data", "review_fault")).to eq("quota")
+  end
 end

@@ -2,7 +2,9 @@
 
 module Ticketing
   # Chiede al server AI un PARERE sull'eleggibilità agenti di un ticket (CYRA-184, CYRA-770) e lo
-  # scrive nelle colonne del parere. Non muove la decisione: quella la prende una persona.
+  # scrive nelle colonne del parere.
+  # With the supporter on — how every project is born (CYRA-1325) — that advice becomes the decision
+  # (CYRA-1197); with it off, a person decides.
   #
   # A differenza di Ai::RunJob, questo job MANTIENE il retry di ApplicationJob (3 tentativi). Lì c'è
   # un utente che sta pollando un esito già mostrato come fallito, e ritentare pagherebbe una

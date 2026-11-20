@@ -302,6 +302,13 @@ module Agents
         unreachable_count: 0, review_budget_from: now }
     end
 
+    # CYRA-1329 — why it is stopped, ready to read, or nil if it is not. The stalled phase is asked
+    # only where no block is written: with one, those two queries would buy nothing. In a queue the
+    # row passes the already-preloaded phases to Agents::StopReason itself (one read for the page).
+    def stop_reason
+      Agents::StopReason.for(workflow: self, stalled_phase: (stalled_review_phase unless blocked_at?))
+    end
+
     # CYRA-871 — chi ha fermato il rilascio prima della produzione, scritto nel motivo del blocco.
     def held_by_name
       blocked_reason.to_s.delete_prefix("#{Agents::Workflows::HoldProduction::KIND}: ").presence if

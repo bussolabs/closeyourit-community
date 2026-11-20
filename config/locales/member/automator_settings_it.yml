@@ -40,7 +40,7 @@ it:
       supporter_hint: Il supporter risponde alle domande delle macchine. Meglio un motore diverso da chi lavora, così non gli dà ragione da solo.
       reserved_topics_label: Temi riservati dell'organizzazione
       reserved_topics_placeholder: "stripe\npaypal\napp/services/billing/"
-      reserved_topics_hint: Uno per riga. Su questi temi decide sempre una persona, in ogni progetto. Una riga con la barra (/) indica una cartella del codice. Si sommano ai temi fissi (soldi, sicurezza, dati personali, cancellazioni, cambi visibili ai clienti).
+      reserved_topics_hint: Uno per riga. Su questi temi decide sempre una persona, in ogni progetto. Una riga con la barra (/) indica una cartella del codice. Si sommano ai temi fissi (soldi, segreti, cancellazione di dati).
       council_mode_label: Consiglio
       council_mode_hint: Claude e Codex propongono miglioramenti sui progetti con il consiglio attivo. In prova a vuoto scrivono solo il resoconto.
       council_modes:

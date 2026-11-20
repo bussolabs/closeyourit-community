@@ -34,6 +34,11 @@ class ApprovalCardSerializer < ApplicationSerializer
 
   attribute(:blocked_review) { |card| card.attempt&.review.presence&.dig("summary").presence }
 
+  # CYRA-1329 — kind, phase and the sentence that says why the work is stopped, so nobody has to open
+  # the database to find out. `blocked_review` above is another thing: the verdict of the last failed
+  # re-read, which only exists where a review rejected the work.
+  attribute(:stop_reason) { |card| card.workflow&.stop_reason&.to_h }
+
   attribute(:secret_change) do |card|
     next nil unless card.kind == "secret_change"
 

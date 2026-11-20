@@ -12,6 +12,9 @@ module Member
       "review_failed" => %w[rejected red x],
       "rejected" => %w[rejected red x],
       "failed" => %w[failed red triangle-alert],
+      # CYRA-1330 — the review never judged the work: not a verdict either, and not red, because
+      # there is nothing in the work to fix.
+      "review_fault" => %w[review_fault gray triangle-alert],
       "stale" => %w[interrupted gray ban],
       "cancelled" => %w[interrupted gray ban],
       "running" => %w[running indigo loader-circle],
@@ -26,6 +29,9 @@ module Member
     def automation_outcome_key(attempt)
       result = attempt.result
       return "blocked" if attempt.status.to_s == "approved" && result.is_a?(Hash) && result["state"] == "blocked"
+      # CYRA-1330 — the review produced no verdict for a technical fault: read as a failure of the
+      # WORK it would send whoever looks to fix something that is not broken.
+      return "review_fault" if attempt.status.to_s == "failed" && attempt.review_fault_technical?
 
       attempt.status.to_s
     end

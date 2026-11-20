@@ -3,7 +3,8 @@
 module Agents
   module Workflows
     # The council decided what to build, so its tickets' plans need no CTO (CYRA-1133). Only with the
-    # council on; every other ticket still waits for the CTO. The delivery stays with a person (AutoApprove).
+    # council on; every other ticket still waits for the CTO. The delivery follows the ordinary rule: with
+    # every check green it moves on by itself (CYRA-1328).
     class CouncilApprovePlan < ApplicationService
       include ConcludedTicketGate
 

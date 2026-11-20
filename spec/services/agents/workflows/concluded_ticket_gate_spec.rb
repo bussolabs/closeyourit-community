@@ -62,7 +62,7 @@ RSpec.describe "decidere su un ticket concluso" do
 
   it "una lavorazione ferma non si rimette in moto" do
     workflow.update!(triage_started_at: 2.minutes.ago, blocked_at: 1.minute.ago,
-                     blocked_phase: "triage", blocked_kind: "attempt_limit")
+                     blocked_phase: "triage", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: triage failed 2 times")
     concludi!
 
     esito = Agents::Workflows::Unblock.call(workflow:, actor: cto)

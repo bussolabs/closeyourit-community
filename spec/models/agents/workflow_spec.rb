@@ -157,7 +157,7 @@ RSpec.describe Agents::Workflow, type: :model do
     it "il tetto ai tentativi blocca anche quando ogni bocciatura è su una fase conclusa" do
       workflow = create(:agent_workflow, triage_started_at: 3.minutes.ago, triaged_at: 2.minutes.ago,
                                          planned_at: 1.minute.ago, blocked_at: Time.current,
-                                         blocked_phase: "triage", blocked_kind: "attempt_limit")
+                                         blocked_phase: "triage", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: triage failed 2 times")
       create(:agent_attempt, workflow:, status: :review_failed, phase: "triage")
 
       expect(workflow.phase).to eq("review_blocked")
@@ -224,7 +224,7 @@ RSpec.describe Agents::Workflow, type: :model do
       end
 
       it "resta ferma se l'approvazione arriva su una lavorazione bloccata" do
-        workflow.update!(blocked_at: Time.current, blocked_phase: "closer_production", blocked_kind: "attempt_limit",
+        workflow.update!(blocked_at: Time.current, blocked_phase: "closer_production", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: closer_production failed 2 times",
                          closer_production_approved_at: Time.current)
 
         expect(workflow.ready_execution_phase).to be_nil
@@ -261,7 +261,7 @@ RSpec.describe Agents::Workflow, type: :model do
                      autopilot_started_at autopilot_completed_at autopilot_approved_at
                      closer_staging_started_at closer_staging_completed_at]
           workflow = create(:agent_workflow, **through(*chain.take(chain.index(last) + 1)),
-                                             blocked_at: Time.current, blocked_phase: "planner", blocked_kind: "attempt_limit")
+                                             blocked_at: Time.current, blocked_phase: "planner", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: planner failed 2 times")
 
           expect(workflow.ready_execution_phase).to be_nil
         end
@@ -320,7 +320,7 @@ RSpec.describe Agents::Workflow, type: :model do
       # infinito che CYRA-218 chiude, sopravvissuto nel solo percorso SQL.
       it "il CASE SQL coincide col metodo Ruby su una lavorazione bloccata (entrambi nil)" do
         workflow = create(:agent_workflow, **through(:triage_started_at, :triaged_at),
-                                           blocked_at: Time.current, blocked_phase: "planner", blocked_kind: "attempt_limit")
+                                           blocked_at: Time.current, blocked_phase: "planner", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: planner failed 2 times")
 
         sql_value = Agents::Workflow.where(id: workflow.id)
                                     .pick(Arel.sql("(#{Agents::Workflow::READY_EXECUTION_PHASE_SQL})"))
@@ -736,7 +736,7 @@ RSpec.describe Agents::Workflow, type: :model do
     it "un blocco resta visibile anche qui" do
       workflow = create(:agent_workflow, approved_at: 2.minutes.ago, autopilot_started_at: 1.minute.ago,
                                          autopilot_completed_at: Time.current, blocked_at: Time.current,
-                                         blocked_phase: "autopilot", blocked_kind: "candidate_check")
+                                         blocked_phase: "autopilot", blocked_kind: "candidate_check", blocked_reason: "candidate_check: checks_failing")
 
       expect(workflow.phase).to eq("review_blocked")
     end
@@ -751,7 +751,7 @@ RSpec.describe Agents::Workflow, type: :model do
     let(:organization) { create(:organization) }
     let(:workflow) do
       create(:agent_workflow, organization:, triage_started_at: Time.current, blocked_at: Time.current,
-                              blocked_phase: "triage", blocked_kind: "attempt_limit")
+                              blocked_phase: "triage", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: triage failed 2 times")
     end
 
     def tentativo(status)

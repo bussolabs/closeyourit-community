@@ -4132,7 +4132,7 @@
       "level": 3,
       "parent": "tkt_flow_eligibility",
       "kind": "step",
-      "summary": "Parte poco dopo creazione o modifica, così una raffica di correzioni costa una sola valutazione. Salta se il testo non è cambiato o se ha deciso una persona. Nei progetti con il supporter acceso il parere diventa la decisione, salvo temi riservati o tentativi di aggirare i controlli.",
+      "summary": "Parte poco dopo creazione o modifica, così una raffica di correzioni costa una sola valutazione. Salta se il testo non è cambiato o se ha deciso una persona. Col supporter acceso — come nasce ogni progetto — il parere diventa la decisione, salvo temi riservati o tentativi di aggirare i controlli.",
       "files": [
         "app/services/ticketing/agent_eligibility_queue.rb",
         "app/jobs/ticketing/evaluate_agent_eligibility_job.rb",
@@ -5998,6 +5998,7 @@
       "summary": "Nasce la scheda del tentativo con macchina, fase e regole d'uso congelate. Per i rilasci il server assegna qui il numero di versione.",
       "files": [
         "app/services/agents/phase_engine.rb",
+        "app/services/agents/budget_restart.rb",
         "app/services/agents/ticket_queues/claim.rb",
         "app/services/agents/releases/assign.rb",
         "app/models/agents/attempt.rb",
@@ -6108,9 +6109,11 @@
       "level": 3,
       "parent": "agt_flow_deliver",
       "kind": "step",
-      "summary": "Un rapporto bocciato o un guasto dichiarato dalla macchina contano come tentativi andati male. Finiti i tentativi, la lavorazione si ferma e chiama una persona.",
+      "summary": "Un rapporto bocciato o un guasto dichiarato dalla macchina contano come tentativi andati male, tranne quando la revisione non si è potuta fare per un guasto tecnico: quello non consuma tentativi e la fase riprova, e solo se si ripete troppe volte di fila la lavorazione si ferma dicendo che è stato un guasto. Finiti i tentativi la lavorazione riparte da zero con un altro motore, una volta sola; se finiscono di nuovo si mette da parte: la lavorazione si chiude, il ticket torna tra quelli da fare con una nota e non riparte da solo finché qualcuno non lo cambia. Nessuna richiesta arriva nella coda delle decisioni. Se nel frattempo una persona ha ripreso quel lavoro, o ha approvato il piano, non si tocca niente. Sulle fasi di rilascio no: lì il lavoro è già approvato e il codice è fuori, quindi i tentativi finiti restano a una persona.",
       "files": [
         "app/services/agents/workflows/block_exhausted_phase.rb",
+        "app/services/agents/workflows/exhausted_budget.rb",
+        "app/jobs/agents/exhausted_budget_job.rb",
         "app/controllers/api/v1/agents/attempt_failures_controller.rb",
         "app/services/agents/attempts/report_failure.rb"
       ]
@@ -6193,7 +6196,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo i piani a rischio fino a 8, senza temi riservati né tentativi di aggirare i controlli; un controllo citato in un divieto («non usare --no-verify o [skip ci]») non conta come tentativo. Un piano con lacune, o che cambia i file della CI che le macchine non possono consegnare, torna al pianificatore con le osservazioni, al massimo tre volte; dopo, se il rischio è fino a 5, parte e le lacune arrivano come note a chi scrive il codice; gli altri restano a una persona. Se il progetto lo accende, il rischio segnato dal triage fa da minimo: un ticket ad alto rischio non viene mai approvato da solo. Con i tetti stretti accesi, dopo tre revisioni un piano ancora da correggere va sempre a una persona. Un piano che propone voci nuove o ne lascia una senza prova resta sempre a una persona.",
+      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo i piani a rischio fino a 8, senza temi riservati né tentativi di aggirare i controlli; un controllo citato in un divieto («non usare --no-verify o [skip ci]») non conta come tentativo. Un piano con lacune, o che cambia i file della CI che le macchine non possono consegnare, torna al pianificatore con le osservazioni, al massimo tre volte; dopo, se il rischio è fino a 5, parte e le lacune arrivano come note a chi scrive il codice; gli altri non aspettano una persona: la lavorazione riparte da zero con un altro motore, una volta sola, poi viene messa da parte. Se il progetto lo accende, il rischio segnato dal triage fa da minimo: un ticket ad alto rischio non viene mai approvato da solo. Con i tetti stretti accesi, dopo tre revisioni un piano ancora da correggere va sempre a una persona, e non riparte da zero. Un piano che propone voci nuove o ne lascia una senza prova resta sempre a una persona.",
       "files": [
         "app/controllers/api/v1/agent_host/supporter_plans_controller.rb",
         "app/controllers/api/v1/agent_host/supporter_plan_verdicts_controller.rb",
@@ -6208,7 +6211,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Prima di chiamare una persona, il supporter legge perché un agente si è fermato. Il server decide: rimanda il lavoro all'agente con le indicazioni (al massimo 4 volte, una per ogni fermata), lo lascia a una persona, oppure lo ferma per sicurezza se l'agente ha provato ad aggirare i controlli o a toccare la produzione. Un fermo di sicurezza lo toglie solo una persona. Un controllo citato in un divieto, anche in un elenco («non usare --no-verify o [skip ci]»), non conta come tentativo. Il supporter legge anche il motivo del revisore; se la macchina ha perso tutti i tentativi il lavoro riparte da solo; i ticket già chiusi vengono saltati.",
+      "summary": "Prima di chiamare una persona, il supporter legge perché un agente si è fermato. Il server decide: rimanda il lavoro all'agente con le indicazioni (al massimo 4 volte, una per ogni fermata), lo lascia a una persona quando c'è un motivo oltre ai tentativi finiti, oppure lo ferma per sicurezza se l'agente ha provato ad aggirare i controlli o a toccare la produzione. Un fermo di sicurezza lo toglie solo una persona. Un controllo citato in un divieto, anche in un elenco («non usare --no-verify o [skip ci]»), non conta come tentativo. Il supporter legge anche il motivo del revisore; se la macchina ha perso tutti i tentativi il lavoro riparte da solo; i ticket già chiusi vengono saltati. Finiti i rinvii, nessuno chiama una persona: la lavorazione riparte da zero con un altro motore, una volta sola, e al secondo esaurimento viene messa da parte.",
       "files": [
         "app/controllers/api/v1/agent_host/supporter_consults_controller.rb",
         "app/controllers/api/v1/agent_host/supporter_consult_verdicts_controller.rb",
@@ -6418,13 +6421,14 @@
       "level": 2,
       "parent": "area_agents",
       "kind": "page",
-      "summary": "La coda di ciò che aspetta una persona e l'elenco di tutto il lavoro in corso. Si approva, si riprova, si rivaluta, si ferma o si annulla, anche dal terminale con cyi approvals.",
+      "summary": "La coda di ciò che aspetta una persona e l'elenco di tutto il lavoro in corso. Si approva, si riprova, si rivaluta, si ferma o si annulla, anche dal terminale con cyi approvals. Ogni riga ferma dice che tipo di fermo è e perché, in parole semplici.",
       "files": [
         "app/controllers/member/tickets/automation/**",
         "app/controllers/member/home/approvals_controller.rb",
         "app/controllers/cli/v1/approvals_controller.rb",
         "app/serializers/approval_row_serializer.rb",
         "app/serializers/approval_card_serializer.rb",
+        "app/presenters/agents/stop_reason.rb",
         "app/services/home/approvals/**",
         "app/views/member/home/approvals/**",
         "app/services/agents/workflows/in_flight.rb",
@@ -6498,7 +6502,7 @@
       "level": 3,
       "parent": "agt_data",
       "kind": "data",
-      "summary": "Un giro di lavoro di una macchina su una fase. Stati: in corso, approvato, bocciato, fallito, scaduto, annullato. Chiuso non si modifica più. Tiene i passi in diretta che la macchina ha mandato.",
+      "summary": "Un giro di lavoro di una macchina su una fase. Stati: in corso, approvato, bocciato, fallito, scaduto, annullato. Se la revisione non ha potuto giudicare il lavoro, porta scritto di che guasto si è trattato. Chiuso non si modifica più. Tiene i passi in diretta che la macchina ha mandato.",
       "files": [
         "app/models/agents/attempt.rb",
         "app/models/agents/attempt_live_event.rb"

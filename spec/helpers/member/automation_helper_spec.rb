@@ -16,6 +16,24 @@ RSpec.describe Member::AutomationHelper, type: :helper do
       expect(outcome[:icon]).to eq("triangle-alert")
       expect(outcome[:label]).to eq(I18n.t("member.tickets.automation.steps.outcome.failed"))
     end
+
+    # CYRA-1330 — the review produced no verdict because of a technical fault: the machine could not
+    # judge the work, so reading it as a failure of the WORK sends whoever looks to fix nothing.
+    it "shows a review that was never produced as a fault of the machine" do
+      attempt = build_stubbed(:agent_attempt, status: :failed, review_fault: "quota")
+
+      outcome = helper.automation_outcome(attempt)
+
+      expect(outcome[:color]).to eq(:gray)
+      expect(outcome[:label]).to eq(I18n.t("member.tickets.automation.steps.outcome.review_fault"))
+    end
+
+    # `work` is the reviewer's own verdict on this working copy: it is a failure like any other.
+    it "keeps a judged failure as a failure" do
+      attempt = build_stubbed(:agent_attempt, status: :failed, review_fault: "work")
+
+      expect(helper.automation_outcome(attempt)[:color]).to eq(:red)
+    end
   end
 
   describe "#automation_considerations" do

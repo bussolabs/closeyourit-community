@@ -29,7 +29,7 @@ RSpec.describe "Member::Home::Approvals blocked release card", type: :request do
     ticket = create(:ticket, organization: org, project:)
     workflow = create(:agent_workflow, ticket:, triage_requested_at: 3.days.ago, triaged_at: 3.days.ago,
                                        planned_at: 2.days.ago, approved_at: 2.days.ago, blocked_at: Time.current,
-                                       blocked_phase: phase, blocked_kind: "attempt_limit")
+                                       blocked_phase: phase, blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: the phase failed 2 times")
     planner = create(:agent_attempt, workflow:, organization: org, phase: "planner",
                                      result: { "decision_card" => decision_card })
     Agents::Plan.create!(workflow:, attempt: planner, ticket_snapshot_digest: "snapshot", contract_version: 2,

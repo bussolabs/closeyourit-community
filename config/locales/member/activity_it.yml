@@ -55,6 +55,8 @@ it:
           plan_supporter_approved: Piano approvato dal supporter
           plan_reopened_items_changed: Si ripianifica, voci di accettazione cambiate
           workflow_supporter_retried: Lavorazione rimandata all'agente dal supporter
+          workflow_restarted_other_engine: Lavorazione ripartita con un altro motore
+          workflow_set_aside: Lavorazione messa da parte
           agent_safety_stopped: Lavorazione fermata per sicurezza
           delivery_scope_stopped: Consegna fermata dal controllo sui file
           delivery_scope_would_stop: Controllo sui file in prova

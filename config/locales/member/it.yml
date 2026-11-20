@@ -2294,6 +2294,7 @@ it:
             approved: approvato
             rejected: respinto
             failed: fallito
+            review_fault: guasto tecnico
             interrupted: interrotto
             running: in corso
             awaiting_review: in revisione
@@ -2304,6 +2305,7 @@ it:
             approved: approvati
             rejected: respinti
             failed: falliti
+            review_fault: guasti tecnici
             interrupted: interrotti
             running: in corso
             awaiting_review: in revisione
@@ -2314,6 +2316,9 @@ it:
             approved: "La revisione ha accettato il lavoro consegnato: il passo è chiuso."
             rejected: "La revisione non ha accettato il lavoro: il passo va rifatto."
             failed: Il tentativo si è rotto per un guasto della macchina, senza consegnare niente.
+            # CYRA-1330 — un guasto della revisione non è un giudizio sul lavoro, e non consuma i
+            # tentativi del passo.
+            review_fault: "La revisione non si è potuta fare per un guasto tecnico: il lavoro non è stato giudicato e il tentativo non è stato consumato."
             interrupted: "Il tentativo è finito senza consegnare: la macchina si è spenta o ha perso il collegamento."
             running: Una macchina ci sta lavorando adesso.
             awaiting_review: Il lavoro è consegnato e un'altra macchina lo sta rileggendo.
@@ -2622,6 +2627,8 @@ it:
         plan_supporter_approved: "Il supporter ha approvato questo piano a rischio basso: nessuno ha dovuto firmarlo"
         plan_reopened_items_changed: "Le voci di accettazione sono cambiate dopo l'approvazione del piano: si ripianifica"
         workflow_supporter_retried: "Il supporter ha guardato perché la lavorazione si era fermata e l'ha rimandata all'agente con le sue indicazioni"
+        workflow_restarted_other_engine: "I tentativi erano finiti: la lavorazione è ripartita da zero con un altro motore, una volta sola"
+        workflow_set_aside: "I tentativi sono finiti di nuovo: la lavorazione si chiude e il ticket torna tra quelli da fare. Non riparte da solo."
         agent_safety_stopped: "Lavorazione fermata per sicurezza: un agente ha provato ad aggirare i controlli o a toccare la produzione. Riparte solo se una persona la sblocca: il motivo è nella scheda Automazione."
         delivery_scope_stopped: "Il lavoro consegnato aspetta una persona: le modifiche toccano %{files}"
         delivery_scope_would_stop: "Controllo in prova: questa consegna si sarebbe fermata, perché le modifiche toccano %{files}"

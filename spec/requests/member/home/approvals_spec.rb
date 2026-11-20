@@ -1403,7 +1403,7 @@ RSpec.describe "Member::Home::Approvals", type: :request do
                                          triage_requested_at: 4.hours.ago, triage_started_at: 4.hours.ago,
                                          triaged_at: 3.hours.ago, planned_at: 2.hours.ago, approved_at: 2.hours.ago,
                                          autopilot_started_at: 1.hour.ago, blocked_at: 30.minutes.ago,
-                                         blocked_phase: "autopilot", blocked_kind: "attempt_limit")
+                                         blocked_phase: "autopilot", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: autopilot failed 2 times")
       create(:agent_attempt, workflow:, organization: org, phase: "autopilot", status: :review_failed)
       workflow
     end
@@ -1717,7 +1717,7 @@ RSpec.describe "Member::Home::Approvals", type: :request do
       it "touches nothing outside the account's organization" do
         other = create(:organization)
         foreign = create(:agent_workflow, ticket: create(:ticket, organization: other, project: create(:project, organization: other)),
-                                          blocked_at: 1.hour.ago, blocked_phase: "autopilot", blocked_kind: "attempt_limit")
+                                          blocked_at: 1.hour.ago, blocked_phase: "autopilot", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: autopilot failed 2 times")
         sign_in(owner)
 
         post member_home_approvals_bulk_retry_path, params: { keys: [ "agent_plan:#{foreign.id}" ] }

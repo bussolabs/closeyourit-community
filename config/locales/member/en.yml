@@ -2225,6 +2225,7 @@ en:
             approved: approved
             rejected: rejected
             failed: failed
+            review_fault: technical fault
             interrupted: interrupted
             running: running
             awaiting_review: in review
@@ -2234,6 +2235,7 @@ en:
             approved: approved
             rejected: rejected
             failed: failed
+            review_fault: technical faults
             interrupted: interrupted
             running: running
             awaiting_review: in review
@@ -2244,6 +2246,9 @@ en:
             approved: "Review accepted the delivered work: the step is closed."
             rejected: "Review did not accept the work: the step has to be done again."
             failed: The attempt broke on a machine failure, delivering nothing.
+            # CYRA-1330 — a fault of the review is not a judgement on the work, and it does not
+            # spend the step's attempts.
+            review_fault: "The review could not be done because of a technical fault: the work was not judged and the attempt was not spent."
             interrupted: "The attempt ended without delivering: the machine went down or lost its connection."
             running: A machine is working on it right now.
             awaiting_review: The work is delivered and another machine is reading it.
@@ -2543,6 +2548,8 @@ en:
         plan_supporter_approved: "The supporter approved this low-risk plan: no one had to sign it"
         plan_reopened_items_changed: "The acceptance items changed after the plan was approved: planning again"
         workflow_supporter_retried: "The supporter looked at why the work stopped and sent it back to the agent with its guidance"
+        workflow_restarted_other_engine: "The attempts had run out: the work started over from scratch on another engine, once"
+        workflow_set_aside: "The attempts ran out again: the run closes and the ticket goes back to the backlog. It does not start again on its own."
         agent_safety_stopped: "Work stopped for safety: an agent tried to skip the checks or to touch production. It resumes only when a person releases it: the reason is in the Automation tab."
         delivery_scope_stopped: "The delivered work waits for a person: the changes touch %{files}"
         delivery_scope_would_stop: "Check in dry run: this delivery would have stopped, because the changes touch %{files}"

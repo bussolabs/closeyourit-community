@@ -122,7 +122,7 @@ RSpec.describe Home::Approvals::Board do
                                          triage_started_at: 4.hours.ago, triaged_at: 3.hours.ago,
                                          planned_at: 2.hours.ago, approved_at: 2.hours.ago,
                                          autopilot_started_at: 1.hour.ago,
-                                         blocked_at: 30.minutes.ago, blocked_phase: "autopilot", blocked_kind: "attempt_limit")
+                                         blocked_at: 30.minutes.ago, blocked_phase: "autopilot", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: autopilot failed 2 times")
       create(:agent_attempt, workflow:, organization:, phase: "autopilot", status: :review_failed)
 
       cells = cells_by_phase(board.page.records.first)
@@ -191,7 +191,7 @@ RSpec.describe Home::Approvals::Board do
                                          triage_started_at: 4.hours.ago, triaged_at: 3.hours.ago,
                                          planned_at: 2.hours.ago, approved_at: 2.hours.ago,
                                          autopilot_started_at: 1.hour.ago,
-                                         blocked_at: 30.minutes.ago, blocked_phase: "autopilot", blocked_kind: "attempt_limit")
+                                         blocked_at: 30.minutes.ago, blocked_phase: "autopilot", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: autopilot failed 2 times")
       create(:agent_attempt, workflow:, organization:, phase: "autopilot", status: :review_failed)
       workflow
     end

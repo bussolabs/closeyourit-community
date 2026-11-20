@@ -3,7 +3,7 @@
 module Ticketing
   # CYRA-1197 — on a project with the supporter on, the AI's advice becomes the decision, so a well-written ticket
   # reaches the agents without a person. The server's own checks stay in front: a ticket that hits a reserved topic
-  # (money, security, personal data, deletions, what customers see, plus the organization's and the project's) or
+  # (money, security, deletions, plus the organization's and the project's) or
   # proposes to skip the system's gates stays pending for a person. A person's decision is never touched, and the
   # decision follows a later advice only while no person has decided.
   class AutoDecideAgentEligibility < ApplicationService

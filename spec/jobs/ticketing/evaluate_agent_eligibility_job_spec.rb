@@ -23,7 +23,10 @@ RSpec.describe Ticketing::EvaluateAgentEligibilityJob do
 
   # CYRA-770: il giro automatico informa, non decide. Il ticket resta fuori dalla coda finché una
   # persona non lo consente, e questo vale anche quando il parere è favorevole.
-  it "lascia la decisione in attesa anche con un parere favorevole" do
+  # Holds with the supporter off; on — how every project is born now (CYRA-1325) — the advice becomes
+  # the decision (CYRA-1197).
+  it "leaves the decision pending on a favourable advice, with the supporter off" do
+    ticket.project.update!(supporter_enabled: false)
     stub_evaluation(eligibility: "allowed")
 
     described_class.perform_now(ticket_id: ticket.id)

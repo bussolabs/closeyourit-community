@@ -101,7 +101,7 @@ RSpec.describe "CYRA-595 — un rilascio in produzione alla volta" do
     it "un rilascio fallito e in attesa di una persona tiene comunque la fila" do
       rotto = pronto_al_rilascio
       rotto.agent_workflow.update!(closer_production_started_at: nil, blocked_at: Time.current,
-                                   blocked_phase: "closer_production", blocked_kind: "attempt_limit")
+                                   blocked_phase: "closer_production", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: closer_production failed 2 times")
       pronto_al_rilascio
 
       expect(coda).to be_nil

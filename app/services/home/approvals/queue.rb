@@ -307,10 +307,10 @@ module Home
         gated = gated_agent_workflows(project: project_filter, agent: agent_filter)
         shown = preloaded(gated.first(@limit))
         # CYRA-998 — the version a rewritten plan has reached, one query for the whole page.
-        plan_versions = ::Agents::Plan.where(workflow_id: shown.map { |workflow, _, _| workflow.id })
+        plan_versions = ::Agents::Plan.where(workflow_id: shown.map(&:first).map(&:id))
                                       .group(:workflow_id).maximum(:version)
         split_sizes = plan_split_sizes(plan_versions)
-        items = shown.map do |workflow, phase, state|
+        items = shown.map do |workflow, phase, state, stop_reason|
           ticket = workflow.ticket
           track_ticket("agent_plan:#{workflow.id}", ticket.id)
           item(
@@ -330,11 +330,12 @@ module Home
             # presa (o congelata), e un avviso su qualcosa che non si sta più decidendo è rumore.
             freeze_warning: (plan_freeze_warning(ticket) if phase == "awaiting_approval"),
             plan_version: plan_versions[workflow.id],
-            plan_split: (split_sizes[workflow.id] if phase == "awaiting_approval")
+            plan_split: (split_sizes[workflow.id] if phase == "awaiting_approval"),
+            stop_reason: stop_reason
           )
         end
         # Conteggi su TUTTI i gated, non sui primi @limit: è l'unica sorgente che li ha già in memoria.
-        { items: items, totals: gated.group_by(&:last).transform_values(&:size),
+        { items: items, totals: gated.group_by { |_, _, state, _| state }.transform_values(&:size),
           project_ids: in_queue(gated_agent_workflows(project: nil, agent: nil))
                          .map { |workflow, _, _| workflow[:gated_project_id] }.uniq,
           agents: in_queue(gated_agent_workflows(project: project_filter, agent: nil))
@@ -399,8 +400,21 @@ module Home
           # davvero sua. CYRA-790
           next if agent && agent_ref_for(workflow, phase)&.id != agent.id
 
-          [ workflow, phase, plan_state(workflow, phase, failed[workflow.id], open[workflow.id]) ]
+          # CYRA-1329 — la fase ferma sotto il tetto si risolve UNA volta per workflow, dalle fasi
+          # già precaricate: la legge lo stato della riga (ferma o in nuovo tentativo) e la legge il
+          # motivo che la riga mostra. Due calcoli separati sarebbero la stessa regola in due posti.
+          stalled = stalled_phase(workflow, failed[workflow.id], open[workflow.id])
+          [ workflow, phase, plan_state(phase, workflow.blocked_at?, stalled),
+            ::Agents::StopReason.for(workflow: workflow, stalled_phase: stalled) ]
         end
+      end
+
+      # Nil dove un blocco è scritto: lì la fase ferma la dice `blocked_phase`, e cercarla fra le
+      # bocciature direbbe un'altra fase sulla stessa lavorazione.
+      def stalled_phase(workflow, failed_phases, open_phases)
+        return nil if workflow.blocked_at?
+
+        workflow.stalled_review_phase_from(failed_phases.to_a, open_phases.to_a)
       end
 
       # Icona e tono seguono lo STATO, non la fase: una lavorazione che riprova da sola non è un
@@ -412,11 +426,10 @@ module Home
       # (resta in coda) o già in nuovo tentativo (elenco separato). Il discrimine è lo STESSO che usa
       # Detail#blocked_decisions per offrire il riaccodo, qui letto dalle fasi precaricate: dove il
       # riaccodo non avrebbe nulla da riaprire, la lavorazione sta riprovando da sé.
-      def plan_state(workflow, phase, failed_phases, open_phases)
+      def plan_state(phase, blocked, stalled)
         return phase unless phase == "review_blocked"
-        return phase if workflow.blocked_at?
 
-        workflow.stalled_review_phase_from(failed_phases.to_a, open_phases.to_a) ? phase : RETRYING_STATE
+        blocked || stalled ? phase : RETRYING_STATE
       end
 
       # Workflow candidati: non terminati, in una fase potenzialmente human-gated, dei ticket visibili e

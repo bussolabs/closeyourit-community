@@ -78,6 +78,18 @@ RSpec.describe Agents::TicketQueues::Claim do
       expect(attempt).to have_attributes(runtime: "claude", work_model: "claude-sonnet-5-5", expected_reviewer: "codex")
     end
 
+    # CYRA-1327 — the run started over because its attempts ran out: it works on the other engine, and
+    # that choice comes before the council's own, which picked the engine that has just failed here.
+    it "starts a restarted run on the engine written on it, before the council's choice" do
+      host.update!(runtimes: [ { "name" => "claude", "present" => true }, { "name" => "codex", "present" => true } ])
+      create(:agent_council_proposal, organization:, project:, ticket:, suggested_engine: "claude")
+      workflow.update!(budget_restart_engine: "codex")
+
+      attempt = claim.send(:ensure_attempt!, context, selection)
+
+      expect(attempt).to have_attributes(runtime: "codex", work_model: nil, expected_reviewer: "claude")
+    end
+
     it "è idempotente sul replay (stessa host+phase+ticket+run) senza creare un secondo tentativo" do
       first = claim.send(:ensure_attempt!, context, selection)
 

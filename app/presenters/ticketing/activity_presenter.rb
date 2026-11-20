@@ -59,6 +59,9 @@ module Ticketing
       # The supporter sent stopped work back to the agent, or stopped an agent for safety (CYRA-1197).
       "workflow_supporter_retried" => "rotate-ccw",
       "agent_safety_stopped" => "shield-alert",
+      # The attempts ran out: over once on another engine, set aside the second time (CYRA-1327).
+      "workflow_restarted_other_engine" => "repeat",
+      "workflow_set_aside" => "archive",
       # The check on the files a delivery really changed (CYRA-1291).
       "delivery_scope_stopped" => "file-warning",
       "delivery_scope_would_stop" => "flask-conical",

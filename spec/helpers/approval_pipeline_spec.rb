@@ -61,7 +61,7 @@ RSpec.describe HomeHelper, type: :helper do
     it "segna respinto il passaggio scritto dal dominio, e NIENTE è in corso" do
       workflow = create(:agent_workflow, ticket:, triaged_at: 2.days.ago, planned_at: 1.day.ago,
                                          approved_at: 1.day.ago, blocked_at: Time.current,
-                                         blocked_phase: "autopilot", blocked_kind: "attempt_limit")
+                                         blocked_phase: "autopilot", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: autopilot failed 2 times")
 
       stato = stati(card_for(workflow, phase: "review_blocked"))
 
@@ -74,7 +74,7 @@ RSpec.describe HomeHelper, type: :helper do
     it "vale anche senza nessun tentativo respinto da leggere" do
       workflow = create(:agent_workflow, ticket:, triaged_at: 2.days.ago, planned_at: 1.day.ago,
                                          approved_at: 1.day.ago, blocked_at: Time.current,
-                                         blocked_phase: "autopilot", blocked_kind: "attempt_limit")
+                                         blocked_phase: "autopilot", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: autopilot failed 2 times")
 
       stato = stati(card_for(workflow, phase: "review_blocked", attempt: nil))
 
@@ -86,7 +86,7 @@ RSpec.describe HomeHelper, type: :helper do
     it "una bocciatura superata non segna respinto un passaggio poi concluso" do
       workflow = create(:agent_workflow, ticket:, triaged_at: 2.days.ago, planned_at: 1.day.ago,
                                          approved_at: 1.day.ago, blocked_at: Time.current,
-                                         blocked_phase: "autopilot", blocked_kind: "attempt_limit")
+                                         blocked_phase: "autopilot", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: autopilot failed 2 times")
       vecchio = create(:agent_attempt, workflow:, organization: org, phase: "planner", status: :review_failed)
 
       stato = stati(card_for(workflow, phase: "review_blocked", attempt: vecchio))
@@ -107,7 +107,7 @@ RSpec.describe HomeHelper, type: :helper do
                phase: "closer_production_queued"),
       card_for(create(:agent_workflow, ticket:, triaged_at: 2.days.ago, planned_at: 1.day.ago,
                                        approved_at: 1.day.ago, blocked_at: Time.current,
-                                       blocked_phase: "autopilot", blocked_kind: "attempt_limit"), phase: "review_blocked")
+                                       blocked_phase: "autopilot", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: autopilot failed 2 times"), phase: "review_blocked")
     ]
     emessi = lavorazioni.flat_map { |c| helper.approval_pipeline(c).map { |s| s[:state] } }.uniq
 

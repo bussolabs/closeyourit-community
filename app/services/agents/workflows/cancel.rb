@@ -5,15 +5,17 @@ module Agents
     class Cancel < ApplicationService
       include ConcludedTicketGate
 
-      def initialize(workflow:, actor:, reason:)
+      # CYRA-1327 — `by_server:` is the close the server decides when the attempts run out a second
+      # time (Agents::Workflows::ExhaustedBudget): no manager behind it, so `cancelled_by` stays empty.
+      def initialize(workflow:, actor:, reason:, by_server: false)
         @workflow = workflow
         @actor = actor
         @reason = reason.to_s.strip
+        @by_server = by_server
       end
 
       def call
-        membership = @workflow.organization.memberships.find_by(account: @actor)
-        return forbidden unless membership&.role.in?(%w[admin owner])
+        return forbidden unless @by_server || authorized?
         return invalid if @reason.blank?
         return concluded_ticket if concluded_ticket?
 
@@ -33,6 +35,10 @@ module Agents
       end
 
       private
+
+      def authorized?
+        @workflow.organization.memberships.find_by(account: @actor)&.role.in?(%w[admin owner])
+      end
 
       # CYRA-1050 — the in-progress status the run put on the ticket goes back to open. Not once the code
       # is verified on the main line (it is in staging: in review), nor while a person holds the ticket.

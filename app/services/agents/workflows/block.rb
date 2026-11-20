@@ -31,8 +31,10 @@ module Agents
       # CYRA-1197 — `safety_stop`: an agent tried to skip the system's gates or to harm production. Only a person
       # releases it (see Agents::Workflow#safety_release and Agents::Workflows::SafetyStop).
       # CYRA-1278 — `production_approval`: the project or its group wants a person's go-ahead before production.
+      # CYRA-1330 — `review_fault`: the review of the phase kept producing no verdict for a technical fault.
+      # Told as `attempt_limit` the sentence would count rejections that are zero: nothing was ever judged.
       KINDS = %w[attempt_limit agent_blocked candidate_check release_probe held_by_person safety_stop
-                 production_approval].freeze
+                 production_approval review_fault].freeze
 
       def initialize(workflow:, phase:, reason:, kind:)
         @workflow = workflow

@@ -125,7 +125,7 @@ RSpec.describe Projects::Moves::Plan do
 
   it "ignores a blocked agent workflow even when it was updated recently" do
     ticket = create(:ticket, project:, with_agent_workflow: true)
-    ticket.agent_workflow.update_columns(blocked_at: Time.current, blocked_kind: "agent_blocked", updated_at: Time.current)
+    ticket.agent_workflow.update_columns(blocked_at: Time.current, blocked_kind: "agent_blocked", blocked_reason: "agent_blocked: it cannot be done here", updated_at: Time.current)
     expect(codes).not_to include("agent_running")
   end
 
@@ -142,7 +142,7 @@ RSpec.describe Projects::Moves::Plan do
     end
 
     it "ignores an open probe past its window on a blocked workflow" do
-      workflow.update_columns(blocked_at: 1.day.ago, blocked_kind: "release_probe")
+      workflow.update_columns(blocked_at: 1.day.ago, blocked_kind: "release_probe", blocked_reason: "release_probe: release_run_failed")
       workflow.probes.create!(kind: "deploy_smoke", bound_at: 3.days.ago, next_check_at: 3.days.ago)
       expect(codes).not_to include("agent_running")
     end

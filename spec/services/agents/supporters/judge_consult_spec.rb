@@ -178,6 +178,38 @@ RSpec.describe Agents::Supporters::JudgeConsult do
     expect(Agents::Supporters::NextConsult.call(host:).value).to be_nil
   end
 
+  # ── CYRA-1327 ─────────────────────────────────────────────────────────────────────────────────
+  #
+  # The retries are finished and the supporter still wanted to send the work back: that is an
+  # exhausted budget, not a question for a person. The server settles it — over once on another
+  # engine, set aside the second time.
+  describe "when the retries are finished" do
+    before do
+      Agents::Supporters::NextConsult::MAX_RETRIES.times do |i|
+        Agents::SupporterDecision.create!(organization:, workflow:, target_type: "consult",
+                                          target_id: workflow.id, target_digest: "old-#{i}",
+                                          outcome: "retried", engine: "codex", risk_score: 3)
+      end
+    end
+
+    it "settles the budget itself instead of calling a person" do
+      result = nil
+      expect { result = judge }.to have_enqueued_job(Agents::ExhaustedBudgetJob).with(workflow.id, String)
+
+      expect(result.value).to include(outcome: "escalated", reasons: [ "retries_exhausted" ])
+    end
+
+    # AC-3, AC-7 — anything else on the list still wants a person: the budget must be the only reason.
+    it "leaves the work to a person when the guidance tries to skip the checks" do
+      expect { judge(guidance: "Deliver with git commit --no-verify and move on, the tests are flaky.") }
+        .not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
+    end
+
+    it "leaves the work to a person when the supporter asked for one" do
+      expect { judge(recommendation: "escalate") }.not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
+    end
+  end
+
   it "refuses a verdict on a stop it did not read" do
     expect(judge(digest: "sha256:old").error.code).to eq("R409-SUPPORTER-005")
     expect(Agents::SupporterDecision.count).to eq(0)

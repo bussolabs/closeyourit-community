@@ -100,6 +100,42 @@ RSpec.describe Agents::Workflows::BlockExhaustedPhase do
 
     expect(workflow.reload.blocked_kind).to eq("attempt_limit")
   end
+
+  # ── CYRA-1327 ─────────────────────────────────────────────────────────────────────────────────
+  #
+  # The stop is the BRAKE, not the end of the story: the phase must stop being offered, and right
+  # after the commit the budget is settled — over once on another engine, set aside the second time.
+  describe "what happens after the stop" do
+    it "asks for the budget to be settled" do
+      limit.times { attempt_with(:stale) }
+
+      expect { described_class.call(attempt: workflow.attempts.last) }
+        .to have_enqueued_job(Agents::ExhaustedBudgetJob).with(workflow.id, String)
+    end
+
+    it "asks for nothing while the phase still has budget" do
+      expect { described_class.call(attempt: attempt_with(:failed)) }
+        .not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
+    end
+
+    # A stop already written is somebody else's story: the budget of this one was settled then.
+    it "asks for nothing on a run that is already stopped" do
+      workflow.update!(blocked_at: 1.day.ago, blocked_phase: "planner", blocked_kind: "attempt_limit",
+                       blocked_reason: "old")
+      limit.times { attempt_with(:failed) }
+
+      expect { described_class.call(attempt: workflow.attempts.last) }
+        .not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
+    end
+
+    # The server's own checkers do not produce attempts and never ran out of any: a red proposal or a
+    # release that did not come up is a fact to look at, not an exhausted budget.
+    it "asks for nothing when the stop comes from a checker" do
+      expect do
+        described_class.call(workflow:, phase: "autopilot", source: "candidate_check", reason: "checks_failing")
+      end.not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
+    end
+  end
   # ── CYRA-618 ──────────────────────────────────────────────────────────────────────────────────
   #
   # Due ingressi, una porta sola. Il secondo non prende un `attempt:` e non è una scorciatoia: i
@@ -139,6 +175,96 @@ RSpec.describe Agents::Workflows::BlockExhaustedPhase do
       expect { described_class.call(workflow:, phase: "autopilot") }.to raise_error(ArgumentError)
       expect { described_class.call(workflow:, reason: "x") }.to raise_error(ArgumentError)
       expect(workflow.reload.blocked_at).to be_nil
+    end
+  end
+
+  # ── CYRA-1330 ─────────────────────────────────────────────────────────────────────────────────
+  #
+  # A review that produced NO verdict — an exhausted quota, a reviewer process that died — says
+  # nothing about the work: it says the MACHINE could not judge it. Counted as a rejection, two of
+  # them stopped sound work and called a person for a fault nobody could act on.
+  describe "a review that was never produced" do
+    let(:fault_limit) { Agents::Constants::PHASE_REVIEW_FAULT_LIMIT }
+
+    def fault_with(kind, at:, phase: "closer_production")
+      create(:agent_attempt, workflow:, organization:, phase:, status: :failed,
+                             review_fault: kind, created_at: at)
+    end
+
+    def last_attempt = workflow.attempts.order(:created_at).last
+
+    # AC-4 — the fault does not charge the phase's attempts: two in a row leave the work going.
+    it "spends no attempt on a technical fault" do
+      limit.times { |n| fault_with("quota", at: (limit - n).minutes.ago) }
+
+      expect(described_class.call(attempt: last_attempt)).to be(false)
+      expect(workflow.reload.blocked_at).to be_nil
+    end
+
+    # AC-5 — `work`: the reviewer DID judge, and the answer belongs to this working copy. It counts
+    # as it always has, because retrying the same copy gives the same answer forever.
+    it "spends an attempt on a fault of the work itself" do
+      limit.times { |n| fault_with("work", at: (limit - n).minutes.ago) }
+
+      expect(described_class.call(attempt: last_attempt)).to be(true)
+      expect(workflow.reload.blocked_kind).to eq("attempt_limit")
+    end
+
+    # AC-2 — real rejections keep their cap: a fault among them neither counts nor forgives.
+    it "counts the rejections around a fault" do
+      create(:agent_attempt, workflow:, organization:, phase: "closer_production",
+                             status: :review_failed, created_at: 30.minutes.ago)
+      fault_with("quota", at: 20.minutes.ago)
+      rejected = create(:agent_attempt, workflow:, organization:, phase: "closer_production",
+                                        status: :review_failed, created_at: 10.minutes.ago)
+
+      expect(described_class.call(attempt: rejected)).to be(true)
+      expect(workflow.reload.blocked_kind).to eq("attempt_limit")
+    end
+
+    # AC-3 / AC-6 — a cap of its own, and higher: a phase that only ever hits faults must stop
+    # somewhere, or it waits and retries forever.
+    it "stops a phase that keeps hitting faults, on a cap of its own" do
+      fault_limit.times { |n| fault_with("transient", at: (fault_limit - n).minutes.ago) }
+
+      expect(described_class.call(attempt: last_attempt)).to be(true)
+      expect(workflow.reload).to have_attributes(blocked_kind: "review_fault",
+                                                 blocked_phase: "closer_production")
+      expect(workflow.blocked_reason)
+        .to eq("review_fault: closer_production not judged #{fault_limit} times")
+    end
+
+    # The faults IN A ROW, not the ones of a lifetime. A delivery that got through breaks the
+    # series: without that, the first fault of next week would count as the third of last month.
+    it "counts the faults in a row" do
+      fault_with("quota", at: 40.minutes.ago)
+      create(:agent_attempt, workflow:, organization:, phase: "closer_production",
+                             status: :approved, created_at: 30.minutes.ago)
+      fault_with("quota", at: 20.minutes.ago)
+      fault_with("quota", at: 10.minutes.ago)
+
+      expect(described_class.call(attempt: last_attempt)).to be(false)
+      expect(workflow.reload.blocked_at).to be_nil
+    end
+
+    # Same reason the rejections have a window: the attempts are immutable audit and stay there for
+    # ever, so after an unblock the series has to start again from zero.
+    it "starts the series again after an unblock" do
+      fault_limit.times { |n| fault_with("quota", at: (60 - n).minutes.ago) }
+      workflow.update!(review_budget_from: 10.minutes.ago)
+      fresh = fault_with("transient", at: 1.minute.ago)
+
+      expect(described_class.call(attempt: fresh)).to be(false)
+      expect(workflow.reload.blocked_at).to be_nil
+    end
+
+    # CYRA-1327 settles a budget that RAN OUT: here nothing was spent, so there is no budget to
+    # settle — starting the work over on another engine would not make a dead reviewer answer.
+    it "settles no budget when nothing was spent" do
+      fault_limit.times { |n| fault_with("quota", at: (fault_limit - n).minutes.ago) }
+
+      expect { described_class.call(attempt: last_attempt) }
+        .not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
     end
   end
 end

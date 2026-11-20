@@ -278,6 +278,16 @@ RSpec.describe Projects::Project, type: :model do
     end
   end
 
+  describe "supporter_enabled (the agent that judges the plans)" do
+    it "is on by default" do
+      expect(create(:project).supporter_enabled?).to be(true)
+    end
+
+    it "can still be switched off per project" do
+      expect(create(:project, supporter_enabled: false).reload.supporter_enabled?).to be(false)
+    end
+  end
+
   describe "#performance_alert_threshold (soglia, default se blank)" do
     it "valore presente → salvato come Integer e ritornato dal getter" do
       project = build(:project)

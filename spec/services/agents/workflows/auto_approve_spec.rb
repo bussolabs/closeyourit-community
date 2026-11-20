@@ -92,11 +92,28 @@ RSpec.describe Agents::Workflows::AutoApprove do
     expect(event.data["review"]).to include("status" => "accepted", "runtime" => "codex")
   end
 
-  it "never approves the delivery of a council ticket by itself" do
-    create(:agent_council_proposal, ticket:, outcome: "ticket")
-    result = described_class.call(workflow:, candidate:, client: client_su(candidate.head_sha))
-    expect(result.value).to be_nil
-    expect(workflow.reload.autopilot_approved_at).to be_nil
+  # CYRA-1328 — work the council proposed is no longer an exception: the council decided WHAT to build,
+  # which is the one decision per ticket, so its delivery is read by the same checks as any other.
+  describe "a delivery the council proposed" do
+    before { create(:agent_council_proposal, ticket:, outcome: "ticket") }
+
+    it "moves on by itself with the checks green, and the ticket history names them" do
+      expect { auto_approve }.to change { Ticketing::Event.where(action: "autopilot_auto_approved").count }.by(1)
+
+      expect(workflow.reload).to have_attributes(autopilot_approved_at: be_present, autopilot_approved_by: nil,
+                                                 phase: "closer_staging_queued")
+      expect(Ticketing::Event.find_by(action: "autopilot_auto_approved").data).to include("checks" => [ "ci" ])
+    end
+
+    # Sending the work back to the agent is Candidates::Verify's red branch (CYRA-1195): a failing verdict
+    # never reaches this service, which only has to leave everything where it is.
+    it "does not move on with a check red" do
+      candidate.update_columns(state: Agents::DeliveryCandidate.states[:verified_failing])
+
+      expect(auto_approve).to be_ok
+      expect(workflow.reload).to have_attributes(autopilot_approved_at: nil, phase: "awaiting_autopilot_approval")
+      expect(Ticketing::Event.where(action: "autopilot_auto_approved")).to be_empty
+    end
   end
 
   # ── Scenario 2: qualcosa non è verde → resta la decisione di una persona ──────────────────────

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.238.0] - 2026-11-20
+
+### Changed
+
+- **Un guasto tecnico non consuma i tentativi**: se la revisione di un lavoro non si può fare per un guasto (quota finita, revisore caduto), il passo aspetta e riprova senza spendere un tentativo. Due guasti di fila non fermano più il lavoro. Se si ripetono, si ferma dicendo che è stato un guasto. [Ticket](/member/tickets) (CYRA-1330)
+- **Un lavoro che non riesce ricomincia una volta, poi si mette da parte**: finiti i tentativi, il lavoro riparte da zero con un altro motore, una volta sola. Se non riesce ancora, si chiude: il ticket torna tra quelli da fare con una nota e non riparte da solo. Non aspetta più una persona. [Approvazioni](/member/home/approvals) (CYRA-1327)
+- **Anche il lavoro proposto dal consiglio passa da solo**: una consegna con tutti i controlli verdi e la rilettura accettata va avanti senza aspettare una persona, anche quando il lavoro l'ha proposto il consiglio. Prima quella aspettava sempre un sì. [Approvazioni](/member/home/approvals) (CYRA-1328)
+- **Una persona decide su soldi, segreti e cancellazioni**: i piani che parlano di dati personali o di testi visibili ai clienti non aspettano più una persona, se il rischio resta basso. Restano a te soldi, segreti, cancellazione di dati e i file che custodiscono gli accessi o comandano i controlli automatici. [Progetti](/member/projects) (CYRA-1326)
+- **Il supporter nasce acceso**: su ogni progetto, anche su quelli che esistono già, l'agente che giudica i piani parte attivo: i piani a rischio basso vanno avanti senza aspettare una persona. Puoi ancora spegnerlo dalle impostazioni del progetto. [Progetti](/member/projects) (CYRA-1325)
+
+### Fixed
+
+- **Un lavoro fermo dice sempre perché**: ogni lavoro fermo mostra che tipo di fermo è e il motivo, in parole semplici, anche da terminale. Prima certe righe restavano in coda senza spiegazione e non si capiva cosa fare. [Approvazioni](/member/home/approvals) (CYRA-1329)
+
 ## [0.237.3] - 2026-11-19
 
 ### Fixed

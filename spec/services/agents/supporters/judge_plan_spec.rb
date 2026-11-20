@@ -98,6 +98,24 @@ RSpec.describe Agents::Supporters::JudgePlan do
     expect(result.value).to include(outcome: "approved", risk_score: 7)
   end
 
+  # CYRA-1326 — what customers read is no longer a reserved topic, so a low-risk wording change needs no person.
+  it "approves a plan that changes what customers read" do
+    ticket.update!(title: "Reword the customer-facing empty state", description: "Mentions the privacy page too.")
+
+    expect(judge(confidence: "medium").value).to include(outcome: "approved")
+    expect(workflow.reload.approved_at).to be_present
+  end
+
+  it "leaves a plan that changes the payments to a person" do
+    ticket.update!(title: "Retry a failed payment once")
+
+    result = judge(confidence: "medium")
+
+    expect(result.value).to include(outcome: "escalated", risk_score: 10)
+    expect(result.value[:reasons]).to include("reserved_topic")
+    expect(workflow.reload.approved_at).to be_nil
+  end
+
   it "leaves the plan to a person when it hits a reserved topic the supporter did not clear" do
     ticket.update!(title: "Change the invoice totals")
 
@@ -182,17 +200,34 @@ RSpec.describe Agents::Supporters::JudgePlan do
     expect(judge(recommendation: "revise").value[:outcome]).to eq("retried")
   end
 
-  it "leaves the plan to a person after three revisions asked by the supporter" do
+  # CYRA-1327 — after three revisions the plan is not sent back again and nobody is called either: the
+  # server settles the exhausted budget (over once on another engine, set aside the second time). The
+  # verdict in the ledger stays what the supporter said.
+  it "settles the budget itself after three revisions asked by the supporter" do
     3.times do |i|
       Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
                                         target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 5)
     end
 
-    result = judge(recommendation: "revise", risk_score: 6)
+    result = nil
+    expect { result = judge(recommendation: "revise", risk_score: 6) }
+      .to have_enqueued_job(Agents::ExhaustedBudgetJob).with(workflow.id, String)
 
     expect(result.value).to include(outcome: "escalated")
     expect(result.value[:reasons]).to include("revisions_exhausted")
     expect(plan.reload.change_request).to be_blank
+  end
+
+  # AC-3, AC-7 — a reserved topic, a suspected bypass or a risk above the line keep the hand-over: the
+  # budget is not the only reason a person is wanted.
+  it "leaves an exhausted plan to a person when something else also wants one" do
+    3.times do |i|
+      Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
+                                        target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 5)
+    end
+
+    expect { judge(recommendation: "revise", risk_score: 10) }
+      .not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
   end
 
   # CYRA-1197 — after three rounds the remaining gaps of a low-risk plan travel to the implementer as notes;
@@ -218,7 +253,9 @@ RSpec.describe Agents::Supporters::JudgePlan do
                                         target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 4)
     end
 
-    result = judge(recommendation: "revise", risk_score: 5, reasons_against: "Name the migration file.")
+    result = nil
+    expect { result = judge(recommendation: "revise", risk_score: 5, reasons_against: "Name the migration file.") }
+      .not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
 
     expect(result.value[:outcome]).to eq("escalated")
     expect(workflow.reload.approved_at).to be_nil

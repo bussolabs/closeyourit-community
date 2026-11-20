@@ -5,7 +5,7 @@ class AgentAttemptSerializer < ApplicationSerializer
   # I pin dell'istruzione (`instruction_version`/`instruction_digest`) sono spariti coi typed agent: il pin
   # equivalente host-first è il `profile_digest` del lease, rivalidato dal claim e dalla consegna.
   attributes :id, :phase, :runtime, :status, :reviewer_runtime, :review_status,
-             :started_at, :finished_at, :failure_reason,
+             :started_at, :finished_at, :failure_reason, :review_fault,
              :host_id, :service_account_id, :skill_key, :sandbox, :permission_mode,
              :allowed_tools, :ttl, :bundle_digest, :bundle_ref
 

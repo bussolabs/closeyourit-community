@@ -35,6 +35,12 @@ en:
       already_merged: "The approved PR #%{number} is already merged: the work must not be redone. Check whether it is already in a release, then close the work."
     already_done:
       service_line: "Whoever was to plan this found the work already done in the code: the ticket closes without planning. What was looked at is in the Automation panel."
+    # CYRA-1327 — the attempts ran out twice. Fixed-length lines, same reason as the one above: a
+    # comment has a character cap and the technical reason does not. That reason is in the
+    # Automation panel.
+    exhausted_budget:
+      service_line: "The machines ran out of attempts twice: the ticket goes back to the backlog and does not start again on its own. What was tried, and the button to restart it, are in the Automation panel."
+      eligibility_reason: "The machines ran out of attempts twice on this ticket. Allowing it here is not enough to put it back to work: it also has to be restarted from the Automation panel."
     clarifications:
       ask:
         # Service line: it ANNOUNCES the questions, it does not contain them. See the Italian file
@@ -43,3 +49,18 @@ en:
         service_line:
           one: "An answer is needed: the question is in the Automation panel. Reply with a comment below and the work resumes on its own."
           other: "Answers are needed: the %{count} questions are in the Automation panel. Reply with a comment below and the work resumes on its own."
+    # CYRA-1329 — why a piece of work is stopped, in one line, for whoever has to decide (queue and
+    # terminal). The saved reason is audit in one language: the sentence is composed from the fields.
+    stop_reason:
+      attempt_limit: "It ran out of attempts on the «%{phase}» step: it will not retry on its own."
+      # CYRA-1330 — the review never answered: saying the attempts ran out would count rejections
+      # that do not exist.
+      review_fault: "The review of the «%{phase}» step could not be done, a technical fault time after time: it will not retry on its own."
+      agent_blocked: "It stopped itself on the «%{phase}» step: %{reason}"
+      candidate_check: "The proposal check did not pass: %{reason}"
+      release_probe: "The release check did not pass: %{reason}"
+      held_by_person: "%{name} held it before the live site release."
+      production_approval: "It is waiting for a person's go-ahead before the live site release."
+      safety_stop: "Stopped for safety: %{reason} Only a person can release it."
+      stalled_review: "The «%{phase}» step was rejected and nobody is retrying it."
+      no_reason: "it wrote no reason"

@@ -43,6 +43,7 @@ RSpec.describe Ticketing::RecoverAgentEligibilityJob do
   end
 
   it "leaves the decision to a person on a project with the supporter off" do
+    project.update!(supporter_enabled: false)
     ticket = create_ticket(title: "Sort the list by name")
     mark_evaluated(ticket)
 

@@ -42,14 +42,14 @@ RSpec.describe Agents::Workflows::ProductionLock do
     # proprio mentre quello prima è rotto.
     it "una produzione bloccata la trattiene anche se l'avvio è stato azzerato" do
       lavorazione(closer_production_started_at: nil, blocked_at: Time.current,
-                  blocked_phase: "closer_production", blocked_kind: "attempt_limit")
+                  blocked_phase: "closer_production", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: closer_production failed 2 times")
 
       expect(described_class).to be_locked(project:)
     end
 
     it "un blocco su un'altra fase non la trattiene" do
       lavorazione(closer_production_started_at: nil, blocked_at: Time.current,
-                  blocked_phase: "autopilot", blocked_kind: "attempt_limit")
+                  blocked_phase: "autopilot", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: autopilot failed 2 times")
 
       expect(described_class).not_to be_locked(project:)
     end
@@ -85,8 +85,10 @@ RSpec.describe Agents::Workflows::ProductionLock do
       { closer_production_started_at: 1.minute.ago },
       { closer_production_started_at: 1.hour.ago, completed_at: Time.current },
       { closer_production_started_at: 1.hour.ago, cancelled_at: Time.current },
-      { blocked_at: Time.current, blocked_phase: "closer_production", blocked_kind: "attempt_limit" },
-      { blocked_at: Time.current, blocked_phase: "autopilot", blocked_kind: "attempt_limit" },
+      { blocked_at: Time.current, blocked_phase: "closer_production", blocked_kind: "attempt_limit",
+        blocked_reason: "attempt_limit: closer_production failed 2 times" },
+      { blocked_at: Time.current, blocked_phase: "autopilot", blocked_kind: "attempt_limit",
+        blocked_reason: "attempt_limit: autopilot failed 2 times" },
       {}
     ].each do |attributi|
       it "combaciano su #{attributi.keys.join(', ').presence || 'una lavorazione appena nata'}" do

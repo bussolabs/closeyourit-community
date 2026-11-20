@@ -4,6 +4,13 @@ module Agents
   class Attempt < ApplicationRecord
     TERMINAL_STATUSES = %w[approved rejected failed review_failed stale cancelled].freeze
 
+    # CYAU-335/CYRA-1330 — whose fault it was when the review of this attempt produced no verdict.
+    # The list mirrors the machine's own (closeyourit-automator, REVIEW_FAULT_KINDS): `work` is the
+    # reviewer's verdict on this working copy, everything else is a fault of the MACHINE.
+    REVIEW_FAULT_KINDS = %w[quota transient unavailable cancelled work].freeze
+    # The work was never judged, so the attempt must not be charged for it (Workflows::BlockExhaustedPhase).
+    TECHNICAL_REVIEW_FAULTS = %w[quota transient unavailable cancelled].freeze
+
     # Execution profile immutabile: descrive COME è stato eseguito il tentativo (host-first) ed è
     # leggibile senza Agent/Command/Instruction. Congelato dopo la creazione — host/fase/runtime +
     # skill/sandbox/permessi/tool/ttl/bundle/service_account. Con raise_on_assign_to_attr_readonly ogni
@@ -66,6 +73,16 @@ module Agents
           deadline: time - grace
         )
     }
+
+    # `where.not` alone would drop the rows with no fault at all: in SQL `NULL NOT IN (...)` is
+    # unknown, and almost every attempt has no fault — the cap would have counted nothing.
+    scope :without_technical_review_fault, lambda {
+      where(review_fault: nil).or(where.not(review_fault: TECHNICAL_REVIEW_FAULTS))
+    }
+
+    # A fault of the machine: the review never judged the work. `work` is not one — there the
+    # reviewer answered, and retrying the same working copy gives the same answer.
+    def review_fault_technical? = review_fault.in?(TECHNICAL_REVIEW_FAULTS)
 
     before_update :ensure_mutable
 

@@ -20,10 +20,17 @@ module Agents
     # lease-match come precondizione: la sessione morente ha il lease magari già scaduto, e pretenderlo
     # attivo bloccherebbe il report proprio quando serve.
     class ReportFailure < ApplicationService
-      def initialize(host:, attempt:, reason:)
+      # CYRA-1330 — the fault arrives in a field of its own, but the machines in the field still
+      # write it in the reason only. The shape of that text is stable (closeyourit-automator,
+      # `reviewFaultReason`): without this bridge the column would stay empty exactly on the
+      # machines the cap was written for.
+      FAULT_IN_REASON = /\Areview not produced by a technical fault \(([a-z]+)\)/
+
+      def initialize(host:, attempt:, reason:, review_fault: nil)
         @host = host
         @attempt = attempt
         @reason = reason.to_s.strip
+        @review_fault = review_fault
       end
 
       def call
@@ -38,7 +45,8 @@ module Agents
           next Result.ok(@attempt) if @attempt.status_failed?
           next already_concluded unless @attempt.status_running?
 
-          @attempt.update!(status: :failed, failure_reason: truncated_reason, finished_at: Time.current)
+          @attempt.update!(status: :failed, failure_reason: truncated_reason,
+                           review_fault: declared_fault, finished_at: Time.current)
           # Recovery della coda (gemello di MarkStale): riapre la fase avviata e mai conclusa così il ticket
           # torna proposto alle macchine invece di restare fuori dalla coda.
           @attempt.workflow.reopen_execution_phase!(@attempt.phase)
@@ -67,6 +75,13 @@ module Agents
       end
 
       def truncated_reason = @reason[0, Agents::Constants::FAILURE_REASON_MAX]
+
+      # A kind outside the list is ignored instead of refusing the report: the failure has to be
+      # recorded anyway, and unsigned the attempt counts like any other — the prudent answer.
+      def declared_fault
+        [ @review_fault.to_s.strip.presence, @reason[FAULT_IN_REASON, 1] ]
+          .compact.find { |kind| Agents::Attempt::REVIEW_FAULT_KINDS.include?(kind) }
+      end
 
       def not_owner
         Result.err(AppError.new("Tentativo non eseguito da questo host",

@@ -76,7 +76,7 @@ it:
       supporter_section: Supporter
       supporter_hint: Il supporter risponde alle domande delle macchine e approva i piani fino a rischio 8 su 10. Ogni sua decisione resta nel ticket.
       supporter_enabled_label: Supporter attivo
-      supporter_enabled_hint: Spento, tutte le domande e i piani arrivano a una persona, come oggi.
+      supporter_enabled_hint: Spento, tutte le domande e i piani arrivano a una persona.
       supporter_reserved_topics_label: Temi riservati del progetto
       supporter_reserved_topics_placeholder: "mailchimp\napp/services/payments/"
       supporter_reserved_topics_hint: Uno per riga. Si sommano a quelli dell'organizzazione e ai temi fissi, senza toglierli. Una riga con la barra (/) indica una cartella del codice.

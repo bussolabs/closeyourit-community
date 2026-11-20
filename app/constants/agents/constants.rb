@@ -31,6 +31,11 @@ module Agents
     # tetto delle bocciature non la vedrebbe mai. Tre e non due: un servizio esterno che non risponde
     # tre volte di fila non e' piu' un inciampo.
     PHASE_UNREACHABLE_LIMIT = 3
+    # CYRA-1330 — how many technical faults of the review IN A ROW a phase may take before it stops.
+    # A fault spends no attempt (the work was never judged), so without a cap of its own the phase
+    # would wait and retry for ever. Higher than PHASE_REVIEW_LIMIT on purpose: equal or lower, and
+    # leaving the faults out of the attempts count would buy nothing.
+    PHASE_REVIEW_FAULT_LIMIT = 3
 
     # Finestra di osservazione dell'allarme "lavorazioni bloccate" (CYRA-212, Scenario 2): con host attivi,
     # se per questo intervallo il sistema chiude tentativi senza mai concluderne uno con successo, gira a

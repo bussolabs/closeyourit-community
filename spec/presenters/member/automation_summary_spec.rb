@@ -58,7 +58,7 @@ RSpec.describe Member::AutomationSummary do
   describe "perché si è fermata" do
     it "una lavorazione ferma dopo troppe bocciature dice quante volte e su quale passo" do
       workflow.update!(triage_started_at: 3.hours.ago, triaged_at: 2.hours.ago,
-                       blocked_at: 1.hour.ago, blocked_phase: "planner", blocked_kind: "attempt_limit")
+                       blocked_at: 1.hour.ago, blocked_phase: "planner", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: planner failed 2 times")
       2.times do |index|
         create(:agent_attempt, organization:, workflow:, host:, phase: "planner", status: :review_failed,
                                started_at: (60 - index).minutes.ago, finished_at: (59 - index).minutes.ago)
@@ -140,7 +140,7 @@ RSpec.describe Member::AutomationSummary do
 
     it "a workflow stopped for a decision is not retrying" do
       workflow.update!(triage_started_at: 3.hours.ago, triaged_at: 2.hours.ago,
-                       blocked_at: 1.hour.ago, blocked_phase: "planner", blocked_kind: "attempt_limit")
+                       blocked_at: 1.hour.ago, blocked_phase: "planner", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: planner failed 2 times")
 
       expect(summary.retrying?).to be(false)
     end
@@ -352,7 +352,7 @@ RSpec.describe Member::AutomationSummary do
     end
 
     it "keeps «Perché si è fermata» when the work is blocked" do
-      workflow.update_columns(blocked_at: Time.current, blocked_phase: "autopilot", blocked_kind: "attempt_limit")
+      workflow.update_columns(blocked_at: Time.current, blocked_phase: "autopilot", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: autopilot failed 2 times")
       allow(workflow).to receive(:phase).and_return("review_blocked")
 
       expect(summary.halted?).to be(true)

@@ -200,7 +200,7 @@ RSpec.describe Home::Approvals::Queue do
     def fermo
       create(:agent_workflow, ticket: create_ticket, triage_started_at: 3.minutes.ago,
                               triaged_at: 2.minutes.ago, planned_at: 1.minute.ago,
-                              blocked_at: Time.current, blocked_phase: "triage", blocked_kind: "attempt_limit").tap do |workflow|
+                              blocked_at: Time.current, blocked_phase: "triage", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: triage failed 2 times").tap do |workflow|
         create(:agent_attempt, workflow:, organization:, status: :review_failed, phase: "triage")
       end
     end
@@ -821,7 +821,7 @@ RSpec.describe Home::Approvals::Queue do
       end
 
       fermo = create(:agent_workflow, triage_started_at: Time.current, blocked_at: Time.current,
-                                      blocked_phase: "triage", blocked_kind: "attempt_limit")
+                                      blocked_phase: "triage", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: triage failed 2 times")
       assert_parity(fermo)
       viste << fermo.phase
       annullato = create(:agent_workflow, cancelled_at: Time.current)
@@ -844,7 +844,7 @@ RSpec.describe Home::Approvals::Queue do
 
       col_tetto = create(:agent_workflow, triage_started_at: 3.minutes.ago, triaged_at: 2.minutes.ago,
                                           planned_at: 1.minute.ago, blocked_at: Time.current,
-                                          blocked_phase: "triage", blocked_kind: "attempt_limit")
+                                          blocked_phase: "triage", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: triage failed 2 times")
       create(:agent_attempt, workflow: col_tetto, organization: col_tetto.ticket.project.organization,
                              status: :review_failed, phase: "triage")
       assert_parity(col_tetto)
@@ -874,7 +874,7 @@ RSpec.describe Home::Approvals::Queue do
                                            approved_at: 1.minute.ago, autopilot_completed_at: Time.current, candidate_verified_at: Time.current)
       fermo = create(:agent_workflow, ticket: create_ticket, triage_started_at: 3.minutes.ago,
                                       triaged_at: 2.minutes.ago, planned_at: 1.minute.ago,
-                                      blocked_at: Time.current, blocked_phase: "triage", blocked_kind: "attempt_limit")
+                                      blocked_at: Time.current, blocked_phase: "triage", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: triage failed 2 times")
       create(:agent_attempt, workflow: fermo, organization:, status: :review_failed, phase: "triage")
       # CYRA-629 — con lo staging concluso la lavorazione non compare più fra le decisioni: il terzo
       # permesso non si chiede, quindi non c'è nessuna card da selezionare.

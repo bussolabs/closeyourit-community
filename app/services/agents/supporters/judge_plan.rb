@@ -43,7 +43,9 @@ module Agents
         return Result.ok(summary(record!(judged, digest, "retried"))) if revise?(judged) && request_changes!
 
         outcome = judged[:reasons].empty? && approve! ? "approved" : "escalated"
-        Result.ok(summary(record!(judged, digest, outcome)))
+        decision = record!(judged, digest, outcome)
+        settle_exhausted_budget(judged[:reasons])
+        Result.ok(summary(decision))
       end
 
       private
@@ -148,6 +150,24 @@ module Agents
                                          actor_name: I18n.t("agents.supporter.activity_actor"), data: {})
           true
         end
+      end
+
+      # CYRA-1327 — the supporter asked for one more revision and the revisions are finished: the
+      # server settles it (over once on another engine, set aside the second time) instead of calling
+      # a person. The verdict in the ledger stays what the supporter said.
+      #
+      # Except on a project with strict caps: switching those on IS the choice to be asked after three
+      # revisions (CYRA-1299), and starting over by ourselves would take that choice away.
+      #
+      # `supporter_escalated` is dropped because here it carries nothing of its own: #reasons writes it
+      # in the same branch as `revisions_exhausted`, so the two together only ever mean "the supporter
+      # asked for a revision it cannot have" — never "the supporter asked for a person".
+      def settle_exhausted_budget(reasons)
+        return if project.strict_caps?
+
+        Agents::Workflows::ExhaustedBudget.settle_later_if_only_the_budget(
+          workflow:, reasons: reasons - [ "supporter_escalated" ]
+        )
       end
 
       def revise?(judged)

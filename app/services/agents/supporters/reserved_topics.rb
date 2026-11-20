@@ -3,9 +3,9 @@
 module Agents
   module Supporters
     # CYAU-235 — the topics the supporter never decides alone: the built-in ones, plus those the organization
-    # and the project add. Lists only add up: a project cannot remove what the organization or the built-in
-    # list reserve. Matching is by whole word, or by path prefix for an entry that holds a slash. A match can
-    # only send more to a person, so over-matching is the safe mistake.
+    # and the project add. Lists only add up, and a project removes nothing. Matching is by whole word, or by
+    # path prefix for an entry with a slash. CYRA-1326 — built in are money, secrets and deleting data; access
+    # code, secrets and CI files stay with a person through RiskScore::SENSITIVE_PATHS, not through this list.
     class ReservedTopics
       Entry = Data.define(:value, :source, :topic) do
         def path? = value.include?("/")
@@ -16,10 +16,7 @@ module Agents
                       fattura fatture billing refund refunds rimborso rimborsi discount sconto],
         "security" => %w[password passwords secret secrets segreto segreti credential credentials credenziali token tokens
                          permission permissions permessi authentication autenticazione authorization],
-        "personal_data" => [ "gdpr", "personal data", "dati personali", "privacy" ],
-        "data_deletion" => [ "delete data", "cancellare dati", "cancella i dati", "purge", "truncate", "drop table" ],
-        "customer_visible" => [ "customer-facing", "visible to customers", "visibile ai clienti", "email to customers",
-                                "email ai clienti" ]
+        "data_deletion" => [ "delete data", "cancellare dati", "cancella i dati", "purge", "truncate", "drop table" ]
       }.freeze
 
       def initialize(organization:, project: nil)

@@ -37,9 +37,9 @@ RSpec.describe "Ticket filters from area overviews", type: :request do
     active = create(:ticket, :story, organization:, project:, status:)
     finished = create(:ticket, :story, organization:, project:, status:)
     hidden = create(:ticket, :story, organization:, project: hidden_project, status:)
-    [ blocked, hidden ].each { |ticket| create(:agent_workflow, ticket:, blocked_at: Time.current, blocked_kind: "attempt_limit") }
+    [ blocked, hidden ].each { |ticket| create(:agent_workflow, ticket:, blocked_at: Time.current, blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: the phase failed 2 times") }
     create(:agent_workflow, ticket: active)
-    create(:agent_workflow, ticket: finished, blocked_at: 1.day.ago, blocked_kind: "attempt_limit", completed_at: Time.current)
+    create(:agent_workflow, ticket: finished, blocked_at: 1.day.ago, blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: the phase failed 2 times", completed_at: Time.current)
 
     get list_member_tickets_path, params: { ft: 1, workflow: "blocked" }
 

@@ -53,7 +53,13 @@ module Home
     # prossimo lettore avrebbe provato a riempire.
     Item = Data.define(:kind, :icon, :tone, :title, :subtitle, :meta, :url, :sort_at, :dom_id, :key,
                        :waiting_since, :actions, :bulk_approvable, :state, :ticket_status,
-                       :code, :project, :agent, :freeze_warning, :no_report, :plan_version, :plan_split)
+                       :code, :project, :agent, :freeze_warning, :no_report, :plan_version, :plan_split,
+                       :stop_reason)
+
+    # `stop_reason` (CYRA-1329) = why the work behind the row is stopped (kind, phase and the sentence
+    # to read), an Agents::StopReason::Note. It rides on the row because a stopped row is decided from
+    # the list, in the terminal, without opening anything: 74 of them had nothing to show on
+    # 2026-11-19. Nil where the row is not stopped.
 
     # `plan_split` (CYRA-1152) = how many child tickets the epic's plan to approve proposes; nil elsewhere.
 
@@ -73,12 +79,12 @@ module Home
     def self.item(actions: [], key: nil, waiting_since: nil,
                   bulk_approvable: false, state: nil, ticket_status: nil, code: nil,
                   project: nil, agent: nil, freeze_warning: nil, no_report: false, plan_version: nil,
-                  plan_split: nil, **attributes)
+                  plan_split: nil, stop_reason: nil, **attributes)
       Item.new(actions: actions, key: key, waiting_since: waiting_since,
                bulk_approvable: bulk_approvable, state: state, ticket_status: ticket_status,
                code: code, project: project, agent: agent,
                freeze_warning: freeze_warning, no_report: no_report, plan_version: plan_version,
-               plan_split: plan_split, **attributes)
+               plan_split: plan_split, stop_reason: stop_reason, **attributes)
     end
   end
 end

@@ -29,6 +29,25 @@ RSpec.describe "Cli::V1::Approvals", type: :request do
     workflow
   end
 
+  # Stopped for good: the attempts budget ran out on the planner, and the reason is written.
+  def blocked_workflow(kind: "attempt_limit", reason: "attempt_limit: planner failed 2 times")
+    ticket = create(:ticket, organization:, project:, title: "Stuck work")
+    workflow = create(:agent_workflow, ticket:, triage_requested_at: 2.days.ago, triage_started_at: 1.day.ago,
+                                       triaged_at: 20.hours.ago)
+    create(:agent_attempt, workflow:, organization:, phase: "planner", status: :review_failed)
+    workflow.update!(blocked_at: Time.current, blocked_phase: "planner", blocked_kind: kind, blocked_reason: reason)
+    workflow
+  end
+
+  # CYRA-267 — rejected under the attempts cap: the phase stays claimed, the queue stops proposing it
+  # and no blocked_at is written. Stopped all the same.
+  def stalled_workflow
+    ticket = create(:ticket, organization:, project:, title: "Stalled work")
+    workflow = create(:agent_workflow, ticket:, triage_requested_at: 2.days.ago, triage_started_at: 1.day.ago)
+    create(:agent_attempt, workflow:, organization:, phase: "triage", status: :review_failed)
+    workflow
+  end
+
   def review_ticket
     create(:ticket, organization:, project:, reviewer: owner, title: "Check the delivery",
                     status: create(:ticket_status, :in_review, organization:))
@@ -58,6 +77,30 @@ RSpec.describe "Cli::V1::Approvals", type: :request do
       expect(row["project"]).to eq("key" => project.key, "name" => project.name)
       expect(response.parsed_body["meta"]).to include("total" => 2)
       expect(response.parsed_body["meta"]["totals"]).to include("awaiting_approval" => 1, "review" => 1)
+    end
+
+    # CYRA-1329 / AC-2, AC-4 — on 2026-11-19 the queue held 74 stopped rows with nothing to show:
+    # whoever had to decide could not tell what to do without opening the database.
+    it "gives every stopped row the kind and the reason of its stop" do
+      blocked = blocked_workflow
+      stalled = stalled_workflow
+      planned = planned_workflow
+
+      get "/cli/v1/approvals", params: { state: "review_blocked" }, headers: headers
+
+      stopped = data.select { |row| row["state"] == "review_blocked" }
+      expect(stopped.map { |row| row["key"] })
+        .to contain_exactly("agent_plan:#{blocked.id}", "agent_plan:#{stalled.id}")
+      expect(stopped).to all(satisfy { |row| row["stop_reason"]["reason"].present? })
+      expect(stopped.find { |row| row["key"] == "agent_plan:#{blocked.id}" }["stop_reason"])
+        .to include("kind" => "attempt_limit", "phase" => "planner")
+      # AC-6 — stopped under the cap: no block is written, so the kind is its own.
+      expect(stopped.find { |row| row["key"] == "agent_plan:#{stalled.id}" }["stop_reason"])
+        .to include("kind" => "stalled_review", "phase" => "triage")
+
+      get "/cli/v1/approvals", headers: headers
+      planned_row = data.find { |row| row["key"] == "agent_plan:#{planned.id}" }
+      expect(planned_row["stop_reason"]).to be_nil
     end
 
     it "filters by state" do
@@ -91,6 +134,35 @@ RSpec.describe "Cli::V1::Approvals", type: :request do
       expect(data["plan"]).to include("version" => 1)
       expect(data["plan"]["markdown"]).to include("Touch the billing job")
       expect(data["ticket"]).to include("code" => workflow.ticket.code, "title" => "Plan to approve")
+    end
+
+    # CYRA-1329 / AC-1 — the kind and the reason of the stop, so nobody has to open the database.
+    it "returns the kind and the reason of a stopped piece of work" do
+      workflow = blocked_workflow
+
+      get "/cli/v1/approvals/agent_plan/#{workflow.id}", headers: headers
+
+      expect(data).to include("phase" => "review_blocked")
+      expect(data["stop_reason"]).to include("kind" => "attempt_limit", "phase" => "planner")
+      expect(data["stop_reason"]["reason"]).to include("Planning").and include("attempts")
+    end
+
+    # AC-6 — the same card for work stopped under the attempts cap, which has no block written.
+    it "returns the reason of a piece of work stopped under the attempts cap" do
+      workflow = stalled_workflow
+
+      get "/cli/v1/approvals/agent_plan/#{workflow.id}", headers: headers
+
+      expect(data["stop_reason"]).to include("kind" => "stalled_review", "phase" => "triage")
+      expect(data["stop_reason"]["reason"]).to be_present
+    end
+
+    it "leaves the stop out of a card that is not stopped" do
+      workflow = planned_workflow
+
+      get "/cli/v1/approvals/agent_plan/#{workflow.id}", headers: headers
+
+      expect(data["stop_reason"]).to be_nil
     end
 
     it "returns the agent questions with their proposed answers" do

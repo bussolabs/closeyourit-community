@@ -74,7 +74,7 @@ en:
       supporter_section: Supporter
       supporter_hint: The supporter answers the machines' questions and approves plans up to risk 8 of 10. Every decision it takes stays on the ticket.
       supporter_enabled_label: Supporter on
-      supporter_enabled_hint: When off, every question and plan goes to a person, as today.
+      supporter_enabled_hint: When off, every question and plan goes to a person.
       supporter_reserved_topics_label: Project reserved topics
       supporter_reserved_topics_placeholder: "mailchimp\napp/services/payments/"
       supporter_reserved_topics_hint: One per line. They add to the organization's and the built-in topics, never remove them. A line with a slash (/) is a code folder.
