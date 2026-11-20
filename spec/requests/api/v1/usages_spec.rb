@@ -62,6 +62,72 @@ RSpec.describe "Api::V1::Usages", type: :request do
     expect(Usage::Symbol.pluck(:symbol)).to eq([ "Users#show" ])
   end
 
+  # CYRA-1232 — una voce ripetuta faceva cadere l'upsert intero: si perdevano anche quelle buone.
+  it "una voce ripetuta nello stesso flush si fonde e le altre voci si salvano lo stesso" do
+    prima = 2.hours.ago.iso8601
+    dopo = 1.minute.ago.iso8601
+
+    post "/api/v1/projects/#{project.id}/usages", headers:, as: :json,
+         params: flush_payload(symbols: [
+           { kind: "route", symbol: "Users#show", count: 2, last_seen_at: prima },
+           { kind: "job", symbol: "Billing::InvoiceJob", count: 7, last_seen_at: dopo },
+           { kind: "route", symbol: "Users#show", count: 3, last_seen_at: dopo }
+         ])
+    # La risposta conta le voci ricevute, non quelle distinte: il contratto del canale non cambia.
+    expect(response.parsed_body.dig("data", "accepted")).to eq(3)
+    perform_enqueued_jobs
+
+    ripetuto = Usage::Symbol.find_by!(kind: "route", symbol: "Users#show")
+    aggregate_failures do
+      expect(Usage::Symbol.pluck(:symbol)).to contain_exactly("Users#show", "Billing::InvoiceJob")
+      expect(ripetuto.hits_count).to eq(5)
+      expect(ripetuto.first_seen_at).to be_within(1.second).of(Time.iso8601(prima))
+      expect(ripetuto.last_seen_at).to be_within(1.second).of(Time.iso8601(dopo))
+      expect(Usage::Symbol.find_by!(symbol: "Billing::InvoiceJob").hits_count).to eq(7)
+      expect(Usage::Reporter.pluck(:kind)).to contain_exactly("route", "job")
+    end
+  end
+
+  it "il tetto degli hit si applica dopo la somma delle voci ripetute" do
+    post "/api/v1/projects/#{project.id}/usages", headers:, as: :json,
+         params: flush_payload(symbols: [
+           { kind: "route", symbol: "Users#show", count: 2**40, last_seen_at: Time.current.iso8601 },
+           { kind: "route", symbol: "Users#show", count: 1, last_seen_at: Time.current.iso8601 }
+         ])
+    perform_enqueued_jobs
+
+    expect(Usage::Symbol.sole.hits_count).to eq(2**40)
+  end
+
+  # I due upsert sono una transazione sola: se il reporter cade, anche i simboli si annullano e il
+  # ritentativo li scrive una volta, non due.
+  it "un guasto passeggero sul reporter si ritenta senza raddoppiare gli hit" do
+    guasti = 1
+    allow(Usage::Reporter).to receive(:upsert_all).and_wrap_original do |original, *args, **kwargs|
+      if guasti.positive?
+        guasti -= 1
+        raise ActiveRecord::Deadlocked, "contesa simulata"
+      end
+      original.call(*args, **kwargs)
+    end
+
+    post "/api/v1/projects/#{project.id}/usages", headers:, as: :json,
+         params: flush_payload(symbols: [
+           { kind: "route", symbol: "Users#show", count: 4, last_seen_at: Time.current.iso8601 }
+         ])
+
+    # A mano quello che farebbe il motore delle code: il primo giro cade e rimette in coda il lavoro.
+    ActiveJob::Base.execute(enqueued_jobs.shift)
+    expect(Usage::Symbol.count).to eq(0)
+    expect(enqueued_jobs.size).to eq(1)
+
+    ActiveJob::Base.execute(enqueued_jobs.shift)
+    aggregate_failures do
+      expect(Usage::Symbol.sole.hits_count).to eq(4)
+      expect(Usage::Reporter.sole.kind).to eq("route")
+    end
+  end
+
   it "il flag truncated arriva sul reporter: è quello che squalifica il kind presso lo scanner" do
     post "/api/v1/projects/#{project.id}/usages", headers:, as: :json,
          params: flush_payload(truncated: true, symbols: [

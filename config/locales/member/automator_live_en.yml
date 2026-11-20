@@ -48,6 +48,7 @@ en:
       file_created: new
       follow: Follow the agent
       following: Following the agent
+      no_agents: No agent at work on this project right now.
       no_steps: The agent has not done anything yet. Its steps show up here as soon as they arrive.
       no_file: No file changed so far.
       file_only_read: The agent only read this file.

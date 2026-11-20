@@ -1,6 +1,11 @@
 <%= turbo_frame_tag ::Agents::LiveEvents::Broadcast::FRAME, class: "flex flex-1 min-h-0 flex-col", target: "_top" do %>
   <%= render "member/agents/live_sessions/header" %>
-  <% if @timeline.empty? %>
+  <%# CYRA-1307 — no agent shown says nobody is at work; an agent shown without steps keeps the waiting note. %>
+  <% if @shown.empty? %>
+    <div class="flex-1 bg-white dark:bg-zinc-900">
+      <%= render Ui::EmptyNoteComponent.new(text: t("member.automator_live.no_agents"), inset: true, test_id: "automator-live-no-agents") %>
+    </div>
+  <% elsif @timeline.empty? %>
     <div class="flex-1 bg-white dark:bg-zinc-900">
       <%= render Ui::EmptyNoteComponent.new(text: t("member.automator_live.no_steps"), inset: true, test_id: "automator-live-no-steps") %>
     </div>

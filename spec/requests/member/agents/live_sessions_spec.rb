@@ -223,7 +223,16 @@ RSpec.describe "Member::Agents::LiveSessions", type: :request do
     it "tells the viewer nothing happened yet" do
       get live
 
-      expect(html).to have_css("[data-test='automator-live-no-steps']")
+      expect(html).to have_css("[data-test='automator-live-no-steps']", text: I18n.t("member.automator_live.no_steps"))
+      expect(html).to have_no_css("[data-test='automator-live-no-agents']")
+    end
+
+    # CYRA-1307 — a project with no agent at work says so instead of waiting for steps.
+    it "tells the viewer no agent is at work on the project" do
+      get live(agent: nil)
+
+      expect(html).to have_css("[data-test='automator-live-no-agents']", text: I18n.t("member.automator_live.no_agents"))
+      expect(html).to have_no_css("[data-test='automator-live-no-steps']")
     end
 
     it "answers the frame alone when the page reloads it" do

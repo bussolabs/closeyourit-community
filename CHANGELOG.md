@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## [0.239.5] - 2026-11-21
+
+### Security
+
+- **Ruby aggiornato per chiudere una falla grave**: CloseYourIt passa a Ruby 4.0.10, che corregge una falla di esecuzione di codice. Il controllo di sicurezza torna verde e le consegne degli agenti non si fermano più su quel passo. (CYRA-1337)
+
+## [0.239.4] - 2026-11-20
+
+### Fixed
+
+- **Il suggerimento delle trascrizioni audio non finisce nei registri**: il testo che accompagna un audio inviato a CloseYourIt AI ora compare nascosto nei registri del server e nelle segnalazioni di errore, come già succedeva per chat, ricerca e riordino. (CYRA-1217)
+
+## [0.239.3] - 2026-11-20
+
+### Fixed
+
+- **La diretta di un progetto senza agenti lo dice**: se nessun agente lavora sul progetto, la pagina Live coding dice che nessun agente è al lavoro. La frase «L'agente non ha ancora fatto niente» resta solo per un agente appena partito che non ha ancora mandato passi. [Agenti](/member/agents) (CYRA-1307)
+
+## [0.239.1] - 2026-11-20
+
+### Fixed
+
+- **I dati d'uso con una voce ripetuta si salvano per intero**: se un invio conteneva due volte la stessa voce, andava perso tutto l'invio. Ora le voci ripetute si sommano e le altre si salvano lo stesso. Se il salvataggio cade a metà e si riprova, i conteggi non raddoppiano. (CYRA-1232)
+
 ## [0.239.0] - 2026-11-20
 
 ### Changed
