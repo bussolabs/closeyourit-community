@@ -2625,6 +2625,7 @@ it:
         autopilot_auto_approved: "Il lavoro consegnato è andato avanti da solo: %{count} controlli superati (%{checks}) e la rilettura del codice è positiva"
         plan_council_approved: "Il consiglio ha approvato questo piano: nessuno ha dovuto firmarlo"
         plan_supporter_approved: "Il supporter ha approvato questo piano a rischio basso: nessuno ha dovuto firmarlo"
+        plan_supporter_added_items: "Il supporter ha aggiunto al ticket le voci di accettazione proposte dal piano: nessuno ha dovuto firmarle"
         plan_reopened_items_changed: "Le voci di accettazione sono cambiate dopo l'approvazione del piano: si ripianifica"
         workflow_supporter_retried: "Il supporter ha guardato perché la lavorazione si era fermata e l'ha rimandata all'agente con le sue indicazioni"
         workflow_restarted_other_engine: "I tentativi erano finiti: la lavorazione è ripartita da zero con un altro motore, una volta sola"

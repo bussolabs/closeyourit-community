@@ -53,6 +53,7 @@ it:
           autopilot_auto_approved: Consegna andata avanti da sola
           plan_council_approved: Piano approvato dal consiglio
           plan_supporter_approved: Piano approvato dal supporter
+          plan_supporter_added_items: Voci di accettazione aggiunte dal supporter
           plan_reopened_items_changed: Si ripianifica, voci di accettazione cambiate
           workflow_supporter_retried: Lavorazione rimandata all'agente dal supporter
           workflow_restarted_other_engine: Lavorazione ripartita con un altro motore

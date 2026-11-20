@@ -6196,7 +6196,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo i piani a rischio fino a 8, senza temi riservati né tentativi di aggirare i controlli; un controllo citato in un divieto («non usare --no-verify o [skip ci]») non conta come tentativo. Un piano con lacune, o che cambia i file della CI che le macchine non possono consegnare, torna al pianificatore con le osservazioni, al massimo tre volte; dopo, se il rischio è fino a 5, parte e le lacune arrivano come note a chi scrive il codice; gli altri non aspettano una persona: la lavorazione riparte da zero con un altro motore, una volta sola, poi viene messa da parte. Se il progetto lo accende, il rischio segnato dal triage fa da minimo: un ticket ad alto rischio non viene mai approvato da solo. Con i tetti stretti accesi, dopo tre revisioni un piano ancora da correggere va sempre a una persona, e non riparte da zero. Un piano che propone voci nuove o ne lascia una senza prova resta sempre a una persona.",
+      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo i piani a rischio fino a 8, senza temi riservati né tentativi di aggirare i controlli; un controllo citato in un divieto («non usare --no-verify o [skip ci]») non conta come tentativo. Un piano con lacune, o che cambia i file della CI che le macchine non possono consegnare, torna al pianificatore con le osservazioni, al massimo tre volte; dopo, se il rischio è fino a 5, parte e le lacune arrivano come note a chi scrive il codice; gli altri non aspettano una persona: la lavorazione riparte da zero con un altro motore, una volta sola, poi viene messa da parte. Se il progetto lo accende, il rischio segnato dal triage fa da minimo: un ticket ad alto rischio non viene mai approvato da solo. Con i tetti stretti accesi, dopo tre revisioni un piano ancora da correggere va sempre a una persona, e non riparte da zero. Un piano approvato che propone voci di accettazione nuove le scrive nel ticket da solo, e la cronologia lo dice; uno che lascia una voce senza prova resta sempre a una persona.",
       "files": [
         "app/controllers/api/v1/agent_host/supporter_plans_controller.rb",
         "app/controllers/api/v1/agent_host/supporter_plan_verdicts_controller.rb",
@@ -6421,7 +6421,7 @@
       "level": 2,
       "parent": "area_agents",
       "kind": "page",
-      "summary": "La coda di ciò che aspetta una persona e l'elenco di tutto il lavoro in corso. Si approva, si riprova, si rivaluta, si ferma o si annulla, anche dal terminale con cyi approvals. Ogni riga ferma dice che tipo di fermo è e perché, in parole semplici.",
+      "summary": "La coda di ciò che aspetta una persona e l'elenco di tutto il lavoro in corso. Si approva, si riprova, si rivaluta, si ferma o si annulla, anche dal terminale con cyi approvals. Ogni riga ferma dice che tipo di fermo è e perché, in parole semplici. Anche un piano che l'agente dei piani ha passato a una persona dice il motivo e il rischio.",
       "files": [
         "app/controllers/member/tickets/automation/**",
         "app/controllers/member/home/approvals_controller.rb",

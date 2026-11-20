@@ -113,10 +113,12 @@ module Agents
         plan.document.work_items.flat_map { |item| Array(item.to_h["files"]) }.filter_map { |file| file.to_h["path"].presence }
       end
 
-      # What the plan itself asks of a person: a split creates tickets (CYRA-1152); new acceptance items, or an
-      # item left unproven, change what the ticket asks (CYRA-1319).
+      # What the plan itself asks of a person: a split creates tickets (CYRA-1152); an acceptance item left
+      # unproven changes what the ticket asks (CYRA-1319). CYRA-1334 — an item the plan proposes is not a
+      # reason of its own: the supporter read it with the plan, and every other rule here still applies.
       def shape_reasons
-        [ ("epic_split" if plan.split?), ("ticket_items_need_person" if plan.needs_person_for_items?) ].compact
+        unproven = Agents::Plans::TicketItems.uncovered(plan).any?
+        [ ("epic_split" if plan.split?), ("ticket_items_need_person" if unproven) ].compact
       end
 
       def reasons(score, reserved, bypass)
@@ -146,10 +148,19 @@ module Agents
                             latest.approved_at.nil? && latest.change_request.blank?
 
           Agents::Workflows::FreezePlan.call(workflow:, plan: latest, actor: nil, now: Time.current)
-          Ticketing::RecordActivity.call(ticket:, action: "plan_supporter_approved",
-                                         actor_name: I18n.t("agents.supporter.activity_actor"), data: {})
+          actor_name = I18n.t("agents.supporter.activity_actor")
+          Ticketing::RecordActivity.call(ticket:, action: "plan_supporter_approved", actor_name:, data: {})
+          record_added_items!(latest, actor_name)
           true
         end
+      end
+
+      # CYRA-1334 — the items the approval wrote into the ticket with no person: said in its history.
+      def record_added_items!(approved, actor_name)
+        codes = Agents::Plans::TicketItems.entries(approved).select { |entry| entry["added"] }.map { |entry| entry["id"] }
+        return if codes.empty?
+
+        Ticketing::RecordActivity.call(ticket:, action: "plan_supporter_added_items", actor_name:, data: { "items" => codes })
       end
 
       # CYRA-1327 — the supporter asked for one more revision and the revisions are finished: the

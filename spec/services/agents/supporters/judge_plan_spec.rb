@@ -307,6 +307,52 @@ RSpec.describe Agents::Supporters::JudgePlan do
     expect(workflow.reload.approved_at).to be_nil
   end
 
+  # CYRA-1334 — a new acceptance item the plan proposes is accepted without a person when nothing else
+  # stops the plan; an item left unproven still waits for a person (CYRA-1319).
+  describe "a plan that changes the ticket's acceptance items" do
+    let(:proof) { { "kind" => "test", "how" => "A request spec opens the page." } }
+    let(:new_item) { { "ref" => "NEW-1", "format" => "text", "text" => "The list keeps its order after a reload", "verification" => proof } }
+
+    before { ticket.conditions.create!(position: 1, text: "The list is sorted") }
+
+    def write_items(verifications: ticket.acceptance_items.map { { "code" => it.code, "revision" => it.revision, "verification" => proof } },
+                    proposed: [])
+      result = { "item_verifications" => verifications, "proposed_items" => proposed }
+      plan.update_columns(contract_version: 3, content: { "summary" => "Sort the list.", "work_items" => [] },
+                          definition_of_done: Agents::Plans::TicketItems.snapshot(ticket, result))
+    end
+
+    it "approves a low-risk plan that proposes a new item and writes it into the ticket" do
+      write_items(proposed: [ new_item ])
+
+      expect(judge.value[:outcome]).to eq("approved")
+      expect(ticket.conditions.reload.map(&:text)).to include("The list keeps its order after a reload")
+      added = ticket.acceptance_items.reload.map(&:code).last
+      expect(Ticketing::Event.find_by!(ticket:, action: "plan_supporter_added_items").data).to eq("items" => [ added ])
+    end
+
+    it "records no added items when the plan proposes none" do
+      write_items
+
+      expect(judge.value[:outcome]).to eq("approved")
+      expect(Ticketing::Event.where(ticket:, action: "plan_supporter_added_items")).not_to exist
+    end
+
+    it "leaves a plan that leaves an item unproven to a person" do
+      write_items(verifications: [])
+
+      expect(judge.value).to include(outcome: "escalated", reasons: [ "ticket_items_need_person" ])
+      expect(workflow.reload.approved_at).to be_nil
+    end
+
+    it "leaves a proposing plan above the autonomous risk to a person and adds nothing" do
+      write_items(proposed: [ new_item ])
+
+      expect(judge(risk_score: 9).value).to include(outcome: "escalated", reasons: [ "risk_above_threshold" ])
+      expect(ticket.conditions.reload.count).to eq(1)
+    end
+  end
+
   it "refuses a verdict on a version it did not read" do
     result = judge(digest: "sha256:old")
 

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.239.0] - 2026-11-20
+
+### Changed
+
+- **Le voci di accettazione nuove non aspettano più una persona**: se un piano a rischio basso propone una voce in più, l'agente che giudica lo approva e la voce entra nel ticket, con una riga nella cronologia. Un piano che lascia una voce senza prova resta a te. [Approvazioni](/member/home/approvals)
+
 ## [0.238.1] - 2026-11-20
 
 ### Fixed

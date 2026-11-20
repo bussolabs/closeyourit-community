@@ -54,6 +54,8 @@ module Ticketing
       "plan_council_approved" => "users",
       # The supporter approved a low-risk plan (CYRA-1193).
       "plan_supporter_approved" => "life-buoy",
+      # The supporter's approval wrote the plan's proposed acceptance items into the ticket (CYRA-1334).
+      "plan_supporter_added_items" => "list-plus",
       # An acceptance item changed after the plan was approved: planning again (CYRA-1319).
       "plan_reopened_items_changed" => "rotate-ccw",
       # The supporter sent stopped work back to the agent, or stopped an agent for safety (CYRA-1197).
