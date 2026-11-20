@@ -309,6 +309,16 @@ module Agents
       Agents::StopReason.for(workflow: self, stalled_phase: (stalled_review_phase unless blocked_at?))
     end
 
+    # CYRA-1332 — why the newest plan waits for a person, when the supporter handed it over. Two queries,
+    # for one card: a queue reads the whole page at once (Home::Approvals::Queue#plan_hand_overs).
+    def plan_hand_over
+      return nil unless planned_at? && approved_at.nil?
+
+      plan = plans.reorder(version: :desc).first
+      decision = plan && Agents::SupporterDecision.where(target_type: "plan", target_id: plan.id).order(:created_at).last
+      Agents::StopReason.for_plan_decision(decision)
+    end
+
     # CYRA-871 — chi ha fermato il rilascio prima della produzione, scritto nel motivo del blocco.
     def held_by_name
       blocked_reason.to_s.delete_prefix("#{Agents::Workflows::HoldProduction::KIND}: ").presence if

@@ -66,3 +66,17 @@ it:
       safety_stop: "Fermata per sicurezza: %{reason} Riparte solo se una persona la sblocca."
       stalled_review: "Il passo «%{phase}» è stato respinto e nessuno lo sta riprovando."
       no_reason: "non ha scritto il motivo"
+      # CYRA-1332 — un piano che il supporter ha passato a una persona: i motivi scritti dal server col verdetto.
+      plan_handed_over: "L'agente che giudica i piani l'ha passato a una persona (rischio %{risk} su 10): %{reasons}."
+      plan_reasons:
+        supporter_escalated: "ha chiesto una persona"
+        revisions_exhausted: "le correzioni sono finite e il piano non va ancora bene"
+        risk_above_threshold: "il rischio è sopra quello che un agente può decidere da solo"
+        triage_risk: "la prima valutazione del ticket lo ha dato ad alto rischio"
+        reserved_topic: "tocca un argomento riservato (soldi, segreti, cancellazione di dati, accessi o file di rilascio)"
+        bypass_suspected: "sembra saltare un controllo del sistema"
+        low_confidence: "non era abbastanza sicuro del proprio giudizio"
+        ticket_concluded: "il ticket è già chiuso"
+        epic_split: "divide il ticket in ticket nuovi"
+        ticket_items_need_person: "cambia quello che il ticket chiede"
+        none: "il piano è cambiato mentre veniva giudicato"

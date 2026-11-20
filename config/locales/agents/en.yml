@@ -64,3 +64,17 @@ en:
       safety_stop: "Stopped for safety: %{reason} Only a person can release it."
       stalled_review: "The «%{phase}» step was rejected and nobody is retrying it."
       no_reason: "it wrote no reason"
+      # CYRA-1332 — a plan the supporter handed to a person: the reasons the server wrote with the verdict.
+      plan_handed_over: "The agent that judges plans passed it to a person (risk %{risk} out of 10): %{reasons}."
+      plan_reasons:
+        supporter_escalated: "it asked for a person"
+        revisions_exhausted: "the corrections ran out and the plan is still not right"
+        risk_above_threshold: "the risk is above what an agent may decide alone"
+        triage_risk: "the first assessment of the ticket rated it high risk"
+        reserved_topic: "it touches a reserved topic (money, secrets, deleting data, access or release files)"
+        bypass_suspected: "it looks like it skips a check of the system"
+        low_confidence: "it was not sure enough of its own judgement"
+        ticket_concluded: "the ticket is already closed"
+        epic_split: "it splits the ticket into new tickets"
+        ticket_items_need_person: "it changes what the ticket asks"
+        none: "the plan changed while it was being judged"

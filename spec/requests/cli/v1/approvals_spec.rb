@@ -103,6 +103,40 @@ RSpec.describe "Cli::V1::Approvals", type: :request do
       expect(planned_row["stop_reason"]).to be_nil
     end
 
+    # CYRA-1332 — on 2026-11-20 the supporter handed 66 plans to a person and nothing said why.
+    it "gives a plan the supporter handed to a person the reasons of the hand-over" do
+      handed = planned_workflow
+      plan = handed.plans.first
+      Agents::SupporterDecision.create!(
+        organization:, workflow: handed, target_type: "plan", target_id: plan.id, target_digest: "sha256:one",
+        outcome: "escalated", engine: "codex", risk_score: 9,
+        evidence: { "reasons" => %w[risk_above_threshold reserved_topic] }
+      )
+      unjudged = planned_workflow(title: "Not judged yet")
+
+      get "/cli/v1/approvals", headers: headers
+
+      note = data.find { |row| row["key"] == "agent_plan:#{handed.id}" }["stop_reason"]
+      expect(note).to include("kind" => "plan_handed_over", "phase" => "planner")
+      expect(note["reason"]).to include("risk 9").and include("risk is above").and include("reserved")
+      expect(data.find { |row| row["key"] == "agent_plan:#{unjudged.id}" }["stop_reason"]).to be_nil
+    end
+
+    it "ignores a hand-over written on an older version of the plan" do
+      workflow = planned_workflow
+      old = workflow.plans.first
+      Agents::SupporterDecision.create!(
+        organization:, workflow:, target_type: "plan", target_id: old.id, target_digest: "sha256:old",
+        outcome: "escalated", engine: "codex", risk_score: 9, evidence: { "reasons" => %w[low_confidence] }
+      )
+      Agents::Plan.create!(workflow:, attempt: old.attempt, version: 2, technical_analysis: "Second take",
+                           scenarios: [], definition_of_done: [], notes: [], ticket_snapshot_digest: "snapshot")
+
+      get "/cli/v1/approvals", headers: headers
+
+      expect(data.find { |row| row["key"] == "agent_plan:#{workflow.id}" }["stop_reason"]).to be_nil
+    end
+
     it "filters by state" do
       planned_workflow
       ticket = review_ticket
@@ -155,6 +189,21 @@ RSpec.describe "Cli::V1::Approvals", type: :request do
 
       expect(data["stop_reason"]).to include("kind" => "stalled_review", "phase" => "triage")
       expect(data["stop_reason"]["reason"]).to be_present
+    end
+
+    # CYRA-1332 — the same reasons on the card of a plan the supporter handed to a person.
+    it "returns the reasons of a plan the supporter handed to a person" do
+      workflow = planned_workflow
+      Agents::SupporterDecision.create!(
+        organization:, workflow:, target_type: "plan", target_id: workflow.plans.first.id,
+        target_digest: "sha256:one", outcome: "escalated", engine: "codex", risk_score: 4,
+        evidence: { "reasons" => %w[supporter_escalated low_confidence] }
+      )
+
+      get "/cli/v1/approvals/agent_plan/#{workflow.id}", headers: headers
+
+      expect(data["stop_reason"]).to include("kind" => "plan_handed_over", "phase" => "planner")
+      expect(data["stop_reason"]["reason"]).to include("risk 4").and include("not sure enough")
     end
 
     it "leaves the stop out of a card that is not stopped" do

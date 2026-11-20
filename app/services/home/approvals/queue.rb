@@ -310,6 +310,7 @@ module Home
         plan_versions = ::Agents::Plan.where(workflow_id: shown.map(&:first).map(&:id))
                                       .group(:workflow_id).maximum(:version)
         split_sizes = plan_split_sizes(plan_versions)
+        hand_overs = plan_hand_overs(shown)
         items = shown.map do |workflow, phase, state, stop_reason|
           ticket = workflow.ticket
           track_ticket("agent_plan:#{workflow.id}", ticket.id)
@@ -331,7 +332,7 @@ module Home
             freeze_warning: (plan_freeze_warning(ticket) if phase == "awaiting_approval"),
             plan_version: plan_versions[workflow.id],
             plan_split: (split_sizes[workflow.id] if phase == "awaiting_approval"),
-            stop_reason: stop_reason
+            stop_reason: stop_reason || hand_overs[workflow.id]
           )
         end
         # Conteggi su TUTTI i gated, non sui primi @limit: è l'unica sorgente che li ha già in memoria.
@@ -359,6 +360,19 @@ module Home
 
       # Solo ciò che sta DAVVERO in coda: chi riprova da solo ne esce (CYRA-317), quindi non compare
       # fra le scelte — sarebbe una voce di menu che porta a una pila vuota. CYRA-790
+      # CYRA-1332 — why each plan on the page waits for a person: the supporter's last verdict on its newest
+      # version, when that verdict was a hand-over. Two queries for the page, whatever its length.
+      def plan_hand_overs(shown)
+        ids = shown.select { |_, phase, _, _| phase == "awaiting_approval" }.map { |workflow, *| workflow.id }
+        return {} if ids.empty?
+
+        latest = ::Agents::Plan.where(workflow_id: ids).order(:version).pluck(:workflow_id, :id).to_h
+        ::Agents::SupporterDecision.where(target_type: "plan", target_id: latest.values).order(:created_at)
+                                   .index_by(&:workflow_id)
+                                   .transform_values { |decision| ::Agents::StopReason.for_plan_decision(decision) }
+                                   .compact
+      end
+
       def in_queue(gated) = gated.reject { |_, _, state| state == RETRYING_STATE }
 
       # Il contorno delle sole righe che finiscono in pagina. Precaricato QUI e non con i candidati,

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.238.1] - 2026-11-20
+
+### Fixed
+
+- **Un piano passato a una persona dice perché**: quando l'agente che giudica i piani ne lascia uno a te, la coda mostra il motivo in parole semplici e il rischio, anche da terminale. Prima il piano arrivava senza spiegazione. [Approvazioni](/member/home/approvals) (CYRA-1332)
+
 ## [0.238.0] - 2026-11-20
 
 ### Changed

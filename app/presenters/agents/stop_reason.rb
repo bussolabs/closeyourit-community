@@ -27,6 +27,19 @@ module Agents
                reason: t("stalled_review", phase: phase_label(stalled_phase)))
     end
 
+    # CYRA-1332 — a plan the supporter handed to a person is not stopped, yet whoever decides has to know
+    # why it reached them: the reasons the server wrote with the verdict, in plain words, with the risk.
+    HANDED_OVER_KIND = "plan_handed_over"
+
+    def self.for_plan_decision(decision)
+      return nil unless decision&.outcome == "escalated"
+
+      reasons = Array(decision.evidence["reasons"]).uniq.map { |code| t("plan_reasons.#{code}", default: code.humanize) }
+      reasons = [ t("plan_reasons.none") ] if reasons.empty?
+      Note.new(kind: HANDED_OVER_KIND, phase: "planner",
+               reason: t("plan_handed_over", risk: decision.risk_score, reasons: reasons.join("; ")))
+    end
+
     # The phase names are the ones the ticket card already shows: a second set of names would make the
     # same phase read as two different steps.
     def self.phase_label(phase)
