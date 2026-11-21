@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.239.6] - 2026-11-21
+
+### Fixed
+
+- **I monitor in pausa non cambiano lo stato del gruppo**: la pagina di stato pubblica di un gruppo e il suo bollino guardano solo i monitor attivi. Un monitor messo in pausa mentre era giù non segna più guasto tutto il gruppo. Se sono tutti in pausa, lo stato è sconosciuto. [Gruppi uptime](/member/monitoring/groups) (CYRA-1220)
+
 ## [0.239.5] - 2026-11-21
 
 ### Security

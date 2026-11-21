@@ -33,7 +33,7 @@ module Website
 
     # Badge compatto del gruppo, gemello di Website::Status#badge: stesso gate opt-in (non pubblicato
     # → 404), stesso `no-store`, stesso layout autoconsistente. Carica i monitor senza `includes`:
-    # `group_state` guarda solo `display_status`, quindi project/environment non servono.
+    # `group_state` guarda solo pausa e `display_status`, quindi project/environment non servono.
     def badge
       @group = find_public_group
       return head(:not_found) if @group.nil?
@@ -66,10 +66,13 @@ module Website
     # Stato ONESTO aggregato del gruppo, sullo stato VISUALIZZATO (display_status): un dato vecchio (worker
     # dei controlli fermo) conta come unknown, non come l'ultimo up (CYRA-209). down se ≥1 down; operational
     # se tutti up; unknown se nessun monitor o tutti unknown (es. worker fermo); altrimenti degraded (misto).
+    # I monitor in pausa non contano: restano fermi all'ultimo esito salvato, come la status per-monitor
+    # che li mostra "paused" prima di ogni altro stato. Un gruppo tutto in pausa è unknown come uno vuoto.
     def group_state(monitors)
-      return "unknown" if monitors.empty?
+      active = monitors.reject(&:paused?)
+      return "unknown" if active.empty?
 
-      displayed = monitors.map(&:display_status)
+      displayed = active.map(&:display_status)
       return "down" if displayed.include?(:down)
       return "operational" if displayed.all?(:up)
       return "unknown" if displayed.all?(:unknown)

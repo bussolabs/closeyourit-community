@@ -143,6 +143,63 @@ RSpec.describe "Website::StatusGroups", type: :request do
       end
     end
 
+    context "with a paused monitor that was left down" do
+      def service(**attrs)
+        create(:uptime_monitor, project:, group:, last_checked_at: 30.seconds.ago, **attrs)
+      end
+
+      it "ignores the paused monitor: two active up → operational" do
+        publish!
+        service(current_status: :up)
+        service(current_status: :up)
+        service(current_status: :down, active: false)
+
+        get path_for
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include('data-state="operational"')
+        expect(response.body).not_to include('data-state="down"')
+      end
+
+      it "keeps the group down when an active monitor is down" do
+        publish!
+        service(current_status: :up)
+        service(current_status: :down)
+        service(current_status: :down, active: false)
+
+        get path_for
+
+        expect(response.body).to include('data-state="down"')
+        expect(response.body).not_to include('data-state="operational"')
+      end
+
+      it "still treats stale data of active monitors as unknown" do
+        travel_to(Time.utc(2026, 6, 26, 12)) do
+          publish!
+          service(current_status: :up, last_checked_at: 1.hour.ago)
+          service(current_status: :down, active: false)
+
+          get path_for
+
+          expect(response.body).to include('data-state="unknown"')
+          expect(response.body).not_to include('data-state="down"')
+        end
+      end
+
+      it "shows unknown when every monitor is paused, like an empty group" do
+        publish!
+        service(current_status: :down, active: false)
+        service(current_status: :up, active: false)
+
+        get path_for
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include('data-state="unknown"')
+        expect(response.body).not_to include('data-state="down"')
+        expect(response.body).not_to include('data-state="operational"')
+      end
+    end
+
     # CYRA-715 — i due divieti vanno tolti INSIEME: `frame-ancestors 'self'` della policy dice la
     # stessa cosa di X-Frame-Options e i browser moderni le danno la precedenza, quindi toglierne uno
     # solo lascerebbe l'embed rotto con questa prova ancora verde.
@@ -212,6 +269,55 @@ RSpec.describe "Website::StatusGroups", type: :request do
         get badge_path_for
         expect(response.body).to include('data-state="degraded"')
         expect(response.body).not_to include('data-state="operational"')
+      end
+    end
+
+    context "with a paused monitor that was left down" do
+      def service(**attrs)
+        create(:uptime_monitor, project:, group:, last_checked_at: 30.seconds.ago, **attrs)
+      end
+
+      it "ignores the paused monitor: two active up → operational" do
+        publish!
+        service(current_status: :up)
+        service(current_status: :up)
+        service(current_status: :down, active: false)
+
+        get badge_path_for
+        expect(response.body).to include('data-state="operational"')
+        expect(response.body).not_to include('data-state="down"')
+      end
+
+      it "keeps the badge down when an active monitor is down" do
+        publish!
+        service(current_status: :up)
+        service(current_status: :down)
+        service(current_status: :down, active: false)
+
+        get badge_path_for
+        expect(response.body).to include('data-state="down"')
+        expect(response.body).not_to include('data-state="operational"')
+      end
+
+      it "still treats stale data of active monitors as unknown" do
+        travel_to(Time.utc(2026, 6, 26, 12)) do
+          publish!
+          service(current_status: :up, last_checked_at: 1.hour.ago)
+          service(current_status: :down, active: false)
+
+          get badge_path_for
+          expect(response.body).to include('data-state="unknown"')
+          expect(response.body).not_to include('data-state="down"')
+        end
+      end
+
+      it "shows unknown when every monitor is paused" do
+        publish!
+        service(current_status: :down, active: false)
+
+        get badge_path_for
+        expect(response.body).to include('data-state="unknown"')
+        expect(response.body).not_to include('data-state="down"')
       end
     end
 
