@@ -23,6 +23,12 @@ RSpec.describe Ticketing::Answer, type: :model do
       expect(build(:ticket_answer, body: "x" * max)).to be_valid
       expect(build(:ticket_answer, body: "x" * (max + 1))).to be_invalid
     end
+
+    # CYRA-1338 — whoever answers often has to explain: the answer has room, the discussion stays short.
+    it "leaves room for a long answer while the comment stays short" do
+      expect(build(:ticket_answer, body: "x" * 2_000)).to be_valid
+      expect(Ticketing::Constants::ANSWER_MAX_CHARS).to be > Ticketing::Constants::COMMENT_MAX_CHARS
+    end
   end
 
   # Chi risponde può legittimamente nominare un file o un comando: la regola anti-comando esiste

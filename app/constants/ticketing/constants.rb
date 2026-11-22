@@ -69,7 +69,8 @@ module Ticketing
     # è l'ipotesi più probabile: chi risponde spesso deve spiegare — si alza quella, non il tetto
     # della discussione.
     QUESTION_MAX_CHARS = COMMENT_MAX_CHARS
-    ANSWER_MAX_CHARS = COMMENT_MAX_CHARS
+    # CYRA-1338 — that day came: answers to the agents' questions did not fit in 240 characters.
+    ANSWER_MAX_CHARS = 2_000
 
     # Tetto delle domande poste da un AGENTE. Più stretto, e non è una scelta di stile: 180 è il
     # numero scritto nel contratto verso gli host (agent-clarification/v1) e ricopiato in
@@ -143,6 +144,8 @@ module Ticketing
     # diventa un caso di `underspecified` invece di un punto cieco.
     AGENT_ELIGIBILITY_INLINE_IMAGE_TYPES = %w[image/png image/jpeg image/webp].freeze
     AGENT_ELIGIBILITY_INLINE_TEXT_TYPES = %w[text/plain].freeze
+    # CYRA-1342 — PDFs go to the model as their extracted text, inlined like text/plain.
+    AGENT_ELIGIBILITY_INLINE_PDF_TYPES = %w[application/pdf].freeze
 
     # Debounce dell'enqueue: chi salva cinque volte in mezzo minuto accoda cinque job che partono
     # tutti dopo il testo definitivo, e la guardia sul checksum ne fa lavorare uno solo.

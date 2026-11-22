@@ -127,6 +127,9 @@ module Ticketing
       - La motivazione ("reason") è per una persona che deve decidere in dieci secondi se ribaltare
         il tuo verdetto: 1-3 frasi, concrete, che citano il punto specifico del ticket o
         dell'allegato da cui nasce il rischio. Niente formule generiche.
+      - La motivazione la legge anche chi ha aperto il ticket, che spesso non è tecnico. Non citare i
+        nomi delle categorie (per esempio security_auth_change), né nomi di classi, file, servizi o
+        protocolli: descrivi il rischio con parole semplici, per esempio «tocca chi può accedere».
       - Se il verdetto è "allowed", elenca esattamente ["none"] in risks.
       Rispondi in italiano.
       #{Text::ItalianOrthography::PROMPT_RULE}
@@ -207,18 +210,34 @@ module Ticketing
     end
 
     def inline_text_section(analyzed)
-      texts = analyzed.select { |file| text_type?(file.blob.content_type) }.map do |file|
-        # Active Storage restituisce byte binari: interpretarli PRIMA del troncamento evita di
-        # spezzare un carattere multibyte. Il gate non deve valutare testo alterato da sostituzioni.
-        body = file.blob.download.to_s.dup.force_encoding(Encoding::UTF_8)
-        raise Encoding::InvalidByteSequenceError unless body.valid_encoding?
-
+      texts = analyzed.select { |file| text_type?(file.blob.content_type) || pdf_type?(file.blob.content_type) }.map do |file|
+        body = pdf_type?(file.blob.content_type) ? pdf_text(file) : plain_text(file)
         body = body.truncate(Ticketing::Constants::AGENT_ELIGIBILITY_MAX_INLINE_TEXT_CHARS)
         "--- #{file.blob.filename} ---\n#{body}"
       end
       return if texts.empty?
 
       "Contenuto degli allegati testuali:\n#{texts.join("\n")}"
+    end
+
+    # Active Storage restituisce byte binari: interpretarli PRIMA del troncamento evita di
+    # spezzare un carattere multibyte. Il gate non deve valutare testo alterato da sostituzioni.
+    def plain_text(file)
+      body = file.blob.download.to_s.dup.force_encoding(Encoding::UTF_8)
+      raise Encoding::InvalidByteSequenceError unless body.valid_encoding?
+
+      body
+    end
+
+    # CYRA-1342 — the text layer of a PDF; blank for a scan or an unreadable file, which then counts as not analyzed.
+    def pdf_text(file)
+      @pdf_texts ||= {}
+      @pdf_texts[file.id] ||= begin
+        text = PDF::Reader.new(StringIO.new(file.blob.download)).pages.map(&:text).join("\n")
+        text.encode(Encoding::UTF_8, invalid: :replace, undef: :replace, replace: "").squeeze("\n").strip
+      rescue PDF::Reader::MalformedPDFError, PDF::Reader::UnsupportedFeatureError, PDF::Reader::EncryptedPDFError
+        ""
+      end
     end
 
     # Divide gli allegati fra quelli spediti al modello e quelli scartati, applicando in ordine:
@@ -234,7 +253,7 @@ module Ticketing
           blob = file.blob
           if blob.nil? || !inlineable_type?(blob.content_type) ||
              analyzed.size >= Ticketing::Constants::AGENT_ELIGIBILITY_MAX_INLINE_ATTACHMENTS ||
-             blob.byte_size.to_i > budget
+             blob.byte_size.to_i > budget || (pdf_type?(blob.content_type) && pdf_text(file).blank?)
             skipped << file if blob
             next
           end
@@ -256,7 +275,12 @@ module Ticketing
 
     def inline_types
       @inline_types ||= Ticketing::Constants::AGENT_ELIGIBILITY_INLINE_IMAGE_TYPES +
-                        Ticketing::Constants::AGENT_ELIGIBILITY_INLINE_TEXT_TYPES
+                        Ticketing::Constants::AGENT_ELIGIBILITY_INLINE_TEXT_TYPES +
+                        Ticketing::Constants::AGENT_ELIGIBILITY_INLINE_PDF_TYPES
+    end
+
+    def pdf_type?(content_type)
+      Ticketing::Constants::AGENT_ELIGIBILITY_INLINE_PDF_TYPES.include?(content_type)
     end
 
     def text_type?(content_type)

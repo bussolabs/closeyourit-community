@@ -174,6 +174,29 @@ RSpec.describe Ticketing::AddComment do
     end
   end
 
+  # CYRA-1343 — a person's comment can carry what the check was missing: the advice is evaluated again.
+  describe "agent eligibility" do
+    include ActiveJob::TestHelper
+
+    let(:organization) { create(:organization) }
+    let(:ticket) { create(:ticket, organization:) }
+    let(:author) { create(:account).tap { |a| create(:membership, account: a, organization:, role: :member) } }
+
+    it "enqueues a new evaluation for an open ticket decided automatically" do
+      expect do
+        described_class.call(ticket:, author:, params: { body: "The texts are in the attached chat." })
+      end.to have_enqueued_job(Ticketing::EvaluateAgentEligibilityJob).with(ticket_id: ticket.id)
+    end
+
+    it "leaves a decision taken by a person alone" do
+      ticket.update_columns(agent_eligibility_source: Ticketing::Ticket.agent_eligibility_sources[:human])
+
+      expect do
+        described_class.call(ticket:, author:, params: { body: "Another note." })
+      end.not_to have_enqueued_job(Ticketing::EvaluateAgentEligibilityJob)
+    end
+  end
+
   # CYRA-781 — l'aggancio dal commento non è più il canale: è la rete per chi risponde da una strada
   # che non sa ancora nominare una domanda (discussione, riga di comando, Telegram). Morde solo su un
   # giro a cui non ha risposto ancora nessuno.
@@ -200,6 +223,53 @@ RSpec.describe Ticketing::AddComment do
       expect(clarification.reload.answered_at).to be_present
       expect(riga.reload.answered_at).to be_present
       expect(riga.answers.first).to be_covers_round
+    end
+
+    # CYRA-1339 — a numbered comment names its questions: each part goes to the question with that number.
+    context "with a numbered comment" do
+      def round_of_two
+        clarification = create(:agent_clarification, workflow: ticket.agent_workflow, questions: [ "First?", "Second?" ])
+        [ clarification, clarification.questions.order(:position).to_a ]
+      end
+
+      it "gives each question the part with its number" do
+        clarification, (first, second) = round_of_two
+
+        described_class.call(ticket:, author: autore, params: { body: "1. The left one\n2. For the whole firm\nset by default" })
+
+        expect(first.reload.answers.sole.body).to eq("The left one")
+        expect(second.reload.answers.sole.body).to eq("For the whole firm\nset by default")
+        expect(first.answers.sole).not_to be_covers_round
+        expect(clarification.reload.response_snapshot).to eq("1. The left one\n2. For the whole firm\nset by default")
+      end
+
+      it "leaves a question without its number unanswered" do
+        _clarification, (first, second) = round_of_two
+
+        described_class.call(ticket:, author: autore, params: { body: "2) Only the second" })
+
+        expect(first.reload.answers).to be_empty
+        expect(second.reload.answers.sole.body).to eq("Only the second")
+      end
+
+      it "keeps the whole comment for every question when a number is outside the round" do
+        _clarification, (first, second) = round_of_two
+        body = "1. Yes\n3. Something else"
+
+        described_class.call(ticket:, author: autore, params: { body: })
+
+        expect([ first, second ].map { |row| row.reload.answers.sole.body }).to eq([ body, body ])
+        expect(first.answers.sole).to be_covers_round
+      end
+
+      it "keeps the whole comment for every question when text comes before the first number" do
+        _clarification, (first, second) = round_of_two
+        body = "Here are my answers:\n1. Yes\n2. No"
+
+        described_class.call(ticket:, author: autore, params: { body: })
+
+        expect([ first, second ].map { |row| row.reload.answers.sole.body }).to eq([ body, body ])
+      end
     end
 
     it "non tocca un giro a cui qualcuno ha già risposto dal canale giusto" do

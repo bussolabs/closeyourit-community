@@ -28,7 +28,19 @@ it:
         consult_not_found: Lavorazione non trovata.
         consult_stale: La lavorazione si è mossa o è già stata decisa. Riprendi quella aggiornata.
       activity_actor: Supporter
+      held_for_person:
+        reserved: "Il controllo lo consentirebbe, ma il ticket parla di %{topics} (%{words}): prima di farlo lavorare alle macchine decide una persona."
+        bypass: "Il controllo lo consentirebbe, ma il ticket propone di saltare i controlli del sistema: prima di farlo lavorare alle macchine decide una persona."
+        topics:
+          money: soldi e pagamenti
+          security: sicurezza e accessi
+          data_deletion: cancellazione di dati
+          listed: un argomento riservato
       plan_revision_intro: "Il supporter chiede di rivedere il piano prima dell'approvazione:"
+      # CYRA-1345 — a plan that went ahead with reasons a person used to decide on.
+      plan_warning:
+        title: "%{code}: piano approvato con un avviso (rischio %{risk} su 10)"
+        body: "%{title} — il lavoro va avanti da solo. Perché te lo diciamo: %{reasons}."
     # CYRA-675 — riga di servizio a lunghezza FISSA, come quella dei chiarimenti e per lo stesso
     # motivo: il riassunto dell'agente non ha un tetto e un commento sì. Il riassunto per esteso sta
     # nella scheda Automazione, i file provati nella cronologia.
@@ -40,8 +52,8 @@ it:
     # della riga qui sopra: un commento ha un tetto di caratteri, il motivo tecnico no. Il motivo
     # tecnico sta nella scheda Automazione.
     exhausted_budget:
-      service_line: "Le macchine hanno finito i tentativi due volte: il ticket torna tra quelli da fare e non riparte da solo. Cosa è stato provato, e il pulsante per riavviare, sono nella scheda Automazione."
-      eligibility_reason: "Le macchine hanno finito i tentativi due volte su questo ticket. Per rimetterlo in lavorazione non basta consentirlo qui: va anche riavviato dalla scheda Automazione."
+      service_line: "Le macchine non sono riuscite a finire questo lavoro, nemmeno al secondo giro. Ora il ticket aspetta il team: tu non devi fare niente. Cosa è stato provato è nella scheda Automazione."
+      eligibility_reason: "Le macchine non sono riuscite a finire questo lavoro, due volte: ora aspetta il team. Per rimetterlo in lavorazione non basta consentirlo qui: va anche riavviato dalla scheda Automazione."
     clarifications:
       ask:
         # Riga di servizio: ANNUNCIA le domande, non le contiene. Le domande sono righe loro e si

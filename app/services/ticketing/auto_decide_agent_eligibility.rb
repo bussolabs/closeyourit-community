@@ -14,7 +14,7 @@ module Ticketing
     def call
       return Result.ok(nil) unless decidable?
       return Result.ok(nil) if @ticket.agent_eligibility == @ticket.agent_eligibility_advice
-      return Result.ok(nil) if @ticket.agent_eligibility_advice_allowed? && needs_a_person?
+      return hold_for_a_person if @ticket.agent_eligibility_advice_allowed? && needs_a_person?
 
       from = @ticket.agent_eligibility
       ApplicationRecord.transaction do
@@ -36,9 +36,31 @@ module Ticketing
     end
 
     def needs_a_person?
-      text = [ @ticket.title, @ticket.description, @ticket.technical_analysis ].join("\n")
-      reserved = Agents::Supporters::ReservedTopics.new(organization: @ticket.project.organization, project: @ticket.project)
-      reserved.match(text:).any? || Agents::Supporters::BypassGuard.match(text).any?
+      reserved_matches.any? || bypass_matches.any?
+    end
+
+    def text = [ @ticket.title, @ticket.description, @ticket.technical_analysis ].join("\n")
+
+    def reserved_matches
+      @reserved_matches ||= Agents::Supporters::ReservedTopics
+                            .new(organization: @ticket.project.organization, project: @ticket.project).match(text:)
+    end
+
+    def bypass_matches = @bypass_matches ||= Agents::Supporters::BypassGuard.match(text)
+
+    # CYRA-1340 — the decision stays pending, but the ticket says why instead of waiting in silence.
+    def hold_for_a_person
+      reason = I18n.with_locale(@ticket.reporter&.effective_locale || I18n.default_locale) { hold_reason }
+      @ticket.update!(agent_eligibility_reason: reason) unless @ticket.agent_eligibility_reason == reason
+      Result.ok(nil)
+    end
+
+    def hold_reason
+      return I18n.t("agents.supporter.held_for_person.bypass") if reserved_matches.empty?
+
+      topics = reserved_matches.map { |entry| I18n.t("agents.supporter.held_for_person.topics.#{entry.topic || "listed"}") }
+      I18n.t("agents.supporter.held_for_person.reserved", topics: topics.uniq.to_sentence,
+                                                          words: reserved_matches.map(&:value).uniq.first(3).join(", "))
     end
   end
 end

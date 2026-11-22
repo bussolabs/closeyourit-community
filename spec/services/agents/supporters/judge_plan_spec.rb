@@ -3,6 +3,7 @@
 require "rails_helper"
 
 # CYRA-1193 — the supporter judges a plan, the server decides whether it is approved without a person.
+# CYRA-1345 — a reason a person used to decide on is a warning: the plan is approved and the person is told.
 RSpec.describe Agents::Supporters::JudgePlan do
   let(:organization) { create(:organization) }
   let(:service_account) do
@@ -50,15 +51,15 @@ RSpec.describe Agents::Supporters::JudgePlan do
       expect(judge.value).to include(outcome: "approved", risk_score: 3)
     end
 
-    it "leaves the plan of a high-risk ticket to a person" do
+    it "approves the plan of a high-risk ticket with a warning" do
       project.update!(triage_risk_floor: "on")
       triage_said({ "risk" => "high" })
 
       result = judge
 
-      expect(result.value).to include(outcome: "escalated", risk_score: 9)
+      expect(result.value).to include(outcome: "approved", risk_score: 9)
       expect(result.value[:reasons]).to include("risk_above_threshold", "triage_risk")
-      expect(workflow.reload.approved_at).to be_nil
+      expect(workflow.reload.approved_at).to be_present
     end
 
     it "raises the score of a medium-risk ticket and still approves" do
@@ -78,17 +79,50 @@ RSpec.describe Agents::Supporters::JudgePlan do
     end
   end
 
-  it "leaves the plan to a person when the supporter escalates" do
-    expect(judge(recommendation: "escalate").value).to include(outcome: "escalated", reasons: [ "supporter_escalated" ])
-    expect(workflow.reload.approved_at).to be_nil
+  # CYRA-1345 — the reasons a person used to decide on are a warning now: the plan goes ahead and the
+  # person is told, in the ticket's history and with a notice.
+  describe "a plan with a reason a person should know about" do
+    it "is approved when the supporter asks for a person, and the gaps travel as notes" do
+      result = judge(recommendation: "escalate", reasons_against: "Nobody chose the retention period.")
+
+      expect(result.value).to include(outcome: "approved", reasons: [ "supporter_escalated" ])
+      expect(workflow.reload).to have_attributes(approved_by_id: nil, frozen_plan_id: plan.id)
+      expect(Agents::SupporterDecision.find_by!(target_id: plan.id).evidence["guidance"])
+        .to include("Nobody chose the retention period.")
+    end
+
+    it "writes the warnings and the risk in the ticket's history" do
+      judge(risk_score: 9)
+
+      expect(Ticketing::Event.find_by!(ticket:, action: "plan_supporter_approved").data)
+        .to eq("warnings" => [ "risk_above_threshold" ], "risk_score" => 9)
+    end
+
+    it "tells a person with a notice" do
+      expect { judge(risk_score: 9) }.to have_enqueued_job(Agents::PlanWarningJob)
+        .with { |decision_id| expect(decision_id).to eq(Agents::SupporterDecision.find_by!(target_id: plan.id).id) }
+    end
+
+    it "sends no notice for a plan approved with no reason" do
+      expect { judge }.not_to have_enqueued_job(Agents::PlanWarningJob)
+      expect(Ticketing::Event.find_by!(ticket:, action: "plan_supporter_approved").data).to eq({})
+    end
+
+    it "still waits for a person on a project with strict caps" do
+      project.update!(strict_caps: "1")
+
+      expect { judge(risk_score: 9) }.not_to have_enqueued_job(Agents::PlanWarningJob)
+      expect(judge(risk_score: 9).value).to include(outcome: "escalated", reasons: [ "risk_above_threshold" ])
+      expect(workflow.reload.approved_at).to be_nil
+    end
   end
 
-  it "raises the score on CI and secrets paths and leaves the plan to a person" do
+  it "raises the score on CI and secrets paths and approves with a warning" do
     result = judge(touched_paths: [ ".kamal/secrets-common" ])
 
-    expect(result.value).to include(outcome: "escalated", risk_score: 9)
+    expect(result.value).to include(outcome: "approved", risk_score: 9)
     expect(result.value[:reasons]).to include("risk_above_threshold")
-    expect(workflow.reload.approved_at).to be_nil
+    expect(workflow.reload.approved_at).to be_present
   end
 
   # CYRA-1197 — the content decides: an additive migration the supporter checked is not a reason by itself.
@@ -106,39 +140,38 @@ RSpec.describe Agents::Supporters::JudgePlan do
     expect(workflow.reload.approved_at).to be_present
   end
 
-  it "leaves a plan that changes the payments to a person" do
+  it "approves a plan that changes the payments with a warning" do
     ticket.update!(title: "Retry a failed payment once")
 
     result = judge(confidence: "medium")
 
-    expect(result.value).to include(outcome: "escalated", risk_score: 10)
+    expect(result.value).to include(outcome: "approved", risk_score: 10)
     expect(result.value[:reasons]).to include("reserved_topic")
-    expect(workflow.reload.approved_at).to be_nil
+    expect(workflow.reload.approved_at).to be_present
   end
 
-  it "leaves the plan to a person when it hits a reserved topic the supporter did not clear" do
+  it "warns when the plan hits a reserved topic the supporter did not clear" do
     ticket.update!(title: "Change the invoice totals")
 
+    expect(judge(recommendation: "escalate").value).to include(outcome: "approved")
     expect(judge(recommendation: "escalate").value[:reasons]).to include("reserved_topic")
-    expect(judge(confidence: "medium").value[:reasons]).to be_present
-    expect(workflow.reload.approved_at).to be_nil
   end
 
-  it "leaves the plan to a person when the reserved topic is in a file it touches" do
+  it "warns when the reserved topic is in a file the plan touches" do
     project.update!(supporter_reserved_topics: "app/models/billing/")
 
     result = judge(touched_paths: [ "app/models/billing/invoice.rb" ])
 
-    expect(result.value).to include(outcome: "escalated", risk_score: 10)
+    expect(result.value).to include(outcome: "approved", risk_score: 10)
     expect(result.value[:reasons]).to include("reserved_topic")
   end
 
-  it "leaves the plan to a person when the text hits a topic the project reserved" do
+  it "warns when the text hits a topic the project reserved" do
     project.update!(supporter_reserved_topics: "sorting")
     ticket.update!(title: "Change the sorting of the list")
 
     expect(judge.value[:reasons]).to include("reserved_topic")
-    expect(workflow.reload.approved_at).to be_nil
+    expect(workflow.reload.approved_at).to be_present
   end
 
   # CYRA-1197 — a built-in word in the text ("billing", "pagamento") does not stop a plan the supporter read and
@@ -200,22 +233,23 @@ RSpec.describe Agents::Supporters::JudgePlan do
     expect(judge(recommendation: "revise").value[:outcome]).to eq("retried")
   end
 
-  # CYRA-1327 — after three revisions the plan is not sent back again and nobody is called either: the
-  # server settles the exhausted budget (over once on another engine, set aside the second time). The
-  # verdict in the ledger stays what the supporter said.
-  it "settles the budget itself after three revisions asked by the supporter" do
+  # CYRA-1345 — after three revisions the plan is not sent back again: it goes ahead with the gaps as
+  # notes and a warning, whatever its risk. The budget is settled by the server (CYRA-1327) only where the
+  # plan still waits for a person.
+  it "approves the plan with a warning after three revisions asked by the supporter" do
     3.times do |i|
       Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
                                         target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 5)
     end
 
     result = nil
-    expect { result = judge(recommendation: "revise", risk_score: 6) }
-      .to have_enqueued_job(Agents::ExhaustedBudgetJob).with(workflow.id, String)
+    expect { result = judge(recommendation: "revise", risk_score: 6, reasons_against: "Name the migration file.") }
+      .not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
 
-    expect(result.value).to include(outcome: "escalated")
+    expect(result.value).to include(outcome: "approved")
     expect(result.value[:reasons]).to include("revisions_exhausted")
     expect(plan.reload.change_request).to be_blank
+    expect(Agents::SupporterDecision.find_by!(target_id: plan.id).evidence["guidance"]).to include("Name the migration file.")
   end
 
   # AC-3, AC-7 — a reserved topic, a suspected bypass or a risk above the line keep the hand-over: the
@@ -338,18 +372,18 @@ RSpec.describe Agents::Supporters::JudgePlan do
       expect(Ticketing::Event.where(ticket:, action: "plan_supporter_added_items")).not_to exist
     end
 
-    it "leaves a plan that leaves an item unproven to a person" do
+    it "approves a plan that leaves an item unproven with a warning" do
       write_items(verifications: [])
 
-      expect(judge.value).to include(outcome: "escalated", reasons: [ "ticket_items_need_person" ])
-      expect(workflow.reload.approved_at).to be_nil
+      expect(judge.value).to include(outcome: "approved", reasons: [ "ticket_items_need_person" ])
+      expect(workflow.reload.approved_at).to be_present
     end
 
-    it "leaves a proposing plan above the autonomous risk to a person and adds nothing" do
+    it "approves a proposing plan above the autonomous risk with a warning and adds its item" do
       write_items(proposed: [ new_item ])
 
-      expect(judge(risk_score: 9).value).to include(outcome: "escalated", reasons: [ "risk_above_threshold" ])
-      expect(ticket.conditions.reload.count).to eq(1)
+      expect(judge(risk_score: 9).value).to include(outcome: "approved", reasons: [ "risk_above_threshold" ])
+      expect(ticket.conditions.reload.count).to eq(2)
     end
   end
 

@@ -28,7 +28,19 @@ en:
         consult_not_found: Workflow not found.
         consult_stale: The workflow moved or was already decided. Take the updated one.
       activity_actor: Supporter
+      held_for_person:
+        reserved: "The check would allow it, but the ticket is about %{topics} (%{words}): a person decides before the machines work on it."
+        bypass: "The check would allow it, but the ticket proposes to skip the system's checks: a person decides before the machines work on it."
+        topics:
+          money: money and payments
+          security: security and access
+          data_deletion: deleting data
+          listed: a reserved topic
       plan_revision_intro: "The supporter asks to revise the plan before approval:"
+      # CYRA-1345 — a plan that went ahead with reasons a person used to decide on.
+      plan_warning:
+        title: "%{code}: plan approved with a warning (risk %{risk} out of 10)"
+        body: "%{title} — the work goes on by itself. Why you are told: %{reasons}."
     # CYRA-675 — fixed-length service line, same reason as the clarification one: a comment has a
     # character cap and the agent summary does not. The full summary is in the Automation panel.
     closer_staging:
@@ -39,8 +51,8 @@ en:
     # comment has a character cap and the technical reason does not. That reason is in the
     # Automation panel.
     exhausted_budget:
-      service_line: "The machines ran out of attempts twice: the ticket goes back to the backlog and does not start again on its own. What was tried, and the button to restart it, are in the Automation panel."
-      eligibility_reason: "The machines ran out of attempts twice on this ticket. Allowing it here is not enough to put it back to work: it also has to be restarted from the Automation panel."
+      service_line: "The machines could not finish this work, not even on the second run. The ticket now waits for the team: you have nothing to do. What was tried is in the Automation panel."
+      eligibility_reason: "The machines could not finish this work, twice: it now waits for the team. Allowing it here is not enough to put it back to work: it also has to be restarted from the Automation panel."
     clarifications:
       ask:
         # Service line: it ANNOUNCES the questions, it does not contain them. See the Italian file

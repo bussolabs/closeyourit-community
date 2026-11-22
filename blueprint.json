@@ -4132,7 +4132,7 @@
       "level": 3,
       "parent": "tkt_flow_eligibility",
       "kind": "step",
-      "summary": "Parte poco dopo creazione o modifica, così una raffica di correzioni costa una sola valutazione. Salta se il testo non è cambiato o se ha deciso una persona. Col supporter acceso — come nasce ogni progetto — il parere diventa la decisione, salvo temi riservati o tentativi di aggirare i controlli.",
+      "summary": "Parte poco dopo creazione o modifica, e dopo il commento di una persona su un ticket non ancora consentito: una raffica di correzioni costa una sola valutazione. Salta se il testo non è cambiato o se ha deciso una persona. Col supporter acceso — come nasce ogni progetto — il parere diventa la decisione, salvo temi riservati o tentativi di aggirare i controlli: allora il ticket aspetta una persona e il motivo lo dice.",
       "files": [
         "app/services/ticketing/agent_eligibility_queue.rb",
         "app/jobs/ticketing/evaluate_agent_eligibility_job.rb",
@@ -6170,6 +6170,7 @@
         "app/models/agents/plan_document.rb",
         "app/models/agents/plan_split.rb",
         "app/jobs/agents/plan_ready_notification_job.rb",
+        "app/jobs/agents/plan_warning_job.rb",
         "app/services/agents/plans/ticket_items.rb"
       ]
     },
@@ -6196,7 +6197,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Approva da solo i piani a rischio fino a 8, senza temi riservati né tentativi di aggirare i controlli; un controllo citato in un divieto («non usare --no-verify o [skip ci]») non conta come tentativo. Un piano con lacune, o che cambia i file della CI che le macchine non possono consegnare, torna al pianificatore con le osservazioni, al massimo tre volte; dopo, se il rischio è fino a 5, parte e le lacune arrivano come note a chi scrive il codice; gli altri non aspettano una persona: la lavorazione riparte da zero con un altro motore, una volta sola, poi viene messa da parte. Se il progetto lo accende, il rischio segnato dal triage fa da minimo: un ticket ad alto rischio non viene mai approvato da solo. Con i tetti stretti accesi, dopo tre revisioni un piano ancora da correggere va sempre a una persona, e non riparte da zero. Un piano approvato che propone voci di accettazione nuove le scrive nel ticket da solo, e la cronologia lo dice; uno che lascia una voce senza prova resta sempre a una persona.",
+      "summary": "Nei progetti con il supporter acceso, la macchina giudica il piano e il server decide. Un piano con lacune, o che cambia i file della CI che le macchine non possono consegnare, torna al pianificatore con le osservazioni, al massimo tre volte. Poi il piano parte: se ha un motivo che una persona dovrebbe conoscere (rischio sopra 8, tema riservato, correzioni finite, poca sicurezza, richiesta di una persona, voce del ticket senza prova) viene approvato lo stesso, le critiche arrivano come note a chi scrive il codice e il responsabile tecnico riceve un avviso con il rischio e i motivi. Restano a una persona solo il tentativo di aggirare i controlli, il ticket già concluso, la divisione di un epic e i progetti con i tetti stretti accesi. Se il progetto lo accende, il rischio segnato dal triage fa da minimo e diventa anch'esso un avviso. Un piano approvato che propone voci di accettazione nuove le scrive nel ticket da solo, e la cronologia lo dice.",
       "files": [
         "app/controllers/api/v1/agent_host/supporter_plans_controller.rb",
         "app/controllers/api/v1/agent_host/supporter_plan_verdicts_controller.rb",
@@ -6345,7 +6346,8 @@
       "files": [
         "app/services/agents/clarifications/settle.rb",
         "app/services/ticketing/questions/reply.rb",
-        "app/services/ticketing/add_comment.rb"
+        "app/services/ticketing/add_comment.rb",
+        "app/services/agents/clarifications/numbered_answers.rb"
       ]
     },
     {

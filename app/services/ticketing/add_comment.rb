@@ -15,6 +15,7 @@ module Ticketing
       comment.files.attach(files) if files.present?
       if comment.save
         capture_legacy_answer(comment)
+        enqueue_agent_eligibility(comment)
         notify(comment)
         # `comment.save` ha già committato (l'action non apre transazioni esterne) → siamo dopo il commit.
         Ticketing::BroadcastComment.call(comment: comment)
@@ -88,12 +89,22 @@ module Ticketing
       question_count = clarification.questions.count
       return if question_count.zero?
 
-      # Lo stesso testo su ogni posizione del giro: chi ha commentato non ha nominato nessuna domanda,
-      # e `covers_round` è ciò che permette di dirlo invece di attribuirgliene una.
+      # A numbered comment names its questions (CYRA-1339); otherwise the same text goes on every
+      # position, and `covers_round` says nobody named a question.
+      numbered = Agents::Clarifications::NumberedAnswers.call(body: comment.body, count: question_count)
       Agents::Clarifications::Settle.call(
         clarification: clarification, author: @author, response_comment: comment,
-        answers: Array.new(question_count) { comment.body }, covers_round: true
+        answers: numbered || Array.new(question_count) { comment.body }, covers_round: numbered.nil?
       )
+    end
+
+    # CYRA-1343 — a person's comment may answer what kept an open ticket from the agents: evaluated again.
+    # An allowed ticket is left alone, so a lively thread does not pay one evaluation per comment.
+    def enqueue_agent_eligibility(comment)
+      return if comment.automation_generated? || !@ticket.status.category_open? || @ticket.agent_eligibility_allowed?
+      return unless @ticket.agent_eligibility_stale?
+
+      Ticketing::AgentEligibilityQueue.enqueue(ticket: @ticket)
     end
 
     # Loop di collaborazione: l'autore diventa watcher; i menzionati (@handle, membri dell'org)

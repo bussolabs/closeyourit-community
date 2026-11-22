@@ -33,12 +33,12 @@
       </div>
       <%= form_with url: member_ticket_question_answers_path(card.ticket, current), method: :post, class: "relative ml-[22px]" do %>
         <%= hidden_field_tag :approval, card.key %>
-        <%= text_field_tag :body, nil, id: "approvals-question-body", maxlength: Ticketing::Constants::ANSWER_MAX_CHARS,
+        <%= text_area_tag :body, nil, rows: 1, id: "approvals-question-body", maxlength: Ticketing::Constants::ANSWER_MAX_CHARS,
               placeholder: t(current.choice_options.any? ? "member.tickets.questions.other_placeholder" : "member.tickets.questions.answer_placeholder"),
-              class: "w-full h-[34px] rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-3 pr-10 text-[12.5px] placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-400",
+              class: "block w-full h-[34px] focus:h-24 [&:not(:placeholder-shown)]:h-24 resize-none rounded-md border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-3 pr-10 py-1.5 text-[12.5px] placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-indigo-400",
               data: { test: "approvals-question-body" } %>
         <%= render Ui::ButtonComponent.new(label: t("member.tickets.questions.answer_submit"), type: "submit", icon: "arrow-right", icon_only: true,
-              variant: :primary, size: :sm, class: "absolute right-[3px] top-1/2 -translate-y-1/2", test_id: "approvals-question-submit") %>
+              variant: :primary, size: :sm, class: "absolute right-[3px] bottom-[3px]", test_id: "approvals-question-submit") %>
       <% end %>
     </div>
   <% else %>

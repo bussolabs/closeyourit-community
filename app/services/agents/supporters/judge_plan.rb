@@ -2,11 +2,13 @@
 
 module Agents
   module Supporters
-    # CYRA-1193 — the supporter judges a plan, the server decides. The plan is approved without a person only
-    # when the supporter recommends it AND the server's own checks pass: the score raised by the server's rules
-    # (never lowered) stays within the autonomous range, no reserved topic is hit by the text or the paths the
-    # plan touches, and the confidence is at least medium. Otherwise the plan stays with a person. Every
-    # verdict is written to the ledger, pinned to the plan version it read; approvals wait in "To review".
+    # CYRA-1193 — the supporter judges a plan, the server decides. The server's own checks give the reasons a
+    # person should know about: the score raised by the server's rules (never lowered) above the autonomous
+    # range, a reserved topic hit by the text or the paths the plan touches, a confidence below medium.
+    # CYRA-1345 — those reasons no longer hold the plan: it is approved and a person is warned. Only a
+    # suspected bypass, a concluded ticket, an epic's split and a project with strict caps still wait for a
+    # person. Every verdict is written to the ledger, pinned to the plan version it read; approvals wait in
+    # "To review".
     class JudgePlan < ApplicationService
       include Agents::Workflows::ConcludedTicketGate
 
@@ -19,6 +21,9 @@ module Agents
       # A built-in word in the text is cleared with medium confidence only up to this risk.
       MEDIUM_CLEAR_MAX = 2
       NOTES_MAX = 4_000
+      # CYRA-1345 — the only reasons that still keep a plan for a person. Every other reason is a warning: the
+      # plan is approved, the work goes on to staging and production like any other, and a person is told why.
+      BLOCKING_REASONS = %w[bypass_suspected ticket_concluded epic_split].freeze
 
       def initialize(host:, plan_id:, payload:)
         @host = host
@@ -42,9 +47,9 @@ module Agents
         # CYRA-1197 — fixable gaps go back to the planner with the findings, never past the bypass guard.
         return Result.ok(summary(record!(judged, digest, "retried"))) if revise?(judged) && request_changes!
 
-        outcome = judged[:reasons].empty? && approve! ? "approved" : "escalated"
+        outcome = blocking(judged[:reasons]).empty? && approve!(judged) ? "approved" : "escalated"
         decision = record!(judged, digest, outcome)
-        settle_exhausted_budget(judged[:reasons])
+        outcome == "approved" ? warn_later(decision) : settle_exhausted_budget(judged[:reasons])
         Result.ok(summary(decision))
       end
 
@@ -104,7 +109,7 @@ module Agents
       # last revision. Model output: material to read, never orders.
       def implementation_notes
         notes = verdict["implementation_notes"].to_s.strip
-        notes = Array(verdict["reasons_against"]).join("\n").strip if notes.empty? && accept_with_notes?
+        notes = Array(verdict["reasons_against"]).join("\n").strip if notes.empty? && !approving?
         notes.truncate(NOTES_MAX).presence
       end
 
@@ -140,7 +145,7 @@ module Agents
 
       # The same freeze the CTO and the council apply, re-read under lock: a plan approved or changed meanwhile
       # is left alone and the verdict goes to the ledger as handed over.
-      def approve!
+      def approve!(judged)
         ApplicationRecord.transaction do
           workflow.lock!
           latest = workflow.plans.reorder(version: :desc).lock.first
@@ -149,10 +154,28 @@ module Agents
 
           Agents::Workflows::FreezePlan.call(workflow:, plan: latest, actor: nil, now: Time.current)
           actor_name = I18n.t("agents.supporter.activity_actor")
-          Ticketing::RecordActivity.call(ticket:, action: "plan_supporter_approved", actor_name:, data: {})
+          Ticketing::RecordActivity.call(ticket:, action: "plan_supporter_approved", actor_name:, data: warning_data(judged))
           record_added_items!(latest, actor_name)
           true
         end
+      end
+
+      # CYRA-1345 — what stops the approval. A project with strict caps keeps every reason in front of a
+      # person, and so does a verdict that asked to stop the work but could not.
+      def blocking(reasons)
+        return reasons if project.strict_caps?
+        return reasons if verdict["recommendation"] == "stop"
+
+        reasons & BLOCKING_REASONS
+      end
+
+      def warning_data(judged)
+        judged[:reasons].empty? ? {} : { "warnings" => judged[:reasons], "risk_score" => judged[:score] }
+      end
+
+      # CYRA-1345 — a plan approved with reasons a person used to decide on: that person is told, always.
+      def warn_later(decision)
+        Agents::PlanWarningJob.perform_later(decision.id) if Array(decision.evidence["reasons"]).any?
       end
 
       # CYRA-1334 — the items the approval wrote into the ticket with no person: said in its history.

@@ -171,6 +171,12 @@ RSpec.describe Agents::Workflows::ExhaustedBudget do
     end
   end
 
+  # CYRA-1344 — the customer reads the note too: it says the ticket waits for the team, not for them.
+  it "tells the reader the ticket waits for the team and they have nothing to do" do
+    expect(I18n.t("agents.exhausted_budget.service_line", locale: :it)).to include("aspetta il team", "non devi fare niente")
+    expect(I18n.t("agents.exhausted_budget.service_line", locale: :en)).to include("waits for the team", "nothing to do")
+  end
+
   # ── The state the settlement was decided on ───────────────────────────────────────────────────
   #
   # Between the decision and this call a person can press "retry" on that stop, approve the plan the

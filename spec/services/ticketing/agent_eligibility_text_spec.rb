@@ -25,6 +25,18 @@ RSpec.describe Ticketing::AgentEligibilityText do
                               "Analisi tecnica: Vedi app/views/shared/_topbar.html.erb")
     end
 
+    # CYRA-1343 — what a person adds in a comment is part of the ticket the check reads.
+    it "includes the comments written by people, not those of the machines" do
+      ticket = create(:ticket)
+      create(:ticket_comment, ticket:, body: "Here is the chat with the texts.")
+      create(:ticket_comment, ticket:, body: "Automatic note.", kind: :service)
+
+      text = described_class.call(ticket: ticket.reload)
+
+      expect(text).to include("Commenti delle persone:", "Here is the chat with the texts.")
+      expect(text).not_to include("Automatic note.")
+    end
+
     it "include gli scenari BDD" do
       ticket = create(:ticket, with_default_body: false, description: "corpo")
       create(:ticketing_scenario, ticket: ticket, title: "Caso limite", step_given: "sono sulla pagina")
@@ -83,6 +95,14 @@ RSpec.describe Ticketing::AgentEligibilityText do
 
     # Il rischio può stare SOLO nell'allegato: se il fingerprint non lo coprisse, allegare uno
     # screenshot di una console di produzione a un ticket già approvato non lo rivaluterebbe.
+    # CYRA-1342 — PDFs are read now: a ticket with one is evaluated again, the others are not.
+    it "marks the PDF attachments, so their tickets are evaluated again once PDFs are read" do
+      ticket = create(:ticket)
+      ticket.files.attach(io: StringIO.new("%PDF-1.4"), filename: "a.pdf", content_type: "application/pdf", identify: false)
+
+      expect(described_class.attachments_fingerprint(ticket: ticket.reload)).to include("pdf-text-v1")
+    end
+
     it "cambia quando si aggiunge un allegato, a corpo invariato" do
       ticket = create(:ticket, description: "corpo")
       before = described_class.checksum(ticket: ticket)

@@ -38,8 +38,18 @@ module Ticketing
         ("Descrizione: #{ticket.description}" if ticket.description.present?),
         ("Scenari:\n#{scenarios}" if scenarios.present?),
         ("Condizioni di completamento:\n#{conditions}" if conditions.present?),
-        ("Analisi tecnica: #{ticket.technical_analysis}" if ticket.technical_analysis.present?)
+        ("Analisi tecnica: #{ticket.technical_analysis}" if ticket.technical_analysis.present?),
+        people_comments(ticket)
       ].compact.join("\n")
+    end
+
+    # CYRA-1343 — a person's comment often carries what the ticket was missing; the machines' ones never decide.
+    def self.people_comments(ticket)
+      bodies = ticket.comments.sort_by { |comment| [ comment.created_at, comment.id ] }
+                     .reject(&:automation_generated?).map { |comment| "- #{comment.body}" }
+      return if bodies.empty?
+
+      "Commenti delle persone:\n#{bodies.join("\n").truncate(Ticketing::Constants::AGENT_ELIGIBILITY_MAX_INLINE_TEXT_CHARS)}"
     end
 
     # Identità stabile del set di allegati. Ordine deterministico (created_at, id) così due ticket
@@ -49,8 +59,14 @@ module Ticketing
     def self.attachments_fingerprint(ticket:)
       ticket.files.includes(:blob).sort_by { |file| [ file.created_at, file.id ] }.map do |file|
         blob = file.blob
-        [ blob&.filename.to_s, blob&.content_type.to_s, blob&.byte_size.to_i, blob&.checksum.to_s ].join("\0")
+        [ blob&.filename.to_s, blob&.content_type.to_s, blob&.byte_size.to_i, blob&.checksum.to_s, pdf_marker(blob) ]
+          .compact.join("\0")
       end.join("\n")
+    end
+
+    # CYRA-1342 — PDFs became readable: the marker re-evaluates only the tickets that carry one.
+    def self.pdf_marker(blob)
+      "pdf-text-v1" if Ticketing::Constants::AGENT_ELIGIBILITY_INLINE_PDF_TYPES.include?(blob&.content_type)
     end
 
     def self.checksum(ticket:)

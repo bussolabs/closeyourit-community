@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## [0.240.0] - 2026-11-22
+
+### Added
+
+- **Risposte più lunghe alle domande**: alle domande delle macchine puoi rispondere con 2000 caratteri, in un campo che si allarga mentre scrivi. I commenti restano brevi. [Ticket](/member/tickets) (CYRA-1338)
+- **I PDF allegati vengono letti**: il controllo che decide se un ticket può andare alle macchine legge anche il testo dei PDF allegati. Un ticket che rimanda a un PDF non viene più bloccato perché il PDF non era stato aperto. (CYRA-1342)
+
+### Changed
+
+- **Un piano a rischio parte lo stesso e ti avvisa**: un piano con rischio alto, argomento riservato o correzioni finite non aspetta più il tuo sì. Il lavoro va avanti e ricevi un avviso con il motivo. Restano fermi i sospetti di aggiramento e i progetti con i limiti rigidi. (CYRA-1345)
+
+### Fixed
+
+- **Un commento numerato risponde domanda per domanda**: se rispondi con un commento scritto «1. … 2. …», ogni parte va alla domanda con quel numero. Un commento senza numeri vale per tutte le domande, come prima. (CYRA-1339)
+- **Il ticket in attesa dice perché**: quando un ticket tocca soldi, sicurezza o cancellazione di dati e aspetta una persona, ora lo dice, con la parola che l'ha fermato. (CYRA-1340)
+- **Motivi del blocco più chiari**: il motivo per cui un ticket non va alle macchine è scritto con parole semplici, senza codici interni. (CYRA-1341)
+- **Un commento può sbloccare il ticket**: se aggiungi in un commento l'informazione che mancava, il ticket bloccato viene valutato di nuovo. (CYRA-1343)
+- **«Tentativi finiti» più chiaro**: quando le macchine non riescono a finire un lavoro, il messaggio dice che il ticket aspetta il team e che non devi fare niente. (CYRA-1344)
+
 ## [0.239.6] - 2026-11-21
 
 ### Fixed

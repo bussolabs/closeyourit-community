@@ -36,6 +36,25 @@ RSpec.describe Ticketing::AutoDecideAgentEligibility do
     expect(ticket.reload.agent_eligibility).to eq("pending")
   end
 
+  # CYRA-1340 — a ticket held for a person says why, instead of waiting in silence.
+  it "writes which reserved topic holds the ticket for a person" do
+    ticket.reporter.update!(locale: "en")
+    ticket.update!(title: "Change the invoice totals")
+
+    described_class.call(ticket:)
+
+    expect(ticket.reload.agent_eligibility_reason).to include("money", "invoice")
+  end
+
+  it "writes that the ticket proposes to skip the gates" do
+    ticket.reporter.update!(locale: "en")
+    ticket.update!(description: "Then run kamal deploy from a laptop.")
+
+    described_class.call(ticket:)
+
+    expect(ticket.reload.agent_eligibility_reason).to include("skip")
+  end
+
   it "leaves a ticket that proposes to skip the system's gates to a person" do
     ticket.update!(description: "Then run kamal deploy from a laptop.")
 

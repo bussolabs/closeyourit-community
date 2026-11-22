@@ -64,7 +64,7 @@ module Ticketing
     def recoverable
       Ticketing::Ticket
         .joins(:status)
-        .includes(:scenarios, :conditions)
+        .includes(:scenarios, :conditions, :comments)
         .with_attached_files
         .where(types_ticket_statuses: { category: Types::TicketStatus.categories.fetch("open") })
         .where(agent_eligibility_advice: :unknown)

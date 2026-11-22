@@ -98,6 +98,9 @@ gem "closeyourit-ruby", "~> 0.10.2"
 # Richiede libsodium a livello OS (Dockerfile: libsodium23 runtime + libsodium-dev build; macOS: brew libsodium).
 gem "rbnacl"
 
+# Text of the PDFs attached to a ticket, read by the agent eligibility check (CYRA-1342).
+gem "pdf-reader", "~> 2.15"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"

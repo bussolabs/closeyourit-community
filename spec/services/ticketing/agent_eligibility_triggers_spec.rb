@@ -107,12 +107,20 @@ RSpec.describe "Innesco della valutazione di eleggibilità agenti" do
     end
   end
 
-  # I commenti sono esclusi di proposito: non fanno parte del corpo valutato (come per l'embedding) e
-  # includerli produrrebbe una raffica di valutazioni su ogni thread vivace.
-  describe "sui commenti" do
+  # CYRA-1343 — a person's comment can carry what kept the ticket from the agents. An allowed ticket
+  # is left alone, so a lively thread does not pay one evaluation per comment.
+  describe "on comments" do
     let(:ticket) { create(:ticket, organization:, project:, description: "corpo") }
 
-    it "NON accoda quando si aggiunge un commento" do
+    it "enqueues when a person comments a ticket that is not allowed" do
+      expect do
+        Ticketing::AddComment.call(ticket:, author: actor, params: { body: "un commento" })
+      end.to change { evaluations_for(ticket) }.by(1)
+    end
+
+    it "does not enqueue on an allowed ticket" do
+      ticket.update_columns(agent_eligibility: Ticketing::Ticket.agent_eligibilities[:allowed])
+
       expect do
         Ticketing::AddComment.call(ticket:, author: actor, params: { body: "un commento" })
       end.not_to change { evaluations_for(ticket) }

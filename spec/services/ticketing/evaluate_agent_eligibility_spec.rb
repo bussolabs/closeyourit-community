@@ -101,6 +101,12 @@ RSpec.describe Ticketing::EvaluateAgentEligibility do
   describe "perimetro dichiarato all'agente (CYRA-191)" do
     let(:prompt) { described_class::SYSTEM_PROMPT.tr("\n", " ").squeeze(" ") }
 
+    # CYRA-1341 — the reason reaches people who are not technical: no category codes in it.
+    it "asks for a reason without category codes or technical names" do
+      expect(prompt).to include("Non citare i nomi delle categorie")
+      expect(prompt).to include("parole semplici")
+    end
+
     it "dichiara che l'agente opera solo su sviluppo, test e staging e mai in produzione" do
       expect(prompt).to include("Opera SOLO su ambienti di sviluppo, test e staging")
       expect(prompt).to include("NON tocca MAI la produzione")
@@ -199,6 +205,31 @@ RSpec.describe Ticketing::EvaluateAgentEligibility do
       expect(client).to have_received(:generate_content) do |args|
         expect(image_parts(args)).to be_empty
         expect(prompt_text(args)).to include("Contenuto degli allegati testuali:", "note.txt")
+      end
+    end
+
+    # CYRA-1342 — a ticket that points to a PDF must not be blocked because nobody read the PDF.
+    it "inlines the text of a PDF attachment" do
+      attach(ticket, fixture: "subjects.pdf", filename: "subjects.pdf", content_type: "application/pdf")
+      stub_verdict
+
+      result
+
+      expect(client).to have_received(:generate_content) do |args|
+        expect(image_parts(args)).to be_empty
+        expect(prompt_text(args)).to include("--- subjects.pdf ---", "Civil law, Debt recovery")
+        expect(prompt_text(args)).not_to include("Allegati NON analizzati")
+      end
+    end
+
+    it "declares a PDF without readable text as not analyzed" do
+      attach(ticket, fixture: "blank.pdf", filename: "scan.pdf", content_type: "application/pdf")
+      stub_verdict
+
+      result
+
+      expect(client).to have_received(:generate_content) do |args|
+        expect(prompt_text(args)).to include("Allegati NON analizzati", "scan.pdf")
       end
     end
 
