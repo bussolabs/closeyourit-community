@@ -15,6 +15,9 @@ module Agents
       # contendersi la testa (CYRA-588).
       HEAD_LOCK = "FOR UPDATE OF ticketing_tickets SKIP LOCKED"
 
+      # Le fasi pronte di un lavoro già avviato: piano approvato, resta da sviluppare o rilasciare (CYRA-1354).
+      STARTED_WORK_PHASES = %w[autopilot closer_staging closer_production].freeze
+
       # Il progetto della coda: deve esistere nell'organizzazione, avere un repository GitHub e ricadere
       # nello scope del service account dell'host. Non distingue «non esiste» da «non lo vedi» — il
       # chiamante risponde allo stesso modo in entrambi i casi, per non rivelare progetti fuori scope.
@@ -64,7 +67,15 @@ module Agents
                 .where(production_slot_free_sql)
                 .where(production_hold_released_sql)
                 .where(OverlapHold.sql(project: @project, now: @now))
-                .order(Arel.sql("types_ticket_priorities.position DESC"), :number)
+                .order(Arel.sql("types_ticket_priorities.position DESC"), Arel.sql(started_work_first_sql), :number)
+      end
+
+      # CYRA-1354 — fra priorità e numero: prima il lavoro avviato (0), poi smistamento e pianificazione (1).
+      # Le correzioni riaprono lo sviluppo ed entrano da sole; un piano riaperto torna al planner e conta
+      # come nuovo. Legge la fase pronta FUORI da READY_EXECUTION_PHASE_SQL, che ha un gemello Ruby.
+      def started_work_first_sql
+        list = STARTED_WORK_PHASES.map { |phase| ActiveRecord::Base.connection.quote(phase) }.join(", ")
+        "CASE WHEN (#{ready_phase_sql}) IN (#{list}) THEN 0 ELSE 1 END"
       end
 
       # CYRA-781 — la coda non prende un ticket che aspetta la risposta a una domanda bloccante.

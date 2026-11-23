@@ -103,6 +103,66 @@ RSpec.describe Agents::TicketQueues::Next do
     expect(result.value).not_to eq(high_first)
   end
 
+  # CYRA-1354 — a parità di priorità passa prima il lavoro già avviato: un ticket da sviluppare, provare o
+  # rilasciare viene prima di uno da smistare o pianificare. La priorità resta la prima regola.
+  describe "lavoro avviato a parità di priorità" do
+    let(:priority) { create(:ticket_priority, organization:, position: 5) }
+
+    # Piano approvato e congelato, sviluppo consegnato e poi rimandato al lavoro dai controlli rossi.
+    def in_correzione(ticket)
+      workflow = ticket.agent_workflow
+      workflow.update!(triaged_at: 3.hours.ago)
+      attempt = create(:agent_attempt, workflow:, organization:, phase: "planner")
+      plan = Agents::Plan.create!(workflow:, attempt:, technical_analysis: "Piano", scenarios: [],
+                                  definition_of_done: [ "RSpec" ], notes: [], ticket_snapshot_digest: "snapshot",
+                                  candidate_items: [ { "repo" => "bussolabs/x", "base" => "main" } ],
+                                  completion_probe: { "kind" => "merge", "repo" => "bussolabs/x" })
+      workflow.update!(planned_at: 2.hours.ago, approved_at: 2.hours.ago, frozen_plan: plan,
+                       plan_frozen_at: 2.hours.ago, autopilot_started_at: 1.hour.ago,
+                       autopilot_completed_at: 30.minutes.ago)
+      workflow.send_phase_back_to_work!("autopilot")
+      workflow.reload.update!(ci_fix_requested_at: Time.current)
+      expect(workflow.ready_execution_phase).to eq("autopilot"), "il montaggio non descrive una correzione"
+      ticket
+    end
+
+    def nuovo(priority: self.priority)
+      create(:ticket, :agent_workable, organization:, project:, priority:, with_agent_workflow: true)
+    end
+
+    it "dà la correzione prima del ticket nuovo con numero più basso" do
+      fresh = nuovo
+      fix = in_correzione(nuovo)
+
+      expect(fresh.number).to be < fix.number
+      expect(result.value).to eq(fix)
+    end
+
+    it "lascia primo il ticket nuovo con priorità più alta" do
+      urgent = nuovo(priority: create(:ticket_priority, organization:, position: 10))
+      in_correzione(nuovo)
+
+      expect(result.value).to eq(urgent)
+    end
+
+    it "fra due lavori avviati dà ancora il numero più basso" do
+      nuovo
+      first = in_correzione(nuovo)
+      in_correzione(nuovo)
+
+      expect(result.value).to eq(first)
+    end
+
+    it "conta come lavoro nuovo un piano riaperto, tornato alla pianificazione" do
+      fresh = nuovo
+      reopened = nuovo
+      reopened.agent_workflow.update!(triaged_at: 1.hour.ago)
+      expect(reopened.agent_workflow.ready_execution_phase).to eq("planner")
+
+      expect(result.value).to eq(fresh)
+    end
+  end
+
   it "considera gli status open e in_progress ma esclude i done" do
     done_status = create(:ticket_status, :done, organization:)
     progress_status = create(:ticket_status, :in_progress, organization:)

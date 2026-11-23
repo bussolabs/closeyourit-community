@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.243.0] - 2026-11-23
+
+### Changed
+
+- **I lavori avviati passano per primi nella coda**: a parità di priorità, una macchina prende prima un ticket già in sviluppo, in correzione o pronto per un rilascio, e solo dopo quelli da valutare o pianificare. La priorità resta la prima regola: un ticket urgente passa comunque davanti. (CYRA-1354)
+
 ## [0.242.4] - 2026-11-23
 
 ### Fixed

@@ -5940,7 +5940,7 @@
       "level": 3,
       "parent": "agt_flow_claim",
       "kind": "step",
-      "summary": "Il server guarda solo i progetti con un repository che la macchina può vedere, e prende il primo ticket con una fase pronta. Due macchine insieme ricevono ticket diversi. Una macchina in pausa non riceve ticket nuovi. Con il Tester acceso, alla macchina che prende un rilascio in produzione il server dice se deve prima eseguire le prove in browser del piano.",
+      "summary": "Il server guarda solo i progetti con un repository che la macchina può vedere, e prende il primo ticket con una fase pronta: prima la priorità più alta, poi, a parità, il lavoro già avviato (da sviluppare, correggere o rilasciare) prima di quello da smistare o pianificare, infine il numero più basso. Due macchine insieme ricevono ticket diversi. Una macchina in pausa non riceve ticket nuovi. Con il Tester acceso, alla macchina che prende un rilascio in produzione il server dice se deve prima eseguire le prove in browser del piano.",
       "files": [
         "app/controllers/api/v1/agents/ticket_queue_next_claims_controller.rb",
         "app/controllers/api/v1/agents/ticket_queues_controller.rb",
