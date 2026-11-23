@@ -2668,7 +2668,7 @@
       "level": 2,
       "parent": "area_crons",
       "kind": "flow",
-      "summary": "Un lavoro programmato avvisa che è partito, finito o fallito. Al primo battito il controllo nasce da solo.",
+      "summary": "Un lavoro programmato avvisa che è partito, finito o fallito. Al primo battito il controllo nasce da solo. Alla macchina degli agenti che batte con il suo token la risposta dice quali motori usa per lavoro, rilettura e supporter.",
       "files": [
         "app/controllers/api/v1/cron_check_ins_controller.rb",
         "app/services/crons/record_check_in.rb",

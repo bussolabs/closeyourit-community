@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.242.3] - 2026-11-23
+
+### Fixed
+
+- **Una macchina non si ferma più per un motore che non usa**: il server ora dice a ogni macchina quali motori usa. Se finisce la quota di un motore, si fermano solo le macchine che lo usano davvero. (CYRA-1355)
+
 ## [0.242.2] - 2026-11-23
 
 ### Changed

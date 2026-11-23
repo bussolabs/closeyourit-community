@@ -21,6 +21,12 @@ RSpec.describe "Api::V1::CronCheckIns (ingest bearer)", type: :request do
     expect(response.parsed_body.dig("data", "slug")).to eq("nightly")
   end
 
+  it "does not list engines for a job that checks in with a project token" do
+    post "/api/v1/projects/#{project.id}/crons/nightly/check_in", headers:, params: { name: "Nightly digest" }
+
+    expect(response.parsed_body.fetch("data")).not_to have_key("engines")
+  end
+
   it "check-in ripetuto non duplica il monitor" do
     post "/api/v1/projects/#{project.id}/crons/nightly/check_in", headers: headers
     expect do

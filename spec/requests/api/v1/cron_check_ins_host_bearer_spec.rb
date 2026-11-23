@@ -24,6 +24,29 @@ RSpec.describe "Api::V1::CronCheckIns (bearer Agent Host)", type: :request do
     expect(response.parsed_body.dig("data", "slug")).to eq("automator-minion-1")
   end
 
+  # CYRA-1355 — the machine checks quota and answer only of the engines it uses (CYAU-305), and it learns
+  # them here. Without the list it checks both, so a paused engine it does not use stopped it anyway.
+  it "answers with the engines in force for the machine" do
+    host.update!(work_engine: "claude", reviewer: "claude", supporter: "claude")
+
+    post "/api/v1/projects/#{project.id}/crons/automator-minion-1/check_in", headers:,
+         params: { status: "ok" }, as: :json
+
+    expect(response.parsed_body.dig("data", "engines")).to eq(
+      "work" => "claude", "reviewer" => "claude", "supporter" => "claude"
+    )
+  end
+
+  it "answers with the organization's engines for a machine that follows it" do
+    post "/api/v1/projects/#{project.id}/crons/automator-minion-1/check_in", headers:,
+         params: { status: "ok" }, as: :json
+
+    expect(response.parsed_body.dig("data", "engines")).to eq(
+      "work" => host.effective_work_engine, "reviewer" => host.effective_reviewer,
+      "supporter" => host.effective_supporter
+    )
+  end
+
   it "attribuisce la telemetria all'host DEL TOKEN, ignorando un host_id ostile nel body" do
     intruder = create(:agent_host, organization:)
 

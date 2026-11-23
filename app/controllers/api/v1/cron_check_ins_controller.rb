@@ -23,13 +23,26 @@ module Api
         at = Time.current
         result = record_check_in_atomically(at:)
         if result.ok?
-          render json: { data: { slug: result.value.slug, status: result.value.status } }, status: :accepted
+          render json: { data: { slug: result.value.slug, status: result.value.status, **host_engines } },
+                 status: :accepted
         else
           render_error(result.error.code, result.error.message, status: result.error.status, details: result.error.details)
         end
       end
 
       private
+
+      # CYRA-1355 — the engines in force for the machine that is beating. The automator checks quota and
+      # answer only of the engines it uses (CYAU-305) and learns them from this answer; without the list
+      # it checks both, so a paused engine the machine does not use stopped it anyway.
+      # Only a beat signed with the machine's own token gets it: a project token names no machine.
+      def host_engines
+        host = Current.agent_host
+        return {} if host.nil?
+
+        { engines: { work: host.effective_work_engine, reviewer: host.effective_reviewer,
+                     supporter: host.effective_supporter } }
+      end
 
       # Il bearer presentato è un token Agent Host? Risolto una sola volta per richiesta: decide sia il
       # ramo di autenticazione sia se pretendere lo scope 'ingest'.
