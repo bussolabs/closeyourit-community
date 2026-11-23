@@ -27,8 +27,7 @@ module Errors
         case value
         when Hash
           value.each_with_object({}) do |(key, item), result|
-            protocol_id = path == %w[contexts trace] && TRACE_KEYS.include?(key) && item.is_a?(String) && item.match?(/\A[0-9a-f]{16}\z/i)
-            result[key] = sensitive_key?(key) && !protocol_id ? REDACTED : clean(item, path + [ key ])
+            result[key] = clean_entry(key, item, path)
           end
         when Array then value.map { |item| clean(item, path) }
         when String
@@ -37,6 +36,24 @@ module Errors
           scrub_message(text).gsub(NATIVE_TOKEN, REDACTED).gsub(BEARER, REDACTED)
         else value
         end
+      end
+
+      def clean_entry(key, item, path)
+        protocol_id = path == %w[contexts trace] && TRACE_KEYS.include?(key) && item.is_a?(String) && item.match?(/\A[0-9a-f]{16}\z/i)
+        name = privacy_key(key)
+        return REDACTED if private_field?(name, path) || (sensitive_key?(key) && !protocol_id)
+        return scrub_query_string(item) if path == [ "request" ] && name == "query_string" && item.is_a?(String)
+
+        item = strip_query(item) if url_key?(name) && item.is_a?(String)
+        clean(item, path + [ name ])
+      end
+
+      # Apply structural rules before staging, also to numbered copies of sections and fields.
+      # Canonical fields keep their existing removal policy in Normalize. CYRA-1218
+      def private_field?(name, path)
+        (path == [ "user" ] && %w[email ip_address username].include?(name)) ||
+          (path == [ "request" ] && %w[cookies env].include?(name)) ||
+          (path == %w[request headers] && sensitive_header?(name))
       end
 
       def safe_url(value)

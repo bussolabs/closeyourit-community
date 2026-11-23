@@ -2,6 +2,35 @@
 
 ## [Unreleased]
 
+## [0.241.3] - 2026-11-23
+
+### Security
+
+- **Aggiornata una libreria con due avvisi di sicurezza.** net-ssh passa alla 7.3.10: la versione precedente accettava chiavi di server revocate. (CYRA-1349)
+
+## [0.241.2] - 2026-11-23
+
+### Fixed
+
+- **Lo storico dei server conta ogni ora per intero**: la pulizia notturna riassume solo le ore già finite e conserva i campioni fino a un'ora in più. Protegge gli archivi anche se le preferenze cambiano durante la pulizia. I riepiloghi già presenti restano invariati.
+
+## [0.241.1] - 2026-11-23
+
+### Fixed
+
+- **Log ed errori conservati per intero**: i caratteri nascosti nei nomi dei campi vengono rimossi senza perdere gli altri dati dell'invio. Se due nomi diventano uguali, entrambi i valori vengono conservati aggiungendo un numero al nome ripulito.
+
+## [0.241.0] - 2026-11-22
+
+### Changed
+
+- **Una consegna senza controlli automatici passa da sola**: nei repository che non hanno controlli sulle proposte di codice, la consegna va avanti se l'altro agente l'ha riletta e accettata. La cronologia dice che nessun controllo è partito. (CYRA-1347)
+- **Un piano che cambia solo i file dei controlli automatici non si ferma più**: l'app delle macchine ha ora il permesso per consegnarli, quindi il piano prosegue come gli altri. Resta l'avviso al responsabile tecnico. (CYRA-1348)
+
+### Fixed
+
+- **Una consegna in conflitto torna all'agente**: una proposta in conflitto con il ramo principale restava davanti a una persona senza dire perché. Ora torna all'agente, che risolve il conflitto. Vale anche per le consegne già in attesa. (CYRA-1346)
+
 ## [0.240.0] - 2026-11-22
 
 ### Added

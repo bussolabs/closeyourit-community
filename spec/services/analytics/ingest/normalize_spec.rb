@@ -3,6 +3,15 @@
 require "rails_helper"
 
 RSpec.describe Analytics::Ingest::Normalize do
+  it "keeps cleaned property collisions and drops numbered personal fields" do
+    fields = { "plan#{0.chr}" => "repaired", "plan" => "original", "plan_2" => "reserved",
+               "email" => "private", "em#{0.chr}ail" => "private-copy" }
+    [ fields, fields.to_a.reverse.to_h ].each do |ordered|
+      result = described_class.call(payload: { "hostname" => "example.test", "path" => "/", "properties" => ordered })
+      expect(result.properties).to eq("plan" => "original", "plan_2" => "reserved", "plan_3" => "repaired")
+    end
+  end
+
   def normalize(payload)
     described_class.call(payload: payload)
   end

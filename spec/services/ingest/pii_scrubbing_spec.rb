@@ -13,6 +13,23 @@ RSpec.describe Ingest::PiiScrubbing, type: :service do
   # Un mixin si prova sul suo contratto, non attraverso le classi che lo includono.
   let(:scrubber) { Class.new { include Ingest::PiiScrubbing }.new }
 
+  it "protects every exact header name after collision numbering" do
+    Ingest::PiiScrubbing::SENSITIVE_HEADER_NAMES.each do |name|
+      [ "_2", "_3", "_10", "_2_3" ].each do |suffix|
+        key = "#{name.upcase}#{suffix}"
+        expect(scrubber.scrub_headers(key => "private")).to eq(key => "[FILTERED]")
+      end
+    end
+  end
+
+  it "strips queries from numbered URL fields without matching unrelated names" do
+    %w[url uri href location referer referrer].each do |name|
+      key = "#{name.upcase}_2_3"
+      expect(scrubber.scrub_value(key => "/path?secret=value")).to eq(key => "/path")
+    end
+    expect(scrubber.scrub_value("url_count" => "kept", "location_1" => "kept")).to eq("url_count" => "kept", "location_1" => "kept")
+  end
+
   describe "#scrub_value" do
     it "redige il valore di una chiave sensibile e lascia il resto intatto" do
       expect(scrubber.scrub_value("password" => "hunter2", "area" => "checkout"))

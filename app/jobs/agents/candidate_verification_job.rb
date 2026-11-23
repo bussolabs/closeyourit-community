@@ -28,6 +28,8 @@ module Agents
         # Una riga che esplode non deve portarsi dietro le altre del lotto: si scrive e si va avanti.
         Rails.logger.error("Agents::CandidateVerificationJob: #{candidate.id} #{e.class}: #{e.message}")
       end
+      # CYRA-1346 — the recurring pass also looks again at the deliveries left in front of a person.
+      Agents::Candidates::RecheckWaiting.call if candidate_id.nil?
     end
 
     private

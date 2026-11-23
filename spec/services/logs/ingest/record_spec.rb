@@ -7,6 +7,37 @@ RSpec.describe Logs::Ingest::Record do
 
   let(:project) { create(:project) }
 
+  [ false, true ].each do |reverse|
+    [ false, true ].each do |occupied|
+      it "preserves all 1000 stored logs with nested collisions (reverse=#{reverse}, occupied=#{occupied})" do
+        fields = { "k" => "original", "k#{0.chr}" => "repaired" }
+        fields["k_2"] = "reserved" if occupied
+        fields = fields.to_a.reverse.to_h if reverse
+        expected = { "k" => "original", (occupied ? "k_3" : "k_2") => "repaired" }
+        expected["k_2"] = "reserved" if occupied
+        batch = Array.new(1000) do |index|
+          payload("event_id" => "event-#{index}", "message" => "message #{index}", "attributes" => { "index" => index })
+        end
+        batch.last["attributes"] = { "nest#{0.chr}ed" => [ fields ],
+          "token" => "secret", "tok#{0.chr}en" => "other",
+          "url" => "/one?token=secret", "ur#{0.chr}l" => "/two?token=other" }
+        original = batch.deep_dup
+
+        expect(described_class.call(project: project, payload: batch).value).to eq(1000)
+        stored = project.logs_entries.order(:event_id).pluck(:event_id, :message, :data).to_h { |id, message, data| [ id, [ message, data ] ] }
+        expect(stored.size).to eq(1000)
+        batch.first(999).each do |item|
+          expect(stored.fetch(item["event_id"])).to eq([ item["message"], item["attributes"] ])
+        end
+        expect(stored.fetch("event-999")).to eq([ "message 999", {
+          "nested" => [ expected ], "token" => "[FILTERED]", "token_2" => "[FILTERED]",
+          "url" => "/one", "url_2" => "/two"
+        } ])
+        expect(batch).to eq(original)
+      end
+    end
+  end
+
   def payload(overrides = {})
     { "event_id" => SecureRandom.uuid, "message" => "hello", "level" => "info",
       "timestamp" => "2026-06-28T10:00:00Z" }.merge(overrides)
@@ -94,6 +125,30 @@ RSpec.describe Logs::Ingest::Record do
     result = described_class.call(project: project, payload: [ 42, "x", payload ])
     expect(result.value).to eq(1)
     expect(project.logs_entries.count).to eq(1)
+  end
+
+  # CYRA-1218: un byte nullo nel NOME di un campo faceva rifiutare a Postgres l'intero insert_all, e
+  # con lui gli altri log del batch.
+  describe "nome di un campo con il byte nullo" do
+    it "salva tutti i 1000 log di un batch dove uno ha un nome sporco" do
+      batch = Array.new(999) { payload }
+      batch << payload("attributes" => { "chi#{0.chr}ave" => "v" })
+
+      result = described_class.call(project: project, payload: batch)
+
+      expect(result.value).to eq(1000)
+      expect(project.logs_entries.count).to eq(1000)
+    end
+
+    it "salva gli altri log e conserva entrambi i valori di due nomi coincidenti" do
+      sporco = payload("event_id" => "sporco", "attributes" => { "k" => "pulito", "k#{0.chr}" => "sporco" })
+      sani = Array.new(3) { payload }
+
+      described_class.call(project: project, payload: [ sporco, *sani ])
+
+      expect(project.logs_entries.count).to eq(4)
+      expect(project.logs_entries.find_by(event_id: "sporco").data).to eq("k" => "pulito", "k_2" => "sporco")
+    end
   end
 
   # CYRA-58: il pre-check del controller usa .acceptable?, che deve essere leggero (niente Normalize

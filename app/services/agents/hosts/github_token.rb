@@ -8,7 +8,8 @@ module Agents
     class GithubToken < ApplicationService
       # CI results are readable in every phase: a rework must see why the pull request's checks failed. CYRA-1061
       CI_READ = { checks: "read", statuses: "read", actions: "read" }.freeze
-      WRITE_PERMISSIONS = { contents: "write", pull_requests: "write", **CI_READ }.freeze
+      # CYRA-1348 — workflows: without it GitHub refuses every push that touches .github/workflows.
+      WRITE_PERMISSIONS = { contents: "write", pull_requests: "write", workflows: "write", **CI_READ }.freeze
       READ_PERMISSIONS = { contents: "read", **CI_READ }.freeze
       # The closers merge the pull request and push the release tag. CYRA-1063
       WRITING_PHASES = %w[autopilot closer_staging closer_production].freeze

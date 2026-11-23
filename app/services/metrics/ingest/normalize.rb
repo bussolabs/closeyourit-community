@@ -179,7 +179,7 @@ module Metrics
       # Ramo in più rispetto al modulo condiviso: il testo SQL non si redige, si templatizza (spariscono
       # i valori letterali, resta la forma della query che fa da chiave di raggruppamento).
       def scrub_entry(key, value)
-        return templatize(value) if SQL_KEY.match?(key.to_s) && value.is_a?(String)
+        return templatize(value) if SQL_KEY.match?(privacy_key(key)) && value.is_a?(String)
 
         super
       end
@@ -193,7 +193,7 @@ module Metrics
           SENSITIVE_COMPOUND.match?(normalized.gsub(/[^a-z\d]/, ""))
       end
 
-      def url_key?(key) = URL_KEY.match?(key.to_s)
+      def url_key?(key) = URL_KEY.match?(privacy_key(key))
     end
   end
 end

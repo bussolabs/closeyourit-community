@@ -40,16 +40,6 @@ module Agents
             ticket_snapshot_digest: workflow.ticket_snapshot_digest, **acceptance(result, version)
           )
           workflow.update!(planned_at: Time.current)
-          block_undeliverable! if @plan.document.only_undeliverable_paths?
-        end
-
-        # CYRA-1323 — stopped here, not at commit time: approving it would only buy attempts that cannot land.
-        def block_undeliverable!
-          Agents::Workflows::Block.call(
-            workflow:, phase: "planner", kind: "candidate_check",
-            reason: "candidate_check: il piano cambia solo .github/workflows, che l'automator non può consegnare; " \
-                    "serve una persona"
-          )
         end
 
         # CYRA-1319 — a v3 plan keeps no list of its own: it records the ticket items it proves and the ones it proposes.

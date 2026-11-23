@@ -3,6 +3,19 @@
 require "rails_helper"
 
 RSpec.describe Metrics::Ingest::Normalize do
+  it "protects exact-name fields after cleaning and numbering nested collisions" do
+    fields = { "sql" => "SELECT 1", "sq#{0.chr}l" => "SELECT 42", "sql_2" => "SELECT 3",
+               "http_url" => "/one?token=secret", "http_#{0.chr}url" => "/two?token=other",
+               "email" => "private", "em#{0.chr}ail" => "private-copy", "span_id" => "technical" }
+    [ fields, fields.to_a.reverse.to_h ].each do |ordered|
+      result = described_class.call(payload: { "kind" => "slow_method", "label" => "work", "nested" => [ ordered ] })
+      expect(result.payload["nested"]).to eq([ {
+        "sql" => "SELECT <n>", "sql_2" => "SELECT <n>", "sql_3" => "SELECT <n>",
+        "http_url" => "/one", "http_url_2" => "/two", "email" => "[FILTERED]", "email_2" => "[FILTERED]", "span_id" => "technical"
+      } ])
+    end
+  end
+
   it "templatizza lo SQL nella signature (slow_query): literal diversi → stessa signature" do
     n1 = described_class.call(payload: { "kind" => "slow_query", "sql" => "SELECT * FROM t WHERE id = 1", "duration_ms" => 10 })
     n2 = described_class.call(payload: { "kind" => "slow_query", "sql" => "SELECT * FROM t WHERE id = 999", "duration_ms" => 10 })

@@ -43,7 +43,7 @@ RSpec.describe "Api::V1::AgentHost::GithubTokens", type: :request do
 
   it "gives the delivering phase a token that can push and open a pull request on the ticket's repository only" do
     hold_lease(phase: "autopilot")
-    req = stub_token(contents: "write", pull_requests: "write", checks: "read", statuses: "read", actions: "read")
+    req = stub_token(contents: "write", pull_requests: "write", workflows: "write", checks: "read", statuses: "read", actions: "read")
 
     post path, params: { ticket: ticket.code }, headers:, as: :json
 
@@ -59,7 +59,7 @@ RSpec.describe "Api::V1::AgentHost::GithubTokens", type: :request do
   %w[closer_staging closer_production].each do |phase|
     it "gives #{phase} a token that can merge and push a tag" do
       hold_lease(phase:)
-      req = stub_token(contents: "write", pull_requests: "write", checks: "read", statuses: "read", actions: "read")
+      req = stub_token(contents: "write", pull_requests: "write", workflows: "write", checks: "read", statuses: "read", actions: "read")
 
       post path, params: { ticket: ticket.code }, headers:, as: :json
 

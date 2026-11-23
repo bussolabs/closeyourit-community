@@ -11,7 +11,8 @@ module Agents
     #
     # Tre controlli, e servono tutti e tre — sono i tre modi diversi di sbagliarsi:
     #
-    #   controlli automatici   il verbale del candidato dice `verified_passing` (CYRA-614)
+    #   controlli automatici   il verbale del candidato dice `verified_passing` (CYRA-614), oppure che il
+    #                          repository non ne ha (`verified_none_configured`, CYRA-1347)
     #   rilettura del codice   il tentativo che ha consegnato è accettato da chi l'ha riletto
     #   proposta ancora quella ApproveAutopilot riapre GitHub e confronta il codice vivo (CYRA-617)
     #
@@ -53,7 +54,13 @@ module Agents
       end
 
       def all_green?
-        @candidate.state_verified_passing? && review_accepted? && closer_pipeline?
+        checks_allow? && review_accepted? && closer_pipeline?
+      end
+
+      # CYRA-1347 — a repository with no automated checks gave an answer too ("none configured"): the re-read and
+      # the delivery gates decide there, and the history written below says that no check ran.
+      def checks_allow?
+        @candidate.state_verified_passing? || @candidate.state_verified_none_configured?
       end
 
       # Il tentativo che ha consegnato questo codice, riletto e accettato. `status_approved?` non è

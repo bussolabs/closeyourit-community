@@ -11,6 +11,7 @@ module Servers
     queue_as :batch
 
     def perform
+      started_at = Time.current
       # Singleton god risolto UNA volta (non per-org) → niente N+1.
       global_days = Servers::Retention.resolve(Settings::Global.instance.servers_retention_days)
 
@@ -19,17 +20,26 @@ module Servers
       # più lunga in vigore, poi si pota il residuo riga per riga. Staccare una fetta prima del
       # riepilogo butterebbe via la baseline di quel periodo: il riepilogo legge i campioni grezzi,
       # e una fetta staccata non si rilegge.
+      #
+      # CYRA-1222 — one cutoff per organization, computed once and floored to the start of the hour,
+      # shared by rollup and delete. Only whole hours get rolled up (a partial hour would be frozen
+      # forever by ON CONFLICT DO NOTHING) and nothing is deleted that was not rolled up. The cutoff
+      # instant itself is excluded: a sample recorded exactly on the hour stays for the next night.
+      cutoffs = {}
       Organizations::Organization.find_each do |organization|
         days = Servers::Retention.for(organization, global_days: global_days)
-        rollup_expiring!(organization.id, days.days.ago)
+        cutoffs[organization.id] = days.days.ago(started_at).beginning_of_hour
+        rollup_expiring!(organization.id, cutoffs[organization.id])
       end
 
-      Ops::Partitions::DropExpired.call(table: "servers_samples",
-                                        keep_from: Monitoring::Retention.longest(key: :servers, global_days: global_days).days.ago)
+      # Same flooring for whole expired months: no slice is dropped past the point already rolled up.
+      longest_days = Monitoring::Retention.longest(key: :servers, global_days: global_days)
+      # Preserve processed cutoffs even if preferences shrink while rollups run. CYRA-1222.
+      keep_from = [ longest_days.days.ago(started_at).beginning_of_hour, *cutoffs.values ].min
+      Ops::Partitions::DropExpired.call(table: "servers_samples", keep_from: keep_from)
 
-      Organizations::Organization.find_each do |organization|
-        days = Servers::Retention.for(organization, global_days: global_days)
-        Servers::Sample.where(organization_id: organization.id, recorded_at: ..days.days.ago)
+      cutoffs.each do |organization_id, cutoff|
+        Servers::Sample.where(organization_id: organization_id, recorded_at: ...cutoff)
                        .in_batches.delete_all
       end
 
@@ -47,7 +57,7 @@ module Servers
     private
 
     # UNA INSERT ... SELECT per organizzazione: aggrega in ore ESATTAMENTE le righe che il delete
-    # subito dopo eliminerà. ON CONFLICT DO NOTHING = idempotente sul retry (il bucket già scritto
+    # subito dopo eliminerà (same cutoff, excluded). ON CONFLICT DO NOTHING = idempotente sul retry (il bucket già scritto
     # da un giro interrotto non si duplica e non si riscrive).
     def rollup_expiring!(organization_id, cutoff)
       conn = ApplicationRecord.connection
@@ -63,7 +73,7 @@ module Servers
                SUM(net_sent_bytes), SUM(net_recv_bytes), NOW()
         FROM servers_samples
         WHERE organization_id = #{conn.quote(organization_id)}
-          AND recorded_at <= #{conn.quote(cutoff)}
+          AND recorded_at < #{conn.quote(cutoff)}
         GROUP BY host_id, organization_id, date_trunc('hour', recorded_at)
         ON CONFLICT (host_id, bucket_at) DO NOTHING
       SQL

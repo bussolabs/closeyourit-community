@@ -16,6 +16,7 @@ module Agents
     #   verified_none_configured ho guardato e di controlli non ce n'è → arriva, con la riga rossa
     #   unreachable              non sono riuscito a guardare → NON arriva, non chiede niente, riprova
     #   verified_failing         controlli rossi → torna una volta all'agente (CYRA-1195), poi chiama una persona
+    #                            in conflitto con main → torna all'agente per il giro di risoluzione (CYRA-1346)
     #
     # `unreachable` e `verified_none_configured` sono la coppia che non va mai confusa: la seconda è
     # una risposta, la prima è l'assenza di una risposta. Se finissero nella stessa casella, un guasto
@@ -96,6 +97,7 @@ module Agents
 
         checks = Array(state[:checks])
         return postpone!("unreachable", "checks_unknown") unless state[:checks_known]
+        return conflict!(state, checks) if state[:mergeable].to_s.upcase == "CONFLICTING"
         return postpone!("checks_running", nil, state:) if checks.any? { |c| still_running?(c) }
         return fail!(state, checks) if checks.any? { |c| failing?(c) }
         return fail!(state, checks, code: "checks_not_run") if checks.any? { |c| not_run?(c) }
@@ -149,7 +151,8 @@ module Agents
         # per confrontare il codice vivo, e un HTTP là dentro terrebbe righe bloccate per la durata di
         # una rete lenta. L'esito non si propaga: «non è passata da sola» lascia il lavoro davanti a
         # una persona, e non è un guasto della verifica appena scritta.
-        auto_approve! if final_state == :verified_passing
+        # CYRA-1347 — also where the repository has no checks: the re-read and the delivery gates decide.
+        auto_approve!
         Result.ok(@candidate)
       end
 
@@ -162,6 +165,24 @@ module Agents
         ApplicationRecord.transaction do
           write_verdict!(state, checks, :verified_failing)
           fix_round_available?(code) ? request_ci_fix! : stop!(code)
+        end
+        Result.ok(@candidate)
+      end
+
+      # CYRA-1346 — GitHub runs no check on a pull request that conflicts with main, so its empty list is not
+      # "none configured": left there, the work waited for a person who was never told about the conflict.
+      # The first time the work goes back to the agent marked for the resolution round (CYAU-300); if that
+      # round was already used, it stops and says so.
+      def conflict!(state, checks)
+        workflow = @candidate.workflow
+        ApplicationRecord.transaction do
+          write_verdict!(state, checks, :verified_failing)
+          if workflow.conflict_resolution_requested_at.nil?
+            workflow.send_phase_back_to_work!("autopilot")
+            workflow.reload.update!(conflict_resolution_requested_at: @now, **Agents::Workflow.cleared_block(@now))
+          else
+            stop!("merge_conflict")
+          end
         end
         Result.ok(@candidate)
       end

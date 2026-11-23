@@ -7,7 +7,6 @@ module Agents
     MACHINE_KEYS = %w[id path line dependencies].freeze
     RISK_LEVELS = %w[none low high].freeze
     HIGH_RISK_PATHS = %w[db/migrate/ config/deploy .github/workflows/].freeze
-    UNDELIVERABLE_PATH = ".github/workflows/"
     attr_reader :plan
 
     def initialize(plan)
@@ -30,14 +29,6 @@ module Agents
     end
 
     def work_items = legacy? ? [] : array("work_items")
-
-    # CYRA-1323 — the automator's GitHub App may not push .github/workflows: a plan that changes nothing else
-    # can only fail at commit time, after days of attempts.
-    def only_undeliverable_paths?
-      paths = work_items.flat_map { |item| Array(item.to_h["files"]) }
-                        .map { |file| file.to_h["path"].to_s.delete_prefix("./").delete_prefix("/") }.reject(&:empty?)
-      paths.any? && paths.all? { |path| path.start_with?(UNDELIVERABLE_PATH) }
-    end
 
     def rationale = legacy? ? [] : array("rationale")
     def risks = legacy? ? [] : array("risks")

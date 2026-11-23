@@ -6,6 +6,18 @@ require "zlib"
 
 RSpec.describe "Api::Ingest (Sentry-compatibile)", type: :request do
   include ActiveJob::TestHelper
+  include_context "an error with colliding field names"
+
+  %w[store envelope].each do |channel|
+    it "accepts and persists repaired collisions through #{channel}" do
+      body = channel == "envelope" ? envelope(colliding_error) : colliding_error.to_json
+      post "/api/#{project.id}/#{channel}", params: body, headers: auth_header
+      expect(response).to have_http_status(:ok)
+      expect_safe_collision_payload(Errors::IngestPayload.sole.payload)
+      perform_enqueued_jobs(only: Errors::IngestJob)
+      expect_safe_collision_payload(project.error_events.sole.payload)
+    end
+  end
 
   let(:organization) { create(:organization) }
   let(:project) { create(:project, organization:) }

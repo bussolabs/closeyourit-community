@@ -118,15 +118,15 @@ RSpec.describe Agents::Workflows::AutoApprove do
 
   # ── Scenario 2: qualcosa non è verde → resta la decisione di una persona ──────────────────────
 
-  # «Ho guardato e di controlli non ce n'è» è una risposta, non un verde: chi approva deve poterlo
-  # leggere e decidere lui. La card lo dice già in rosso, quindi il motivo è sotto gli occhi.
-  it "nessun controllo configurato: non avanza, il lavoro resta davanti a una persona" do
+  # CYRA-1347 — a repository with no automated checks kept every delivery in front of a person for ever. The
+  # code re-read by the other engine and the delivery gates still stand, and the history says no check ran.
+  it "no checks configured: the delivery moves on by itself and the history says none ran" do
     candidate.update_columns(state: Agents::DeliveryCandidate.states[:verified_none_configured],
                              checks_payload: [], checks_count: 0)
 
     expect(auto_approve).to be_ok
-    expect(workflow.reload.phase).to eq("awaiting_autopilot_approval")
-    expect(ticket.reload.status).to eq(in_review)
+    expect(workflow.reload.phase).to eq("closer_staging_queued")
+    expect(Ticketing::Event.find_by!(ticket:, action: "autopilot_auto_approved").data).to include("checks" => [], "checks_count" => 0)
   end
 
   it "rilettura del codice non accettata: non avanza" do

@@ -107,7 +107,13 @@ module Ingest
     end
 
     def url_key?(key)
-      URL_KEY.match?(key.to_s)
+      URL_KEY.match?(privacy_key(key))
+    end
+
+    # Collision suffixes must not bypass exact-name privacy rules, including repeated cleaning.
+    # Treat client-supplied numbered names identically so the rule survives serialization. CYRA-1218
+    def privacy_key(key)
+      key.to_s.sub(/(?:_(?:[2-9]|[1-9]\d+))+\z/, "")
     end
 
     # Redige gli header il cui NOME matcha la denylist o è un noto header di autenticazione/indirizzo.
@@ -118,7 +124,7 @@ module Ingest
     end
 
     def sensitive_header?(name)
-      SENSITIVE_HEADER.match?(name.to_s) || sensitive_key?(name)
+      SENSITIVE_HEADER.match?(privacy_key(name)) || sensitive_key?(name)
     end
 
     # Redige i soli parametri sensibili di una query string, preservando la struttura.

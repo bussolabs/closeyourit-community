@@ -4,6 +4,15 @@ require "rails_helper"
 
 RSpec.describe "Api::V1::Events (ingest bearer custom)", type: :request do
   include ActiveJob::TestHelper
+  include_context "an error with colliding field names"
+
+  it "accepts and persists repaired collisions through the direct channel" do
+    post "/api/v1/projects/#{project.id}/events", params: colliding_error.to_json, headers: headers
+    expect(response).to have_http_status(:accepted)
+    expect_safe_collision_payload(Errors::IngestPayload.sole.payload)
+    perform_enqueued_jobs(only: Errors::IngestJob)
+    expect_safe_collision_payload(project.error_events.sole.payload)
+  end
 
   let(:organization) { create(:organization) }
   let(:project) { create(:project, organization:) }

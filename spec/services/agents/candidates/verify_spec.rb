@@ -42,8 +42,8 @@ RSpec.describe Agents::Candidates::Verify do
   end
 
   def risposta(checks:, checks_known: true, base_ref: "main", base_default: "main",
-               head_sha: "a" * 40, committed_at: 1.hour.ago.iso8601)
-    { head_sha:, base_ref:, state: "OPEN", draft: false, mergeable: "MERGEABLE", merge_commit: nil,
+               head_sha: "a" * 40, committed_at: 1.hour.ago.iso8601, mergeable: "MERGEABLE")
+    { head_sha:, base_ref:, state: "OPEN", draft: false, mergeable:, merge_commit: nil,
       checks:, checks_known:, base_repository: "bussolabs/closeyourit-rails",
       base_default_branch: base_default, head_committed_at: committed_at }
   end
@@ -68,6 +68,34 @@ RSpec.describe Agents::Candidates::Verify do
     expect(candidate.reload).to be_state_verified_none_configured
     expect(workflow.reload.review_candidate_id).to eq(candidate.id)
     expect(ticket.reload.status).to eq(in_review)
+  end
+
+  # CYRA-1346 — GitHub runs no check on a pull request that conflicts with main: the empty list is not
+  # "none configured", and nobody was told there was a conflict to resolve.
+  describe "a pull request in conflict with main" do
+    it "goes back to the agent for the resolution round instead of waiting for a person" do
+      described_class.call(candidate:, client: client_con(risposta(checks: [], mergeable: "CONFLICTING")))
+
+      expect(candidate.reload).to be_state_verified_failing
+      expect(workflow.reload).to have_attributes(autopilot_started_at: nil, autopilot_completed_at: nil, blocked_at: nil)
+      expect(workflow.conflict_resolution_requested_at).to be_present
+      expect(ticket.reload.status).not_to eq(in_review)
+    end
+
+    it "stops saying there is a conflict when the resolution round was already used" do
+      workflow.update!(conflict_resolution_requested_at: 1.hour.ago)
+
+      described_class.call(candidate:, client: client_con(risposta(checks: [ check_run("SUCCESS") ], mergeable: "CONFLICTING")))
+
+      expect(candidate.reload).to be_state_verified_failing
+      expect(workflow.reload.blocked_reason).to include("merge_conflict")
+    end
+
+    it "keeps waiting while GitHub has not computed whether it merges" do
+      described_class.call(candidate:, client: client_con(risposta(checks: [ check_run("SUCCESS") ], mergeable: "UNKNOWN")))
+
+      expect(candidate.reload).to be_state_verified_passing
+    end
   end
 
   it "controlli verdi: congela il codice letto e mette il lavoro davanti a una persona" do
@@ -151,12 +179,13 @@ RSpec.describe Agents::Candidates::Verify do
       expect(workflow.reload.blocked_reason).to include("checks_failing")
     end
 
-    # «Ho guardato e di controlli non ce n'è» è una risposta, non un verde: resta la decisione umana.
-    it "nessun controllo configurato: il lavoro resta davanti a una persona" do
+    # CYRA-1347 — a repository with no checks no longer keeps the delivery for a person: with the re-read
+    # accepted it moves on by itself, like a delivery with every check green.
+    it "no checks configured: the delivery moves on by itself when the re-read is accepted" do
       described_class.call(candidate:, client: client_con(risposta(checks: [])))
 
-      expect(workflow.reload).to have_attributes(autopilot_approved_at: nil,
-                                                 phase: "awaiting_autopilot_approval")
+      expect(workflow.reload).to have_attributes(autopilot_approved_by: nil, phase: "closer_staging_queued")
+      expect(workflow.autopilot_approved_at).to be_present
     end
   end
 
