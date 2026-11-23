@@ -6233,7 +6233,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "La macchina scrive il codice e apre la proposta di modifica. Il server va a leggerla su GitHub e annota quale codice contiene e com'è andato il controllo automatico. Se si ferma su un conflitto di codice con main, o se la proposta consegnata risulta in conflitto, il ticket torna in coda una volta sola per un giro di risoluzione: lavora Codex, rilegge Claude. Con i controlli verdi, o in un repository senza controlli, la consegna riletta e accettata va avanti da sola. Le consegne rimaste davanti a una persona vengono riguardate a intervalli.",
+      "summary": "La macchina scrive il codice e apre la proposta di modifica. Il server va a leggerla su GitHub e annota quale codice contiene e com'è andato il controllo automatico. Se si ferma su un conflitto di codice con main, o se la proposta consegnata risulta in conflitto, il ticket torna in coda una volta sola per un giro di risoluzione: lavora Codex, rilegge Claude. Con i controlli rossi il lavoro torna alla macchina per correggere; una seconda volta solo se i controlli rossi sono altri. Finiti i giri, il lavoro ricomincia una volta e poi viene messo da parte. Con i controlli verdi, o in un repository senza controlli, la consegna riletta e accettata va avanti da sola. Le consegne rimaste davanti a una persona vengono riguardate a intervalli.",
       "files": [
         "app/services/agents/attempts/effects/autopilot.rb",
         "app/services/agents/candidates/verify.rb",

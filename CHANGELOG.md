@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.242.2] - 2026-11-23
+
+### Changed
+
+- **Un secondo giro di correzione quando i controlli falliscono per un motivo nuovo**: se dopo la prima correzione i controlli rossi sono altri, il lavoro torna alla macchina ancora una volta. Se restano gli stessi, il lavoro ricomincia una volta e poi viene messo da parte, senza chiedere a una persona. (CYRA-1353)
+
 ## [0.242.1] - 2026-11-23
 
 ### Fixed

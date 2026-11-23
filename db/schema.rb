@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_23_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_23_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -797,6 +797,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_100000) do
     t.datetime "conflict_resolution_requested_at"
     t.datetime "ci_fix_requested_at"
     t.string "budget_restart_engine"
+    t.datetime "ci_second_fix_requested_at"
     t.index ["approved_by_id"], name: "index_agents_workflows_on_approved_by_id"
     t.index ["autopilot_approved_by_id"], name: "index_agents_workflows_on_autopilot_approved_by_id"
     t.index ["autopilot_by_agent_id"], name: "index_agents_workflows_on_autopilot_by_agent_id"
@@ -822,7 +823,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_100000) do
     t.index ["triage_by_service_account_id"], name: "idx_agents_workflows_triage_by_sa"
     t.check_constraint "blocked_at IS NULL OR blocked_kind IS NOT NULL", name: "agents_workflows_blocco_ha_un_autore"
     t.check_constraint "blocked_at IS NULL OR blocked_reason IS NOT NULL AND btrim(blocked_reason) <> ''::text", name: "agents_workflows_blocco_ha_un_motivo"
-    t.check_constraint "blocked_kind IS NULL OR (blocked_kind::text = ANY (ARRAY['attempt_limit'::character varying, 'agent_blocked'::character varying, 'candidate_check'::character varying, 'release_probe'::character varying, 'held_by_person'::character varying, 'safety_stop'::character varying, 'production_approval'::character varying, 'review_fault'::character varying]::text[]))", name: "agents_workflows_blocked_kind_valido"
+    t.check_constraint "blocked_kind IS NULL OR (blocked_kind::text = ANY (ARRAY['attempt_limit'::character varying::text, 'agent_blocked'::character varying::text, 'candidate_check'::character varying::text, 'release_probe'::character varying::text, 'held_by_person'::character varying::text, 'safety_stop'::character varying::text, 'production_approval'::character varying::text, 'review_fault'::character varying::text]))", name: "agents_workflows_blocked_kind_valido"
     t.check_constraint "candidate_rejections_count >= 0", name: "agents_workflows_candidate_rejections_count_non_negative"
     t.check_constraint "closer_staging_checks_count >= 0", name: "agents_workflows_staging_checks_count_non_negative"
   end

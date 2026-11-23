@@ -344,10 +344,59 @@ RSpec.describe Agents::Candidates::Verify do
       expect(workflow.ready_execution_phase).to eq("autopilot")
     end
 
-    it "blocks and calls a person on the second red result" do
+    def named_check(name, conclusion = "FAILURE")
+      { "__typename" => "CheckRun", "name" => name, "conclusion" => conclusion, "status" => "COMPLETED" }
+    end
+
+    # The red result the first fix round was granted on.
+    def first_red_result(*names)
+      at = 1.hour.ago
+      workflow.update!(ci_fix_requested_at: at)
+      create(:agent_delivery_candidate, workflow:, repository:, organization:,
+                                        repository_full_name: "bussolabs/closeyourit-rails", number: 7,
+                                        state: :verified_failing, head_sha: "b" * 40, base_ref: "main",
+                                        verified_at: at, last_checked_at: at,
+                                        checks_payload: names.map { |n| named_check(n) }, checks_count: names.size)
+    end
+
+    it "stops on the second red result when the same checks are still failing" do
+      first_red_result("test", "security")
+
+      expect do
+        described_class.call(candidate:, client: client_con(risposta(checks: [ named_check("test"), named_check("security") ])))
+      end.to have_enqueued_job(Agents::ExhaustedBudgetJob)
+
+      expect(workflow.reload.blocked_reason).to include("checks_failing")
+      expect(workflow.ci_second_fix_requested_at).to be_nil
+    end
+
+    it "stops on the second red result when there is no earlier red result to compare with" do
       workflow.update!(ci_fix_requested_at: 1.hour.ago)
 
       described_class.call(candidate:, client: client_con(risposta(checks: [ check_run("FAILURE") ])))
+
+      expect(workflow.reload.blocked_reason).to include("checks_failing")
+    end
+
+    # CYRA-1353 — seen on DMRA-208: the first round fixed the CI template, then the security scan
+    # failed on a library advisory the earlier failure had been hiding.
+    it "grants a second fix round when the failing checks are not the ones of the first round" do
+      first_red_result("test", "lint", "security")
+
+      described_class.call(candidate:, client: client_con(risposta(checks: [ named_check("test", "SUCCESS"), named_check("security") ])))
+
+      expect(workflow.reload).to have_attributes(blocked_at: nil, autopilot_started_at: nil)
+      expect(workflow.ci_second_fix_requested_at).to be_present
+      expect(workflow.ready_execution_phase).to eq("autopilot")
+    end
+
+    it "stops on the third red result even when the failing checks changed again" do
+      first_red_result("test")
+      workflow.update!(ci_second_fix_requested_at: 30.minutes.ago)
+
+      expect do
+        described_class.call(candidate:, client: client_con(risposta(checks: [ named_check("security") ])))
+      end.to have_enqueued_job(Agents::ExhaustedBudgetJob)
 
       expect(workflow.reload.blocked_reason).to include("checks_failing")
     end
@@ -357,6 +406,12 @@ RSpec.describe Agents::Candidates::Verify do
 
       expect(workflow.reload.blocked_reason).to include("checks_not_run")
       expect(workflow.ci_fix_requested_at).to be_nil
+    end
+
+    it "does not settle a budget for a stop a person owns" do
+      expect do
+        described_class.call(candidate:, client: client_con(risposta(checks: [ check_run("CANCELLED") ])))
+      end.not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
     end
   end
 

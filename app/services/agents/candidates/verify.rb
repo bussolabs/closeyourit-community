@@ -15,7 +15,7 @@ module Agents
     #   verified_passing         controlli verdi → il lavoro arriva davanti a una persona
     #   verified_none_configured ho guardato e di controlli non ce n'è → arriva, con la riga rossa
     #   unreachable              non sono riuscito a guardare → NON arriva, non chiede niente, riprova
-    #   verified_failing         controlli rossi → torna una volta all'agente (CYRA-1195), poi chiama una persona
+    #   verified_failing         controlli rossi → torna all'agente (CYRA-1195), una seconda volta se il rosso è cambiato (CYRA-1353)
     #                            in conflitto con main → torna all'agente per il giro di risoluzione (CYRA-1346)
     #
     # `unreachable` e `verified_none_configured` sono la coppia che non va mai confusa: la seconda è
@@ -164,7 +164,8 @@ module Agents
       def fail!(state, checks, code: "checks_failing")
         ApplicationRecord.transaction do
           write_verdict!(state, checks, :verified_failing)
-          fix_round_available?(code) ? request_ci_fix! : stop!(code)
+          fix_column = fix_round_column(code, checks)
+          fix_column ? request_ci_fix!(fix_column) : stop_after_fix_rounds!(code)
         end
         Result.ok(@candidate)
       end
@@ -188,16 +189,46 @@ module Agents
       end
 
       # CYRA-1195 — the first red result sends the work back to the agent, once, on the same pull request;
-      # the failing checks reach it as rework findings. A second red result calls a person, as before.
+      # the failing checks reach it as rework findings.
+      # CYRA-1353 — a second round is granted only when the failing checks are not the ones the first round
+      # was granted on: a fixed failure often uncovers the next one, while the same red twice means the
+      # agent tried and could not. Check names are all the server can compare without reading logs.
       # Checks that never ran are not a code defect: re-running them is a person's call.
-      def fix_round_available?(code)
-        code == "checks_failing" && @candidate.workflow.ci_fix_requested_at.nil?
+      def fix_round_column(code, checks)
+        return unless code == "checks_failing"
+
+        workflow = @candidate.workflow
+        return :ci_fix_requested_at if workflow.ci_fix_requested_at.nil?
+        return unless workflow.ci_second_fix_requested_at.nil?
+
+        earlier = first_round_failing_names(workflow)
+        :ci_second_fix_requested_at if earlier.present? && earlier != failing_names(checks)
       end
 
-      def request_ci_fix!
+      def request_ci_fix!(column)
         workflow = @candidate.workflow
         workflow.send_phase_back_to_work!("autopilot")
-        workflow.reload.update!(ci_fix_requested_at: @now, **Agents::Workflow.cleared_block(@now))
+        workflow.reload.update!(column => @now, **Agents::Workflow.cleared_block(@now))
+      end
+
+      # The red result the first round was granted on: verified no later than that round was requested.
+      def first_round_failing_names(workflow)
+        earlier = workflow.delivery_candidates.where.not(id: @candidate.id)
+                          .where(state: :verified_failing, verified_at: ..workflow.ci_fix_requested_at)
+                          .order(:verified_at).last
+        failing_names(Array(earlier&.checks_payload))
+      end
+
+      def failing_names(checks)
+        checks.select { |c| c.is_a?(Hash) && failing?(c) }.map { |c| (c["name"] || c["context"]).to_s }.sort
+      end
+
+      # Red checks with no fix round left are an exhausted budget, not a question for a person: the work
+      # starts over once on the other engine, then is set aside (CYRA-1327). The stop is the brake.
+      # Any other code — checks that never ran — still waits for a person.
+      def stop_after_fix_rounds!(code)
+        stop!(code)
+        Agents::Workflows::ExhaustedBudget.settle_later(@candidate.workflow) if code == "checks_failing"
       end
 
       # `unreachable` e `checks_running` non sono un verdetto: la riga resta com'è e si riprova. Non
