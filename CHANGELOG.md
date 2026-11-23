@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.242.4] - 2026-11-23
+
+### Fixed
+
+- **L'avviso sulle lavorazioni ferme guarda ogni corsia**: se un solo gruppo di lavorazioni si blocca mentre gli altri lavorano, l'avviso scatta lo stesso e dice quale gruppo è fermo. I lavori lunghi, come addestramenti e controlli SEO, hanno un'attesa più larga e non danno più falsi allarmi. (CYRA-1229)
+
 ## [0.242.3] - 2026-11-23
 
 ### Fixed
