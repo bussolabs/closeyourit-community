@@ -16,13 +16,24 @@ module Logs
   # giro ripara da sé la finestra di guasto. Costo tenuto basso dal pre-filtro SQL sui candidati
   # (TRACE_CANDIDATE_SQL) e dal select delle sole colonne che servono — senza, ogni giro
   # istanzierebbe l'intera tabella più grande del prodotto, jsonb `data` da 16 KB per riga incluso.
-  # Lancio immediato (senza aspettare la notte):
+  #
+  # CYRA-1233: il giro notturno guarda solo i log arrivati negli ultimi LOOKBACK. Il codice si ricava
+  # già all'ingest, quindi il giro è solo una rete di sicurezza; senza finestra un log senza codice
+  # riconoscibile tornava candidato OGNI notte e la durata cresceva con lo storico. La finestra è su
+  # `created_at`, la chiave delle fette mensili: le fette vecchie non vengono più aperte. `since`
+  # opzionale = ripasso da una data scelta (stesso schema di Uptime::RollupJob), da lanciare a mano
+  # quando si corregge il riconoscimento.
+  # Lancio immediato (senza aspettare la notte), o ripasso dello storico:
   #   bin/rails runner 'Logs::BackfillTraceIdsJob.perform_later'
+  #   bin/rails runner 'Logs::BackfillTraceIdsJob.perform_later(since: 2.months.ago)'
   class BackfillTraceIdsJob < ApplicationJob
     queue_as :batch
 
-    def perform
-      candidates.find_each do |entry|
+    # Finestra del giro notturno: due giorni coprono anche una notte saltata.
+    LOOKBACK = 2.days
+
+    def perform(since: nil)
+      candidates(since || LOOKBACK.ago).find_each do |entry|
         trace = Logs::Ingest::Normalize.trace_id_from_message(entry.message)
         next if trace.blank?
 
@@ -32,8 +43,9 @@ module Logs
 
     private
 
-    def candidates
-      Logs::Entry.where(trace_id: nil)
+    def candidates(since)
+      Logs::Entry.where(created_at: since..)
+                 .where(trace_id: nil)
                  .where(Logs::Ingest::Normalize::TRACE_CANDIDATE_SQL)
                  .select(:id, :message)
     end

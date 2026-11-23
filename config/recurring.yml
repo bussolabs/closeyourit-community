@@ -211,7 +211,8 @@ production: &schedule
   # Codice della richiesta riconosciuto nel testo dei log (CYRA-559). Stessa logica dei backfill qui
   # sopra: quando il riconoscimento sbaglia, i log entrati nel frattempo restano scollegati PER SEMPRE
   # dagli errori e dagli altri log della stessa richiesta, perché l'unico rimedio era un comando
-  # lanciato a mano al deploy. Il giro notturno ripara da solo la finestra di guasto ed è idempotente
+  # lanciato a mano al deploy. Il giro notturno ripara da solo i log arrivati negli ultimi 2 giorni
+  # (CYRA-1233: lo storico più vecchio si ripassa a mano con `since:`, vedi il job) ed è idempotente
   # (tocca solo i log senza codice e con un identificativo riconoscibile). Alle 4:30 e non alle 4: la
   # corsia `batch` ha UN thread e i quattro backfill degli embedding partono tutti alle 4, quindi
   # questo aspetterebbe comunque — l'attesa però resta fra lavori lunghi e non tocca più i controlli

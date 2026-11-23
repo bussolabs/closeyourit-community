@@ -68,6 +68,44 @@ RSpec.describe Logs::BackfillTraceIdsJob do
     expect(entry.reload.trace_id).to eq("e146fed6-1a2b-4c3d-8e4f-556677889900")
   end
 
+  # CYRA-1233: il giro notturno guarda solo i log arrivati negli ultimi due giorni. Un log vecchio
+  # già esaminato senza esito non torna candidato ogni notte, e la durata non cresce con lo storico.
+  describe "finestra del giro notturno" do
+    let(:uuid) { "e146fed6-1a2b-4c3d-8e4f-556677889900" }
+
+    # Lo spy si arma dopo la creazione dei log: conta solo le letture fatte dal job.
+    def spy_recognition
+      allow(Logs::Ingest::Normalize).to receive(:trace_id_from_message).and_call_original
+    end
+
+    it "non rilegge un log arrivato prima della finestra" do
+      create(:log_entry, project:, trace_id: nil, message: "[senza id] riga vecchia", created_at: 3.days.ago)
+      spy_recognition
+      described_class.perform_now
+      expect(Logs::Ingest::Normalize).not_to have_received(:trace_id_from_message)
+    end
+
+    it "fra molti log vecchi legge e collega solo quello recente" do
+      old = Array.new(5) do
+        create(:log_entry, project:, trace_id: nil, message: "[#{uuid}] vecchio", created_at: 1.month.ago)
+      end
+      fresh = create(:log_entry, project:, trace_id: nil, message: "[#{uuid}] nuovo", created_at: 1.hour.ago)
+      spy_recognition
+      described_class.perform_now
+      expect(Logs::Ingest::Normalize).to have_received(:trace_id_from_message).once.with(fresh.message)
+      expect(fresh.reload.trace_id).to eq(uuid)
+      expect(old.map { |entry| entry.reload.trace_id }).to all(be_nil)
+    end
+
+    it "con una data di partenza ripassa e collega anche i log vecchi" do
+      entry = create(:log_entry, project:, trace_id: nil, message: "[#{uuid}] vecchio", created_at: 1.month.ago)
+      described_class.perform_now(since: 2.months.ago)
+      entry.reload
+      expect(entry.trace_id).to eq(uuid)
+      expect(entry.trace_id_extracted).to be(true)
+    end
+  end
+
   # CYRA-559: lo storico si ripara da sé solo se il giro parte davvero. Finché il recupero dipendeva
   # da un comando lanciato a mano al deploy, un difetto del riconoscimento lasciava i log scollegati
   # per sempre. Qui si verifica il patto: la pianificazione esiste e punta a questa classe.

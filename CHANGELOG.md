@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.243.1] - 2026-11-23
+
+### Changed
+
+- **Recupero notturno del codice di richiesta più rapido**: il giro di ogni notte rilegge solo i log arrivati negli ultimi 2 giorni, quindi non rallenta più con lo storico. Per ripassare i log più vecchi si lancia il recupero a mano da una data scelta. (CYRA-1233)
+
 ## [0.243.0] - 2026-11-23
 
 ### Changed

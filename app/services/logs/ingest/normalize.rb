@@ -36,7 +36,7 @@ module Logs
       TRACE_FROM_JOB_ID = /Job ID:\s*(#{TRACE_UUID})/i
 
       # Pre-filtro SQL dei candidati, usato SOLO da Logs::BackfillTraceIdsJob per non istanziare in
-      # Ruby l'intera tabella più grande del prodotto a ogni giro. NON è autoritativo: decidono i due
+      # Ruby tutti i log della finestra di arrivo che il job scorre. NON è autoritativo: decidono i due
       # pattern qui sopra. Deve restare più LARGO di entrambi — cerca i soli marcatori letterali,
       # senza l'UUID — altrimenti il backfill scarta log che l'ingest riconosce e le due strade
       # divergono in silenzio. Chi aggiunge un pattern qui sopra allarga anche questo.

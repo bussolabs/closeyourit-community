@@ -2235,7 +2235,7 @@
       "level": 2,
       "parent": "area_logs",
       "kind": "job",
-      "summary": "Ogni notte alle 4:30 rilegge i log senza codice di richiesta e lo ricava dal testo, così si ricollegano agli errori.",
+      "summary": "Ogni notte alle 4:30 rilegge i log degli ultimi 2 giorni senza codice di richiesta e lo ricava dal testo, così si ricollegano agli errori. A mano si ripassa lo storico da una data scelta.",
       "files": [
         "app/jobs/logs/backfill_trace_ids_job.rb",
         "app/services/logs/ingest/normalize.rb",
