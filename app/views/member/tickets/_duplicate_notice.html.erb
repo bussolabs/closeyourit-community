@@ -1,0 +1,14 @@
+<%# locals: (ticket:, links:, visible_ids:) %>
+<%# CYRA-1352 — a ticket closed as a duplicate says so at the top and points to where the work goes on. %>
+<% if ticket.status.category_done? %>
+  <% others = links.select(&:kind_duplicate?).map { |link| link.other_ticket(ticket) }.select { |other| visible_ids.include?(other.id) } %>
+  <% if others.any? %>
+    <%= render Ui::AlertComponent.new(variant: :info, title: t("member.tickets.duplicate_notice.title"), test_id: "ticket-duplicate-notice") do %>
+      <%= t("member.tickets.duplicate_notice.body") %>
+      <% others.each do |other| %>
+        <%= link_to "#{other.code} · #{other.title}", member_ticket_path(other), class: "font-semibold underline underline-offset-2",
+              data: { test: "ticket-duplicate-notice-#{other.id}" } %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

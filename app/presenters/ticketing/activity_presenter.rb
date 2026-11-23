@@ -14,6 +14,7 @@ module Ticketing
       "reviewer_changed" => "user-pen",
       "reporter_changed" => "user-round-pen",
       "milestone_changed" => "flag",
+      "moved_to_project" => "folder-input",
       "comment_deleted" => "message-circle-off",
       "attached" => "paperclip",
       "attachment_removed" => "unlink",
@@ -129,6 +130,7 @@ module Ticketing
       return reviewer_sentence if @event.action == "reviewer_changed"
       return linked_sentence if @event.action == "linked"
       return reporter_sentence if @event.action == "reporter_changed"
+      return moved_sentence if @event.action == "moved_to_project"
       return created_on_behalf_sentence if @event.action == "created" && @event.data["on_behalf_of"].present?
       return agent_eligibility_sentence if @event.action.start_with?("agent_eligibility_")
       return delivery_gate_sentence if @event.action.start_with?("delivery_scope_", "delivery_evidence_", "delivery_checks_", "delivery_review_", "delivery_tester_",
@@ -158,6 +160,11 @@ module Ticketing
     # così la riga NON è attribuita a una persona e resta chiara anche senza leggere il nome.
     def automated_status_sentence
       I18n.t("member.tickets.activity.automated.#{@event.action}", to: dig("status", "to"))
+    end
+
+    # CYRA-1352 — both codes are snapshots: the old one names the project the ticket left.
+    def moved_sentence
+      I18n.t("member.tickets.activity.moved_to_project", actor: actor_name, from: @event.data["from"], to: @event.data["to"])
     end
 
     # `updated` aggrega più campi: compone la lista dei campi cambiati (label i18n) dal jsonb.

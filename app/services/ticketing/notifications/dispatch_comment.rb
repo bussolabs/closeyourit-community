@@ -40,11 +40,19 @@ module Ticketing
         content = I18n.with_locale(account.effective_locale) { content_for(event_type, ticket) }
         count = 0
         count += deliver_in_app(account, ticket, organization, event_type, content) # in-app SEMPRE
+        return count if machine_progress?(event_type)
+
         telegram = deliver_telegram(account, ticket, organization, event_type, content, channels[:telegram])
         unless ::Notifications::Deliver.reached_by_telegram?(telegram)
           count += deliver_email(account, ticket, organization, event_type, content, pref, channels[:email])
         end
         count + (telegram&.ok? ? 1 : 0)
+      end
+
+      # CYRA-1350 — a machine's progress note asks nothing of anyone: it stays in the app. A mention is a
+      # call to a person, and questions and reviews have their own notifications.
+      def machine_progress?(event_type)
+        event_type == :ticket_commented && @comment.author&.service?
       end
 
       def deliver_in_app(account, ticket, organization, event_type, content)

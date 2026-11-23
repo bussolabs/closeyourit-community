@@ -38,6 +38,12 @@ module Ticketing
     SCENARIO_TITLE_CHARS = 60
     STEP_CHARS = 200
 
+    # Text the user marks as content is copied, never summarized: quotes, ``` fences, "> " lines (CYRA-1351).
+    QUOTE_PATTERN = /```\n?(.+?)```|«([^»]+)»|“([^”]+)”|"([^"]+)"|((?:^>[^\n]*(?:\n|\z))+)/m
+    VERBATIM_RULE = "I testi che la richiesta mette tra virgolette, o che incolla come contenuto da " \
+                    "usare, vanno riportati parola per parola nella description: non riassumerli, " \
+                    "non riformularli, non tradurli.\n"
+
     # La riga in più del SECONDO giro. Il primo tentativo non è arrivato in fondo: ripeterlo identico
     # è un'altra moneta lanciata, chiedere la versione minima cambia davvero il compito.
     SHORTER_RULE = "Il tentativo precedente non è arrivato in fondo perché troppo lungo. Questa " \
@@ -103,6 +109,7 @@ module Ticketing
 
     def call
       return blank_text_error if @text.blank?
+      return verbatim_too_long if verbatim_block(quoted_texts).length > Ticketing::Constants::DESCRIPTION_MAX_CHARS
       if ::Ai::Feature.disabled?(:ticket_composition)
         return Result.err(::Ai::Feature.disabled_error(:ticket_composition))
       end
@@ -251,7 +258,7 @@ module Ticketing
         - technical_analysis: QUI e solo qui i dettagli tecnici (stack, componenti coinvolti, ipotesi di
           causa, file/endpoint). Tienili FUORI da description/scenari/conditions. Vuoto se non pertinenti.
         Non inventare requisiti non presenti nel testo.
-        #{length_rule}#{knowledge_rule}#{correction_rule}#{shorter ? SHORTER_RULE : ''}#{Text::ItalianOrthography::PROMPT_RULE}
+        #{length_rule}#{VERBATIM_RULE}#{knowledge_rule}#{correction_rule}#{shorter ? SHORTER_RULE : ''}#{Text::ItalianOrthography::PROMPT_RULE}
       PROMPT
     end
 
@@ -302,7 +309,7 @@ module Ticketing
       Result.ok(Draft.new(
                   title: (args["title"].to_s.strip.presence || @text).truncate(TITLE_LIMIT),
                   kind:,
-                  description: description.truncate(Ticketing::Constants::DESCRIPTION_MAX_CHARS),
+                  description: with_missing_quotes(description, args),
                   technical_analysis: args["technical_analysis"].to_s.strip.presence
                                           &.truncate(Ticketing::Constants::TECHNICAL_ANALYSIS_MAX_CHARS),
                   scenarios: self.class.parse_scenarios(args["scenarios"]),
@@ -322,6 +329,45 @@ module Ticketing
 
         { title: item["title"].to_s.strip.presence }.merge(steps)
       end
+    end
+
+    # The model may still paraphrase: any quote missing from the draft is appended unchanged,
+    # and the model text is the part that gets cut when space runs out (CYRA-1351).
+    def with_missing_quotes(description, args)
+      limit = Ticketing::Constants::DESCRIPTION_MAX_CHARS
+      scenario_text = Array(args["scenarios"]).grep(Hash).flat_map(&:values)
+      drafted = [ description, *Array(args["conditions"]), *scenario_text, args["technical_analysis"] ].join("\n")
+      appended = description + verbatim_block(quoted_texts.reject { |quote| drafted.include?(quote) })
+      return appended if appended.length <= limit
+
+      # Cutting may hit a quote the model wrote: then every quote goes in the block, which is never cut
+      # (#call refused quotes that cannot fit), and only the model's own words give way.
+      block = verbatim_block(quoted_texts)
+      room = limit - block.length
+      (room > 20 ? description.truncate(room) + block : block).strip
+    end
+
+    def verbatim_block(quotes)
+      return "" if quotes.empty?
+
+      "\n\n#{I18n.t('member.tickets.compose.verbatim_heading')}\n" + quotes.map { |quote| "«#{quote}»" }.join("\n")
+    end
+
+    def quoted_texts
+      @quoted_texts ||= "#{@text}\n#{@correction}".scan(QUOTE_PATTERN)
+                                                  .map { |groups| unquote(groups.compact.first) }
+                                                  .reject(&:blank?).uniq
+    end
+
+    # A "> " block loses its markers: the content is what gets copied, not the way it was marked.
+    def unquote(raw)
+      raw.lines.map { |line| line.sub(/\A> ?/, "") }.join.strip
+    end
+
+    def verbatim_too_long
+      Result.err(AppError.new(I18n.t("member.tickets.compose.errors.verbatim_too_long",
+                                     count: Ticketing::Constants::DESCRIPTION_MAX_CHARS),
+                              code: "R422-TICKET-032", status: :unprocessable_content))
     end
 
     def self.parse_conditions(raw)

@@ -47,8 +47,13 @@ module Ticketing
       return scope.none if pairs.empty?
 
       # Una query per N riferimenti: un find_by per riga sarebbe un N+1 gratuito.
-      scope.where(pairs.map { "(ticketing_tickets.project_id = ? AND ticketing_tickets.number = ?)" }.join(" OR "),
-                  *pairs.flatten)
+      # CYRA-1352 — a moved ticket answers to its old codes too; numbers are never reused, so no clash.
+      # Built with Arel, not an interpolated SQL string, so Brakeman has nothing to flag.
+      tickets = Ticketing::Ticket.arel_table
+      moves = Ticketing::TicketMove.arel_table
+      current = pairs.map { |project_id, number| tickets[:project_id].eq(project_id).and(tickets[:number].eq(number)) }.reduce(:or)
+      moved = pairs.map { |project_id, number| moves[:from_project_id].eq(project_id).and(moves[:from_number].eq(number)) }.reduce(:or)
+      scope.where(current.or(tickets[:id].in(Ticketing::TicketMove.where(moved).select(:ticket_id).arel)))
     end
   end
 end

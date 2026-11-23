@@ -75,4 +75,33 @@ RSpec.describe Ticketing::Notifications::DispatchComment do
     described_class.call(comment: comment, mentioned_ids: [ mentioned.id ])
     expect(Alerting::Notification.where(account: watcher, event_type: :ticket_commented, via: :in_app)).to exist
   end
+
+  describe "comments written by a machine (CYRA-1350)" do
+    let(:author) do
+      create(:account, :service).tap { |a| create(:membership, account: a, organization: organization, role: :member) }
+    end
+
+    it "a progress comment reaches watchers in the app only, with no email" do
+      described_class.call(comment: comment, mentioned_ids: [])
+
+      expect(Alerting::Notification.where(account: watcher, event_type: :ticket_commented, via: :in_app)).to exist
+      expect(Alerting::Notification.where(account: watcher).where.not(via: :in_app)).not_to exist
+    end
+
+    it "a machine that mentions a person still emails that person" do
+      described_class.call(comment: comment, mentioned_ids: [ mentioned.id ])
+
+      expect(Alerting::Notification.where(account: mentioned, event_type: :ticket_mentioned, via: :email)).to exist
+    end
+
+    it "a comment written by a person still emails the watchers" do
+      human_comment = create(:ticket_comment, ticket: ticket, author: watcher, body: "Va bene così")
+      other = member
+      Ticketing::Subscription.ensure_for(ticket: ticket, account: other, source: :manual)
+
+      described_class.call(comment: human_comment, mentioned_ids: [])
+
+      expect(Alerting::Notification.where(account: other, event_type: :ticket_commented, via: :email)).to exist
+    end
+  end
 end

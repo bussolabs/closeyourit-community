@@ -31,6 +31,7 @@ module Agents
       # passata da sola» non è un guasto della verifica appena fatta.
       def call
         return Result.ok(nil) unless all_green?
+        return send_back_for_feedback if feedback_after_start?
         return Result.ok(nil) if delivery_gates_stop?
 
         outcome = ApproveAutopilot.call(workflow: @workflow, actor: nil, client: @client)
@@ -51,6 +52,21 @@ module Agents
 
       def delivery_gates_stop?
         DELIVERY_GATES.map { |gate| gate.stops?(workflow: @workflow, candidate: @candidate, client: @client) }.any?
+      end
+
+      # CYAU-347 — a worker reads the comments when it starts: what a person wrote after that never reached
+      # the delivered code, so merging it would ship work that ignores them.
+      def feedback_after_start?
+        @workflow.ticket.comments.kind_human.joins(:author)
+                 .where(accounts: { kind: Accounts::Account.kinds[:human] })
+                 .exists?([ "ticketing_comments.created_at > ?", @candidate.attempt.started_at ])
+      end
+
+      # Back to the machine, which reads the new comments on its next run. Not in review: nothing to approve.
+      def send_back_for_feedback
+        Ticketing::RejectReview.call(organization: @workflow.organization, ticket: @workflow.ticket,
+                                     reason: I18n.t("agents.auto_approve.feedback_after_start"), mode: :rework)
+        Result.ok(nil)
       end
 
       def all_green?

@@ -38,6 +38,8 @@
       partita. `@review_evidence_tab` è la scheda che ha DAVVERO il racconto (resoconto, discussione o
       automazione); nil significa che non è stato consegnato niente, e allora si dice — lo stato resta
       modificabile dal pannello Dettagli, per chi sa qualcosa che la pagina non sa. %>
+  <%= render "member/tickets/duplicate_notice", ticket: @ticket, links: @links, visible_ids: @visible_linked_ticket_ids %>
+
   <% if can_manage && @ticket.status.review_gate? %>
     <%= render "member/tickets/review_decision" %>
   <% end %>

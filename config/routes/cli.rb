@@ -358,6 +358,7 @@ namespace :cli do
         resource  :assignee,  only: %i[update destroy], module: :tickets       # PUT assegna / DELETE disassegna
         resource  :reviewer,  only: %i[update destroy], module: :tickets       # PUT imposta revisore / DELETE rimuove
         resource  :milestone, only: %i[update destroy], module: :tickets       # PUT imposta / DELETE rimuove
+        resource  :move,      only: :create,            module: :tickets       # POST moves it to another project
         resources :comments,  only: %i[index create destroy], module: :tickets # GET lista / POST commenta / DELETE elimina
         # Resoconto di lavorazione (CYRA-220): singleton perché è UNO per ticket — il POST non
         # sovrascrive, scrive la versione successiva. Le versioni sono la cronologia, in sola lettura.

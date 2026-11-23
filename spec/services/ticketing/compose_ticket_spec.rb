@@ -456,4 +456,96 @@ RSpec.describe Ticketing::ComposeTicket do
       expect(client).to have_received(:generate_content).once
     end
   end
+
+  describe "quoted text kept word for word (CYRA-1351)" do
+    let(:quote) { "Il tuo studio, sempre a portata di mano" }
+    let(:text) { "Cambia il titolo del login in «#{quote}» e il sottotitolo in \"Accedi al tuo spazio di lavoro\"" }
+
+    it "tells the model to copy quoted text exactly" do
+      captured = prompts { compose(text:) }
+
+      expect(captured[:system]).to include("parola per parola")
+    end
+
+    it "appends the quotes the model paraphrased, unchanged" do
+      draft("title" => "Nuovi testi del login", "kind" => "task",
+            "description" => "Aggiornare titolo e sottotitolo della pagina di login.")
+
+      description = compose(text:).value.description
+
+      expect(description).to include("«#{quote}»")
+      expect(description).to include("«Accedi al tuo spazio di lavoro»")
+      expect(description).to start_with("Aggiornare titolo e sottotitolo")
+    end
+
+    it "adds nothing when the draft already carries every quote" do
+      model_text = "Titolo: «#{quote}». Sottotitolo: Accedi al tuo spazio di lavoro."
+      draft("title" => "x", "kind" => "task", "description" => model_text)
+
+      expect(compose(text:).value.description).to eq(model_text)
+    end
+
+    it "keeps a short quoted label the model dropped" do
+      draft("title" => "x", "kind" => "bug", "description" => "Il pulsante non salva.")
+
+      expect(compose(text: "il pulsante \"Salva\" non funziona").value.description).to include("«Salva»")
+    end
+
+    it "copies lines starting with > word for word, without the markers" do
+      draft("title" => "x", "kind" => "task", "description" => "Aggiornare il benvenuto.")
+      text = "Metti questo benvenuto:\n> Benvenuto nel tuo studio.\n> Accedi con la tua email.\nGrazie"
+
+      description = compose(text:).value.description
+
+      expect(description).to include("«Benvenuto nel tuo studio.\nAccedi con la tua email.»")
+    end
+
+    it "copies a ``` fenced block word for word" do
+      draft("title" => "x", "kind" => "task", "description" => "Aggiornare il piè di pagina.")
+
+      description = compose(text: "Footer:\n```\nStudio Rossi — P.IVA 0123\n```").value.description
+
+      expect(description).to include("«Studio Rossi — P.IVA 0123»")
+    end
+
+    it "keeps the quotes whole when the model description is too long" do
+      draft("title" => "x", "kind" => "task", "description" => "a" * 5_000)
+
+      description = compose(text:).value.description
+
+      expect(description.length).to be <= Ticketing::Constants::DESCRIPTION_MAX_CHARS
+      expect(description).to include("«#{quote}»")
+      expect(description).to include("«Accedi al tuo spazio di lavoro»")
+    end
+
+    it "keeps a quote the model wrote at the end of a description that has to be cut" do
+      model_text = "#{'c' * 3_990} Titolo: «#{quote}». Sottotitolo: Accedi al tuo spazio di lavoro."
+      draft("title" => "x", "kind" => "task", "description" => model_text)
+
+      description = compose(text:).value.description
+
+      expect(description.length).to be <= Ticketing::Constants::DESCRIPTION_MAX_CHARS
+      expect(description).to include("«#{quote}»")
+      expect(description).to include("«Accedi al tuo spazio di lavoro»")
+    end
+
+    it "keeps a long quote whole even when nothing else fits" do
+      long_quote = "Testo legale. " * 270
+      draft("title" => "x", "kind" => "task", "description" => "b" * 3_000)
+
+      description = compose(text: "Usa \"#{long_quote.strip}\"").value.description
+
+      expect(description).to include("«#{long_quote.strip}»")
+      expect(description.length).to be <= Ticketing::Constants::DESCRIPTION_MAX_CHARS
+    end
+
+    it "refuses, before calling the model, text to copy that cannot fit in a description" do
+      allow(client).to receive(:generate_content)
+
+      result = compose(text: "Usa \"#{'x' * 4_100}\"")
+
+      expect(result.error.code).to eq("R422-TICKET-032")
+      expect(client).not_to have_received(:generate_content)
+    end
+  end
 end

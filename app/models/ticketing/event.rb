@@ -44,6 +44,7 @@ module Ticketing
       delivery_tester_stopped delivery_tester_would_stop delivery_tester_ran
       delivery_tester_release_passed delivery_tester_release_missing
       plan_fast_lane_approved plan_fast_lane_would_approve delivery_fast_lane_stopped
+      moved_to_project
     ].freeze
 
     belongs_to :organization, class_name: "Organizations::Organization"

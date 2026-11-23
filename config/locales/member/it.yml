@@ -1847,11 +1847,31 @@ it:
           disabled: La modalità rapida non è attiva per questo progetto.
           blank: Scrivi prima la tua segnalazione.
           unreadable: L'assistente ha risposto in modo imprevisto. Riprova o compila i campi a mano.
+      duplicate_notice:
+        title: Chiuso come doppione
+        body: "Questa richiesta è già seguita in un altro ticket. Il lavoro continua qui:"
+      move:
+        menu: Sposta in un altro progetto
+        title: Sposta il ticket
+        project: Progetto di destinazione
+        select_project: Scegli il progetto
+        hint: "Il ticket prende un codice nuovo nel progetto scelto. Commenti, allegati e cronologia restano. %{code} continua a portare qui. Milestone ed epic del vecchio progetto vengono tolti."
+        submit: Sposta
+        cancel: Annulla
+        done: "Ticket spostato: ora è %{code}."
+        errors:
+          same_project: Il ticket è già in questo progetto.
+          other_organization: Si può spostare un ticket solo in un progetto della stessa organizzazione.
+          machine_working: Una macchina ci sta lavorando. Annulla prima la lavorazione, poi spostalo.
+          repository_work: Il ticket ha già un ramo o una proposta di modifica nel codice del suo progetto, quindi resta lì.
+          epic_with_children: Questo epic contiene altri ticket. Sposta o stacca prima quelli.
+          project_signal: Il ticket è nato da un errore o da una misura del suo progetto, quindi resta lì.
       compose:
         label: "Scrivi il ticket per me — dimmi cosa ti serve"
-        hint: "Spiega con parole tue cosa ti serve: al ticket completo ci pensa l'assistente."
+        hint: "Spiega con parole tue cosa ti serve: al ticket completo ci pensa l'assistente. I testi da copiare così come sono mettili tra virgolette, oppure su righe che iniziano con >."
         placeholder: Es. Su mobile il checkout va in timeout dopo 30s e gli utenti non riescono a pagare.
         button: "Scrivi per me"
+        verbatim_heading: "Testi da usare così come sono:"
         generating: Sto scrivendo il ticket…
         complete: "Fatto — l'assistente ha compilato il ticket qui sotto. Controllalo e correggilo prima di salvare."
         failed: Non è stato possibile scrivere il ticket ora. Riprova tra poco o compila il form a mano.
@@ -1885,6 +1905,7 @@ it:
           blank: Descrivi prima cosa ti serve.
           previous_missing: La bozza da correggere non c'è più. Scrivine una nuova, poi correggila.
           unreadable: L'assistente ha risposto in modo imprevisto. Riprova o compila il modulo a mano.
+          verbatim_too_long: "I testi da copiare così come sono superano i %{count} caratteri della descrizione. Dividili in più ticket o allegali come file."
           too_long: La bozza è venuta troppo lunga e si è interrotta. Prova a descrivere quello che ti serve in modo più corto, o dividilo in due ticket.
       form:
         tabs:
@@ -2600,6 +2621,7 @@ it:
         reviewer_removed: "%{actor} ha rimosso il revisore"
         reporter_changed: "%{actor} ha impostato il segnalatore su %{to}"
         milestone_changed: "%{actor} ha cambiato la milestone"
+        moved_to_project: "%{actor} ha spostato il ticket da %{from} a %{to}"
         comment_deleted: "%{actor} ha eliminato un commento di %{author}"
         attached: "%{actor} ha allegato %{filenames}"
         attachment_removed: "%{actor} ha rimosso l'allegato %{filename}"

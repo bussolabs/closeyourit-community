@@ -203,6 +203,8 @@ module Ticketing
 
     # Sottoscrizioni (watcher): chi riceve le notifiche dei cambiamenti del ticket. Cadono col
     # ticket (FK on_delete: :cascade, AR dependent: :destroy): sono preferenza, non evidenza.
+    # CYRA-1352 — the projects this ticket was moved out of, so its old codes still find it.
+    has_many :moves, class_name: "Ticketing::TicketMove", inverse_of: :ticket, dependent: :delete_all
     has_many :subscriptions,
              class_name: "Ticketing::Subscription",
              foreign_key: :ticket_id,

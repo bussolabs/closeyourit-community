@@ -1,5 +1,7 @@
 it:
   agents:
+    auto_approve:
+      feedback_after_start: "C'è un commento nuovo scritto dopo l'inizio del lavoro: la macchina lo rilegge e aggiorna il lavoro prima di consegnarlo."
     council:
       ticket_body: |
         **Problema:** %{problem}

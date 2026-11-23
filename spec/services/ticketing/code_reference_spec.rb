@@ -87,6 +87,20 @@ RSpec.describe Ticketing::CodeReference do
       expect(resolved).to be_empty
     end
 
+    it "finds a moved ticket by the code it had before the move (CYRA-1352)" do
+      from = create(:project, organization:, key: "LBWB")
+      to = create(:project, organization:, key: "LBRA")
+      ticket = create(:ticket, project: from, organization:)
+      old_code = ticket.code
+      admin = create(:account).tap { |account| create(:membership, account:, organization:, role: :admin) }
+      Ticketing::MoveToProject.call(ticket:, project: to, actor: admin)
+
+      resolved = described_class.resolve(scope: Ticketing::Ticket.all, projects: organization.projects,
+                                         references: [ described_class.parse(old_code) ])
+
+      expect(resolved).to contain_exactly(ticket)
+    end
+
     it "senza riferimenti utili non interroga nulla" do
       aggregate_failures do
         expect(described_class.resolve(scope: Ticketing::Ticket.all, projects: organization.projects,

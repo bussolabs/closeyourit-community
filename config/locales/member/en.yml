@@ -1793,11 +1793,31 @@ en:
           disabled: Quick mode is not enabled for this project.
           blank: Write your report first.
           unreadable: The assistant replied unexpectedly. Try again or fill the fields manually.
+      duplicate_notice:
+        title: Closed as a duplicate
+        body: "This request is already followed in another ticket. The work goes on here:"
+      move:
+        menu: Move to another project
+        title: Move the ticket
+        project: Destination project
+        select_project: Choose the project
+        hint: "The ticket takes a new code in the chosen project. Comments, attachments and history stay. %{code} keeps leading here. The old project's milestone and epic are removed."
+        submit: Move
+        cancel: Cancel
+        done: "Ticket moved: it is now %{code}."
+        errors:
+          same_project: The ticket is already in this project.
+          other_organization: A ticket can only move to a project of the same organization.
+          machine_working: A machine is working on it. Cancel that work first, then move it.
+          repository_work: The ticket already has a branch or a pull request in its project's code, so it stays there.
+          epic_with_children: This epic holds other tickets. Move or detach those first.
+          project_signal: The ticket came from an error or a measure of its project, so it stays there.
       compose:
         label: "Write the ticket for me — tell me what you need"
-        hint: "Explain in your own words what you need: the assistant writes the full ticket."
+        hint: "Explain in your own words what you need: the assistant writes the full ticket. Put text to copy exactly as written between quotes, or on lines starting with >."
         placeholder: e.g. On mobile the checkout times out after 30s and users can't pay.
         button: "Write it for me"
+        verbatim_heading: "Text to use exactly as written:"
         generating: Writing your ticket…
         complete: "Done — the assistant filled the ticket below. Check it and fix it before saving."
         failed: Couldn't write the ticket right now. Try again shortly or fill the form manually.
@@ -1831,6 +1851,7 @@ en:
           blank: Describe what you need first.
           previous_missing: The draft you wanted to correct is gone. Write a new one, then correct it.
           unreadable: The assistant replied unexpectedly. Try again or fill the form manually.
+          verbatim_too_long: "The text to copy exactly as written is longer than the %{count} characters of the description. Split it across tickets or attach it as a file."
           too_long: The draft came out too long and stopped halfway. Try describing what you need more briefly, or split it into two tickets.
       form:
         tabs:
@@ -2521,6 +2542,7 @@ en:
         reviewer_removed: "%{actor} removed the reviewer"
         reporter_changed: "%{actor} set the reporter to %{to}"
         milestone_changed: "%{actor} changed the milestone"
+        moved_to_project: "%{actor} moved the ticket from %{from} to %{to}"
         comment_deleted: "%{actor} deleted a comment by %{author}"
         attached: "%{actor} attached %{filenames}"
         attachment_removed: "%{actor} removed attachment %{filename}"

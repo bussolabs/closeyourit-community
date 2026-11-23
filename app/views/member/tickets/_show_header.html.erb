@@ -72,14 +72,21 @@
     <%# Modificare ed eliminare sono azioni rare, e una è irreversibile: non stanno in prima fila
         accanto a ciò che si fa tutti i giorni. %>
     <% if can_manage %>
+      <div class="contents" data-controller="ui--dialog">
       <%= render Ui::RowMenuComponent.new(test_id: "ticket-more-menu", aria_label: t("member.tickets.show.more_menu")) do %>
         <%= link_to t("member.tickets.show.edit"), edit_member_ticket_path(@ticket),
               class: Ui::RowMenuComponent.item_class, data: { test: "ticket-edit" } %>
+        <% if @move_targets.any? %>
+          <%= tag.button t("member.tickets.move.menu"), type: "button", class: Ui::RowMenuComponent.item_class,
+                data: { action: "ui--dialog#open", test: "ticket-move" } %>
+        <% end %>
         <div class="my-1 border-t border-stone-200 dark:border-zinc-800"></div>
         <%= button_to t("member.tickets.show.delete"), member_ticket_path(@ticket), method: :delete, params: { confirm: 1 },
               class: Ui::RowMenuComponent.item_class(:danger), form: { class: "block" },
               data: { test: "ticket-delete", turbo_confirm: t("member.tickets.delete_confirm") } %>
       <% end %>
+      <%= render "member/tickets/move_modal", ticket: @ticket, projects: @move_targets if @move_targets.any? %>
+      </div>
     <% end %>
   <% end %>
 <% end %>

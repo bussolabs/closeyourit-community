@@ -56,6 +56,7 @@ module Projects
         "secrets_shared_events" => "project_id IN (:projects)",
         "ticketing_events" => "ticket_id IN (:tickets)",
         "ticketing_subscriptions" => "ticket_id IN (:tickets)",
+        "ticketing_ticket_moves" => "ticket_id IN (:tickets)",
         "ticketing_work_context_snapshots" => "ticket_id IN (:tickets)"
       }.freeze
 

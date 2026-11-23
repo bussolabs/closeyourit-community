@@ -15,8 +15,8 @@ module Member
     # `set_ticket` PRIMA delle parti che seguono: le opzioni del modulo escludono dagli epic
     # selezionabili il ticket in modifica, e senza il ticket già caricato un epic si ritroverebbe fra
     # i propri padri possibili.
-    before_action :set_ticket, only: %i[edit update destroy status assignee reviewer reporter knowledge]
-    before_action :require_ticket_permission, only: %i[edit update destroy status assignee reviewer reporter]
+    before_action :set_ticket, only: %i[edit update destroy status assignee reviewer reporter move knowledge]
+    before_action :require_ticket_permission, only: %i[edit update destroy status assignee reviewer reporter move]
 
     # CYRA-739 — le parti della pagina, una per compito. Erano milletrecento righe in questo file:
     # ricerca, bacheca, doppioni e opzioni del modulo si toccavano a vicenda e ogni correzione
@@ -121,6 +121,21 @@ module Member
         return head(result.error.status)
       end
       respond_change(result, t("member.tickets.status_changed"))
+    end
+
+    # CYRA-1352 — tickets.edit on the source (before_action) and on the target, which must be visible.
+    def move
+      target = visible.projects.find(params.require(:project_id))
+      require_permission!("tickets.edit", scope: target)
+      return if performed?
+
+      result = Ticketing::MoveToProject.call(ticket: @ticket, project: target, actor: Current.account,
+                                             true_actor: Current.true_account)
+      if result.ok?
+        redirect_to member_ticket_path(@ticket), notice: t("member.tickets.move.done", code: @ticket.code)
+      else
+        redirect_to member_ticket_path(@ticket), alert: result.error.message
+      end
     end
 
     def assignee

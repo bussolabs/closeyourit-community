@@ -834,6 +834,7 @@ namespace :member do
       patch :assignee
       patch :reviewer
       patch :reporter
+      patch :move # CYRA-1352 — to another project of the organization
       # Pagine Knowledge semanticamente correlate al ticket (pannello lazy nella show).
       post  :knowledge
     end

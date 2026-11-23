@@ -94,6 +94,7 @@ en:
           dependency_removed: Prerequisite removed
           dependency_blocked: Blocked by a prerequisite
           already_done: Already done
+          moved_to_project: Moved to another project
         permissions:
           role_created: Role created
           role_updated: Role updated

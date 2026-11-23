@@ -12,6 +12,22 @@ module Cli
 
       before_action :authenticate_user_token!
 
+      # CYRA-1352 — an old code of a moved ticket answers with the code it has now, never with the ticket:
+      # the caller's permissions were checked on the old project, not on the new one.
+      class TicketMoved < StandardError
+        attr_reader :ticket
+
+        def initialize(ticket)
+          @ticket = ticket
+          super("Ticket moved: it is now #{ticket.code}")
+        end
+      end
+
+      rescue_from TicketMoved do |error|
+        render_error("R404-TICKET-031", error.message, status: :not_found,
+                                                       details: { code: error.ticket.code, project_key: error.ticket.project.key })
+      end
+
       private
 
       def authorization
@@ -78,7 +94,7 @@ module Cli
       def find_ticket!(project, ref)
         ref = ref.to_s.strip
         if (match = /\A#{Regexp.escape(project.key)}-(\d+)\z/i.match(ref))
-          project.tickets.find_by!(number: match[1].to_i)
+          project.tickets.find_by(number: match[1].to_i) || raise_moved!(project, match[1].to_i)
         else
           project.tickets.find(ref)
         end
@@ -100,10 +116,22 @@ module Cli
         ref = ref.to_s.strip
         if (match = /\A([a-z0-9]{1,4})-(\d+)\z/i.match(ref))
           project = visible_projects.find_by(key: match[1].upcase)
-          project&.tickets&.find_by(number: match[2].to_i)
+          project&.tickets&.find_by(number: match[2].to_i) || (project && moved_visible_ticket(project, match[2].to_i))
         else
           visible_tickets.find_by(id: ref)
         end
+      end
+
+      def raise_moved!(project, number)
+        moved = moved_visible_ticket(project, number)
+        raise TicketMoved, moved if moved
+
+        raise ActiveRecord::RecordNotFound
+      end
+
+      def moved_visible_ticket(project, number)
+        moved = Ticketing::TicketMove.find_by(from_project: project, from_number: number)&.ticket
+        moved if moved && visible_tickets.exists?(id: moved.id)
       end
 
       # Paginazione offset nativa → [records, meta] per l'envelope {data:, meta:}.

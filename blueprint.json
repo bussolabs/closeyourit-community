@@ -3658,7 +3658,7 @@
       "level": 2,
       "parent": "area_tickets",
       "kind": "page",
-      "summary": "La bacheca a colonne per stato e la lista con filtri, ricerca per codice o per significato e viste salvate. C'è anche la pagina per fare domande all'archivio dei ticket.",
+      "summary": "La bacheca a colonne per stato e la lista con filtri, ricerca per codice o per significato e viste salvate. Il codice che un ticket aveva prima di essere spostato lo trova ancora. C'è anche la pagina per fare domande all'archivio dei ticket.",
       "files": [
         "app/controllers/member/tickets_controller.rb",
         "app/controllers/concerns/member/tickets/boards.rb",
@@ -3679,11 +3679,16 @@
       "level": 2,
       "parent": "area_tickets",
       "kind": "page",
-      "summary": "Tutto su un ticket: descrizione, criteri di accettazione (una tabella sola, ogni voce col suo codice), analisi tecnica, discussione, domande, prerequisiti, allegati, cronologia e stato dell'automazione.",
+      "summary": "Tutto su un ticket: descrizione, criteri di accettazione (una tabella sola, ogni voce col suo codice), analisi tecnica, discussione, domande, prerequisiti, allegati, cronologia e stato dell'automazione. Dal menu si sposta il ticket in un altro progetto; un ticket chiuso come doppione dice in cima dove continua il lavoro.",
       "files": [
         "app/controllers/concerns/member/tickets/detail.rb",
         "app/views/member/tickets/show.html.erb",
-        "app/views/member/tickets/history.html.erb"
+        "app/views/member/tickets/history.html.erb",
+        "app/views/member/tickets/_move_modal.html.erb",
+        "app/views/member/tickets/_duplicate_notice.html.erb",
+        "app/services/ticketing/move_to_project.rb",
+        "app/models/ticketing/ticket_move.rb",
+        "app/controllers/cli/v1/tickets/moves_controller.rb"
       ]
     },
     {
@@ -3869,7 +3874,7 @@
       "level": 3,
       "parent": "tkt_flow_ai_draft",
       "kind": "step",
-      "summary": "Compone titolo, tipo, descrizione, scenari e condizioni. Usa come contesto la scheda del progetto e al massimo due pagine di conoscenza pertinenti.",
+      "summary": "Compone titolo, tipo, descrizione, scenari e condizioni. Usa come contesto la scheda del progetto e al massimo due pagine di conoscenza pertinenti. I testi tra virgolette, nelle righe che iniziano con > e nei blocchi ``` restano identici; se non entrano nella descrizione la richiesta viene rifiutata.",
       "files": [
         "app/services/ticketing/compose_ticket.rb",
         "app/services/ticketing/compose_context.rb"
@@ -4042,7 +4047,7 @@
       "level": 3,
       "parent": "tkt_flow_comments",
       "kind": "step",
-      "summary": "In coda: chi è menzionato riceve «sei stato citato», gli altri iscritti «nuovo commento». Mai l'autore. Rispetta preferenze e ore di silenzio.",
+      "summary": "In coda: chi è menzionato riceve «sei stato citato», gli altri iscritti «nuovo commento». Mai l'autore. Rispetta preferenze e ore di silenzio. I commenti delle macchine restano solo nell'app, tranne le menzioni.",
       "files": [
         "app/jobs/ticketing/comment_notify_job.rb",
         "app/services/ticketing/notifications/dispatch_comment.rb",
@@ -6244,7 +6249,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "Con controlli verdi, rilettura accettata e proposta invariata la consegna passa da sola. Al primo controllo rosso il lavoro torna all'agente; al secondo decide una persona. Se il progetto ha acceso il controllo sulle modifiche consegnate, il server legge da GitHub i file cambiati davvero: una modifica ai dati, o un file delicato che il piano non nominava, lascia la decisione a una persona. Lo stesso vale per una prova del «fatto quando» mancante o parziale e per test falliti o non eseguiti. Lo stesso vale per un lavoro riletto dallo stesso motore che lo ha scritto. Un piano piccolo e a basso rischio può passare dalla corsia veloce senza che nessuno lo approvi: alla consegna la perde se le modifiche vere superano 3 file o 60 righe, o escono dal piano. I test tolti dalle modifiche vengono annotati nella storia del ticket.",
+      "summary": "Con controlli verdi, rilettura accettata e proposta invariata la consegna passa da sola. Al primo controllo rosso il lavoro torna all'agente; al secondo decide una persona. Se il progetto ha acceso il controllo sulle modifiche consegnate, il server legge da GitHub i file cambiati davvero: una modifica ai dati, o un file delicato che il piano non nominava, lascia la decisione a una persona. Lo stesso vale per una prova del «fatto quando» mancante o parziale e per test falliti o non eseguiti. Lo stesso vale per un lavoro riletto dallo stesso motore che lo ha scritto. Un piano piccolo e a basso rischio può passare dalla corsia veloce senza che nessuno lo approvi: alla consegna la perde se le modifiche vere superano 3 file o 60 righe, o escono dal piano. I test tolti dalle modifiche vengono annotati nella storia del ticket. Se una persona ha scritto un commento dopo l'inizio del lavoro, la consegna non passa: il lavoro torna alla macchina, che legge il commento.",
       "files": [
         "app/services/agents/workflows/auto_approve.rb",
         "app/services/agents/candidates/delivery_gate.rb",
@@ -11120,7 +11125,7 @@
       "level": 3,
       "parent": "cli_flow_request",
       "kind": "step",
-      "summary": "Progetti e ticket si cercano solo fra quelli visibili. Un progetto non visibile risponde «non trovato», mai «vietato».",
+      "summary": "Progetti e ticket si cercano solo fra quelli visibili. Un progetto non visibile risponde «non trovato», mai «vietato». Il vecchio codice di un ticket spostato risponde «non trovato» con il codice nuovo.",
       "files": [
         "app/controllers/cli/v1/base_controller.rb"
       ]

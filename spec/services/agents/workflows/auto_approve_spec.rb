@@ -762,4 +762,49 @@ RSpec.describe Agents::Workflows::AutoApprove do
       end
     end
   end
+
+  describe "a person commented after the work started (CYAU-347)" do
+    let(:customer) do
+      create(:account).tap { |account| create(:membership, account:, organization:, role: :member) }
+    end
+
+    # The plan was approved: rework sends the delivery back to the autopilot phase, not to triage.
+    before do
+      now = Time.current
+      workflow.update!(triage_started_at: now, triaged_at: now, planned_at: now, approved_at: now)
+    end
+
+    def comment!(author:, at:)
+      create(:ticket_comment, ticket:, author:, organization:, created_at: at,
+                              body: "Sono uguali: usa i dati studio delle impostazioni del gestionale.")
+    end
+
+    it "does not merge the old work and sends it back to the machine with the comment to read" do
+      comment!(author: customer, at: attempt.started_at + 1.second)
+
+      expect(auto_approve).to be_ok
+
+      workflow.reload
+      expect(workflow.autopilot_approved_at).to be_nil
+      expect(workflow.ready_execution_phase).to eq("autopilot")
+      expect(ticket.reload.status).to eq(in_progress)
+      expect(Ticketing::Event.where(ticket:, action: "autopilot_auto_approved")).to be_empty
+      expect(Ticketing::Event.find_by(ticket:, action: "review_rejected").data["mode"]).to eq("rework")
+    end
+
+    it "still approves when the comment came before the work started" do
+      comment!(author: customer, at: attempt.started_at - 1.minute)
+
+      expect(auto_approve).to be_ok
+      expect(workflow.reload.autopilot_approved_at).to be_present
+    end
+
+    it "ignores comments written by a machine" do
+      machine = create(:account, :service).tap { |account| create(:membership, account:, organization:, role: :member) }
+      comment!(author: machine, at: attempt.started_at + 1.second)
+
+      expect(auto_approve).to be_ok
+      expect(workflow.reload.autopilot_approved_at).to be_present
+    end
+  end
 end

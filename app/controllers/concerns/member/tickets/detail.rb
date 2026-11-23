@@ -55,6 +55,8 @@ module Member
         # CYRA-941 — help desk requests that became this ticket or joined it. They hold a visitor's
         # words: only who manages the help desk on the project sees them.
         @helpdesk_requests = can?("helpdesk.manage", scope: @ticket.project) ? @ticket.helpdesk_requests.order(created_at: :desc) : []
+        # CYRA-1352 — the projects this ticket can move to: visible, and where the viewer edits tickets.
+        @move_targets = can?("tickets.edit", scope: @ticket.project) ? move_targets : []
         # Collegamenti ticket↔ticket (gate duplicati), letti da entrambe le direzioni.
         @links = Connections::TicketLink.involving(@ticket)
                                         .includes(ticket: [ :project, :status ], related: [ :project, :status ])
@@ -137,6 +139,11 @@ module Member
       end
 
       private
+
+      def move_targets
+        visible.projects.where.not(id: @ticket.project_id).order(:name)
+               .select { |project| can?("tickets.edit", scope: project) }
+      end
 
       # CYRA-1162 — the request to recommend the app is decided only here, on a page the person opened:
       # the reservation is one UPDATE, so two pages opened together show it once. Nil = nothing to show.

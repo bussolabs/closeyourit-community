@@ -95,6 +95,7 @@ it:
           dependency_removed: Prerequisito rimosso
           dependency_blocked: Fermato da un prerequisito
           already_done: Già fatto
+          moved_to_project: Spostato in un altro progetto
         permissions:
           role_created: Ruolo creato
           role_updated: Ruolo modificato

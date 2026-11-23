@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_20_090100) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_23_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -4116,6 +4116,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_20_090100) do
     t.index ["ticket_id"], name: "index_ticketing_subscriptions_on_ticket_id"
   end
 
+  create_table "ticketing_ticket_moves", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "organization_id", null: false
+    t.uuid "ticket_id", null: false
+    t.uuid "from_project_id", null: false
+    t.integer "from_number", null: false
+    t.uuid "to_project_id", null: false
+    t.integer "to_number", null: false
+    t.uuid "actor_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_id"], name: "index_ticketing_ticket_moves_on_actor_id"
+    t.index ["from_project_id", "from_number"], name: "idx_on_from_project_id_from_number_5a719d3244", unique: true
+    t.index ["organization_id"], name: "index_ticketing_ticket_moves_on_organization_id"
+    t.index ["ticket_id"], name: "index_ticketing_ticket_moves_on_ticket_id"
+    t.index ["to_project_id"], name: "index_ticketing_ticket_moves_on_to_project_id"
+  end
+
   create_table "ticketing_tickets", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.integer "agent_eligibility", default: 0, null: false
     t.integer "agent_eligibility_advice", default: 0, null: false
@@ -5226,6 +5243,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_20_090100) do
   add_foreign_key "ticketing_subscriptions", "accounts", on_delete: :cascade
   add_foreign_key "ticketing_subscriptions", "organizations", on_delete: :cascade
   add_foreign_key "ticketing_subscriptions", "ticketing_tickets", column: "ticket_id", on_delete: :cascade
+  add_foreign_key "ticketing_ticket_moves", "accounts", column: "actor_id", on_delete: :nullify
+  add_foreign_key "ticketing_ticket_moves", "organizations"
+  add_foreign_key "ticketing_ticket_moves", "projects", column: "from_project_id", on_delete: :cascade
+  add_foreign_key "ticketing_ticket_moves", "projects", column: "to_project_id", on_delete: :cascade
+  add_foreign_key "ticketing_ticket_moves", "ticketing_tickets", column: "ticket_id", on_delete: :cascade
   add_foreign_key "ticketing_tickets", "accounts", column: "agent_eligibility_decided_by_id", on_delete: :nullify
   add_foreign_key "ticketing_tickets", "accounts", column: "assignee_id"
   add_foreign_key "ticketing_tickets", "accounts", column: "reporter_id"

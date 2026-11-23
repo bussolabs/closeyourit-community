@@ -1,0 +1,18 @@
+<%# locals: (ticket:, projects:) %>
+<%# CYRA-1352 — a ticket opened in the wrong project moves with its history; the old code keeps finding it. %>
+<%= render Ui::ModalComponent.new(title: t("member.tickets.move.title"), size: :sm, test_id: "ticket-move-modal",
+      form: { url: move_member_ticket_path(ticket), method: :patch },
+      data: { "ui--dialog-target": "dialog", action: "click->ui--dialog#backdrop" }) do |modal| %>
+  <% modal.with_actions do %>
+    <%= render Ui::ButtonComponent.new(label: t("member.tickets.move.cancel"), variant: :secondary_muted, size: :sm,
+          data: { action: "ui--dialog#close" }) %>
+    <%= render Ui::ButtonComponent.new(label: t("member.tickets.move.submit"), type: "submit", size: :sm,
+          icon: "folder-input", test_id: "ticket-move-submit") %>
+  <% end %>
+  <%= render Ui::StackComponent.new(gap: 3) do %>
+    <%= render Ui::SelectComponent.new(name: "project_id", label: t("member.tickets.move.project"), required: true,
+          options: projects.map { |project| [ project.name, project.id ] }, include_blank: true,
+          placeholder: t("member.tickets.move.select_project"), test_id: "ticket-move-project") %>
+    <p class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="ticket-move-hint"><%= t("member.tickets.move.hint", code: ticket.code) %></p>
+  <% end %>
+<% end %>

@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## [0.242.1] - 2026-11-23
+
+### Fixed
+
+- **Arrivano in produzione le novità della 0.242.0**: quel rilascio si era fermato a un controllo di sicurezza e non era stato pubblicato. Questa versione lo completa, senza altri cambiamenti.
+
+## [0.242.0] - 2026-11-23
+
+### Added
+
+- **Spostare un ticket in un altro progetto**: dal menu «…» del ticket scegli il progetto giusto. Il ticket prende un codice nuovo e tiene commenti e cronologia; il vecchio codice lo ritrova ancora. Un ticket chiuso come doppione dice in cima dove continua il lavoro. [Ticket](/member/tickets)
+
+### Changed
+
+- **Meno email dalle macchine**: i messaggi di avanzamento delle macchine restano nelle notifiche dell'app. L'email arriva ancora quando una macchina ti nomina.
+
+### Fixed
+
+- **I commenti scritti durante la revisione vengono letti**: se chiedi una correzione mentre il lavoro di una macchina è in revisione, il lavoro torna alla macchina invece di essere rilasciato così com'era.
+- **«Scrivi per me» copia i testi parola per parola**: i testi tra virgolette, sulle righe che iniziano con > o tra ``` restano identici nel ticket.
+
 ## [0.241.3] - 2026-11-23
 
 ### Security
