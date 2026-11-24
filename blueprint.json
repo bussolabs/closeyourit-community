@@ -6000,11 +6000,10 @@
       "level": 3,
       "parent": "agt_flow_claim",
       "kind": "step",
-      "summary": "Nasce la scheda del tentativo con macchina, fase e regole d'uso congelate. Un motore scelto per la fase vale solo se la macchina non lo segnala senza credito: altrimenti lavora il motore della macchina. Per i rilasci il server assegna qui il numero di versione.",
+      "summary": "Nasce la scheda del tentativo con macchina, fase e regole d'uso congelate. Per i rilasci il server assegna qui il numero di versione.",
       "files": [
         "app/services/agents/phase_engine.rb",
         "app/services/agents/budget_restart.rb",
-        "app/services/agents/council/work_choice.rb",
         "app/services/agents/ticket_queues/claim.rb",
         "app/services/agents/releases/assign.rb",
         "app/models/agents/attempt.rb",

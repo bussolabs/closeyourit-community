@@ -15,30 +15,18 @@ module SessionHealth
 
       def call
         return Result.new(accepted: 0, duplicates: 0, stale: 0, rejected: 0) if @items.empty?
-        counts = { accepted: 0, duplicates: 0, stale: 0, rejected: 0 }
-        sessions = @items.select { |item| item.fetch(:type) == "session" }.map { |item| item.fetch(:value) }
-        aggregates = @items.select { |item| item.fetch(:type) == "sessions" }.map { |item| item.fetch(:value) }
-        now = Time.current
-        ApplicationRecord.transaction do
-          # Aggregates are append-only: no lock. Sessions lock only their own sids, never the project.
-          if aggregates.any?
-            Aggregate.insert_all!(aggregates.map { |item| item.merge(project_id: @project.id, created_at: now, updated_at: now) })
-            counts[:accepted] += aggregates.size
-          end
-          persist_sessions(sessions, counts, now) if sessions.any?
-        end
-        Result.new(**counts)
+        @project.with_lock { persist }
       end
 
       private
 
-      # The rows are read only after the locks are held, so a concurrent writer of the same sid
-      # (another delivery or the pruning job) is either fully visible or not started yet.
-      def persist_sessions(sessions, counts, now)
-        sids = sessions.filter_map { |item| item[:sid] }
-        SessionLock.acquire!(project_id: @project.id, sids: sids)
-        existing = @project.health_sessions.where(sid: sids).index_by { |row| row.sid }
+      def persist
+        counts = { accepted: 0, duplicates: 0, stale: 0, rejected: 0 }
+        sessions = @items.select { |item| item.fetch(:type) == "session" }.map { |item| item.fetch(:value) }
+        aggregates = @items.select { |item| item.fetch(:type) == "sessions" }.map { |item| item.fetch(:value) }
+        existing = @project.health_sessions.where(sid: sessions.filter_map { |item| item[:sid] }).index_by { |row| row.sid }
         changed = {}
+        now = Time.current
         sessions.each do |item|
           sid = item[:sid] || SecureRandom.uuid
           previous = changed[sid] || existing[sid]&.attributes&.symbolize_keys
@@ -49,6 +37,11 @@ module SessionHealth
           changed[sid] = session_row(previous, item, sid, digest, now)
         end
         Session.upsert_all(changed.values, unique_by: [ :project_id, :sid ], update_only: UPDATE_COLUMNS, record_timestamps: false) if changed.any?
+        if aggregates.any?
+          Aggregate.insert_all!(aggregates.map { |item| item.merge(project_id: @project.id, created_at: now, updated_at: now) })
+          counts[:accepted] += aggregates.size
+        end
+        Result.new(**counts)
       end
 
       def payload_digest(item)

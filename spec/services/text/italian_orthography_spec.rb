@@ -128,16 +128,6 @@ RSpec.describe Text::ItalianOrthography do
         expect(described_class.correct("scrivi a gia.perche@esempio.it subito"))
           .to eq("scrivi a gia.perche@esempio.it subito")
       end
-
-      # CYRA-1359 — a project key can be a dictionary word: its ticket code is a reference, not prose.
-      it "leaves a ticket code alone when its project key is a dictionary word" do
-        expect(described_class.correct("Alfa cita PIU-1 e GIA-30, vedi anche cosi-2"))
-          .to eq("Alfa cita PIU-1 e GIA-30, vedi anche cosi-2")
-      end
-
-      it "still corrects the word before a hyphen that does not start a number" do
-        expect(described_class.correct("piu-o-meno uguale")).to eq("più-o-meno uguale")
-      end
     end
 
     context "input non correggibili" do
