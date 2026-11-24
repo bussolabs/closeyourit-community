@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+## [0.245.1] - 2026-11-24
+
+### Changed
+
+- **Un agente che si arrende non finisce più nella tua coda**: il lavoro riprova una volta con l'altro motore. Se si ferma ancora, il ticket torna tra quelli da fare con una nota. Restano a te soldi, segreti, cancellazioni e i rilasci già approvati. (CYRA-1357) [Decisioni](/member/home/approvals)
+
+## [0.245.0] - 2026-11-24
+
+### Security
+
+- **Il controllo pubblico dei lavori in sottofondo non conta più tutta la coda a ogni chiamata**: il numero dei lavori in attesa si ferma a 10000 e la risposta dice quando il tetto è raggiunto. Chi lo chiama più di 60 volte al minuto dallo stesso indirizzo riceve «troppe richieste». Il guardiano esterno vede i guasti negli stessi tempi di prima. (CYRA-1273)
+
+## [0.244.0] - 2026-11-24
+
+### Security
+
+- **Il codice per collegare Telegram non è più leggibile nei dati salvati**: si salva solo un'impronta non reversibile, il codice vero esiste solo nel link mostrato alla persona. I codici già emessi vengono cancellati: chi aveva la pagina aperta la ricarica e riceve un codice nuovo. (CYRA-1264)
+
+## [0.243.3] - 2026-11-24
+
+### Fixed
+
+- **Un avviso di GitHub arrivato in ritardo non riapre più una proposta unita**: un avviso più vecchio dell'ultimo ricevuto non cambia più lo stato della proposta né la data di unione. Così sul ticket l'unione compare una volta sola e la chiusura automatica non riparte. Gli avvisi con lo stesso orario o senza orario cambiano lo stato come prima. (CYRA-1253)
+
+## [0.243.2] - 2026-11-23
+
+### Fixed
+
+- **Il controllo ping funziona anche con gli indirizzi IPv6**: un controllo ping verso un nome che ha solo indirizzi IPv6 restava in stato sconosciuto. Ora pinga l'indirizzo IPv6. Se il server non ha la rete IPv6, il controllo risulta non raggiungibile con il motivo `ipv6_unavailable`. Ogni altro errore di rete scrive comunque un esito. (CYRA-1239)
+
 ## [0.243.1] - 2026-11-23
 
 ### Changed

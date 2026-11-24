@@ -266,6 +266,152 @@ RSpec.describe Uptime::Ping, type: :service do
       it "dati vuoti → non reply" do
         expect(svc.send(:icmp_echo_reply?, "")).to be(false)
       end
+
+      it "ICMPv6: type 129 → reply (nessun header IP da saltare)" do
+        expect(svc.send(:icmp_echo_reply?, [ 129, 0 ].pack("C2"), ipv6: true)).to be(true)
+      end
+
+      it "ICMPv6: type 128 (request) o type 0 IPv4 → non reply" do
+        expect(svc.send(:icmp_echo_reply?, [ 128, 0 ].pack("C2"), ipv6: true)).to be(false)
+        expect(svc.send(:icmp_echo_reply?, [ 0, 0 ].pack("C2"), ipv6: true)).to be(false)
+      end
+    end
+
+    it "errore di rete generico (IPv4) → down con il nome dell'errore, mai un'eccezione" do
+      allow_any_instance_of(described_class).to receive(:icmp_reachable?).and_raise(Errno::EHOSTUNREACH)
+      r = described_class.call(monitor: ping)
+      expect(r.up).to be(false)
+      expect(r.error).to eq("ehostunreach")
+    end
+
+    it "IPv4 senza rotta → down con il nome dell'errore, non ipv6_unavailable" do
+      allow_any_instance_of(described_class).to receive(:icmp_reachable?).and_raise(Errno::ENETUNREACH)
+      r = described_class.call(monitor: ping)
+      expect(r.error).to eq("enetunreach")
+    end
+
+    it "IPv4: socket ICMP connesso all'IP pinnato, reply type 0 → up" do
+      socket = instance_double(Socket, connect: 0, send: 1, close: nil)
+      expect(Socket).to receive(:new).with(Socket::AF_INET, Socket::SOCK_DGRAM, Socket::IPPROTO_ICMP).and_return(socket)
+      expect(socket).to receive(:connect).with(Socket.sockaddr_in(0, "93.184.216.34"))
+      allow(socket).to receive(:wait_readable).with(5).and_return(socket)
+      allow(socket).to receive(:recvfrom).and_return([ [ 0, 0 ].pack("C2"), nil ])
+      expect(described_class.call(monitor: ping).up).to be(true)
+    end
+
+    it "pacchetto IPv4: type 8 con checksum valido" do
+      packet = described_class.new(monitor: ping).send(:icmp_echo_packet)
+      expect(packet.getbyte(0)).to eq(8)
+      expect(described_class.new(monitor: ping).send(:icmp_checksum, packet)).to eq(0)
+    end
+
+    # CYRA-1239: un host che risolve solo a IPv6 apriva comunque un socket IPv4 → eccezione, job fallito,
+    # nessun check scritto e monitor fermo in «unknown».
+    describe "verso un indirizzo IPv6" do
+      let(:ping6) { build(:uptime_monitor, :ping, host: "ipv6.example.com", timeout_seconds: 5) }
+
+      before { allow(NetworkGuard).to receive(:resolve).and_return([ "2606:2800:220:1:248:1893:25c8:1946" ]) }
+
+      it "pinga l'IP IPv6 pubblico risolto (pinnato, nessuna seconda risoluzione)" do
+        expect_any_instance_of(described_class).to receive(:icmp_reachable?)
+          .with("2606:2800:220:1:248:1893:25c8:1946", 5).and_return(true)
+        r = described_class.call(monitor: ping6)
+        expect(r.up).to be(true)
+        expect(r.response_time_ms).to be_a(Integer)
+        expect(NetworkGuard).to have_received(:resolve).once
+      end
+
+      it "apre un socket ICMPv6 per un IPv6, un socket ICMP per un IPv4" do
+        svc = described_class.new(monitor: ping6)
+        expect(Socket).to receive(:new).with(Socket::AF_INET6, Socket::SOCK_DGRAM, Socket::IPPROTO_ICMPV6)
+        svc.send(:icmp_socket, true)
+        expect(Socket).to receive(:new).with(Socket::AF_INET, Socket::SOCK_DGRAM, Socket::IPPROTO_ICMP)
+        svc.send(:icmp_socket, false)
+      end
+
+      it "riconosce la famiglia dall'IP risolto" do
+        svc = described_class.new(monitor: ping6)
+        expect(svc.send(:ipv6?, "2606:2800:220:1:248:1893:25c8:1946")).to be(true)
+        expect(svc.send(:ipv6?, "93.184.216.34")).to be(false)
+      end
+
+      it "invia un echo request ICMPv6 (type 128)" do
+        packet = described_class.new(monitor: ping6).send(:icmp_echo_packet, ipv6: true)
+        expect(packet.getbyte(0)).to eq(128)
+        expect(packet.getbyte(1)).to eq(0)
+      end
+
+      # Percorso completo senza stub di icmp_reachable?: solo il socket del sistema è finto.
+      it "socket ICMPv6 connesso all'IP pinnato, echo request 128 e reply 129 → up" do
+        socket = instance_double(Socket, connect: 0, send: 1, close: nil)
+        expect(Socket).to receive(:new).with(Socket::AF_INET6, Socket::SOCK_DGRAM, Socket::IPPROTO_ICMPV6).and_return(socket)
+        expect(socket).to receive(:connect).with(Socket.sockaddr_in(0, "2606:2800:220:1:248:1893:25c8:1946"))
+        expect(socket).to receive(:send).with(satisfy { |packet| packet.getbyte(0) == 128 }, 0)
+        allow(socket).to receive(:wait_readable).with(5).and_return(socket)
+        allow(socket).to receive(:recvfrom).and_return([ [ 129, 0 ].pack("C2") + "closeyourit", nil ])
+        r = described_class.call(monitor: ping6)
+        expect(r.up).to be(true)
+        expect(socket).to have_received(:close)
+      end
+
+      it "socket ICMPv6 senza risposta entro il timeout → down unreachable, socket chiuso" do
+        socket = instance_double(Socket, connect: 0, send: 1, close: nil, wait_readable: nil)
+        allow(Socket).to receive(:new).and_return(socket)
+        expect(described_class.call(monitor: ping6).error).to eq("unreachable")
+        expect(socket).to have_received(:close)
+      end
+
+      it "socket ICMPv6 che fallisce all'invio per rotta assente → ipv6_unavailable" do
+        socket = instance_double(Socket, connect: 0, close: nil)
+        allow(socket).to receive(:send).and_raise(Errno::ENETUNREACH)
+        allow(Socket).to receive(:new).and_return(socket)
+        expect(described_class.call(monitor: ping6).error).to eq("ipv6_unavailable")
+      end
+
+      it "nessuna risposta entro il timeout → down con error unreachable" do
+        allow_any_instance_of(described_class).to receive(:icmp_reachable?).and_return(false)
+        r = described_class.call(monitor: ping6)
+        expect(r.up).to be(false)
+        expect(r.error).to eq("unreachable")
+      end
+
+      it "server senza stack IPv6 → down con error ipv6_unavailable" do
+        allow(Socket).to receive(:new).and_raise(Errno::EAFNOSUPPORT)
+        r = described_class.call(monitor: ping6)
+        expect(r.up).to be(false)
+        expect(r.error).to eq("ipv6_unavailable")
+      end
+
+      it "server senza rotta IPv6 → down con error ipv6_unavailable" do
+        allow_any_instance_of(described_class).to receive(:icmp_reachable?).and_raise(Errno::ENETUNREACH)
+        expect(described_class.call(monitor: ping6).error).to eq("ipv6_unavailable")
+      end
+
+      it "ping senza privilegi su IPv6 → icmp_unavailable, come per IPv4" do
+        allow(Socket).to receive(:new).and_raise(Errno::EACCES)
+        expect(described_class.call(monitor: ping6).error).to eq("icmp_unavailable")
+      end
+
+      it "altro errore di rete → down con il nome dell'errore" do
+        allow_any_instance_of(described_class).to receive(:icmp_reachable?).and_raise(Errno::EHOSTUNREACH)
+        r = described_class.call(monitor: ping6)
+        expect(r.up).to be(false)
+        expect(r.error).to eq("ehostunreach")
+      end
+
+      it "blocca un IPv6 interno (SSRF) senza pingare" do
+        expect_any_instance_of(described_class).not_to receive(:icmp_reachable?)
+        %w[::1 fe80::1 fd00::1].each do |host|
+          r = described_class.call(monitor: build(:uptime_monitor, :ping, host:))
+          expect(r.error).to eq("blocked_address")
+        end
+      end
+
+      it "blocca un host con record misti IPv6 pubblico + interno" do
+        allow(NetworkGuard).to receive(:resolve).and_return([ "2606:2800:220:1:248:1893:25c8:1946", "fd00::1" ])
+        expect_any_instance_of(described_class).not_to receive(:icmp_reachable?)
+        expect(described_class.call(monitor: ping6).error).to eq("blocked_address")
+      end
     end
   end
 end

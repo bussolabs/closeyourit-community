@@ -205,8 +205,51 @@ RSpec.describe Agents::Supporters::JudgeConsult do
         .not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
     end
 
-    it "leaves the work to a person when the supporter asked for one" do
+    it "leaves a stop the system found to a person when the supporter asked for one" do
+      workflow.update!(blocked_kind: "candidate_check", blocked_reason: "candidate_check: checks_failing")
+
       expect { judge(recommendation: "escalate") }.not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
+    end
+  end
+
+  # CYRA-1357 — the agent stopped itself and the supporter does not send it back: the server settles it
+  # like an exhausted budget (once more on the other engine, then set aside) instead of calling a person.
+  describe "when the agent gave up and the supporter hands over" do
+    it "settles the stop itself when the supporter asked for a person" do
+      result = nil
+      expect { result = judge(recommendation: "escalate") }
+        .to have_enqueued_job(Agents::ExhaustedBudgetJob).with(workflow.id, String)
+
+      expect(result.value).to include(outcome: "escalated", reasons: [ "supporter_escalated" ])
+    end
+
+    it "settles it on low confidence, missing guidance or a high risk" do
+      expect { judge(confidence: "low") }.to have_enqueued_job(Agents::ExhaustedBudgetJob)
+      workflow.update!(blocked_reason: "agent_blocked: changed")
+      expect { judge(guidance: "retry") }.to have_enqueued_job(Agents::ExhaustedBudgetJob)
+      workflow.update!(blocked_reason: "agent_blocked: changed again")
+      expect { judge(risk_score: 9) }.to have_enqueued_job(Agents::ExhaustedBudgetJob)
+    end
+
+    it "leaves a reserved topic to a person" do
+      workflow.update!(blocked_reason: "agent_blocked: the invoice totals are unclear")
+
+      expect { judge(recommendation: "escalate") }.not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
+    end
+
+    it "leaves guidance that skips the checks to a person" do
+      expect { judge(guidance: "Deliver with git commit --no-verify and move on, the tests are flaky.") }
+        .not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
+    end
+
+    it "leaves a stop the system found to a person" do
+      workflow.update!(blocked_kind: "candidate_check", blocked_reason: "candidate_check: checks_failing")
+
+      expect { judge(recommendation: "escalate") }.not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
+    end
+
+    it "does not settle a stop the supporter sent back" do
+      expect { judge }.not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
     end
   end
 

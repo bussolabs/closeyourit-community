@@ -62,8 +62,15 @@ module Agents
         # CYRA-1327 — the supporter wanted to send the work back and the retries are finished: the
         # server settles the budget instead of calling a person. The verdict in the ledger stays what
         # the supporter said.
-        Agents::Workflows::ExhaustedBudget.settle_later_if_only_the_budget(workflow:, reasons: judged[:reasons])
+        settle_without_a_person(judged[:reasons]) if outcome == "escalated"
         decision
+      end
+
+      # One settlement at most: the budget rule first, then the agent's own stop (CYRA-1357).
+      def settle_without_a_person(reasons)
+        budget = Agents::Workflows::ExhaustedBudget
+        budget.settle_later_if_only_the_budget(workflow:, reasons:) ||
+          budget.settle_later_if_the_agent_gave_up(workflow:, reasons:)
       end
 
       def judgement

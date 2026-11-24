@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_23_110000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -128,13 +128,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_110000) do
 
   create_table "accounts_telegram_link_codes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "account_id", null: false
-    t.string "code", null: false
+    t.string "code_digest", null: false, comment: "SHA-256 del codice del deep-link: il codice in chiaro esiste solo nel link"
     t.datetime "created_at", null: false
     t.datetime "expires_at", null: false
     t.uuid "organization_id", comment: "Presente = il codice collega il gruppo con argomenti di questa organizzazione"
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_accounts_telegram_link_codes_on_account_id"
-    t.index ["code"], name: "index_accounts_telegram_link_codes_on_code", unique: true
+    t.index ["code_digest"], name: "index_accounts_telegram_link_codes_on_code_digest", unique: true
     t.index ["expires_at"], name: "index_accounts_telegram_link_codes_on_expires_at"
     t.index ["organization_id"], name: "index_accounts_telegram_link_codes_on_organization_id"
   end

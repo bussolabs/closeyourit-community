@@ -15,6 +15,11 @@
 # `stalled_lanes` dice quali. `ready_count` e `last_finished_at` sono i numeri globali, rimasti come
 # informazione. `stalled_lanes` sta prima di loro perché il guardiano copia nell'avviso solo l'inizio
 # della risposta: il nome della corsia ferma deve finirci dentro.
+#
+# `ready_count` si ferma a Ops::QueueThroughput::READY_COUNT_CAP e `ready_count_capped` dice quando
+# l'ha raggiunto (CYRA-1273): contare tutta la coda a ogni chiamata pubblica costava di più proprio a
+# coda piena. Per lo stesso motivo `stalled_lanes` legge una sola riga per coda, la testa, e mai tutta la
+# coda. Le chiamate ripetute dallo stesso indirizzo, GET o HEAD, le frena `workers_health/ip` (rack_attack).
 class WorkersHealthController < ActionController::Base
   def show
     heartbeat = Ops::WorkerLiveness.last_heartbeat_at
@@ -22,13 +27,15 @@ class WorkersHealthController < ActionController::Base
 
     stalled_lanes = Ops::QueueThroughput.stalled_lanes
     queue_stalled = stalled_lanes.any?
+    ready_count = Ops::QueueThroughput.ready_count
 
     render json: {
       workers: workers_up ? "up" : "down",
       last_heartbeat_at: heartbeat&.iso8601,
       queue: queue_stalled ? "stalled" : "up",
       stalled_lanes:,
-      ready_count: Ops::QueueThroughput.ready_count,
+      ready_count:,
+      ready_count_capped: Ops::QueueThroughput.ready_count_capped?(ready_count),
       last_finished_at: Ops::QueueThroughput.last_finished_at&.iso8601
     }, status: workers_up && !queue_stalled ? :ok : :service_unavailable
   end

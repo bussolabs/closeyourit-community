@@ -24,7 +24,7 @@ RSpec.describe Telegram::LinkGroup do
     group = Alerting::TelegramGroup.find_by!(organization: organization)
     expect(group).to have_attributes(account: owner, chat_id: "-100", title: "Avvisi")
     expect(reply).to have_been_requested
-    expect(Accounts::TelegramLinkCode.where(code: code)).to be_empty
+    expect(Accounts::TelegramLinkCode.where(code_digest: Accounts::TelegramLinkCode.digest(code))).to be_empty
   end
 
   it "gruppo senza argomenti → rifiutato con la spiegazione" do

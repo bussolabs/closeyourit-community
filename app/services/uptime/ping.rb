@@ -31,6 +31,16 @@ module Uptime
     # ricevuto NON porta l'header IP (a differenza del raw socket), quindi il primo byte è già il type ICMP.
     ICMP_ECHO_REQUEST = 8
     ICMP_ECHO_REPLY = 0
+    # ICMPv6 echo (RFC 4443): request type 128, reply type 129. Il checksum (con pseudo-header) lo calcola
+    # sempre il kernel, e il messaggio ricevuto non porta mai l'header IPv6 (CYRA-1239).
+    ICMPV6_ECHO_REQUEST = 128
+    ICMPV6_ECHO_REPLY = 129
+
+    # Il server non ha stack o rotta IPv6: il check non è eseguibile da qui. L'esito lo dice con un motivo
+    # dedicato (ipv6_unavailable), così non sembra un guasto del servizio monitorato.
+    IPV6_UNAVAILABLE_ERRORS = [
+      Errno::EAFNOSUPPORT, Errno::EPROTONOSUPPORT, Errno::ENETUNREACH, Errno::EADDRNOTAVAIL
+    ].freeze
 
     def initialize(monitor:)
       @monitor = monitor
@@ -137,26 +147,47 @@ module Uptime
       # ICMP unprivileged non consentito in questo ambiente (net.ipv4.ping_group_range non include il
       # gruppo del processo). Degrado esplicito: l'utente vede subito che il ping non è disponibile qui.
       down("icmp_unavailable")
+    rescue *IPV6_UNAVAILABLE_ERRORS => e
+      address && ipv6?(address) ? down("ipv6_unavailable") : down(e.class.name.demodulize.underscore)
+    rescue SystemCallError, SocketError, IOError => e
+      # Ogni altro errore di rete diventa un esito down registrabile, come per tcp: il job non fallisce più
+      # senza scrivere il check e il monitor non resta «unknown» (CYRA-1239).
+      down(e.class.name.demodulize.underscore)
     end
 
-    # ICMP echo via socket DATAGRAM (SOCK_DGRAM/IPPROTO_ICMP): non richiede root né CAP_NET_RAW, solo che
-    # l'host abbia net.ipv4.ping_group_range configurato. Il kernel riscrive l'identifier con la porta del
-    # socket e calcola il checksum; leggiamo il primo messaggio ricevuto e verifichiamo che sia un echo reply.
+    def ipv6?(address) = IPAddr.new(address).ipv6?
+
+    # ICMP echo via socket DATAGRAM (SOCK_DGRAM/IPPROTO_ICMP o IPPROTO_ICMPV6): non richiede root né
+    # CAP_NET_RAW, solo che l'host abbia net.ipv4.ping_group_range configurato (vale per entrambe le
+    # famiglie). La famiglia segue l'IP già validato e pinnato da NetworkGuard (CYRA-1239). Il kernel
+    # riscrive l'identifier con la porta del socket; leggiamo il primo messaggio e verifichiamo il reply.
     # simplecov:disable I/O di rete a basso livello — non eseguibile in CI (stubbato in ping_spec).
     def icmp_reachable?(address, timeout)
-      socket = Socket.new(Socket::AF_INET, Socket::SOCK_DGRAM, Socket::IPPROTO_ICMP)
+      ipv6 = ipv6?(address)
+      socket = icmp_socket(ipv6)
       socket.connect(Socket.sockaddr_in(0, address))
-      socket.send(icmp_echo_packet, 0)
+      socket.send(icmp_echo_packet(ipv6:), 0)
       return false unless socket.wait_readable(timeout)
 
       data, = socket.recvfrom(1500)
-      icmp_echo_reply?(data)
+      icmp_echo_reply?(data, ipv6:)
     ensure
       socket&.close
     end
 
-    def icmp_echo_packet
+    def icmp_socket(ipv6)
+      if ipv6
+        Socket.new(Socket::AF_INET6, Socket::SOCK_DGRAM, Socket::IPPROTO_ICMPV6)
+      else
+        Socket.new(Socket::AF_INET, Socket::SOCK_DGRAM, Socket::IPPROTO_ICMP)
+      end
+    end
+
+    def icmp_echo_packet(ipv6: false)
       payload = "closeyourit".b
+      # ICMPv6: checksum=0, lo calcola il kernel sul pseudo-header IPv6.
+      return [ ICMPV6_ECHO_REQUEST, 0, 0, 0, 1 ].pack("C2n3") + payload if ipv6
+
       # type, code, checksum=0 (placeholder), identifier=0 (kernel lo riscrive), sequence=1
       header = [ ICMP_ECHO_REQUEST, 0, 0, 0, 1 ].pack("C2n3")
       checksum = icmp_checksum(header + payload)
@@ -175,8 +206,10 @@ module Uptime
     # È un echo reply (type 0)? Portabilità: su Linux il socket ICMP datagram consegna il solo messaggio
     # ICMP, ma su Darwin (e sui raw socket) il messaggio è preceduto dall'header IPv4 → va saltato
     # (IHL * 4 byte, riconosciuto dal nibble di versione == 4) prima di leggere il byte del type.
-    def icmp_echo_reply?(data)
+    # ICMPv6 non porta mai l'header IP (RFC 3542 §3), e il reply ha type 129.
+    def icmp_echo_reply?(data, ipv6: false)
       return false if data.blank?
+      return data.getbyte(0) == ICMPV6_ECHO_REPLY if ipv6
 
       first = data.getbyte(0)
       offset = (first >> 4) == 4 ? (first & 0x0F) * 4 : 0

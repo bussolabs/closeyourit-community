@@ -69,17 +69,22 @@ module Github
       # aveva già scritto, invece di cancellarlo. Stessa scelta già in uso per titolo, indirizzo e
       # collegamento al ticket. Fuori dalla regola resta merged_at: lì il valore vuoto è informativo
       # (proposta non unita) e deve poter tornare indietro.
+      #
+      # CYRA-1253 — stato e merged_at li scrive solo una consegna non anteriore a quella già
+      # registrata: una vecchia che dava la proposta aperta, arrivata dopo l'unione, la riapriva, e la
+      # consegna successiva registrava l'unione una seconda volta e riprovava a chiudere il ticket. Il
+      # confronto va fatto prima di assign_head_sha, che sposta l'orario salvato.
       def assign_pull_attributes(record, pr, number, ticket)
+        stale = stale_delivery?(record, pr)
         record.assign_attributes(
           title: value_at(pr, "title").presence || record.title.presence || "##{number}",
-          state: state_for(pr),
           head_ref: value_at(pr, "head", "ref").presence || record.head_ref,
           base_ref: value_at(pr, "base", "ref").presence || record.base_ref,
           html_url: value_at(pr, "html_url").presence || record.html_url,
           github_id: value_at(pr, "id").presence || record.github_id,
-          author_login: value_at(pr, "user", "login").presence || record.author_login,
-          merged_at: value_at(pr, "merged_at")
+          author_login: value_at(pr, "user", "login").presence || record.author_login
         )
+        record.assign_attributes(state: state_for(pr), merged_at: value_at(pr, "merged_at")) unless stale
         assign_head_sha(record, pr)
         record.ticket = ticket if ticket # non azzera un link già presente se il webhook non lo porta
       end
@@ -92,17 +97,22 @@ module Github
       # Un payload senza orario non si può ordinare: in quel caso si scrive solo a colonna vuota,
       # mai sopra un valore che qualcuno ha già messo con un orologio in mano.
       #
-      # La guardia vale su questi due campi soltanto. Stato, eventi e chiusura automatica restano
-      # come sono: lì una consegna fuori ordine ha già le sue difese, e allargare la regola
-      # cambierebbe comportamenti che nessuno ha chiesto di cambiare.
+      # Lo stesso confronto protegge anche stato e merged_at (CYRA-1253), vedi assign_pull_attributes.
       def assign_head_sha(record, pr)
         delivery_time = parse_time(value_at(pr, "updated_at"))
         return if delivery_time.nil? && record.head_sha.present?
-        return if delivery_time && record.github_updated_at && delivery_time < record.github_updated_at
+        return if stale_delivery?(record, pr)
 
         sha = value_at(pr, "head", "sha")
         record.head_sha = sha if sha.present?
         record.github_updated_at = delivery_time if delivery_time
+      end
+
+      # Anteriore in senso stretto: a parità di orario la consegna non si scarta. Senza orario non si
+      # può ordinare, quindi non vale come vecchia.
+      def stale_delivery?(record, pr)
+        delivery_time = parse_time(value_at(pr, "updated_at"))
+        delivery_time.present? && record.github_updated_at.present? && delivery_time < record.github_updated_at
       end
 
       # Un orario illeggibile (o impossibile, tipo un mese 13) vale come consegna senza orario: non si

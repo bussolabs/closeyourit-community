@@ -319,6 +319,14 @@ class Rack::Attack
     req.ip if req.get? && req.path.start_with?("/status/")
   end
 
+  # Throttle di /up/workers PUBBLICO per IP (CYRA-1273) — ogni chiamata interroga la coda dei job, e
+  # senza freno uno script in ciclo la interroga quanto vuole. Gemello di public_status/ip: 60 al
+  # minuto. Il guardiano esterno (.github/workflows/workers-watchdog.yml) ne fa al massimo 3 ogni 5'.
+  # Anche HEAD: Rails lo serve con l'azione della rotta GET, che fa le stesse domande alla coda.
+  throttle("workers_health/ip", limit: 60, period: 1.minute) do |req|
+    req.ip if (req.get? || req.head?) && req.path.start_with?("/up/workers")
+  end
+
   # Throttle aperture statistiche condivise PUBBLICHE per IP — /share/analytics/:slug è un link
   # capability incollabile in una pagina o dentro un iframe: ogni GET ricalcola da zero decine di
   # aggregati pesanti sull'intero storico (Analytics::Snapshot) sullo stesso DB che riceve gli errori

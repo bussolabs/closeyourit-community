@@ -31,6 +31,15 @@ RSpec.describe Agents::Workflows::ExhaustedBudget do
                                        blocked_at: nil, cancelled_at: nil)
     end
 
+    # CYRA-1357 — an agent's own stop is settled the same way.
+    it "restarts a stop the agent declared itself" do
+      attempt_on("claude")
+      stop!(kind: "agent_blocked")
+
+      expect(described_class.call(workflow:).value).to eq(:restarted)
+      expect(ticket.reload.agent_workflow.budget_restart_engine).to eq("codex")
+    end
+
     it "hands the work to claude when codex is the engine that failed" do
       attempt_on("codex")
       stop!

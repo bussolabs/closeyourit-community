@@ -62,6 +62,18 @@ module Agents
         true
       end
 
+      # CYRA-1357 — the agent stopped itself and the supporter did not send it back: settled like an
+      # exhausted budget instead of waiting for a person. A reason only a person owns keeps the hand-over.
+      PERSON_OWNED_REASONS = %w[reserved_topic bypass_suspected ticket_concluded].freeze
+
+      def self.settle_later_if_the_agent_gave_up(workflow:, reasons:)
+        return false unless workflow.blocked_kind == "agent_blocked"
+        return false if reasons.empty? || (reasons & PERSON_OWNED_REASONS).any?
+
+        settle_later(workflow)
+        true
+      end
+
       # `digest:` is the state the settlement was decided on (see .settle_later); nil skips the check,
       # for a caller that settles what it is reading right now.
       def initialize(workflow:, digest: nil)

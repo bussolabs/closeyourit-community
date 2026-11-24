@@ -38,7 +38,7 @@ RSpec.describe "Telegram webhook", type: :request do
       expect(account.reload.telegram_chat_id).to eq("424242")
       expect(account.telegram_username).to eq("mario")
       expect(account.telegram_linked_at).to be_present
-      expect(Accounts::TelegramLinkCode.where(code: code)).to be_empty # single-use
+      expect(Accounts::TelegramLinkCode.where(code_digest: Accounts::TelegramLinkCode.digest(code))).to be_empty # single-use
     end
 
     it "/start con codice invalido non collega nulla (200, niente retry di Telegram)" do
@@ -46,6 +46,35 @@ RSpec.describe "Telegram webhook", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(Accounts::Account.where(telegram_chat_id: "999")).to be_empty
+    end
+
+    # CYRA-1264 — il codice si salva solo come impronta: collega una volta, poi non vale più.
+    it "/start col codice collega, il dato salvato non contiene il codice e il riuso non collega" do
+      code = Accounts::TelegramLinkCode.issue(account: account)
+      stored = Accounts::TelegramLinkCode.connection.select_rows("SELECT * FROM accounts_telegram_link_codes")
+      expect(stored.flatten.map(&:to_s)).to all(satisfy { |value| !value.include?(code) })
+
+      post_update({ text: "/start #{code}", chat: { id: 424_243 } })
+      expect(account.reload.telegram_chat_id).to eq("424243")
+
+      account.update!(telegram_chat_id: nil, telegram_linked_at: nil)
+      post_update({ text: "/start #{code}", chat: { id: 424_244 } })
+
+      expect(response).to have_http_status(:ok)
+      expect(Accounts::Account.where(telegram_chat_id: "424244")).to be_empty
+      expect(account.reload.telegram_chat_id).to be_nil
+    end
+
+    it "/start con un codice scaduto o mai emesso non collega nulla" do
+      Accounts::TelegramLinkCode.create!(account: account, code_digest: Accounts::TelegramLinkCode.digest("scaduto-123"),
+                                         expires_at: 61.minutes.ago)
+
+      post_update({ text: "/start scaduto-123", chat: { id: 801 } })
+      post_update({ text: "/start #{SecureRandom.urlsafe_base64(24)}", chat: { id: 802 } })
+
+      expect(response).to have_http_status(:ok)
+      expect(Accounts::Account.where(telegram_chat_id: %w[801 802])).to be_empty
+      expect(account.reload.telegram_chat_id).to be_nil
     end
 
     it "un chat_id già legato altrove viene spostato al nuovo account (un chat_id = un account)" do

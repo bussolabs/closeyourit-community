@@ -72,13 +72,28 @@ RSpec.describe "Github::Webhooks — il codice dentro la proposta" do
     expect(consegna(sha: "a" * 40, updated_at: nil).head_sha).to eq("b" * 40)
   end
 
-  # La guardia vale su questi due campi soltanto: allargarla cambierebbe comportamenti che nessuno
-  # ha chiesto di cambiare, e la chiusura di una proposta è uno di quelli.
-  it "una consegna vecchia aggiorna comunque lo stato, come prima" do
+  # CYRA-1253 — rovesciato di proposito: qui si pretendeva che una consegna vecchia cambiasse
+  # comunque lo stato. Così una vecchia «aperta» arrivata dopo l'unione riapriva la proposta, e
+  # l'unione finiva registrata due volte sul ticket. Ora lo stato segue lo stesso orologio del codice.
+  it "una consegna vecchia NON cambia lo stato" do
     consegna(sha: "b" * 40, updated_at: "2026-08-19T10:05:00Z")
     pull = consegna(sha: "a" * 40, updated_at: "2026-08-19T10:00:00Z", action: "closed")
 
-    expect(pull.state).to eq("closed")
+    expect(pull.state).to eq("open")
     expect(pull.head_sha).to eq("b" * 40)
+  end
+
+  # Si scartano solo le consegne strettamente più vecchie: a parità di orario non c'è niente che
+  # dica quale delle due sia l'ultima, e scartarla potrebbe perdere un cambio vero.
+  it "una consegna con lo stesso orario cambia lo stato" do
+    consegna(sha: "b" * 40, updated_at: "2026-08-19T10:05:00Z")
+
+    expect(consegna(sha: "b" * 40, updated_at: "2026-08-19T10:05:00Z", action: "closed").state).to eq("closed")
+  end
+
+  it "una consegna senza orario cambia lo stato, come prima" do
+    consegna(sha: "b" * 40, updated_at: "2026-08-19T10:05:00Z")
+
+    expect(consegna(sha: "b" * 40, updated_at: nil, action: "closed").state).to eq("closed")
   end
 end

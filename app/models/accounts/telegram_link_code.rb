@@ -5,6 +5,8 @@ module Accounts
   # (generates_token_for), che a 238 char non entra nel parametro `start` di Telegram (max 64,
   # solo [A-Za-z0-9_-]). Il codice è url-safe (32 char), scade, e viene consumato (single-use)
   # al collegamento. Vive nel primary DB (condiviso tra container, a differenza di Solid Cache).
+  # Si salva solo lo SHA-256 del codice, come per AiGateway::Key: il codice in chiaro esiste solo nel
+  # link mostrato alla persona (CYRA-1264). Casuale e lungo, non serve un hash lento.
   class TelegramLinkCode < ApplicationRecord
     # Il namespace Accounts non ha table_name_prefix (Accounts::Account → "accounts"); nome esplicito.
     self.table_name = "accounts_telegram_link_codes"
@@ -18,12 +20,16 @@ module Accounts
 
     scope :active, -> { where(expires_at: Time.current..) }
 
+    def self.digest(code) = Digest::SHA256.hexdigest(code.to_s)
+
     # Conia un nuovo codice per l'account (purga i scaduti al volo, niente job dedicato) e restituisce
-    # la stringa da mettere nel deep-link. Regenera in caso di collisione (improbabilissima).
+    # la stringa da mettere nel deep-link: è l'unica volta che esiste in chiaro. Regenera in caso di
+    # collisione (improbabilissima).
     def self.issue(account:, organization: nil, ttl: Accounts::Constants::TTL_TELEGRAM_LINK)
       where(expires_at: ..Time.current).delete_all
-      create!(account: account, organization: organization,
-              code: SecureRandom.urlsafe_base64(CODE_BYTES), expires_at: ttl.from_now).code
+      code = SecureRandom.urlsafe_base64(CODE_BYTES)
+      create!(account: account, organization: organization, code_digest: digest(code), expires_at: ttl.from_now)
+      code
     rescue ActiveRecord::RecordNotUnique
       retry
     end
@@ -41,7 +47,7 @@ module Accounts
     def self.take(scope, code)
       return nil if code.blank?
 
-      scope.includes(:account, :organization).find_by(code: code)&.destroy
+      scope.includes(:account, :organization).find_by(code_digest: digest(code))&.destroy
     end
     private_class_method :take
   end

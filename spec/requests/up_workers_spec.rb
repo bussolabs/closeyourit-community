@@ -270,5 +270,64 @@ RSpec.describe "Workers health", type: :request do
         response.parsed_body["stalled_lanes"].each { |lane| expect(copied).to include(%("#{lane}")) }
       end
     end
+
+    # -------------------------------------------------------------------------------------------
+    # Conteggio con un tetto (CYRA-1273)
+    # -------------------------------------------------------------------------------------------
+    describe "conteggio dei lavori pronti" do
+      let(:cap) { Ops::QueueThroughput::READY_COUNT_CAP }
+
+      # Una coda vera oltre il tetto, scritta in blocco: diecimila create! una per una sarebbero
+      # minuti di prova per un setup che il motore stesso fa con insert_all.
+      def fill_queue(size, queue_name: "uptime", waiting_since: 1.minute.ago)
+        jobs = Array.new(size) do
+          { queue_name:, class_name: "Uptime::CheckJob", priority: 0, active_job_id: SecureRandom.uuid,
+            arguments: { "arguments" => [] } }
+        end
+        ids = SolidQueue::Job.insert_all!(jobs, returning: %w[id]).rows.flatten
+        SolidQueue::ReadyExecution.insert_all!(ids.map { |job_id| { job_id:, queue_name:, priority: 0, created_at: waiting_since } })
+      end
+
+      before { register_process(last_heartbeat_at: Time.current) }
+
+      it "il tetto è di 10000 lavori" do
+        expect(cap).to eq(10_000)
+      end
+
+      it "con più lavori del tetto riporta il tetto e dice che è stato raggiunto" do
+        fill_queue(cap + 1)
+
+        get "/up/workers"
+
+        expect(response.parsed_body["ready_count"]).to eq(cap)
+        expect(response.parsed_body["ready_count_capped"]).to be(true)
+      end
+
+      it "sotto il tetto riporta il numero esatto e il tetto non è raggiunto" do
+        fill_queue(3)
+
+        get "/up/workers"
+
+        expect(response.parsed_body["ready_count"]).to eq(3)
+        expect(response.parsed_body["ready_count_capped"]).to be(false)
+      end
+
+      it "a coda vuota il tetto non è raggiunto" do
+        get "/up/workers"
+
+        expect(response.parsed_body["ready_count"]).to eq(0)
+        expect(response.parsed_body["ready_count_capped"]).to be(false)
+      end
+
+      it "con la coda oltre il tetto ferma da 11 minuti resta 503 e nomina la corsia" do
+        fill_queue(cap + 1, waiting_since: 11.minutes.ago)
+
+        get "/up/workers"
+
+        expect(response).to have_http_status(:service_unavailable)
+        expect(response.parsed_body["stalled_lanes"]).to eq([ realtime_lane ])
+        expect(response.parsed_body["ready_count_capped"]).to be(true)
+      end
+    end
   end
 end

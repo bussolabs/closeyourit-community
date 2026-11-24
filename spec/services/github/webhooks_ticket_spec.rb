@@ -140,6 +140,59 @@ RSpec.describe "Github::Webhooks — branch/PR ↔ ticket" do
         .not_to change { ticket.events.where(action: "pull_request_merged").count }
     end
 
+    # CYRA-1253 — la coda lavora più consegne insieme, quindi una vecchia può arrivare dopo
+    # l'unione. Prima la proposta tornava aperta e la consegna successiva registrava l'unione una
+    # seconda volta, riprovando anche a chiudere il ticket.
+    describe "consegne fuori ordine" do
+      def unione
+        pr("merged" => true, "state" => "closed", "merged_at" => "2026-11-20T10:05:00Z",
+           "updated_at" => "2026-11-20T10:05:00Z")
+      end
+
+      def stato_della_proposta
+        repository.pull_requests.find_by(number: 5)
+      end
+
+      it "un avviso vecchio di apertura dopo l'unione lascia la proposta unita, con l'unione registrata una volta" do
+        described_class.call(payload: pr_payload(action: "closed", pr: unione))
+        described_class.call(payload: pr_payload(action: "edited", pr: pr("updated_at" => "2026-11-20T10:00:00Z")))
+
+        expect(stato_della_proposta.state).to eq("merged")
+        expect(stato_della_proposta.merged_at).to eq(Time.zone.parse("2026-11-20T10:05:00Z"))
+        expect(ticket.events.where(action: "pull_request_merged").count).to eq(1)
+      end
+
+      it "un avviso vecchio non cambia lo stato di una proposta chiusa senza unione" do
+        described_class.call(payload: pr_payload(action: "closed",
+                                                 pr: pr("state" => "closed", "updated_at" => "2026-11-20T10:05:00Z")))
+        described_class.call(payload: pr_payload(action: "edited", pr: pr("updated_at" => "2026-11-20T10:00:00Z")))
+
+        expect(stato_della_proposta.state).to eq("closed")
+        expect(ticket.events.where(action: "pull_request_closed").count).to eq(1)
+      end
+
+      it "unione, avviso vecchio e di nuovo unione: un solo evento di unione e una sola chiusura tentata" do
+        repository.update!(autoclose_on_merge: true)
+        create(:ticket_status, :done, organization:)
+        allow(Ticketing::ChangeStatus).to receive(:call).and_call_original
+
+        described_class.call(payload: pr_payload(action: "closed", pr: unione))
+        described_class.call(payload: pr_payload(action: "edited", pr: pr("updated_at" => "2026-11-20T10:00:00Z")))
+        described_class.call(payload: pr_payload(action: "closed", pr: unione))
+
+        expect(ticket.events.where(action: "pull_request_merged").count).to eq(1)
+        expect(Ticketing::ChangeStatus).to have_received(:call).once
+      end
+
+      it "un avviso più recente riapre una proposta chiusa senza unione" do
+        described_class.call(payload: pr_payload(action: "closed",
+                                                 pr: pr("state" => "closed", "updated_at" => "2026-11-20T10:05:00Z")))
+        described_class.call(payload: pr_payload(action: "reopened", pr: pr("updated_at" => "2026-11-20T10:10:00Z")))
+
+        expect(stato_della_proposta.state).to eq("open")
+      end
+    end
+
     it "non raddoppia pull_request_opened se la PR è già registrata (aperta da CloseYourIt)" do
       create(:github_pull_request, repository:, ticket:, number: 5, state: :open)
 

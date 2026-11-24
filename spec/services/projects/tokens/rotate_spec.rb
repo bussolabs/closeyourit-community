@@ -42,8 +42,10 @@ RSpec.describe Projects::Tokens::Rotate, type: :service do
     end
 
     it "ruotare un token GIÀ scaduto riparte dalla stessa durata invece di fallire" do
-      scaduto = create(:project_token, :expired, project:, expires_at: 30.days.ago)
-      scaduto.update_column(:created_at, 60.days.ago)
+      # Exact seconds on both ends: 60.days.ago and 30.days.ago straddling a daylight saving change
+      # are 30 days +/- 1 hour apart.
+      scaduto = create(:project_token, :expired, project:, expires_at: Time.current - (30 * 86_400))
+      scaduto.update_column(:created_at, Time.current - (60 * 86_400))
 
       nuovo = described_class.call(token: scaduto, host:).value[:new][:token]
 

@@ -448,7 +448,7 @@ RSpec.describe "Member::AlertingPreferences", type: :request do
       link = Nokogiri::HTML(response.body).at_css("[data-test='telegram-group-connect']")
       expect(link["href"]).to match(%r{\Ahttps://t\.me/closeyourit_bot\?startgroup=[\w-]+&admin=manage_topics\z})
       code = link["href"][/startgroup=([\w-]+)/, 1]
-      expect(Accounts::TelegramLinkCode.find_by(code: code).organization).to eq(organization)
+      expect(Accounts::TelegramLinkCode.find_by(code_digest: Accounts::TelegramLinkCode.digest(code)).organization).to eq(organization)
     end
 
     it "chi non è owner non vede la scheda" do
