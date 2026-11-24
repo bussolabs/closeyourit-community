@@ -2,6 +2,37 @@
 
 ## [Unreleased]
 
+## [0.246.2] - 2026-11-24
+
+### Fixed
+
+- **Un motore senza credito non blocca più i rilasci**: se il motore scelto per una fase ha finito il credito su una macchina, quella fase la fa il motore abituale della macchina. Prima il rilascio falliva a ripetizione finché il credito non tornava. [Agenti](/member/agents)
+- **I codici dei ticket non vengono più «corretti»**: se la sigla di un progetto è uguale a una parola italiana senza accento (per esempio PIU), il codice citato in un ticket resta com'è. Prima diventava PIÙ-1 e la ricerca per codice non trovava più chi lo citava. [Ticket](/member/tickets)
+
+## [0.246.1] - 2026-11-24
+
+### Fixed
+
+- **Il documento dei controlli automatici dice quando partono i test**: la suite completa gira su ogni proposta di modifica e su ogni modifica al ramo principale, non solo sui rilasci. Una prova automatica fallisce se il documento torna a negarlo. (CYRA-1269)
+
+## [0.246.0] - 2026-11-24
+
+### Changed
+
+- **Molte app avviate insieme non fanno più la fila**: i dati delle sessioni di uno stesso progetto si salvano in parallelo. Una richiesta aspetta solo se un'altra sta scrivendo la stessa sessione. I conteggi e i numeri sulla salute delle sessioni restano quelli di prima. (CYRA-1251)
+
+## [0.245.3] - 2026-11-24
+
+### Fixed
+
+- **Un valore troppo lungo non fa più perdere i log**: se un log arriva con un codice, un ambiente o una versione lunghissimi, quel valore viene accorciato e il log si salva. Prima si perdeva l'intero invio, fino a mille log. Vale anche per errori e visite. (CYRA-1244)
+
+## [0.245.2] - 2026-11-24
+
+### Fixed
+
+- **Collegamento GitHub più affidabile**: gli avvisi già elaborati vengono riconosciuti anche molto tempo dopo e non scollegano di nuovo l'organizzazione. Le lavorazioni interrotte vengono recuperate automaticamente.
+
 ## [0.245.1] - 2026-11-24
 
 ### Changed

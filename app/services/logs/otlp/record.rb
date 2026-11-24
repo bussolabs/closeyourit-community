@@ -78,15 +78,22 @@ module Logs
         environment = resource.key?("deployment.environment.name") ? resource["deployment.environment.name"] : resource["deployment.environment"]
         {
           project_id: @project.id, event_id: event_id, level: Logs::Entry.levels.fetch(level), message: message,
-          data: { "otlp_attributes" => log.fetch("attributes") }, logger_name: snapshot.fetch(:instrumentation_scope)["name"].presence,
+          data: { "otlp_attributes" => log.fetch("attributes") }, logger_name: short_field(snapshot.fetch(:instrumentation_scope)["name"]).presence,
           trace_id: log["traceId"].presence, span_id: log["spanId"].presence, trace_id_extracted: false,
-          environment: environment, release: resource["service.version"], occurred_at: occurred_at, created_at: now,
+          environment: short_field(environment), release: short_field(resource["service.version"]), occurred_at: occurred_at, created_at: now,
           signal_source: "otlp", severity_number: log.fetch("severityNumber"), severity_text: log.fetch("severityText"),
           event_time_unix_nano: event_ns.to_s, observed_time_unix_nano: observed_ns.to_s,
           otlp_payload: stored_payload(snapshot, resource), payload_digest: digest,
           error_event_id: snapshot[:error_event_id] || (SecureRandom.hex(16) if snapshot[:exception]),
           fingerprint: Logs::Fingerprint.call(message: message, level: level)
         }
+      end
+
+      # CYRA-1244 — stesso tetto dei log delle nostre librerie: ambiente, versione e nome della sorgente
+      # vanno in colonne indicizzate e un valore enorme farebbe rifiutare l'intero invio. Il valore
+      # integro resta nel payload conservato; nil resta nil (un attributo assente non diventa "").
+      def short_field(value)
+        value.nil? ? nil : ::Ingest::Normalization.clean_text(value, Logs::Ingest::Normalize::FIELD_MAX)
       end
 
       def stored_payload(snapshot, resource)

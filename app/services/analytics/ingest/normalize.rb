@@ -20,6 +20,10 @@ module Analytics
 
       UTM_MAX_LENGTH = 150
       NAME_MAX_LENGTH = 120
+      # CYRA-1244 — tetto dei campi brevi (codice della visita, sito, ambiente) e, più largo, della
+      # pagina. Queste colonne oggi non sono indicizzate: è una difesa, come per i log e gli errori.
+      FIELD_MAX = 255
+      PATH_MAX_LENGTH = 2048
       DEFAULT_ENVIRONMENT = "production"
       # Nome dell'evento "visita pagina"; un name diverso è un custom event (goal/conversione).
       PAGEVIEW_NAME = "pageview"
@@ -38,7 +42,7 @@ module Analytics
       def call
         host = hostname
         Normalized.new(
-          event_id: @payload["event_id"].to_s.presence || SecureRandom.uuid,
+          event_id: ::Ingest::Normalization.clean_text(@payload["event_id"], FIELD_MAX).presence || SecureRandom.uuid,
           name: event_name,
           hostname: host,
           path: path,
@@ -49,7 +53,7 @@ module Analytics
           utm_term: utm("utm_term"),
           utm_content: utm("utm_content"),
           screen_class: screen_class,
-          environment: @payload["environment"].to_s.presence || DEFAULT_ENVIRONMENT,
+          environment: ::Ingest::Normalization.clean_text(@payload["environment"], FIELD_MAX).presence || DEFAULT_ENVIRONMENT,
           occurred_at: parse_time(@payload["occurred_at"]),
           properties: Properties.call(raw: @payload["properties"])
         )
@@ -58,7 +62,7 @@ module Analytics
       private
 
       def hostname
-        @payload["hostname"].to_s.strip.downcase
+        ::Ingest::Normalization.clean_text(@payload["hostname"].to_s.strip.downcase, FIELD_MAX)
       end
 
       # Solo pathname: la query/fragment non devono viaggiare (contratto SDK), ma un client custom
@@ -67,7 +71,7 @@ module Analytics
         raw = @payload["path"].to_s.strip.split(/[?#]/, 2).first.to_s
         return "" if raw.blank?
 
-        raw.start_with?("/") ? raw : "/#{raw}"
+        ::Ingest::Normalization.clean_text(raw.start_with?("/") ? raw : "/#{raw}", PATH_MAX_LENGTH)
       end
 
       # document.referrer è un URL assoluto: si estrae il solo hostname. Referrer same-host =

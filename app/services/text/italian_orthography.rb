@@ -116,9 +116,10 @@ module Text
     # Le chiavi lunghe prima: l'alternanza si ferma alla prima che matcha.
     WORDS_SOURCE = Regexp.union(CORRECTIONS.keys.sort_by { |word| -word.length }).source
 
+    # CYRA-1359 — a word followed by "-<digit>" is the project key of a ticket code (PIU-1), not prose.
     SCANNER = Regexp.new(
       "(?<skip>#{PROTECTED_SOURCE})|" \
-      "(?<![[:alnum:]_])(?<word>#{WORDS_SOURCE})(?<mark>['’])?(?![[:alnum:]_])",
+      "(?<![[:alnum:]_])(?<word>#{WORDS_SOURCE})(?<mark>['’])?(?![[:alnum:]_])(?!-\\d)",
       Regexp::IGNORECASE | Regexp::MULTILINE
     )
 

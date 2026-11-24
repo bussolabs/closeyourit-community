@@ -421,4 +421,35 @@ RSpec.describe Errors::Ingest::Normalize, type: :service do
       expect(n.payload.to_json).not_to include("SECRET")
     end
   end
+
+  # CYRA-1244 — i campi brevi finiscono in colonne indicizzate e la versione nell'indice unico delle
+  # release: un valore enorme si accorcia al tetto invece di far fallire il salvataggio.
+  describe "tetto dei campi brevi" do
+    let(:max) { described_class::FIELD_MAX }
+
+    it "accorcia codice, tracciamento, ambiente, versione e server oltre il tetto" do
+      n = normalize(
+        "event_id" => "e" * 5000, "trace_id" => "t" * 5000, "environment" => "p" * 5000,
+        "release" => "v" * 5000, "server_name" => "s" * 5000, "message" => "disk full"
+      )
+      expect(n.event_id).to eq("e" * max)
+      expect(n.trace_id).to eq("t" * max)
+      expect(n.environment).to eq("p" * max)
+      expect(n.release).to eq("v" * max)
+      expect(n.server_name).to eq("s" * max)
+      expect(n.title).to eq("disk full")
+    end
+
+    it "accorcia anche il codice di tracciamento annidato degli SDK Sentry" do
+      n = normalize("contexts" => { "trace" => { "trace_id" => "t" * 5000 } })
+      expect(n.trace_id).to eq("t" * max)
+    end
+
+    it "lascia identico un valore di lunghezza normale" do
+      n = normalize("event_id" => "a" * 32, "trace_id" => "b" * 32, "environment" => "production",
+                    "release" => "v1.2.3", "server_name" => "web-1")
+      expect(n).to have_attributes(event_id: "a" * 32, trace_id: "b" * 32, environment: "production",
+                                   release: "v1.2.3", server_name: "web-1")
+    end
+  end
 end

@@ -324,4 +324,40 @@ RSpec.describe Logs::Ingest::Normalize do
       end
     end
   end
+
+  # CYRA-1244 — un campo breve enorme farebbe rifiutare la riga al database e, con l'insert_all,
+  # l'intero invio: si accorcia al tetto prima di salvare.
+  describe "tetto dei campi brevi" do
+    let(:max) { described_class::FIELD_MAX }
+
+    it "accorcia codice, tracciamento, ambiente, versione e sorgente oltre il tetto" do
+      n = normalize(
+        "message" => "x", "event_id" => "e" * 5000, "trace_id" => "t" * 5000,
+        "environment" => "p" * 5000, "release" => "v" * 5000, "logger" => "l" * 5000
+      )
+      expect(n.event_id).to eq("e" * max)
+      expect(n.trace_id).to eq("t" * max)
+      expect(n.environment).to eq("p" * max)
+      expect(n.release).to eq("v" * max)
+      expect(n.logger_name).to eq("l" * max)
+      expect(n.message).to eq("x")
+    end
+
+    it "lascia identico, carattere per carattere, un valore di lunghezza normale" do
+      values = {
+        "event_id" => "4f1c2d3e-aaaa-4bbb-8ccc-0123456789ab", "trace_id" => "a1b2c3d4e5f60718293a4b5c6d7e8f90",
+        "environment" => "staging-eu", "release" => "v2.41.0+build.7", "logger" => "Rails::Worker"
+      }
+      n = normalize(values.merge("message" => "ok"))
+      expect(n.event_id).to eq(values["event_id"])
+      expect(n.trace_id).to eq(values["trace_id"])
+      expect(n.environment).to eq(values["environment"])
+      expect(n.release).to eq(values["release"])
+      expect(n.logger_name).to eq(values["logger"])
+    end
+
+    it "non accorcia un valore lungo esattamente quanto il tetto" do
+      expect(normalize("message" => "x", "trace_id" => "t" * max).trace_id).to eq("t" * max)
+    end
+  end
 end

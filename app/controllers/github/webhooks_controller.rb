@@ -4,11 +4,7 @@ require "openssl"
 require "json"
 
 module Github
-  # Webhook inbound della GitHub App (canale Github::, rules/backend-channels.md). Machine POST JSON:
-  # eredita da ActionController::API (niente CSRF né allow_browser). Il gate è la firma HMAC
-  # X-Hub-Signature-256 = "sha256="+HMAC-SHA256(GH_WEBHOOK_SECRET, raw body), confrontata in tempo
-  # costante. Firma errata/assente → 404 (nasconde l'endpoint). Su firma valida accoda il processing
-  # su Solid Queue e risponde SEMPRE 204 (anche sugli eventi ignorati), così GitHub non ritenta.
+  # Authenticate the raw body before recording a permanent receipt or enqueueing work.
   class WebhooksController < ActionController::API
     SIGNATURE_HEADER = "X-Hub-Signature-256"
     EVENT_HEADER = "X-GitHub-Event"
@@ -16,8 +12,14 @@ module Github
     before_action :verify_signature
 
     def create
-      Github::WebhookJob.perform_later(event: request.headers[EVENT_HEADER].to_s, payload: parsed_payload)
+      delivery = Github::WebhookDelivery.receive(
+        delivery_id: request.headers["X-GitHub-Delivery"],
+        event: request.headers[EVENT_HEADER].to_s, body: request.raw_post
+      )
+      delivery.enqueue
       head :no_content
+    rescue Github::WebhookDelivery::ConflictingDelivery
+      head :conflict
     end
 
     private
@@ -29,16 +31,6 @@ module Github
       return if secret.present? && ActiveSupport::SecurityUtils.secure_compare(given, expected)
 
       head :not_found
-    end
-
-    # Il payload è il body grezzo (lo stesso su cui è calcolata la firma), non i params Rails. Un corpo
-    # illeggibile, o che è JSON valido ma non un oggetto, vale come consegna vuota: la firma dice DA CHI
-    # viene la consegna, non com'è fatta dentro, e gli handler a valle si aspettano un oggetto (CYRA-720).
-    def parsed_payload
-      parsed = JSON.parse(request.raw_post)
-      parsed.is_a?(Hash) ? parsed : {}
-    rescue JSON::ParserError
-      {}
     end
   end
 end

@@ -323,6 +323,17 @@ RSpec.describe Errors::Ingest::Record, type: :service do
       expect(project.releases.find_by!(version: "v1.0.0").events_count).to eq(1)
     end
 
+    # CYRA-1244 — una versione di 5000 caratteri faceva fallire la registrazione nell'indice unico.
+    it "una versione lunghissima viene accorciata e registrata tra le versioni, collegata all'errore" do
+      short = "v" * Errors::Ingest::Normalize::FIELD_MAX
+      result = record(payload_with_release(event_id: "r-long", release: "v" * 5000))
+
+      expect(result).to be_ok
+      expect(project.error_events.sole.release).to eq(short)
+      expect(project.error_groups.sole.release).to eq(short)
+      expect(project.releases.find_by!(version: short).events_count).to eq(1)
+    end
+
     it "evento senza release → nessuna Projects::Release" do
       record(payload(event_id: "r3"))
       expect(project.releases).to be_empty

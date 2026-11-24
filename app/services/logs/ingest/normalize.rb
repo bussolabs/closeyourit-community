@@ -57,6 +57,11 @@ module Logs
       # triggera il cap. È un limite difensivo anti-abuso, non un limite di prodotto (16 KB di JSON
       # strutturato = centinaia di campi legittimi).
       DATA_MAX_BYTES = 16_000
+      # CYRA-1244 — tetto dei campi brevi (codice del log e di tracciamento, ambiente, versione, nome
+      # della sorgente): finiscono in colonne indicizzate e un valore enorme fa rifiutare la riga al
+      # database, che con l'insert_all perde l'INTERO invio. 255 è ben oltre qualunque valore vero
+      # (i codici sono lunghi 32 o 36): si accorcia solo ciò che era già sbagliato.
+      FIELD_MAX = 255
 
       # Pre-check leggero (CYRA-58): un item ha un message persistibile? Applica SOLO la normalizzazione
       # del message (strip dei null byte, come #call) — nessun deep_clean dell'intero payload né scrub
@@ -91,28 +96,33 @@ module Logs
 
       def call
         message = scrubbed_message
-        structured_trace = @payload["trace_id"].presence
+        structured_trace = short_field(@payload["trace_id"])
         # Fallback: se il client non manda il campo strutturato, prova a riconoscere l'identificativo
         # nel testo del messaggio. Marca la provenienza (trace_id_extracted) così la UI segnala che il
         # collegamento è dedotto dal testo, non certificato dal client (CYRA-345).
         extracted_trace = structured_trace ? nil : self.class.trace_id_from_message(message)
         Normalized.new(
-          event_id: @payload["event_id"].to_s.presence || SecureRandom.uuid,
+          event_id: short_field(@payload["event_id"]) || SecureRandom.uuid,
           occurred_at: parse_time(@payload["timestamp"]),
           level: level,
           message: message,
           data: scrubbed_data,
-          logger_name: @payload["logger"].presence,
+          logger_name: short_field(@payload["logger"]),
           trace_id: structured_trace || extracted_trace,
           trace_id_extracted: extracted_trace.present?,
-          environment: @payload["environment"].presence,
-          release: @payload["release"].presence,
+          environment: short_field(@payload["environment"]),
+          release: short_field(@payload["release"]),
           sdk_name: sdk_name,
           sdk_version: sdk_version
         )
       end
 
       private
+
+      # Campo breve persistibile, o nil se vuoto: la regola di pulizia condivisa con gli altri canali.
+      def short_field(value)
+        ::Ingest::Normalization.clean_text(value, FIELD_MAX).presence
+      end
 
       # CYRA-735 — il messaggio è testo libero e ci finisce dentro di tutto: un indirizzo con il token
       # nella query, una riga di configurazione con la password. Il backend è l'autorità PII su tutti i

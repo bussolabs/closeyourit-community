@@ -15,7 +15,7 @@ module Agents
   module BudgetRestart
     def self.choice_for(workflow:, host:)
       engine = workflow.budget_restart_engine.presence
-      return nil unless Council::ENGINES.include?(engine) && Council::WorkChoice.installed?(host, engine)
+      return nil unless Council::ENGINES.include?(engine) && Council::WorkChoice.available?(host, engine)
 
       Council::WorkChoice::Choice.new(engine: engine, model: nil, reviewer: (Council::ENGINES - [ engine ]).first)
     end

@@ -30,6 +30,14 @@ RSpec.describe Agents::BudgetRestart do
     expect(described_class.choice_for(workflow:, host:)).to be_nil
   end
 
+  # CYRA-1358
+  it "returns nothing while the machine reports that engine out of quota" do
+    workflow.update!(budget_restart_engine: "codex")
+    host.update!(agent_quota: [ { "runtime" => "codex", "paused_until" => 2.hours.from_now.iso8601 } ])
+
+    expect(described_class.choice_for(workflow:, host:)).to be_nil
+  end
+
   it "returns nothing for an engine that cannot do the work" do
     workflow.update!(budget_restart_engine: "opencode")
 

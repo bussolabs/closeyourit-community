@@ -12,7 +12,7 @@ module Agents
       return nil unless LIGHT_PHASES.include?(phase)
 
       engine, model = project.light_phase_engine.to_s.split(":", 2)
-      return nil unless OPTIONS.include?("#{engine}:#{model}") && Council::WorkChoice.installed?(host, engine)
+      return nil unless OPTIONS.include?("#{engine}:#{model}") && Council::WorkChoice.available?(host, engine)
 
       Council::WorkChoice::Choice.new(engine:, model:, reviewer: (Council::ENGINES - [ engine ]).first)
     end

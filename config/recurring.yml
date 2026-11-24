@@ -22,6 +22,10 @@
 # sbaglio su `maintenance` rimette in fila tutti i controlli che arrivano dopo di lui: la coda serve
 # in ordine di arrivo, non di urgenza. spec/config/queue_yml_spec.rb tiene la regola.
 production: &schedule
+  recover_github_webhooks:
+    class: Github::RecoverWebhooksJob
+    queue: maintenance
+    schedule: every minute
   reap_coworkers:
     class: Coworkers::ReapJob
     queue: maintenance

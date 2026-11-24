@@ -250,4 +250,23 @@ RSpec.describe Logs::Ingest::Record do
       end
     end
   end
+
+  # CYRA-1244 — un solo log con un codice di tracciamento lunghissimo faceva rifiutare al database
+  # l'insert_all dell'intero invio: si perdevano tutti i mille log.
+  it "salva tutti i mille log dell'invio quando uno ha un codice di tracciamento lunghissimo" do
+    max = Logs::Ingest::Normalize::FIELD_MAX
+    batch = Array.new(1_000) { |i| payload("event_id" => "e-#{i}", "message" => "log #{i}", "trace_id" => "t-#{i}") }
+    batch[500] = batch[500].merge("trace_id" => "x" * 10_000, "environment" => "e" * 10_000)
+
+    result = described_class.call(project: project, payload: batch)
+
+    expect(result.value).to eq(1_000)
+    expect(project.logs_entries.count).to eq(1_000)
+    long = project.logs_entries.find_by!(event_id: "e-500")
+    expect(long.trace_id).to eq("x" * max)
+    expect(long.environment).to eq("e" * max)
+    expect(long.message).to eq("log 500")
+    neighbour = project.logs_entries.find_by!(event_id: "e-501")
+    expect(neighbour).to have_attributes(trace_id: "t-501", message: "log 501", environment: nil)
+  end
 end

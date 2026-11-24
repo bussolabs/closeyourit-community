@@ -7,7 +7,7 @@ module Github
     # repo agganciati dei progetti dell'org.
     class Installation < Base
       def call
-        installation&.destroy if value_at(@payload, "action") == "deleted"
+        installation&.destroy! if value_at(@payload, "action") == "deleted"
 
         Result.ok(nil)
       end

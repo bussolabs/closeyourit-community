@@ -18,6 +18,10 @@ module Errors
 
       LEVELS = %w[debug info warning error fatal].freeze
       TITLE_MAX = 255
+      # CYRA-1244 — tetto dei campi brevi (codice dell'errore e di tracciamento, ambiente, versione, nome
+      # del server): finiscono in colonne indicizzate, e la versione anche nell'indice unico delle
+      # release del progetto, dove un valore enorme fa fallire la registrazione.
+      FIELD_MAX = 255
 
       # La denylist PII (chiavi, header, chiavi-indirizzo) vive in ::Ingest::PiiScrubbing, che questa
       # classe include: le costanti restano leggibili come Errors::Ingest::Normalize::SENSITIVE_KEY.
@@ -43,12 +47,12 @@ module Errors
 
       def call
         Normalized.new(
-          event_id: @payload["event_id"].to_s.presence,
+          event_id: short_field(@payload["event_id"]),
           occurred_at: parse_time(@payload["timestamp"]),
           level: level,
-          environment: @payload["environment"].presence,
-          release: @payload["release"].presence,
-          server_name: @payload["server_name"].presence,
+          environment: short_field(@payload["environment"]),
+          release: short_field(@payload["release"]),
+          server_name: short_field(@payload["server_name"]),
           runtime: runtime,
           os_name: os_context["name"].to_s.presence,
           os_version: os_context["version"].to_s.presence,
@@ -89,6 +93,11 @@ module Errors
       end
 
       private
+
+      # Campo breve persistibile, o nil se vuoto: la regola di pulizia condivisa con gli altri canali.
+      def short_field(value)
+        ::Ingest::Normalization.clean_text(value, FIELD_MAX).presence
+      end
 
       # Identità del client dal filo (Sentry `sdk: {name, version}`) — alimenta la card Monitoring tools.
       def sdk_name
@@ -171,7 +180,7 @@ module Errors
       # Correlazione log↔errori: la gemma nativa mette trace_id top-level; gli SDK Sentry
       # ufficiali lo annidano in contexts.trace.trace_id (il top-level, quando c'è, vince).
       def trace_id
-        @payload["trace_id"].presence || sentry_trace_id
+        short_field(@payload["trace_id"].presence || sentry_trace_id)
       end
 
       def span_id

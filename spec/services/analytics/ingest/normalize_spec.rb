@@ -159,4 +159,24 @@ RSpec.describe Analytics::Ingest::Normalize do
       expect(props).to eq("plan" => "pro", "order" => 1_234_567, "day" => "2026-11-03")
     end
   end
+
+  # CYRA-1244 — tetto difensivo dei campi brevi della visita, più largo per la pagina.
+  describe "tetto dei campi brevi" do
+    it "accorcia codice, sito e ambiente a 255 caratteri e la pagina a 2048" do
+      n = normalize({ "event_id" => "e" * 5000, "hostname" => "h" * 5000, "path" => "/".ljust(5000, "p"),
+                      "environment" => "s" * 5000, "utm_source" => "google" })
+      expect(n.event_id).to eq("e" * described_class::FIELD_MAX)
+      expect(n.hostname).to eq("h" * described_class::FIELD_MAX)
+      expect(n.environment).to eq("s" * described_class::FIELD_MAX)
+      expect(n.path).to eq("/".ljust(described_class::PATH_MAX_LENGTH, "p"))
+      expect(n.utm_source).to eq("google")
+    end
+
+    it "lascia identici i valori di lunghezza normale" do
+      n = normalize({ "event_id" => "4f1c2d3e-aaaa-4bbb-8ccc-0123456789ab", "hostname" => "www.example.test",
+                      "path" => "/articles/foo", "environment" => "staging" })
+      expect(n).to have_attributes(event_id: "4f1c2d3e-aaaa-4bbb-8ccc-0123456789ab", hostname: "www.example.test",
+                                   path: "/articles/foo", environment: "staging")
+    end
+  end
 end

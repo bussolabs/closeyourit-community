@@ -38,6 +38,21 @@ RSpec.describe Agents::PhaseEngine do
     expect(described_class.choice_for(phase: "triage", project:, host:)).to be_nil
   end
 
+  # CYRA-1358
+  it "returns nothing while the machine reports that engine out of quota" do
+    project.update!(light_phase_engine: "codex:gpt-6-astra")
+    host.update!(agent_quota: [ { "runtime" => "codex", "paused_until" => 2.hours.from_now.iso8601 } ])
+
+    expect(described_class.choice_for(phase: "closer_production", project:, host:)).to be_nil
+  end
+
+  it "returns the choice again once the quota pause is over" do
+    project.update!(light_phase_engine: "codex:gpt-6-astra")
+    host.update!(agent_quota: [ { "runtime" => "codex", "paused_until" => 1.minute.ago.iso8601 } ])
+
+    expect(described_class.choice_for(phase: "closer_production", project:, host:)&.engine).to eq("codex")
+  end
+
   it "refuses an engine or a model outside the allowed ones" do
     project.light_phase_engine = "claude:some-other-model"
     expect(project).not_to be_valid

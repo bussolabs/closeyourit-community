@@ -6000,10 +6000,11 @@
       "level": 3,
       "parent": "agt_flow_claim",
       "kind": "step",
-      "summary": "Nasce la scheda del tentativo con macchina, fase e regole d'uso congelate. Per i rilasci il server assegna qui il numero di versione.",
+      "summary": "Nasce la scheda del tentativo con macchina, fase e regole d'uso congelate. Un motore scelto per la fase vale solo se la macchina non lo segnala senza credito: altrimenti lavora il motore della macchina. Per i rilasci il server assegna qui il numero di versione.",
       "files": [
         "app/services/agents/phase_engine.rb",
         "app/services/agents/budget_restart.rb",
+        "app/services/agents/council/work_choice.rb",
         "app/services/agents/ticket_queues/claim.rb",
         "app/services/agents/releases/assign.rb",
         "app/models/agents/attempt.rb",
@@ -6719,10 +6720,12 @@
       "level": 2,
       "parent": "area_github",
       "kind": "flow",
-      "summary": "GitHub avvisa di etichette, rami, proposte di modifica, rilasci e disinstallazioni. Il server controlla la firma e lavora l'evento in background.",
+      "summary": "GitHub avvisa di etichette, rami, proposte di modifica, rilasci e disinstallazioni. Dopo la firma il server registra una memoria permanente della consegna, riconosce i duplicati e recupera le lavorazioni interrotte.",
       "files": [
         "app/controllers/github/webhooks_controller.rb",
         "app/jobs/github/webhook_job.rb",
+        "app/models/github/webhook_delivery.rb",
+        "app/jobs/github/recover_webhooks_job.rb",
         "app/services/github/webhooks/**"
       ]
     },
@@ -6732,7 +6735,7 @@
       "level": 3,
       "parent": "gh_flow_webhook",
       "kind": "step",
-      "summary": "Firma sbagliata o assente: risponde come se l'indirizzo non esistesse. Firma giusta: accoda il lavoro e risponde subito, così GitHub non ritenta.",
+      "summary": "Firma sbagliata o assente: nessuna registrazione. Firma giusta: registra numero e impronta del contenuto prima di accodare; un contenuto già ricevuto resta riconoscibile anche cambiando numero o dopo la cancellazione del collegamento.",
       "files": [
         "app/controllers/github/webhooks_controller.rb"
       ]
@@ -6743,7 +6746,7 @@
       "level": 3,
       "parent": "gh_flow_webhook",
       "kind": "step",
-      "summary": "In background ogni tipo di evento va al suo gestore; gli altri si ignorano. Ripetere lo stesso evento non fa danni.",
+      "summary": "Una consegna alla volta: effetti e completamento si salvano insieme, poi il contenuto viene cancellato. Ogni minuto si recuperano fino a cento consegne non accodate o senza completamento da dieci minuti. I duplicati completati non producono altri effetti.",
       "files": [
         "app/jobs/github/webhook_job.rb",
         "app/services/github/webhooks/base.rb"

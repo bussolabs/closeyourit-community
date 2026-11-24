@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -2342,6 +2342,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_090000) do
     t.check_constraint "release_probe <> 0 OR production_environment_id IS NOT NULL", name: "github_repositories_deploy_smoke_needs_production"
     t.check_constraint "release_probe <> 1 OR registry IS NOT NULL AND package_name IS NOT NULL", name: "github_repositories_publish_needs_registry"
     t.check_constraint "release_probe IS NULL OR (release_probe = ANY (ARRAY[0, 1, 2]))", name: "github_repositories_release_probe_known"
+  end
+
+  create_table "github_webhook_deliveries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "delivery_id"
+    t.string "body_digest", null: false
+    t.string "event", null: false
+    t.text "body"
+    t.datetime "enqueued_at"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["body_digest"], name: "index_github_webhook_deliveries_on_body_digest", unique: true
+    t.index ["delivery_id"], name: "index_github_webhook_deliveries_on_delivery_id", unique: true
+    t.index ["enqueued_at"], name: "index_github_webhook_deliveries_on_enqueued_at", where: "(completed_at IS NULL)"
   end
 
   create_table "guidance_procedures", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

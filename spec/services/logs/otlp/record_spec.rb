@@ -138,4 +138,30 @@ RSpec.describe Logs::Otlp::Record do
     expect(statements.count { |sql| sql.start_with?("INSERT INTO") }).to eq(1)
     expect(statements.size).to be <= 4
   end
+
+  # CYRA-1244 — ambiente, versione e nome della sorgente arrivano senza tetto: un valore enorme
+  # faceva rifiutare l'intero invio. Si accorciano come nei log delle nostre librerie.
+  it "shortens oversized environment, version and scope name while keeping the rest of the export" do
+    max = Logs::Ingest::Normalize::FIELD_MAX
+    payload = { "resourceLogs" => [ { "resource" => { "attributes" => [
+      attribute("service.name", "checkout"), attribute("deployment.environment.name", "e" * 5000),
+      attribute("service.version", "v" * 5000)
+    ] }, "scopeLogs" => [ { "scope" => { "name" => "s" * 5000 }, "logRecords" => [ log, log ] } ] } ] }
+
+    expect(described_class.call(project: project, payload: payload).rejected).to eq(0)
+    expect(project.logs_entries.count).to eq(2)
+    project.logs_entries.each do |entry|
+      expect(entry).to have_attributes(environment: "e" * max, release: "v" * max, logger_name: "s" * max,
+                                       trace_id: "a" * 32, span_id: "b" * 16, severity_number: 18)
+    end
+  end
+
+  it "keeps normal-length environment and version exactly as sent" do
+    payload = { "resourceLogs" => [ { "resource" => { "attributes" => [
+      attribute("deployment.environment", "staging"), attribute("service.version", "1.4.2")
+    ] }, "scopeLogs" => [ { "scope" => { "name" => "logger" }, "logRecords" => [ log ] } ] } ] }
+
+    described_class.call(project: project, payload: payload)
+    expect(project.logs_entries.sole).to have_attributes(environment: "staging", release: "1.4.2", logger_name: "logger")
+  end
 end
