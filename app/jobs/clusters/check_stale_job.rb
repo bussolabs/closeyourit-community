@@ -5,6 +5,7 @@ module Clusters
   # Apply brings it back up at the next snapshot (CYAG-22).
   class CheckStaleJob < ApplicationJob
     queue_as :servers
+    limits_concurrency to: 1, key: "periodic", duration: 5.minutes, on_conflict: :discard
 
     def perform
       Clusters::Cluster.stale.find_each do |cluster|

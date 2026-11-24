@@ -4,6 +4,7 @@ module Coworkers
   # schedule runs as whoever saved it and its checks as its creator, while they may still act (CYRA-1023).
   class TickJob < ApplicationJob
     queue_as :maintenance
+    limits_concurrency to: 1, key: "periodic", duration: 5.minutes, on_conflict: :discard
     BATCH = 50
 
     def perform(at = Time.current)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_120003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -909,10 +909,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120000) do
     t.string "status", null: false
     t.datetime "updated_at", null: false
     t.decimal "window_end_ns", precision: 20, null: false
+    t.index ["created_at"], name: "index_alerting_evaluations_on_created_at"
     t.index ["dispatch_state", "retry_at"], name: "index_alerting_evaluations_on_dispatch_state_and_retry_at"
     t.index ["project_id"], name: "index_alerting_evaluations_on_project_id"
     t.index ["rule_id", "config_digest", "series_id", "window_end_ns"], name: "measurement_evaluation_identity", unique: true
     t.index ["rule_id"], name: "index_alerting_evaluations_on_rule_id"
+    t.index ["window_end_ns", "retry_at"], name: "index_alerting_evaluations_unknown_by_window_and_retry", where: "((status)::text = 'unknown'::text)"
     t.check_constraint "dispatch_state::text = ANY (ARRAY['none'::character varying::text, 'pending'::character varying::text, 'delivering'::character varying::text, 'delivered'::character varying::text, 'cancelled'::character varying::text])", name: "measurement_evaluation_dispatch"
     t.check_constraint "octet_length(result::text) <= 16384", name: "measurement_evaluation_budget"
     t.check_constraint "status::text = ANY (ARRAY['unknown'::character varying::text, 'firing'::character varying::text, 'safe'::character varying::text])", name: "measurement_evaluation_status"

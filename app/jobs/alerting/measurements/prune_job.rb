@@ -7,7 +7,7 @@ module Alerting
       BATCH_SIZE = 1_000
 
       def perform
-        ids = Evaluation.where(created_at: ...30.days.ago).order(:id).limit(BATCH_SIZE).pluck(:id)
+        ids = Evaluation.where(created_at: ...30.days.ago).order(:created_at, :id).limit(BATCH_SIZE).pluck(:id)
         Evaluation.where(id: ids).delete_all
         self.class.perform_later if ids.size == BATCH_SIZE
       end

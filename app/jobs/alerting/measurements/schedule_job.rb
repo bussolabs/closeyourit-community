@@ -4,6 +4,7 @@ module Alerting
   module Measurements
     class ScheduleJob < ApplicationJob
       queue_as :alerts
+      limits_concurrency to: 1, key: ->(after_id: nil, window_end: nil) { "#{window_end || :periodic}:#{after_id || :start}" }, duration: 5.minutes, on_conflict: :discard
       BATCH_SIZE = 100
 
       def perform(after_id: nil, window_end: nil)

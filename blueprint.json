@@ -2319,7 +2319,7 @@
       "level": 2,
       "parent": "area_uptime",
       "kind": "flow",
-      "summary": "Ogni minuto si controllano i servizi in scadenza. Dopo alcune cadute di fila si apre un disservizio e parte l'avviso.",
+      "summary": "Ogni minuto si controllano i servizi in scadenza. Dopo alcune cadute di fila si apre un disservizio e parte l'avviso. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda.",
       "files": [
         "app/jobs/uptime/dispatch_checks_job.rb",
         "app/jobs/uptime/check_job.rb",
@@ -2333,7 +2333,7 @@
       "level": 3,
       "parent": "upt_flow_check",
       "kind": "step",
-      "summary": "Ogni minuto mette in coda un controllo per ogni servizio attivo in scadenza.",
+      "summary": "Ogni minuto mette in coda un controllo per ogni servizio attivo in scadenza. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda.",
       "files": [
         "app/jobs/uptime/dispatch_checks_job.rb",
         "config/recurring.yml"
@@ -2402,7 +2402,7 @@
       "level": 2,
       "parent": "area_uptime",
       "kind": "job",
-      "summary": "Ogni minuto cerca disservizi con un avviso scritto ma mai partito e lo manda: prima la caduta, poi il ritorno.",
+      "summary": "Ogni minuto cerca disservizi con un avviso scritto ma mai partito e lo manda: prima la caduta, poi il ritorno. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda.",
       "files": [
         "app/jobs/uptime/reconcile_alerts_job.rb",
         "app/services/uptime/reconcile_alerts.rb",
@@ -2714,7 +2714,7 @@
       "level": 2,
       "parent": "area_crons",
       "kind": "job",
-      "summary": "Ogni minuto segna «mancato» chi non ha battuto entro intervallo più tolleranza, e avvisa una volta sola per volta. Se è lui a ripartire in ritardo di oltre 3 minuti, salta quel giro.",
+      "summary": "Ogni minuto segna «mancato» chi non ha battuto entro intervallo più tolleranza, e avvisa una volta sola per volta. Se è lui a ripartire in ritardo di oltre 3 minuti, salta quel giro. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda.",
       "files": [
         "app/jobs/crons/evaluate_job.rb",
         "config/recurring.yml"
@@ -2980,7 +2980,7 @@
       "level": 2,
       "parent": "area_servers",
       "kind": "job",
-      "summary": "Ogni minuto segna giù le macchine che non scrivono da troppo e avvisa. Salta i gruppi di lavoro a cui il server ha rifiutato i dati. Se l'avviso non parte, lo recupera il giro dedicato.",
+      "summary": "Ogni minuto segna giù le macchine che non scrivono da troppo e avvisa. Salta i gruppi di lavoro a cui il server ha rifiutato i dati. Se l'avviso non parte, lo recupera il giro dedicato. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda.",
       "files": [
         "app/jobs/servers/check_stale_job.rb",
         "app/services/servers/ingest_rejections.rb",
@@ -3132,7 +3132,7 @@
       "level": 2,
       "parent": "area_servers",
       "kind": "job",
-      "summary": "Ogni minuto segna giù un cluster senza notizie da 3 minuti. Ogni ora dimentica ciò che è sparito da un giorno e gli eventi vecchi.",
+      "summary": "Ogni minuto segna giù un cluster senza notizie da 3 minuti. Ogni ora dimentica ciò che è sparito da un giorno e gli eventi vecchi. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda.",
       "files": [
         "app/jobs/clusters/check_stale_job.rb",
         "app/jobs/clusters/prune_job.rb",
@@ -3536,7 +3536,7 @@
       "level": 2,
       "parent": "area_analytics",
       "kind": "job",
-      "summary": "Ogni minuto ridà la spinta ai cruscotti dei progetti con visite recenti, così il numero di persone online scende quando escono.",
+      "summary": "Ogni minuto ridà la spinta ai cruscotti dei progetti con visite recenti, così il numero di persone online scende quando escono. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda.",
       "files": [
         "app/jobs/analytics/decay_realtime_job.rb",
         "config/recurring.yml"
@@ -6000,10 +6000,11 @@
       "level": 3,
       "parent": "agt_flow_claim",
       "kind": "step",
-      "summary": "Nasce la scheda del tentativo con macchina, fase e regole d'uso congelate. Per i rilasci il server assegna qui il numero di versione.",
+      "summary": "Nasce la scheda del tentativo con macchina, fase e regole d'uso congelate. Un motore scelto per la fase vale solo se la macchina non lo segnala senza credito: altrimenti lavora il motore della macchina. Lo stesso vale per chi rilegge: se l'altro motore è senza credito, rilegge il revisore scelto per la macchina. Per i rilasci il server assegna qui il numero di versione.",
       "files": [
         "app/services/agents/phase_engine.rb",
         "app/services/agents/budget_restart.rb",
+        "app/services/agents/council/work_choice.rb",
         "app/services/agents/ticket_queues/claim.rb",
         "app/services/agents/releases/assign.rb",
         "app/models/agents/attempt.rb",
@@ -6233,7 +6234,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "La macchina scrive il codice e apre la proposta di modifica. Il server va a leggerla su GitHub e annota quale codice contiene e com'è andato il controllo automatico. Se si ferma su un conflitto di codice con main, o se la proposta consegnata risulta in conflitto, il ticket torna in coda una volta sola per un giro di risoluzione: lavora Codex, rilegge Claude. Con i controlli rossi il lavoro torna alla macchina per correggere; una seconda volta solo se i controlli rossi sono altri. Finiti i giri, il lavoro ricomincia una volta e poi viene messo da parte. Con i controlli verdi, o in un repository senza controlli, la consegna riletta e accettata va avanti da sola. Le consegne rimaste davanti a una persona vengono riguardate a intervalli.",
+      "summary": "La macchina scrive il codice e apre la proposta di modifica. Il server va a leggerla su GitHub e annota quale codice contiene e com'è andato il controllo automatico. Se si ferma su un conflitto di codice con main, o se la proposta consegnata risulta in conflitto, il ticket torna in coda una volta sola per un giro di risoluzione: lavora Codex, rilegge Claude. Con i controlli rossi il lavoro torna alla macchina per correggere; una seconda volta solo se i controlli rossi sono altri. Finiti i giri, il lavoro ricomincia una volta e poi viene messo da parte. Con i controlli verdi, o in un repository senza controlli, la consegna riletta e accettata va avanti da sola. Le consegne rimaste davanti a una persona vengono riguardate a intervalli. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda. Le verifiche mirate hanno un posto distinto per lavorazione.",
       "files": [
         "app/services/agents/attempts/effects/autopilot.rb",
         "app/services/agents/candidates/verify.rb",
@@ -6276,7 +6277,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "La macchina unisce il codice. Il server verifica su GitHub che sia davvero entrato nel ramo principale; solo allora si apre la produzione. Se il progetto lo chiede, aspetta anche che il rilascio di prova e il suo controllo finale siano finiti bene.",
+      "summary": "La macchina unisce il codice. Il server verifica su GitHub che sia davvero entrato nel ramo principale; solo allora si apre la produzione. Se il progetto lo chiede, aspetta anche che il rilascio di prova e il suo controllo finale siano finiti bene. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda. Le verifiche mirate hanno un posto distinto per lavorazione.",
       "files": [
         "app/services/agents/attempts/effects/closer_staging.rb",
         "app/services/agents/staging/verify_merge.rb",
@@ -6290,7 +6291,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "La macchina mette l'etichetta di versione. Il ticket è «Fatto» solo quando il server vede il rilascio riuscito e la produzione che risponde con quella versione. Se la prova del piano è l'unione del codice, il ticket è «Fatto» appena l'etichetta stabile è messa. Un rilascio fallito si chiude da solo quando un rilascio successivo, riuscito, contiene già quel codice. Lo stesso vale per un lavoro approvato e unito che un rilascio provato porta già in produzione.",
+      "summary": "La macchina mette l'etichetta di versione. Il ticket è «Fatto» solo quando il server vede il rilascio riuscito e la produzione che risponde con quella versione. Se la prova del piano è l'unione del codice, il ticket è «Fatto» appena l'etichetta stabile è messa. Un rilascio fallito si chiude da solo quando un rilascio successivo, riuscito, contiene già quel codice. Lo stesso vale per un lavoro approvato e unito che un rilascio provato porta già in produzione. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda. Le verifiche mirate hanno un posto distinto per lavorazione.",
       "files": [
         "app/services/agents/attempts/effects/closer_production.rb",
         "app/services/agents/workflows/close_already_released.rb",
@@ -6745,7 +6746,7 @@
       "level": 3,
       "parent": "gh_flow_webhook",
       "kind": "step",
-      "summary": "Una consegna alla volta: effetti e completamento si salvano insieme, poi il contenuto viene cancellato. Ogni minuto si recuperano fino a cento consegne non accodate o senza completamento da dieci minuti. I duplicati completati non producono altri effetti.",
+      "summary": "Una consegna alla volta: effetti e completamento si salvano insieme, poi il contenuto viene cancellato. Ogni minuto si recuperano fino a cento consegne non accodate o senza completamento da dieci minuti. I duplicati completati non producono altri effetti. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda.",
       "files": [
         "app/jobs/github/webhook_job.rb",
         "app/services/github/webhooks/base.rb"
@@ -7463,7 +7464,7 @@
       "level": 2,
       "parent": "area_coworkers",
       "kind": "job",
-      "summary": "Ogni minuto partono i compiti a orario e i controlli dei progetti. Il modello lavora solo se ci sono segnali nuovi, e le sue proposte aspettano una persona.",
+      "summary": "Ogni minuto partono i compiti a orario e i controlli dei progetti. Il modello lavora solo se ci sono segnali nuovi, e le sue proposte aspettano una persona. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda.",
       "files": [
         "app/jobs/coworkers/tick_job.rb",
         "app/models/coworkers/schedule.rb",
@@ -7476,7 +7477,7 @@
       "level": 2,
       "parent": "area_coworkers",
       "kind": "job",
-      "summary": "Ogni minuto si chiudono i giri fermati o con la presa scaduta, e la pagina si aggiorna.",
+      "summary": "Ogni minuto si chiudono i giri fermati o con la presa scaduta, e la pagina si aggiorna. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda.",
       "files": [
         "app/jobs/coworkers/reap_job.rb"
       ]
@@ -8206,7 +8207,7 @@
       "level": 2,
       "parent": "area_alerting",
       "kind": "job",
-      "summary": "Ogni minuto cerca macchine, cluster e lavori pianificati fermi il cui avviso non è mai partito e lo manda. Ignora chi è già tornato attivo.",
+      "summary": "Ogni minuto cerca macchine, cluster e lavori pianificati fermi il cui avviso non è mai partito e lo manda. Ignora chi è già tornato attivo. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda.",
       "files": [
         "app/jobs/alerting/reconcile_outages_job.rb",
         "app/services/alerting/reconcile_outages.rb",
@@ -8290,7 +8291,7 @@
       "level": 3,
       "parent": "alr_flow_measurement",
       "kind": "step",
-      "summary": "Mette in coda un controllo per ogni regola su misura accesa, e riprova quelle rimaste a metà.",
+      "summary": "Mette in coda un controllo per ogni regola su misura accesa, e riprova quelle rimaste a metà. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda. Le continuazioni hanno posti distinti per finestra e posizione.",
       "files": [
         "app/jobs/alerting/measurements/schedule_job.rb",
         "app/jobs/alerting/measurements/evaluate_job.rb"
@@ -11931,7 +11932,7 @@
       "level": 2,
       "parent": "area_valhalla",
       "kind": "job",
-      "summary": "Ogni minuto scrive e rilegge un valore nella cache comune. Se non torna, parte un avviso di piattaforma.",
+      "summary": "Ogni minuto scrive e rilegge un valore nella cache comune. Se non torna, parte un avviso di piattaforma. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda.",
       "files": [
         "app/jobs/ops/cache_canary_job.rb",
         "app/services/ops/cache_canary.rb"

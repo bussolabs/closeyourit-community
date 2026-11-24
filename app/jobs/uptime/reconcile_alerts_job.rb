@@ -10,6 +10,7 @@ module Uptime
   # altro controllo passasse di lì.
   class ReconcileAlertsJob < ApplicationJob
     queue_as :maintenance
+    limits_concurrency to: 1, key: "periodic", duration: 5.minutes, on_conflict: :discard
 
     def perform
       recovered = Uptime::ReconcileAlerts.call.value.to_i

@@ -24,4 +24,21 @@ RSpec.describe Agents::Council::WorkChoice do
     create(:agent_council_proposal, ticket:, outcome: "ticket", suggested_engine: "codex")
     expect(described_class.for(ticket:, host:)).to be_nil
   end
+
+  # CYRA-1360
+  it "hands the review to the machine's own reviewer while the other engine is out of quota" do
+    host.update!(work_engine: "claude", reviewer: "claude", supporter: "claude",
+                 agent_quota: [ { "runtime" => "codex", "paused_until" => 2.hours.from_now.iso8601 } ])
+    create(:agent_council_proposal, ticket:, outcome: "ticket", suggested_engine: "claude")
+
+    expect(described_class.for(ticket:, host:).reviewer).to eq("claude")
+  end
+
+  it "keeps the other engine as reviewer once its quota pause is over" do
+    host.update!(work_engine: "claude", reviewer: "claude", supporter: "claude",
+                 agent_quota: [ { "runtime" => "codex", "paused_until" => 1.hour.ago.iso8601 } ])
+    create(:agent_council_proposal, ticket:, outcome: "ticket", suggested_engine: "claude")
+
+    expect(described_class.for(ticket:, host:).reviewer).to eq("codex")
+  end
 end

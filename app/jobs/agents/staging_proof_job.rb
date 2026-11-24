@@ -8,6 +8,7 @@ module Agents
   # ritenta tre volte e poi tace, e il silenzio qui sarebbe indistinguibile da «è andato tutto bene».
   class StagingProofJob < ApplicationJob
     queue_as :maintenance
+    limits_concurrency to: 1, key: ->(id = nil) { id ? "target:#{id}" : "periodic" }, duration: 5.minutes, on_conflict: :discard
 
     # Ogni riga costa due chiamate a GitHub: senza un tetto, un arretrato le farebbe partire tutte
     # insieme e il rate limit le farebbe fallire in blocco.

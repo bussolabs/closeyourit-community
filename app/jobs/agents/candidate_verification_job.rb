@@ -13,6 +13,7 @@ module Agents
   # silenzio qui sarebbe indistinguibile da «tutto a posto». Verify scrive sempre uno stato.
   class CandidateVerificationJob < ApplicationJob
     queue_as :maintenance
+    limits_concurrency to: 1, key: ->(id = nil) { id ? "target:#{id}" : "periodic" }, duration: 5.minutes, on_conflict: :discard
 
     # Quante righe per giro. Un tetto c'è perché ogni riga costa una chiamata a GitHub: senza, un
     # arretrato le farebbe partire tutte insieme e il rate limit le farebbe fallire in blocco.

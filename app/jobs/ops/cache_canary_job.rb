@@ -23,6 +23,7 @@ module Ops
   # giri periodici addosso. È anche prioritaria su :ingest, quindi nemmeno un picco d'ingest lo affama.
   class CacheCanaryJob < ApplicationJob
     queue_as :default
+    limits_concurrency to: 1, key: "periodic", duration: 5.minutes, on_conflict: :discard
 
     EVENT = "cache_unavailable"
 

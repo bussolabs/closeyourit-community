@@ -5,6 +5,7 @@ module Crons
   # grace) and alerts once per window (missed_alerted_at, reset by the next check-in).
   class EvaluateJob < ApplicationJob
     queue_as :maintenance
+    limits_concurrency to: 1, key: "periodic", duration: 5.minutes, on_conflict: :discard
 
     LAST_RUN_KEY = "crons:evaluate:last_run_at"
     # Three times the schedule step: past this, the check itself was late, not the jobs. CYRA-1141

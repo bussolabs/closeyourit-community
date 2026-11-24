@@ -1,6 +1,7 @@
 module Coworkers
   class ReapJob < ApplicationJob
     queue_as :maintenance
+    limits_concurrency to: 1, key: "periodic", duration: 5.minutes, on_conflict: :discard
 
     def perform
       return unless Coworkers.enabled? && Coworkers.remote?

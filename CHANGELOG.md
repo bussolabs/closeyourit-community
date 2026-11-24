@@ -2,6 +2,41 @@
 
 ## [Unreleased]
 
+## [0.247.0] - 2026-11-24
+
+### Changed
+
+- **I controlli di ogni minuto non si accodano più due volte**: se il giro precedente dello stesso controllo è ancora in attesa o in corso, il nuovo giro viene scartato invece di mettersi in fila. Dopo un ritardo della coda non parte più una serie di giri arretrati. (CYRA-1272)
+
+### Fixed
+
+- **Un revisore senza credito non ferma più i lavori**: se il motore che dovrebbe rileggere una fase ha finito il credito su una macchina, la rilettura la fa il revisore scelto per quella macchina. Prima falliva più volte e il lavoro arrivava a una persona. [Agenti](/member/agents)
+
+## [0.246.3] - 2026-11-24
+
+### Fixed
+
+- **Gli avvisi sulle soglie restano puntuali anche con tanto storico**: il controllo di ogni minuto rilegge solo gli ultimi minuti invece di tutto lo storico delle verifiche, e la pulizia notturna delle verifiche vecchie non rilegge più l'intera tabella. Il comportamento degli avvisi non cambia. (CYRA-1231)
+
+## [0.246.2] - 2026-11-24
+
+### Fixed
+
+- **Un motore senza credito non blocca più i rilasci**: se il motore scelto per una fase ha finito il credito su una macchina, quella fase la fa il motore abituale della macchina. Prima il rilascio falliva a ripetizione finché il credito non tornava. [Agenti](/member/agents)
+- **I codici dei ticket non vengono più «corretti»**: se la sigla di un progetto è uguale a una parola italiana senza accento (per esempio PIU), il codice citato in un ticket resta com'è. Prima diventava PIÙ-1 e la ricerca per codice non trovava più chi lo citava. [Ticket](/member/tickets)
+
+## [0.246.1] - 2026-11-24
+
+### Fixed
+
+- **Il documento dei controlli automatici dice quando partono i test**: la suite completa gira su ogni proposta di modifica e su ogni modifica al ramo principale, non solo sui rilasci. Una prova automatica fallisce se il documento torna a negarlo. (CYRA-1269)
+
+## [0.246.0] - 2026-11-24
+
+### Changed
+
+- **Molte app avviate insieme non fanno più la fila**: i dati delle sessioni di uno stesso progetto si salvano in parallelo. Una richiesta aspetta solo se un'altra sta scrivendo la stessa sessione. I conteggi e i numeri sulla salute delle sessioni restano quelli di prima. (CYRA-1251)
+
 ## [0.245.3] - 2026-11-24
 
 ### Fixed

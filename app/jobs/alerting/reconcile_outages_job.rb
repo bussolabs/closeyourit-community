@@ -5,6 +5,7 @@ module Alerting
   # quelli che il controllo ha segnato giù e non è riuscito ad affidare alla coda.
   class ReconcileOutagesJob < ApplicationJob
     queue_as :maintenance
+    limits_concurrency to: 1, key: "periodic", duration: 5.minutes, on_conflict: :discard
 
     def perform
       recovered = Alerting::ReconcileOutages.call.value.to_i

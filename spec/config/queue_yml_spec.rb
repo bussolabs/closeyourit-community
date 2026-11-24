@@ -121,6 +121,171 @@ RSpec.describe "config/queue.yml" do
     end
   end
 
+  describe "minute checks discard duplicate reservations (CYRA-1272)" do
+    include ActiveJob::TestHelper
+
+    before do
+      clear_enqueued_jobs
+      SolidQueue::ReadyExecution.delete_all
+      SolidQueue::ScheduledExecution.delete_all
+      SolidQueue::ClaimedExecution.delete_all
+      SolidQueue::BlockedExecution.delete_all
+      SolidQueue::FailedExecution.delete_all
+      SolidQueue::Semaphore.delete_all
+      SolidQueue::Process.delete_all
+      SolidQueue::Job.delete_all
+    end
+
+    let(:minute_jobs) do
+      raw = ERB.new(File.read(Rails.root.join("config/recurring.yml"))).result
+      YAML.safe_load(raw, aliases: true).fetch("production").values
+        .select { |task| Fugit.parse(task.fetch("schedule")).rough_frequency == 60 }
+        .map { |task| task.fetch("class").constantize }
+    end
+    let(:process) { SolidQueue::Process.create!(kind: "Worker", name: "minute-check-spec", pid: Process.pid, last_heartbeat_at: Time.current) }
+    let(:job_class) { Coworkers::ReapJob }
+
+    def enqueue_check(klass = job_class, *args, **kwargs)
+      job = klass.new(*args, **kwargs)
+      SolidQueue::Job.enqueue(job)
+      job
+    end
+
+    def claim_check(job)
+      record = SolidQueue::Job.find_by!(active_job_id: job.job_id)
+      SolidQueue::ClaimedExecution.claiming([ record.id ], process.id) do
+        record.ready_execution.destroy!
+      end.sole
+    end
+
+    def maintain_reservations
+      SolidQueue::Dispatcher::ConcurrencyMaintenance.new(600, 500).send(:expire_semaphores)
+    end
+
+    it "reserves one independent slot for every minute check and never blocks duplicates" do
+      expect(minute_jobs).to include(Coworkers::ReapJob, Alerting::ReconcileOutagesJob, Github::RecoverWebhooksJob)
+      minute_jobs.each do |klass|
+        expect(klass.concurrency_limit).to eq(1)
+        expect(klass.concurrency_duration).to eq(5.minutes)
+        expect(klass.concurrency_on_conflict).to eq(:discard)
+        enqueue_check(klass)
+        3.times { enqueue_check(klass) }
+        expect(SolidQueue::Job.where(class_name: klass.name).count).to eq(1)
+      end
+      expect(SolidQueue::BlockedExecution.count).to eq(0)
+      expect(minute_jobs.map { |klass| klass.new.concurrency_key }.uniq.size).to eq(minute_jobs.size)
+    end
+
+    it "keeps only one queued check after four minutes of queue delay" do
+      freeze_time do
+        enqueue_check
+        4.times do
+          travel 1.minute
+          enqueue_check
+        end
+        expect(SolidQueue::Job.where(class_name: job_class.name).count).to eq(1)
+        expect(SolidQueue::BlockedExecution.count).to eq(0)
+      end
+    end
+
+    it "discards the next minute while running and admits a check after completion" do
+      freeze_time do
+        execution = claim_check(enqueue_check)
+        allow(Coworkers).to receive(:enabled?).and_return(false)
+        travel 1.minute
+        enqueue_check
+        expect(SolidQueue::ReadyExecution.count).to eq(0)
+        execution.perform
+        enqueue_check
+        expect(SolidQueue::ReadyExecution.count).to eq(1)
+      end
+    end
+
+    it "recovers an abandoned reservation only after expiry and maintenance" do
+      freeze_time do
+        execution = claim_check(enqueue_check)
+        execution.delete
+        travel 5.minutes + 1.second
+        enqueue_check
+        expect(SolidQueue::ReadyExecution.count).to eq(0)
+        maintain_reservations
+        enqueue_check
+        expect(SolidQueue::ReadyExecution.count).to eq(1)
+      end
+    end
+
+    [ false, true ].each do |running|
+      it "exposes overlap after expiry and maintenance with a previous check #{running ? 'running' : 'queued'}" do
+        freeze_time do
+          first = enqueue_check
+          claim_check(first) if running
+          travel 5.minutes + 1.second
+          maintain_reservations
+          enqueue_check
+          expect(SolidQueue::Job.where(class_name: job_class.name).count).to eq(2)
+          expect(SolidQueue::ClaimedExecution.count).to eq(running ? 1 : 0)
+          expect(SolidQueue::ReadyExecution.count).to eq(running ? 1 : 2)
+        end
+      end
+    end
+
+    it "admits distinct targeted checks while each general sweep is running" do
+      [ Agents::ReleaseProbeJob, Agents::StagingProofJob, Agents::CandidateVerificationJob ].each do |klass|
+        claim_check(enqueue_check(klass))
+        enqueue_check(klass, 123)
+        enqueue_check(klass, 456)
+        enqueue_check(klass, 123)
+        enqueue_check(klass)
+        expect(SolidQueue::Job.where(class_name: klass.name).count).to eq(3)
+      end
+      expect(SolidQueue::BlockedExecution.count).to eq(0)
+    end
+
+    it "keeps continuation slots separate by window and cursor" do
+      klass = Alerting::Measurements::ScheduleJob
+      claim_check(enqueue_check(klass))
+      enqueue_check(klass, after_id: 100, window_end: "2026-11-24T10:00:00Z")
+      enqueue_check(klass, after_id: 200, window_end: "2026-11-24T10:00:00Z")
+      enqueue_check(klass, after_id: 100, window_end: "2026-11-24T10:01:00Z")
+      enqueue_check(klass, after_id: 100, window_end: "2026-11-24T10:00:00Z")
+      expect(SolidQueue::ReadyExecution.count).to eq(3)
+    end
+
+    it "dispatches all 101 rules through a continuation enqueued before the sweep finishes" do
+      project = create(:project)
+      Measurements::Ingest::Record.call(project: project, payload: {
+        "resourceMetrics" => [ { "scopeMetrics" => [ { "metrics" => [ {
+          "name" => "temperature", "unit" => "Cel",
+          "gauge" => { "dataPoints" => [ { "timeUnixNano" => "1795514400000000000", "asInt" => "10" } ] }
+        } ] } ] } ]
+      })
+      series = project.measurement_series.sole
+      config = { "version" => 1, "statistic" => "last", "comparison" => "gt", "threshold" => "5", "window_seconds" => 60 }
+      rules = create_list(:alerting_rule, 101, organization: project.organization, project: project,
+        event_type: :measurement_threshold, measurement_series: series, measurement_config: config)
+      klass = Alerting::Measurements::ScheduleJob
+      original_adapter = klass.queue_adapter
+      evaluator = Alerting::Measurements::EvaluateJob
+      evaluator_adapter = evaluator.queue_adapter
+      klass.queue_adapter = :solid_queue
+      evaluator.queue_adapter = :solid_queue
+      first = enqueue_check(klass)
+      execution = claim_check(first)
+      # Execute the real sweep while its queue claim still holds the initial reservation.
+      first.perform_now
+      continuation = SolidQueue::Job.where(class_name: klass.name).where.not(active_job_id: first.job_id).sole
+      expect(execution.reload).to be_present
+      next_job = ActiveJob::Base.deserialize(continuation.arguments)
+      claim_check(next_job).perform
+      dispatched = SolidQueue::Job.where(class_name: evaluator.name).map { |job| job.arguments.fetch("arguments").first }
+      expect(dispatched.map { |args| args.fetch("rule_id") }).to match_array(rules.map(&:id))
+      expect(dispatched.map { |args| args.fetch("window_end") }.uniq.size).to eq(1)
+    ensure
+      klass.queue_adapter = original_adapter if klass && original_adapter
+      evaluator.queue_adapter = evaluator_adapter if evaluator && evaluator_adapter
+    end
+  end
+
   describe "isolamento della corsia AI" do
     it "esiste un pool dedicato che contiene la coda ai" do
       expect(ai_pool).to be_present

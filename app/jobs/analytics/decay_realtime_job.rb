@@ -12,6 +12,7 @@ module Analytics
   # Servers::CheckStaleJob (job ricorrente every-minute che broadcasta).
   class DecayRealtimeJob < ApplicationJob
     queue_as :maintenance
+    limits_concurrency to: 1, key: "periodic", duration: 5.minutes, on_conflict: :discard
 
     def perform
       cutoff = (Analytics::Constants::REALTIME_WINDOW + 1.minute).ago

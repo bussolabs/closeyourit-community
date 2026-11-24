@@ -6,6 +6,7 @@ module Servers
   # lo fa l'ingest al primo push utile.
   class CheckStaleJob < ApplicationJob
     queue_as :servers
+    limits_concurrency to: 1, key: "periodic", duration: 5.minutes, on_conflict: :discard
 
     def perform
       # CYRA-775 — prima di leggere il silenzio come un guasto: il silenzio è nostro? Le
