@@ -393,6 +393,9 @@ namespace :cli do
         resources :attachments, only: %i[index create destroy], module: :tickets do # GET lista / POST allega / DELETE rimuovi
           get :download, on: :member                                                # GET scarica il binario (inviato dall'app)
         end
+        resources :link_previews, only: [], module: :tickets do                   # CYRA-1163
+          get :image, on: :member                                                   # GET the image of a link card, kept by us
+        end
         scope module: :tickets do
           namespace :review do
             resource :rejection, only: :create  # POST respinge la review (reason obbligatoria)

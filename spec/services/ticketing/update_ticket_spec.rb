@@ -113,6 +113,30 @@ RSpec.describe Ticketing::UpdateTicket do
     expect(detached.data["parent"]).to eq("from" => epic.code, "to" => nil)
   end
 
+  # CYRA-1163 — una scheda scaduta si rilegge anche se il salvataggio non tocca la descrizione.
+  # Prima del claim il form rimanda il corpo intero: un campo assente lo svuoterebbe, quindi la
+  # descrizione viaggia identica, come la rinvia il browser.
+  describe "anteprime dei link" do
+    let(:description) { "Design https://www.figma.com/file/abc/Checkout" }
+
+    before { ticket.update!(description:) }
+
+    it "rilegge un'anteprima scaduta a descrizione invariata" do
+      create(:link_preview, organization: org, url: "https://www.figma.com/file/abc/Checkout", expires_at: 1.minute.ago)
+
+      expect { described_class.call(channel: :web, organization: org, ticket:, params: params(title: "Altro titolo", description:)) }
+        .to have_enqueued_job(Ticketing::LinkPreviews::RefreshJob).with(ticket_id: ticket.id)
+      expect(ticket.reload.description).to eq(description)
+    end
+
+    it "non accoda niente se l'anteprima è ancora valida" do
+      create(:link_preview, organization: org, url: "https://www.figma.com/file/abc/Checkout")
+
+      expect { described_class.call(channel: :web, organization: org, ticket:, params: params(title: "Altro titolo", description:)) }
+        .not_to have_enqueued_job(Ticketing::LinkPreviews::RefreshJob)
+    end
+  end
+
   it "converte un bug in story (kind + description); il corpo esistente resta valido" do
     result = described_class.call(channel: :web, organization: org, ticket: ticket,
       params: params(kind: "story", description: "ridisegno checkout"))

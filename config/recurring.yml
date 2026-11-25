@@ -74,6 +74,12 @@ production: &schedule
     queue: batch
     schedule: every day at 3am
 
+  # CYRA-1163 — link previews expired for a month go, with their image.
+  prune_link_previews:
+    class: Ticketing::LinkPreviews::PruneJob
+    queue: batch
+    schedule: every day at 3am
+
   # CYRA-750 — le fette del mese in arrivo, pronte prima che serva. All'una e non alle 3: le
   # potature staccano le fette scadute e devono trovare il lavoro già fatto. Corsia `maintenance`
   # perché dura secondi e non deve mettersi in coda dietro ai lavori lunghi della notte.

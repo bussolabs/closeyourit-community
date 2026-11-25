@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.250.0] - 2026-11-25
+
+### Added
+
+- **Anteprime dei link nella descrizione**: un link nella descrizione di un ticket mostra una scheda con titolo, sito e immagine, che apre il link in una nuova scheda. I link verso indirizzi interni restano semplici. [Ticket](/member/tickets) (CYRA-1163)
+
+### Security
+
+- **Libreria per le connessioni ai server aggiornata**: la libreria che apre le connessioni sicure verso i server passa a una versione che corregge due falle, una sulle chiavi revocate e una sui certificati. Il controllo di sicurezza torna verde. (CYRA-1163)
+
 ## [0.249.0] - 2026-11-25
 
 ### Added

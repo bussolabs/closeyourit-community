@@ -18,7 +18,8 @@ module RestrictedBlobServing
   extend ActiveSupport::Concern
 
   TICKET_RECORD_TYPES = %w[Ticketing::Ticket Ticketing::Comment].freeze
-  CLOSED_RECORD_TYPES = %w[Ticketing::Question Ticketing::Answer].freeze
+  # Link card images (CYRA-1163) leave only through the ticket's own image route.
+  CLOSED_RECORD_TYPES = %w[Ticketing::Question Ticketing::Answer Ticketing::LinkPreview].freeze
 
   included do
     # In TESTA alla catena: gira prima di set_blob e set_representation, quindi non dipende dal loro

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_120006) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_120007) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -4088,6 +4088,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120006) do
     t.index ["true_actor_id"], name: "index_ticketing_events_on_true_actor_id"
   end
 
+  create_table "ticketing_link_previews", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "organization_id", null: false
+    t.string "url", null: false
+    t.string "status", null: false
+    t.string "title"
+    t.string "description"
+    t.string "site_name"
+    t.datetime "expires_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_ticketing_link_previews_on_expires_at"
+    t.index ["organization_id", "url"], name: "index_ticketing_link_previews_on_organization_id_and_url", unique: true
+  end
+
   create_table "ticketing_questions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "answered_at"
     t.integer "audience", default: 0, null: false
@@ -5261,6 +5275,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120006) do
   add_foreign_key "ticketing_events", "accounts", column: "true_actor_id", on_delete: :nullify
   add_foreign_key "ticketing_events", "organizations"
   add_foreign_key "ticketing_events", "ticketing_tickets", column: "ticket_id"
+  add_foreign_key "ticketing_link_previews", "organizations", on_delete: :cascade
   add_foreign_key "ticketing_questions", "accounts", column: "author_id"
   add_foreign_key "ticketing_questions", "accounts", column: "closed_by_id", on_delete: :nullify
   add_foreign_key "ticketing_questions", "agents_clarifications", column: "round_id", on_delete: :nullify

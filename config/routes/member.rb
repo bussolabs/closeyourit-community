@@ -847,6 +847,10 @@ namespace :member do
     # visibilità del ticket a ogni richiesta (anche a ogni pezzo di un video). Il path non porta il
     # filename, come il download della KB; i vecchi link /rails/active_storage/ rimandano qui.
     resources :files, only: :show, module: :tickets
+    # CYRA-1163 — the image of a link card, checked against the ticket's visibility on every request.
+    resources :link_previews, path: "previews", only: [], module: :tickets do
+      get :image, on: :member
+    end
     # Domande e risposte di primo livello (CYRA-782). Chiedere e rispondere sono baseline di chi vede
     # il ticket: è una conversazione. Marcare una domanda bloccante ferma la coda degli agenti, quindi
     # è una leva sul lavoro e passa da tickets.edit — come il ritiro di una domanda altrui.

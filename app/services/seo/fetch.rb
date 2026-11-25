@@ -61,12 +61,20 @@ module Seo
       def truncated? = truncated
     end
 
+    ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+
     # `budget`: secondi per l'intera lettura. Il giro passa il minore fra TOTAL_TIMEOUT e quanto
     # resta a lui (Seo::Crawl), così nemmeno l'ultima pagina sfora la scadenza del giro.
-    def initialize(url:, timeout: READ_TIMEOUT, budget: TOTAL_TIMEOUT)
+    # `max_bytes`, `accept` and `binary` are for callers that reuse the guarded reader: link previews
+    # read pages and images with their own caps, and an image body stays bytes (CYRA-1163).
+    def initialize(url:, timeout: READ_TIMEOUT, budget: TOTAL_TIMEOUT, max_bytes: MAX_BODY_BYTES,
+                   accept: ACCEPT, binary: false)
       @url = url.to_s
       @timeout = timeout
       @budget = budget
+      @max_bytes = max_bytes
+      @accept = accept
+      @binary = binary
     end
 
     def call
@@ -100,7 +108,7 @@ module Seo
       log_truncation(uri) if truncated
 
       Result.new(url: @url, final_url: uri.to_s, status_code: response.code.to_i,
-                 redirect_chain: chain, body: decode(body), truncated: truncated,
+                 redirect_chain: chain, body: @binary ? (body unless body.empty?) : decode(body), truncated: truncated,
                  content_type: response["content-type"], response_time_ms: elapsed)
     end
 
@@ -129,7 +137,7 @@ module Seo
             raise BudgetReached if res.is_a?(Net::HTTPRedirection)
 
             res.read_body do |chunk|
-              room = MAX_BODY_BYTES - body.bytesize
+              room = @max_bytes - body.bytesize
               # `>=` e non `>`: al tetto si smette, anche quando il pezzo lo riempie esatto. Con `>`
               # si resterebbe in attesa del pezzo successivo per sapere se ce n'è ancora, e su una
               # risposta che promette più di quanto manda quell'attesa finisce nel read timeout —
@@ -233,7 +241,7 @@ module Seo
     def build_request(uri)
       request = Net::HTTP::Get.new(uri.request_uri)
       request["User-Agent"] = USER_AGENT
-      request["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+      request["Accept"] = @accept
       request
     end
 
@@ -250,7 +258,7 @@ module Seo
     # che non è nostro, e una di quelle può portarsi dietro un token in chiaro. Per ritrovare la
     # pagina pesante il percorso basta.
     def log_truncation(uri)
-      Rails.logger.warn("[seo] corpo troncato a #{MAX_BODY_BYTES} byte: #{uri.host}#{uri.path}")
+      Rails.logger.warn("[seo] corpo troncato a #{@max_bytes} byte: #{uri.host}#{uri.path}")
     end
 
     def redirect_target(uri, response)

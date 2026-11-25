@@ -68,6 +68,8 @@ module Ticketing
 
       # Fuori transazione, mai after_commit.
       Ticketing::EmbedTicketJob.perform_later(ticket_id: @ticket.id) if semantic_changed
+      # CYRA-1163 — new links, or cards expired since the last save: read again in the background.
+      Ticketing::LinkPreviews::RefreshJob.enqueue_for(@ticket)
       Agents::Workflows::ReopenPlanForItems.call(ticket: @ticket) if items_changed?(before)
       # Rivalutazione del gate agenti (CYRA-184). La condizione è `stale?` e NON una seconda lista di
       # colonne osservate: quella di EmbeddingText esclude le condizioni DoD e ignora gli allegati,

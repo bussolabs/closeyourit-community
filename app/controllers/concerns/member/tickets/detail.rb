@@ -119,6 +119,8 @@ module Member
         @work_report_attempt = work_report_attempt(@workflow)
         @tab = "detail" if @tab == "report" && @report.nil? && @workflow.nil?
         @advice = @tab == "detail" ? advice_lines_of(@ticket) : []
+        # CYRA-1163 — the cards of the description's links, on the tab that shows the description.
+        @link_previews = @tab == "detail" ? ::Ticketing::LinkPreviews::ForTicket.call(ticket: @ticket) : []
         # Su quale scheda vive DAVVERO il racconto del lavoro consegnato (CYRA-557). Nil = da nessuna
         # parte, e il banner della revisione non offre una decisione da prendere alla cieca.
         @review_evidence_tab = review_evidence_tab if @ticket.status.review_gate?

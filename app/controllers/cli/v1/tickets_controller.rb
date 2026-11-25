@@ -45,7 +45,9 @@ module Cli
         # pre-calcolata qui e passata via params così la serializzazione non fa query extra.
         guidance = ::Guidance::Resolve.call(project: @ticket.project)
         answered = @ticket.questions.readable_by(Current.account, organization: Current.organization)
-        render_ok(TicketSerializer.new(@ticket, params: { guidance: guidance, answered_questions: answered }))
+        previews = ::Ticketing::LinkPreviews::ForTicket.call(ticket: @ticket)
+        render_ok(TicketSerializer.new(@ticket, params: { guidance: guidance, answered_questions: answered,
+                                                          link_previews: previews }))
       end
 
       def create

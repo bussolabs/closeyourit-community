@@ -68,4 +68,15 @@ class TicketSerializer < ApplicationSerializer
   attribute :answered_questions, if: proc { params[:answered_questions] } do |ticket|
     ticket.answered_question_decisions(params[:answered_questions])
   end
+
+  # CYRA-1163 — the cards of the description's links. Detail only, like guidance: the list pays nothing.
+  # The image address is ours and checks who opens it; a card without an image has none.
+  attribute :link_previews, if: proc { params[:link_previews] } do |ticket|
+    routes = Rails.application.routes.url_helpers
+    params[:link_previews].map do |preview|
+      image = routes.image_cli_v1_project_ticket_link_preview_path(ticket.project_id, ticket.id, preview.id)
+      { url: preview.url, title: preview.title, description: preview.description, site_name: preview.site_name,
+        image_url: (image if preview.image.attached?) }
+    end
+  end
 end

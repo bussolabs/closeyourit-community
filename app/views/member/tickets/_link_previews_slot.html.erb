@@ -1,0 +1,7 @@
+<%# locals: (ticket:, previews:) %>
+<%# CYRA-1163 — always on the page, even empty: Ticketing::LinkPreviews::RefreshJob replaces it when the cards are read after the page was rendered. %>
+<div id="<%= dom_id(ticket, :link_previews) %>">
+  <% if previews.present? %>
+    <%= render "member/tickets/link_previews", ticket:, previews: %>
+  <% end %>
+</div>

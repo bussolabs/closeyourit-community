@@ -24,6 +24,8 @@
         body_class: "px-4 py-3.5", test_id: "ticket-body") do %>
     <%= render Ui::MarkdownComponent.new(text: @ticket.description,
           class: "text-[13px] text-zinc-700 dark:text-zinc-300 leading-relaxed", test_id: "ticket-description") %>
+    <%# CYRA-1163 — a card for each link with a ready preview; the links in the text stay as written. %>
+    <%= render "member/tickets/link_previews_slot", ticket: @ticket, previews: @link_previews %>
   <% end %>
 <% end %>
 

@@ -3824,11 +3824,34 @@
       "level": 3,
       "parent": "tkt_flow_create",
       "kind": "step",
-      "summary": "Partono tre lavori in coda: avvisi al team, indice per la ricerca per significato e primo parere su chi può lavorarlo.",
+      "summary": "Partono i lavori in coda: avvisi al team, indice per la ricerca per significato, primo parere su chi può lavorarlo e, se la descrizione ha link, le loro anteprime.",
       "files": [
         "app/jobs/ticketing/notify_job.rb",
         "app/jobs/ticketing/embed_ticket_job.rb",
-        "app/services/ticketing/agent_eligibility_queue.rb"
+        "app/services/ticketing/agent_eligibility_queue.rb",
+        "app/jobs/ticketing/link_previews/refresh_job.rb"
+      ]
+    },
+    {
+      "id": "tkt_link_previews",
+      "name": "Anteprime dei link",
+      "level": 3,
+      "parent": "tkt_flow_create",
+      "kind": "step",
+      "summary": "Dopo il salvataggio si leggono in sottofondo fino a 5 link della descrizione: titolo, sito e immagine, tenuti 7 giorni. Ogni salvataggio rilegge quelli scaduti. Gli indirizzi interni non si visitano mai. Sotto la descrizione compare una scheda per ogni link con titolo, anche nella pagina già aperta; l'immagine la serviamo noi a chi vede il ticket.",
+      "files": [
+        "app/jobs/ticketing/link_previews/refresh_job.rb",
+        "app/jobs/ticketing/link_previews/prune_job.rb",
+        "app/services/ticketing/link_previews/links.rb",
+        "app/services/ticketing/link_previews/refresh.rb",
+        "app/services/ticketing/link_previews/read_page.rb",
+        "app/services/ticketing/link_previews/for_ticket.rb",
+        "app/services/seo/fetch.rb",
+        "app/models/ticketing/link_preview.rb",
+        "app/controllers/member/tickets/link_previews_controller.rb",
+        "app/controllers/cli/v1/tickets/link_previews_controller.rb",
+        "app/views/member/tickets/_link_previews.html.erb",
+        "app/views/member/tickets/_link_previews_slot.html.erb"
       ]
     },
     {

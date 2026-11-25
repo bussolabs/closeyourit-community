@@ -39,6 +39,8 @@ module Ticketing
       Ticketing::NotifyJob.perform_later(event_id: event.id)
       # Embedding per ricerca semantica/duplicati (fuori dalla transazione, mai after_commit).
       Ticketing::EmbedTicketJob.perform_later(ticket_id: ticket.id)
+      # CYRA-1163 — the cards of the links in the description, read in the background.
+      Ticketing::LinkPreviews::RefreshJob.enqueue_for(ticket)
       # Gate di eleggibilità agenti (CYRA-184): il ticket nasce `pending` — quindi già fuori dalla
       # coda — e questo job produce il primo verdetto. Il debounce copre il caso "creo e correggo
       # subito": la raffica di job che ne segue costa una sola chiamata LLM (guardia sul checksum).
