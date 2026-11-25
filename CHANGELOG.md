@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.251.4] - 2026-11-25
+
+### Fixed
+
+- **Le macchine non vengono più rifiutate per troppe richieste**: ogni macchina ha il suo limite di richieste, non più uno condiviso con tutto il resto. Prima il server ne rifiutava centinaia al giorno e i lavori in attesa venivano saltati.
+
 ## [0.251.3] - 2026-11-25
 
 ### Fixed

@@ -137,7 +137,28 @@ class Rack::Attack
   # buco per prefisso avrebbe lasciato senza alcun freno il traffico anonimo verso le stesse rotte,
   # che pur finendo in 401 costa comunque una risoluzione di credenziale a testa.
   throttle("api/ip", limit: 300, period: 1.minute) do |req|
-    req.ip if req.path.start_with?("/api/") && Rack::Attack.agent_ingest_key(req).nil?
+    req.ip if req.path.start_with?("/api/") && Rack::Attack.agent_ingest_key(req).nil? &&
+              Rack::Attack.agent_host_key(req).nil?
+  end
+
+  # CYRA-1363 — an agent machine asks every queue it serves at each round, and a fleet leaves from one
+  # address: in the shared counter one machine was refused 847 claims in a day. Counted per credential,
+  # like the server probes (CYRA-775); the per-address ceiling stops made-up tokens from opening counters.
+  AGENT_HOST_TOKEN_PREFIX = "cyi_ah_"
+
+  def self.agent_host_key(req)
+    return nil unless req.path.start_with?("/api/")
+    return nil unless req.get_header("HTTP_AUTHORIZATION").to_s.start_with?("Bearer #{AGENT_HOST_TOKEN_PREFIX}")
+
+    bearer_token_key(req)
+  end
+
+  throttle("agent_host/token", limit: 600, period: 1.minute) do |req|
+    Rack::Attack.agent_host_key(req)
+  end
+
+  throttle("agent_host/ip", limit: 6000, period: 1.minute) do |req|
+    req.ip if Rack::Attack.agent_host_key(req)
   end
 
   # CloseYourIt AI gateway (/v1/ on api.closeyour.it, CYRA-1046) — 60 / minute per presented key, or
