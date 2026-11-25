@@ -504,7 +504,7 @@
       "level": 3,
       "parent": "err_flow_ingest",
       "kind": "step",
-      "summary": "Lo stesso evento non si salva due volte. Si trova o crea il gruppo (anche se fuso in un altro), si scrive l'occorrenza e si aggiornano i contatori.",
+      "summary": "Lo stesso evento non si salva due volte. Si trova o crea il gruppo (anche se fuso in un altro), si scrive l'occorrenza e si aggiornano i contatori. Un utente conta solo quando entra per la prima volta nell'elenco delle persone viste dal gruppo.",
       "files": [
         "app/services/errors/ingest/record.rb",
         "app/services/ingest/grouped_record.rb"
@@ -679,7 +679,7 @@
       "level": 3,
       "parent": "err_flow_merge_split",
       "kind": "step",
-      "summary": "Occorrenze, log collegati e contatori passano al gruppo principale. Le impronte assorbite restano sue. O si fonde tutto o niente.",
+      "summary": "Occorrenze, log collegati, persone già viste e contatori passano al gruppo principale. Le impronte assorbite restano sue. O si fonde tutto o niente.",
       "files": [
         "app/services/errors/merge.rb",
         "app/controllers/member/monitoring/error_groups/merges_controller.rb",
@@ -692,7 +692,7 @@
       "level": 3,
       "parent": "err_flow_merge_split",
       "kind": "step",
-      "summary": "Dalla CLI si spostano alcune occorrenze in un gruppo nuovo. Se hanno tutte la stessa impronta libera, i futuri arrivi andranno lì; se no, è solo un riordino.",
+      "summary": "Dalla CLI si spostano alcune occorrenze in un gruppo nuovo, con le persone che le avevano incontrate. Se hanno tutte la stessa impronta libera, i futuri arrivi andranno lì; se no, è solo un riordino.",
       "files": [
         "app/services/errors/split.rb",
         "app/controllers/cli/v1/error_groups_controller.rb"
@@ -938,7 +938,7 @@
       "level": 2,
       "parent": "area_errors",
       "kind": "job",
-      "summary": "Ogni notte alle 3 si cancellano le occorrenze oltre la conservazione del progetto. I contatori dei gruppi restano. Si buttano anche le righe temporanee rimaste orfane.",
+      "summary": "Ogni notte alle 3 si cancellano le occorrenze oltre la conservazione del progetto. I contatori dei gruppi e le persone già viste restano. Si buttano anche le righe temporanee rimaste orfane.",
       "files": [
         "app/jobs/errors/prune_events_job.rb",
         "app/jobs/errors/prune_ingest_payloads_job.rb",
@@ -986,7 +986,7 @@
       "level": 2,
       "parent": "area_errors",
       "kind": "data",
-      "summary": "Gruppi, occorrenze, regole di raggruppamento, righe temporanee e traduzioni dello stack.",
+      "summary": "Gruppi, persone già viste, occorrenze, regole di raggruppamento, righe temporanee e traduzioni dello stack.",
       "files": [
         "app/models/errors/**"
       ]
@@ -1011,6 +1011,18 @@
       "summary": "Una singola volta in cui l'errore è successo. Non cambia mai. Porta ambiente, versione, utente anonimo, trace e sessione registrata.",
       "files": [
         "app/models/errors/event.rb"
+      ]
+    },
+    {
+      "id": "err_data_group_user",
+      "name": "Persona già vista",
+      "level": 3,
+      "parent": "err_data",
+      "kind": "data",
+      "summary": "Un utente anonimo che ha già incontrato un errore. Ognuno compare una volta sola per errore, così conta una volta sola. La pulizia delle occorrenze non lo tocca: sparisce solo con l'errore.",
+      "files": [
+        "app/models/errors/group_user.rb",
+        "app/jobs/errors/backfill_group_users_job.rb"
       ]
     },
     {

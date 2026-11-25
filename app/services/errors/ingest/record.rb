@@ -129,7 +129,8 @@ module Errors
       end
 
       # Le sei letture pre-bump. `new_user` DEVE stare qui e non dopo la create: l'evento appena
-      # scritto porta lo stesso user_hash e farebbe rispondere «già visto» a ogni utente nuovo.
+      # scritto porta lo stesso user_hash e farebbe rispondere «già visto» a ogni utente nuovo. È
+      # l'unica che scrive (l'aggiunta all'elenco delle persone viste), dentro la stessa transazione.
       def pre_bump_reading(group, normalized)
         created = group.previously_new_record?     # gruppo appena creato?
         Reading.new(
@@ -143,8 +144,16 @@ module Errors
         )
       end
 
+      # CYRA-1241 — nuovo SOLO se entra adesso nell'elenco delle persone viste (Errors::GroupUser): la
+      # potatura non lo svuota, e l'indice unico fa passare una sola aggiunta fra due eventi simultanei
+      # dello stesso utente. Il controllo sulle occorrenze conservate resta per chi le ha da prima
+      # dell'elenco e non è ancora stato riempito (Errors::BackfillGroupUsersJob): ci entra senza essere
+      # contato di nuovo. Costa una query solo alla prima aggiunta, non a ogni evento.
       def new_user_for?(group, user_hash)
-        user_hash.present? && !group.events.where(user_hash: user_hash).exists?
+        return false if user_hash.blank?
+        return false unless Errors::GroupUser.claim(group_id: group.id, user_hash: user_hash)
+
+        !group.events.where(user_hash: user_hash).exists?
       end
 
       # Raffica IN CORSO: l'occorrenza precedente è arrivata pochi secondi fa. `last_seen_at` è

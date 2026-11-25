@@ -43,6 +43,9 @@ module Errors
         new_group = build_new_group!(fingerprint)
         Errors::Event.where(id: moved.map(&:id)).update_all(group_id: new_group.id)
         release_absorbed_fingerprint!(fingerprint)
+        # CYRA-1241 — il nuovo gruppo conosce le persone delle occorrenze che riceve: chi torna su di
+        # lui non viene contato di nuovo. Il sorgente tiene il suo elenco: quelle persone le ha viste.
+        Errors::GroupUser.collect_from_events(group_id: new_group.id, events: new_group.events)
         recount!(new_group)
         recount!(@group)
       end

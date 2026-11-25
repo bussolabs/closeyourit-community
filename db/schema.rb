@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_120007) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_120008) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -2192,6 +2192,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120007) do
     t.index ["project_id", "replay_session_id"], name: "index_errors_events_on_project_id_and_replay_session_id"
     t.index ["project_id", "trace_id", "span_id"], name: "errors_events_span_correlation"
     t.index ["project_id", "trace_id"], name: "index_errors_events_on_project_id_and_trace_id"
+  end
+
+  create_table "errors_group_users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "group_id", null: false
+    t.string "user_hash", null: false
+    t.datetime "created_at", null: false
+    t.index ["group_id", "user_hash"], name: "index_errors_group_users_on_group_id_and_user_hash", unique: true
   end
 
   create_table "errors_grouping_rules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -5051,6 +5058,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120007) do
   add_foreign_key "datasets_trainings", "datasets_datasets", column: "dataset_id", on_delete: :cascade
   add_foreign_key "errors_events", "errors_groups", column: "group_id", on_delete: :cascade
   add_foreign_key "errors_events", "projects", on_delete: :cascade
+  add_foreign_key "errors_group_users", "errors_groups", column: "group_id", on_delete: :cascade
   add_foreign_key "errors_grouping_rules", "projects", on_delete: :cascade
   add_foreign_key "errors_groups", "accounts", column: "assignee_id", on_delete: :nullify
   add_foreign_key "errors_groups", "projects", on_delete: :cascade

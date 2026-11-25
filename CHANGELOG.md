@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.251.2] - 2026-11-25
+
+### Fixed
+
+- **Le persone colpite da un errore contano una volta sola**: chi torna su un errore dopo la pulizia, o invia due eventi insieme, non è più contato due volte. Ogni errore tiene l'elenco delle persone viste, anche dopo fusione e divisione. Per gli errori esistenti l'elenco si riempie lanciando una volta `Errors::BackfillGroupUsersJob`. (CYRA-1241)
+
 ## [0.251.1] - 2026-11-25
 
 ### Fixed

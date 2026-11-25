@@ -165,6 +165,48 @@ RSpec.describe Errors::Ingest::Record, type: :service do
       record(payload(event_id: "e1"))
       expect(project.error_groups.sole.users_count).to eq(0)
     end
+
+    # CYRA-1241: si decideva sulle sole occorrenze conservate — potate quelle, chi tornava era nuovo.
+    it "chi torna dopo la potatura dei suoi eventi non è contato di nuovo" do
+      Settings::Global.instance.update!(errors_retention_days: 30)
+      u = { "id" => "user-1" }
+      record(payload(event_id: "e1", user: u))
+
+      travel(31.days) do
+        Errors::PruneEventsJob.perform_now
+        expect(project.error_groups.sole.events).to be_empty
+        record(payload(event_id: "e2", user: u))
+      end
+
+      expect(project.error_groups.sole.users_count).to eq(1)
+    end
+
+    it "la persona entra una volta sola nell'elenco del gruppo" do
+      u = { "id" => "user-1" }
+      record(payload(event_id: "e1", user: u))
+      record(payload(event_id: "e2", user: u))
+      record(payload(event_id: "e3", user: { "id" => "user-2" }))
+
+      expect(project.error_groups.sole.group_users.count).to eq(2)
+    end
+
+    # Errore di prima dell'elenco, non ancora riempito: le occorrenze conservate bastano a riconoscerla,
+    # e da lì entra nell'elenco — sopravvive anche alla potatura successiva.
+    it "chi ha occorrenze conservate da prima dell'elenco non è contato di nuovo" do
+      Settings::Global.instance.update!(errors_retention_days: 30)
+      u = { "id" => "user-1" }
+      record(payload(event_id: "e1", user: u))
+      Errors::GroupUser.delete_all
+
+      record(payload(event_id: "e2", user: u))
+      expect(project.error_groups.sole.users_count).to eq(1)
+
+      travel(31.days) do
+        Errors::PruneEventsJob.perform_now
+        record(payload(event_id: "e3", user: u))
+      end
+      expect(project.error_groups.sole.users_count).to eq(1)
+    end
   end
 
   # CYRA-380: fatto storico «il gruppo ha ricevuto contesto utente», acceso al primo user_hash e mai

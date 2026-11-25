@@ -25,6 +25,10 @@ module Errors
     belongs_to :assignee, class_name: "Accounts::Account", inverse_of: :assigned_error_groups, optional: true
     has_many :events, class_name: "Errors::Event", foreign_key: :group_id,
              inverse_of: :group, dependent: :destroy
+    # CYRA-1241 — le persone già viste: decidono se `users_count` sale. Sopravvivono alla potatura
+    # degli eventi e se ne vanno solo con il gruppo (la FK ha anche on_delete: :cascade).
+    has_many :group_users, class_name: "Errors::GroupUser", foreign_key: :group_id,
+             inverse_of: :group, dependent: :delete_all
     # Log collegati manualmente a questo errore (vedi Logs::Link).
     has_many :log_links, class_name: "Logs::Link", as: :linkable, dependent: :destroy
     has_many :linked_log_entries, through: :log_links, source: :log_entry

@@ -50,6 +50,19 @@ RSpec.describe Errors::Split do
       expect(group.users_count).to eq(1)              # solo u2 resta
     end
 
+    # CYRA-1241: il nuovo gruppo conosce le persone delle occorrenze ricevute; il sorgente tiene le sue.
+    it "il nuovo gruppo riceve le persone delle occorrenze spostate" do
+      moved = create_list(:error_event, 2, group:, project:, user_hash: "a" * 16)
+      create(:error_event, group:, project:, user_hash: "b" * 16)
+      Errors::GroupUser.create!(group:, user_hash: "a" * 16)
+      Errors::GroupUser.create!(group:, user_hash: "b" * 16)
+
+      new_group = split(moved).value
+
+      expect(new_group.group_users.pluck(:user_hash)).to eq([ "a" * 16 ])
+      expect(group.group_users.pluck(:user_hash)).to contain_exactly("a" * 16, "b" * 16)
+    end
+
     # CYRA-380: il sorgente aveva già ricevuto contesto utente (user_context_seen true), ma le
     # occorrenze con user_hash sono state potate: recount! azzera users_count. Il fatto storico NON deve
     # regredire, altrimenti un gruppo che aveva tracciato risulterebbe «non tracciato» dopo lo split.

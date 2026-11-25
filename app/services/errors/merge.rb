@@ -34,6 +34,7 @@ module Errors
         absorb_fingerprints!(sources)
         move_events!(sources)
         move_log_links!(sources)
+        absorb_known_users!(sources)
         absorb_counters!(sources)
         # I gruppi muoiono QUI, dopo che tutto ciò che portavano ha cambiato padrone: `has_many
         # :events, dependent: :destroy` cancellerebbe le occorrenze ancora appese a loro.
@@ -98,18 +99,27 @@ module Errors
       links.delete_all
     end
 
+    # CYRA-1241 — le persone già viste dalle sorgenti confluiscono nell'elenco del primario PRIMA che
+    # le sorgenti muoiano (la cascade se le porterebbe via): chi le aveva incontrate e torna sul
+    # primario non viene contato di nuovo.
+    def absorb_known_users!(sources)
+      Errors::GroupUser.absorb(to_id: @primary.id, from_ids: sources.map(&:id))
+    end
+
     # `events_count` si SOMMA: è un totale di occorrenze e sopravvive alla potatura, quindi un COUNT
     # sulle righe rimaste direbbe meno del vero.
     #
     # `users_count` NO: è un conteggio di utenti DISTINTI, e sommarlo conterebbe due volte chi ha
     # incontrato entrambi gli errori — cosa probabile proprio nei gruppi che si fondono, che per
-    # definizione sono lo stesso guasto. Senza i set degli utenti non si può calcolare l'unione:
-    # teniamo il massimo, che è l'unico numero certamente vero ("almeno tanti"). Sottostima invece
-    # di gonfiare, che su un dato mostrato all'utente è il verso giusto in cui sbagliare.
+    # definizione sono lo stesso guasto. Teniamo il massimo fra i contatori e l'elenco unito delle
+    # persone viste (CYRA-1241): ognuno è un numero certamente vero ("almeno tanti"), quindi lo è
+    # anche il massimo. L'elenco può dire meno del contatore — chi è stato potato prima che
+    # l'elenco esistesse non c'è — e per questo non lo sostituisce. Sottostima invece di gonfiare,
+    # che su un dato mostrato all'utente è il verso giusto in cui sbagliare.
     def absorb_counters!(sources)
       @primary.update!(
         events_count: @primary.events_count + sources.sum(&:events_count),
-        users_count: [ @primary.users_count, *sources.map(&:users_count) ].max,
+        users_count: [ @primary.users_count, *sources.map(&:users_count), @primary.group_users.count ].max,
         # user_context_seen è un fatto storico monotòno (CYRA-380): se il primario o QUALSIASI gruppo
         # fuso aveva ricevuto contesto utente, il gruppo risultante resta «tracciato».
         user_context_seen: [ @primary, *sources ].any?(&:user_context_seen?),

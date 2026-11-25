@@ -67,6 +67,33 @@ RSpec.describe Errors::PruneEventsJob, type: :job do
     expect(group.reload.events_count).to eq(3) # i contatori non vengono decrementati
   end
 
+  # CYRA-1241: l'elenco delle persone viste non è una occorrenza — la potatura non lo tocca.
+  it "l'elenco delle persone viste sopravvive alla potatura" do
+    group = create(:error_group, users_count: 1)
+    create(:error_event, group:, project: group.project, user_hash: "a" * 16, created_at: 40.days.ago)
+    Errors::GroupUser.create!(group:, user_hash: "a" * 16)
+
+    described_class.perform_now
+
+    expect(Errors::Event.where(group_id: group.id).exists?).to be(false)
+    expect(Errors::GroupUser.where(group_id: group.id).pluck(:user_hash)).to eq([ "a" * 16 ])
+  end
+
+  it "chi era già contato e torna dopo la potatura non viene contato di nuovo" do
+    project = create(:project)
+    payload = { "event_id" => "1" * 32, "message" => "boom", "user" => { "id" => "user-1" } }
+    Errors::Ingest::Record.call(project:, payload:)
+
+    travel(31.days) do
+      described_class.perform_now
+      Errors::Ingest::Record.call(project:, payload: payload.merge("event_id" => "2" * 32))
+    end
+
+    group = project.error_groups.sole
+    expect(group.events.count).to eq(1)
+    expect(group.users_count).to eq(1)
+  end
+
   it "risolve Settings::Global una sola volta (no N+1 sul singleton)" do
     create_list(:project, 3).each { |p| create(:error_event, group: create(:error_group, project: p), project: p) }
     expect(Settings::Global).to receive(:instance).once.and_call_original

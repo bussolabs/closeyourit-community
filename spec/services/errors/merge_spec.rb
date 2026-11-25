@@ -35,6 +35,29 @@ RSpec.describe Errors::Merge do
     expect(primary.reload.users_count).to eq(3)
   end
 
+  # CYRA-1241: le persone viste dalle sorgenti passano al primario, così chi torna non viene ricontato.
+  it "porta le persone viste dalle sorgenti nell'elenco del primario, senza doppioni" do
+    Errors::GroupUser.create!(group: primary, user_hash: "a" * 16)
+    Errors::GroupUser.create!(group: source, user_hash: "a" * 16)
+    Errors::GroupUser.create!(group: source, user_hash: "b" * 16)
+
+    merge(source)
+
+    expect(primary.reload.group_users.pluck(:user_hash)).to contain_exactly("a" * 16, "b" * 16)
+    expect(Errors::GroupUser.where(group_id: source.id)).to be_empty
+  end
+
+  it "sugli utenti tiene l'elenco unito quando supera i contatori, mai la somma" do
+    primary.update!(users_count: 1)
+    source.update!(users_count: 1)
+    Errors::GroupUser.create!(group: primary, user_hash: "a" * 16)
+    Errors::GroupUser.create!(group: source, user_hash: "b" * 16)
+
+    merge(source)
+
+    expect(primary.reload.users_count).to eq(2)
+  end
+
   # CYRA-380: «ha ricevuto contesto utente» è un fatto storico monotòno — se lo era il primario o una
   # qualsiasi sorgente, il gruppo fuso resta «tracciato» (OR, non max di un conteggio azzerabile).
   it "resta «tracciato» se lo era una sorgente anche quando il primario non lo era" do
