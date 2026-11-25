@@ -944,6 +944,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120007) do
     t.index ["account_id", "dedup_key"], name: "idx_alerting_notifications_ticket_idem", unique: true, where: "(rule_id IS NULL)"
     t.index ["account_id", "read_at"], name: "index_alerting_notifications_on_account_id_and_read_at"
     t.index ["account_id"], name: "index_alerting_notifications_on_account_id"
+    t.index ["created_at"], name: "idx_alerting_notifications_retention"
     t.index ["organization_id", "created_at"], name: "index_alerting_notifications_on_organization_id_and_created_at"
     t.index ["organization_id"], name: "index_alerting_notifications_on_organization_id"
     t.index ["project_id"], name: "index_alerting_notifications_on_project_id"
@@ -1134,6 +1135,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120007) do
     t.uuid "project_id", null: false
     t.string "rating", comment: "good | needs-improvement | poor — RICALCOLATO qui, mai preso dal client"
     t.float "value", null: false, comment: "ms per lcp/inp/ttfb/fcp; adimensionale per cls"
+    t.index ["project_id", "created_at"], name: "idx_analytics_web_vitals_retention"
     t.index ["project_id", "event_id"], name: "index_analytics_web_vitals_on_project_id_and_event_id", unique: true
     t.index ["project_id", "hostname", "metric", "occurred_at"], name: "index_analytics_web_vitals_site_lookup", order: { occurred_at: :desc }
     t.index ["project_id", "metric", "occurred_at"], name: "idx_on_project_id_metric_occurred_at_1f3573bd44", order: { occurred_at: :desc }

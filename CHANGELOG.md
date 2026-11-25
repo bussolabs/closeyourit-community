@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.250.1] - 2026-11-25
+
+### Fixed
+
+- **Pulizia dello storico più efficiente**: la pulizia delle notifiche e delle misure di velocità delle pagine limita le letture dei dati recenti anche con archivi grandi. I tempi di conservazione restano invariati.
+
 ## [0.250.0] - 2026-11-25
 
 ### Added

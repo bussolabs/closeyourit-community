@@ -25,11 +25,24 @@ module Analytics
         # Le misure di velocità (CYRA-538) nascono dallo stesso visitatore e si potano con la stessa
         # finestra: due durate diverse per lo stesso dato sono un modo per ritrovarsi in casa
         # qualcosa che non si doveva più avere.
-        Analytics::WebVital.where(project_id: project.id, created_at: ..threshold).in_batches.delete_all
+        prune_web_vitals(project, threshold)
       end
 
       salt_cutoff = Time.current.utc.to_date - Analytics::Constants::SALT_RETENTION_DAYS
       Analytics::Salt.where(date: ...salt_cutoff).delete_all
+    end
+
+    private
+
+    def prune_web_vitals(project, threshold)
+      expired = Analytics::WebVital.where(project_id: project.id, created_at: ..threshold)
+      loop do
+        # Follow the project/time index, including the final empty lookup. CYRA-1268.
+        ids = expired.reorder(:created_at).limit(1_000).pluck(:id)
+        break if ids.empty?
+
+        expired.where(id: ids).delete_all
+      end
     end
   end
 end

@@ -8,7 +8,14 @@ module Alerting
     RETENTION = 30.days
 
     def perform
-      Alerting::Notification.where(created_at: ..RETENTION.ago).in_batches.delete_all
+      expired = Alerting::Notification.where(created_at: ..RETENTION.ago)
+      loop do
+        # A primary-key cursor can scan recent rows on every batch. CYRA-1268.
+        ids = expired.reorder(:created_at).limit(1_000).pluck(:id)
+        break if ids.empty?
+
+        expired.where(id: ids).delete_all
+      end
     end
   end
 end
