@@ -47,10 +47,62 @@ RSpec.describe AgentTicketCandidateSerializer do
     create(:membership, organization: ticket.project.organization, account: cto)
     approved_at = Time.current
     plan.update!(approved_by: cto, approved_at:)
+    workflow.update!(approved_at:)
 
     payload = described_class.new(ticket.reload).as_json.dig("workflow", :current_plan)
     expect(payload).to include(approved_by: "Alessio", definition_of_done: [ "RSpec verde" ])
     expect(payload[:approved_at]).to be_within(1.second).of(approved_at)
+  end
+
+  # CYRA-1362 — the delivery said the approved plan does not apply: the work goes back to planning and the plan
+  # keeps who approved it and when. Planning must read it as the previous plan with the reason, not as approved.
+  describe "a plan the delivery rejected" do
+    let(:organization) { create(:organization) }
+    let(:project) { create(:project, organization:) }
+    let(:ticket) { create(:ticket, organization:, project:, with_agent_workflow: true) }
+    let(:workflow) { ticket.agent_workflow }
+
+    before do
+      create(:github_repository, project:, full_name: "bussolabs/app", default_branch: "main", release_probe: :merge)
+      workflow.update!(ticket_snapshot_digest: "snapshot", triaged_at: 1.hour.ago, planned_at: 1.hour.ago)
+      Agents::Plan.create!(workflow:, attempt: create(:agent_attempt, organization:, workflow:), technical_analysis: "Piano",
+                           scenarios: [], definition_of_done: [ "RSpec" ], notes: [], ticket_snapshot_digest: "snapshot")
+      cto = create(:account, name: "Alessio").tap do |account|
+        create(:membership, account:, organization:)
+        create(:project_membership, account:, project:)
+      end
+      organization.update!(cto:)
+      expect(Agents::Workflows::ApprovePlan.call(workflow:, actor: cto)).to be_ok
+    end
+
+    it "still reaches development as approved, with the frozen version and its constraints" do
+      json = described_class.new(ticket.reload).as_json
+
+      expect(json.dig("workflow", :execution_phase)).to eq("autopilot")
+      expect(json.dig("workflow", :frozen_plan_version)).to eq(workflow.reload.frozen_plan.version)
+      expect(json.dig("workflow", :current_plan)).to include(
+        approved_by: "Alessio",
+        candidate_items: [ { "repo" => "bussolabs/app", "base" => "main" } ],
+        completion_probe: { "kind" => "merge", "repo" => "bussolabs/app" }
+      )
+      expect(json.dig("workflow", :current_plan, :approved_at)).to be_present
+    end
+
+    it "reaches planning without the approval, without the frozen constraints, with the reason to follow" do
+      workflow.plans.last.update!(change_request: "The model allows a single owner")
+      workflow.update!(planned_at: nil, approved_at: nil, approved_by: nil)
+
+      json = described_class.new(ticket.reload).as_json
+
+      expect(json.dig("workflow", :execution_phase)).to eq("planner")
+      expect(json.dig("workflow", :frozen_plan_version)).to be_nil
+      expect(json.dig("workflow", :current_plan)).to include(
+        approved_at: nil, approved_by: nil, candidate_items: nil, completion_probe: nil,
+        change_request: "The model allows a single owner"
+      )
+      # The approval stays on record: only what travels to the machine changes.
+      expect(workflow.plans.last.approved_at).to be_present
+    end
   end
 
   # CYAU-177 — le due decisioni che una persona ha congelato approvando il piano (CYRA-610) devono

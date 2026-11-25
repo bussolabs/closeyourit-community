@@ -153,6 +153,35 @@ RSpec.describe Agents::Attempts::Deliver, "il blocco dichiarato dalla macchina" 
       expect(workflow.phase).to eq("planning")
     end
 
+    # CYRA-1362 — the plan keeps its approval on record, but planning must not receive it as approved: it reads
+    # the previous plan with the delivery's reason as the change request to follow.
+    it "hands planning the rejected plan without its approval, with the reason" do
+      consegna("autopilot", contract_version: 2, state: "blocked", security_findings: [],
+                            failure: { category: "invalid_plan", summary: "1.1.19 is still vulnerable", retryable: false, human_action: "Replan." })
+
+      candidate = AgentTicketCandidateSerializer.new(ticket.reload).as_json.fetch("workflow")
+      expect(candidate[:execution_phase]).to eq("planner")
+      expect(candidate[:frozen_plan_version]).to be_nil
+      expect(candidate[:current_plan]).to include(approved_at: nil, approved_by: nil, candidate_items: nil,
+                                                  completion_probe: nil, change_request: "1.1.19 is still vulnerable")
+      expect(plan.reload.approved_at).to be_present
+    end
+
+    # CYRA-1362 — on CYRA-1236 planning and delivery bounced twelve sessions: every rejected plan was replanned.
+    it "blocks with the reason when the replanned plan does not apply either" do
+      invalid = { category: "invalid_plan", summary: "The model allows a single owner", retryable: false, human_action: "Replan." }
+      consegna("autopilot", contract_version: 2, state: "blocked", security_findings: [], failure: invalid)
+      workflow.update!(planned_at: 2.minutes.ago, approved_at: 1.minute.ago, autopilot_started_at: 1.minute.ago)
+
+      consegna("autopilot", contract_version: 2, state: "blocked", security_findings: [], failure: invalid)
+
+      expect(workflow.reload).to have_attributes(blocked_phase: "autopilot", blocked_kind: "agent_blocked")
+      expect(workflow.blocked_reason).to include("The model allows a single owner")
+      expect(workflow.approved_at).to be_present
+      # No further session: a stopped work offers no phase to the machine.
+      expect(workflow.ready_execution_phase).to be_nil
+    end
+
     it "still blocks on any other reason" do
       consegna("autopilot", contract_version: 2, state: "blocked", security_findings: [], failure: { category: "tooling", summary: "pnpm cannot run", retryable: false, human_action: "Fix pnpm." })
 

@@ -17,6 +17,9 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
   attribute :workflow do |ticket|
     workflow = ticket.agent_workflow
     current_plan = workflow.plans.last
+    # CYRA-1362 — a plan the delivery rejected keeps its approval on the row (who and when stay on record), but
+    # the work is back to planning: it travels as the previous plan with its change request, not as approved.
+    approved = workflow.approved_at.present?
     payload = {
       id: workflow.id,
       phase: workflow.phase,
@@ -31,7 +34,7 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
       # l'host comporrebbe il vincolo di scope da un piano che nessuno ha approvato. L'host confronta
       # le due e, se non coincidono, non compone niente e si ferma — meglio un ticket fermo col motivo
       # scritto che una macchina che lavora su una spec sbagliata. Nil finché non è stato congelato.
-      frozen_plan_version: workflow.frozen_plan&.version,
+      frozen_plan_version: (workflow.frozen_plan&.version if approved),
       # CYAU-249 — when a person last said "redo" (retry, reject, plan changes): the machine restarts its own
       # attempt series from here, or the next round would block the ticket again on the old count.
       budget_from: workflow.review_budget_from&.iso8601(3),
@@ -62,15 +65,15 @@ class AgentTicketCandidateSerializer < ApplicationSerializer
         scenarios: current_plan.scenarios, definition_of_done: current_plan.definition_of_done,
         mixed_parts: current_plan.mixed_parts, notes: current_plan.notes,
         change_request: current_plan.change_request,
-        approved_at: current_plan.approved_at,
-        approved_by: current_plan.approved_by&.name,
+        approved_at: (current_plan.approved_at if approved),
+        approved_by: (current_plan.approved_by&.name if approved),
         # CYAU-177 — le due decisioni che l'approvazione ha congelato (CYRA-610): su quale archivio il
         # lavoro può nascere e da quale punto, e qual è la prova che dirà «fatto». Viaggiano fin qui
         # perché è la sessione dell'agente a doverle rispettare, e finora non le riceveva: deduceva da
         # sé dove aprire la proposta e quando dirsi finita. Nulle sui piani approvati prima di CYRA-610
         # o su un progetto non configurato: l'host lo legge come vincolo assente, che è la verità.
-        candidate_items: current_plan.candidate_items,
-        completion_probe: current_plan.completion_probe
+        candidate_items: (current_plan.candidate_items if approved),
+        completion_probe: (current_plan.completion_probe if approved)
       }
     end
     rework = AgentTicketCandidateSerializer.rework_for(workflow)

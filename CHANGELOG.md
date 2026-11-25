@@ -2,11 +2,18 @@
 
 ## [Unreleased]
 
+## [0.251.3] - 2026-11-25
+
+### Fixed
+
+- **Un piano rifiutato si rifà partendo dal motivo del rifiuto**: quando la consegna rifiuta un piano, la nuova pianificazione non lo riceve più come approvato, ma come piano precedente con il motivo del rifiuto da seguire. Il piano si rifà una volta sola; al secondo rifiuto il lavoro si ferma. (CYRA-1362)
+
 ## [0.251.2] - 2026-11-25
 
 ### Fixed
 
 - **Le persone colpite da un errore contano una volta sola**: chi torna su un errore dopo la pulizia, o invia due eventi insieme, non è più contato due volte. Ogni errore tiene l'elenco delle persone viste, anche dopo fusione e divisione. Per gli errori esistenti l'elenco si riempie lanciando una volta `Errors::BackfillGroupUsersJob`. (CYRA-1241)
+- **Un piano che non si può applicare non gira più a vuoto**: se la macchina rifiuta anche il secondo piano, il lavoro si ferma con il motivo visibile. Prima pianificazione e consegna si rimbalzavano il lavoro senza fine, consumando credito.
 
 ## [0.251.1] - 2026-11-25
 

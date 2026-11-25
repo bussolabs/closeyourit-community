@@ -54,6 +54,8 @@ RSpec.describe Agents::TicketQueues::Next do
     create(:membership, organization:, account: cto)
     Agents::Plan.create!(workflow:, attempt:, technical_analysis: "Piano", scenarios: [], definition_of_done: [],
                          notes: [], ticket_snapshot_digest: "snapshot", approved_by: cto, approved_at: Time.current)
+    # CYRA-1362 — the plan travels as approved only while the work holds the approval.
+    workflow.update!(approved_at: Time.current, approved_by: cto)
 
     candidate = result.value
     expect(candidate).to eq(ticket)

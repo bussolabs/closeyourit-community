@@ -6204,7 +6204,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "La macchina scrive un piano che dice come provare ogni voce di accettazione del ticket e può proporre voci che mancano; il server avvisa che è pronto. Su un epic il piano può proporre i ticket figli e cosa aspetta cosa. Se il lavoro risulta già fatto, il ticket si chiude.",
+      "summary": "La macchina scrive un piano che dice come provare ogni voce di accettazione del ticket e può proporre voci che mancano; il server avvisa che è pronto. Su un epic il piano può proporre i ticket figli e cosa aspetta cosa. Se il lavoro risulta già fatto, il ticket si chiude. Un piano approvato che la consegna dice non applicabile si rifà una volta sola: arriva come piano precedente, non più approvato, con il motivo del rifiuto da seguire.",
       "files": [
         "app/services/agents/attempts/effects/planner.rb",
         "app/models/agents/plan.rb",
@@ -6269,7 +6269,7 @@
       "level": 3,
       "parent": "agt_flow_phases",
       "kind": "step",
-      "summary": "La macchina scrive il codice e apre la proposta di modifica. Il server va a leggerla su GitHub e annota quale codice contiene e com'è andato il controllo automatico. Se si ferma su un conflitto di codice con main, o se la proposta consegnata risulta in conflitto, il ticket torna in coda una volta sola per un giro di risoluzione: lavora Codex, rilegge Claude. Con i controlli rossi il lavoro torna alla macchina per correggere; una seconda volta solo se i controlli rossi sono altri. Finiti i giri, il lavoro ricomincia una volta e poi viene messo da parte. Con i controlli verdi, o in un repository senza controlli, la consegna riletta e accettata va avanti da sola. Le consegne rimaste davanti a una persona vengono riguardate a intervalli. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda. Le verifiche mirate hanno un posto distinto per lavorazione.",
+      "summary": "La macchina scrive il codice e apre la proposta di modifica. Il server va a leggerla su GitHub e annota quale codice contiene e com'è andato il controllo automatico. Se si ferma su un conflitto di codice con main, o se la proposta consegnata risulta in conflitto, il ticket torna in coda una volta sola per un giro di risoluzione: lavora Codex, rilegge Claude. Con i controlli rossi il lavoro torna alla macchina per correggere; una seconda volta solo se i controlli rossi sono altri. Finiti i giri, il lavoro ricomincia una volta e poi viene messo da parte. Con i controlli verdi, o in un repository senza controlli, la consegna riletta e accettata va avanti da sola. Le consegne rimaste davanti a una persona vengono riguardate a intervalli. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda. Le verifiche mirate hanno un posto distinto per lavorazione. Se la macchina dice che il piano approvato non si può applicare, il lavoro torna alla pianificazione una volta sola; se rifiuta anche il piano nuovo, si ferma con il motivo.",
       "files": [
         "app/services/agents/attempts/effects/autopilot.rb",
         "app/services/agents/candidates/verify.rb",

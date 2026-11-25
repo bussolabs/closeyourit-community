@@ -20,7 +20,7 @@ module Agents
         private
 
         def apply!
-          return replan_from_agent! if result_state == "blocked" && failure_category == "invalid_plan"
+          return replan_from_agent! if result_state == "blocked" && failure_category == "invalid_plan" && !replanned_before?
           return resolve_conflict! if result_state == "blocked" && failure_category == "merge_conflict" && workflow.conflict_resolution_requested_at.nil?
           return block_from_agent! if result_state == "blocked"
           return unless result_state.in?(ADVANCING_STATES)
@@ -71,6 +71,13 @@ module Agents
         end
 
         def failure_category = @payload.dig("result", "failure", "category")
+
+        # CYRA-1362 — one replan per work: a second plan the delivery rejects blocks with its reason, because
+        # planning and delivery bounced twelve sessions on CYRA-1236 without writing a line.
+        def replanned_before?
+          workflow.attempts.where(phase: @attempt.phase).where.not(id: @attempt.id)
+                  .where("result -> 'failure' ->> 'category' = ?", "invalid_plan").exists?
+        end
 
         # CYAU-300 — a code conflict with main gets one resolution attempt before it waits for a person: the
         # autopilot goes back to the queue marked for it, and the claim gives it to Codex with Claude as reviewer.
