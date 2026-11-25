@@ -54,6 +54,8 @@ module Notifications
       "server_container_up" => "📦",
       "server_container_restart_loop" => "🔁",
       "server_container_stable" => "✅",
+      # misura di nuovo sotto soglia (CYRA-1256)
+      "server_threshold_recovered" => "📉",
       # database sull'host (CYRA-181)
       "server_db_down" => "🛑",
       "server_db_connections" => "🔌",

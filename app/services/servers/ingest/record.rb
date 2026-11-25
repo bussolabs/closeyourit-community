@@ -21,6 +21,12 @@ module Servers
         "server_inode" => :inode_pct
       }.freeze
 
+      # CYRA-1256 — a breach closes only below threshold minus a margin, so a value hovering on the
+      # line does not alert in bursts: 5 points on percentages, 5% of the threshold on the absolute ones.
+      ABSOLUTE_THRESHOLD_EVENTS = %w[server_temp server_db_connections server_replication_lag].freeze
+      RECOVERY_MARGIN_POINTS = 5
+      RECOVERY_MARGIN_RATIO = 0.05
+
       RESTART_WINDOW = 10.minutes
       RESTART_THRESHOLD = 3
 
@@ -435,34 +441,89 @@ module Servers
         host.container_restart_outage.is_a?(Hash) ? host.container_restart_outage : {}
       end
 
-      # Pre-check: una EvaluateJob per event_type SOLO se almeno una regola org ha la soglia superata
-      # (niente job no-op ogni minuto). Evaluate poi ri-filtra regola per regola.
-      # CYRA-1209: come Alerting::Evaluate#effective_threshold, la soglia per-macchina (cpu/mem/disco)
-      # sostituisce la minima delle regole org — anche se più bassa, o l'avviso non partirebbe sul limite
-      # mostrato in pagina. Solo nil ricade sulla minima org: una soglia per-macchina a 0 conta.
+      # CYRA-1256 — alerts on the CROSSING, like containers and replica: the breach is remembered on
+      # the host (threshold_breaches), staying above is silent, and going back under the margin sends
+      # one server_threshold_recovered. Crossing a higher rule level during a breach alerts once more.
+      # CYRA-1209: the per-host threshold (cpu/mem/disk) replaces the org rules' ones, even when lower;
+      # only nil falls back to them. A measurement whose rules are gone drops its breach silently.
+      # The host row is locked while the state is read and written back, so two pushes processed at
+      # once cannot both see the old state; a push older than a sample already stored (an agent
+      # catching up out of order) does not drive the state with a stale value.
       def notify_thresholds(normalized)
-        thresholds = Alerting::Rule.enabled
-                                   .where(organization_id: @host.organization_id, event_type: THRESHOLD_EVENTS.keys)
-                                   .where.not(threshold: nil)
-                                   .group(:event_type).minimum(:threshold)
-        return if thresholds.empty?
+        levels = threshold_levels
 
-        sample = normalized.sample_attrs
-        thresholds.each do |event_type, min_threshold|
-          value = sample[THRESHOLD_EVENTS.fetch(event_type)]
-          threshold = @host.threshold_for(event_type)
-          threshold = min_threshold if threshold.nil?
-          next if value.nil? || value < threshold
+        @host.with_lock do
+          next if newer_sample?(normalized.recorded_at)
 
-          enqueue_alert(event_type, value: value.to_f)
+          previous = threshold_breaches(@host)
+          breaches = previous.slice(*levels.keys)
+
+          levels.each do |event_type, thresholds|
+            value = normalized.sample_attrs[THRESHOLD_EVENTS.fetch(event_type)]
+            next if value.nil?
+
+            breaches = track_breach(breaches, event_type, thresholds, value.to_f, normalized.recorded_at)
+          end
+
+          @host.update_column(:threshold_breaches, breaches) unless breaches == previous
         end
       end
 
-      def enqueue_alert(event_type, value: nil)
-        Alerting::EvaluateJob.perform_later(
-          event_type: event_type, subject_type: "Servers::Host", subject_id: @host.id,
-          project_id: nil, organization_id: @host.organization_id, value: value
-        )
+      def newer_sample?(recorded_at)
+        Servers::Sample.where(host_id: @host.id).where("recorded_at > ?", recorded_at).exists?
+      end
+
+      # Thresholds that can fire per measurement: the host's own one, or every enabled org rule's.
+      def threshold_levels
+        Alerting::Rule.enabled
+                      .where(organization_id: @host.organization_id, event_type: THRESHOLD_EVENTS.keys)
+                      .where.not(threshold: nil)
+                      .distinct.pluck(:event_type, :threshold)
+                      .group_by(&:first)
+                      .to_h do |event_type, pairs|
+                        override = @host.threshold_for(event_type)
+                        [ event_type, override.nil? ? pairs.map { |pair| pair.last.to_f } : [ override.to_f ] ]
+                      end
+      end
+
+      # Each alert carries the breach it belongs to (start + level): Alerting::Evaluate dedups on it
+      # instead of the rule's time window, and `above` keeps the rules already told out of a rise.
+      def track_breach(breaches, event_type, thresholds, value, recorded_at)
+        breach = breaches[event_type]
+        level = thresholds.select { |threshold| value >= threshold }.max
+
+        if level
+          return breaches if breach && level <= breach["threshold"].to_f
+
+          since = breach&.dig("since") || recorded_at.iso8601
+          enqueue_alert(event_type, value: value, breach: "#{since}@#{level}", above: breach&.dig("threshold"))
+          return breaches.merge(event_type => { "since" => since, "threshold" => level })
+        end
+        return breaches if breach.nil? || value >= thresholds.min - recovery_margin(event_type, thresholds.min)
+
+        enqueue_alert("server_threshold_recovered", value: value, metric: event_type, breach: breach["since"])
+        breaches.except(event_type)
+      end
+
+      # Never wider than half the threshold: a 5% cpu rule (or a host override that low) would
+      # otherwise ask for a value under zero and its breach would never close.
+      def recovery_margin(event_type, threshold)
+        return threshold * RECOVERY_MARGIN_RATIO if ABSOLUTE_THRESHOLD_EVENTS.include?(event_type)
+
+        [ RECOVERY_MARGIN_POINTS, threshold / 2 ].min
+      end
+
+      def threshold_breaches(host)
+        host.threshold_breaches.is_a?(Hash) ? host.threshold_breaches : {}
+      end
+
+      def enqueue_alert(event_type, value: nil, metric: nil, breach: nil, above: nil)
+        args = { event_type: event_type, subject_type: "Servers::Host", subject_id: @host.id,
+                 project_id: nil, organization_id: @host.organization_id, value: value }
+        args[:metric] = metric if metric
+        args[:breach] = breach if breach
+        args[:above] = above if above
+        Alerting::EvaluateJob.perform_later(**args)
       end
     end
   end

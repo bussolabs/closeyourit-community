@@ -130,6 +130,25 @@ en:
       server_container_stable:
         title: "Container stable again · %{host}"
         body: "No container is above the restart threshold anymore."
+      server_threshold_recovered:
+        title: "Back under threshold · %{host}"
+        body: "%{metric} on %{hostname}: back under threshold, now %{value}."
+        body_generic: "A value on %{hostname} is back under threshold."
+        metrics:
+          server_cpu: "CPU"
+          server_mem: "Memory"
+          server_disk: "Disk"
+          server_temp: "Temperature"
+          server_db_connections: "Database connections"
+          server_db_connection_usage: "Database slots"
+          server_replication_lag: "Replication lag"
+          server_data_volume_disk: "Data volume"
+          server_inode: "Inodes"
+        values:
+          percent: "%{value}%"
+          celsius: "%{value} °C"
+          count: "%{value}"
+          seconds: "%{value} s"
       server_db_down:
         title: "Database unreachable · %{host}"
         body: "The database on %{hostname} is not responding."

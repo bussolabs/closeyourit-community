@@ -13,9 +13,7 @@ module AlertingHelper
       t("member.alerting.event_types.#{event_type}", default: event_type.to_s.humanize)
   end
 
-  def alerting_event_description(event_type)
-    ::Notifications::Catalog.entry(event_type)&.description
-  end
+  def alerting_event_description(event_type) = ::Notifications::Catalog.entry(event_type)&.description
 
   EVENT_TONES = {
     "error_new" => { icon: "bug", bg: "bg-red-50 dark:bg-red-500/15", fg: "text-red-600 dark:text-red-400" },
@@ -56,6 +54,8 @@ module AlertingHelper
     "server_container_up" => { icon: "box", bg: "bg-emerald-50 dark:bg-emerald-500/15", fg: "text-emerald-700 dark:text-emerald-300" },
     "server_container_restart_loop" => { icon: "refresh-cw", bg: "bg-red-50 dark:bg-red-500/15", fg: "text-red-600 dark:text-red-400" },
     "server_container_stable" => { icon: "circle-check", bg: "bg-emerald-50 dark:bg-emerald-500/15", fg: "text-emerald-700 dark:text-emerald-300" },
+    # Measurement back under its threshold (CYRA-1256): reassuring tone, like the containers back up.
+    "server_threshold_recovered" => { icon: "trending-down", bg: "bg-emerald-50 dark:bg-emerald-500/15", fg: "text-emerald-700 dark:text-emerald-300" },
     "server_db_connection_usage" => { icon: "database", bg: "bg-amber-50 dark:bg-amber-500/15", fg: "text-amber-700 dark:text-amber-300" },
     "server_data_volume_disk" => { icon: "hard-drive", bg: "bg-amber-50 dark:bg-amber-500/15", fg: "text-amber-700 dark:text-amber-300" },
     "server_inode" => { icon: "folder-tree", bg: "bg-amber-50 dark:bg-amber-500/15", fg: "text-amber-700 dark:text-amber-300" },

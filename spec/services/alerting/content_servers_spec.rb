@@ -180,4 +180,31 @@ RSpec.describe Alerting::Content do
     expect(loop_content.details).to include(include("worker", "4"))
     expect(described_class.for(event_type: "server_container_stable", subject: host).body).to be_present
   end
+
+  # CYRA-1256 — the return under threshold names the machine, the measurement and the current value.
+  describe "server_threshold_recovered" do
+    it "names machine, measurement and current value, in Italian and English" do
+      italian = I18n.with_locale(:it) do
+        described_class.for(event_type: "server_threshold_recovered", subject: host, metric: "server_disk", value: 72.04)
+      end
+      english = I18n.with_locale(:en) do
+        described_class.for(event_type: "server_threshold_recovered", subject: host, metric: "server_disk", value: 72.04)
+      end
+
+      expect(italian.title).to include("apps")
+      expect(italian.body).to include("Disco", "apps.internal", "72%")
+      expect(english.body).to include("Disk", "apps.internal", "72%")
+      expect(italian.url).to eq("/member/monitoring/servers/#{host.id}")
+    end
+
+    it "writes the unit of the absolute measurements" do
+      temp, lag = I18n.with_locale(:en) do
+        [ described_class.for(event_type: "server_threshold_recovered", subject: host, metric: "server_temp", value: 71.5),
+          described_class.for(event_type: "server_threshold_recovered", subject: host, metric: "server_replication_lag", value: 3) ]
+      end
+
+      expect(temp.body).to include("71.5 °C")
+      expect(lag.body).to include("3 s")
+    end
+  end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_120003) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_120004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -3791,6 +3791,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120003) do
     t.datetime "updated_at", null: false
     t.integer "updates_available"
     t.bigint "uptime_seconds"
+    t.jsonb "threshold_breaches", default: {}, null: false
     t.index ["enrollment_token_id"], name: "index_servers_hosts_on_enrollment_token_id"
     t.index ["last_push_at"], name: "index_servers_hosts_pending_down_alert", where: "((status = 2) AND (down_alerted_at IS NULL))"
     t.index ["organization_id", "fingerprint"], name: "index_servers_hosts_on_organization_id_and_fingerprint", unique: true

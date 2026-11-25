@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.248.0] - 2026-11-25
+
+### Changed
+
+- **Avvisi di soglia delle macchine solo al cambio**: un valore che supera la soglia manda un solo avviso, non uno ogni cinque minuti. Quando torna normale arriva un avviso di rientro con il valore attuale. Chi usava l'avviso ripetuto come promemoria non lo riceverà più. (CYRA-1256)
+
 ## [0.247.0] - 2026-11-24
 
 ### Changed

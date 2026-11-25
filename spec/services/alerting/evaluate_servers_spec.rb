@@ -199,6 +199,109 @@ RSpec.describe Alerting::Evaluate do
     expect(Alerting::Notification.where(account: owner, event_type: "server_down", via: :email).count).to eq(0)
   end
 
+  # CYRA-1256 — the return under threshold uses the measurement's rule, without comparing thresholds.
+  describe "server_threshold_recovered" do
+    def recover(metric:, value: 70.0)
+      described_class.call(
+        event_type: "server_threshold_recovered", subject_type: "Servers::Host", subject_id: host.id,
+        project_id: nil, organization_id: org.id, value: value, metric: metric
+      )
+    end
+
+    let!(:rule) { create(:alerting_rule, organization: org, event_type: :server_disk, name: "Disk", threshold: 80) }
+
+    it "reaches the people of the measurement's rule, even with the value under its threshold" do
+      expect(recover(metric: "server_disk").value).to be > 0
+
+      notification = Alerting::Notification.find_by(account: owner, event_type: "server_threshold_recovered", via: :in_app)
+      expect(notification.rule).to eq(rule)
+      expect(notification.subject).to eq(host)
+      expect(notification.title).to include("apps")
+      expect(notification.body).to include("70%")
+    end
+
+    it "reaches the measurement rule's external channels" do
+      allow(NetworkGuard).to receive(:resolve).and_return([ "93.184.216.34" ])
+      channel = create(:alerting_channel, organization: org)
+      create(:alerting_rule_channel, rule: rule, channel: channel)
+      allow(Alerting::Deliver).to receive(:webhook).and_return(Result.ok(nil))
+
+      recover(metric: "server_disk")
+
+      expect(Alerting::Deliver).to have_received(:webhook)
+        .with(hash_including(channel: channel, event_type: "server_threshold_recovered"))
+    end
+
+    it "ignores the rules of other measurements and unknown measurements" do
+      expect(recover(metric: "server_cpu").value).to eq(0)
+      expect(recover(metric: "server_down").value).to eq(0)
+      expect(recover(metric: nil).value).to eq(0)
+    end
+
+    it "stays silent on a host excluded from the rule" do
+      Alerting::RuleHostExclusion.create!(rule:, host:)
+
+      expect(recover(metric: "server_disk").value).to eq(0)
+    end
+
+    it "does not collapse the returns of two measurements of the same host" do
+      create(:alerting_rule, organization: org, event_type: :server_cpu, name: "CPU", threshold: 90)
+
+      recover(metric: "server_disk")
+      recover(metric: "server_cpu", value: 40.0)
+
+      expect(Alerting::Notification.where(account: owner, event_type: "server_threshold_recovered", via: :in_app).count).to eq(2)
+    end
+  end
+
+  # CYRA-1256 — a crossing is a state change remembered on the host: its breach identity replaces the
+  # rule's time window, and `above` keeps the rules already told about the open breach quiet.
+  describe "threshold crossing with a breach identity" do
+    def cross(value:, breach:, above: nil, at: Time.zone.parse("2026-07-02T10:00:10Z"))
+      described_class.call(
+        event_type: "server_disk", subject_type: "Servers::Host", subject_id: host.id,
+        project_id: nil, organization_id: org.id, value: value, breach: breach, above: above, at: at
+      )
+    end
+
+    def crossings(rule)
+      Alerting::Notification.where(account: owner, event_type: "server_disk", via: :in_app, rule: rule)
+    end
+
+    let!(:rule) do
+      create(:alerting_rule, organization: org, event_type: :server_disk, name: "Disk", threshold: 80, throttle_seconds: 300)
+    end
+
+    it "delivers a second crossing inside the same throttle window when it is a new breach" do
+      allow(NetworkGuard).to receive(:resolve).and_return([ "93.184.216.34" ])
+      channel = create(:alerting_channel, organization: org)
+      create(:alerting_rule_channel, rule: rule, channel: channel)
+      allow(Alerting::Deliver).to receive(:webhook).and_return(Result.ok(nil))
+
+      cross(value: 95.0, breach: "2026-07-02T10:00:00Z@80.0")
+      cross(value: 95.0, breach: "2026-07-02T10:01:00Z@80.0", at: Time.zone.parse("2026-07-02T10:01:10Z"))
+
+      expect(crossings(rule).count).to eq(2)
+      expect(Alerting::Deliver).to have_received(:webhook).twice
+    end
+
+    it "still collapses a retried job of the same breach, even in a later window" do
+      cross(value: 95.0, breach: "2026-07-02T10:00:00Z@80.0")
+      cross(value: 95.0, breach: "2026-07-02T10:00:00Z@80.0", at: Time.zone.parse("2026-07-02T10:20:00Z"))
+
+      expect(crossings(rule).count).to eq(1)
+    end
+
+    it "on a rise during the breach reaches only the rules above the level already alerted" do
+      critical = create(:alerting_rule, organization: org, event_type: :server_disk, name: "Disk critical", threshold: 95)
+
+      cross(value: 96.0, breach: "2026-07-02T10:00:00Z@95.0", above: 80.0)
+
+      expect(crossings(rule)).to be_empty
+      expect(crossings(critical).count).to eq(1)
+    end
+  end
+
   it "throttle: due eventi nella stessa finestra → una sola notifica" do
     create(:alerting_rule, organization: org, event_type: :server_down, name: "Down", throttle_seconds: 300)
 

@@ -192,7 +192,10 @@ module Alerting
       puck_report_ready: 82,
       # CYRA-1155: an epic whose open children all wait for someone (subject = the epic, rule_id nil,
       # direct dispatch). Value APPENDED (82 is puck_report_ready).
-      ticket_epic_stalled: 83
+      ticket_epic_stalled: 83,
+      # CYRA-1256: a host measurement back under its threshold (subject = Servers::Host, rule_id = the
+      # measurement's rule). Value APPENDED (83 is ticket_epic_stalled).
+      server_threshold_recovered: 84
     }, prefix: :event
     # Valori APPESI (mai riordinare): queued (4) = email/telegram trattenuta per il digest (cadenza
     # daily/weekly), raccolta e marcata :sent dal job digest (digest_bucket dice a quale ciclo appartiene).

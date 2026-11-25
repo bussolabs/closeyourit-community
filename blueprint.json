@@ -2896,7 +2896,7 @@
       "level": 3,
       "parent": "srv_flow_push",
       "kind": "step",
-      "summary": "Avvisa su soglie (processore, memoria, disco), ritorno della macchina, container, database, dischi, servizi e aggiornamenti di sicurezza.",
+      "summary": "Avvisa su soglie (processore, memoria, disco) solo al superamento e annuncia il rientro sotto soglia, poi ritorno della macchina, container, database, dischi, servizi e aggiornamenti di sicurezza.",
       "files": [
         "app/services/servers/ingest/record.rb"
       ]

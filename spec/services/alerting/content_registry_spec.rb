@@ -37,13 +37,13 @@ RSpec.describe Alerting::Content do
     used.select { |key| key.start_with?("alerting.", "member.") }.uniq.sort
   end
 
-  def build(event_type, subject_record)
+  def build(event_type, subject_record, context = {})
     used = []
     allow(I18n).to receive(:t).and_wrap_original do |original, key, **options|
       used << key.to_s
       original.call(key, **options)
     end
-    content = described_class.for(event_type: event_type, subject: subject_record)
+    content = described_class.for(event_type: event_type, subject: subject_record, **context)
     [ content, contract_keys(used) ]
   end
 
@@ -194,6 +194,16 @@ RSpec.describe Alerting::Content do
     { event_type: "server_container_stable", subject: -> { host },
       keys: %w[alerting.content.server_container_stable.body alerting.content.server_container_stable.title],
       url: ->(_s) { host_url }, project: ->(_s) { nil }, details: nil },
+    { name: "server_threshold_recovered (with the measurement and its value)",
+      event_type: "server_threshold_recovered", subject: -> { host },
+      context: { metric: "server_disk", value: 72.0 },
+      keys: %w[alerting.content.server_threshold_recovered.body alerting.content.server_threshold_recovered.metrics.server_disk
+               alerting.content.server_threshold_recovered.title alerting.content.server_threshold_recovered.values.percent],
+      url: ->(_s) { host_url }, project: ->(_s) { nil }, details: nil },
+    { name: "server_threshold_recovered (without a known measurement)",
+      event_type: "server_threshold_recovered", subject: -> { host },
+      keys: %w[alerting.content.server_threshold_recovered.body_generic alerting.content.server_threshold_recovered.title],
+      url: ->(_s) { host_url }, project: ->(_s) { nil }, details: nil },
     { event_type: "log_alert",
       subject: -> { create(:log_entry, project:, level: :fatal, message: "payment gateway unreachable") },
       keys: ->(s) { [ "alerting.content.log_alert.title", "member.alerting.levels.#{s.level}" ] },
@@ -319,7 +329,7 @@ RSpec.describe Alerting::Content do
   cases.each do |scenario|
     it "#{scenario[:name] || scenario[:event_type]}: stesse chiavi, stesso link, stesso progetto" do
       subject_record = instance_exec(&scenario[:subject])
-      content, used = build(scenario[:event_type], subject_record)
+      content, used = build(scenario[:event_type], subject_record, scenario.fetch(:context, {}))
 
       expected_keys = scenario[:keys]
       unless expected_keys == :any

@@ -124,7 +124,7 @@ RSpec.describe Alerting::Preference, type: :model do
       %w[server_down server_cpu server_smart_failing
          server_db_down server_db_connections server_db_connection_usage server_replication_lag
          server_replication_down server_replication_up server_data_volume_disk server_inode
-         server_container_restart_loop server_container_stable].each do |event|
+         server_container_restart_loop server_container_stable server_threshold_recovered].each do |event|
         expect(build(:alerting_preference, servers_enabled: false).source_enabled?(event)).to be(false)
         expect(build(:alerting_preference, servers_enabled: true).source_enabled?(event)).to be(true)
       end

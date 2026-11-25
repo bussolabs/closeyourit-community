@@ -229,6 +229,9 @@ en:
         server_ingest_rejected:
           title: Machine data rejected
           description: "The system rejected the data sent by your machines: their figures stay frozen, but they are not down."
+        server_threshold_recovered:
+          title: Value back under threshold
+          description: A server measurement that crossed its threshold is back to a normal value.
         cluster_down:
           title: Cluster silent
           description: "A Kubernetes cluster has sent no data for 3 minutes: the observer stopped or the cluster does not answer."

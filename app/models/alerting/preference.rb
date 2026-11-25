@@ -49,7 +49,7 @@ module Alerting
            "server_db_down", "server_db_connections", "server_db_connection_usage",
            "server_replication_lag", "server_replication_down", "server_replication_up",
            "server_data_volume_disk", "server_inode", "server_container_down", "server_container_up",
-           "server_container_restart_loop", "server_container_stable",
+           "server_container_restart_loop", "server_container_stable", "server_threshold_recovered",
            # CYRA-775: i dati delle sonde respinti dal backend. Sta con gli altri server_* perché è
            # una notizia sul monitoraggio delle macchine — chi ha spento quella sorgente non la vuole.
            "server_ingest_rejected",

@@ -40,6 +40,7 @@ module Alerting
       "server_container_up" => :server_container_up,
       "server_container_restart_loop" => :server_container_restart_loop,
       "server_container_stable" => :server_container_stable,
+      "server_threshold_recovered" => :server_threshold_recovered,
       "server_ingest_rejected" => :server_ingest_rejected,
       "embedding_down" => :embedding_down,
       "ai_unavailable" => :ai_availability, "ai_available" => :ai_availability,
@@ -61,16 +62,22 @@ module Alerting
       "dataset_training_failed" => :dataset_training_failed
     }.freeze
 
+    # Unit of each measurement with a threshold; the ones not listed are percentages (CYRA-1256).
+    RECOVERY_UNITS = {
+      "server_temp" => "celsius", "server_db_connections" => "count", "server_replication_lag" => "seconds"
+    }.freeze
+
     def initialize(details: nil, **kwargs)
       super(details: details, **kwargs)
     end
 
-    def self.for(event_type:, subject:)
+    # `context` carries what the subject alone cannot say: the recovered measurement (CYRA-1256).
+    def self.for(event_type:, subject:, **context)
       event_type = event_type.to_s
       builder = EVENT_BUILDERS[event_type]
       raise ArgumentError, "Alerting::Content: event_type non supportato #{event_type.inspect}" if builder.nil?
 
-      send(builder, event_type, subject)
+      send(builder, event_type, subject, **context)
     end
 
     class << self
@@ -335,6 +342,20 @@ module Alerting
 
       def server_container_stable(_event_type, host)
         host_alert(host, key: "server_container_stable")
+      end
+
+      # CYRA-1256 — a measurement back under threshold, named with the value that closed it. Without a
+      # known measurement (a job queued without it) the text stays generic instead of leaving a hole.
+      def server_threshold_recovered(_event_type, host, metric: nil, value: nil)
+        key = "alerting.content.server_threshold_recovered"
+        unless !value.nil? && Alerting::Rule::THRESHOLD_EVENT_TYPES.include?(metric.to_s)
+          return host_alert(host, key: "server_threshold_recovered", body_key: "body_generic", hostname: host_label(host))
+        end
+
+        rounded = ActiveSupport::NumberHelper.number_to_rounded(value, precision: 1, strip_insignificant_zeros: true)
+        host_alert(host, key: "server_threshold_recovered",
+                         metric: I18n.t("#{key}.metrics.#{metric}"), hostname: host_label(host),
+                         value: I18n.t("#{key}.values.#{RECOVERY_UNITS.fetch(metric.to_s, 'percent')}", value: rounded))
       end
 
       def server_ingest_rejected(_event_type, organization)

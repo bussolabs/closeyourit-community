@@ -19,7 +19,8 @@ module Notifications
     # normalità, che in «Essenziale» restano spenti — l'in-app li mostra comunque.
     # v3 (CYAG-22): cluster_down is critical, cluster_up joins the recoveries.
     # v4 (CYRA-1155): a stalled epic waits for you, so it is personal.
-    VERSION = 4
+    # v5 (CYRA-1256): a measurement back under its threshold joins the recoveries.
+    VERSION = 5
 
     IMMEDIATE = Cadence::IMMEDIATE
     DAILY = Cadence::DAILY
@@ -36,7 +37,7 @@ module Notifications
     # l'in-app li mostra comunque, che è dove si va a guardare se una cosa è rientrata.
     RECOVERY_EVENT_TYPES = %w[
       uptime_up server_up server_container_up server_container_stable server_replication_up
-      ai_available cluster_up
+      server_threshold_recovered ai_available cluster_up
     ].freeze
 
     # Rumore di fondo per chi vuole solo l'essenziale: apertura di ticket e idee altrui, chiacchiere,

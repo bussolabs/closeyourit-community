@@ -31,7 +31,7 @@ module Notifications
         server_db_down server_db_connections server_db_connection_usage server_replication_lag
         server_replication_down server_replication_up server_data_volume_disk server_inode
         server_security_updates server_silent server_disk_forecast
-        server_ingest_rejected
+        server_ingest_rejected server_threshold_recovered
         cluster_down cluster_up cluster_node_not_ready cluster_node_pressure
         cluster_workload_crashloop cluster_workload_degraded
       ] },

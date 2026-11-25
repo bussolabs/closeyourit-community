@@ -94,6 +94,10 @@ RSpec.describe Alerting::Notification, type: :model do
         "server_container_restart_loop" => 58, "server_container_stable" => 59
       )
     end
+
+    it "appends server_threshold_recovered after ticket_epic_stalled (CYRA-1256)" do
+      expect(described_class.event_types).to include("ticket_epic_stalled" => 83, "server_threshold_recovered" => 84)
+    end
   end
 
   describe "#read? e #mark_read!" do

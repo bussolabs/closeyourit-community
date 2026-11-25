@@ -9,8 +9,12 @@ module Alerting
 
     def initialize(event_type:, subject_type:, subject_id:, project_id:,
                    environment: nil, environment_id: nil, level: nil, duration_ms: nil,
-                   organization_id: nil, value: nil, handled: nil, actor_id: nil, at: Time.current, rule_id: nil)
+                   organization_id: nil, value: nil, handled: nil, actor_id: nil, at: Time.current, rule_id: nil,
+                   metric: nil, breach: nil, above: nil)
       @rule_id = rule_id
+      @metric = metric.to_s.presence     # measurement back under threshold (server_threshold_recovered)
+      @breach = breach.to_s.presence     # identity of a threshold crossing/return: stands in for the time bucket
+      @above = above                     # threshold the open breach already alerted: only higher rules fire
       @event_type = event_type.to_s
       @subject_type = subject_type
       @subject_id = subject_id
@@ -36,7 +40,7 @@ module Alerting
       # Alerting::Notification): memoizzato per locale — max |LOCALES| render, non uno per destinatario.
       # I canali esterni (webhook Slack/Discord) non hanno un account → lingua di default.
       content_for = Hash.new do |cache, locale|
-        cache[locale] = I18n.with_locale(locale) { Alerting::Content.for(event_type: @event_type, subject: subject) }
+        cache[locale] = I18n.with_locale(locale) { Alerting::Content.for(event_type: @event_type, subject: subject, **content_context) }
       end
 
       delivered = 0
@@ -112,7 +116,7 @@ module Alerting
       count = 0
       rule.channels.enabled.each do |channel|
         identity = @event_type == "measurement_threshold" ? "#{rule.id}:#{dedup_subject}" : dedup_subject
-        key = "alerting:channel:#{channel.id}:#{@event_type}:#{identity}:#{@at.to_i / rule.throttle_seconds}"
+        key = "alerting:channel:#{channel.id}:#{@event_type}:#{identity}:#{throttle_bucket(rule)}"
         next unless Rails.cache.write(key, 1, unless_exist: true, expires_in: rule.throttle_seconds)
 
         result = deliver_channel(channel, subject, content)
@@ -129,8 +133,14 @@ module Alerting
     # Il bucket nel dedup_key implementa il throttle: stesso (account, canale, evento, subject) nella
     # stessa finestra → stessa key → bloccato dall'unique [rule_id, dedup_key].
     def dedup_key(rule, account, via)
-      bucket = @at.to_i / rule.throttle_seconds
-      "#{account.id}:#{via}:#{@event_type}:#{dedup_subject}:#{bucket}"
+      "#{account.id}:#{via}:#{@event_type}:#{dedup_subject}:#{throttle_bucket(rule)}"
+    end
+
+    # CYRA-1256 — a threshold crossing or return is already a state change remembered on the host:
+    # its own identity stands in for the time window, so a new crossing a minute after a return is
+    # not swallowed by the previous one's bucket, while a retried job still collides with itself.
+    def throttle_bucket(rule)
+      @breach || (@at.to_i / rule.throttle_seconds)
     end
 
     # Chiave stabile del subject per il throttle. Gli errori/uptime/server deduplicano sul subject
@@ -140,6 +150,7 @@ module Alerting
     # notifica per riga (CYRA-55).
     def dedup_subject
       return "measurement:#{subject.series_id}" if @event_type == "measurement_threshold"
+      return "#{@subject_id}:#{@metric}" if threshold_recovery?
       return @subject_id unless @event_type == "log_alert"
 
       "logs:#{@project_id}:#{@level}"
@@ -227,11 +238,29 @@ module Alerting
     # regola non si applicano (host e agenti non appartengono a un progetto). Filtro soglia sul valore
     # misurato (nessuna soglia per agents_* → sempre passante).
     def matching_org_rules(organization)
+      return threshold_recovery_rules(organization) if threshold_recovery?
+
       Alerting::Rule.notifying
                     .where(organization_id: organization.id, event_type: @event_type)
                     .where.not(id: excluded_rule_ids)
                     .select { |rule| server_threshold_match?(rule) }
     end
+
+    # CYRA-1256 — the return under threshold reaches the rules of its measurement, whatever their
+    # threshold: the people and channels told about the crossing hear that it is over.
+    def threshold_recovery_rules(organization)
+      return [] unless Alerting::Rule::THRESHOLD_EVENT_TYPES.include?(@metric)
+
+      Alerting::Rule.notifying
+                    .where(organization_id: organization.id, event_type: @metric)
+                    .where.not(threshold: nil)
+                    .where.not(id: excluded_rule_ids)
+                    .to_a
+    end
+
+    def threshold_recovery? = @event_type == "server_threshold_recovered"
+
+    def content_context = threshold_recovery? ? { metric: @metric, value: @value } : {}
 
     # CYRA-519 — regole silenziate su QUESTA macchina: restano accese per tutte le altre. Un evento
     # che non riguarda una macchina non ha eccezioni da applicare, e la query non parte nemmeno.
@@ -257,7 +286,10 @@ module Alerting
       return true if rule.threshold.nil?
       return false if @value.nil?
 
-      @value.to_f >= effective_threshold(rule).to_f
+      threshold = effective_threshold(rule).to_f
+      return false if @above && threshold <= @above.to_f # rule already told about this breach (CYRA-1256)
+
+      @value.to_f >= threshold
     end
 
     # CYRA-458: la soglia per-macchina (impostata sull'host per quella metrica) sostituisce quella della

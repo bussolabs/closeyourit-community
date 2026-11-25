@@ -130,6 +130,25 @@ it:
       server_container_stable:
         title: "Container di nuovo stabile · %{host}"
         body: "Nessun container supera più la soglia di riavvio."
+      server_threshold_recovered:
+        title: "Di nuovo sotto soglia · %{host}"
+        body: "%{metric} su %{hostname}: di nuovo sotto soglia, ora %{value}."
+        body_generic: "Un valore di %{hostname} è di nuovo sotto soglia."
+        metrics:
+          server_cpu: "Processore"
+          server_mem: "Memoria"
+          server_disk: "Disco"
+          server_temp: "Temperatura"
+          server_db_connections: "Connessioni al database"
+          server_db_connection_usage: "Slot del database"
+          server_replication_lag: "Ritardo della replica"
+          server_data_volume_disk: "Volume dati"
+          server_inode: "Inode"
+        values:
+          percent: "%{value}%"
+          celsius: "%{value} °C"
+          count: "%{value}"
+          seconds: "%{value} s"
       server_db_down:
         title: "Database non raggiungibile · %{host}"
         body: "Il database di %{hostname} non risponde."

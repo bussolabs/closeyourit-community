@@ -229,6 +229,9 @@ it:
         server_ingest_rejected:
           title: Dati delle macchine respinti
           description: "Il sistema ha respinto i dati inviati dalle macchine: restano ferme sull'ultimo numero, ma non sono cadute."
+        server_threshold_recovered:
+          title: Valore di nuovo sotto soglia
+          description: Una misura di un server che aveva superato la soglia torna a un valore normale.
         cluster_down:
           title: Cluster muto
           description: "Un cluster Kubernetes non manda più dati da 3 minuti: l'osservatore è fermo o il cluster non risponde."

@@ -279,6 +279,153 @@ RSpec.describe Servers::Ingest::Record do
         end
       end
 
+      # CYRA-1256 — the alert follows the crossing, like containers and replica: one alert when the
+      # value goes above, silence while it stays there, one return when it goes back under the margin.
+      describe "crossing and return" do
+        let(:start) { Time.zone.parse("2026-07-02T10:00:00Z") }
+
+        def push(at:, disk: nil, temp: nil)
+          stats = {}
+          stats["dp"] = disk if disk
+          stats["t"] = { "k10temp_tctl" => temp, "nvme_composite" => temp } if temp
+          travel_to(at)
+          described_class.call(host: host.reload,
+                               payload: payload.deep_merge("recorded_at" => at.iso8601, "data" => { "stats" => stats }))
+        end
+
+        def alerts(event_type, metric: nil)
+          enqueued_jobs.select do |job|
+            arguments = job["arguments"].first
+            job["job_class"] == "Alerting::EvaluateJob" && arguments["event_type"] == event_type &&
+              (metric.nil? || arguments["metric"] == metric)
+          end
+        end
+
+        context "with a disk rule at 80%" do
+          let!(:rule) do
+            create(:alerting_rule, organization: host.organization, event_type: :server_disk,
+                   name: "Disk full", threshold: 80)
+          end
+
+          it "sends one crossing alert for a disk that stays high for a day" do
+            (0..48).each { |step| push(at: start + (step * 30).minutes, disk: 92) }
+
+            expect(alerts("server_disk").size).to eq(1)
+            expect(alerts("server_threshold_recovered")).to be_empty
+            expect(host.reload.threshold_breaches["server_disk"])
+              .to include("threshold" => 80.0, "since" => start.iso8601)
+          end
+
+          it "sends one return with the current value when the disk goes back under the margin" do
+            push(at: start, disk: 90)
+            push(at: start + 5.minutes, disk: 70)
+            push(at: start + 10.minutes, disk: 68)
+
+            recovered = alerts("server_threshold_recovered", metric: "server_disk")
+            expect(recovered.size).to eq(1)
+            expect(recovered.first["arguments"].first).to include("value" => 70.0, "subject_id" => host.id)
+            expect(host.reload.threshold_breaches).to be_empty
+          end
+
+          it "does not burst while the value hovers around the threshold" do
+            [ 85, 79, 81, 76, 82, 75.5, 80 ].each_with_index do |disk, step|
+              push(at: start + (step * 5).minutes, disk: disk)
+            end
+
+            expect(alerts("server_disk").size).to eq(1)
+            expect(alerts("server_threshold_recovered")).to be_empty
+          end
+
+          it "alerts again on a new crossing after a return" do
+            [ 90, 60, 90 ].each_with_index { |disk, step| push(at: start + (step * 5).minutes, disk: disk) }
+
+            expect(alerts("server_disk").size).to eq(2)
+            expect(alerts("server_threshold_recovered").size).to eq(1)
+          end
+
+          # Pushes a minute apart fall in the same 300s throttle window: each alert names its own
+          # breach, so Alerting::Evaluate does not swallow the second crossing (or its return).
+          it "gives each breach its own identity, even a minute apart" do
+            [ 90, 60, 90, 60 ].each_with_index { |disk, step| push(at: start + step.minutes, disk: disk) }
+
+            crossings = alerts("server_disk").map { |job| job["arguments"].first["breach"] }
+            returns = alerts("server_threshold_recovered").map { |job| job["arguments"].first["breach"] }
+            expect(crossings).to eq([ "#{start.iso8601}@80.0", "#{(start + 2.minutes).iso8601}@80.0" ])
+            expect(returns).to eq([ start.iso8601, (start + 2.minutes).iso8601 ])
+          end
+
+          it "alerts once more when the value crosses a higher rule, naming the level already told" do
+            create(:alerting_rule, organization: host.organization, event_type: :server_disk,
+                   name: "Disk critical", threshold: 95)
+
+            [ 85, 96, 97 ].each_with_index { |disk, step| push(at: start + (step * 5).minutes, disk: disk) }
+
+            first, second = alerts("server_disk").map { |job| job["arguments"].first }
+            expect(first).not_to have_key("above")
+            expect(second).to include("above" => 80.0, "breach" => "#{start.iso8601}@95.0")
+            expect(host.reload.threshold_breaches.dig("server_disk", "threshold")).to eq(95.0)
+          end
+
+          it "ignores a push older than a sample already stored" do
+            push(at: start + 10.minutes, disk: 90)
+            push(at: start + 5.minutes, disk: 50)
+
+            expect(alerts("server_threshold_recovered")).to be_empty
+            expect(host.reload.threshold_breaches).to have_key("server_disk")
+          end
+
+          it "drops the breach without a return when the rule is removed" do
+            push(at: start, disk: 90)
+            rule.destroy!
+            push(at: start + 5.minutes, disk: 50)
+
+            expect(alerts("server_threshold_recovered")).to be_empty
+            expect(host.reload.threshold_breaches).to be_empty
+          end
+
+          it "keeps the breach still while the host is paused" do
+            push(at: start, disk: 90)
+            host.update!(status: :paused)
+            push(at: start + 5.minutes, disk: 50)
+
+            expect(alerts("server_threshold_recovered")).to be_empty
+            expect(host.reload.threshold_breaches).to have_key("server_disk")
+          end
+        end
+
+        it "alerts at the first push after a rule is created while the disk is already high" do
+          push(at: start, disk: 92)
+          expect(alerts("server_disk")).to be_empty
+
+          create(:alerting_rule, organization: host.organization, event_type: :server_disk,
+                 name: "Disk full", threshold: 80)
+          push(at: start + 5.minutes, disk: 92)
+
+          expect(alerts("server_disk").size).to eq(1)
+        end
+
+        it "uses 5% of the threshold as margin on the absolute measurements" do
+          create(:alerting_rule, organization: host.organization, event_type: :server_temp,
+                 name: "Hot", threshold: 80)
+
+          [ 85, 77, 75.5 ].each_with_index { |temp, step| push(at: start + (step * 5).minutes, temp: temp) }
+
+          expect(alerts("server_temp").size).to eq(1)
+          expect(alerts("server_threshold_recovered", metric: "server_temp").size).to eq(1)
+        end
+
+        it "closes a breach on a percentage threshold of 5 or less, with half the threshold as margin" do
+          create(:alerting_rule, organization: host.organization, event_type: :server_disk,
+                 name: "Any disk", threshold: 4)
+
+          [ 10, 2.5, 1.9 ].each_with_index { |disk, step| push(at: start + (step * 5).minutes, disk: disk) }
+
+          expect(alerts("server_disk").size).to eq(1)
+          expect(alerts("server_threshold_recovered", metric: "server_disk").size).to eq(1)
+          expect(host.reload.threshold_breaches).to be_empty
+        end
+      end
+
       it "regola disabled o di un'altra org non conta" do
         create(:alerting_rule, :disabled, organization: host.organization,
                event_type: :server_cpu, name: "off", threshold: 1)
