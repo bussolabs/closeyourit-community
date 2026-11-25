@@ -24,6 +24,8 @@ module Valhalla
       @god_count = Accounts::Account.where(god: true).count
       # Segnali operativi (stato org, accessi/impersonation recenti, crescita 7gg): logica nel presenter.
       @signals = DashboardSignals.new
+      # CYRA-1159 — first steps by signup week, preexisting organizations in a row of their own.
+      @first_steps_rows = FirstStepsCohorts.new.rows
       @recent_sessions = sorted_rows(@signals.recent_sessions.to_a, columns: SESSION_SORT_COLUMNS, param: :sessions_sort)
       @impersonations = sorted_rows(@signals.recent_impersonation_events.to_a, columns: IMPERSONATION_SORT_COLUMNS,
                                                                                 param: :impersonations_sort)

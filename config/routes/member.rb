@@ -55,6 +55,8 @@ namespace :member do
     post "card/skip",  to: "cards#skip",  as: :card_skip
     post "card/defer", to: "cards#defer", as: :card_defer
     post "card/back",  to: "cards#back",  as: :card_back
+    # CYRA-1159 — closes the first-steps list for the whole organization (owner and admin).
+    post "steps/dismissal", to: "first_steps_dismissals#create", as: :first_steps_dismissal
 
     # Plancia delle approvazioni (CYRA-262, CYRA-592): una riga per lavorazione e una colonna per
     # ciascuna delle cinque fasi, raggruppata per progetto. `?item=famiglia:uuid` apre la singola

@@ -1,0 +1,35 @@
+<%# locals: (rows:)
+    CYRA-1159 — how many organizations of each signup week reached each first step. The organizations
+    born before the steps were recorded have rebuilt dates: they sit in the last row, apart. %>
+<% steps = Organizations::FirstStep::STEPS %>
+<%= render Ui::SectionComponent.new(title: t("valhalla.dashboard.first_steps.title"), heading_size: :md, body_class: nil,
+      test_id: "valhalla-dashboard-first-steps") do |section| %>
+  <% section.with_subtitle do %>
+    <span class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("valhalla.dashboard.first_steps.subtitle", weeks: Valhalla::FirstStepsCohorts::WEEKS) %></span>
+  <% end %>
+  <%= render(Ui::TableComponent.new(stacked: true, label: t("valhalla.dashboard.first_steps.title"))) do |table| %>
+    <% table.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.first_steps.col_week")) %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.first_steps.col_signed_up"), align: :right) %>
+      <% steps.each do |step| %>
+        <%= render Ui::TableComponent::HeaderComponent.new(label: t("valhalla.dashboard.first_steps.steps.#{step}"), align: :right) %>
+      <% end %>
+    <% end %>
+    <% rows.each do |row| %>
+      <% key = row.preexisting? ? "preexisting" : row.week.iso8601 %>
+      <%= render Ui::TableComponent::RowComponent.new(test_id: "valhalla-first-steps-#{key}") do %>
+        <%= render Ui::TableComponent::CellComponent.new(header: true) do %>
+          <%= row.preexisting? ? t("valhalla.dashboard.first_steps.preexisting") : t("valhalla.dashboard.first_steps.week_of", date: l(row.week, format: :short)) %>
+        <% end %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.dashboard.first_steps.col_signed_up"), mono: true, align: :right)) do %>
+          <span data-test="first-steps-signed-up"><%= row.signed_up %></span>
+        <% end %>
+        <% steps.each do |step| %>
+          <%= render(Ui::TableComponent::CellComponent.new(label: t("valhalla.dashboard.first_steps.steps.#{step}"), mono: true, align: :right)) do %>
+            <span data-test="first-steps-<%= step.dasherize %>"><%= row.reached(step) %></span>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

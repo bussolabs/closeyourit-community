@@ -322,6 +322,8 @@ module Ticketing
     # (rules/rails/models.md): è stato derivato dal dominio, mai scrivibile dal form.
     before_save :sync_closed_at, if: :status_id_changed?
     before_save :number_new_acceptance_items
+    # CYRA-1159 — the first closed ticket is a first step of the organization, whatever path closed it.
+    after_save_commit :record_first_close, if: -> { saved_change_to_closed_at? && closed_at.present? }
 
     # Candidati del gate duplicati: aperti/in lavorazione sempre, chiusi solo dentro la finestra
     # (Ticketing::Constants::DUPLICATE_CLOSED_WINDOW). Componibile con la scope di visibilità.
@@ -439,6 +441,12 @@ module Ticketing
       else
         self.closed_at = nil
       end
+    end
+
+    # Read through the id, not the association: a ticket from a list is strict_loading.
+    def record_first_close
+      organization_id = Projects::Project.where(id: project_id).pick(:organization_id)
+      Organizations::FirstStep.record(:ticket_closed, organization_ids: organization_id, at: closed_at)
     end
 
     # CYRA-1318 — items built with the ticket get their codes in list order, not in the order the two formats

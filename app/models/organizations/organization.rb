@@ -385,6 +385,13 @@ module Organizations
              inverse_of: :organization,
              dependent: :delete_all
 
+    # CYRA-1159 — the day of each first step; `first_steps_dismissed_at` closes the list for everyone.
+    has_many :first_steps,
+             class_name: "Organizations::FirstStep",
+             foreign_key: :organization_id,
+             inverse_of: :organization,
+             dependent: :delete_all
+
     # Richieste AI asincrone dei membri, scoped a quest'org (draft effimeri).
     has_many :ai_requests,
              class_name: "Ai::Request",

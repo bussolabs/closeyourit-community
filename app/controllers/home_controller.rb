@@ -32,7 +32,9 @@ class HomeController < ApplicationController
   def index
     return unless current_organization
 
-    @next = ::Home::NextDecision.call(
+    # CYRA-1159 — nil once the five steps are done or the list was closed: it never comes back.
+    @first_steps = ::Organizations::FirstSteps::Checklist.for(current_organization)
+    @next =::Home::NextDecision.call(
       account: Current.account,
       organization: current_organization,
       visible_projects: visible.projects,

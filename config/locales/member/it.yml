@@ -1036,6 +1036,24 @@ it:
       subtitle: "La prossima decisione che aspetta te."
       no_org_title: Nessuna organizzazione
       no_org_body: Hai effettuato l'accesso ma non sei membro di alcuna organizzazione.
+      # CYRA-1159 — tono sobrio: un passo mancante è un'indicazione, non un rimprovero.
+      first_steps:
+        title: Primi passi
+        progress: "%{done} di %{total} fatti"
+        dismiss: Chiudi la lista
+        dismissed: La lista dei primi passi è chiusa per tutta l'organizzazione.
+        steps:
+          first_error: Ricevi il primo errore
+          alert_rule: Crea una regola di avviso
+          invitation: Invita un collega
+          telegram: Collega Telegram
+          ticket_closed: Chiudi il primo ticket
+        hints:
+          first_error: Collega un'app per vedere i suoi errori.
+          alert_rule: Scegli tu quando ricevere una notifica.
+          invitation: Lavora insieme al tuo team.
+          telegram: Ricevi le notifiche sul telefono.
+          ticket_closed: Porta a termine un lavoro.
       counts:
         approvals: Da approvare
         conversations: Notifiche

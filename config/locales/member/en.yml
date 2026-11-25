@@ -1002,6 +1002,23 @@ en:
       subtitle: "The next decision waiting on you."
       no_org_title: No organization yet
       no_org_body: You're signed in but not a member of any organization.
+      first_steps:
+        title: First steps
+        progress: "%{done} of %{total} done"
+        dismiss: Close the list
+        dismissed: The first steps list is closed for the whole organization.
+        steps:
+          first_error: Receive the first error
+          alert_rule: Create an alert rule
+          invitation: Invite a colleague
+          telegram: Connect Telegram
+          ticket_closed: Close the first ticket
+        hints:
+          first_error: Connect an app to see its errors.
+          alert_rule: Choose when you get a notification.
+          invitation: Work together with your team.
+          telegram: Get notifications on your phone.
+          ticket_closed: Finish a piece of work.
       counts:
         approvals: To approve
         conversations: Notifications

@@ -1,0 +1,34 @@
+<%# locals: (checklist:)
+    CYRA-1159 — the organization's five first steps, above the decision of the day. Done steps are
+    ticked with their day, a missing one links to the page where it is done. Owner and admin close
+    the list for everyone; once the five are done it is not rendered at all. %>
+<% links = { "first_error" => member_guides_errors_path, "alert_rule" => new_member_alerting_rule_path,
+             "invitation" => new_member_invitation_path, "telegram" => member_telegram_connection_path,
+             "ticket_closed" => member_tickets_path } %>
+<%= render Ui::SectionComponent.new(title: t("member.home.first_steps.title"), body_class: nil, test_id: "home-first-steps") do |section| %>
+  <% section.with_subtitle do %>
+    <span class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="home-first-steps-progress"><%= t("member.home.first_steps.progress", done: checklist.done_count, total: checklist.total) %></span>
+  <% end %>
+  <% if Organizations::FirstSteps::Checklist.dismissable_by?(current_membership) %>
+    <% section.with_actions do %>
+      <%= render Ui::ButtonComponent.new(label: t("member.home.first_steps.dismiss"), href: member_home_first_steps_dismissal_path(organization_id: current_organization.id),
+                                         method: :post, variant: :secondary_muted, size: :sm, test_id: "home-first-steps-dismiss") %>
+    <% end %>
+  <% end %>
+  <ul class="divide-y divide-stone-200 dark:divide-zinc-800">
+    <% checklist.items.each do |item| %>
+      <li class="flex items-center gap-3 px-4 py-2.5 text-[13px]" data-test="home-first-step-<%= item.step.dasherize %>" data-done="<%= item.done? %>">
+        <%= render Ui::IconComponent.new(name: (item.done? ? "circle-check" : "circle"),
+                                         class: "text-[14px] #{item.done? ? "text-emerald-500" : "text-gray-400 dark:text-zinc-500"}") %>
+        <% if item.done? %>
+          <span class="text-gray-500 dark:text-zinc-400"><%= t("member.home.first_steps.steps.#{item.step}") %></span>
+          <span class="ml-auto font-mono text-[11.5px] text-gray-400 dark:text-zinc-500"><%= l(item.reached_at.to_date, format: :short) %></span>
+        <% else %>
+          <%= link_to t("member.home.first_steps.steps.#{item.step}"), links.fetch(item.step),
+                      class: "font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400" %>
+          <span class="ml-auto text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.home.first_steps.hints.#{item.step}") %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

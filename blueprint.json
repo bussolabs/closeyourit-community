@@ -6000,7 +6000,7 @@
       "level": 3,
       "parent": "agt_flow_claim",
       "kind": "step",
-      "summary": "Nasce la scheda del tentativo con macchina, fase e regole d'uso congelate. Un motore scelto per la fase vale solo se la macchina non lo segnala senza credito: altrimenti lavora il motore della macchina. Lo stesso vale per chi rilegge: se l'altro motore è senza credito, rilegge il revisore scelto per la macchina. Per i rilasci il server assegna qui il numero di versione.",
+      "summary": "Nasce la scheda del tentativo con macchina, fase e regole d'uso congelate. Un motore scelto per la fase vale solo se la macchina non lo segnala senza credito: altrimenti lavora il motore della macchina. Lo stesso vale per chi rilegge: se l'altro motore è senza credito, rilegge il revisore scelto per la macchina. Anche il giro che risolve i conflitti lascia il suo motore fisso se è senza credito. Per i rilasci il server assegna qui il numero di versione.",
       "files": [
         "app/services/agents/phase_engine.rb",
         "app/services/agents/budget_restart.rb",
@@ -10518,6 +10518,21 @@
       ]
     },
     {
+      "id": "acc_d_first_step",
+      "name": "Primi passi",
+      "level": 3,
+      "parent": "acc_data",
+      "kind": "data",
+      "summary": "Il giorno in cui l'organizzazione ha fatto ciascuno dei cinque primi passi: primo errore, regola di avviso creata da una persona, collega invitato, Telegram collegato, primo ticket chiuso. Si scrive una volta sola. La Home li mostra finché non sono tutti fatti o un proprietario o amministratore chiude la lista.",
+      "files": [
+        "app/models/organizations/first_step.rb",
+        "app/services/organizations/first_steps/**",
+        "app/controllers/home_controller.rb",
+        "app/controllers/member/home/first_steps_dismissals_controller.rb",
+        "app/views/home/_first_steps.html.erb"
+      ]
+    },
+    {
       "id": "acc_d_membership",
       "name": "Iscrizione",
       "level": 3,
@@ -11728,10 +11743,11 @@
       "level": 2,
       "parent": "area_valhalla",
       "kind": "page",
-      "summary": "Stato delle organizzazioni, accessi e impersonazioni recenti, crescita degli ultimi sette giorni.",
+      "summary": "Stato delle organizzazioni, accessi e impersonazioni recenti, crescita degli ultimi sette giorni. Per settimana di iscrizione, quante organizzazioni arrivano a ciascuno dei primi passi; le preesistenti in una riga a parte.",
       "files": [
         "app/controllers/valhalla/dashboard_controller.rb",
         "app/presenters/valhalla/dashboard_signals.rb",
+        "app/presenters/valhalla/first_steps_cohorts.rb",
         "app/views/valhalla/dashboard/**"
       ]
     },

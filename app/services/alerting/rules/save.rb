@@ -49,9 +49,12 @@ module Alerting
           ids = Array(@attributes[:channel_ids]).reject(&:blank?)
           @rule.channel_ids = @organization.alerting_channels.where(id: ids).ids
         end
-        @rule.created_by ||= @actor if @rule.new_record?
+        created = @rule.new_record?
+        @rule.created_by ||= @actor if created
 
         @rule.save!
+        # CYRA-1159 — a rule a person creates is a first step; the default rules never pass here.
+        Organizations::FirstStep.record(:alert_rule, organization_ids: @organization.id) if created && @actor&.human?
         Result.ok(@rule)
       end
 

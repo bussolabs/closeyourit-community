@@ -19,6 +19,8 @@ module Connections
       return err("R422-INVITE-005", :pending_invitation) if pending_invitation?
 
       invitation = @organization.invitations.create!(email: @email, role: @role, invited_by: @invited_by)
+      # CYRA-1159 — the step counts when the invitation leaves, not when it is accepted.
+      Organizations::FirstStep.record(:invitation, organization_ids: @organization.id)
       Connections::InvitationsMailer.invite(invitation).deliver_later
       Result.ok(invitation)
     rescue ActiveRecord::RecordInvalid => e

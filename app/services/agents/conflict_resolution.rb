@@ -2,7 +2,8 @@
 
 module Agents
   # CYAU-300 — the attempt that resolves a code conflict with main runs on Codex and is reviewed by Claude, when
-  # the machine has Codex; otherwise on the machine's usual engine. Same shape as the council's choice.
+  # the machine has Codex and does not report it out of quota (CYRA-1361); otherwise on the machine's usual
+  # engine. Same shape as the council's choice.
   module ConflictResolution
     ENGINE = "codex"
     REVIEWER = "claude"
@@ -18,7 +19,7 @@ module Agents
 
     def self.choice_for(workflow:, host:, phase:)
       return nil unless requested?(workflow:, phase:)
-      return nil unless Council::WorkChoice.installed?(host, ENGINE)
+      return nil unless Council::WorkChoice.available?(host, ENGINE)
 
       Council::WorkChoice::Choice.new(engine: ENGINE, model: nil, reviewer: REVIEWER)
     end

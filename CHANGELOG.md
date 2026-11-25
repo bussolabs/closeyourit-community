@@ -2,11 +2,21 @@
 
 ## [Unreleased]
 
+## [0.249.0] - 2026-11-25
+
+### Added
+
+- **Primi passi in Home**: sopra la decisione del giorno trovi i cinque passi per cominciare, dal primo errore ricevuto al primo ticket chiuso. Quelli fatti sono spuntati, gli altri portano alla pagina dove si fanno. Sparisce a passi fatti, o quando un proprietario o amministratore la chiude per tutti.
+
 ## [0.248.0] - 2026-11-25
 
 ### Changed
 
 - **Avvisi di soglia delle macchine solo al cambio**: un valore che supera la soglia manda un solo avviso, non uno ogni cinque minuti. Quando torna normale arriva un avviso di rientro con il valore attuale. Chi usava l'avviso ripetuto come promemoria non lo riceverà più. (CYRA-1256)
+
+### Fixed
+
+- **I conflitti si risolvono anche con un motore senza credito**: se il motore che di solito risolve i conflitti ha finito il credito su una macchina, il giro lo fa il motore abituale della macchina. Prima falliva in pochi secondi, più volte. [Agenti](/member/agents)
 
 ## [0.247.0] - 2026-11-24
 

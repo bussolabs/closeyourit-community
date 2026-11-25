@@ -71,6 +71,7 @@ module Errors
                                        environment: normalized.environment,
                                        occurred_at: normalized.occurred_at)
         track_source(normalized)                                   # dopo il commit
+        record_first_error(reading)                                # dopo il commit
         notify_alerts(group, reading.created, reopened, normalized) # dopo il commit
         # In raffica il lavoro che passa da Rails.cache — probe dello spike e segnale di refresh — si fa
         # una volta ogni TELEMETRY_BURST_WORK_EVERY. Fuori dalla raffica: sempre, come prima.
@@ -87,6 +88,13 @@ module Errors
       end
 
       private
+
+      # CYRA-1159 — only a new group writes the first step, never every occurrence.
+      def record_first_error(reading)
+        return unless reading.created
+
+        Organizations::FirstStep.record(:first_error, organization_ids: @project.organization_id)
+      end
 
       def reconcile_artifacts(event)
         ::Crashes::Reconcile.call(project: @project, event: event)

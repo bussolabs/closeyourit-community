@@ -386,4 +386,27 @@ RSpec.describe "Valhalla::Dashboard", type: :request do
       expect(names.call.index("Owned by amy")).to be < names.call.index("Owned by zed")
     end
   end
+
+  # CYRA-1159 — first steps by signup week, preexisting organizations apart.
+  describe "first steps table" do
+    before do
+      Organizations::Organization.delete_all
+      sign_in_as(create(:account, god: true))
+    end
+
+    it "says how many organizations signed up this week and how many linked Telegram" do
+      organizations = create_list(:organization, 3)
+      Organizations::FirstStep.record!(:telegram, organization_ids: organizations.first.id)
+      create(:organization, first_steps_preexisting: true)
+
+      get valhalla_root_path
+
+      doc = Nokogiri::HTML(response.body)
+      week = doc.at_css("[data-test='valhalla-first-steps-#{Time.current.utc.to_date.beginning_of_week.iso8601}']")
+      expect(week.at_css("[data-test='first-steps-signed-up']").text.strip).to eq("3")
+      expect(week.at_css("[data-test='first-steps-telegram']").text.strip).to eq("1")
+      preexisting = doc.at_css("[data-test='valhalla-first-steps-preexisting']")
+      expect(preexisting.at_css("[data-test='first-steps-signed-up']").text.strip).to eq("1")
+    end
+  end
 end

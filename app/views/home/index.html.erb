@@ -29,6 +29,8 @@
       <% end %>
     <% end %>
 
+    <% if @first_steps %><%= render "home/first_steps", checklist: @first_steps %><% end %>
+
     <% if @next.card? %>
       <%= render "home/next_decision", card: @next.card, item: @next.item %>
     <% else %>

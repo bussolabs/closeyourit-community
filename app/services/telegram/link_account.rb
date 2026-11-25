@@ -16,6 +16,8 @@ module Telegram
       return Result.err(AppError.new("Codice Telegram non valido", code: "R404-TELEGRAM-001", status: :not_found)) if account.nil?
 
       link!(account)
+      # CYRA-1159 — one person on Telegram ticks the step for every organization they belong to.
+      Organizations::FirstStep.record(:telegram, organization_ids: account.memberships.pluck(:organization_id))
       confirm(account)
       Result.ok(account)
     end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_120004) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_120006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -2800,6 +2800,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120004) do
     t.index ["organization_id"], name: "index_organization_ai_settings_on_organization_id", unique: true
   end
 
+  create_table "organization_first_steps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "organization_id", null: false
+    t.string "step", null: false
+    t.datetime "reached_at", null: false
+    t.datetime "created_at", null: false
+    t.index ["organization_id", "step"], name: "index_organization_first_steps_on_organization_id_and_step", unique: true
+  end
+
   create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.uuid "created_by_id"
@@ -2810,6 +2818,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120004) do
     t.string "slug", null: false
     t.datetime "suspended_at"
     t.datetime "updated_at", null: false
+    t.datetime "first_steps_dismissed_at"
+    t.boolean "first_steps_preexisting", default: false, null: false
     t.index ["created_by_id"], name: "index_organizations_on_created_by_id"
     t.index ["cto_id"], name: "index_organizations_on_cto_id"
     t.index ["default_assignee_id"], name: "index_organizations_on_default_assignee_id"
@@ -5089,6 +5099,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120004) do
   add_foreign_key "metrics_samples", "metrics_groups", column: "group_id", on_delete: :cascade
   add_foreign_key "metrics_samples", "projects", on_delete: :cascade
   add_foreign_key "organization_ai_settings", "organizations"
+  add_foreign_key "organization_first_steps", "organizations", on_delete: :cascade
   add_foreign_key "organizations", "accounts", column: "created_by_id", on_delete: :nullify
   add_foreign_key "organizations", "accounts", column: "cto_id", on_delete: :nullify
   add_foreign_key "organizations", "accounts", column: "default_assignee_id", on_delete: :nullify

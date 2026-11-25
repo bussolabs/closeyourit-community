@@ -23,6 +23,7 @@ module Telegram
       return refuse(:not_forum, account, "R422-TELEGRAM-013", :unprocessable_content) unless @forum
 
       group = link!(organization, account)
+      Organizations::FirstStep.record(:telegram, organization_ids: organization.id) # CYRA-1159
       refresh_icons(group)
       reply(:connected, account, organization: organization.name)
       Result.ok(organization)
