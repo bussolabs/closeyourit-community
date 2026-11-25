@@ -14,6 +14,20 @@ RSpec.describe Errors::Ingest::Normalize, type: :service do
     expect(normalize("message" => "disk full").title).to eq("disk full")
   end
 
+  it "strips title parts without changing meaningful text" do
+    expect(normalize("exception" => { "values" => [ { "type" => " RuntimeError ", "value" => " boom " } ] }).title)
+      .to eq("RuntimeError: boom")
+    expect(normalize("message" => " disk full ").title).to eq("disk full")
+    expect(normalize("transaction" => " /checkout ").title).to eq("/checkout")
+  end
+
+  it "falls back after removing null bytes and truncates informative titles" do
+    expect(normalize("exception" => { "values" => [ { "type" => 0.chr, "value" => " " } ] }).title).to eq("Error")
+    title = normalize("exception" => { "values" => [ { "type" => "RuntimeError", "value" => "x" * 300 } ] }).title
+    expect(title.length).to eq(described_class::TITLE_MAX)
+    expect(title).to start_with("RuntimeError: ")
+  end
+
   it "level mappato; sconosciuto → error" do
     expect(normalize("level" => "warning").level).to eq("warning")
     expect(normalize("level" => "bogus").level).to eq("error")
@@ -263,9 +277,57 @@ RSpec.describe Errors::Ingest::Normalize, type: :service do
   end
 
   describe "rami ai confini" do
-    it "exception con type e value assenti → title nil (presence& else)" do
-      n = normalize("exception" => { "values" => [ {} ] })
-      expect(n.title).to be_nil
+    describe "title di riserva con exception senza type né value (CYRA-1243)" do
+      def exception(type: nil, value: nil) = { "exception" => { "values" => [ { "type" => type, "value" => value }.compact ] } }
+
+      it "type e value assenti → 'Error'" do
+        expect(normalize("exception" => { "values" => [ {} ] }).title).to eq("Error")
+      end
+
+      it "type e value vuoti → 'Error', non ': '" do
+        expect(normalize(exception(type: "", value: "")).title).to eq("Error")
+      end
+
+      it "type e value di soli spazi → 'Error'" do
+        expect(normalize(exception(type: "  ", value: "\t\n")).title).to eq("Error")
+      end
+
+      it "ricade prima sul message" do
+        n = normalize(exception(type: "", value: " ").merge("message" => "disco pieno", "transaction" => "/checkout"))
+        expect(n.title).to eq("disco pieno")
+      end
+
+      it "message di soli spazi → ricade sulla transaction" do
+        n = normalize(exception(type: "", value: "").merge("message" => "   ", "transaction" => "/checkout"))
+        expect(n.title).to eq("/checkout")
+      end
+
+      it "message e transaction vuoti o di soli spazi → 'Error'" do
+        n = normalize(exception.merge("message" => "", "transaction" => "  "))
+        expect(n.title).to eq("Error")
+      end
+
+      it "solo il type significativo → titolo dal solo type, senza ': ' pendente" do
+        expect(normalize(exception(type: "RuntimeError", value: "  ")).title).to eq("RuntimeError")
+        expect(normalize(exception(type: "RuntimeError")).title).to eq("RuntimeError")
+      end
+
+      it "solo il value significativo → titolo dal solo value, senza ': ' iniziale" do
+        expect(normalize(exception(type: " ", value: "boom")).title).to eq("boom")
+        expect(normalize(exception(value: "boom")).title).to eq("boom")
+      end
+
+      it "type e value significativi non cambiano: il message non sostituisce l'exception" do
+        n = normalize(exception(type: "RuntimeError", value: "boom").merge("message" => "disco pieno"))
+        expect(n.title).to eq("RuntimeError: boom")
+      end
+
+      it "il titolo di riserva rispetta TITLE_MAX" do
+        n = normalize(exception.merge("message" => "x" * 300))
+        expect(n.title.length).to eq(described_class::TITLE_MAX)
+        n = normalize(exception.merge("transaction" => "/t" * 200))
+        expect(n.title.length).to eq(described_class::TITLE_MAX)
+      end
     end
 
     it "exception.values array vuoto ([]) → title da message, nessun crash su values.last" do

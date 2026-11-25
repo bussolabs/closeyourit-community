@@ -25,6 +25,24 @@ RSpec.describe "Member::Monitoring::ErrorGroups", type: :request do
   end
 
   describe "GET index" do
+    it "shows the generic title after ingesting an incomplete event for an authorized member" do
+      create(:project_membership, account: member, project: project)
+      sign_in(member)
+      perform_enqueued_jobs only: Errors::IngestJob do
+        Errors::Ingest::Enqueue.call(project: project,
+          payload: { "event_id" => "incomplete", "exception" => { "values" => [ {} ] } })
+      end
+      group = project.error_groups.sole
+
+      get member_monitoring_error_groups_path
+
+      expect(response).to have_http_status(:ok)
+      title = Nokogiri::HTML(response.body).at_css("[data-test='error-group-title-#{group.id}']")
+      expect(title).to be_present
+      expect(title.text.strip).to eq("Error")
+      expect(project.error_events.sole.event_id).to eq("incomplete")
+    end
+
     it "non autenticato → redirect login" do
       get member_monitoring_error_groups_path
       expect(response).to redirect_to(login_path)

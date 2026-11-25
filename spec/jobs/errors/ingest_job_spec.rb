@@ -5,7 +5,27 @@ require "rails_helper"
 # CYRA-211 — Il job legge il payload dalla staging effimera (in coda viaggia solo l'id) e la cancella
 # una volta persistito.
 RSpec.describe Errors::IngestJob, type: :job do
+  include ActiveJob::TestHelper
+
   let(:project) { create(:project) }
+
+  it "persists an incomplete event before deleting staging and deduplicates repeated delivery" do
+    payload = { "event_id" => "incomplete", "exception" => { "values" => [ {} ] } }
+    staged = Errors::Ingest::Enqueue.call(project: project, payload: payload)
+    allow_any_instance_of(Errors::IngestPayload).to receive(:destroy).and_wrap_original do |original|
+      expect(project.error_events.find_by!(event_id: "incomplete").group.title).to eq("Error")
+      original.call
+    end
+
+    perform_enqueued_jobs only: described_class
+
+    expect(Errors::IngestPayload.exists?(staged.id)).to be(false)
+    perform_enqueued_jobs only: described_class do
+      Errors::Ingest::Enqueue.call(project: project, payload: payload)
+    end
+    expect(project.error_events.count).to eq(1)
+    expect(project.error_groups.sole.events_count).to eq(1)
+  end
 
   def stage(event_id: "e1")
     Errors::IngestPayload.create!(

@@ -132,12 +132,17 @@ module Errors
         values.is_a?(Array) ? values.last : nil
       end
 
+      # Missing exception details fall back to message, transaction, then "Error" (CYRA-1243).
       def title
-        if (exc = last_exception)
-          [ exc["type"], exc["value"] ].compact.join(": ").presence&.truncate(TITLE_MAX)
-        else
-          (message_text || @payload["transaction"] || "Error").to_s.truncate(TITLE_MAX)
-        end
+        (exception_title || message_text.to_s.strip.presence || @payload["transaction"].to_s.strip.presence || "Error")
+          .to_s.truncate(TITLE_MAX)
+      end
+
+      def exception_title
+        exc = last_exception
+        return unless exc
+
+        [ exc["type"], exc["value"] ].filter_map { |part| part.to_s.strip.presence }.join(": ").presence
       end
 
       def culprit

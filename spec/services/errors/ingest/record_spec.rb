@@ -39,6 +39,76 @@ RSpec.describe Errors::Ingest::Record, type: :service do
     expect(project.error_groups.sole.events_count).to eq(2)
   end
 
+  # CYRA-1243: prima il titolo restava vuoto, la validazione del gruppo rifiutava il salvataggio e
+  # l'evento accettato spariva.
+  describe "exception senza type né value" do
+    [ nil, "", " \t\n" ].each do |details|
+      [ nil, "", " \t", " /checkout " ].each do |operation|
+        it "persists and deduplicates incomplete details #{details.inspect} with operation #{operation.inspect}" do
+          first = payload(event_id: "incomplete-1", type: details, value: details)
+          first["exception"]["values"].first.compact!
+          first["transaction"] = operation
+          expect(record(first)).to be_ok
+          group = project.error_groups.sole
+          expect(record(first.merge("event_id" => "incomplete-2"))).to be_ok
+          expect(record(first)).to be_ok
+
+          expect(project.error_groups.sole.id).to eq(group.id)
+          expect(group.reload.title).to eq(operation.to_s.strip.presence || "Error")
+          expect(group.events_count).to eq(2)
+          expect(group.events.count).to eq(2)
+        end
+      end
+    end
+
+    it "salva il gruppo col titolo di riserva e lo mostra in elenco" do
+      result = record(payload(event_id: "untitled-1", type: nil, value: nil))
+      expect(result).to be_ok
+      group = project.error_groups.sole
+      expect(group.title).to eq("Error")
+      expect(project.error_groups.recent).to include(group)
+    end
+
+    it "type e value vuoti o di soli spazi → stesso esito, titolo di riserva" do
+      expect(record(payload(event_id: "untitled-1", type: "", value: "  "))).to be_ok
+      expect(project.error_groups.sole.title).to eq("Error")
+    end
+
+    it "due occorrenze distinte finiscono nello stesso gruppo e contano entrambe" do
+      expect(record(payload(event_id: "untitled-1", type: nil, value: nil))).to be_ok
+      expect { record(payload(event_id: "untitled-2", type: nil, value: nil)) }.not_to change(Errors::Group, :count)
+      group = project.error_groups.sole
+      expect(group.title).to eq("Error")
+      expect(group.events_count).to eq(2)
+      expect(group.events.count).to eq(2)
+    end
+
+    it "il titolo di riserva usa il message quando c'è" do
+      record(payload(event_id: "untitled-1", type: nil, value: nil).merge("message" => "disco pieno"))
+      expect(project.error_groups.sole.title).to eq("disco pieno")
+    end
+
+    it "message di soli spazi → il titolo di riserva usa la transaction" do
+      record(payload(event_id: "untitled-1", type: "", value: "").merge("message" => "  ", "transaction" => "/checkout"))
+      expect(project.error_groups.sole.title).to eq("/checkout")
+    end
+
+    it "il titolo di riserva salvato rispetta il limite di lunghezza" do
+      expect(record(payload(event_id: "untitled-1", type: nil, value: nil).merge("message" => "x" * 300))).to be_ok
+      expect(project.error_groups.sole.title.length).to eq(Errors::Ingest::Normalize::TITLE_MAX)
+    end
+
+    # Group titles follow the latest occurrence, including a generic fallback (CYRA-1243).
+    it "replaces an informative title with the latest generic fallback without losing events" do
+      record(payload(event_id: "untitled-1", type: nil, value: nil).merge("message" => "disco pieno"))
+      expect(record(payload(event_id: "untitled-2", type: " ", value: nil))).to be_ok
+      group = project.error_groups.sole
+      expect(group.title).to eq("Error")
+      expect(group.events_count).to eq(2)
+      expect(group.events.count).to eq(2)
+    end
+  end
+
   it "persiste le colonne device context (os_name/os_version/app_version)" do
     result = record(payload(event_id: "dev1").merge(
       "contexts" => { "os" => { "name" => "Android", "version" => "14" },

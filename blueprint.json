@@ -3132,7 +3132,7 @@
       "level": 2,
       "parent": "area_servers",
       "kind": "job",
-      "summary": "Ogni minuto segna giù un cluster senza notizie da 3 minuti. Ogni ora dimentica ciò che è sparito da un giorno e gli eventi vecchi. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda.",
+      "summary": "Ogni minuto segna giù un cluster senza notizie da 3 minuti. Ogni ora cancella a gruppi prima applicazioni e nodi spariti da oltre 24 ore, poi spazi vuoti non collegati ai progetti con la stessa scadenza e infine eventi più vecchi di 48 ore. Il giro al minuto scarta i duplicati per cinque minuti dalla prenotazione; oltre la scadenza può sovrapporsi. Dopo un arresto serve anche la manutenzione della coda.",
       "files": [
         "app/jobs/clusters/check_stale_job.rb",
         "app/jobs/clusters/prune_job.rb",
@@ -7945,7 +7945,7 @@
       "level": 2,
       "parent": "area_ai",
       "kind": "job",
-      "summary": "Ogni notte si cancellano le richieste AI vecchie: sono bozze del momento, non storico.",
+      "summary": "Ogni notte si cancellano a gruppi le richieste AI più vecchie di un giorno: sono bozze del momento, non storico.",
       "files": [
         "app/jobs/ai/prune_requests_job.rb"
       ]

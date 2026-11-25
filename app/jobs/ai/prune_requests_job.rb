@@ -7,7 +7,7 @@ module Ai
     queue_as :batch
 
     def perform
-      Ai::Request.stale.delete_all
+      Ai::Request.stale.in_batches.delete_all
     end
   end
 end

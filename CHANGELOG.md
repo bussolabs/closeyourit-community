@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.251.1] - 2026-11-25
+
+### Fixed
+
+- **Errori senza descrizione sempre visibili**: gli errori privi di tipo e messaggio vengono salvati e mostrati con il nome dell'operazione oppure con un titolo generico. Anche le occorrenze successive aggiornano correttamente il conteggio.
+
+## [0.251.0] - 2026-11-25
+
+### Changed
+
+- **Pulizia dello storico a piccoli gruppi**: le richieste scadute dell'assistente e i dati obsoleti dei cluster vengono eliminati a piccoli gruppi, anche dopo giorni di pausa. Restano invariati i tempi di conservazione e le protezioni degli spazi ancora utilizzati.
+
 ## [0.250.1] - 2026-11-25
 
 ### Fixed
