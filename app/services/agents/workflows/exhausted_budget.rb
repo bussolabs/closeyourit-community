@@ -23,6 +23,16 @@ module Agents
       # a phase, the plan revisions and the supporter's retries.
       EXHAUSTION_REASONS = %w[retries_exhausted revisions_exhausted].freeze
 
+      # CYRA-1364 — the fixed head of a set-aside's close reason. With no author on the close, it is what tells a run
+      # the server set aside from one a person cancelled (ResumeSetAside reads it).
+      REASON_MARK = "exhausted_budget:"
+
+      def self.set_aside?(workflow)
+        return false unless workflow&.cancelled_at? && workflow.cancelled_by_id.nil?
+
+        workflow.cancellation_reason.to_s.start_with?(REASON_MARK)
+      end
+
       # Settled after the commit, never in place: see Agents::ExhaustedBudgetJob for why.
       #
       # The state it was decided on travels with it. Between the decision and the job a person can
@@ -158,7 +168,7 @@ module Agents
 
       # An audit line, not the sentence a person reads: one language, stable shape.
       def cancellation_reason
-        "exhausted_budget: #{@workflow.blocked_phase.presence || "the work"} ran out of attempts twice"
+        "#{REASON_MARK} #{@workflow.blocked_phase.presence || "the work"} ran out of attempts twice"
       end
 
       # The ticket is back in the backlog and must not be picked up on its own. Written like the

@@ -54,7 +54,7 @@ en:
     # Automation panel.
     exhausted_budget:
       service_line: "The machines could not finish this work, not even on the second run. The ticket now waits for the team: you have nothing to do. What was tried is in the Automation panel."
-      eligibility_reason: "The machines could not finish this work, twice: it now waits for the team. Allowing it here is not enough to put it back to work: it also has to be restarted from the Automation panel."
+      eligibility_reason: "The machines could not finish this work, twice: it now waits for the team. If an administrator allows it to the agents again, the work starts over from triage."
     clarifications:
       ask:
         # Service line: it ANNOUNCES the questions, it does not contain them. See the Italian file

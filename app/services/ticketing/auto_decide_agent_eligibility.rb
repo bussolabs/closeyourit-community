@@ -25,6 +25,8 @@ module Ticketing
                             actor_name: I18n.t("agents.supporter.activity_actor"),
                             data: { agent_eligibility: { from:, to: @ticket.agent_eligibility } })
       end
+      # CYRA-1364 — work the machines set aside starts over on its own, up to the per-ticket cap.
+      Agents::Workflows::ResumeSetAside.call(ticket: @ticket, by_server: true) if @ticket.agent_eligibility_allowed?
       Result.ok(@ticket)
     end
 

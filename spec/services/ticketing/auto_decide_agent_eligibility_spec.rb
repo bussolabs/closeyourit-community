@@ -82,4 +82,42 @@ RSpec.describe Ticketing::AutoDecideAgentEligibility do
     described_class.call(ticket:)
     expect(ticket.reload.agent_eligibility).to eq("pending")
   end
+
+  # CYRA-1364 AC-3 — the ticket was edited after its work was set aside, and the supporter allows it again.
+  describe "work the machines set aside" do
+    let!(:workflow) do
+      create(:agent_workflow, ticket:, organization:, budget_restart_engine: "codex", cancelled_at: 1.hour.ago,
+                              cancellation_reason: "#{Agents::Workflows::ExhaustedBudget::REASON_MARK} autopilot ran out of attempts twice")
+    end
+
+    before { ticket.update_columns(agent_eligibility: Ticketing::Ticket.agent_eligibilities[:blocked]) }
+
+    it "starts over from triage without anybody pressing anything" do
+      described_class.call(ticket:)
+
+      fresh = ticket.reload.agent_workflow
+      expect(fresh.id).not_to eq(workflow.id)
+      expect(fresh).to have_attributes(triage_requested_at: be_present, budget_restart_engine: nil, cancelled_at: nil)
+      expect(Ticketing::Event.where(ticket:, action: "workflow_resumed_automatically").count).to eq(1)
+    end
+
+    # Review finding — a run that always fails stops coming back on its own after the cap.
+    it "leaves the run closed once the server has restarted it as often as allowed" do
+      Agents::Workflows::ResumeSetAside::AUTOMATIC_LIMIT.times do
+        Ticketing::RecordActivity.call(ticket:, action: "workflow_resumed_automatically", actor_name: "supporter")
+      end
+
+      described_class.call(ticket:)
+
+      expect(ticket.reload).to have_attributes(agent_eligibility: "allowed", agent_workflow: workflow)
+    end
+
+    it "does not restart a run a person cancelled" do
+      workflow.update!(cancelled_by: create(:account), cancellation_reason: "Not needed any more")
+
+      described_class.call(ticket:)
+
+      expect(ticket.reload.agent_workflow).to eq(workflow)
+    end
+  end
 end

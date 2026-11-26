@@ -104,6 +104,18 @@ RSpec.describe Agents::Workflows::ExhaustedBudget do
       expect(workflow.cancellation_reason).to include("autopilot")
     end
 
+    # CYRA-1364 — the fixed mark, with no author, is how a set-aside is told from a person's cancel.
+    it "closes with the fixed mark and no author, so the set-aside can be recognised" do
+      attempt_on("codex")
+      stop!
+
+      described_class.call(workflow:)
+
+      expect(workflow.reload.cancellation_reason).to start_with(described_class::REASON_MARK)
+      expect(workflow.cancelled_by).to be_nil
+      expect(described_class.set_aside?(workflow)).to be(true)
+    end
+
     it "gives the ticket back to the backlog" do
       attempt_on("codex")
       stop!
@@ -153,6 +165,22 @@ RSpec.describe Agents::Workflows::ExhaustedBudget do
       described_class.call(workflow:)
 
       expect(ticket.reload.agent_workflow).to eq(workflow)
+    end
+  end
+
+  describe ".set_aside?" do
+    let(:person) { create(:account) }
+
+    it "is false for a run a person cancelled, even with the same words" do
+      workflow.update!(cancelled_at: Time.current, cancelled_by: person,
+                       cancellation_reason: "#{described_class::REASON_MARK} copied by hand")
+
+      expect(described_class.set_aside?(workflow)).to be(false)
+    end
+
+    it "is false for a run that is not closed, or no run at all" do
+      expect(described_class.set_aside?(workflow)).to be(false)
+      expect(described_class.set_aside?(nil)).to be(false)
     end
   end
 

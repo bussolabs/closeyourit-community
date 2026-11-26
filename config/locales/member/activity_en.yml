@@ -65,6 +65,8 @@ en:
           workflow_supporter_retried: Work sent back to the agent by the supporter
           workflow_restarted_other_engine: Work restarted on another engine
           workflow_set_aside: Work set aside
+          workflow_resumed: Work restarted after being allowed again
+          workflow_resumed_automatically: Work restarted on its own after being allowed again
           agent_safety_stopped: Work stopped for safety
           delivery_scope_stopped: Delivery stopped by the file check
           delivery_scope_would_stop: File check in dry run

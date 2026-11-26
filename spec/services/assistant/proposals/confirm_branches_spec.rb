@@ -61,6 +61,18 @@ RSpec.describe Assistant::Proposals::Confirm, "edge cases" do
       expect(Ticketing::AttachToTicket).not_to have_received(:call)
     end
 
+    # CYRA-1364 — work the machines set aside starts over, as from the ticket page.
+    it "starts over work the machines set aside" do
+      workflow = create(:agent_workflow, ticket:, organization:, cancelled_at: 1.hour.ago,
+                                         cancellation_reason: "#{Agents::Workflows::ExhaustedBudget::REASON_MARK} autopilot ran out of attempts twice")
+      record = proposal(:start_agent_work, "ticket_id" => ticket.id, "ticket_code" => ticket.code)
+
+      expect(described_class.call(proposal: record, account: account, organization: organization)).to be_ok
+      fresh = ticket.reload.agent_workflow
+      expect(fresh.id).not_to eq(workflow.id)
+      expect(fresh.triage_requested_at).to be_present
+    end
+
     it "attaches nothing when the eligibility change fails" do
       allow(Ticketing::SetAgentEligibility).to receive(:call)
         .and_return(Result.err(AppError.new("Not allowed", code: "R422-ELIGIBILITY-001")))

@@ -34,10 +34,17 @@ module Cli
           # Il reset non è una decisione ma una richiesta di riesame: va accodata subito. Senza il
           # servizio collegato non si accoda niente e il ticket resta pending (CYRA-548).
           Ticketing::AgentEligibilityQueue.enqueue(ticket: @ticket, wait: nil) if source == :reset
-          render_ok(TicketSerializer.new(@ticket.reload))
+          # CYRA-1364 — same outcome as the page: the set-aside work starts over, or the reply says who has to.
+          resume = ::Agents::Workflows::ResumeSetAside.call(ticket: @ticket, actor: Current.account) if decision == "allowed"
+          outcome = ::Agents::Workflows::ResumeSetAside.outcome_key(@ticket, resume) if resume
+          render_ok(TicketSerializer.new(@ticket.reload), meta: (workflow_meta(outcome) if outcome))
         end
 
         private
+
+        def workflow_meta(outcome)
+          { workflow: outcome, message: I18n.t("member.tickets.agent_eligibility.updated.allowed_#{outcome}") }
+        end
 
         def invalid_decision
           render_error("R422-TICKET-014", "eligibility must be allowed, blocked or auto",

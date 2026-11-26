@@ -57,6 +57,74 @@ RSpec.describe "Member::Tickets::Eligibilities", type: :request do
     end
   end
 
+  # CYRA-1364 — the server set the work aside after two failed runs; a person allows the ticket again.
+  describe "consentire un lavoro messo da parte" do
+    let!(:workflow) do
+      create(:agent_workflow, ticket:, organization:, budget_restart_engine: "codex", cancelled_at: 1.hour.ago,
+                              cancellation_reason: "#{Agents::Workflows::ExhaustedBudget::REASON_MARK} autopilot ran out of attempts twice")
+    end
+    let(:editor) do
+      create(:account).tap do |account|
+        create(:membership, account:, organization:, role: :member)
+        create(:project_membership, account:, project:)
+        create(:account_permission, account:, organization:, permission_key: "tickets.edit", effect: :allow)
+      end
+    end
+
+    def notice_for(key)
+      I18n.available_locales.map { |locale| I18n.t("member.tickets.agent_eligibility.updated.#{key}", locale:) }
+    end
+
+    def closed_run_box
+      Nokogiri::HTML(response.body).at_css("[data-test='agent-eligibility-closed-run']")
+    end
+
+    # AC-1 — an owner allows it: the work starts over from triage and the message says so.
+    it "fa ripartire il lavoro dallo smistamento e lo dice" do
+      patch member_ticket_eligibility_path(ticket), params: { eligibility: "allowed" }
+
+      fresh = ticket.reload.agent_workflow
+      expect(fresh.id).not_to eq(workflow.id)
+      expect(fresh).to have_attributes(triage_requested_at: be_present, budget_restart_engine: nil)
+      expect(notice_for("allowed_restarted")).to include(flash[:notice])
+    end
+
+    # AC-4 — an editor who is not an administrator: the decision is saved, the message asks for an administrator.
+    it "a chi non è amministratore salva la decisione e chiede di farlo riavviare" do
+      sign_in(editor)
+
+      patch member_ticket_eligibility_path(ticket), params: { eligibility: "allowed" }
+
+      expect(ticket.reload).to have_attributes(agent_eligibility: "allowed", agent_workflow: workflow)
+      expect(notice_for("allowed_needs_admin")).to include(flash[:notice])
+    end
+
+    # AC-2 — allowed, run closed: the box on the ticket page says why nothing picks it up.
+    it "sulla pagina dice perché un ticket consentito è fermo" do
+      sign_in(editor)
+      patch member_ticket_eligibility_path(ticket), params: { eligibility: "allowed" }
+
+      get member_ticket_path(ticket)
+
+      expect(closed_run_box).to be_present
+      expect(I18n.available_locales.map { |locale| I18n.t("member.tickets.agent_eligibility.closed_run.set_aside", locale:) })
+        .to include(closed_run_box.text.strip)
+    end
+
+    # AC-5 — a run a person cancelled stays where it is, and the page says to restart it from Automation.
+    it "non fa ripartire una lavorazione annullata a mano e lo dice" do
+      workflow.update!(cancelled_by: owner, cancellation_reason: "Duplicato")
+
+      patch member_ticket_eligibility_path(ticket), params: { eligibility: "allowed" }
+
+      expect(ticket.reload.agent_workflow).to eq(workflow)
+      expect(notice_for("allowed_cancelled")).to include(flash[:notice])
+      get member_ticket_path(ticket)
+      expect(I18n.available_locales.map { |locale| I18n.t("member.tickets.agent_eligibility.closed_run.cancelled", locale:) })
+        .to include(closed_run_box.text.strip)
+    end
+  end
+
   describe "ritorno alla valutazione automatica" do
     before do
       Ticketing::SetAgentEligibility.call(ticket:, source: :human, eligibility: "allowed",

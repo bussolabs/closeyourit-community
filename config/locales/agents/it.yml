@@ -55,7 +55,7 @@ it:
     # tecnico sta nella scheda Automazione.
     exhausted_budget:
       service_line: "Le macchine non sono riuscite a finire questo lavoro, nemmeno al secondo giro. Ora il ticket aspetta il team: tu non devi fare niente. Cosa è stato provato è nella scheda Automazione."
-      eligibility_reason: "Le macchine non sono riuscite a finire questo lavoro, due volte: ora aspetta il team. Per rimetterlo in lavorazione non basta consentirlo qui: va anche riavviato dalla scheda Automazione."
+      eligibility_reason: "Le macchine non sono riuscite a finire questo lavoro, due volte: ora aspetta il team. Se un amministratore lo consente di nuovo agli agenti, il lavoro riparte da capo, dallo smistamento."
     clarifications:
       ask:
         # Riga di servizio: ANNUNCIA le domande, non le contiene. Le domande sono righe loro e si

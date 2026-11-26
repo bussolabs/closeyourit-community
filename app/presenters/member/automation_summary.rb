@@ -235,6 +235,9 @@ module Member
     end
 
     def cancelled_line
+      # CYRA-1364 — the server closed it after two failed runs: no person stopped it, and its reason is an audit line.
+      return t("stopped.set_aside_by_machines") if ::Agents::Workflows::ExhaustedBudget.set_aside?(@workflow)
+
       reason = @workflow.cancellation_reason.presence
       reason ? t("stopped.cancelled", reason:) : t("stopped.cancelled_no_reason")
     end

@@ -66,6 +66,8 @@ it:
           workflow_supporter_retried: Lavorazione rimandata all'agente dal supporter
           workflow_restarted_other_engine: Lavorazione ripartita con un altro motore
           workflow_set_aside: Lavorazione messa da parte
+          workflow_resumed: Lavorazione ripartita dopo la riammissione
+          workflow_resumed_automatically: Lavorazione ripartita da sola dopo la riammissione
           agent_safety_stopped: Lavorazione fermata per sicurezza
           delivery_scope_stopped: Consegna fermata dal controllo sui file
           delivery_scope_would_stop: Controllo sui file in prova

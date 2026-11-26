@@ -42,6 +42,20 @@ RSpec.describe "Cli::V1::Tickets — eleggibilità agenti", type: :request do
       expect(ticket.reload).to have_attributes(agent_eligibility: "allowed", agent_eligibility_source: "human")
     end
 
+    # CYRA-1364 — same outcome as the page: the set-aside work starts over and the reply says so.
+    it "fa ripartire un lavoro messo da parte e lo dice nella risposta" do
+      workflow = create(:agent_workflow, ticket:, organization:, cancelled_at: 1.hour.ago,
+                                         cancellation_reason: "#{Agents::Workflows::ExhaustedBudget::REASON_MARK} autopilot ran out of attempts twice")
+
+      put "/cli/v1/projects/#{project.id}/tickets/#{ticket.code}/eligibility",
+          params: { eligibility: "allowed" }, headers: headers, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.dig("meta", "workflow")).to eq("restarted")
+      expect(response.parsed_body.dig("meta", "message")).to be_present
+      expect(ticket.reload.agent_workflow.id).not_to eq(workflow.id)
+    end
+
     it "riporta alla valutazione automatica e ne richiede una nuova" do
       Ticketing::SetAgentEligibility.call(ticket:, source: :human, eligibility: "allowed",
                                           reason: "sicuro", actor: owner)

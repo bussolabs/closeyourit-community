@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.257.1] - 2026-11-26
+
+### Changed
+
+- **Un lavoro messo da parte riparte quando consenti di nuovo il ticket**: se le macchine hanno fallito due volte e un amministratore consente di nuovo il ticket, il lavoro riparte da capo. Lo fa anche il supporter dopo una modifica al ticket. Se non sei amministratore, il messaggio ti dice di farlo riavviare. La scheda dice sempre perché un lavoro consentito è fermo. ([Ticket](/member/tickets))
+
 ## [0.257.0] - 2026-11-26
 
 ### Changed

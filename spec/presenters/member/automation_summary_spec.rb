@@ -150,6 +150,16 @@ RSpec.describe Member::AutomationSummary do
 
       expect(summary.stopped).to include("Il ticket è un duplicato.")
     end
+
+    # CYRA-1364 — the server closed it after two failed runs: «a person stopped it», with the English audit
+    # line, was false twice.
+    it "says the machines failed twice on work the server set aside, without the audit line" do
+      workflow.update!(cancelled_at: 1.minute.ago,
+                       cancellation_reason: "#{Agents::Workflows::ExhaustedBudget::REASON_MARK} autopilot ran out of attempts twice")
+
+      expect(summary.stopped).to eq(I18n.t("member.tickets.automation.summary.stopped.set_aside_by_machines"))
+      expect(summary.stopped).not_to include("Una persona", "ran out")
+    end
   end
 
   # CYRA-1308 — a delivery rejected «for a person» leaves the review status: the ticket has no decision

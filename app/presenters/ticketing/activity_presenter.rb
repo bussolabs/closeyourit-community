@@ -77,6 +77,9 @@ module Ticketing
       # The attempts ran out: over once on another engine, set aside the second time (CYRA-1327).
       "workflow_restarted_other_engine" => "repeat",
       "workflow_set_aside" => "archive",
+      # Allowed again after a set-aside: the work starts over from triage (CYRA-1364).
+      "workflow_resumed" => "rotate-cw",
+      "workflow_resumed_automatically" => "rotate-cw",
       # The check on the files a delivery really changed (CYRA-1291).
       "delivery_scope_stopped" => "file-warning",
       "delivery_scope_would_stop" => "flask-conical",

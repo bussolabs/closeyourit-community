@@ -129,7 +129,11 @@ module Assistant
       def start_agent_work(ticket)
         result = Ticketing::SetAgentEligibility.call(ticket: ticket, source: :human, eligibility: "allowed",
                                                      reason: payload["note"].to_s.first(500).presence, actor: @account, true_actor: @true_actor)
-        attach_proof_video(ticket) if result.ok?
+        return result if result.err?
+
+        attach_proof_video(ticket)
+        # CYRA-1364 — work the machines set aside starts over, as from the ticket page.
+        Agents::Workflows::ResumeSetAside.call(ticket: ticket, actor: @account)
         result
       end
 

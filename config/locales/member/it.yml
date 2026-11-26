@@ -2113,6 +2113,9 @@ it:
           person: Una persona
         unknown_actor: Qualcuno
         manual_reason: "Decisione presa a mano da %{name}."
+        closed_run:
+          set_aside: "Il ticket è lavorabile, ma le macchine non sono riuscite a finire il lavoro due volte e la lavorazione è chiusa: nessuna macchina la prende. Deve riavviarla un amministratore dalla scheda Automazione."
+          cancelled: "Il ticket è lavorabile, ma la lavorazione è stata annullata a mano: nessuna macchina la prende. Va riavviata dalla scheda Automazione."
         actions:
           allow: Consenti agli agenti
           allow_confirm: Vuoi permettere a un agente di lavorare questo ticket da solo?
@@ -2120,6 +2123,9 @@ it:
           reset: Torna alla valutazione automatica
         updated:
           allowed: Ora gli agenti possono lavorare questo ticket.
+          allowed_restarted: "Ora gli agenti possono lavorare questo ticket. Il lavoro messo da parte riparte da capo, dallo smistamento: rifà anche il piano."
+          allowed_needs_admin: "Ora gli agenti possono lavorare questo ticket, ma il lavoro messo da parte resta chiuso: deve riavviarlo un amministratore dalla scheda Automazione."
+          allowed_cancelled: "Ora gli agenti possono lavorare questo ticket, ma la lavorazione è stata annullata a mano: va riavviata dalla scheda Automazione."
           blocked: Il ticket resta a una persona.
           auto: Il ticket verrà riesaminato automaticamente.
         errors:
@@ -2217,6 +2223,7 @@ it:
             set_aside: "Una persona ha messo da parte il lavoro consegnato: il ticket non è più in revisione e la macchina non lo riprende."
             missing_release_probe: "Non può partire: il progetto non dichiara come si capisce che un suo rilascio è riuscito, e senza quel dato la macchina non sa dove aprire la proposta né quando dirsi finita. Si imposta dalla scheda GitHub del progetto, poi riparte da sola."
             cancelled_no_reason: Una persona l'ha fermata, senza indicare il motivo.
+            set_aside_by_machines: "Le macchine non sono riuscite a finire questo lavoro, due volte, e la lavorazione si è chiusa. Riparte da capo se il ticket viene consentito di nuovo agli agenti da un amministratore, o con «Riavvia la lavorazione»."
             completed: "È arrivata in fondo."
             inactive: "Non è mai partita: su questo ticket non l'ha chiesta nessuno."
             queued: "Aspetta una macchina libera."
@@ -2682,7 +2689,9 @@ it:
         plan_reopened_items_changed: "Le voci di accettazione sono cambiate dopo l'approvazione del piano: si ripianifica"
         workflow_supporter_retried: "Il supporter ha guardato perché la lavorazione si era fermata e l'ha rimandata all'agente con le sue indicazioni"
         workflow_restarted_other_engine: "I tentativi erano finiti: la lavorazione è ripartita da zero con un altro motore, una volta sola"
-        workflow_set_aside: "I tentativi sono finiti di nuovo: la lavorazione si chiude e il ticket torna tra quelli da fare. Non riparte da solo."
+        workflow_set_aside: "I tentativi sono finiti di nuovo: la lavorazione si chiude e il ticket torna tra quelli da fare. Riparte da capo solo se viene consentito di nuovo agli agenti."
+        workflow_resumed: "Il ticket è stato consentito di nuovo agli agenti: la lavorazione messa da parte riparte da capo, dallo smistamento, con tentativi nuovi"
+        workflow_resumed_automatically: "Il ticket è cambiato e il supporter lo ha consentito di nuovo agli agenti: la lavorazione messa da parte riparte da capo, dallo smistamento, con tentativi nuovi"
         agent_safety_stopped: "Lavorazione fermata per sicurezza: un agente ha provato ad aggirare i controlli o a toccare la produzione. Riparte solo se una persona la sblocca: il motivo è nella scheda Automazione."
         delivery_scope_stopped: "Il lavoro consegnato aspetta una persona: le modifiche toccano %{files}"
         delivery_scope_would_stop: "Controllo in prova: questa consegna si sarebbe fermata, perché le modifiche toccano %{files}"

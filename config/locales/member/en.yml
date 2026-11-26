@@ -2053,6 +2053,9 @@ en:
           person: A person
         unknown_actor: Someone
         manual_reason: "Decision made manually by %{name}."
+        closed_run:
+          set_aside: "The ticket is workable, but the machines could not finish the work twice and the run is closed: no machine picks it up. An administrator has to restart it from the Automation tab."
+          cancelled: "The ticket is workable, but the work was cancelled by hand: no machine picks it up. It has to be restarted from the Automation tab."
         actions:
           allow: Allow agents
           allow_confirm: Do you want to let an AI agent work on this ticket on its own?
@@ -2060,6 +2063,9 @@ en:
           reset: Back to automatic evaluation
         updated:
           allowed: Agents can now work on this ticket.
+          allowed_restarted: "Agents can now work on this ticket. The work that was set aside starts over from triage: it plans again too."
+          allowed_needs_admin: "Agents can now work on this ticket, but the work that was set aside stays closed: an administrator has to restart it from the Automation tab."
+          allowed_cancelled: "Agents can now work on this ticket, but the work was cancelled by hand: it has to be restarted from the Automation tab."
           blocked: The ticket stays with a person.
           auto: The ticket will be evaluated again automatically.
         errors:
@@ -2154,6 +2160,7 @@ en:
             set_aside: "A person set the delivered work aside: the ticket is no longer in review and the machine does not pick it up again."
             missing_release_probe: "It cannot start: the project does not declare how one can tell that a release of its own succeeded, and without that the machine does not know where to open the proposal nor when to call itself done. Set it from the project's GitHub panel, then it starts again on its own."
             cancelled_no_reason: A person stopped it, without giving a reason.
+            set_aside_by_machines: "The machines could not finish this work, twice, and the run closed. It starts over if an administrator allows the ticket to the agents again, or with «Restart the work»."
             completed: "It reached the end."
             inactive: "It never started: nobody requested it on this ticket."
             queued: "It is waiting for a free machine."
@@ -2602,7 +2609,9 @@ en:
         plan_reopened_items_changed: "The acceptance items changed after the plan was approved: planning again"
         workflow_supporter_retried: "The supporter looked at why the work stopped and sent it back to the agent with its guidance"
         workflow_restarted_other_engine: "The attempts had run out: the work started over from scratch on another engine, once"
-        workflow_set_aside: "The attempts ran out again: the run closes and the ticket goes back to the backlog. It does not start again on its own."
+        workflow_set_aside: "The attempts ran out again: the run closes and the ticket goes back to the backlog. It starts over only if it is allowed to the agents again."
+        workflow_resumed: "The ticket was allowed to the agents again: the work that was set aside starts over from triage, with fresh attempts"
+        workflow_resumed_automatically: "The ticket changed and the supporter allowed it to the agents again: the work that was set aside starts over from triage, with fresh attempts"
         agent_safety_stopped: "Work stopped for safety: an agent tried to skip the checks or to touch production. It resumes only when a person releases it: the reason is in the Automation tab."
         delivery_scope_stopped: "The delivered work waits for a person: the changes touch %{files}"
         delivery_scope_would_stop: "Check in dry run: this delivery would have stopped, because the changes touch %{files}"

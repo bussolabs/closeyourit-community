@@ -38,7 +38,7 @@ module Ticketing
       github_change_declined github_assignee_unknown github_text_kept github_reconciled
       autopilot_auto_approved plan_council_approved plan_supporter_approved plan_supporter_added_items plan_reopened_items_changed
       workflow_supporter_retried agent_safety_stopped release_resumed
-      workflow_restarted_other_engine workflow_set_aside
+      workflow_restarted_other_engine workflow_set_aside workflow_resumed workflow_resumed_automatically
       delivery_scope_stopped delivery_scope_would_stop delivery_scope_outside_plan
       delivery_scope_tests_removed delivery_evidence_stopped delivery_evidence_would_stop
       delivery_checks_stopped delivery_checks_would_stop

@@ -32,9 +32,12 @@ module Member
         # debounce (l'utente ha appena premuto il pulsante e sta aspettando un esito). Senza il
         # servizio collegato non si accoda: il ticket resta pending e la sua pagina dice perché.
         Ticketing::AgentEligibilityQueue.enqueue(ticket: @ticket, wait: nil) if source == :reset
+        # CYRA-1364 — allowing a ticket whose work was set aside starts it over, or says who has to.
+        resume = ::Agents::Workflows::ResumeSetAside.call(ticket: @ticket, actor: Current.account) if decision == "allowed"
+        outcome = ::Agents::Workflows::ResumeSetAside.outcome_key(@ticket, resume) if resume
 
         redirect_back fallback_location: member_ticket_path(@ticket),
-                      notice: t("member.tickets.agent_eligibility.updated.#{decision}")
+                      notice: t("member.tickets.agent_eligibility.updated.#{outcome ? "allowed_#{outcome}" : decision}")
       end
 
       private

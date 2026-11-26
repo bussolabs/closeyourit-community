@@ -22,6 +22,14 @@
     <p class="text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.tickets.agent_eligibility.not_evaluated_yet") %></p>
   <% end %>
 
+  <%# CYRA-1364 — allowed, but the run is closed: no machine picks it up, so the box says why and who restarts it. %>
+  <% closed_run = ticket.agent_eligibility_allowed? && ticket.agent_workflow&.cancelled_at? %>
+  <% if closed_run %>
+    <p class="rounded-md border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 px-3 py-2 text-[12px] text-amber-800 dark:text-amber-200" data-test="agent-eligibility-closed-run">
+      <%= t("member.tickets.agent_eligibility.closed_run.#{Agents::Workflows::ExhaustedBudget.set_aside?(ticket.agent_workflow) ? "set_aside" : "cancelled"}") %>
+    </p>
+  <% end %>
+
   <%# Su un ticket su cui nessuno ha deciso non c'è niente da attribuire: niente paragrafo, così non
       resta una riga vuota a spingere in giù i pulsanti. %>
   <%# When the AI decided on its own, its reason is the decision's reason: said once, with no advice box below. %>
