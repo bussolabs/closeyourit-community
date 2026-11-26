@@ -31,6 +31,8 @@ module Ticketing
       # Realtime dopo il commit (destroy persistito): rimuove la bolla dalla timeline e aggiorna il
       # contatore. L'evento `comment_deleted` entra in timeline via RecordActivity (after-commit).
       broadcast_removal(ticket)
+      # Its twin on the linked issue goes too (CYRA-1055).
+      ::Github::Issues::Outbound.comment_removed(@comment)
       Result.ok(@comment)
     end
 

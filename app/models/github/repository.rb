@@ -44,6 +44,10 @@ module Github
     enum :registry, { npm: 0, pub: 1, rubygems: 2, pypi: 3, docker: 4 }, prefix: true,
          validate: { allow_nil: true }
 
+    # Which issues become tickets: none, every issue, or only those on the chosen organization board.
+    # `validate:` turns an unknown value into a field error instead of a 500. CYRA-1055
+    enum :issue_sync, { off: 0, all_issues: 1, board_issues: 2 }, prefix: true, validate: true
+
     # Gemella del vincolo di database (`github_repositories_deploy_smoke_needs_production`). Il
     # vincolo copre chi scrive saltando il modello; questa copre chi passa dal modello, e risponde
     # con un errore leggibile invece che con una violazione di database.
@@ -56,6 +60,7 @@ module Github
     # come l'altra: chi dichiara «il pacchetto compare sullo scaffale» deve dire su quale e con che
     # nome, e non si tolgono le coordinate a un progetto che quella scelta l'ha già fatta.
     validate :publish_needs_registry_coordinates
+    validate :issue_mappings_within_organization
 
     belongs_to :project,
                class_name: "Projects::Project",
@@ -85,12 +90,20 @@ module Github
              class_name: "Github::PullRequest",
              inverse_of: :repository,
              dependent: :destroy
+    # Unlinking the repository breaks the links; the tickets stay. CYRA-1055
+    has_many :issues,
+             class_name: "Github::Issue",
+             inverse_of: :repository,
+             dependent: :delete_all
     # CI jobs and their runs (CYRA-1164): the foreign key cascades, so thousands of runs go in one statement.
     has_many :ci_jobs,
              class_name: "Github::CiJob",
              inverse_of: :repository
 
     normalizes :full_name, with: ->(value) { value.to_s.strip }
+    # Label names are matched the way GitHub shows them to people: case does not count. CYRA-1055
+    normalizes :label_kinds, with: ->(value) { Github::Repository.normalized_label_map(value) }
+    normalizes :label_priorities, with: ->(value) { Github::Repository.normalized_label_map(value) }
     normalizes :default_branch, with: ->(value) { value.to_s.strip.presence || "main" }
 
     validates :project_id, uniqueness: true
@@ -110,6 +123,33 @@ module Github
       env = stable ? production_environment : staging_environment
       env&.code
     end
+
+    # {"label" => value} with trimmed, lowercase names and no blank side.
+    def self.normalized_label_map(value)
+      value.to_h.each_with_object({}) do |(label, target), map|
+        name = label.to_s.strip.downcase
+        map[name] = target.to_s.strip if name.present? && target.to_s.strip.present?
+      end
+    end
+
+    # Issues travel only while the repository listens to GitHub at all. CYRA-1055
+    def issue_sync_active? = sync_enabled? && !issue_sync_off?
+
+    # A suspended organization moves nothing, in either direction (CYRA-722).
+    def issue_sync_live? = issue_sync_active? && !project.organization.suspended?
+
+    def board_configured? = board_node_id.present? && board_status_field_id.present?
+
+    def status_id_for_option(option_id) = board_columns[option_id.to_s].presence
+
+    # The first column mapped to that status, in the order the columns were saved.
+    def option_for_status(status_id) = board_columns.find { |_option, status| status == status_id.to_s }&.first
+
+    def kind_for_labels(labels) = first_mapped(label_kinds, labels)
+    def priority_id_for_labels(labels) = first_mapped(label_priorities, labels)
+    def label_for_kind(kind) = label_kinds.find { |_label, value| value == kind.to_s }&.first
+    def label_for_priority(priority_id) = label_priorities.find { |_label, value| value == priority_id.to_s }&.first
+    def managed_labels = (label_kinds.keys + label_priorities.keys).uniq
 
     def last_sync_ok? = last_sync_status == SYNC_OK
     def last_sync_failed? = last_sync_status == SYNC_ERROR
@@ -140,6 +180,26 @@ module Github
     end
 
     private
+
+    def first_mapped(map, labels)
+      names = Array(labels).map { |label| label.to_s.strip.downcase }
+      map.find { |label, _value| names.include?(label) }&.last
+    end
+
+    # Columns, kinds and priorities point only to what this organization has. CYRA-1055
+    def issue_mappings_within_organization
+      return if project.blank?
+
+      organization = project.organization
+      errors.add(:board_columns, :invalid) unless ids_within?(board_columns.values, organization.ticket_statuses)
+      errors.add(:label_priorities, :invalid) unless ids_within?(label_priorities.values, organization.ticket_priorities)
+      errors.add(:label_kinds, :invalid) unless (label_kinds.values - Ticketing::Ticket.kinds.keys).empty?
+    end
+
+    def ids_within?(ids, relation)
+      wanted = ids.map(&:to_s).uniq
+      wanted.empty? || relation.where(id: wanted).count == wanted.size
+    end
 
     def sync_failure_payload(error, slot)
       details = error.details.to_h.stringify_keys

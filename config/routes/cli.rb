@@ -406,6 +406,7 @@ namespace :cli do
         resource :github, only: [], module: :tickets, controller: "github" do
           post :branch          # POST crea branch KEY-N-slug
           post :pull_request    # POST apre PR dal branch del ticket
+          post :issue           # POST pubblica il ticket come issue allineata (CYRA-1055)
         end
       end
       scope module: :tokens do

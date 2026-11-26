@@ -37,6 +37,12 @@
                 label: ->(theme) { t("member.preferences.theme_options.#{theme}") } %>
         <% end %>
 
+        <%# CYRA-1055 — who you are on GitHub: an issue assigned to that name gets you as assignee. %>
+        <%= render "member/preferences/row", key: "github", title: t("member.preferences.github_title"), lead: t("member.preferences.github_lead") do %>
+          <%= render Ui::InputComponent.new(name: "github_login", value: Current.account.github_login,
+                placeholder: t("member.preferences.github_placeholder"), test_id: "preferences-github-login") %>
+        <% end %>
+
         <%= render "member/preferences/row", key: "display", title: t("member.preferences.projects_view"), lead: t("member.preferences.display_lead") do %>
           <%= render "member/preferences/choices", name: "projects_view", values: Projects::Constants::VIEWS,
                 current: Current.account.projects_view.presence || "cards", test_prefix: "preferences-view",

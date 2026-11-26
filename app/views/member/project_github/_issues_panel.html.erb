@@ -1,0 +1,24 @@
+<%# CYRA-1055 — the issue sync, next to today's switches: which issues become tickets (none, all, the
+    board's), and once on, which board moves them and which labels mean a type or a priority. %>
+<% mode_options = Github::Repository.issue_syncs.keys.map { |mode| [ t("member.project_github.issues.modes.#{mode}"), mode ] } %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="github-issues-panel">
+  <div class="px-4 py-3 border-b border-stone-100 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.project_github.issues.title") %></h2>
+    <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.project_github.issues.lead") %></p>
+  </div>
+  <%= form_with url: member_project_github_path(@project), method: :patch, class: "px-4 py-4 space-y-4", data: { test: "github-issues-form" } do %>
+    <%= hidden_field_tag :issue_sync_form, "1", id: nil %>
+    <%= render Ui::SelectComponent.new(
+          name: "issue_sync", options: mode_options, selected: @repository.issue_sync,
+          label: t("member.project_github.issues.mode_label"),
+          hint: t("member.project_github.issues.mode_hint"), test_id: "github-issue-sync") %>
+
+    <% if @issue_setup %>
+      <%= render "member/project_github/issues_setup", setup: @issue_setup %>
+    <% end %>
+
+    <div class="flex justify-end">
+      <%= render Ui::ButtonComponent.new(label: t("member.project_github.save"), type: "submit", test_id: "github-issues-submit") %>
+    </div>
+  <% end %>
+</div>

@@ -19,6 +19,11 @@ module Cli
           respond Ticketing::Github::OpenPullRequest.call(ticket: @ticket, actor: Current.account)
         end
 
+        # `cyi tickets issue`: publishes the ticket as an aligned issue (CYRA-1055).
+        def issue
+          respond Ticketing::Github::PublishIssue.call(ticket: @ticket, actor: Current.account)
+        end
+
         private
 
         def respond(result)
@@ -37,6 +42,8 @@ module Cli
           when ::Github::PullRequest
             { kind: "pull_request", number: record.number, state: record.state,
               html_url: record.html_url, ticket_id: record.ticket_id }
+          when ::Github::Issue
+            { kind: "issue", number: record.number, html_url: record.html_url, ticket_id: record.ticket_id }
           end
         end
 

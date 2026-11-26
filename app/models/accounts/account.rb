@@ -347,6 +347,8 @@ module Accounts
     normalizes :email, with: ->(email) { email.strip.downcase }
     normalizes :name, with: ->(name) { name.strip }
     normalizes :handle, with: ->(value) { value.to_s.strip.downcase }
+    # The person's GitHub name, written by them: it turns a GitHub assignee into a ticket assignee. CYRA-1055
+    normalizes :github_login, with: ->(value) { value.to_s.strip.delete_prefix("@").presence }
 
     # Handle globale per le @menzioni nei commenti: [a-z0-9_], unico. Generato da ensure_handle quando
     # vuoto (nuovi account) a partire dalla parte locale dell'email; i record esistenti via migration.
@@ -359,6 +361,8 @@ module Accounts
     validates :theme, inclusion: { in: Accounts::Constants::THEMES }, allow_nil: true
     validates :locale, inclusion: { in: App::Constants::LOCALES }, allow_nil: true
     validates :handle, presence: true, uniqueness: true, format: { with: /\A[a-z0-9_]+\z/ }
+    # GitHub's own shape: letters, digits and single hyphens, at most 39 characters.
+    validates :github_login, format: { with: /\A[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}\z/i }, allow_nil: true
     validate :password_complexity
     # I superadmin (god, area Valhalla) sono SEMPRE umani: un service account non può essere god.
     validate :god_reserved_for_humans

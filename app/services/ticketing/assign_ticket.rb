@@ -43,6 +43,8 @@ module Ticketing
         broadcast_assignee
         Ticketing::NotifyJob.perform_later(event_id: event.id)
       end
+      # A linked issue takes the assignee's GitHub name (CYRA-1055).
+      ::Github::Issues::Outbound.ticket_changed(@ticket)
       Result.ok(@ticket)
     end
 

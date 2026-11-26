@@ -1,0 +1,29 @@
+it:
+  member:
+    guides:
+      index:
+        github_issues:
+          title: Segnalazioni e bacheca di GitHub
+      github_issues:
+        title: Segnalazioni e bacheca di GitHub
+        subtitle: Le segnalazioni del repository diventano ticket e restano uguali nei due sensi.
+        what_title: Che cosa fa
+        what_intro: Chi lavora su GitHub e chi lavora su CloseYourIt vede le stesse cose. Una segnalazione nuova diventa un ticket in pochi secondi, e ogni modifica passa dall'altra parte.
+        what_text: Titolo, testo, commenti, chiusura e riapertura passano nei due sensi. Gli allegati del ticket diventano collegamenti nel testo della segnalazione.
+        what_board: Spostare una card sulla bacheca cambia lo stato del ticket, e cambiare lo stato sposta la card.
+        what_people: Chi è assegnato su GitHub diventa assegnatario del ticket, se ha scritto il suo nome GitHub nelle preferenze. Le etichette diventano tipo e priorità.
+        what_night: Ogni notte un controllo confronta segnalazioni e ticket e ripara quello che GitHub non ha avvisato.
+        steps_title: Come si accende
+        step1: Collega il repository al progetto dalla scheda GitHub del progetto, se non l'hai già fatto.
+        step2: "Nel riquadro «Segnalazioni e bacheca di GitHub» scegli quali segnalazioni diventano ticket: tutte, oppure solo quelle di una bacheca dell'organizzazione. Salva: entrano quelle ancora aperte, senza avvisare il team."
+        step3: Se usi una bacheca, sceglila e abbina ogni colonna a uno stato del ticket.
+        step4: Se vuoi, scrivi quale etichetta GitHub corrisponde a ogni tipo e a ogni priorità.
+        step5: "Per portare su GitHub un ticket nato qui, apri il ticket e usa «Pubblica su GitHub» dal menu per sviluppatori."
+        notes_title: Cosa sapere
+        note_signature: Ticket e commenti nati su GitHub sono firmati GitHub, con accanto il nome di chi li ha scritti davvero.
+        note_cut: Un commento tiene 240 caratteri e una descrizione 4.000. Un testo più lungo entra tagliato, con il collegamento all'originale, e non torna mai su GitHub, nemmeno dopo una modifica.
+        note_newest: Se lo stesso campo cambia sui due lati, vince la modifica più recente. La cronologia del ticket le registra tutte e due.
+        note_refused: Se un ticket non può cambiare stato, per esempio per un prerequisito aperto, lo spostamento resta scritto in cronologia.
+        note_leave: Quando una card esce dalla bacheca, il legame si rompe e il ticket resta.
+        note_personal: Le bacheche personali non mandano avvisi, quindi non si possono usare.
+        note_permissions: L'app GitHub deve poter scrivere sulle segnalazioni e sui progetti dell'organizzazione. Se manca un permesso, la scheda GitHub del progetto dice quale.

@@ -35,10 +35,57 @@ RSpec.describe Github::WebhookJob, type: :job do
     described_class.perform_now(event: "pull_request", payload:)
   end
 
+  # CYRA-1055 — issues, comments and board cards go one at a time per issue, keyed by its node id.
+  it "queues the issue events per issue, keyed by the issue's node id" do
+    payload = { "action" => "opened", "issue" => { "node_id" => "I_7" } }
+
+    expect { described_class.perform_now(event: "issues", payload:) }
+      .to have_enqueued_job(Github::Issues::EventJob).with(event: "issues", payload:, key: "I_7")
+  end
+
+  it "keys a board card by the issue it carries" do
+    payload = { "action" => "edited", "projects_v2_item" => { "node_id" => "PVTI_1", "content_node_id" => "I_7" } }
+
+    expect { described_class.perform_now(event: "projects_v2_item", payload:) }
+      .to have_enqueued_job(Github::Issues::EventJob).with(event: "projects_v2_item", payload:, key: "I_7")
+  end
+
   it "dispatches the workflow_job event to the WorkflowJob handler" do
     payload = { "action" => "completed" }
     expect(Github::Webhooks::WorkflowJob).to receive(:call).with(payload:)
     described_class.perform_now(event: "workflow_job", payload:)
+  end
+
+  it "keeps issue receipts unfinished until their serialized handler succeeds, including duplicate jobs" do
+    payload = { "action" => "opened", "issue" => { "node_id" => "I_7" } }
+    receipt = Github::WebhookDelivery.receive(delivery_id: "issue", event: "issues", body: payload.to_json)
+    expect(Github::Webhooks::Issues).to receive(:call).once.with(payload:)
+
+    2.times { described_class.perform_now(delivery_id: receipt.id) }
+    expect(receipt.reload.completed_at).to be_nil
+    expect(receipt.body).to be_present
+    expect(Github::Issues::EventJob).to have_been_enqueued.with(event: "issues", payload: {}, key: "I_7", delivery_id: receipt.id).twice
+
+    perform_enqueued_jobs
+    expect(receipt.reload.completed_at).to be_present
+    expect(receipt.body).to be_nil
+    expect { described_class.perform_now(delivery_id: receipt.id) }.not_to have_enqueued_job(Github::Issues::EventJob)
+  end
+
+  it "recovers an issue receipt when its serialized handler returns a failure" do
+    receipt = Github::WebhookDelivery.receive(delivery_id: "issue", event: "issues", body: '{"issue":{"node_id":"I_7"}}')
+    allow(Github::Webhooks::Issues).to receive(:call).and_return(double(ok?: false))
+
+    described_class.perform_now(delivery_id: receipt.id)
+    clear_enqueued_jobs
+    expect { Github::Issues::EventJob.perform_now(event: "issues", payload: {}, key: "I_7", delivery_id: receipt.id) }
+      .to raise_error("GitHub webhook handler failed")
+    expect(receipt.reload.completed_at).to be_nil
+    expect(receipt.body).to be_present
+
+    allow(Github::Webhooks::Issues).to receive(:call).and_return(double(ok?: true))
+    perform_enqueued_jobs { Github::RecoverWebhooksJob.perform_now }
+    expect(receipt.reload.completed_at).to be_present
   end
 
   it "ignora gli eventi non gestiti" do

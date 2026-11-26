@@ -102,6 +102,8 @@ module Ticketing
         Ticketing::NotifyJob.perform_later(event_id: event.id)
         broadcast_status_change(ticket: @ticket) if @broadcast
       end
+      # A linked issue closes or reopens, and its board card moves (CYRA-1055).
+      ::Github::Issues::Outbound.ticket_changed(@ticket)
       Result.ok(@ticket)
     end
 

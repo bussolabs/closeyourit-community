@@ -57,6 +57,16 @@ module Ticketing
       "plan_council_approved" => "users",
       # The supporter approved a low-risk plan (CYRA-1193).
       "plan_supporter_approved" => "life-buoy",
+      # Issue sync with GitHub: born there, published there, link broken, and the changes that did
+      # not land on one side — overtaken, refused, unknown person, text kept here (CYRA-1055).
+      "github_issue_imported" => "github",
+      "github_issue_published" => "github",
+      "github_issue_unlinked" => "unlink",
+      "github_change_superseded" => "git-compare",
+      "github_change_declined" => "hand",
+      "github_assignee_unknown" => "user-x",
+      "github_text_kept" => "scissors",
+      "github_reconciled" => "refresh-cw",
       # The supporter's approval wrote the plan's proposed acceptance items into the ticket (CYRA-1334).
       "plan_supporter_added_items" => "list-plus",
       # An acceptance item changed after the plan was approved: planning again (CYRA-1319).
@@ -135,6 +145,7 @@ module Ticketing
       return moved_sentence if @event.action == "moved_to_project"
       return created_on_behalf_sentence if @event.action == "created" && @event.data["on_behalf_of"].present?
       return agent_eligibility_sentence if @event.action.start_with?("agent_eligibility_")
+      return github_sentence if @event.action.start_with?("github_")
       return delivery_gate_sentence if @event.action.start_with?("delivery_scope_", "delivery_evidence_", "delivery_checks_", "delivery_review_", "delivery_tester_",
                                                              "delivery_fast_lane_", "plan_fast_lane_")
 
@@ -283,6 +294,13 @@ module Ticketing
       else
         base
       end
+    end
+
+    # The GitHub sync rows name the issue, who did it on GitHub, which fields and where it was headed. CYRA-1055
+    def github_sentence
+      fields = Array(@event.data["fields"]).map { |key| I18n.t("member.tickets.activity.field.#{key}", default: key.to_s) }
+      I18n.t("member.tickets.activity.#{@event.action}", actor: actor_name, number: @event.data["number"],
+             login: @event.data["login"].presence || "—", fields: fields.join(", "), to: @event.data["to"])
     end
 
     # I primi file, e quanti restano. Un elenco lungo in timeline diventa un muro, e la riga serve a

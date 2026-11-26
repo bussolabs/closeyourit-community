@@ -67,6 +67,12 @@
         <%= button_to t("member.tickets.github.open_pr"), pull_request_member_ticket_github_path(@ticket),
               method: :post, class: Ui::RowMenuComponent.item_class, form: { class: "block" },
               data: { test: "ticket-github-pr" } %>
+        <%# CYRA-1055 — a ticket born here goes to GitHub as an issue, and from then on stays aligned. %>
+        <% if @ticket.project.github_repository.issue_sync_active? && @ticket.github_issue.nil? %>
+          <%= button_to t("member.tickets.github.publish"), issue_member_ticket_github_path(@ticket),
+                method: :post, class: Ui::RowMenuComponent.item_class, form: { class: "block" },
+                data: { test: "ticket-github-publish" } %>
+        <% end %>
       <% end %>
     <% end %>
     <%# Modificare ed eliminare sono azioni rare, e una è irreversibile: non stanno in prima fila

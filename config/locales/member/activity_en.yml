@@ -52,6 +52,14 @@ en:
           autopilot_auto_approved: Delivery moved on by itself
           plan_council_approved: Plan approved by the council
           plan_supporter_approved: Plan approved by the supporter
+          github_issue_imported: Born from a GitHub issue
+          github_issue_published: Published on GitHub
+          github_issue_unlinked: GitHub link broken
+          github_change_superseded: GitHub change overtaken
+          github_change_declined: Status from GitHub refused
+          github_assignee_unknown: Unknown GitHub assignee
+          github_text_kept: Text kept here only
+          github_reconciled: Realigned with GitHub
           plan_supporter_added_items: Acceptance items added by the supporter
           plan_reopened_items_changed: Planning again, acceptance items changed
           workflow_supporter_retried: Work sent back to the agent by the supporter

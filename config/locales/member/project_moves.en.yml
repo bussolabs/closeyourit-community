@@ -70,6 +70,9 @@ en:
         agents_release_assignments:
           one: "An agent release assignment is removed."
           other: "%{count} agent release assignments are removed."
+        github_issues:
+          one: "A ticket stops being aligned with its GitHub issue. The ticket stays."
+          other: "%{count} tickets stop being aligned with their GitHub issues. The tickets stay."
         alerting_rules:
           one: "An alert rule is removed."
           other: "%{count} alert rules are removed."

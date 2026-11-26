@@ -53,6 +53,14 @@ it:
           autopilot_auto_approved: Consegna andata avanti da sola
           plan_council_approved: Piano approvato dal consiglio
           plan_supporter_approved: Piano approvato dal supporter
+          github_issue_imported: Nato da una segnalazione GitHub
+          github_issue_published: Pubblicato su GitHub
+          github_issue_unlinked: Legame con GitHub rotto
+          github_change_superseded: Modifica GitHub superata
+          github_change_declined: Stato da GitHub rifiutato
+          github_assignee_unknown: Assegnatario GitHub sconosciuto
+          github_text_kept: Testo tenuto solo qui
+          github_reconciled: Riallineato con GitHub
           plan_supporter_added_items: Voci di accettazione aggiunte dal supporter
           plan_reopened_items_changed: Si ripianifica, voci di accettazione cambiate
           workflow_supporter_retried: Lavorazione rimandata all'agente dal supporter

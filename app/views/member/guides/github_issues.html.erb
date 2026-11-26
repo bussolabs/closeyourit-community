@@ -1,0 +1,52 @@
+<% content_for :title, t("member.guides.github_issues.title") %>
+
+<%# CYRA-1055 — how to turn on the alignment of GitHub issues and board, what travels both ways, and
+    the few things that do not. %>
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-github-issues">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "github", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.github_issues.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.github_issues.title") } ]) do |h| %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.github_issues.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.github_issues.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.github_issues.what_intro") %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <% %w[what_text what_board what_people what_night].each do |key| %>
+          <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "check", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.github_issues.#{key}") %></span></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="guide-github-issues-steps">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.github_issues.steps_title") %></h2></div>
+    <div class="px-4 py-4">
+      <ol class="space-y-4">
+        <% 1.upto(5) do |step| %>
+          <li class="flex gap-3">
+            <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-mono text-[11px] font-semibold mt-0.5"><%= step %></span>
+            <div class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.github_issues.step#{step}") %></div>
+          </li>
+        <% end %>
+      </ol>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="guide-github-issues-notes">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.github_issues.notes_title") %></h2></div>
+    <ul class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% %w[signature cut newest refused leave personal permissions].each do |note| %>
+        <li class="flex items-start gap-2.5 px-4 py-3 text-[12.5px] text-gray-600 dark:text-zinc-400">
+          <%= render Ui::IconComponent.new(name: "info", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.github_issues.note_#{note}") %></span>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+</div>

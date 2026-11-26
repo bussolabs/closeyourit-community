@@ -36,6 +36,19 @@ en:
       branch_exists: A branch already exists for this ticket.
       no_branch: Create a branch for the ticket first, then open the PR.
     pull_request_body: "Closes ticket %{code} on CloseYourIt."
+    # CYRA-1055 — texts the sync writes into tickets and issues.
+    issues:
+      empty_body: "Issue without text on GitHub: %{url}"
+      cut: "[Full text on GitHub](%{url})"
+      attachments: Attachments on CloseYourIt
+      on_closeyourit: wrote on CloseYourIt
+      errors:
+        board_unreadable: We cannot read the chosen board on GitHub. Check that the app has the permission on the organization's projects.
+        board_without_columns: The chosen board has no status column, so it cannot move tickets.
+        sync_off: Issue sync is off for this project. Turn it on from the GitHub tab.
+        already_published: This ticket is already aligned with an issue on GitHub.
+        publish_failed: Publication could not be confirmed. Check GitHub before trying again.
+        publish_pending: Publication is in progress or needs checking. Check the issue on GitHub before trying again; contact an administrator if the link is missing.
   member:
     tickets:
       github:
@@ -43,6 +56,11 @@ en:
         open_pr: Open PR
         branch_created: Branch created on GitHub.
         pull_request_opened: Pull request opened on GitHub.
+        publish: Publish on GitHub
+        published: Ticket published on GitHub as an issue.
+        issue_label: Issue
+        issue_author: "opened by %{login}"
+        issue_cut: Text cut here, full on GitHub
         panel_title: GitHub
         pr_state:
           open: open
@@ -100,6 +118,28 @@ en:
         R404-GITHUB-010: "This GitHub resource does not exist, or is not accessible with the current permissions. This is not a temporary failure: retrying will not change the answer."
         R502-GITHUB-001: GitHub did not answer as expected and the sync was interrupted. Try again in a few minutes.
       sync_no_repo: No GitHub repo connected to this project.
+      # CYRA-1055 — the issues panel, next to the switches.
+      issues:
+        title: GitHub issues and board
+        lead: Issues become tickets and stay the same both ways. The board moves the tickets' status, and the other way round.
+        mode_label: Which issues become tickets
+        mode_hint: On the first save the issues still open come in, without notifying the team. After that every change arrives within seconds.
+        modes:
+          "off": None — sync off
+          all_issues: Every issue of the repository
+          board_issues: Only the issues on the chosen board
+        board_label: Organization board
+        board_hint: Moving a card changes the ticket's status, and changing the status moves the card. Personal boards send no notices and are not listed.
+        no_board: No board
+        columns_label: Board column → ticket status
+        no_status: Does not change the status
+        kinds_label: GitHub label for each ticket type
+        priorities_label: GitHub label for each priority
+        unreadable: GitHub did not answer, so boards and permissions are not shown. Try again shortly.
+        missing_permissions: "The GitHub app is missing some permissions: %{names}. Whoever manages the app on GitHub adds them, then the organization accepts them."
+        permissions:
+          issues: write access to issues
+          organization_projects: write access to the organization's projects
       needs_installation: The organization has not installed the GitHub App yet. Install it before linking a repository.
       go_to_integrations: Go to integrations
       no_repos_available: No repository available for the installation (or all already linked).

@@ -81,7 +81,13 @@ module Projects
           Connections::ProjectMembership.where(project_id: ids).pluck(:account_id),
           Connections::GroupMembership.where(group_id: @subject.group_ids).pluck(:account_id),
           Connections::AccountSecretAccess.where(project_id: ids).pluck(:account_id),
-          Secrets::Override.where(project_id: ids).pluck(:account_id) ].flatten.compact.uniq
+          Secrets::Override.where(project_id: ids).pluck(:account_id) ].flatten.compact.uniq - github_signatures
+      end
+
+      # The GitHub signature leaves with the repository link (Moves::Github): it is nobody to invite (CYRA-1055).
+      def github_signatures
+        ::Github::Installation.where(organization_id: @subject.organization.id).where.not(system_account_id: nil)
+                              .pluck(:system_account_id)
       end
 
       def provisions_crossing

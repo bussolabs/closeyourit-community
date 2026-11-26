@@ -74,6 +74,8 @@ module Guides
       # CYRA-545 — i servizi esterni collegati con la chiave dell'organizzazione. La regola copre
       # anche la pagina della GitHub App, che di quell'elenco è una scheda.
       [ %r{\A/member/integrations\b},                                      "integrations" ],
+      # CYRA-1055 — the GitHub tab of a project opens the guide on aligning issues and board.
+      [ %r{\A/member/projects/[^/]+/github\b},                              "github_issues" ],
       # CYRA-160 — dalla pagina in cui si sceglie ogni quanto arriva il riepilogo dei dati si va
       # alla guida che dice cosa contiene e perché non è la stessa cosa degli avvisi.
       [ %r{\A/member/preferences/notifications\b},                         "reports" ],

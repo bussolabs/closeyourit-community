@@ -6,13 +6,18 @@ module Ticketing
   # `reporter:` is whoever creates the ticket. The ticket names as reporter `params[:reporter_id]`,
   # else the project owner when `use_project_owner` (channels where a person types the ticket), else
   # the creator (CYRA-1086).
+  # `notify: false` keeps the team quiet (a bulk first import of GitHub issues); `default_assignee: false`
+  # leaves a ticket without an explicit assignee unassigned instead of inheriting one (CYRA-1055).
   class CreateTicket < ApplicationService
-    def initialize(organization:, reporter:, params:, true_actor: nil, use_project_owner: false)
+    def initialize(organization:, reporter:, params:, true_actor: nil, use_project_owner: false,
+                   notify: true, default_assignee: true)
       @organization = organization
       @reporter = reporter
       @params = params
       @true_actor = true_actor
       @use_project_owner = use_project_owner
+      @notify = notify
+      @default_assignee = default_assignee
     end
 
     def call
@@ -36,7 +41,7 @@ module Ticketing
         # simplecov:enable
       end
       # Notifiche al team (fuori dalla transazione, evento committato). Vedi Ticketing::NotifyJob.
-      Ticketing::NotifyJob.perform_later(event_id: event.id)
+      Ticketing::NotifyJob.perform_later(event_id: event.id) if @notify
       # Embedding per ricerca semantica/duplicati (fuori dalla transazione, mai after_commit).
       Ticketing::EmbedTicketJob.perform_later(ticket_id: ticket.id)
       # CYRA-1163 — the cards of the links in the description, read in the background.
@@ -98,7 +103,8 @@ module Ticketing
         priority: @organization.ticket_priorities.find_by(id: @params[:priority_id]),
         assignee: assignee,
         # Il revisore nasce = reporter (chi apre il ticket). Riassegnabile poi via SetReviewer.
-        reviewer: @reporter,
+        # A channel signed by a machine names a person instead (`reviewer_id`, CYRA-1055).
+        reviewer: explicit_reviewer || @reporter,
         milestone: milestone,
         parent: parent,
         platforms: platforms
@@ -115,12 +121,21 @@ module Ticketing
     # ereditato dalla gerarchia progetto → team → org.
     def assignee
       return explicit_assignee if @params[:assignee_id].present?
+      return nil unless @default_assignee
 
       default_assignee
     end
 
     def explicit_assignee
       @organization.accounts.find_by(id: @params[:assignee_id])
+    end
+
+    # Only someone who could report on the project reviews it; anyone else leaves the default.
+    def explicit_reviewer
+      return nil if @params[:reviewer_id].blank?
+
+      account = @organization.accounts.find_by(id: @params[:reviewer_id])
+      account if @project.reporter_candidate?(account)
     end
 
     # Fallback progetto → team → org: primo default valorizzato che sia ANCORA membro dell'org

@@ -75,7 +75,7 @@
       "level": 0,
       "parent": null,
       "kind": "external",
-      "summary": "Repository, pull request, tag. Avvisa l'app con i webhook; l'app crea rami e pull request.",
+      "summary": "Repository, pull request, tag, segnalazioni e bacheche. Avvisa l'app con i webhook; l'app crea rami e pull request e tiene allineate segnalazioni e card.",
       "files": []
     },
     {
@@ -4293,6 +4293,17 @@
       ]
     },
     {
+      "id": "tkt_github_publish",
+      "name": "Pubblicare su GitHub",
+      "level": 3,
+      "parent": "tkt_flow_github",
+      "kind": "step",
+      "summary": "Un ticket nato qui diventa una segnalazione GitHub con lo stesso testo e da lì resta allineato. Con una bacheca scelta, finisce nella colonna del suo stato.",
+      "files": [
+        "app/services/ticketing/github/publish_issue.rb"
+      ]
+    },
+    {
       "id": "tkt_job_embeddings",
       "name": "Indice per la ricerca per significato",
       "level": 2,
@@ -6781,7 +6792,7 @@
       "level": 2,
       "parent": "area_github",
       "kind": "flow",
-      "summary": "GitHub avvisa di etichette, rami, proposte di modifica, rilasci, lavori dei controlli conclusi e disinstallazioni. Dopo la firma il server registra una memoria permanente della consegna, riconosce i duplicati e recupera le lavorazioni interrotte.",
+      "summary": "GitHub avvisa di etichette, rami, proposte di modifica, rilasci, segnalazioni, commenti, card della bacheca, lavori dei controlli conclusi e disinstallazioni. Dopo la firma il server registra una memoria permanente della consegna, riconosce i duplicati e recupera le lavorazioni interrotte.",
       "files": [
         "app/controllers/github/webhooks_controller.rb",
         "app/jobs/github/webhook_job.rb",
@@ -6859,6 +6870,76 @@
       "summary": "Se l'app viene tolta da GitHub, si cancella l'installazione e con lei i repository agganciati.",
       "files": [
         "app/services/github/webhooks/installation.rb"
+      ]
+    },
+    {
+      "id": "gh_flow_issues",
+      "name": "Segnalazioni e bacheca allineate ai ticket",
+      "level": 2,
+      "parent": "area_github",
+      "kind": "flow",
+      "summary": "Le segnalazioni del repository diventano ticket e restano uguali nei due sensi; la bacheca sposta lo stato. Vince la modifica più recente, e la cronologia le registra.",
+      "files": [
+        "app/services/github/issues/**",
+        "app/jobs/github/issues/**",
+        "app/services/github/webhooks/issues.rb",
+        "app/services/github/webhooks/issue_comment.rb",
+        "app/services/github/webhooks/projects_v2_item.rb"
+      ]
+    },
+    {
+      "id": "gh_is_in",
+      "name": "Da GitHub verso il ticket",
+      "level": 3,
+      "parent": "gh_flow_issues",
+      "kind": "step",
+      "summary": "Una segnalazione nuova diventa un ticket firmato GitHub, con accanto il nome di chi l'ha scritta. Le modifiche e i commenti arrivano in pochi secondi; quelli fatti dall'app stessa si ignorano.",
+      "files": [
+        "app/services/github/webhooks/issues.rb",
+        "app/services/github/webhooks/issue_comment.rb",
+        "app/services/github/issues/import.rb",
+        "app/services/github/issues/apply.rb",
+        "app/services/github/issues/comments.rb"
+      ]
+    },
+    {
+      "id": "gh_is_out",
+      "name": "Dal ticket verso GitHub",
+      "level": 3,
+      "parent": "gh_flow_issues",
+      "kind": "step",
+      "summary": "Ogni modifica parte in un lavoro che manda solo ciò che è cambiato, in coda con gli avvisi della stessa segnalazione. Un testo tagliato non torna su GitHub. La prima pubblicazione prenota il ticket prima di chiamare GitHub e conserva la risposta per i ritentativi.",
+      "files": [
+        "app/services/ticketing/github/publish_issue.rb",
+        "app/services/github/issues/outbound.rb",
+        "app/services/github/issues/push.rb",
+        "app/services/github/issues/push_comment.rb",
+        "app/jobs/github/issues/push_job.rb"
+      ]
+    },
+    {
+      "id": "gh_is_board",
+      "name": "La bacheca sposta lo stato",
+      "level": 3,
+      "parent": "gh_flow_issues",
+      "kind": "step",
+      "summary": "Spostare una card cambia lo stato abbinato alla colonna; cambiare stato sposta la card. Una card che esce dalla bacheca rompe il legame, il ticket resta.",
+      "files": [
+        "app/services/github/webhooks/projects_v2_item.rb",
+        "app/services/github/issues/board.rb"
+      ]
+    },
+    {
+      "id": "gh_is_night",
+      "name": "Controllo notturno",
+      "level": 3,
+      "parent": "gh_flow_issues",
+      "kind": "job",
+      "summary": "Ogni notte confronta segnalazioni, card e ticket e ripara gli avvisi persi. Gli invii passano dalla stessa coda degli avvisi della segnalazione; il lavoro registra la riparazione solo dopo averla eseguita.",
+      "files": [
+        "app/jobs/github/issues/reconcile_job.rb",
+        "app/services/github/issues/reconcile.rb",
+        "config/recurring.yml"
       ]
     },
     {
@@ -6990,7 +7071,7 @@
       "level": 2,
       "parent": "area_github",
       "kind": "data",
-      "summary": "Installazione, repository agganciati, rami e proposte di modifica collegati ai ticket.",
+      "summary": "Installazione, repository agganciati, rami, proposte di modifica e segnalazioni collegati ai ticket.",
       "files": [
         "app/models/github/**"
       ]
@@ -7037,6 +7118,17 @@
       "summary": "Una proposta di modifica legata a un ticket. Stato: aperta, chiusa o unita, aggiornato dagli eventi di GitHub.",
       "files": [
         "app/models/github/pull_request.rb"
+      ]
+    },
+    {
+      "id": "gh_data_issue",
+      "name": "Legame segnalazione e ticket",
+      "level": 3,
+      "parent": "gh_data",
+      "kind": "data",
+      "summary": "Una segnalazione GitHub legata al suo ticket, uno a uno. Ricorda l'ultimo stato visto sui due lati, quali testi sono entrati tagliati e la card della bacheca.",
+      "files": [
+        "app/models/github/issue.rb"
       ]
     },
     {
@@ -14663,6 +14755,36 @@
       "from": "gh_data_pr",
       "to": "gh_data_repository",
       "label": "appartiene a"
+    },
+    {
+      "from": "gh_data_issue",
+      "to": "gh_data_repository",
+      "label": "appartiene a"
+    },
+    {
+      "from": "gh_wh_dispatch",
+      "to": "gh_is_in",
+      "label": "segnalazioni e commenti"
+    },
+    {
+      "from": "gh_wh_dispatch",
+      "to": "gh_is_board",
+      "label": "card della bacheca"
+    },
+    {
+      "from": "gh_is_in",
+      "to": "gh_is_out",
+      "label": "senza rimbalzo"
+    },
+    {
+      "from": "gh_is_night",
+      "to": "gh_is_out",
+      "label": "ripara"
+    },
+    {
+      "from": "tkt_github_publish",
+      "to": "gh_data_issue",
+      "label": "crea"
     },
     {
       "from": "ast_ak_post",

@@ -35,6 +35,19 @@ it:
       branch_exists: Esiste già un branch per questo ticket.
       no_branch: Crea prima un branch per il ticket, poi apri la PR.
     pull_request_body: "Chiude il ticket %{code} su CloseYourIt."
+    # CYRA-1055 — testi che la sincronizzazione scrive dentro ticket e issue.
+    issues:
+      empty_body: "Segnalazione senza testo su GitHub: %{url}"
+      cut: "[Testo completo su GitHub](%{url})"
+      attachments: Allegati su CloseYourIt
+      on_closeyourit: ha scritto su CloseYourIt
+      errors:
+        board_unreadable: Non riusciamo a leggere la bacheca scelta su GitHub. Controlla che l'app abbia il permesso sui progetti dell'organizzazione.
+        board_without_columns: La bacheca scelta non ha una colonna di stato, quindi non può spostare i ticket.
+        sync_off: L'allineamento con le segnalazioni GitHub è spento per questo progetto. Accendilo dalla scheda GitHub.
+        already_published: Questo ticket è già allineato a una segnalazione su GitHub.
+        publish_failed: Non è stato possibile confermare la pubblicazione. Controlla GitHub prima di riprovare.
+        publish_pending: La pubblicazione è in corso o va verificata. Controlla la segnalazione su GitHub prima di riprovare; se manca il legame, contatta un amministratore.
   member:
     tickets:
       github:
@@ -42,6 +55,11 @@ it:
         open_pr: Apri PR
         branch_created: Branch creato su GitHub.
         pull_request_opened: Pull request aperta su GitHub.
+        publish: Pubblica su GitHub
+        published: Ticket pubblicato su GitHub come segnalazione.
+        issue_label: Segnalazione
+        issue_author: "aperta da %{login}"
+        issue_cut: Testo tagliato qui, completo su GitHub
         panel_title: GitHub
         pr_state:
           open: aperta
@@ -99,6 +117,28 @@ it:
         R404-GITHUB-010: "Questa risorsa su GitHub non esiste, oppure non è accessibile con i permessi attuali. Non è un guasto temporaneo: riprovare non cambia la risposta."
         R502-GITHUB-001: GitHub non ha risposto come previsto e la sincronizzazione si è interrotta. Riprova fra qualche minuto.
       sync_no_repo: Nessun repo GitHub agganciato a questo progetto.
+      # CYRA-1055 — il riquadro delle issue, accanto agli interruttori.
+      issues:
+        title: Segnalazioni e bacheca di GitHub
+        lead: Le segnalazioni del repository diventano ticket e restano uguali nei due sensi. La bacheca sposta lo stato dei ticket, e il contrario.
+        mode_label: Quali segnalazioni diventano ticket
+        mode_hint: Al primo salvataggio entrano le segnalazioni ancora aperte, senza avvisare il team. Poi arriva ogni novità in pochi secondi.
+        modes:
+          "off": Nessuna — allineamento spento
+          all_issues: Tutte le segnalazioni del repository
+          board_issues: Solo le segnalazioni della bacheca scelta
+        board_label: Bacheca dell'organizzazione
+        board_hint: Spostare una card cambia lo stato del ticket, e cambiare stato sposta la card. Le bacheche personali non mandano avvisi e non compaiono.
+        no_board: Nessuna bacheca
+        columns_label: Colonna della bacheca → stato del ticket
+        no_status: Non cambia lo stato
+        kinds_label: Etichetta GitHub per ogni tipo di ticket
+        priorities_label: Etichetta GitHub per ogni priorità
+        unreadable: GitHub non ha risposto, quindi bacheche e permessi non si vedono. Riprova fra poco.
+        missing_permissions: "All'app GitHub mancano dei permessi: %{names}. Chi amministra l'app su GitHub li aggiunge, poi l'organizzazione li accetta."
+        permissions:
+          issues: scrittura sulle segnalazioni del repository
+          organization_projects: scrittura sui progetti dell'organizzazione
       needs_installation: L'organizzazione non ha ancora installato la GitHub App. Installala prima di agganciare un repo.
       go_to_integrations: Vai alle integrazioni
       no_repos_available: Nessun repo disponibile per l'installazione (o già tutti agganciati).

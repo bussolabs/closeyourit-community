@@ -55,6 +55,9 @@ module Ticketing
     # riassunto sia già passato o no, qui esce sempre lo stesso testo.
     def full_body = original_body.presence || body
 
+    # Written on GitHub and imported: signed by the GitHub account, with the real writer beside it. CYRA-1055
+    def from_github? = github_author_login.present?
+
     private
 
     # Isolamento tenant (anti-BOLA): l'autore deve essere membro dell'organizzazione del

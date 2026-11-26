@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_26_120002) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_26_120004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -32,6 +32,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120002) do
     t.datetime "telegram_linked_at"
     t.string "telegram_username"
     t.datetime "updated_at", null: false
+    t.string "github_login"
+    t.index "lower((github_login)::text)", name: "index_accounts_on_lower_github_login", where: "(github_login IS NOT NULL)"
     t.index ["email"], name: "index_accounts_on_email", unique: true
     t.index ["handle"], name: "index_accounts_on_handle", unique: true
     t.index ["telegram_chat_id"], name: "index_accounts_on_telegram_chat_id", unique: true, where: "(telegram_chat_id IS NOT NULL)"
@@ -2384,8 +2386,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120002) do
     t.bigint "installation_id", null: false
     t.uuid "organization_id", null: false
     t.datetime "updated_at", null: false
+    t.uuid "system_account_id"
     t.index ["installation_id"], name: "index_github_installations_on_installation_id", unique: true
     t.index ["organization_id"], name: "index_github_installations_on_organization_id", unique: true
+    t.index ["system_account_id"], name: "index_github_installations_on_system_account_id"
+  end
+
+  create_table "github_issues", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "repository_id", null: false
+    t.uuid "ticket_id", null: false
+    t.integer "number", null: false
+    t.bigint "github_id"
+    t.string "node_id"
+    t.string "html_url", null: false
+    t.string "author_login"
+    t.datetime "github_updated_at", comment: "Clock of the last GitHub state seen, to drop older deliveries. Not updated_at."
+    t.jsonb "synced_state", default: {}, null: false, comment: "Last state seen on both sides: remote (issue) and local (ticket)."
+    t.string "truncated_fields", default: [], null: false, comment: "Texts imported cut: never sent back to GitHub.", array: true
+    t.string "board_item_node_id"
+    t.string "board_option_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["board_item_node_id"], name: "index_github_issues_on_board_item_node_id"
+    t.index ["node_id"], name: "index_github_issues_on_node_id"
+    t.index ["repository_id", "number"], name: "index_github_issues_on_repository_id_and_number", unique: true
+    t.index ["repository_id"], name: "index_github_issues_on_repository_id"
+    t.index ["ticket_id"], name: "index_github_issues_on_ticket_id", unique: true
   end
 
   create_table "github_pull_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -2431,12 +2457,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120002) do
     t.jsonb "synced_secret_names", default: {}, null: false
     t.boolean "tag_binding_enabled", default: true, null: false
     t.datetime "updated_at", null: false
+    t.integer "issue_sync", default: 0, null: false
+    t.string "board_node_id"
+    t.string "board_title"
+    t.string "board_status_field_id"
+    t.jsonb "board_columns", default: {}, null: false
+    t.jsonb "label_kinds", default: {}, null: false
+    t.jsonb "label_priorities", default: {}, null: false
+    t.datetime "issues_reconciled_at"
+    t.index ["board_node_id"], name: "index_github_repositories_on_board_node_id"
     t.index ["installation_id", "repo_id"], name: "index_github_repositories_on_installation_id_and_repo_id", unique: true
     t.index ["installation_id"], name: "index_github_repositories_on_installation_id"
     t.index ["preview_environment_id"], name: "index_github_repositories_on_preview_environment_id"
     t.index ["production_environment_id"], name: "index_github_repositories_on_production_environment_id"
     t.index ["project_id"], name: "index_github_repositories_on_project_id", unique: true
     t.index ["staging_environment_id"], name: "index_github_repositories_on_staging_environment_id"
+    t.check_constraint "issue_sync = ANY (ARRAY[0, 1, 2])", name: "github_repositories_issue_sync_known"
     t.check_constraint "registry IS NULL OR (registry = ANY (ARRAY[0, 1, 2, 3, 4]))", name: "github_repositories_registry_known"
     t.check_constraint "release_probe <> 0 OR production_environment_id IS NOT NULL", name: "github_repositories_deploy_smoke_needs_production"
     t.check_constraint "release_probe <> 1 OR registry IS NOT NULL AND package_name IS NOT NULL", name: "github_repositories_publish_needs_registry"
@@ -4162,8 +4198,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120002) do
     t.text "original_body"
     t.uuid "ticket_id", null: false
     t.datetime "updated_at", null: false
+    t.bigint "github_comment_id"
+    t.string "github_author_login"
+    t.boolean "github_truncated", default: false, null: false
     t.index ["author_id"], name: "index_ticketing_comments_on_author_id"
     t.index ["compacted_at"], name: "index_ticketing_comments_on_compacted_at", where: "(compacted_at IS NULL)"
+    t.index ["github_comment_id"], name: "index_ticketing_comments_on_github_comment_id", unique: true, where: "(github_comment_id IS NOT NULL)"
     t.index ["ticket_id"], name: "index_ticketing_comments_on_ticket_id"
   end
 
@@ -4308,6 +4348,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120002) do
     t.integer "votes_count", default: 0, null: false
     t.integer "weight"
     t.integer "last_acceptance_item_number", default: 0, null: false
+    t.jsonb "github_issue_publication", default: {}, null: false, comment: "Publication claim and received issue: retries never create a second issue."
     t.index ["agent_eligibility_decided_by_id"], name: "index_ticketing_tickets_on_agent_eligibility_decided_by"
     t.index ["assignee_id"], name: "index_ticketing_tickets_on_assignee_id"
     t.index ["closed_at"], name: "index_ticketing_tickets_on_closed_at"
@@ -5183,7 +5224,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120002) do
   add_foreign_key "github_ci_job_runs", "github_ci_jobs", column: "ci_job_id", on_delete: :cascade
   add_foreign_key "github_ci_jobs", "github_repositories", column: "repository_id", on_delete: :cascade
   add_foreign_key "github_ci_jobs", "ticketing_tickets", column: "ticket_id", on_delete: :nullify
+  add_foreign_key "github_installations", "accounts", column: "system_account_id", on_delete: :nullify
   add_foreign_key "github_installations", "organizations"
+  add_foreign_key "github_issues", "github_repositories", column: "repository_id", on_delete: :cascade
+  add_foreign_key "github_issues", "ticketing_tickets", column: "ticket_id", on_delete: :cascade
   add_foreign_key "github_pull_requests", "github_repositories", column: "repository_id"
   add_foreign_key "github_pull_requests", "ticketing_tickets", column: "ticket_id"
   add_foreign_key "github_repositories", "github_installations", column: "installation_id"

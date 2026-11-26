@@ -20,7 +20,7 @@ RSpec.describe "Member preferences as a single list", type: :request do
 
     expect(doc.css("form[data-test='preferences-list']").size).to eq(1)
     rows = doc.css("[data-test='preferences-list'] [data-test^='preferences-row-']").map { it["data-test"] }
-    expect(rows).to eq(%w[preferences-row-platforms preferences-row-language preferences-row-theme preferences-row-display])
+    expect(rows).to eq(%w[preferences-row-platforms preferences-row-language preferences-row-theme preferences-row-github preferences-row-display])
     expect(doc.css("[data-test='preferences-submit']").size).to eq(1)
     expect(doc.css("[data-test$='-submit'][data-test^='preferences-']").size).to eq(1)
   end

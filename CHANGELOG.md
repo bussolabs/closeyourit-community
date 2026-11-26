@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.256.0] - 2026-11-26
+
+### Added
+
+- **Issue di GitHub allineate ai ticket**: dalla scheda GitHub del progetto scegli se allineare tutte le issue, solo quelle della board o nessuna. Testo, commenti, chiusura, persone ed etichette passano nei due sensi, e spostare una card cambia lo stato del ticket. ([guida](/member/guides/github-issues)) (CYRA-1055)
+
 ## [0.255.0] - 2026-11-26
 
 ### Added
@@ -765,6 +771,7 @@
 
 ### Added
 
+- **Segnalazioni di GitHub allineate ai ticket**: dalla scheda GitHub del progetto scegli se le segnalazioni del repository diventano ticket, tutte o solo quelle di una bacheca. Testo, commenti, chiusura, persone ed etichette restano uguali nei due sensi, e spostare una card cambia lo stato. ([guida](/member/guides/github-issues))
 - **Canale beta e avvisi di sicurezza per chi ospita CloseYourIt**: nelle impostazioni scegli se ricevere solo le versioni stabili o anche le beta. Se la tua versione ha una falla di sicurezza, in cima alle pagine compare un avviso rosso con la versione da installare. Sparisce da solo dopo l'aggiornamento.
 - **Annulla dopo le azioni di gruppo**: dopo aver risolto o ignorato più errori o problemi di lentezza insieme, o segnato lette più notifiche, l'avviso offre Annulla per 10 secondi. Torna com'era solo ciò che nessun altro ha cambiato nel frattempo. ([Errori](/member/monitoring/error))
 

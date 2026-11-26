@@ -76,6 +76,8 @@ module Ticketing
       # e mantenerne due divergenti a mano sarebbe una fonte di buchi. Il checksum è già la sorgente
       # unica di verità, e su un ticket con decisione umana `stale?` è falso per definizione.
       enqueue_agent_eligibility if @ticket.agent_eligibility_stale?
+      # A linked issue follows text, type and priority (CYRA-1055).
+      ::Github::Issues::Outbound.ticket_changed(@ticket)
 
       Result.ok(@ticket)
     rescue ActiveRecord::RecordInvalid => e

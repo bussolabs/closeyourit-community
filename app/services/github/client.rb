@@ -162,6 +162,163 @@ module Github
       token_request(Net::HTTP::Get, installation_id, "/repos/#{repo_full_name}/issues?state=#{URI.encode_www_form_component(state)}&per_page=20")
     end
 
+    # --- Issue sync (CYRA-1055). Writing needs the App permission "Issues" read/write; the board needs
+    #     the organization permission "Projects". A missing permission answers 403/404 → R404-GITHUB-010. ---
+
+    ISSUES_PAGE_SIZE = 100
+
+    # One issue, or nil when it does not exist (or the App cannot see it).
+    def issue(installation_id, repo_full_name, number)
+      token_request(Net::HTTP::Get, installation_id, "/repos/#{repo_full_name}/issues/#{number.to_i}",
+                    nil, allow_not_found: true)
+    end
+
+    # One page of issues, oldest change first when `since` is given. GitHub lists pull requests here too:
+    # they carry a "pull_request" key and are dropped.
+    def repository_issues(installation_id, repo_full_name, state: "open", since: nil, page: 1)
+      query = { state:, per_page: ISSUES_PAGE_SIZE, page:, since: since&.utc&.iso8601,
+                sort: since ? "updated" : "created", direction: "asc" }.compact.to_query
+      batch = token_request(Net::HTTP::Get, installation_id, "/repos/#{repo_full_name}/issues?#{query}")
+      Array(batch).reject { |issue| issue.is_a?(Hash) && issue.key?("pull_request") }
+    end
+
+    def create_issue(installation_id, repo_full_name, title:, body:, labels: nil, assignees: nil)
+      token_request(Net::HTTP::Post, installation_id, "/repos/#{repo_full_name}/issues",
+                    { title:, body:, labels:, assignees: }.compact)
+    end
+
+    # PATCH with only the fields that changed: title, body, state, state_reason, labels, assignees.
+    def update_issue(installation_id, repo_full_name, number, attributes)
+      token_request(Net::HTTP::Patch, installation_id, "/repos/#{repo_full_name}/issues/#{number.to_i}", attributes)
+    end
+
+    def issue_comments(installation_id, repo_full_name, number, since: nil, page: 1)
+      query = { per_page: ISSUES_PAGE_SIZE, page:, since: since&.utc&.iso8601 }.compact.to_query
+      Array(token_request(Net::HTTP::Get, installation_id,
+                          "/repos/#{repo_full_name}/issues/#{number.to_i}/comments?#{query}"))
+    end
+
+    def create_issue_comment(installation_id, repo_full_name, number, body:)
+      token_request(Net::HTTP::Post, installation_id, "/repos/#{repo_full_name}/issues/#{number.to_i}/comments",
+                    { body: })
+    end
+
+    # A comment already gone counts as deleted.
+    def delete_issue_comment(installation_id, repo_full_name, comment_id)
+      token_request(Net::HTTP::Delete, installation_id, "/repos/#{repo_full_name}/issues/comments/#{comment_id.to_i}",
+                    allow_not_found: true)
+    end
+
+    BOARDS_QUERY = <<~GRAPHQL
+      query($login: String!) {
+        organization(login: $login) {
+          projectsV2(first: 50, orderBy: { field: TITLE, direction: ASC }) { nodes { id number title closed } }
+        }
+      }
+    GRAPHQL
+
+    BOARD_FIELDS_QUERY = <<~GRAPHQL
+      query($id: ID!) {
+        node(id: $id) {
+          ... on ProjectV2 {
+            title
+            fields(first: 50) {
+              nodes { ... on ProjectV2SingleSelectField { id name options { id name } } }
+            }
+          }
+        }
+      }
+    GRAPHQL
+
+    BOARD_ITEM_FIELDS = <<~GRAPHQL
+      id
+      project { id }
+      content { __typename ... on Issue { id number repository { databaseId } } }
+      fieldValues(first: 30) {
+        nodes { ... on ProjectV2ItemFieldSingleSelectValue { optionId field { ... on ProjectV2SingleSelectField { id } } } }
+      }
+    GRAPHQL
+
+    BOARD_ITEM_QUERY = <<~GRAPHQL
+      query($id: ID!) { node(id: $id) { ... on ProjectV2Item { #{BOARD_ITEM_FIELDS} } } }
+    GRAPHQL
+
+    BOARD_ITEMS_QUERY = <<~GRAPHQL
+      query($id: ID!, $after: String) {
+        node(id: $id) {
+          ... on ProjectV2 {
+            items(first: 100, after: $after) { pageInfo { hasNextPage endCursor } nodes { #{BOARD_ITEM_FIELDS} } }
+          }
+        }
+      }
+    GRAPHQL
+
+    ISSUE_BOARD_ITEMS_QUERY = <<~GRAPHQL
+      query($id: ID!) { node(id: $id) { ... on Issue { projectItems(first: 20) { nodes { #{BOARD_ITEM_FIELDS} } } } } }
+    GRAPHQL
+
+    ADD_BOARD_ITEM_MUTATION = <<~GRAPHQL
+      mutation($project: ID!, $content: ID!) {
+        addProjectV2ItemById(input: { projectId: $project, contentId: $content }) { item { id } }
+      }
+    GRAPHQL
+
+    MOVE_BOARD_ITEM_MUTATION = <<~GRAPHQL
+      mutation($project: ID!, $item: ID!, $field: ID!, $option: String!) {
+        updateProjectV2ItemFieldValue(input: { projectId: $project, itemId: $item, fieldId: $field,
+                                               value: { singleSelectOptionId: $option } }) { projectV2Item { id } }
+      }
+    GRAPHQL
+
+    # The organization boards: GitHub sends board events only for these, never for personal ones.
+    def organization_boards(installation_id, login)
+      data = graphql(installation_id, BOARDS_QUERY, login:)
+      Array(data.dig("organization", "projectsV2", "nodes")).compact.reject { |board| board["closed"] }
+    end
+
+    # A board's title and its column field: the single-select named "Status" (GitHub's default), else the
+    # first single-select. { title:, field: { "id", "name", "options" => [{ "id", "name" }] } }, nil if gone.
+    def board(installation_id, board_node_id)
+      node = graphql(installation_id, BOARD_FIELDS_QUERY, id: board_node_id)["node"]
+      return nil unless node.is_a?(Hash)
+
+      fields = Array(node.dig("fields", "nodes")).select { |field| field.is_a?(Hash) && field["options"] }
+      { title: node["title"], field: fields.find { |field| field["name"].to_s.casecmp?("status") } || fields.first }
+    end
+
+    def board_item(installation_id, item_node_id)
+      board_item_shape(graphql(installation_id, BOARD_ITEM_QUERY, id: item_node_id)["node"])
+    end
+
+    # Every issue card of a board, page after page.
+    def board_items(installation_id, board_node_id)
+      items = []
+      after = nil
+      loop do
+        page = graphql(installation_id, BOARD_ITEMS_QUERY, id: board_node_id, after:).dig("node", "items")
+        items.concat(Array(page&.dig("nodes")).filter_map { |node| board_item_shape(node) })
+        break unless page&.dig("pageInfo", "hasNextPage")
+
+        after = page.dig("pageInfo", "endCursor")
+      end
+      items
+    end
+
+    def issue_board_items(installation_id, issue_node_id)
+      data = graphql(installation_id, ISSUE_BOARD_ITEMS_QUERY, id: issue_node_id)
+      Array(data.dig("node", "projectItems", "nodes")).filter_map { |node| board_item_shape(node) }
+    end
+
+    def add_board_item(installation_id, board_node_id, content_node_id)
+      data = graphql(installation_id, ADD_BOARD_ITEM_MUTATION, project: board_node_id, content: content_node_id)
+      data.dig("addProjectV2ItemById", "item", "id")
+    end
+
+    def move_board_item(installation_id, board_node_id, item_node_id, field_id, option_id)
+      graphql(installation_id, MOVE_BOARD_ITEM_MUTATION, project: board_node_id, item: item_node_id,
+                                                         field: field_id, option: option_id)
+    end
+
     # CYRA-599 — l'occhio: lo stato di una proposta di modifica letto dal server, non raccontato
     # dall'agente che ci ha lavorato. Un solo giro, perché ogni campo qui serve a una regola diversa
     # più avanti e chiederli separatamente costerebbe cinque richieste.
@@ -401,6 +558,19 @@ module Github
     end
 
     private
+
+    # { item_id:, board_id:, issue_node_id:, number:, repo_id:, options: { field_id => option_id } },
+    # or nil for a card that is not an issue (a draft, a pull request).
+    def board_item_shape(node)
+      return nil unless node.is_a?(Hash) && node.dig("content", "__typename") == "Issue"
+
+      options = Array(node.dig("fieldValues", "nodes")).each_with_object({}) do |value, map|
+        field_id = value.is_a?(Hash) ? value.dig("field", "id") : nil
+        map[field_id] = value["optionId"] if field_id
+      end
+      { item_id: node["id"], board_id: node.dig("project", "id"), issue_node_id: node.dig("content", "id"),
+        number: node.dig("content", "number"), repo_id: node.dig("content", "repository", "databaseId"), options: }
+    end
 
     def token_cache_key(installation_id) = "github:installation_token:#{installation_id}"
 

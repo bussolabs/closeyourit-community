@@ -75,4 +75,28 @@ RSpec.describe "Member::Tickets::Github", type: :request do
       expect(ticket.github_pull_requests).not_to exist
     end
   end
+
+  # CYRA-1055 — «Pubblica su GitHub»: the ticket becomes an issue and stays aligned with it.
+  describe "POST issue" do
+    it "publishes the ticket as an issue and links them" do
+      repository.update!(issue_sync: :all_issues)
+      stub_client(create_issue: {
+                    "number" => 12, "id" => 1200, "node_id" => "I_12", "title" => ticket.title, "body" => "",
+                    "html_url" => "https://github.com/#{repository.full_name}/issues/12", "state" => "open",
+                    "labels" => [], "assignees" => [], "user" => { "login" => "bot" }
+                  })
+
+      post issue_member_ticket_github_path(ticket)
+
+      expect(response).to redirect_to(member_ticket_path(ticket))
+      expect(ticket.reload.github_issue.number).to eq(12)
+    end
+
+    it "with the sync off nothing is published" do
+      post issue_member_ticket_github_path(ticket)
+
+      expect(response).to redirect_to(member_ticket_path(ticket))
+      expect(ticket.reload.github_issue).to be_nil
+    end
+  end
 end

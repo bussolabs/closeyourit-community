@@ -3,22 +3,29 @@
 module Ticketing
   # Aggiunge un commento a un ticket già risolto e scoped dal controller (visibilità Fase E).
   # L'autore deve essere membro dell'org (validato sul model). Allegati opzionali. Result pattern.
+  # `github:` carries the twin of a comment imported from GitHub (id, writer's login, cut?) and
+  # `notify: false` keeps a bulk import quiet. A comment of a linked ticket is sent to its issue (CYRA-1055).
   class AddComment < ApplicationService
-    def initialize(ticket:, author:, params:)
+    GITHUB_ATTRIBUTES = %i[github_comment_id github_author_login github_truncated].freeze
+
+    def initialize(ticket:, author:, params:, github: {}, notify: true)
       @ticket = ticket
       @author = author
       @params = params
+      @github = github.to_h.symbolize_keys.slice(*GITHUB_ATTRIBUTES)
+      @notify = notify
     end
 
     def call
-      comment = @ticket.comments.new(body: @params[:body], author: @author)
+      comment = @ticket.comments.new(body: @params[:body], author: @author, **@github)
       comment.files.attach(files) if files.present?
       if comment.save
         capture_legacy_answer(comment)
         enqueue_agent_eligibility(comment)
-        notify(comment)
+        notify(comment) if @notify
         # `comment.save` ha già committato (l'action non apre transazioni esterne) → siamo dopo il commit.
         Ticketing::BroadcastComment.call(comment: comment)
+        ::Github::Issues::Outbound.comment_added(comment)
         return Result.ok(comment)
       end
 
@@ -111,7 +118,8 @@ module Ticketing
     # diventano watcher e vengono notificati. Il fan-out vero gira nel job (DispatchComment).
     def notify(comment)
       organization = @ticket.project.organization
-      Subscription.ensure_for(ticket: @ticket, account: @author, source: :commenter)
+      # The GitHub signature does not follow tickets: it writes, it does not read.
+      Subscription.ensure_for(ticket: @ticket, account: @author, source: :commenter) unless comment.from_github?
       mentioned = Mentions::Parse.call(text: comment.body, organization: organization) - [ @author ]
       mentioned.each { |account| Subscription.ensure_for(ticket: @ticket, account: account, source: :mentioned) }
       Ticketing::CommentNotifyJob.perform_later(comment_id: comment.id, mentioned_ids: mentioned.map(&:id))

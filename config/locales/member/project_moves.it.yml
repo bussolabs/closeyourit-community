@@ -70,6 +70,9 @@ it:
         agents_release_assignments:
           one: "Un'assegnazione di rilascio degli agent viene tolta."
           other: "%{count} assegnazioni di rilascio degli agent vengono tolte."
+        github_issues:
+          one: "Un ticket smette di essere allineato alla sua segnalazione GitHub. Il ticket resta."
+          other: "%{count} ticket smettono di essere allineati alle loro segnalazioni GitHub. I ticket restano."
         alerting_rules:
           one: "Una regola di avviso viene tolta."
           other: "%{count} regole di avviso vengono tolte."

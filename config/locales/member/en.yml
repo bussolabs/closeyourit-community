@@ -1222,6 +1222,10 @@ en:
         system: System
       language_title: Language
       language_lead: Choose the language for your interface.
+      github_title: My GitHub name
+      github_lead: When a GitHub issue is assigned to this name, the aligned ticket is assigned to you.
+      github_placeholder: e.g. jane-doe
+      github_invalid: "The GitHub name is not valid: only letters, digits and single hyphens, up to 39 characters. Your other preferences were saved."
       language_options:
         en: English
         it: Italiano
@@ -2586,6 +2590,14 @@ en:
         autopilot_auto_approved: "The delivered work moved on by itself: %{count} checks passed (%{checks}) and the code re-read is positive"
         plan_council_approved: "The council approved this plan: no one had to sign it"
         plan_supporter_approved: "The supporter approved this low-risk plan: no one had to sign it"
+        github_issue_imported: "Ticket born from issue #%{number} by %{login} on GitHub"
+        github_issue_published: "%{actor} published the ticket on GitHub as issue #%{number}"
+        github_issue_unlinked: "The link with issue #%{number} is broken. The ticket stays"
+        github_change_superseded: "The change by %{login} on GitHub (%{fields}) was overtaken by a newer one on CloseYourIt"
+        github_change_declined: "Change from GitHub not applied (%{fields}): the ticket cannot change that way right now"
+        github_assignee_unknown: "On GitHub the issue is assigned to %{login}, whom nobody wrote in their profile"
+        github_text_kept: "The edited text stays on CloseYourIt only: on GitHub it is longer and is not overwritten"
+        github_reconciled: "The nightly check realigned with GitHub: %{fields}"
         plan_supporter_added_items: "The supporter added the acceptance items the plan proposed to the ticket: no one had to sign them"
         plan_reopened_items_changed: "The acceptance items changed after the plan was approved: planning again"
         workflow_supporter_retried: "The supporter looked at why the work stopped and sent it back to the agent with its guidance"
@@ -2647,6 +2659,7 @@ en:
         field:
           title: title
           kind: type
+          comments: comments
           description: description
           weight: weight
           scenarios: scenarios

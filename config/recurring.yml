@@ -705,5 +705,12 @@ production: &schedule
     queue: maintenance
     schedule: every hour
 
+  # CYRA-1055 — GitHub does not deliver again a notice it lost: every night issues, board cards and
+  # tickets of the synced projects are compared, and each difference is repaired and written down.
+  reconcile_github_issues:
+    class: Github::Issues::ReconcileJob
+    queue: batch
+    schedule: every day at 2am
+
 # Development runs the production schedule, so alerts and checks fire locally too (CYRA-932).
 development: *schedule

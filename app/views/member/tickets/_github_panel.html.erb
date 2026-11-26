@@ -1,7 +1,8 @@
 <%# locals: ticket %>
 <% pulls = ticket.github_pull_requests.order(created_at: :desc).to_a %>
 <% branches = ticket.github_branches.order(created_at: :desc).to_a %>
-<% if pulls.any? || branches.any? %>
+<% issue = ticket.github_issue %>
+<% if pulls.any? || branches.any? || issue %>
   <% pr_colors = { "open" => "sky", "merged" => "violet", "closed" => "rose" } %>
   <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ticket-github-panel">
     <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800 flex items-center gap-2">
@@ -9,6 +10,9 @@
       <h2 class="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.tickets.github.panel_title") %></h2>
     </div>
     <div class="divide-y divide-stone-100 dark:divide-zinc-800">
+      <% if issue %>
+        <%= render "member/tickets/github_issue_row", issue: issue %>
+      <% end %>
       <% pulls.each do |pull| %>
         <div class="px-4 py-2.5 flex items-center gap-2 min-w-0" data-test="ticket-github-pr-row">
           <%= render Ui::IconComponent.new(name: "git-pull-request", class: "text-[11px] text-gray-400 dark:text-zinc-500 shrink-0") %>

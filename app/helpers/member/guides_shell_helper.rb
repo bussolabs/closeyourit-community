@@ -15,7 +15,7 @@ module Member
       "security" => %w[vulnerabilities seo],
       "infrastructure" => %w[servers],
       "vault" => %w[vault secrets secret_overrides shared_values],
-      "organization" => %w[agents skill_bundles datasets permissions activity integrations project_moves]
+      "organization" => %w[agents skill_bundles datasets permissions activity integrations github_issues project_moves]
     }.freeze
 
     ICONS = {
@@ -28,7 +28,7 @@ module Member
       "vulnerabilities" => "shield-half", "seo" => "file-search", "servers" => "server", "vault" => "vault",
       "secrets" => "key", "secret_overrides" => "user-pen", "shared_values" => "group", "agents" => "bot",
       "skill_bundles" => "boxes", "datasets" => "wand-sparkles", "permissions" => "shield-half",
-      "activity" => "history", "integrations" => "plug", "project_moves" => "arrow-left-right"
+      "activity" => "history", "integrations" => "plug", "github_issues" => "github", "project_moves" => "arrow-left-right"
     }.freeze
 
     def guides_area?

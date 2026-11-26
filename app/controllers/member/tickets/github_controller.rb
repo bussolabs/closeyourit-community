@@ -23,6 +23,14 @@ module Member
         respond_with_result(result, t("member.tickets.github.pull_request_opened"))
       end
 
+      # "Publish on GitHub": the ticket becomes an issue and stays aligned with it (CYRA-1055).
+      def issue
+        result = Ticketing::Github::PublishIssue.call(
+          ticket: @ticket, actor: Current.account, true_actor: Current.true_account
+        )
+        respond_with_result(result, t("member.tickets.github.published"))
+      end
+
       private
 
       def respond_with_result(result, notice)

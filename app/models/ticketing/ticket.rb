@@ -160,6 +160,12 @@ module Ticketing
              foreign_key: :ticket_id,
              inverse_of: :ticket,
              dependent: :nullify
+    # The issue this ticket stays aligned with (CYRA-1055). The link dies with the ticket, the issue stays.
+    has_one :github_issue,
+            class_name: "Github::Issue",
+            foreign_key: :ticket_id,
+            inverse_of: :ticket,
+            dependent: :delete
 
     # Collegamenti ticket↔ticket del gate duplicati (vedi Connections::TicketLink): `links` dove
     # questo ticket è il nuovo, `inverse_links` dove è il preesistente. La lettura simmetrica

@@ -25,6 +25,8 @@ module Ticketing
       # Il rischio può stare SOLO nell'allegato (lo screenshot di una console di produzione su un
       # ticket dal testo innocuo): allegare rivaluta il gate agenti (CYRA-184). Fuori transazione.
       enqueue_agent_eligibility if @ticket.agent_eligibility_stale?
+      # The files become links in the text of a linked issue (CYRA-1055).
+      ::Github::Issues::Outbound.ticket_changed(@ticket)
       Result.ok(@ticket)
     end
 

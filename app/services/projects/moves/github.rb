@@ -22,12 +22,21 @@ module Projects
         ids = repositories.map(&:id)
         Agents::DeliveryCandidate.where(repository_id: ids).update_all(repository_id: nil)
         Agents::ReleaseAssignment.where(github_repository_id: ids).delete_all
+        drop_github_signature(subject)
         repositories.each(&:destroy!)
       end
 
+      # The source's GitHub account stops seeing the moved projects: it is not a member over there (CYRA-1055).
+      def drop_github_signature(subject)
+        signatures = ::Github::Installation.where(organization_id: subject.organization.id).select(:system_account_id)
+        Connections::ProjectMembership.where(project_id: subject.project_ids, account_id: signatures).delete_all
+      end
+
+      # The issue links go with their repository; the tickets stay, unlinked (CYRA-1055).
       def dependent_counts(ids)
         { "agents_delivery_candidates" => Agents::DeliveryCandidate.where(repository_id: ids).count,
-          "agents_release_assignments" => Agents::ReleaseAssignment.where(github_repository_id: ids).count }
+          "agents_release_assignments" => Agents::ReleaseAssignment.where(github_repository_id: ids).count,
+          "github_issues" => ::Github::Issue.where(repository_id: ids).count }
       end
 
       def repositories(subject) = ::Github::Repository.where(project_id: subject.project_ids).to_a

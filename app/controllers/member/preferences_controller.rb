@@ -24,6 +24,7 @@ module Member
       Current.account.update(locale: locale) if App::Constants::LOCALES.include?(locale)
       theme = params[:theme]
       Current.account.update(theme: theme) if Accounts::Constants::THEMES.include?(theme)
+      return github_login_rejected if params.key?(:github_login) && !Current.account.update(github_login: params[:github_login])
       # The preferences page (one form, every preference) comes back with a notice; the single
       # switches elsewhere (footer language, projects view) go back where they were.
       if params.key?(:platform_codes) || params[:preferences_form].present?
@@ -34,6 +35,12 @@ module Member
     end
 
     private
+
+    # The GitHub name has GitHub's shape or nothing (CYRA-1055): the rest of the form is already saved.
+    def github_login_rejected
+      Current.account.restore_attributes([ :github_login ])
+      redirect_to member_preferences_path, alert: t("member.preferences.github_invalid")
+    end
 
     # Codici puliti: stringhe minuscole, niente blank, deduplicati. L'hidden platform_codes[]=""
     # nel form permette di azzerare la selezione (un multi-select vuoto non invierebbe nulla).

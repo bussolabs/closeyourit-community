@@ -54,6 +54,18 @@ module Github
           end
       end
 
+      def sender_login = value_at(@payload, "sender", "login").to_s.presence
+
+      # The delivery answers a change this app made itself (its bot is the sender, or the object says it
+      # was made through the app): applying it again would bounce the change back and forth. CYRA-1055
+      def from_this_app?(object = {})
+        slug = Settings::Integrations.value(:gh_app_slug).to_s
+        return true if slug.present? && sender_login.to_s.casecmp?("#{slug}[bot]")
+
+        app_id = Settings::Integrations.value(:gh_app_id).to_s
+        app_id.present? && value_at(object, "performed_via_github_app", "id").to_s == app_id
+      end
+
       # Estrae il codice ticket (KEY-N, case-insensitive) dalle stringhe date (nome branch, titolo/body
       # PR) e risolve il ticket nel progetto del repo. nil se nessun match o ticket inesistente.
       def ticket_from(*texts)

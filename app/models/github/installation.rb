@@ -8,6 +8,11 @@ module Github
     belongs_to :organization,
                class_name: "Organizations::Organization",
                inverse_of: :github_installation
+    # The "GitHub" signature of the organization: a service account without web access that signs the
+    # tickets and comments born on GitHub (Github::Issues::SystemAccount). CYRA-1055
+    belongs_to :system_account,
+               class_name: "Accounts::Account",
+               optional: true
 
     has_many :repositories,
              class_name: "Github::Repository",

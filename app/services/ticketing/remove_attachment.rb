@@ -29,6 +29,8 @@ module Ticketing
       # checksum risulterebbe invariato.
       @ticket.files.reload
       enqueue_agent_eligibility if @ticket.agent_eligibility_stale?
+      # Its link leaves the text of a linked issue (CYRA-1055).
+      ::Github::Issues::Outbound.ticket_changed(@ticket)
       Result.ok(@ticket)
     end
 

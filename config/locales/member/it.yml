@@ -1266,6 +1266,10 @@ it:
         system: Sistema
       language_title: Lingua
       language_lead: Scegli la lingua della tua interfaccia.
+      github_title: Il mio nome su GitHub
+      github_lead: Se una segnalazione su GitHub è assegnata a questo nome, il ticket allineato viene assegnato a te.
+      github_placeholder: es. mario-rossi
+      github_invalid: "Il nome GitHub non è valido: solo lettere, numeri e trattini singoli, fino a 39 caratteri. Le altre preferenze sono state salvate."
       language_options:
         en: English
         it: Italiano
@@ -2666,6 +2670,14 @@ it:
         autopilot_auto_approved: "Il lavoro consegnato è andato avanti da solo: %{count} controlli superati (%{checks}) e la rilettura del codice è positiva"
         plan_council_approved: "Il consiglio ha approvato questo piano: nessuno ha dovuto firmarlo"
         plan_supporter_approved: "Il supporter ha approvato questo piano a rischio basso: nessuno ha dovuto firmarlo"
+        github_issue_imported: "Ticket nato dalla segnalazione GitHub #%{number} di %{login}"
+        github_issue_published: "%{actor} ha pubblicato il ticket su GitHub come segnalazione #%{number}"
+        github_issue_unlinked: "Il legame con la segnalazione GitHub #%{number} si è rotto. Il ticket resta"
+        github_change_superseded: "La modifica di %{login} su GitHub (%{fields}) è stata superata da una più recente su CloseYourIt"
+        github_change_declined: "Modifica arrivata da GitHub non applicata (%{fields}): il ticket adesso non può cambiare così"
+        github_assignee_unknown: "Su GitHub la segnalazione è assegnata a %{login}, che nessuno ha scritto nel proprio profilo"
+        github_text_kept: "Il testo modificato resta solo su CloseYourIt: su GitHub è più lungo e non viene sovrascritto"
+        github_reconciled: "Il controllo notturno ha riallineato con GitHub: %{fields}"
         plan_supporter_added_items: "Il supporter ha aggiunto al ticket le voci di accettazione proposte dal piano: nessuno ha dovuto firmarle"
         plan_reopened_items_changed: "Le voci di accettazione sono cambiate dopo l'approvazione del piano: si ripianifica"
         workflow_supporter_retried: "Il supporter ha guardato perché la lavorazione si era fermata e l'ha rimandata all'agente con le sue indicazioni"
@@ -2727,6 +2739,7 @@ it:
         field:
           title: titolo
           kind: tipo
+          comments: commenti
           description: descrizione
           weight: peso
           scenarios: scenari

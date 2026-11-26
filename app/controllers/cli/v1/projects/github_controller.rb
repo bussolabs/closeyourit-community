@@ -120,12 +120,13 @@ module Cli
         def settings_requested?
           params.key?(:default_branch) || params.key?(:production_environment_id) ||
             params.key?(:staging_environment_id) || params.key?(:preview_environment_id) ||
-            params.key?(:release_probe)
+            params.key?(:release_probe) || params.key?(:issue_sync) || params.key?(:board_node_id)
         end
 
+        # CYRA-1055 — the issue sync choice and its board travel here too, same service as the page.
         def settings_params
           params.permit(:default_branch, :production_environment_id, :staging_environment_id,
-                        :preview_environment_id, :release_probe)
+                        :preview_environment_id, :release_probe, :issue_sync, :board_node_id)
         end
 
         def github_payload
@@ -150,7 +151,10 @@ module Cli
             staging_environment_id: repository.staging_environment_id,
             preview_environment_id: repository.preview_environment_id,
             # NULL e' il terzo stato e va restituito com'e': «non ancora deciso» non e' «merge».
-            release_probe: repository.release_probe
+            release_probe: repository.release_probe,
+            issue_sync: repository.issue_sync,
+            board_node_id: repository.board_node_id,
+            board_title: repository.board_title
           }
         end
       end

@@ -60,6 +60,8 @@ guide_pages = {
   # CYRA-545 — i servizi esterni collegati con la chiave dell'organizzazione: la pagina si legge in
   # fretta, la guida spiega cos'è una chiave, chi ne paga il consumo e cosa si spegne togliendola.
   "/member/integrations"               => "integrations",
+  # CYRA-1055 — the GitHub tab of a project: how issues and board stay aligned with the tickets.
+  "/member/projects/abc-123/github"    => "github_issues",
   # CYRA-879 — the move pages of a project or group open the guide on moving between organizations.
   "/member/projects/abc-123/move/new"  => "project_moves",
   # CYRA-1165 — the Tests tab of a project opens the guide on sending test results from the CI.

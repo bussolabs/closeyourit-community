@@ -1,0 +1,46 @@
+<%# locals: (setup:) %>
+<%# CYRA-1055 — read from GitHub when the sync is on. A permission GitHub has not granted is named here,
+    instead of the sync failing in silence. %>
+<% scope = "member.project_github.issues" %>
+<% status_options = @project.organization.ticket_statuses.active.ordered.map { |status| [ status.display_label, status.id ] } %>
+<% if setup.unreadable %>
+  <p class="text-[12.5px] text-amber-700 dark:text-amber-300" data-test="github-issues-unreadable"><%= t("#{scope}.unreadable") %></p>
+<% end %>
+<% if setup.missing_permissions.any? %>
+  <div class="rounded-md border border-amber-200 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/15 px-3 py-2.5 text-[12.5px] text-amber-800 dark:text-amber-300" data-test="github-issues-permissions">
+    <%= t("#{scope}.missing_permissions", names: setup.missing_permissions.map { |name| t("#{scope}.permissions.#{name}") }.to_sentence) %>
+  </div>
+<% end %>
+
+<%= render Ui::SelectComponent.new(
+      name: "board_node_id", options: setup.boards.map { |board| [ board["title"], board["id"] ] },
+      selected: @repository.board_node_id, include_blank: true, placeholder: t("#{scope}.no_board"),
+      label: t("#{scope}.board_label"), hint: t("#{scope}.board_hint"), test_id: "github-board") %>
+
+<% if setup.columns.any? %>
+  <div class="space-y-2" data-test="github-board-columns">
+    <p class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("#{scope}.columns_label") %></p>
+    <% setup.columns.each do |column| %>
+      <%= render Ui::SelectComponent.new(
+            name: "board_columns[#{column['id']}]", options: status_options, label: column["name"],
+            selected: @repository.board_columns[column["id"]], include_blank: true,
+            placeholder: t("#{scope}.no_status"), test_id: "github-board-column") %>
+    <% end %>
+  </div>
+<% end %>
+
+<div class="space-y-2" data-test="github-label-kinds">
+  <p class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("#{scope}.kinds_label") %></p>
+  <% Ticketing::Ticket.kinds.each_key do |kind| %>
+    <%= render Ui::InputComponent.new(name: "kind_labels[#{kind}]", label: t("member.tickets.kind.#{kind}"),
+          value: @repository.label_for_kind(kind), test_id: "github-kind-label-#{kind}") %>
+  <% end %>
+</div>
+
+<div class="space-y-2" data-test="github-label-priorities">
+  <p class="text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100"><%= t("#{scope}.priorities_label") %></p>
+  <% @project.organization.ticket_priorities.active.ordered.each do |priority| %>
+    <%= render Ui::InputComponent.new(name: "priority_labels[#{priority.id}]", label: priority.display_label,
+          value: @repository.label_for_priority(priority.id), test_id: "github-priority-label") %>
+  <% end %>
+</div>

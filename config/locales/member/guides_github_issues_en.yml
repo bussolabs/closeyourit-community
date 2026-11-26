@@ -1,0 +1,29 @@
+en:
+  member:
+    guides:
+      index:
+        github_issues:
+          title: GitHub issues and board
+      github_issues:
+        title: GitHub issues and board
+        subtitle: The repository's issues become tickets and stay the same both ways.
+        what_title: What it does
+        what_intro: People working on GitHub and people working on CloseYourIt see the same things. A new issue becomes a ticket within seconds, and every change reaches the other side.
+        what_text: Title, text, comments, closing and reopening travel both ways. The ticket's attachments become links in the issue's text.
+        what_board: Moving a card on the board changes the ticket's status, and changing the status moves the card.
+        what_people: Whoever is assigned on GitHub becomes the ticket's assignee, if they wrote their GitHub name in their preferences. Labels become type and priority.
+        what_night: Every night a check compares issues and tickets and repairs what GitHub did not report.
+        steps_title: How to turn it on
+        step1: Link the repository to the project from the project's GitHub tab, if you have not done it yet.
+        step2: "In \"GitHub issues and board\" choose which issues become tickets: all of them, or only those on an organization board. Save: the issues still open come in, without notifying the team."
+        step3: If you use a board, choose it and match each column to a ticket status.
+        step4: If you want, write which GitHub label stands for each type and each priority.
+        step5: "To take a ticket born here to GitHub, open the ticket and use \"Publish on GitHub\" from the developer menu."
+        notes_title: Good to know
+        note_signature: Tickets and comments born on GitHub are signed GitHub, with the name of whoever really wrote them beside it.
+        note_cut: A comment holds 240 characters and a description 4,000. A longer text comes in cut, with the link to the original, and never goes back to GitHub, not even after an edit.
+        note_newest: If the same field changes on both sides, the newest change wins. The ticket's history records both.
+        note_refused: If a ticket cannot change status, for example because of an open prerequisite, the move stays written in the history.
+        note_leave: When a card leaves the board, the link breaks and the ticket stays.
+        note_personal: Personal boards send no notices, so they cannot be used.
+        note_permissions: The GitHub app must be able to write issues and the organization's projects. If a permission is missing, the project's GitHub tab says which.

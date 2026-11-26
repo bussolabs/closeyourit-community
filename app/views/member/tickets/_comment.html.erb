@@ -15,7 +15,10 @@
   <div class="min-w-0 flex-1">
     <div class="flex items-center gap-2 min-h-8">
       <span class="text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100"><%= comment.author.name %></span>
-      <% if automated %>
+      <%# CYRA-1055 — written on GitHub: signed GitHub, with the real writer's GitHub name beside it. %>
+      <% if comment.from_github? %>
+        <span class="text-[12px] text-gray-500 dark:text-zinc-400" data-test="member-ticket-comment-github-login">@<%= comment.github_author_login %></span>
+      <% elsif automated %>
         <%= render Ui::BadgeComponent.new(label: t("member.tickets.comments.automation"), color: :indigo, icon: "bot", size: :sm) %>
       <% elsif role %>
         <span class="font-mono uppercase text-[9px] tracking-[1px] text-gray-500 dark:text-zinc-400 border border-stone-200 dark:border-zinc-800 rounded px-1 py-0.5"><%= t("member.tickets.comments.role.#{role}") %></span>

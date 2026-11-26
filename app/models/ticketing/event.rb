@@ -34,6 +34,8 @@ module Ticketing
       work_context_captured dependency_added dependency_removed dependency_blocked
       pull_request_autoclose_declined pull_request_conflict already_done
       question_asked question_answered question_closed
+      github_issue_imported github_issue_published github_issue_unlinked github_change_superseded
+      github_change_declined github_assignee_unknown github_text_kept github_reconciled
       autopilot_auto_approved plan_council_approved plan_supporter_approved plan_supporter_added_items plan_reopened_items_changed
       workflow_supporter_retried agent_safety_stopped release_resumed
       workflow_restarted_other_engine workflow_set_aside

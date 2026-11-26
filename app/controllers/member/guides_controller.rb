@@ -186,6 +186,9 @@ module Member
     # Sono le quattro domande che la pagina non può spiegare per esteso senza diventare prosa.
     def integrations; end
 
+    # CYRA-1055 — how to turn on the alignment of GitHub issues and board with the project's tickets.
+    def github_issues; end
+
     # CYRA-879 — moving a project or group to another organization: who can, the blockers and what
     # detaches. The move page links here.
     def project_moves; end

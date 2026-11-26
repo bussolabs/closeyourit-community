@@ -18,6 +18,7 @@ module Member
       @repository = @project.github_repository
       @installation = @project.organization.github_installation
       @available_repos = available_repos if @repository.nil?
+      @issue_setup = issue_setup
       @stats = @project.ticket_tally
     end
 
@@ -121,8 +122,17 @@ module Member
       @error = error
       @installation = @project.organization.github_installation
       @available_repos = available_repos if @repository.nil?
+      @issue_setup = issue_setup
       @stats = @project.ticket_tally
       render :show, status: error.status
+    end
+
+    # Boards, columns and missing App permissions for the issue sync panel, read from GitHub only once
+    # the sync is on: with it off the panel offers the three choices and nothing else (CYRA-1055).
+    def issue_setup
+      return nil if @repository.nil? || @repository.issue_sync_off?
+
+      ::Github::Issues::Setup.call(repository: @repository).value
     end
 
     # Repo dell'installazione dell'org (per il picker). Vuoto se l'org non ha connesso l'App o l'API
@@ -136,9 +146,17 @@ module Member
       end
     end
 
+    # The issue sync panel has its own form: only the fields it sends are saved (CYRA-1055).
     def settings_params
+      return issue_sync_params if params[:issue_sync_form].present?
+
       params.permit(:default_branch, :production_environment_id, :staging_environment_id,
                     :preview_environment_id, :release_probe, :registry, :package_name)
+    end
+
+    def issue_sync_params
+      params.permit(:issue_sync, :board_node_id, board_columns: {}, kind_labels: {}, priority_labels: {})
+            .reverse_merge(board_columns: {}, kind_labels: {}, priority_labels: {})
     end
 
     def set_project

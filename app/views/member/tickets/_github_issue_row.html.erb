@@ -1,0 +1,16 @@
+<%# locals: (issue:) %>
+<%# CYRA-1055 — the issue this ticket stays aligned with, who opened it on GitHub, and whether its text entered cut. %>
+<div class="px-4 py-2.5 space-y-1 min-w-0" data-test="ticket-github-issue-row">
+  <div class="flex items-center gap-2 min-w-0">
+    <%= render Ui::IconComponent.new(name: "circle-dot", class: "text-[11px] text-gray-400 dark:text-zinc-500 shrink-0") %>
+    <span class="text-[12px] text-zinc-700 dark:text-zinc-300 shrink-0"><%= t("member.tickets.github.issue_label") %></span>
+    <%= link_to "##{issue.number}", issue.html_url, target: "_blank", rel: "noopener",
+          class: "font-mono text-[12px] text-indigo-600 dark:text-indigo-400 hover:underline shrink-0" %>
+    <% if issue.author_login.present? %>
+      <span class="truncate text-[12px] text-gray-500 dark:text-zinc-400" data-test="ticket-github-issue-author"><%= t("member.tickets.github.issue_author", login: issue.author_login) %></span>
+    <% end %>
+  </div>
+  <% if issue.truncated?("description") %>
+    <p class="text-[11.5px] text-amber-700 dark:text-amber-300" data-test="ticket-github-issue-cut"><%= t("member.tickets.github.issue_cut") %></p>
+  <% end %>
+</div>

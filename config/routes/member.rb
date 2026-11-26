@@ -557,6 +557,8 @@ namespace :member do
   # CYRA-545 — i servizi esterni collegati con la chiave dell'organizzazione: cos'è una chiave,
   # dove si prende, perché non si rilegge più e cosa si spegne togliendola.
   get "guides/integrations", to: "guides#integrations", as: :guides_integrations
+  # CYRA-1055 — GitHub issues and board aligned with the tickets: how to turn it on, what travels.
+  get "guides/github-issues", to: "guides#github_issues", as: :guides_github_issues
   # CYRA-501 — le macchine che lavorano i ticket (il ciclo, gli esiti, l'attesa di una risposta) e
   # la versione delle competenze che eseguono: la parte da cui dipende il valore del prodotto era
   # l'unica senza una riga di spiegazione.
@@ -898,6 +900,7 @@ namespace :member do
     resource :github, only: [], module: :tickets, controller: "github" do
       post :branch
       post :pull_request, path: "pr"
+      post :issue # CYRA-1055 — «Pubblica su GitHub»
     end
     # Decisioni di review (solo su status review-gate): rejection col motivo, approval secca.
     # Segmenti una-parola (rules/naming.md) → POST /member/tickets/:ticket_id/review/{rejection,approval}.
