@@ -1,0 +1,10 @@
+<%# locals: row, can_promote %>
+<%# A flaky job opens a ticket (ci.promote); while that ticket is open the row leads to it instead (CYRA-1164). %>
+<% if (ticket = row.ci_job.open_ticket) %>
+  <%= render Ui::ButtonComponent.new(label: t("member.ci_health.open_ticket"), href: member_ticket_path(ticket),
+        variant: :link, size: :sm, test_id: "ci-health-ticket") %>
+<% elsif row.flaky? && can_promote %>
+  <%= render Ui::ButtonComponent.new(label: t("member.ci_health.promote"),
+        href: promote_member_project_ci_health_job_path(@project, row.ci_job), method: :post,
+        variant: :secondary, size: :sm, icon: "plus", test_id: "ci-health-promote") %>
+<% end %>

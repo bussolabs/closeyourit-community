@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_120010) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_26_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -2325,6 +2325,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120010) do
     t.index ["repository_id", "name"], name: "index_github_branches_on_repository_id_and_name", unique: true
     t.index ["repository_id"], name: "index_github_branches_on_repository_id"
     t.index ["ticket_id"], name: "index_github_branches_on_ticket_id"
+  end
+
+  create_table "github_ci_job_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "ci_job_id", null: false
+    t.bigint "github_job_id", null: false
+    t.bigint "run_id", null: false
+    t.integer "run_attempt", default: 1, null: false
+    t.string "head_sha", null: false
+    t.string "conclusion", null: false
+    t.datetime "queued_at"
+    t.datetime "started_at"
+    t.datetime "completed_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "head_branch"
+    t.index ["ci_job_id", "completed_at"], name: "index_github_ci_job_runs_on_ci_job_id_and_completed_at"
+    t.index ["completed_at"], name: "index_github_ci_job_runs_on_completed_at"
+    t.index ["github_job_id"], name: "index_github_ci_job_runs_on_github_job_id", unique: true
+  end
+
+  create_table "github_ci_jobs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "repository_id", null: false
+    t.uuid "ticket_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "workflow_name", default: "", null: false
+    t.string "job_name", null: false
+    t.index ["repository_id", "workflow_name", "job_name"], name: "idx_on_repository_id_workflow_name_job_name_2f0b5d96ee", unique: true
+    t.index ["ticket_id"], name: "index_github_ci_jobs_on_ticket_id"
   end
 
   create_table "github_installations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -5127,6 +5156,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120010) do
   add_foreign_key "errors_symbolications", "projects", on_delete: :cascade
   add_foreign_key "github_branches", "github_repositories", column: "repository_id"
   add_foreign_key "github_branches", "ticketing_tickets", column: "ticket_id"
+  add_foreign_key "github_ci_job_runs", "github_ci_jobs", column: "ci_job_id", on_delete: :cascade
+  add_foreign_key "github_ci_jobs", "github_repositories", column: "repository_id", on_delete: :cascade
+  add_foreign_key "github_ci_jobs", "ticketing_tickets", column: "ticket_id", on_delete: :nullify
   add_foreign_key "github_installations", "organizations"
   add_foreign_key "github_pull_requests", "github_repositories", column: "repository_id"
   add_foreign_key "github_pull_requests", "ticketing_tickets", column: "ticket_id"

@@ -6668,7 +6668,8 @@
         "app/jobs/github/**",
         "app/controllers/github/**",
         "app/controllers/member/integrations/github_controller.rb",
-        "app/controllers/member/project_github_controller.rb"
+        "app/controllers/member/project_github_controller.rb",
+        "app/controllers/member/project_ci_health_controller.rb"
       ]
     },
     {
@@ -6774,7 +6775,7 @@
       "level": 2,
       "parent": "area_github",
       "kind": "flow",
-      "summary": "GitHub avvisa di etichette, rami, proposte di modifica, rilasci e disinstallazioni. Dopo la firma il server registra una memoria permanente della consegna, riconosce i duplicati e recupera le lavorazioni interrotte.",
+      "summary": "GitHub avvisa di etichette, rami, proposte di modifica, rilasci, lavori dei controlli conclusi e disinstallazioni. Dopo la firma il server registra una memoria permanente della consegna, riconosce i duplicati e recupera le lavorazioni interrotte.",
       "files": [
         "app/controllers/github/webhooks_controller.rb",
         "app/jobs/github/webhook_job.rb",
@@ -6852,6 +6853,79 @@
       "summary": "Se l'app viene tolta da GitHub, si cancella l'installazione e con lei i repository agganciati.",
       "files": [
         "app/services/github/webhooks/installation.rb"
+      ]
+    },
+    {
+      "id": "gh_wh_ci_job",
+      "name": "Finisce un lavoro della CI",
+      "level": 3,
+      "parent": "gh_flow_webhook",
+      "kind": "step",
+      "summary": "Per ogni lavoro concluso si salvano flusso e nome del lavoro, commit, ramo, tentativo, esito e tre orari. Una consegna ripetuta aggiorna la stessa riga; i lavori saltati, i repository non collegati e le organizzazioni sospese non salvano niente.",
+      "files": [
+        "app/services/github/webhooks/workflow_job.rb",
+        "app/models/github/ci_job_run.rb"
+      ]
+    },
+    {
+      "id": "gh_flow_ci_health",
+      "name": "Leggere la salute della CI",
+      "level": 2,
+      "parent": "area_github",
+      "kind": "flow",
+      "summary": "Dagli esiti degli ultimi 30 giorni si calcolano le cifre di ogni lavoro. Da un lavoro instabile chi ha il permesso apre un ticket.",
+      "files": [
+        "app/services/github/ci_health.rb",
+        "app/services/github/ci_health/promote_to_ticket.rb"
+      ]
+    },
+    {
+      "id": "gh_ch_figures",
+      "name": "Si calcolano le cifre",
+      "level": 3,
+      "parent": "gh_flow_ci_health",
+      "kind": "step",
+      "summary": "Fallimenti, durata media e attesa media in coda. Instabile: rosso e poi verde sullo stesso commit a un nuovo tentativo, almeno 3 volte e su almeno il 5% dei commit. Peggiora: supera di 5 punti i 30 giorni prima.",
+      "files": [
+        "app/services/github/ci_health.rb"
+      ]
+    },
+    {
+      "id": "gh_ch_ticket",
+      "name": "Si apre un ticket",
+      "level": 3,
+      "parent": "gh_flow_ci_health",
+      "kind": "step",
+      "summary": "Il pulsante, per chi ha il permesso apposito, apre un ticket con le cifre, gli ultimi commit coinvolti e uno scenario già scritto. Finché quel ticket è aperto, un nuovo clic porta lì invece di aprirne un altro.",
+      "files": [
+        "app/services/github/ci_health/promote_to_ticket.rb",
+        "app/controllers/member/project_ci_health_controller.rb"
+      ]
+    },
+    {
+      "id": "gh_page_ci_health",
+      "name": "Scheda Salute CI",
+      "level": 2,
+      "parent": "area_github",
+      "kind": "page",
+      "summary": "Una riga per lavoro della CI, con i lavori instabili segnati e quelli che peggiorano in evidenza. Senza repository invita a collegarlo, senza esiti spiega quale permesso ed evento attivare su GitHub e porta alla guida.",
+      "files": [
+        "app/controllers/member/project_ci_health_controller.rb",
+        "app/views/member/project_ci_health/**",
+        "app/helpers/member/ci_health_helper.rb",
+        "app/views/member/guides/ci_health.html.erb"
+      ]
+    },
+    {
+      "id": "gh_job_prune_ci",
+      "name": "Pulizia degli esiti della CI",
+      "level": 2,
+      "parent": "area_github",
+      "kind": "job",
+      "summary": "Ogni notte alle 3, a blocchi: via gli esiti più vecchi di 90 giorni e i lavori rimasti senza esiti e senza ticket.",
+      "files": [
+        "app/jobs/github/prune_ci_runs_job.rb",
+        "config/recurring.yml"
       ]
     },
     {
@@ -6957,6 +7031,28 @@
       "summary": "Una proposta di modifica legata a un ticket. Stato: aperta, chiusa o unita, aggiornato dagli eventi di GitHub.",
       "files": [
         "app/models/github/pull_request.rb"
+      ]
+    },
+    {
+      "id": "gh_data_ci_job",
+      "name": "Lavoro della CI",
+      "level": 3,
+      "parent": "gh_data",
+      "kind": "data",
+      "summary": "Un lavoro della CI di un repository, riconosciuto da nome del flusso e nome del lavoro. Tiene il ticket aperto dal pulsante.",
+      "files": [
+        "app/models/github/ci_job.rb"
+      ]
+    },
+    {
+      "id": "gh_data_ci_run",
+      "name": "Esito di un lavoro",
+      "level": 3,
+      "parent": "gh_data",
+      "kind": "data",
+      "summary": "Un tentativo concluso, riconosciuto dal numero che GitHub dà a ogni tentativo: commit, ramo, giro, numero di tentativo, esito, ora di coda, partenza e fine. Si conserva 90 giorni.",
+      "files": [
+        "app/models/github/ci_job_run.rb"
       ]
     },
     {
@@ -14504,6 +14600,39 @@
     {
       "from": "gh_wh_dispatch",
       "to": "gh_wh_uninstall"
+    },
+    {
+      "from": "gh_wh_dispatch",
+      "to": "gh_wh_ci_job"
+    },
+    {
+      "from": "gh_ch_figures",
+      "to": "gh_ch_ticket"
+    },
+    {
+      "from": "gh_flow_webhook",
+      "to": "gh_flow_ci_health",
+      "label": "esiti dei lavori"
+    },
+    {
+      "from": "gh_page_ci_health",
+      "to": "gh_flow_ci_health",
+      "label": "legge le cifre"
+    },
+    {
+      "from": "gh_job_prune_ci",
+      "to": "gh_data_ci_run",
+      "label": "cancella dopo 90 giorni"
+    },
+    {
+      "from": "gh_data_ci_run",
+      "to": "gh_data_ci_job",
+      "label": "appartiene a"
+    },
+    {
+      "from": "gh_data_ci_job",
+      "to": "gh_data_repository",
+      "label": "appartiene a"
     },
     {
       "from": "gh_wh_tag",

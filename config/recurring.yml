@@ -650,6 +650,12 @@ production: &schedule
     queue: batch
     schedule: every day at 3am
 
+  # CI job outcomes received from GitHub (CYRA-1164): kept 90 days, the CI health tab reads the last 30.
+  prune_github_ci_runs:
+    class: Github::PruneCiRunsJob
+    queue: batch
+    schedule: every day at 3am
+
   prune_crashes:
     class: Crashes::PruneJob
     queue: batch

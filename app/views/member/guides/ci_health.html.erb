@@ -1,0 +1,41 @@
+<% content_for :title, t("member.guides.ci_health.title") %>
+
+<%# CYRA-1164 — how CI job outcomes arrive from GitHub, what the CI health tab computes and how long it keeps them. %>
+<div class="p-7 space-y-6 max-w-3xl" data-test="member-guide-ci-health">
+  <%= render Ui::PageHeaderComponent.new(
+        title: safe_join([ tag.span(render(Ui::IconComponent.new(name: "activity", class: "text-[17px]")), class: "inline-flex items-center justify-center w-10 h-10 rounded-md bg-sky-50 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 shrink-0 align-middle mr-3"),
+                           t("member.guides.ci_health.title") ]),
+        breadcrumb: [ { label: t("member.guides.index.title"), href: member_guides_path },
+                      { label: t("member.guides.ci_health.title") } ]) do |h| %>
+    <% h.with_meta do %>
+      <p class="text-[12.5px] text-gray-500 dark:text-zinc-400"><%= t("member.guides.ci_health.subtitle") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="guide-ci-health-setup">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.ci_health.setup_title") %></h2></div>
+    <div class="px-4 py-4 space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+      <p><%= t("member.guides.ci_health.setup_intro") %></p>
+      <ol class="list-decimal pl-5 space-y-1.5">
+        <li><%= t("member.guides.ci_health.setup_permission") %></li>
+        <li><%= t("member.guides.ci_health.setup_event") %></li>
+        <li><%= t("member.guides.ci_health.setup_accept") %></li>
+      </ol>
+      <p><%= t("member.guides.ci_health.setup_only_actions") %></p>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.ci_health.what_title") %></h2></div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.ci_health.what_intro", days: Github::CiHealth::WINDOW.in_days.to_i) %></p>
+      <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "shuffle", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.ci_health.what_flaky", commits: Github::CiHealth::FLAKY_MIN_COMMITS, percent: (Github::CiHealth::FLAKY_MIN_RATE * 100).round) %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "trending-up", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.ci_health.what_worsening", days: Github::CiHealth::WINDOW.in_days.to_i, points: (Github::CiHealth::WORSENING_POINTS * 100).round) %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "clock", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.ci_health.what_queue") %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "plus", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.ci_health.what_ticket", permission: authorization_permission_label("ci.promote")) %></span></li>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "trash-2", class: "text-gray-400 dark:text-zinc-500 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.ci_health.what_retention", days: Github::CiJobRun::RETENTION.in_days.to_i) %></span></li>
+      </ul>
+    </div>
+  </div>
+</div>

@@ -20,6 +20,7 @@ en:
       "errors.grouping.manage": "Decide how incoming errors get grouped together."
       "artifacts.manage": "Upload and delete private build artifacts used to resolve reported errors."
       "metrics.promote": "Turn a measured slowdown into a ticket to work on."
+      "ci.promote": "Open a ticket from a CI job that passes only when run again."
       "logs.link": "Attach a log line to a ticket, to keep it as evidence."
       "uptime.manage": "Create, edit and remove the checks that verify an address responds."
       "vulnerabilities.triage": "Decide what to do with a vulnerability: ignore, reopen, turn it into a ticket."

@@ -48,6 +48,8 @@ module Authorization
       { key: "errors.grouping.manage",     area: "monitoring", scoped: true },
       { key: "artifacts.manage",           area: "monitoring", scoped: true, dangerous: true },
       { key: "metrics.promote",            area: "monitoring", scoped: true },
+      # CYRA-1164 — opening a ticket from a flaky CI job. Reading the CI health tab is not a key.
+      { key: "ci.promote",                 area: "monitoring", scoped: true },
       { key: "logs.link",                  area: "monitoring", scoped: true },
       { key: "uptime.manage",              area: "monitoring", scoped: true },
       # CYRA-506 — decidere cosa fare di una vulnerabilità trovata: ignorarla (convivo col rischio),

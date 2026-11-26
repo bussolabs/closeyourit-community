@@ -27,6 +27,7 @@ module Github
       when "release"      then Github::Webhooks::Release.call(payload:)
       when "installation" then Github::Webhooks::Installation.call(payload:)
       when "pull_request" then Github::Webhooks::PullRequest.call(payload:)
+      when "workflow_job" then Github::Webhooks::WorkflowJob.call(payload:)
       end
     end
   end

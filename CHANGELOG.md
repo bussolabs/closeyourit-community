@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.254.0] - 2026-11-26
+
+### Added
+
+- **Salute CI**: una nuova scheda del progetto mostra per ogni lavoro di GitHub Actions fallimenti, durata, attesa e quanto spesso passa solo rifacendolo. Da un lavoro instabile apri un ticket con un clic. Gli esiti arrivano dopo aver dato all'app GitHub il permesso di leggere GitHub Actions. ([guida](/member/guides/ci-health))
+
 ## [0.253.0] - 2026-11-25
 
 ### Added

@@ -402,6 +402,13 @@ namespace :member do
     resource :github, only: %i[show update destroy], controller: "project_github" do
       post :sync # "Sync now": enfila il push dei secret del vault sui GitHub Environment secrets
     end
+    # CI health tab (CYRA-1164): figures per CI job from GitHub's job outcomes, and a ticket from a flaky job.
+    # Reading = project visibility. :id of jobs = Github::CiJob id.
+    resource :ci_health, path: "ci", only: :show, controller: "project_ci_health" do
+      resources :jobs, only: [], controller: "project_ci_health" do
+        post :promote, on: :member
+      end
+    end
     # Tab Environments (CYRA-63): posto unico di gestione degli environment del progetto — tabella con
     # dichiarazione (create/destroy), capability tri-state e multiselect server. Controller flat
     # Member::ProjectEnvironmentsController (stesso motivo dei tokens; niente Member::Projects che
@@ -514,6 +521,8 @@ namespace :member do
   get "guides/crons",       to: "guides#crons",       as: :guides_crons
   # CYRA-1165 — sending the outcome of every test from the CI, flaky tests and known failures.
   get "guides/tests",       to: "guides#tests",       as: :guides_tests
+  # CYRA-1164 — the CI job outcomes GitHub sends: the permission and event to turn on, flaky jobs, retention.
+  get "guides/ci-health",   to: "guides#ci_health",   as: :guides_ci_health
   get "guides/coverage",    to: "guides#coverage",    as: :guides_coverage
   get "guides/servers",     to: "guides#servers",     as: :guides_servers
   get "guides/analytics",   to: "guides#analytics",   as: :guides_analytics

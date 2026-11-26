@@ -1,0 +1,53 @@
+<%# locals: rows, can_promote %>
+<%# CYRA-1164 — flaky jobs come first, those that are worsening first of all and highlighted. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="ci-health-panel">
+  <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-3 border-b border-stone-200 dark:border-zinc-800">
+    <h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.ci_health.section_title") %></h2>
+    <div class="flex items-center flex-wrap gap-1.5" data-test="ci-health-counts">
+      <%= render Ui::StatLabelComponent.new(label: t("member.ci_health.count_jobs"), value: rows.size, test_id: "ci-health-count-jobs") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.ci_health.count_flaky"), value: rows.count(&:flaky?),
+            value_color: :amber, test_id: "ci-health-count-flaky") %>
+      <%= render Ui::StatLabelComponent.new(label: t("member.ci_health.count_worsening"), value: rows.count(&:worsening?),
+            value_color: :red, test_id: "ci-health-count-worsening") %>
+    </div>
+    <p class="w-full text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.ci_health.legend", days: Github::CiHealth::WINDOW.in_days.to_i,
+          commits: Github::CiHealth::FLAKY_MIN_COMMITS, percent: (Github::CiHealth::FLAKY_MIN_RATE * 100).round,
+          points: (Github::CiHealth::WORSENING_POINTS * 100).round) %></p>
+  </div>
+
+  <%= render(Ui::TableComponent.new(stacked: true, label: t("member.ci_health.section_title"), body_test_id: "ci-health-rows")) do |table| %>
+    <% table.with_head do %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.ci_health.col_job")) %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.ci_health.col_runs"), classes: "w-24") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.ci_health.col_failures"), classes: "w-32") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.ci_health.col_duration"), classes: "w-32") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.ci_health.col_queue"), classes: "w-32") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.ci_health.col_flaky"), classes: "w-44") %>
+      <%= render Ui::TableComponent::HeaderComponent.new(label: t("member.ci_health.col_actions"), label_hidden: true, align: :right, classes: "w-36") %>
+    <% end %>
+    <% rows.each do |row| %>
+      <%= render Ui::TableComponent::RowComponent.new(highlighted: row.worsening?, test_id: "ci-health-row",
+            data: { ci_job: row.ci_job.name, flaky: row.flaky?, worsening: row.worsening? }) do %>
+        <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-[12.5px] text-zinc-900 dark:text-zinc-100 break-all")) { row.ci_job.name } %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: t("member.ci_health.col_runs"), mono: true)) { number_with_delimiter(row.runs) } %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: t("member.ci_health.col_failures"), mono: true, test_id: "ci-health-failures")) do %>
+          <%= number_with_delimiter(row.failures) %> · <%= ci_health_percent(row.failure_rate) %>
+        <% end %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: t("member.ci_health.col_duration"), mono: true, test_id: "ci-health-duration")) { ci_health_duration(row.avg_duration) } %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: t("member.ci_health.col_queue"), mono: true, test_id: "ci-health-queue")) { ci_health_duration(row.avg_queue) } %>
+        <%= render(Ui::TableComponent::CellComponent.new(label: t("member.ci_health.col_flaky"), test_id: "ci-health-flaky")) do %>
+          <span class="font-mono text-[12px] text-zinc-900 dark:text-zinc-100"><%= ci_health_percent(row.flaky_rate) %></span>
+          <% if row.flaky? %>
+            <%= render Ui::BadgeComponent.new(label: t("member.ci_health.flaky"), color: :amber, size: :sm, class: "ml-1.5", test_id: "ci-health-flaky-mark") %>
+          <% end %>
+          <% if row.worsening? %>
+            <%= render Ui::BadgeComponent.new(label: t("member.ci_health.worsening"), color: :red, size: :sm, class: "ml-1.5", test_id: "ci-health-worsening") %>
+          <% end %>
+        <% end %>
+        <%= render(Ui::TableComponent::CellComponent.new(actions: true)) do %>
+          <%= render "member/project_ci_health/row_action", row: row, can_promote: can_promote %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

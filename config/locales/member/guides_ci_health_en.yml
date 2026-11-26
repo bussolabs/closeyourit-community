@@ -1,0 +1,22 @@
+en:
+  member:
+    guides:
+      index:
+        ci_health:
+          title: "CI health"
+      ci_health:
+        title: "CI health"
+        subtitle: "Receive the outcome of every CI job from GitHub: failures, duration, wait and flaky jobs."
+        setup_title: "How to turn it on"
+        setup_intro: "Outcomes arrive from the GitHub app already connected to the project. A person who administers the app on GitHub does these steps once:"
+        setup_permission: "In the GitHub app settings, under Permissions & events, give Actions read-only access."
+        setup_event: "On the same page, among the events to subscribe to, tick «Workflow job» and save."
+        setup_accept: "Every GitHub organization that installed the app has to accept the new permission. Until it does, GitHub sends nothing and the tab stays empty."
+        setup_only_actions: "Only GitHub Actions jobs show: CI systems outside GitHub, which do not send this event, do not show."
+        what_title: "What it shows"
+        what_intro: "The project's CI health tab lists every job with its runs, failures, average duration, average wait before starting and flakiness over the last %{days} days."
+        what_flaky: "A job is flaky when, on the same commit, it fails and then passes on a new attempt, at least %{commits} times and on at least %{percent}% of the commits."
+        what_worsening: "A flaky job is «worsening» when its flakiness beats the %{days} days before by at least %{points} points."
+        what_queue: "A long average wait means jobs wait for a free machine: a few more may be needed."
+        what_ticket: "A flaky job opens a ticket with one click, with the job's name, the percentage and the latest commits involved. It needs the «%{permission}» permission. While that ticket is open, the button leads there instead of opening another."
+        what_retention: "Outcomes older than %{days} days are deleted every night."

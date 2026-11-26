@@ -64,7 +64,8 @@ guide_pages = {
   "/member/projects/abc-123/move/new"  => "project_moves",
   # CYRA-1165 — the Tests tab of a project opens the guide on sending test results from the CI.
   "/member/projects/abc-123/tests"     => "tests",
-  "/member/projects/abc-123/tests/def-456" => "tests"
+  "/member/projects/abc-123/tests/def-456" => "tests",
+  "/member/projects/abc-123/ci"        => "ci_health"
 }.freeze
 
 RSpec.describe Guides::Map do

@@ -1,0 +1,28 @@
+<% content_for :title, t("member.ci_health.title", project: @project.name) %>
+
+<%# CYRA-1164 — one row per CI job, from the job outcomes GitHub sends. Only GitHub Actions jobs show here. %>
+<div class="p-7 space-y-6" data-test="member-project-ci-health">
+  <%= render "member/projects/overview_header", project: @project, stats: @stats, active_tab: "ci_health" %>
+
+  <% if @repository.nil? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.ci_health.no_repository"), body: t("member.ci_health.no_repository_body"),
+          icon: "github", framed: true, test_id: "ci-health-no-repository") do |empty| %>
+      <% if can?("github.manage", scope: @project) %>
+        <% empty.with_action do %>
+          <%= render Ui::ButtonComponent.new(label: t("member.ci_health.connect"), href: member_project_github_path(@project),
+                size: :sm, icon: "github", test_id: "ci-health-connect") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% elsif @rows.empty? %>
+    <%= render Ui::EmptyStateComponent.new(title: t("member.ci_health.empty"), body: t("member.ci_health.empty_body"),
+          example: t("member.ci_health.empty_example"), icon: "activity", framed: true, test_id: "ci-health-empty") do |empty| %>
+      <% empty.with_action do %>
+        <%= render Ui::ButtonComponent.new(label: t("member.ci_health.empty_guide"), href: member_guides_ci_health_path,
+              variant: :secondary, size: :sm, icon: "book-open", test_id: "ci-health-guide") %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= render "member/project_ci_health/table", rows: @rows, can_promote: @can_promote %>
+  <% end %>
+</div>

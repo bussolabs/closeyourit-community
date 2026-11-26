@@ -96,6 +96,9 @@ module Member
     # CYRA-1165 — sending the outcome of every test from CI; the project's Tests tab links here.
     def tests; end
 
+    # CYRA-1164 — receiving the outcome of every CI job from GitHub; the project's CI health tab links here.
+    def ci_health; end
+
     def servers; end
 
     # CYRA-501 — il passo che conta («inserisci il codice nel tuo sito») nominava lo snippet senza

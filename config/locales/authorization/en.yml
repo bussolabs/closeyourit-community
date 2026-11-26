@@ -35,6 +35,7 @@ en:
       "errors.grouping.manage": Manage error grouping rules
       "artifacts.manage": Manage build artifacts
       "metrics.promote": Promote slow query/method to ticket
+      "ci.promote": Open a ticket from a flaky CI job
       "uptime.manage": Manage uptime monitors
       "vulnerabilities.triage": Triage vulnerabilities
       "seo.manage": Manage the sites under SEO check

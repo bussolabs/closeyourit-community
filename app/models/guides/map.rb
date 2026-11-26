@@ -66,6 +66,8 @@ module Guides
       [ %r{\A/member/(groups|projects)/[^/]+/move\b},                       "project_moves" ],
       # CYRA-1165 — the Tests tab of a project opens the guide on sending test results from the CI.
       [ %r{\A/member/projects/[^/]+/tests\b},                               "tests" ],
+      # CYRA-1164 — the CI health tab opens the guide on receiving CI job outcomes from GitHub.
+      [ %r{\A/member/projects/[^/]+/ci\b},                                  "ci_health" ],
       [ %r{\A/member/(roles|teams)\b},                                     "permissions" ],
       # CYRA-745 — dal registro si arriva alla guida che dice cosa ci si trova e cosa no.
       [ %r{\A/member/activity\b},                                          "activity" ],

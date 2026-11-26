@@ -7,7 +7,7 @@ module Authorization
   class InstallDefaultRoles < ApplicationService
     DEFAULTS = {
       "Viewer" => [],
-      "Triager" => %w[errors.triage errors.promote errors.assign vulnerabilities.triage seo.triage],
+      "Triager" => %w[errors.triage errors.promote errors.assign vulnerabilities.triage seo.triage ci.promote],
       "Maintainer" => %w[
         tickets.edit tickets.assign tickets.delete tickets.comment.delete_any
         tickets.attachments.manage tokens.manage secrets.read secrets.manage secret_files.manage uptime.manage uptime_groups.manage

@@ -20,6 +20,7 @@ it:
       "errors.grouping.manage": "Decidere come gli errori che arrivano vengono raggruppati fra loro."
       "artifacts.manage": "Caricare ed eliminare gli artefatti privati usati per risalire al sorgente degli errori."
       "metrics.promote": "Trasformare una lentezza misurata in un ticket da lavorare."
+      "ci.promote": "Aprire un ticket da un lavoro della CI che passa solo rifacendolo."
       "logs.link": "Agganciare una riga di registro a un ticket, per tenerla come prova."
       "uptime.manage": "Creare, modificare e togliere i controlli che verificano se un indirizzo risponde."
       "vulnerabilities.triage": "Decidere cosa fare di una vulnerabilità: ignorarla, riaprirla, farne un ticket."

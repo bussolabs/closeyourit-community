@@ -35,6 +35,12 @@ RSpec.describe Github::WebhookJob, type: :job do
     described_class.perform_now(event: "pull_request", payload:)
   end
 
+  it "dispatches the workflow_job event to the WorkflowJob handler" do
+    payload = { "action" => "completed" }
+    expect(Github::Webhooks::WorkflowJob).to receive(:call).with(payload:)
+    described_class.perform_now(event: "workflow_job", payload:)
+  end
+
   it "ignora gli eventi non gestiti" do
     expect { described_class.perform_now(event: "star", payload: {}) }.not_to raise_error
   end

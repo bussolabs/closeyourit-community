@@ -34,9 +34,10 @@ RSpec.describe "Member guides shell", type: :request do
     tests = nav_links.map { |link| link["data-test"] }
     expect(tests.first(2)).to eq(%w[member-guides-card-catalog member-guides-card-overview])
     expect(tests.uniq.size).to eq(tests.size)
-    expect(tests.size).to eq(42)
+    expect(tests.size).to eq(43)
     expect(tests).to include("member-guides-card-installation", "member-guides-card-traces",
-                             "member-guides-card-tests", "member-guides-card-slack-alerts")
+                             "member-guides-card-tests", "member-guides-card-ci-health",
+                             "member-guides-card-slack-alerts")
   end
 
   it "groups the index under headings" do

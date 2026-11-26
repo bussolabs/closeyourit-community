@@ -145,4 +145,47 @@ RSpec.describe "Github::Webhooks", type: :request do
     allow(Github::WebhookJob).to receive(:perform_later).and_call_original
     expect { Github::RecoverWebhooksJob.perform_now }.to have_enqueued_job(Github::WebhookJob)
   end
+
+  # CYRA-1164 — the end of a CI job, signed by GitHub, becomes a stored outcome of the connected repository.
+  describe "workflow_job" do
+    let(:repository) { create(:github_repository) }
+
+    def job_body(repo_id: repository.repo_id)
+      { action: "completed", repository: { id: repo_id }, installation: { id: repository.installation.installation_id },
+        workflow_job: { id: 501, run_id: 601, run_attempt: 1, head_sha: "abc", head_branch: "main", name: "test",
+                        workflow_name: "ci", conclusion: "success", created_at: "2026-11-05T10:00:00Z",
+                        started_at: "2026-11-05T10:02:00Z", completed_at: "2026-11-05T10:07:00Z" } }.to_json
+    end
+
+    def deliver_job(payload)
+      perform_enqueued_jobs do
+        post_webhook(event: "workflow_job", payload:,
+                     headers: { "X-GitHub-Delivery" => "job-1", "X-Hub-Signature-256" => signature(payload) })
+      end
+    end
+
+    it "stores the outcome of a signed delivery" do
+      deliver_job(job_body)
+
+      expect(response).to have_http_status(:no_content)
+      expect(Github::CiJobRun.sole).to have_attributes(github_job_id: 501, conclusion: "success", head_branch: "main")
+      expect(Github::CiJobRun.sole.ci_job.repository).to eq(repository)
+    end
+
+    it "receives the delivery of a repository not connected, and stores nothing" do
+      deliver_job(job_body(repo_id: 424_242))
+
+      expect(response).to have_http_status(:no_content)
+      expect(Github::CiJobRun.count).to eq(0)
+    end
+
+    it "receives the delivery of a suspended organization, and stores nothing" do
+      repository.installation.organization.update!(suspended_at: Time.current)
+
+      deliver_job(job_body)
+
+      expect(response).to have_http_status(:no_content)
+      expect(Github::CiJobRun.count).to eq(0)
+    end
+  end
 end

@@ -1,0 +1,22 @@
+it:
+  member:
+    guides:
+      index:
+        ci_health:
+          title: "Salute CI"
+      ci_health:
+        title: "Salute CI"
+        subtitle: "Ricevi da GitHub l'esito di ogni lavoro della CI: fallimenti, durata, attesa e lavori instabili."
+        setup_title: "Come si attiva"
+        setup_intro: "Gli esiti arrivano dall'app GitHub già collegata al progetto. Una persona che amministra l'app su GitHub fa questi passi una volta sola:"
+        setup_permission: "Nelle impostazioni dell'app GitHub, sotto Permessi ed eventi, dai a GitHub Actions il permesso di sola lettura."
+        setup_event: "Nella stessa pagina, fra gli eventi a cui iscriversi, spunta «Workflow job» e salva."
+        setup_accept: "Ogni organizzazione GitHub che ha installato l'app deve accettare il nuovo permesso. Finché non lo fa, GitHub non manda niente e la scheda resta vuota."
+        setup_only_actions: "Compaiono solo i lavori di GitHub Actions: le CI fuori da GitHub, che non mandano questo avviso, non compaiono."
+        what_title: "Cosa mostra"
+        what_intro: "La scheda Salute CI del progetto elenca ogni lavoro con le esecuzioni, i fallimenti, la durata media, l'attesa media prima di partire e l'instabilità degli ultimi %{days} giorni."
+        what_flaky: "Un lavoro è instabile quando, sullo stesso commit, fallisce e poi passa a un nuovo tentativo, almeno %{commits} volte e su almeno il %{percent}% dei commit."
+        what_worsening: "Un lavoro instabile «peggiora» quando la sua instabilità supera di almeno %{points} punti quella dei %{days} giorni prima."
+        what_queue: "Un'attesa media lunga vuol dire che i lavori aspettano una macchina libera: può servirne qualcuna in più."
+        what_ticket: "Da un lavoro instabile si apre un ticket con un clic, con il nome del lavoro, la percentuale e gli ultimi commit coinvolti. Serve il permesso «%{permission}». Finché quel ticket è aperto, il pulsante porta lì invece di aprirne un altro."
+        what_retention: "Gli esiti più vecchi di %{days} giorni vengono cancellati ogni notte."

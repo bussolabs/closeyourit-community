@@ -44,6 +44,20 @@ RSpec.describe "Member::Guides", type: :request do
       expect(response.body).to include('data-test="member-guides-card-tests"')
     end
 
+    # CYRA-1164 — receiving CI job outcomes: the GitHub permission and event to turn on, and the retention.
+    it "GET guides/ci-health explains the GitHub permission, the event and the retention" do
+      get member_guides_ci_health_path
+
+      expect(response).to have_http_status(:ok)
+      setup = Nokogiri::HTML(response.body).at_css("[data-test='guide-ci-health-setup']")
+      expect(setup.text).to include("Actions", "Workflow job", "GitHub Actions")
+      expect(response.body).to include("90")
+
+      get member_guides_path
+
+      expect(response.body).to include('data-test="member-guides-card-ci-health"')
+    end
+
     it "lists the coverage guide in the guides index on the left" do
       get member_guides_path
 

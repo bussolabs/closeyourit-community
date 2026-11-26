@@ -85,6 +85,10 @@ module Github
              class_name: "Github::PullRequest",
              inverse_of: :repository,
              dependent: :destroy
+    # CI jobs and their runs (CYRA-1164): the foreign key cascades, so thousands of runs go in one statement.
+    has_many :ci_jobs,
+             class_name: "Github::CiJob",
+             inverse_of: :repository
 
     normalizes :full_name, with: ->(value) { value.to_s.strip }
     normalizes :default_branch, with: ->(value) { value.to_s.strip.presence || "main" }

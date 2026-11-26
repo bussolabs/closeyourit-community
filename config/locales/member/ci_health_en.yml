@@ -1,0 +1,54 @@
+en:
+  member:
+    ci_health:
+      tab: CI health
+      title: "CI health · %{project}"
+      section_title: CI jobs
+      legend: >-
+        Last %{days} days of GitHub Actions. A job is flaky when, on the same commit, it fails and then
+        passes when re-run: at least %{commits} times and on at least %{percent}% of the commits.
+        «Worsening» when flakiness beats the %{days} days before by at least %{points} points.
+      count_jobs: Jobs
+      count_flaky: Flaky
+      count_worsening: Worsening
+      col_job: Job
+      col_runs: Runs
+      col_failures: Failures
+      col_duration: Average duration
+      col_queue: Average wait
+      col_flaky: Flakiness
+      col_actions: Ticket
+      flaky: Flaky
+      worsening: Worsening
+      promote: Open a ticket
+      open_ticket: See the ticket
+      promoted: Ticket opened from the flaky job.
+      already_promoted: This job already has an open ticket.
+      not_flaky: This job is not flaky in the last %{days} days.
+      promote_failed: The ticket could not be opened.
+      no_repository: No repository connected
+      no_repository_body: >-
+        This is where the health of the project's CI shows, job by job. It needs a GitHub repository
+        connected from the GitHub tab.
+      connect: Connect a repository
+      empty: No outcome received from GitHub
+      empty_body: >-
+        Failures, duration, wait and flakiness of every GitHub Actions job show here. Outcomes arrive
+        only if the GitHub app may read Actions and the «Workflow job» event is on. CI systems outside
+        GitHub Actions do not show.
+      empty_example: >-
+        GitHub app settings › Permissions & events › Actions: read-only, then tick «Workflow job».
+        The organization on GitHub then has to accept the new permission.
+      empty_guide: Read the guide
+  github:
+    ci_health:
+      ticket:
+        title: "Flaky CI job: %{job}"
+        description: >-
+          The CI job «%{job}» sometimes fails and then passes when re-run on the same commit, with no
+          code change. It happens on %{flaky} of the commits of the last %{days} days. The figures and
+          the latest commits involved are in the technical details.
+        given: "The CI job «%{job}» runs on a commit."
+        when: The first attempt fails and the job is re-run on the same commit.
+        then: "The next attempt passes: it happens on %{flaky} of the commits."
+        expected: The job gives the same outcome on every attempt on the same commit.

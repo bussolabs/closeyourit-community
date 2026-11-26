@@ -67,6 +67,8 @@
   <% if can?("github.manage", scope: project) %>
     <% h.with_more_tab(label: t("member.projects.show.tab_github"), href: member_project_github_path(project), active: active_tab.to_s == "github", icon: "github", test_id: "project-github-link") %>
   <% end %>
+  <%# CI health (CYRA-1164): reading = project visibility, like Usage. %>
+  <% h.with_more_tab(label: t("member.ci_health.tab"), href: member_project_ci_health_path(project), active: active_tab.to_s == "ci_health", icon: "activity", test_id: "project-ci-health-link") %>
   <%# Usage (CYRA-733): reading = project visibility (no .view gate, Catalog principle). %>
   <% h.with_more_tab(label: t("member.usage.tab"), href: member_project_usage_path(project), active: active_tab.to_s == "usage", icon: "chart-column", test_id: "project-usage-link") %>
   <%# Tests (CYRA-1165): reading = project visibility, like Usage. %>

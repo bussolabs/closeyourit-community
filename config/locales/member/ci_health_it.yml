@@ -1,0 +1,54 @@
+it:
+  member:
+    ci_health:
+      tab: Salute CI
+      title: "Salute CI · %{project}"
+      section_title: Lavori della CI
+      legend: >-
+        Ultimi %{days} giorni di GitHub Actions. Un lavoro è instabile quando, sullo stesso commit, fallisce
+        e poi passa rifacendolo: almeno %{commits} volte e su almeno il %{percent}% dei commit. «Peggiora»
+        quando l'instabilità supera di almeno %{points} punti quella dei %{days} giorni prima.
+      count_jobs: Lavori
+      count_flaky: Instabili
+      count_worsening: Peggiorano
+      col_job: Lavoro
+      col_runs: Esecuzioni
+      col_failures: Fallimenti
+      col_duration: Durata media
+      col_queue: Attesa media
+      col_flaky: Instabilità
+      col_actions: Ticket
+      flaky: Instabile
+      worsening: Peggiora
+      promote: Apri un ticket
+      open_ticket: Vedi il ticket
+      promoted: Ticket aperto dal lavoro instabile.
+      already_promoted: Questo lavoro ha già un ticket aperto.
+      not_flaky: Questo lavoro non risulta instabile negli ultimi %{days} giorni.
+      promote_failed: Non è stato possibile aprire il ticket.
+      no_repository: Nessun repository collegato
+      no_repository_body: >-
+        Qui compare la salute della CI del progetto, lavoro per lavoro. Serve un repository GitHub
+        collegato dalla scheda GitHub.
+      connect: Collega un repository
+      empty: Nessun esito ricevuto da GitHub
+      empty_body: >-
+        Qui compaiono fallimenti, durata, attesa e instabilità di ogni lavoro di GitHub Actions. Gli esiti
+        arrivano solo se l'app GitHub ha il permesso di leggere GitHub Actions e l'evento «Workflow job» è
+        attivo. Le CI fuori da GitHub Actions non compaiono.
+      empty_example: >-
+        Impostazioni dell'app GitHub › Permessi ed eventi › permesso GitHub Actions in sola lettura, poi spunta «Workflow job».
+        L'organizzazione su GitHub deve poi accettare il nuovo permesso.
+      empty_guide: Leggi la guida
+  github:
+    ci_health:
+      ticket:
+        title: "Lavoro instabile nella CI: %{job}"
+        description: >-
+          Il lavoro «%{job}» della CI a volte fallisce e poi passa rifacendolo sullo stesso commit, senza
+          modifiche al codice. Succede sul %{flaky} dei commit degli ultimi %{days} giorni. Le cifre e gli
+          ultimi commit coinvolti sono nei dettagli tecnici.
+        given: "Il lavoro «%{job}» della CI gira su un commit."
+        when: Il primo tentativo fallisce e il lavoro viene rifatto sullo stesso commit.
+        then: "Il tentativo successivo passa: succede sul %{flaky} dei commit."
+        expected: Il lavoro dà lo stesso esito a ogni tentativo sullo stesso commit.
