@@ -25,7 +25,7 @@ it:
         severity_title: Gravità e ticket
         severity_intro: "La gravità arriva dall'archivio pubblico e va da bassa a critica. Alcune voci non sono classificate: significa che nessuno ha ancora stabilito quanto pesano."
         severity_ticket: Il ticket automatico scatta solo per le vulnerabilità alte e critiche. Le altre restano in elenco, e apri il ticket tu quando decidi di intervenire.
-        severity_ignore: "Se convivi con un rischio, mettilo tra le ignorate: non tornerà a farsi vedere al controllo successivo."
+        severity_ignore: "Se convivi con un rischio, mettilo tra le ignorate con un motivo e una data: il controllo successivo non lo rimette in lista, e il giorno che hai scelto torna aperto con un avviso."
     monitoring:
       vulnerabilities:
         title: Vulnerabilità
@@ -121,3 +121,27 @@ it:
           references: Approfondisci
           affected_package: Libreria colpita
           no_summary: L'archivio pubblico non fornisce una descrizione per questa vulnerabilità.
+          ignore_decision: Ignorata
+        # CYRA-1144 — ignorare è una decisione con una data di fine: perché, fino a quando, chi.
+        ignore:
+          title: Ignora questa vulnerabilità
+          hint: Scrivi perché puoi conviverci e fino a quando. Quel giorno torna aperta e parte un avviso.
+          reason: Motivo
+          reason_placeholder: Per esempio, riguarda solo gli strumenti di sviluppo.
+          until: Fino al
+          until_hint: Una data successiva a oggi.
+          until_short: "fino al %{date}"
+          by: Ignorata da
+          by_unknown: Non registrato
+          no_reason: Nessun motivo indicato
+          no_expiry: Senza scadenza
+  activerecord:
+    errors:
+      models:
+        vulnerabilities/finding:
+          attributes:
+            triage_note:
+              blank: Scrivi perché la ignori
+            ignored_until:
+              blank: Scegli fino a quando ignorarla
+              must_be_future: La data deve essere successiva a oggi

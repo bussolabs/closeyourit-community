@@ -358,28 +358,121 @@ RSpec.describe "Member::Monitoring vulnerabilities", type: :request do
   end
 
   describe "triage" do
-    it "l'owner può ignorare e riaprire" do
+    let(:next_month) { 1.month.from_now.to_date }
+
+    it "l'owner può ignorare con motivo e scadenza, e riaprire svuota scadenza e autore" do
+      finding = finding_in(project)
+      sign_in(owner)
+
+      patch ignore_member_monitoring_vulnerability_path(finding),
+            params: { reason: "Solo sviluppo", ignored_until: next_month.iso8601 }
+      expect(finding.reload).to have_attributes(status: "ignored", triage_note: "Solo sviluppo",
+                                                ignored_until: next_month, ignored_by_id: owner.id)
+
+      patch reopen_member_monitoring_vulnerability_path(finding)
+      expect(finding.reload).to have_attributes(status: "open", ignored_until: nil, ignored_by_id: nil)
+    end
+
+    it "senza motivo la vulnerabilità resta aperta e la scheda chiede il motivo" do
+      finding = finding_in(project)
+      sign_in(owner)
+
+      patch ignore_member_monitoring_vulnerability_path(finding),
+            params: { reason: "", ignored_until: next_month.iso8601 }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      html = Nokogiri::HTML(response.body)
+      expect(html.at_css("[data-test='vulnerability-ignore-error']").text)
+        .to include(I18n.t("activerecord.errors.models.vulnerabilities/finding.attributes.triage_note.blank"))
+      expect(html.at_css("[data-test='vulnerability-ignore-form']")).to be_present
+      expect(finding.reload).to be_status_open
+    end
+
+    %i[current yesterday].each do |date_method|
+      it "keeps the finding open and asks for a future date when given Date.#{date_method}" do
+        finding = finding_in(project)
+        sign_in(owner)
+
+        patch ignore_member_monitoring_vulnerability_path(finding),
+              params: { reason: "Solo sviluppo", ignored_until: Date.public_send(date_method).iso8601 }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(Nokogiri::HTML(response.body).at_css("[data-test='vulnerability-ignore-error']").text)
+          .to include(I18n.t("activerecord.errors.models.vulnerabilities/finding.attributes.ignored_until.must_be_future"))
+        expect(finding.reload).to be_status_open
+      end
+    end
+
+    it "senza nessun campo (la vecchia richiesta) la vulnerabilità resta aperta" do
       finding = finding_in(project)
       sign_in(owner)
 
       patch ignore_member_monitoring_vulnerability_path(finding)
-      expect(finding.reload).to be_status_ignored
 
-      patch reopen_member_monitoring_vulnerability_path(finding)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(finding.reload).to be_status_open
+    end
+
+    it "la scheda di una ignorata mostra motivo, scadenza e autore" do
+      finding = finding_in(project, status: :ignored, triage_note: "Solo sviluppo", ignored_until: next_month,
+                                    ignored_by: owner)
+      sign_in(owner)
+
+      get member_monitoring_vulnerability_path(finding)
+
+      html = Nokogiri::HTML(response.body)
+      expect(html.at_css("[data-test='vulnerability-ignore-reason']").text).to include("Solo sviluppo")
+      expect(html.at_css("[data-test='vulnerability-ignore-until']").text).to include(I18n.l(next_month, format: :long))
+      expect(html.at_css("[data-test='vulnerability-ignore-by']").text).to include(owner.name)
+      expect(html.at_css("[data-test='vulnerability-ignore-form']")).to be_nil
+    end
+
+    it "una ignorata prima della scadenza obbligatoria si legge «senza scadenza»" do
+      finding = finding_in(project, status: :ignored, triage_note: "Vecchia decisione")
+      sign_in(owner)
+
+      get member_monitoring_vulnerability_path(finding)
+
+      expect(Nokogiri::HTML(response.body).at_css("[data-test='vulnerability-ignore-until']").text)
+        .to include(I18n.t("member.monitoring.vulnerabilities.ignore.no_expiry"))
+    end
+
+    # Più righe ignorate da persone diverse: l'autore arriva precaricato, o la guardia delle letture
+    # a raffica (CYRA-747) fallisce qui.
+    it "la riga dell'elenco di una ignorata mostra scadenza e autore" do
+      authors = create_list(:account, 2)
+      authors.each_with_index do |author, index|
+        manifest = create(:vulnerability_manifest, project: project, path: "app-#{index}/Gemfile.lock")
+        package = create(:vulnerability_package, manifest: manifest, name: "rails", version: "7.0.#{index}")
+        create(:vulnerability_finding, project: project, package: package, status: :ignored,
+                                       triage_note: "Solo sviluppo", ignored_until: next_month, ignored_by: author)
+      end
+      sign_in(owner)
+
+      get member_monitoring_vulnerabilities_path
+
+      rows = Nokogiri::HTML(response.body).css("[data-test='vulnerability-row-ignore']").map(&:text)
+      expect(rows.size).to eq(2)
+      expect(rows).to all(include(I18n.l(next_month, format: :long)))
+      expect(rows.join).to include(authors.first.name, authors.last.name)
     end
 
     it "chi non ha il permesso vede la pagina ma non può ignorare" do
       member = create(:account)
       create(:membership, account: member, organization: org, role: :member)
-      create(:project_member, project: project, account: member) if defined?(ProjectMember)
+      create(:project_membership, project: project, account: member)
       finding = finding_in(project)
       sign_in(member)
 
-      patch ignore_member_monitoring_vulnerability_path(finding)
+      get member_monitoring_vulnerability_path(finding)
+      expect(response).to have_http_status(:ok)
+      expect(response.body).not_to include("vulnerability-ignore-form")
+
+      patch ignore_member_monitoring_vulnerability_path(finding),
+            params: { reason: "Solo sviluppo", ignored_until: next_month.iso8601 }
 
       expect(response).not_to have_http_status(:ok)
-      expect(finding.reload).to be_status_open
+      expect(finding.reload).to have_attributes(status: "open", ignored_by_id: nil)
     end
 
     it "la promozione crea un ticket collegato" do

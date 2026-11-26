@@ -91,6 +91,8 @@ module Notifications
       # versione di linguaggio che sta per restare senza patch.
       "vulnerability_new" => "🛡️",
       "runtime_eol" => "⌛",
+      # CYRA-1144 — la decisione di ignorare è scaduta: la sveglia.
+      "vulnerability_ignore_expired" => "⏰",
       # CYRA-528 — SEO: la lente, la stessa dell icona di menu.
       "seo_issue_new" => "🔎",
       # statistiche del sito (CYRA-147)

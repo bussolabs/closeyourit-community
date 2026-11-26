@@ -108,7 +108,7 @@ RSpec.describe Alerting::Rule, type: :model do
                             "ai_unavailable", "ai_available", "server_ingest_rejected",
                             "cache_unavailable", "cluster_down", "cluster_up", "cluster_node_not_ready",
                             "cluster_node_pressure", "cluster_workload_crashloop", "cluster_workload_degraded",
-                            "measurement_threshold")
+                            "measurement_threshold", "vulnerability_ignore_expired")
     end
 
     it "predicato di tipo" do

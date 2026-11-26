@@ -83,10 +83,10 @@ module AlertingHelper
     "agents_host_failing" => { icon: "triangle-alert", bg: "bg-red-50 dark:bg-red-500/15", fg: "text-red-600 dark:text-red-400" },
     # Una macchina di automazione è ferma (CYRA-450): non risponde più — tono rosso.
     "agents_host_stale" => { icon: "power-off", bg: "bg-red-50 dark:bg-red-500/15", fg: "text-red-600 dark:text-red-400" },
-    # Sicurezza delle dipendenze (CYRA-506): scudo per la falla trovata, clessidra per la versione
-    # che sta per restare senza patch — due urgenze diverse, due segnali diversi.
+    # Dipendenze (CYRA-506, CYRA-1144): scudo per la falla, clessidra per la versione senza patch, scudo ambra per l'ignorata scaduta.
     "vulnerability_new" => { icon: "shield-half", bg: "bg-red-50 dark:bg-red-500/15", fg: "text-red-600 dark:text-red-400" },
     "runtime_eol" => { icon: "hourglass", bg: "bg-amber-50 dark:bg-amber-500/15", fg: "text-amber-600 dark:text-amber-400" },
+    "vulnerability_ignore_expired" => { icon: "shield-half", bg: "bg-amber-50 dark:bg-amber-500/15", fg: "text-amber-600 dark:text-amber-400" },
     # Statistiche del sito (CYRA-147): crollo = attenzione, picco = informativo.
     "analytics_traffic_drop" => { icon: "trending-down", bg: "bg-amber-50 dark:bg-amber-500/15", fg: "text-amber-700 dark:text-amber-300" },
     "analytics_traffic_spike" => { icon: "trending-up", bg: "bg-sky-50 dark:bg-sky-500/15", fg: "text-sky-600 dark:text-sky-400" },

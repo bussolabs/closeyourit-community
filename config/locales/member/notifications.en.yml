@@ -358,6 +358,9 @@ en:
         vulnerability_new:
           title: New vulnerability
           description: A library used by a project turns out to have a known security problem.
+        vulnerability_ignore_expired:
+          title: Ignored vulnerability open again
+          description: A vulnerability that was set aside reaches the date chosen by whoever ignored it and comes back open.
         seo_issue_new:
           title: New SEO finding
           description: The check on a site finds a serious problem that can keep it out of search results.

@@ -168,7 +168,11 @@ module Alerting
       cluster_node_pressure: 56,
       cluster_workload_crashloop: 57,
       cluster_workload_degraded: 58,
-      measurement_threshold: 59
+      measurement_threshold: 59,
+      # CYRA-1144 (subject = Vulnerabilities::Finding): una vulnerabilità ignorata è arrivata alla
+      # scadenza scelta da chi l'ha ignorata ed è tornata aperta. Project-scoped come
+      # vulnerability_new, senza soglia. Valore APPESO (il 59 è measurement_threshold).
+      vulnerability_ignore_expired: 60
     }, prefix: :event
 
     # Eventi server con soglia numerica (threshold: percent per cpu/mem/disk, °C per temp,

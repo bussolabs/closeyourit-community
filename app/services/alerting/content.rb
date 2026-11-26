@@ -51,6 +51,7 @@ module Alerting
       "agents_stalled" => :agents_stalled,
       "agents_host_failing" => :agents_host, "agents_host_stale" => :agents_host,
       "vulnerability_new" => :vulnerability_new,
+      "vulnerability_ignore_expired" => :vulnerability_ignore_expired,
       "runtime_eol" => :runtime_eol,
       "seo_issue_new" => :seo_issue_new,
       "secret_read" => :secret_access, "secret_denied" => :secret_access,
@@ -426,6 +427,24 @@ module Alerting
                           package: finding.package_coordinates),
             body: I18n.t("alerting.content.vulnerability_new.#{body_key}",
                          fixed_version: finding.fixed_version, advisory: finding.display_id),
+            url: routes.member_monitoring_vulnerability_path(finding),
+            project: finding.project)
+      end
+
+      def vulnerability_ignore_expired(_event_type, finding, decision: nil)
+        # CYRA-1144 — la decisione di ignorare è scaduta e la riga è tornata aperta. Il testo ripete
+        # la decisione per intero — chi, fino a quando, perché — così chi lo legge sa cosa rivalutare
+        # senza aprire la scheda. Viene dalla fotografia presa alla riapertura, non dalla riga: prima
+        # che l'avviso parta qualcuno può averla ignorata di nuovo o riaperta a mano.
+        decision = (decision || {}).stringify_keys
+        author = decision["author"].presence || I18n.t("alerting.content.vulnerability_ignore_expired.someone")
+        date = decision["until"].present? ? I18n.l(Date.iso8601(decision["until"]), format: :long) : "—"
+        reason = decision["reason"].presence || I18n.t("alerting.content.vulnerability_ignore_expired.no_reason")
+        new(title: I18n.t("alerting.content.vulnerability_ignore_expired.title",
+                          severity: I18n.t("member.monitoring.vulnerabilities.severity.#{finding.severity}"),
+                          package: finding.package_coordinates),
+            body: I18n.t("alerting.content.vulnerability_ignore_expired.body",
+                         author: author, date: date, reason: reason, advisory: finding.display_id),
             url: routes.member_monitoring_vulnerability_path(finding),
             project: finding.project)
       end

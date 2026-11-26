@@ -36,7 +36,7 @@ module Member
       remembers_filters :severity, :status, :project_id, :q, :sort, only: :index
 
       def index
-        scope = base_scope.includes(:advisory, :project, package: :manifest)
+        scope = base_scope.includes(:advisory, :project, :ignored_by, package: :manifest)
         scope = scope.where(status: status_filter) if status_filter.any?
         scope = scope.joins(:advisory).where(vulnerabilities_advisories: { severity: severity_filter }) if severity_filter.any?
         scope = filter_by_project(scope)
@@ -70,15 +70,24 @@ module Member
         assign_counts
       end
 
-      # Ignora = convivo col rischio. Non torna aperta da sola alla scansione successiva: sarebbe un
-      # modo per rimettere in lista una decisione già presa.
+      # Ignora = convivo col rischio, fino a una data (CYRA-1144). La scansione successiva non la
+      # riapre; la riapre il controllo giornaliero il giorno della scadenza. Motivo e data sono
+      # obbligatori con la stessa regola della riga di comando (Vulnerabilities::IgnoreFinding): se
+      # mancano la scheda si ripresenta col modulo ancora compilato e il messaggio che dice cosa manca.
       def ignore
-        @finding.update!(status: :ignored, triage_note: params[:triage_note].presence)
-        redirect_back_to_list(notice_key: "ignored")
+        result = Vulnerabilities::IgnoreFinding.call(
+          finding: @finding, reason: params[:reason], ignored_until: params[:ignored_until],
+          actor: Current.account
+        )
+        return redirect_back_to_list(notice_key: "ignored") if result.ok?
+
+        @manifest = @finding.package.manifest
+        @ignore_error = result.error.message
+        render :show, status: :unprocessable_content
       end
 
       def reopen
-        @finding.update!(status: :open, resolved_at: nil)
+        @finding.reopen!
         redirect_back_to_list(notice_key: "reopened")
       end
 
@@ -115,7 +124,7 @@ module Member
       def base_scope = visible.vulnerabilities
 
       def set_finding
-        @finding = base_scope.includes(:advisory, package: :manifest).find_by(id: params[:id])
+        @finding = base_scope.includes(:advisory, :ignored_by, package: :manifest).find_by(id: params[:id])
         # Anti-BOLA: una riga di un progetto che non vedi non esiste, non è "vietata".
         raise ActiveRecord::RecordNotFound if @finding.nil?
       end

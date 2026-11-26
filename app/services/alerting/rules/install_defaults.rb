@@ -82,6 +82,9 @@ module Alerting
         # critiche; il ticket automatico invece parte solo da high in su, sempre.
         { event_type: :vulnerability_new,          name: "New vulnerability" },
         { event_type: :runtime_eol,                name: "Runtime end of life" },
+        # CYRA-1144: senza una regola la vulnerabilità ignorata tornerebbe aperta in silenzio, e la
+        # scadenza scelta da chi l'aveva ignorata non arriverebbe a nessuno.
+        { event_type: :vulnerability_ignore_expired, name: "Ignored vulnerability expired" },
         # CYRA-528: senza una regola il rilievo SEO grave verrebbe scritto e poi nessuno lo saprebbe
         # finché non apre la pagina — cioè, di solito, dopo che il traffico è già sceso.
         { event_type: :seo_issue_new,              name: "Nuovo rilievo SEO" }

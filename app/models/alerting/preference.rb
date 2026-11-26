@@ -62,7 +62,7 @@ module Alerting
       when "agents_stalled", "agents_host_failing", "agents_host_stale" then true
       # Vulnerabilità e runtime fuori supporto (CYRA-506): sicurezza delle dipendenze. Non hanno un
       # interruttore di sorgente dedicato — la consegna resta governata dai canali per-utente.
-      when "vulnerability_new", "runtime_eol" then true
+      when "vulnerability_new", "runtime_eol", "vulnerability_ignore_expired" then true
       # Rilievo SEO (CYRA-528): come le vulnerabilità, nessun interruttore di sorgente dedicato.
       when "seo_issue_new" then true
       # Servizio di embedding giu' (CYEM-2): come agents_stalled, nessun interruttore di sorgente

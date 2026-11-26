@@ -21,14 +21,12 @@
     <% end %>
     <% if can_triage %>
       <% h.with_actions do %>
+        <%# CYRA-1144 — ignorare chiede motivo e scadenza: non è più un pulsante qui ma il modulo nella
+            colonna a destra. Riaprire resta un gesto solo. %>
         <% if @finding.status_ignored? %>
           <%= button_to t("member.monitoring.vulnerabilities.actions.reopen"), reopen_member_monitoring_vulnerability_path(@finding),
                 method: :patch, class: "inline-flex items-center h-7 px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 hover:bg-stone-50 dark:hover:bg-zinc-800",
                 data: { test: "vulnerability-reopen" } %>
-        <% else %>
-          <%= button_to t("member.monitoring.vulnerabilities.actions.ignore"), ignore_member_monitoring_vulnerability_path(@finding),
-                method: :patch, class: "inline-flex items-center h-7 px-2.5 rounded-md border border-stone-200 dark:border-zinc-800 text-[12.5px] font-medium text-zinc-900 dark:text-zinc-100 hover:bg-stone-50 dark:hover:bg-zinc-800",
-                data: { test: "vulnerability-ignore" } %>
         <% end %>
         <% if @finding.promoted? %>
           <%= render Ui::ButtonComponent.new(label: @finding.ticket.code, href: member_ticket_path(@finding.ticket),
@@ -58,6 +56,50 @@
     </div>
 
     <div class="space-y-5">
+      <% if @finding.status_ignored? %>
+        <%# CYRA-1144 — la decisione si legge per intero: perché, fino a quando, chi. Le voci ignorate
+            prima della scadenza obbligatoria non hanno data né autore, e lo dicono. %>
+        <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3" data-test="vulnerability-ignore-decision">
+          <h2 class="font-display text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.vulnerabilities.show.ignore_decision") %></h2>
+          <dl class="space-y-2 text-[12.5px]">
+            <div class="flex justify-between gap-3">
+              <dt class="text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.vulnerabilities.ignore.reason") %></dt>
+              <dd class="text-zinc-900 dark:text-zinc-100 text-right whitespace-pre-line" data-test="vulnerability-ignore-reason"><%= @finding.triage_note.presence || t("member.monitoring.vulnerabilities.ignore.no_reason") %></dd>
+            </div>
+            <div class="flex justify-between gap-3">
+              <dt class="text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.vulnerabilities.ignore.until") %></dt>
+              <dd class="text-zinc-900 dark:text-zinc-100" data-test="vulnerability-ignore-until"><%= @finding.ignored_until ? l(@finding.ignored_until, format: :long) : t("member.monitoring.vulnerabilities.ignore.no_expiry") %></dd>
+            </div>
+            <div class="flex justify-between gap-3">
+              <dt class="text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.vulnerabilities.ignore.by") %></dt>
+              <dd class="text-zinc-900 dark:text-zinc-100" data-test="vulnerability-ignore-by"><%= @finding.ignored_by&.name || t("member.monitoring.vulnerabilities.ignore.by_unknown") %></dd>
+            </div>
+          </dl>
+        </div>
+      <% elsif can_triage %>
+        <%# CYRA-1144 — il gesto di ignorare: motivo e data futura obbligatori. Il server applica la
+            stessa regola della riga di comando; i vincoli del browser sono solo un aiuto. %>
+        <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5" data-test="vulnerability-ignore-form">
+          <h2 class="font-display text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.vulnerabilities.ignore.title") %></h2>
+          <p class="mt-1 text-[12px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.vulnerabilities.ignore.hint") %></p>
+          <% if @ignore_error %>
+            <%= render Ui::AlertComponent.new(variant: :danger, class: "mt-3", test_id: "vulnerability-ignore-error").with_content(@ignore_error) %>
+          <% end %>
+          <%= form_with url: ignore_member_monitoring_vulnerability_path(@finding), method: :patch, class: "mt-3 space-y-3" do %>
+            <%= render Ui::InputComponent.new(name: "reason", id: "vulnerability_ignore_reason", type: "textarea", rows: 3,
+                  label: t("member.monitoring.vulnerabilities.ignore.reason"), value: params[:reason],
+                  placeholder: t("member.monitoring.vulnerabilities.ignore.reason_placeholder"),
+                  required: true, test_id: "vulnerability-ignore-reason-field") %>
+            <%= render Ui::InputComponent.new(name: "ignored_until", id: "vulnerability_ignore_until", type: "date",
+                  label: t("member.monitoring.vulnerabilities.ignore.until"), value: params[:ignored_until],
+                  min: Date.tomorrow.iso8601, required: true,
+                  hint: t("member.monitoring.vulnerabilities.ignore.until_hint"), test_id: "vulnerability-ignore-until-field") %>
+            <%= render Ui::ButtonComponent.new(label: t("member.monitoring.vulnerabilities.actions.ignore"), type: "submit",
+                  variant: :secondary, size: :sm, test_id: "vulnerability-ignore") %>
+          <% end %>
+        </div>
+      <% end %>
+
       <div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-3" data-test="vulnerability-details">
         <h2 class="font-display text-[13px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.monitoring.vulnerabilities.show.details") %></h2>
         <dl class="space-y-2 text-[12.5px]">

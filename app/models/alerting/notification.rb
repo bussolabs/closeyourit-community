@@ -195,7 +195,10 @@ module Alerting
       ticket_epic_stalled: 83,
       # CYRA-1256: a host measurement back under its threshold (subject = Servers::Host, rule_id = the
       # measurement's rule). Value APPENDED (83 is ticket_epic_stalled).
-      server_threshold_recovered: 84
+      server_threshold_recovered: 84,
+      # An ignored finding has expired; dispatch through its alerting rule, like vulnerability_new.
+      # Append after server_threshold_recovered to preserve released event values (CYRA-1144).
+      vulnerability_ignore_expired: 85
     }, prefix: :event
     # Valori APPESI (mai riordinare): queued (4) = email/telegram trattenuta per il digest (cadenza
     # daily/weekly), raccolta e marcata :sent dal job digest (digest_bucket dice a quale ciclo appartiene).

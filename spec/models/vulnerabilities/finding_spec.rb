@@ -73,4 +73,62 @@ RSpec.describe Vulnerabilities::Finding, type: :model do
     finding = create(:vulnerability_finding)
     expect { finding.project.destroy }.to change(described_class, :count).by(-1)
   end
+
+  # CYRA-1144 — ignorare è una decisione a tempo, con motivo e autore.
+  describe "regola per ignorare (contesto :ignore)" do
+    let(:finding) { create(:vulnerability_finding) }
+
+    it "vale con motivo e una data futura" do
+      finding.assign_attributes(status: :ignored, triage_note: "Solo sviluppo", ignored_until: Date.tomorrow)
+      expect(finding).to be_valid(:ignore)
+    end
+
+    it "senza motivo non vale" do
+      finding.assign_attributes(status: :ignored, triage_note: " ", ignored_until: Date.tomorrow)
+      expect(finding).not_to be_valid(:ignore)
+      expect(finding.errors.details[:triage_note]).to include(error: :blank)
+    end
+
+    it "con la data di oggi o passata non vale" do
+      [ Date.current, Date.yesterday ].each do |day|
+        finding.assign_attributes(status: :ignored, triage_note: "Solo sviluppo", ignored_until: day)
+        expect(finding).not_to be_valid(:ignore)
+        expect(finding.errors.details[:ignored_until]).to include(error: :must_be_future)
+      end
+    end
+
+    # Le voci ignorate prima della regola non hanno scadenza: la scansione che le aggiorna non deve
+    # fallire per questo.
+    it "fuori dal contesto :ignore una ignorata senza scadenza resta valida" do
+      expect(create(:vulnerability_finding, :ignored)).to be_valid
+    end
+  end
+
+  it "scope ignore_expired prende solo le ignorate arrivate alla scadenza" do
+    due = create(:vulnerability_finding, :ignored, ignored_until: Date.current)
+    past = create(:vulnerability_finding, :ignored, ignored_until: 3.days.ago.to_date)
+    create(:vulnerability_finding, :ignored, ignored_until: Date.tomorrow)
+    create(:vulnerability_finding, :ignored, ignored_until: nil)
+    create(:vulnerability_finding, ignored_until: Date.yesterday)
+
+    expect(described_class.ignore_expired).to contain_exactly(due, past)
+  end
+
+  it "#reopen! riapre e svuota scadenza e autore" do
+    finding = create(:vulnerability_finding, :ignored, ignored_until: Date.tomorrow, ignored_by: create(:account))
+
+    finding.reopen!
+
+    expect(finding.reload).to have_attributes(status: "open", ignored_until: nil, ignored_by_id: nil)
+  end
+
+  it "l'account rimosso svuota l'autore senza cancellare la decisione" do
+    author = create(:account)
+    finding = create(:vulnerability_finding, :ignored, ignored_until: Date.tomorrow, ignored_by: author)
+
+    # Direttamente sul database: è la chiave esterna (on_delete: :nullify) che lo garantisce.
+    Accounts::Account.where(id: author.id).delete_all
+
+    expect(finding.reload).to have_attributes(status: "ignored", ignored_by_id: nil)
+  end
 end

@@ -9,8 +9,10 @@ module Vulnerabilities
   # - presente e ancora colpita → si aggiorna `last_seen_at` (e `fixed_version`, che può comparire
   #   dopo, quando l'advisory viene corretto);
   # - presente e non più colpita → `resolved`: il pacchetto è stato aggiornato o rimosso;
-  # - una voce `ignored` NON torna aperta da sola. Qualcuno ha già valutato quel rischio; rimetterla
-  #   in lista a ogni scansione significherebbe ignorare la sua decisione.
+  # - una voce `ignored` NON torna aperta alla scansione. Qualcuno ha già valutato quel rischio;
+  #   rimetterla in lista a ogni scansione significherebbe ignorare la sua decisione. La decisione
+  #   però è a tempo (CYRA-1144): motivo, scadenza e autore stanno sulla riga, che qui si aggiorna e
+  #   non si ricrea, e il giorno della scadenza la riapre Vulnerabilities::ReopenExpiredIgnores.
   #
   # Ritorna i finding APERTI ADESSO per la prima volta: sono l'unico insieme su cui ha senso
   # avvisare qualcuno.
@@ -67,7 +69,8 @@ module Vulnerabilities
         attributes = { last_seen_at: @now,
                        fixed_version: advisory.fixed_version_for(ecosystem: package.ecosystem,
                                                                  name: name, version: version) }
-        # Una voce risolta che ricompare è tornata a essere vera: la riapriamo. Una ignorata no.
+        # Una voce risolta che ricompare è tornata a essere vera: la riapriamo. Una ignorata no: resta
+        # ignorata con il suo motivo, la sua scadenza e il suo autore, che questo update non tocca.
         attributes[:status] = :open if finding.status_resolved?
         attributes[:resolved_at] = nil if finding.status_resolved?
         finding.update!(attributes)

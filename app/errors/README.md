@@ -244,6 +244,10 @@ Formato `R{HTTP_STATUS}-{DOMINIO}-{SEQ}` (rules/error-handling.md). Envelope API
 - `R422-UPTIME-003` — banner status page invalido (messaggio blank o finestra ends_at ≤ starts_at; `Uptime::Announcements::Save`)
 - `R422-UPTIMEGROUP-001` — create/update gruppo uptime fallito (validazione: name blank; canale CLI `Cli::V1::UptimeGroupsController`)
 
+### VULNERABILITY — triage delle vulnerabilità delle dipendenze (`Vulnerabilities::IgnoreFinding`, condiviso Member + CLI `Cli::V1::Vulnerabilities::IgnoresController`)
+- `R422-VULNERABILITY-001` — ignorare rifiutato: motivo vuoto, scadenza mancante o non futura (CYRA-1144); `details` è `errors.to_hash`
+- `R422-VULNERABILITY-002` — ignorare rifiutato a un comando che non manda né motivo né scadenza (versione vecchia della CLI): il messaggio chiede di aggiornarla. Stessa regola di 001, nessuna eccezione
+
 ### CRON — heartbeat monitoring (`Crons::RecordCheckIn`, `Api::V1::CronCheckInsController`)
 - `R422-CRON-001` — check-in invalido (slug mancante o parametri monitor non validi)
 

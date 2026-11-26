@@ -34,7 +34,8 @@ RSpec.describe Alerting::Rules::InstallDefaults, type: :service do
   end
   # CYRA-506: sicurezza delle dipendenze. Project-scoped come gli errori, senza soglia — il filtro di
   # gravità sta su min_level della regola, non sull'elenco dei default.
-  let(:vulnerability_default_events) { %w[vulnerability_new runtime_eol] }
+  # CYRA-1144: la vulnerabilità ignorata che torna aperta alla scadenza.
+  let(:vulnerability_default_events) { %w[vulnerability_new runtime_eol vulnerability_ignore_expired] }
   # CYRA-875: CloseYourIt's own services are platform alerts for the gods, never a customer default.
   let(:service_default_events) { %w[embedding_down ai_unavailable ai_available cache_unavailable] }
   # CYRA-528: il rilievo SEO grave. Project-scoped come gli errori.

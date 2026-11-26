@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.257.0] - 2026-11-26
+
+### Changed
+
+- **Ignorare una vulnerabilità ha una scadenza**: per ignorarla scrivi il motivo e scegli fino a quando, dalla pagina o dal comando. Scheda ed elenco mostrano la data e chi l'ha ignorata. Quel giorno torna aperta e ricevi un avviso. Chi usa una versione vecchia del comando deve aggiornarla. ([Vulnerabilità](/member/monitoring/vulnerabilities))
+
 ## [0.256.0] - 2026-11-26
 
 ### Added

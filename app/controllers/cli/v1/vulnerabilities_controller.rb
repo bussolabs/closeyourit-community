@@ -19,13 +19,13 @@ module Cli
       before_action -> { require_permission!("vulnerabilities.triage", scope: @rescan_project) }, only: :rescan
 
       def index
-        scope = scoped_findings.includes(:advisory, :project, package: :manifest)
+        scope = scoped_findings.includes(:advisory, :project, :ignored_by, package: :manifest)
         records, meta = paginate(filtered(scope).by_severity)
         render_ok(VulnerabilityFindingSerializer.new(records), meta: meta)
       end
 
       def show
-        finding = visible_findings.includes(:advisory, :project, package: :manifest).find(params[:id])
+        finding = visible_findings.includes(:advisory, :project, :ignored_by, package: :manifest).find(params[:id])
         render_ok(VulnerabilityFindingSerializer.new(finding))
       end
 

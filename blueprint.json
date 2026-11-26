@@ -9827,7 +9827,7 @@
       "level": 3,
       "parent": "vul_flow_scan",
       "kind": "step",
-      "summary": "Falle nuove si aprono, quelle ancora presenti si confermano, quelle sparite si chiudono. Le ignorate restano ignorate.",
+      "summary": "Falle nuove si aprono, quelle ancora presenti si confermano, quelle sparite si chiudono. Le ignorate restano ignorate, con motivo, scadenza e autore.",
       "files": [
         "app/services/vulnerabilities/record_findings.rb"
       ]
@@ -9863,10 +9863,11 @@
       "level": 2,
       "parent": "area_vulnerabilities",
       "kind": "page",
-      "summary": "Elenco e dettaglio delle falle trovate, con ignora, riapri, trasforma in ticket e nuova scansione. Un riquadro a parte segnala le librerie uscite da meno di 72 ore. Una scheda mostra lo stato dei linguaggi.",
+      "summary": "Elenco e dettaglio delle falle trovate, con ignora (motivo e scadenza obbligatori), riapri, trasforma in ticket e nuova scansione. Un riquadro a parte segnala le librerie uscite da meno di 72 ore. Una scheda mostra lo stato dei linguaggi.",
       "files": [
         "app/controllers/member/monitoring/vulnerabilities_controller.rb",
-        "app/views/member/monitoring/vulnerabilities/**"
+        "app/views/member/monitoring/vulnerabilities/**",
+        "app/services/vulnerabilities/ignore_finding.rb"
       ]
     },
     {
@@ -9878,6 +9879,18 @@
       "summary": "Ogni notte cancella le schede delle falle che non colpiscono più nessun progetto. Le falle trovate non si cancellano mai.",
       "files": [
         "app/jobs/vulnerabilities/prune_job.rb"
+      ]
+    },
+    {
+      "id": "vul_job_reopen_expired",
+      "name": "Ignorate arrivate alla scadenza",
+      "level": 2,
+      "parent": "area_vulnerabilities",
+      "kind": "job",
+      "summary": "Ogni mattina riapre le falle ignorate il cui giorno di scadenza è arrivato e manda un avviso con motivo, autore e data.",
+      "files": [
+        "app/jobs/vulnerabilities/reopen_expired_ignores_job.rb",
+        "app/services/vulnerabilities/reopen_expired_ignores.rb"
       ]
     },
     {

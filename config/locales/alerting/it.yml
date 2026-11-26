@@ -199,6 +199,11 @@ it:
         title: "%{severity} · %{package}"
         body: "Aggiorna alla versione %{fixed_version} per chiudere il problema (%{advisory})."
         body_unfixable: "Non esiste ancora una versione che lo risolve (%{advisory}): valuta un'alternativa."
+      vulnerability_ignore_expired:
+        title: "Di nuovo aperta · %{severity} · %{package}"
+        body: "%{author} l'aveva ignorata fino al %{date} con questo motivo: «%{reason}». La scadenza è arrivata e la vulnerabilità (%{advisory}) è tornata aperta: valutala di nuovo."
+        someone: Qualcuno
+        no_reason: nessun motivo indicato
       runtime_eol:
         title: "Senza più aggiornamenti · %{runtime} %{version}"
         body: "Questa versione non riceve correzioni di sicurezza dal %{date}: pianifica il passaggio a una più recente."

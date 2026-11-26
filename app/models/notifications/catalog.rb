@@ -56,7 +56,8 @@ module Notifications
       { key: :agents, events: %w[agents_stalled agents_host_failing agents_host_stale puck_decision_needed puck_report_ready] },
       # Sicurezza delle dipendenze (CYRA-506): la falla trovata in una libreria e la versione di
       # linguaggio che non riceve più patch. Gruppo proprio: chi le riceve non è chi segue le macchine.
-      { key: :vulnerabilities, events: %w[vulnerability_new runtime_eol] },
+      # CYRA-1144 aggiunge la vulnerabilità ignorata che torna aperta alla scadenza scelta.
+      { key: :vulnerabilities, events: %w[vulnerability_new runtime_eol vulnerability_ignore_expired] },
       # Statistiche del sito (CYRA-147): crollo o picco anomalo del traffico.
       { key: :analytics, events: %w[analytics_traffic_drop analytics_traffic_spike] },
       # SEO (CYRA-528): un rilievo grave nuovo sul sito. Gruppo proprio e non dentro le statistiche:

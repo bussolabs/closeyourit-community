@@ -626,6 +626,14 @@ production: &schedule
     queue: batch
     schedule: every day at 3am
 
+  # Vulnerabilità ignorate arrivate alla scadenza scelta (CYRA-1144): tornano aperte e avvisano.
+  # Separato dalla scansione, così riapre anche i progetti che non si scansionano più. Alle 7, a
+  # giorno iniziato: l'avviso arriva quando qualcuno può leggerlo.
+  reopen_expired_vulnerability_ignores:
+    class: Vulnerabilities::ReopenExpiredIgnoresJob
+    queue: maintenance
+    schedule: every day at 7am
+
   # Cockpit SEO (CYRA-528): accoda un giro per i siti scaduti. ORARIO, non giornaliero, perché la
   # cadenza vera è per-sito (`next_audit_at`, giornaliera o settimanale) e questo giro si limita a
   # chiedere chi è maturo — un sito creato a mezzogiorno non deve aspettare la notte per la prima

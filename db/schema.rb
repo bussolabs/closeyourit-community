@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_26_120004) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_26_120006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -4756,7 +4756,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120004) do
     t.uuid "ticket_id"
     t.text "triage_note"
     t.datetime "updated_at", null: false
+    t.date "ignored_until", comment: "Giorno in cui la decisione di ignorare scade e la riga torna aperta"
+    t.uuid "ignored_by_id"
     t.index ["advisory_id"], name: "index_vulnerabilities_findings_on_advisory_id"
+    t.index ["ignored_by_id"], name: "index_vulnerabilities_findings_on_ignored_by_id"
     t.index ["package_id", "advisory_id"], name: "index_vulnerabilities_findings_on_package_id_and_advisory_id", unique: true
     t.index ["package_id"], name: "index_vulnerabilities_findings_on_package_id"
     t.index ["project_id", "status"], name: "index_vulnerabilities_findings_on_project_id_and_status"
@@ -5509,6 +5512,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120004) do
   add_foreign_key "uptime_monitors", "uptime_groups", column: "group_id", on_delete: :nullify
   add_foreign_key "usage_reporters", "projects", on_delete: :cascade
   add_foreign_key "usage_symbols", "projects", on_delete: :cascade
+  add_foreign_key "vulnerabilities_findings", "accounts", column: "ignored_by_id", on_delete: :nullify
   add_foreign_key "vulnerabilities_findings", "projects", on_delete: :cascade
   add_foreign_key "vulnerabilities_findings", "ticketing_tickets", column: "ticket_id", on_delete: :nullify
   add_foreign_key "vulnerabilities_findings", "vulnerabilities_advisories", column: "advisory_id", on_delete: :cascade

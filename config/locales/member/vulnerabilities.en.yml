@@ -25,7 +25,7 @@ en:
         severity_title: Severity and tickets
         severity_intro: "Severity comes from the public database and ranges from low to critical. Some entries are unclassified: nobody has assessed their weight yet."
         severity_ticket: The automatic ticket only fires for high and critical vulnerabilities. The others stay in the list, and you open the ticket when you decide to act.
-        severity_ignore: "If you choose to live with a risk, mark it as ignored: it will not come back at the next check."
+        severity_ignore: "If you choose to live with a risk, mark it as ignored with a reason and a date: the next check does not put it back on the list, and on the day you chose it comes back open with an alert."
     monitoring:
       vulnerabilities:
         title: Vulnerabilities
@@ -112,3 +112,27 @@ en:
           references: Learn more
           affected_package: Affected library
           no_summary: The public database provides no description for this vulnerability.
+          ignore_decision: Ignored
+        # CYRA-1144 — ignoring is a decision with an end date: why, until when, who.
+        ignore:
+          title: Ignore this vulnerability
+          hint: Say why you can live with it and until when. On that day it comes back open and an alert goes out.
+          reason: Reason
+          reason_placeholder: For example, it only affects development tools.
+          until: Until
+          until_hint: A date after today.
+          until_short: "until %{date}"
+          by: Ignored by
+          by_unknown: Not recorded
+          no_reason: No reason given
+          no_expiry: No expiry
+  activerecord:
+    errors:
+      models:
+        vulnerabilities/finding:
+          attributes:
+            triage_note:
+              blank: Write why you are ignoring it
+            ignored_until:
+              blank: Choose until when to ignore it
+              must_be_future: The date must be after today

@@ -268,6 +268,26 @@ RSpec.describe Alerting::Content do
       },
       url: ->(s) { "/member/monitoring/vulnerabilities/#{s.id}" },
       project: ->(s) { s.project }, details: nil },
+    { name: "vulnerability_ignore_expired (decisione con autore e motivo)", event_type: "vulnerability_ignore_expired",
+      subject: -> {
+        create(:vulnerability_finding, :ignored, ignored_until: Date.yesterday, ignored_by: create(:account))
+      },
+      context: { decision: { "reason" => "Solo sviluppo", "author" => "Ada", "until" => "2026-11-25" } },
+      keys: ->(s) {
+        [ "alerting.content.vulnerability_ignore_expired.body", "alerting.content.vulnerability_ignore_expired.title",
+          "member.monitoring.vulnerabilities.severity.#{s.severity}" ]
+      },
+      url: ->(s) { "/member/monitoring/vulnerabilities/#{s.id}" },
+      project: ->(s) { s.project }, details: nil },
+    { name: "vulnerability_ignore_expired (decisione senza autore né motivo)", event_type: "vulnerability_ignore_expired",
+      subject: -> { create(:vulnerability_finding, status: :ignored, ignored_until: Date.yesterday) },
+      keys: ->(s) {
+        [ "alerting.content.vulnerability_ignore_expired.body", "alerting.content.vulnerability_ignore_expired.no_reason",
+          "alerting.content.vulnerability_ignore_expired.someone", "alerting.content.vulnerability_ignore_expired.title",
+          "member.monitoring.vulnerabilities.severity.#{s.severity}" ]
+      },
+      url: ->(s) { "/member/monitoring/vulnerabilities/#{s.id}" },
+      project: ->(s) { s.project }, details: nil },
     { event_type: "seo_issue_new", subject: -> { create(:seo_issue) },
       keys: :any,
       url: ->(s) { "/member/monitoring/seo/#{s.id}" },

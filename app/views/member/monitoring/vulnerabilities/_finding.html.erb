@@ -1,5 +1,5 @@
 <%# locals:
-      finding: (required) — Vulnerabilities::Finding con :advisory, :project e package→manifest caricati
+      finding: (required) — Vulnerabilities::Finding con :advisory, :project, :ignored_by e package→manifest caricati
     Riga dell'elenco vulnerabilità. Le coordinate del pacchetto sono in monospace perché sono un
     identificatore da leggere carattere per carattere, non prosa. %>
 <%= render Ui::TableComponent::RowComponent.new(href: member_monitoring_vulnerability_path(finding), link_label: finding.package_coordinates, id: dom_id(finding), test_id: "vulnerability-row") do %>
@@ -22,6 +22,12 @@
       <span class="text-[11px] text-gray-500 dark:text-zinc-400"><%= t("member.monitoring.vulnerabilities.seen_ago", time: time_ago_in_words(finding.last_seen_at)) %></span>
     <% else %>
       <%= render Ui::BadgeComponent.new(label: t("member.monitoring.vulnerabilities.status.#{finding.status}"), color: :gray) %>
+      <% if finding.status_ignored? %>
+        <%# CYRA-1144 — fino a quando e chi: `ignored_by` arriva precaricato dall'elenco. %>
+        <span class="block mt-0.5 text-[11px] text-gray-500 dark:text-zinc-400" data-test="vulnerability-row-ignore">
+          <%= finding.ignored_until ? t("member.monitoring.vulnerabilities.ignore.until_short", date: l(finding.ignored_until, format: :long)) : t("member.monitoring.vulnerabilities.ignore.no_expiry") %><% if finding.ignored_by %> · <%= finding.ignored_by.name %><% end %>
+        </span>
+      <% end %>
     <% end %>
   <% end %>
 <% end %>

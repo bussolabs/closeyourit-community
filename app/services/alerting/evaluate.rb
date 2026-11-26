@@ -10,11 +10,12 @@ module Alerting
     def initialize(event_type:, subject_type:, subject_id:, project_id:,
                    environment: nil, environment_id: nil, level: nil, duration_ms: nil,
                    organization_id: nil, value: nil, handled: nil, actor_id: nil, at: Time.current, rule_id: nil,
-                   metric: nil, breach: nil, above: nil)
+                   metric: nil, breach: nil, above: nil, decision: nil)
       @rule_id = rule_id
       @metric = metric.to_s.presence     # measurement back under threshold (server_threshold_recovered)
       @breach = breach.to_s.presence     # identity of a threshold crossing/return: stands in for the time bucket
       @above = above                     # threshold the open breach already alerted: only higher rules fire
+      @decision = decision               # expired ignore decision, frozen when the finding reopened (CYRA-1144)
       @event_type = event_type.to_s
       @subject_type = subject_type
       @subject_id = subject_id
@@ -264,7 +265,12 @@ module Alerting
 
     def threshold_recovery? = @event_type == "server_threshold_recovered"
 
-    def content_context = threshold_recovery? ? { metric: @metric, value: @value } : {}
+    def content_context
+      return { metric: @metric, value: @value } if threshold_recovery?
+      return { decision: @decision } if @decision
+
+      {}
+    end
 
     # CYRA-519 — regole silenziate su QUESTA macchina: restano accese per tutte le altre. Un evento
     # che non riguarda una macchina non ha eccezioni da applicare, e la query non parte nemmeno.

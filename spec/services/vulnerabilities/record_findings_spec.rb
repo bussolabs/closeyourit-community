@@ -88,6 +88,23 @@ RSpec.describe Vulnerabilities::RecordFindings do
     expect(finding.reload).to be_status_ignored
   end
 
+  # CYRA-1144 (R-1) — la decisione vive sulla riga: se la scansione la ricreasse, motivo, scadenza
+  # e autore andrebbero persi e la vulnerabilità tornerebbe in lista senza che nessuno l'abbia deciso.
+  it "una nuova scansione conserva motivo, scadenza e autore della riga ignorata" do
+    record
+    finding = Vulnerabilities::Finding.sole
+    author = create(:account)
+    finding.update!(status: :ignored, triage_note: "Solo sviluppo", ignored_until: 1.month.from_now.to_date,
+                    ignored_by: author)
+
+    expect { record }.not_to change(Vulnerabilities::Finding, :count)
+
+    expect(finding.reload).to have_attributes(
+      id: finding.id, status: "ignored", triage_note: "Solo sviluppo",
+      ignored_until: 1.month.from_now.to_date, ignored_by_id: author.id
+    )
+  end
+
   it "un pacchetto senza corrispondenze non genera nulla" do
     expect { record({}) }.not_to change(Vulnerabilities::Finding, :count)
   end
