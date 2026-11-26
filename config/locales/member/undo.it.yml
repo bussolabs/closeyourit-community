@@ -1,0 +1,20 @@
+# CYRA-1150 — l'Annulla delle azioni di gruppo, nell'avviso che le conferma.
+it:
+  shared:
+    undo:
+      action: Annulla
+  member:
+    undo:
+      restored:
+        zero: Niente da rimettere com'era.
+        one: 1 elemento è tornato com'era.
+        other: "%{count} elementi sono tornati com'erano."
+      kept:
+        one: 1 è stato lasciato com'è, perché nel frattempo era cambiato.
+        other: "%{count} sono stati lasciati come sono, perché nel frattempo erano cambiati."
+      expired: È passato troppo tempo per tornare indietro.
+    alerting:
+      notifications:
+        read:
+          one: 1 notifica segnata come letta.
+          other: "%{count} notifiche segnate come lette."

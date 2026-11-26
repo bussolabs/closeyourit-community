@@ -40,6 +40,15 @@ RSpec.describe "Member::Monitoring::ErrorGroups bulk triage", type: :request do
         expect(b.reload).to be_status_resolved
       end
 
+      # CYRA-1150: the toast offers Undo, on an entry that is the actor's own.
+      it "records the undo of the bulk action for its author" do
+        a = create(:error_group, project:, status: :unresolved)
+
+        post bulk_triage_member_monitoring_error_groups_path, params: { ids: [ a.id ], bulk_action: "resolve" }
+
+        expect(Undo::Entry.find(flash[:undo])).to have_attributes(kind: "error_groups", account_id: owner.id)
+      end
+
       it "ignore → i gruppi selezionati diventano ignored" do
         a = create(:error_group, project:, status: :unresolved)
         post bulk_triage_member_monitoring_error_groups_path, params: { ids: [ a.id ], bulk_action: "ignore" }

@@ -48,9 +48,14 @@ module Member
 
     # Marca letto l'intero gruppo raggruppato in index (params[:ids] = gli altri id della riga):
     # own_notifications filtra eventuali id estranei, quindi nessun rischio anti-BOLA anche se forgiati.
+    # CYRA-1150: a row that groups several unread notifications says so, and offers Undo.
     def read
-      own_notifications.where(id: [ @notification.id, *Array(params[:ids]) ]).update_all(read_at: Time.current)
-      redirect_to member_alerting_notifications_path
+      ids = own_notifications.unread.where(id: [ @notification.id, *Array(params[:ids]) ]).pluck(:id)
+      undo = mark_read(ids, undoable: ids.size > 1)
+      return redirect_to member_alerting_notifications_path unless undo
+
+      redirect_to member_alerting_notifications_path,
+                  notice: t("member.alerting.notifications.read", count: undo.items.size), flash: { undo: undo.id }
     end
 
     # CYRA-898 — the bell's panel: the latest five, loaded into a lazy frame of the top bar. No
@@ -61,9 +66,11 @@ module Member
     end
 
     # Back to where it was pressed: the bell's panel lives on every page (CYRA-898).
+    # CYRA-1150: which ones were unread is recorded first, so the toast offers Undo.
     def read_all
-      own_notifications.unread.update_all(read_at: Time.current)
-      redirect_back_or_to member_alerting_notifications_path, notice: t("member.alerting.notifications.all_read")
+      undo = mark_read(own_notifications.unread.pluck(:id))
+      redirect_back_or_to member_alerting_notifications_path,
+                          notice: t("member.alerting.notifications.all_read"), flash: { undo: undo&.id }.compact
     end
 
     def destroy
@@ -76,6 +83,15 @@ module Member
     def own_notifications
       Alerting::Notification.where(account_id: Current.account.id,
                                    organization_id: Current.organization.id, via: :in_app)
+    end
+
+    # Marks the given unread notifications read; with `undoable`, on locked rows and with an undo entry.
+    def mark_read(ids, undoable: true)
+      update = -> { Alerting::Notification.where(id: ids).unread.update_all(read_at: Time.current) }
+      return update.call.then { nil } unless undoable
+
+      ::Undo::Entry.capture(kind: "notifications", account: Current.account,
+                            organization: Current.organization, ids:, &update).last
     end
 
     # Anti-BOLA: solo notifiche proprie (un id altrui → RecordNotFound → 404).

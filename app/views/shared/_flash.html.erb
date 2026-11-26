@@ -12,17 +12,23 @@
       schermo, Turbo lo riconosce dall'id e non lo duplica.
 
     L'id sul contenitore (CYRA-828) serve a chi risponde in turbo_stream: un'azione che fallisce
-    senza ricaricare la pagina rimpiazza #flash-container per far comparire il messaggio. %>
+    senza ricaricare la pagina rimpiazza #flash-container per far comparire il messaggio.
+
+    CYRA-1150 — `flash[:undo]` is not a toast of its own: it puts Undo on the notice and keeps it 10s.
+    The undo id goes into the toast id, or a second identical notice would keep the first one's button. %>
 <div id="flash-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-80 max-w-[calc(100vw-2rem)] pointer-events-none" data-test="flash-container">
   <% flash.each do |type, message| %>
+    <% next if type.to_s == "undo" %>
+    <% undo_id = flash[:undo] if type.to_s == "notice" %>
     <%= render Ui::AlertComponent.new(
           variant: flash_variant(type),
           dismissible: true,
+          duration: (10_000 if undo_id),
           test_id: "flash-#{type}",
-          id: "flash-#{type}-#{Digest::MD5.hexdigest(message.to_s)}",
+          id: "flash-#{type}-#{Digest::MD5.hexdigest("#{message}#{undo_id}")}",
           data: { turbo_permanent: true },
           class: "pointer-events-auto transition duration-200 ease-out"
-        ) do %><%= message %><% end %>
+        ) do %><%= message %><%= render("shared/undo_button", undo_id:) if undo_id %><% end %>
   <% end %>
   <%= local_assigns[:extra] %>
 </div>

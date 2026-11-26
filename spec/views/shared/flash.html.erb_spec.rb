@@ -25,6 +25,31 @@ RSpec.describe "shared/_flash", type: :view do
     expect(first).to include("flash-notice-#{Digest::MD5.hexdigest('Azione accodata.')}")
   end
 
+  # CYRA-1150 — a bulk action that can be undone puts Undo on its notice, for 10 seconds.
+  it "puts Undo on the notice of an undoable action and keeps it 10 seconds" do
+    flash[:notice] = "3 gruppi aggiornati."
+    flash[:undo] = "0b6f2c1e-0000-4000-8000-000000000001"
+
+    render partial: "shared/flash"
+
+    html = Capybara.string(rendered)
+    expect(html).to have_css("[data-test='flash-notice'][data-ui--alert-duration-value='10000']")
+    expect(html).to have_css("[data-test='flash-notice'] form[action='/member/undo/0b6f2c1e-0000-4000-8000-000000000001']")
+    expect(html).to have_css("[data-test='flash-notice'] [data-test='flash-undo-button']")
+    # The undo id is not a message: it never becomes a toast of its own.
+    expect(html).to have_no_css("[data-test='flash-undo']")
+  end
+
+  it "shows today's toast, without Undo, for an action that cannot be undone" do
+    flash[:notice] = "5 card approvate."
+
+    render partial: "shared/flash"
+
+    html = Capybara.string(rendered)
+    expect(html).to have_no_css("[data-test='flash-undo-button']")
+    expect(html).to have_no_css("[data-ui--alert-duration-value]")
+  end
+
   it "tiene il contenitore nel DOM anche senza messaggi" do
     render partial: "shared/flash"
 

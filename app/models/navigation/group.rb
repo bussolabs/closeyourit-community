@@ -68,7 +68,7 @@ module Navigation
                    member/coworker_rules member/coworker_schedules member/coworker_watches member/coworker_memory_notes
                    member/coworker_budgets member/coworker_controls member/coworker_procedures member/coworker_connections
                    member/coworker_sites member/coworker_devices member/preferences member/referral_prompts member/saved_views
-                   member/page_header_preferences member/dismissed_notices member/support_requests
+                   member/page_header_preferences member/dismissed_notices member/undos member/support_requests
                    member/organization_switches member/changelog member/errors member/base
                    member/ai member/assistant_conversations member/assistant_messages member/assistant_proposals
                    member/assistant_voice member/assistant_dictation

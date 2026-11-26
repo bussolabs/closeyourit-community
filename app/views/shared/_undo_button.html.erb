@@ -1,0 +1,10 @@
+<%# CYRA-1150 — Undo inside a bulk action's toast: it leaves with the toast, after 10 seconds. %>
+<%= render Ui::ButtonComponent.new(
+      label: t("shared.undo.action"),
+      variant: :link,
+      href: member_undo_path(undo_id),
+      method: :post,
+      form_class: "inline",
+      test_id: "flash-undo-button",
+      class: "ml-1"
+    ) %>

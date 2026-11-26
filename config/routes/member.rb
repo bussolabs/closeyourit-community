@@ -565,6 +565,10 @@ namespace :member do
     resources :requests, only: :show
   end
 
+  # CYRA-1150 — the Undo of the bulk actions below (errors, slowness) and of «mark all read»: one route
+  # for all of them, the entry says what it undoes.
+  post "undo/:id", to: "undos#create", as: :undo
+
   # --- Error monitoring (Fase 2) ---
   namespace :monitoring do
     resources :measurement_rules, path: "measurements/alerts"

@@ -604,11 +604,28 @@
       "level": 3,
       "parent": "err_flow_triage",
       "kind": "step",
-      "summary": "Dalla lista o dalla CLI si smistano molti gruppi in un colpo, per esempio dopo un rilascio rumoroso.",
+      "summary": "Dalla lista o dalla CLI si smistano molti gruppi in un colpo, per esempio dopo un rilascio rumoroso. Dalla lista, l'avviso offre Annulla per 10 secondi.",
       "files": [
         "app/services/errors/bulk_triage.rb",
         "app/controllers/member/monitoring/error_groups/triages_controller.rb",
         "app/controllers/cli/v1/error_groups_controller.rb"
+      ]
+    },
+    {
+      "id": "err_tri_undo",
+      "name": "Annulla un'azione di gruppo",
+      "level": 3,
+      "parent": "err_flow_triage",
+      "kind": "step",
+      "summary": "Prima di un'azione di gruppo su errori, lentezza o notifiche si salva com'erano le righe. Per 10 secondi chi l'ha fatta può premere Annulla: tornano com'erano solo le righe che nessuno ha cambiato nel frattempo.",
+      "files": [
+        "app/models/undo/entry.rb",
+        "app/services/undo/restore.rb",
+        "app/controllers/member/undos_controller.rb",
+        "app/views/shared/_flash.html.erb",
+        "app/views/shared/_undo_button.html.erb",
+        "app/javascript/controllers/ui/alert_controller.js",
+        "app/jobs/undo/prune_job.rb"
       ]
     },
     {
@@ -1767,8 +1784,10 @@
       "level": 3,
       "parent": "prf_flow_triage",
       "kind": "step",
-      "summary": "Cambia lo stato di uno o più gruppi in un colpo solo: o tutti o nessuno. Gli id non visibili vengono scartati.",
+      "summary": "Cambia lo stato di uno o più gruppi in un colpo solo: o tutti o nessuno. Gli id non visibili vengono scartati. Dalla lista, l'avviso offre Annulla per 10 secondi.",
       "files": [
+        "app/controllers/member/monitoring/metric_groups_controller.rb",
+        "app/models/undo/entry.rb",
         "app/services/metrics/bulk_triage.rb",
         "app/services/metrics/triage.rb",
         "app/services/observability/bulk_triage.rb",
@@ -8380,9 +8399,10 @@
       "level": 2,
       "parent": "area_alerting",
       "kind": "page",
-      "summary": "Le proprie notifiche, con filtri per tipo e progetto. Le ripetute sono raggruppate e un avviso di guasto mostra quando la cosa è tornata a posto. Aprire un ticket, un errore o un monitor segna lette le proprie notifiche su quella cosa.",
+      "summary": "Le proprie notifiche, con filtri per tipo e progetto. Le ripetute sono raggruppate e un avviso di guasto mostra quando la cosa è tornata a posto. Aprire un ticket, un errore o un monitor segna lette le proprie notifiche su quella cosa. Dopo aver segnato lette più notifiche, l'avviso offre Annulla per 10 secondi.",
       "files": [
         "app/controllers/member/alerting_notifications_controller.rb",
+        "app/models/undo/entry.rb",
         "app/views/member/alerting_notifications/**",
         "app/services/notifications/mark_read.rb",
         "app/services/alerting/notification_group.rb",

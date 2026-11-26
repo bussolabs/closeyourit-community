@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.252.0] - 2026-11-25
+
+### Added
+
+- **Annulla dopo le azioni di gruppo**: dopo lo smistamento in gruppo di errori o problemi di lentezza, e dopo aver segnato lette più notifiche, l'avviso offre Annulla per circa 10 secondi. Tornano allo stato di prima, note di risoluzione comprese, solo gli elementi che nessun altro ha cambiato nel frattempo. (CYRA-1150)
+
 ## [0.251.4] - 2026-11-25
 
 ### Fixed
@@ -742,6 +748,7 @@
 ### Added
 
 - **Canale beta e avvisi di sicurezza per chi ospita CloseYourIt**: nelle impostazioni scegli se ricevere solo le versioni stabili o anche le beta. Se la tua versione ha una falla di sicurezza, in cima alle pagine compare un avviso rosso con la versione da installare. Sparisce da solo dopo l'aggiornamento.
+- **Annulla dopo le azioni di gruppo**: dopo aver risolto o ignorato più errori o problemi di lentezza insieme, o segnato lette più notifiche, l'avviso offre Annulla per 10 secondi. Torna com'era solo ciò che nessun altro ha cambiato nel frattempo. ([Errori](/member/monitoring/error))
 
 ### Fixed
 

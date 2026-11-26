@@ -1,0 +1,20 @@
+# CYRA-1150 — the Undo of the bulk actions, in the toast that confirms them.
+en:
+  shared:
+    undo:
+      action: Undo
+  member:
+    undo:
+      restored:
+        zero: Nothing to put back.
+        one: 1 item is back as it was.
+        other: "%{count} items are back as they were."
+      kept:
+        one: 1 was left as it is, because it had changed in the meantime.
+        other: "%{count} were left as they are, because they had changed in the meantime."
+      expired: Too much time has passed to go back.
+    alerting:
+      notifications:
+        read:
+          one: 1 notification marked as read.
+          other: "%{count} notifications marked as read."

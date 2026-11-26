@@ -35,6 +35,12 @@ production: &schedule
     class: Coworkers::TickJob
     queue: maintenance
     schedule: every minute
+  # CYRA-1150 — the undo of a bulk action lives seconds: the expired entries go.
+  # Lane `batch` (CYRA-714) like every prune; an expired entry is already refused, so once an hour is enough.
+  prune_undo_entries:
+    class: Undo::PruneJob
+    queue: batch
+    schedule: every hour at minute 37
 
   # CYSK-29 — un simbolo non visto da 400 giorni esce; se torna, rientra con un first_seen nuovo.
   # Corsia `batch` (CYRA-714): girava su `default`, la corsia real-time degli avvisi e delle notifiche,

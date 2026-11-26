@@ -283,6 +283,7 @@ Alert / flash. Content = messaggio; `title:` = parte in grassetto.
 `render Ui::AlertComponent.new(variant: :info, title:, dismissible: false, test_id:) { "messaggio" }`
 - **variant**: `success` · `warning` · `danger` · `info`
 - `dismissible: true` → bottone X + Stimulus `ui--alert` (slide+fade in all'ingresso, auto-dismiss 5s, X chiude subito).
+- `duration:` (ms, solo con `dismissible`) → cambia l'auto-dismiss: il toast con Annulla delle azioni di gruppo resta 10s (CYRA-1150).
 - I **flash** li renderizza il partial `shared/_flash` come toast floating in basso a destra, stacked, fuori dal flusso (nessuno shift del contenuto).
 
 ### `Ui::FloatingNoticeComponent`

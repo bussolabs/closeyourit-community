@@ -155,18 +155,19 @@ module Member
       # deploy → resolve/ignore in massa. Anti-BOLA a due strati: id VISIBILI (visible.metric_groups)
       # + solo quelli su cui ho metrics.promote per il loro progetto (unica chiave di gestione metriche).
       # Broadcast batch: un solo page-refresh org dopo il commit.
+      # CYRA-1150: the rows are locked and their state recorded in the same step, so the toast offers Undo.
       def bulk_triage
         permitted_ids = triageable_metric_group_ids(params[:ids])
-        result = Metrics::BulkTriage.call(
-          scope: visible.metric_groups, ids: permitted_ids, action: params[:bulk_action]
-        )
+        result, undo = ::Undo::Entry.capture(
+          kind: "metric_groups", account: Current.account, organization: current_organization, ids: permitted_ids
+        ) { Metrics::BulkTriage.call(scope: visible.metric_groups, ids: permitted_ids, action: params[:bulk_action]) }
         return redirect_to member_monitoring_metric_groups_path, alert: t("member.metrics.bulk.invalid") if result.err?
 
         # Il bulk può attraversare più progetti: si dichiarano tutti quelli toccati, o le liste
         # filtrate su uno di essi non si accorgerebbero del triage (CYRA-822).
         Metrics::Broadcast.refresh_list(current_organization, projects: result.value.map(&:project)) if result.value.any?
         redirect_to member_monitoring_metric_groups_path,
-                    notice: t("member.metrics.bulk.done", count: result.value.size)
+                    notice: t("member.metrics.bulk.done", count: result.value.size), flash: { undo: undo&.id }.compact
       end
 
       # Triage AI on-demand (draft non persistito, sincrono): l'AI propone categoria/severità/fix e se

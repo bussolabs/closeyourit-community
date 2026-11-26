@@ -12,11 +12,13 @@ module Ui
       info: { box: "border-indigo-200 dark:border-indigo-500/40 bg-indigo-50 dark:bg-indigo-500/15 dark:in-[#flash-container]:bg-indigo-950", tone: "text-indigo-600 dark:text-indigo-400", icon: "info" }
     }.freeze
 
-    def initialize(variant: :info, title: nil, dismissible: false, test_id: nil, **options)
+    # `duration` (ms) overrides how long a dismissible alert stays: the toast with Undo lives 10s (CYRA-1150).
+    def initialize(variant: :info, title: nil, dismissible: false, test_id: nil, duration: nil, **options)
       @variant = variant.to_sym
       @title = title
       @dismissible = dismissible
       @test_id = test_id
+      @duration = duration
       @options = options
 
       raise ArgumentError, "variante sconosciuta: #{@variant}" unless VARIANTS.key?(@variant)
@@ -32,6 +34,7 @@ module Ui
       base = "flex items-start gap-3 rounded-md border px-4 py-3 #{spec[:box]}"
       opts = merge_options(base_class: base, test_id: @test_id, options: @options)
       opts[:data] = (opts[:data] || {}).merge(controller: "ui--alert") if @dismissible
+      opts[:data] = opts[:data].merge("ui--alert-duration-value": @duration) if @dismissible && @duration
 
       # danger/warning interrompono lo screen reader (assertive); success/info sono annunciate
       # educatamente a fine lettura (polite) — vedi WAI-ARIA alert vs status.

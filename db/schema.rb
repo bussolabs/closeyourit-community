@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_120008) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_120009) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -4432,6 +4432,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120008) do
     t.index ["organization_id"], name: "index_types_ticket_statuses_on_organization_id"
   end
 
+  create_table "undo_entries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "organization_id", null: false
+    t.uuid "account_id", null: false
+    t.string "kind", null: false
+    t.jsonb "items", default: [], null: false
+    t.datetime "expires_at", null: false
+    t.datetime "created_at", null: false
+    t.index ["account_id"], name: "index_undo_entries_on_account_id"
+    t.index ["expires_at"], name: "index_undo_entries_on_expires_at"
+    t.index ["organization_id"], name: "index_undo_entries_on_organization_id"
+    t.check_constraint "jsonb_typeof(items) = 'array'::text", name: "undo_entries_items_array"
+    t.check_constraint "kind::text = ANY (ARRAY['error_groups'::character varying, 'metric_groups'::character varying, 'notifications'::character varying]::text[])", name: "undo_entries_kind_valid"
+  end
+
   create_table "uptime_announcements", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -5333,6 +5347,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120008) do
   add_foreign_key "types_ticket_priorities", "organizations"
   add_foreign_key "types_ticket_statuses", "accounts", column: "created_by_id", on_delete: :nullify
   add_foreign_key "types_ticket_statuses", "organizations"
+  add_foreign_key "undo_entries", "accounts", on_delete: :cascade
+  add_foreign_key "undo_entries", "organizations", on_delete: :cascade
   add_foreign_key "uptime_announcements", "accounts", column: "created_by_id", on_delete: :nullify
   add_foreign_key "uptime_announcements", "uptime_monitors", column: "monitor_id", on_delete: :cascade
   add_foreign_key "uptime_checks", "uptime_monitors", column: "monitor_id", on_delete: :cascade

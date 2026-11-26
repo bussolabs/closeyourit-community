@@ -23,11 +23,12 @@ module Member
         # CYRA-45: smistamento a più gruppi dalla lista. Dopo un rilascio rumoroso si selezionano N
         # gruppi e si marcano in un colpo. Anti-BOLA a due strati: id VISIBILI, poi solo quelli su
         # cui ho errors.triage per il loro progetto. Broadcast batch: un solo page-refresh org.
+        # CYRA-1150: the rows are locked and their state recorded in the same step, so the toast offers Undo.
         def bulk_triage
           permitted_ids = triageable_error_group_ids(params[:ids])
-          result = ::Errors::BulkTriage.call(
-            scope: visible.error_groups, ids: permitted_ids, action: params[:bulk_action]
-          )
+          result, undo = ::Undo::Entry.capture(
+            kind: "error_groups", account: Current.account, organization: current_organization, ids: permitted_ids
+          ) { ::Errors::BulkTriage.call(scope: visible.error_groups, ids: permitted_ids, action: params[:bulk_action]) }
           return redirect_to member_monitoring_error_groups_path, alert: t("member.monitoring.bulk.invalid") if result.err?
 
           # Il bulk può attraversare più progetti: si dichiarano tutti quelli toccati, o le liste
@@ -36,7 +37,7 @@ module Member
             ::Errors::Broadcast.refresh_list(current_organization, projects: result.value.map(&:project))
           end
           redirect_to member_monitoring_error_groups_path,
-                      notice: t("member.monitoring.bulk.done", count: result.value.size)
+                      notice: t("member.monitoring.bulk.done", count: result.value.size), flash: { undo: undo&.id }.compact
         end
 
         # Verdetto AI on-demand, ASINCRONO: accoda Ai::RunJob (202 + request_id) — il polling del
