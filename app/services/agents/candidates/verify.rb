@@ -180,7 +180,7 @@ module Agents
           write_verdict!(state, checks, :verified_failing)
           if workflow.conflict_resolution_requested_at.nil?
             workflow.send_phase_back_to_work!("autopilot")
-            workflow.reload.update!(conflict_resolution_requested_at: @now, **Agents::Workflow.cleared_block(@now))
+            workflow.reload.update!(**Agents::Workflow.conflict_round(@now), **Agents::Workflow.cleared_block(@now))
           else
             stop!("merge_conflict")
           end

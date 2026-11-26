@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.255.0] - 2026-11-26
+
+### Added
+
+- **Consegne in conflitto rimandate subito all'agente**: quando nel codice principale entra un altro lavoro, il sistema controlla le consegne in attesa. Se una non si unisce più, torna all'agente con i titoli delle modifiche arrivate, una volta sola, e la scheda lo dice. Se ha già avuto quel giro, il lavoro si ferma col motivo. Un tuo rifiuto resta com'è. ([Ticket](/member/tickets))
+
 ## [0.254.0] - 2026-11-26
 
 ### Added

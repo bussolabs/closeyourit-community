@@ -84,6 +84,7 @@ it:
           pull_request_merged: Proposta di modifica unita
           pull_request_closed: Proposta di modifica chiusa
           pull_request_autoclose_declined: Chiusura automatica rifiutata
+          pull_request_conflict: Proposta in conflitto col ramo principale
           agent_eligibility_evaluated: Parere dell'AI
           agent_eligibility_overridden: Idoneità forzata
           clarification_requested: Chiarimento chiesto

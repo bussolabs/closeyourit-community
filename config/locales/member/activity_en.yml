@@ -83,6 +83,7 @@ en:
           pull_request_merged: Pull request merged
           pull_request_closed: Pull request closed
           pull_request_autoclose_declined: Auto-close declined
+          pull_request_conflict: Pull request in conflict with the main branch
           agent_eligibility_evaluated: AI opinion
           agent_eligibility_overridden: Eligibility overridden
           clarification_requested: Clarification requested

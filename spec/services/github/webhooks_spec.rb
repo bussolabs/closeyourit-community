@@ -23,8 +23,51 @@ RSpec.describe "Github::Webhooks handlers" do
     end
 
     it "ignora i push di branch" do
-      result = described_class.call(payload: repo_payload("ref" => "refs/heads/main"))
+      result = described_class.call(payload: repo_payload("ref" => "refs/heads/feature"))
       expect(result.value).to be_nil
+    end
+
+    # CYRA-1154 — main moved: the delivered proposals still waiting are checked against it.
+    describe "push to the default branch" do
+      let(:in_review) { create(:ticket_status, :in_review, organization: project.organization) }
+      let(:ticket) do
+        create(:ticket, organization: project.organization, project:, status: in_review, with_agent_workflow: true)
+      end
+      let!(:candidate) { delivered_waiting!(ticket:, repository:, number: 7) }
+
+      def push(ref: "refs/heads/main", extra: {})
+        described_class.call(payload: repo_payload({ "ref" => ref, "after" => "e" * 40,
+                                                     "commits" => [ { "message" => "Rename the login form" } ] }
+                                                   .merge(extra)))
+      end
+
+      it "creates a check per delivered proposal, with the titles from the delivery" do
+        expect { push }.to have_enqueued_job(Agents::ConflictCheckJob)
+
+        expect(Agents::ConflictCheck.sole).to have_attributes(delivery_candidate_id: candidate.id, main_sha: "e" * 40,
+                                                              main_titles: [ "Rename the login form" ])
+      end
+
+      it "creates a single check when GitHub delivers the same push twice" do
+        2.times { push }
+
+        expect(Agents::ConflictCheck.count).to eq(1)
+      end
+
+      it "starts no check for a push to another branch" do
+        expect(push(ref: "refs/heads/feature").value).to be_nil
+        expect(Agents::ConflictCheck.count).to eq(0)
+        expect(ticket.agent_workflow.reload.phase).to eq("awaiting_autopilot_approval")
+      end
+
+      it "starts no check when sync is off or the branch was deleted" do
+        repository.update!(sync_enabled: false)
+        push
+        repository.update!(sync_enabled: true)
+        push(extra: { "deleted" => true })
+
+        expect(Agents::ConflictCheck.count).to eq(0)
+      end
     end
 
     it "no-op se il payload non porta installation.id" do

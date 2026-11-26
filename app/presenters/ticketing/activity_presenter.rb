@@ -29,6 +29,8 @@ module Ticketing
       # Il tentativo resta scritto: senza, una chiusura rifiutata sarebbe indistinguibile da una mai
       # tentata, e chi guarda si chiederebbe perché il ticket è ancora aperto.
       "pull_request_autoclose_declined" => "git-merge",
+      # CYRA-1154 — main moved and the delivered proposal no longer merges: the work went back to the agent.
+      "pull_request_conflict" => "git-pull-request",
       # Gate di eleggibilità agenti (CYRA-184): robot = verdetto del modello, scudo = decisione umana.
       "agent_eligibility_evaluated" => "bot",
       "agent_eligibility_overridden" => "shield-half",
@@ -275,7 +277,8 @@ module Ticketing
         base.merge(count: names.size, checks: activity_file_list(names))
       when "branch_created"
         base.merge(branch: @event.data["branch"])
-      when "pull_request_opened", "pull_request_merged", "pull_request_closed", "pull_request_autoclose_declined"
+      when "pull_request_opened", "pull_request_merged", "pull_request_closed", "pull_request_autoclose_declined",
+           "pull_request_conflict"
         base.merge(number: @event.data["number"])
       else
         base

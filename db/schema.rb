@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_26_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_26_120002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -307,6 +307,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120000) do
     t.index ["personal_variable_id"], name: "index_agents_claude_credentials_on_personal_variable_id"
     t.index ["set_by_id"], name: "index_agents_claude_credentials_on_set_by_id"
     t.index ["shared_value_id"], name: "index_agents_claude_credentials_on_shared_value_id"
+  end
+
+  create_table "agents_conflict_checks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "workflow_id", null: false
+    t.uuid "delivery_candidate_id", null: false
+    t.string "repository_full_name", null: false
+    t.integer "number", null: false
+    t.string "main_sha", null: false
+    t.integer "state", default: 0, null: false
+    t.integer "attempts", default: 0, null: false
+    t.datetime "next_check_at"
+    t.datetime "last_checked_at"
+    t.string "last_error_code"
+    t.jsonb "main_titles", default: [], null: false
+    t.integer "main_commits_count", default: 0, null: false
+    t.datetime "handled_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["delivery_candidate_id", "main_sha"], name: "index_agents_conflict_checks_identity", unique: true
+    t.index ["next_check_at"], name: "index_agents_conflict_checks_due", where: "(state = 0)"
+    t.index ["workflow_id"], name: "index_agents_conflict_checks_on_workflow_id"
   end
 
   create_table "agents_council_proposals", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -798,6 +819,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120000) do
     t.datetime "ci_fix_requested_at"
     t.string "budget_restart_engine"
     t.datetime "ci_second_fix_requested_at"
+    t.datetime "conflict_resolution_used_at"
     t.index ["approved_by_id"], name: "index_agents_workflows_on_approved_by_id"
     t.index ["autopilot_approved_by_id"], name: "index_agents_workflows_on_autopilot_approved_by_id"
     t.index ["autopilot_by_agent_id"], name: "index_agents_workflows_on_autopilot_by_agent_id"
@@ -4878,6 +4900,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120000) do
   add_foreign_key "agents_claude_credentials", "organizations", on_delete: :cascade
   add_foreign_key "agents_claude_credentials", "secrets_personal_variables", column: "personal_variable_id", on_delete: :cascade
   add_foreign_key "agents_claude_credentials", "secrets_shared_values", column: "shared_value_id", on_delete: :cascade
+  add_foreign_key "agents_conflict_checks", "agents_delivery_candidates", column: "delivery_candidate_id", on_delete: :cascade
+  add_foreign_key "agents_conflict_checks", "agents_workflows", column: "workflow_id", on_delete: :cascade
   add_foreign_key "agents_council_proposals", "agents_council_runs", column: "council_run_id", on_delete: :cascade
   add_foreign_key "agents_council_proposals", "ideas_ideas", column: "idea_id", on_delete: :nullify
   add_foreign_key "agents_council_proposals", "organizations", on_delete: :cascade

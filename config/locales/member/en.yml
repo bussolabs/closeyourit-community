@@ -2571,6 +2571,7 @@ en:
         pull_request_opened: "%{actor} opened PR #%{number}"
         pull_request_merged: "PR #%{number} merged"
         pull_request_autoclose_declined: "PR #%{number} merged: the automated run decides when to close the ticket"
+        pull_request_conflict: "PR #%{number} no longer merges with the main branch: the work goes back to the agent to resolve the conflict, then a person reviews it again"
         pull_request_closed: "PR #%{number} closed"
         agent_eligibility_evaluated: "The AI gave an opinion: %{to} for AI agents. A person still decides"
         agent_eligibility_overridden: "%{actor} set the ticket to %{to} for AI agents"

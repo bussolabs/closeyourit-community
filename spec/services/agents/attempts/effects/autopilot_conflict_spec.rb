@@ -50,6 +50,7 @@ RSpec.describe Agents::Attempts::Deliver, "a code conflict with main" do
 
     expect(workflow.reload).to have_attributes(blocked_at: nil, autopilot_started_at: nil)
     expect(workflow.conflict_resolution_requested_at).to be_present
+    expect(workflow.conflict_resolution_used_at).to eq(workflow.conflict_resolution_requested_at)
     expect(workflow.ready_execution_phase).to eq("autopilot")
   end
 
@@ -77,5 +78,17 @@ RSpec.describe Agents::Attempts::Deliver, "a code conflict with main" do
 
     expect(outcome).to be_ok, -> { outcome.error.inspect }
     expect(workflow.reload.conflict_resolution_requested_at).to be_nil
+  end
+
+  # CYRA-1154 — the check after a change of main reads this mark: the round stays used after the delivery.
+  it "keeps the mark that the round was used once the resolved work is delivered" do
+    workflow.update!(**Agents::Workflow.conflict_round(10.minutes.ago))
+    congela_vincolo!(workflow)
+
+    deliver(state: "delivered", security_findings: [], gate: { passed: true }, review: { verdict: "approved" }, cycles: 1,
+            delivery: { prUrl: "https://github.com/#{repository.full_name}/pull/7", cyiStatus: "in_review", autoMerged: false })
+
+    expect(workflow.reload).to have_attributes(conflict_resolution_requested_at: nil,
+                                               conflict_resolution_used_at: be_present)
   end
 end

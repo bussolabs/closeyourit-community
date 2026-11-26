@@ -79,6 +79,7 @@ RSpec.describe Agents::Candidates::Verify do
       expect(candidate.reload).to be_state_verified_failing
       expect(workflow.reload).to have_attributes(autopilot_started_at: nil, autopilot_completed_at: nil, blocked_at: nil)
       expect(workflow.conflict_resolution_requested_at).to be_present
+      expect(workflow.conflict_resolution_used_at).to be_present
       expect(ticket.reload.status).not_to eq(in_review)
     end
 

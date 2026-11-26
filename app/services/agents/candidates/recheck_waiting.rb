@@ -45,7 +45,7 @@ module Agents
         Rails.cache.write(key(workflow), true, expires_in: REST)
         candidate = Agents::DeliveryCandidate.find_by(id: workflow.review_candidate_id)
         return false unless candidate&.repository && candidate.state.in?(MOVING_ON)
-        return false if held_by_person?(workflow)
+        return false if ConflictRework.held_by_person?(workflow)
 
         state = client.pull_request_state(candidate.repository.github_installation_id, candidate.repository_full_name,
                                           candidate.number)
@@ -56,22 +56,9 @@ module Agents
         false
       end
 
-      # A person who looked at this delivery and said no keeps the last word: nothing moves it by itself.
-      def held_by_person?(workflow)
-        Ticketing::Event.where(ticket_id: workflow.ticket_id, action: "review_rejected")
-                        .exists?([ "created_at >= ?", workflow.candidate_verified_at ])
-      end
-
+      # CYRA-1154 — the same path the check after a change of main takes.
       def conflict!(workflow, candidate)
-        if workflow.conflict_resolution_requested_at.nil?
-          workflow.send_phase_back_to_work!("autopilot")
-          workflow.reload.update!(conflict_resolution_requested_at: @now, **Agents::Workflow.cleared_block(@now))
-        else
-          Agents::Workflows::BlockExhaustedPhase.call(
-            workflow:, phase: "autopilot", source: "candidate_check",
-            reason: "merge_conflict on #{candidate.repository_full_name}##{candidate.number}"
-          )
-        end
+        ConflictRework.call(workflow:, candidate:, now: @now)
       end
 
       def approve(workflow, candidate)

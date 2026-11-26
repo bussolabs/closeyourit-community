@@ -2651,6 +2651,7 @@ it:
         pull_request_opened: "%{actor} ha aperto la PR #%{number}"
         pull_request_merged: "PR #%{number} mergiata"
         pull_request_autoclose_declined: "PR #%{number} mergiata: la chiusura del ticket la decide la lavorazione"
+        pull_request_conflict: "La PR #%{number} non si unisce più al ramo principale: il lavoro torna all'agente per risolvere il conflitto, poi una persona lo riguarda"
         pull_request_closed: "PR #%{number} chiusa"
         agent_eligibility_evaluated: "L'AI ha dato un parere: %{to} per gli agenti. La decisione resta a una persona"
         agent_eligibility_overridden: "%{actor} ha impostato il ticket su %{to} per gli agenti"

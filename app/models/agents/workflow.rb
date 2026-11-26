@@ -35,6 +35,9 @@ module Agents
     has_many :delivery_candidates, class_name: "Agents::DeliveryCandidate", foreign_key: :workflow_id,
                                    inverse_of: :workflow, dependent: :destroy
     belongs_to :review_candidate, class_name: "Agents::DeliveryCandidate", optional: true
+    # CYRA-1154 — the rows go with their candidate or workflow through the cascading foreign keys.
+    has_many :conflict_checks, class_name: "Agents::ConflictCheck", foreign_key: :workflow_id,
+                               inverse_of: :workflow, dependent: nil
     # CYRA-624 — le prove del rilascio. Ne resta viva una sola per volta (indice parziale): due
     # sarebbero due verità sullo stesso rilascio.
     has_many :probes, class_name: "Agents::WorkflowProbe", foreign_key: :workflow_id,
@@ -300,6 +303,20 @@ module Agents
       # sblocco — un giro concesso che non è un giro.
       { blocked_at: nil, blocked_phase: nil, blocked_reason: nil, blocked_kind: nil,
         unreachable_count: 0, review_budget_from: now }
+    end
+
+    # CYRA-1069, CYRA-1154 — main moved and the delivered branch no longer merges: the autopilot delivers
+    # again from the start, and the new head goes back to verification and a person's review.
+    def self.autopilot_rework(now = Time.current)
+      { autopilot_started_at: nil, autopilot_completed_at: nil, autopilot_approved_at: nil,
+        autopilot_approved_by_id: nil, closer_staging_started_at: nil,
+        candidate_verified_at: nil, review_candidate_id: nil, **cleared_block(now) }
+    end
+
+    # CYAU-300, CYRA-1154 — the resolution round, asked by any path. The request is cleared at the next
+    # delivery; `conflict_resolution_used_at` stays, so the check after a change of main knows it was used.
+    def self.conflict_round(now = Time.current)
+      { conflict_resolution_requested_at: now, conflict_resolution_used_at: now }
     end
 
     # CYRA-1329 — why it is stopped, ready to read, or nil if it is not. The stalled phase is asked

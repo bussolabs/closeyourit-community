@@ -31,10 +31,7 @@ module Agents
           # CYRA-1097 — an already merged pull request has nothing left to merge: redoing it rebuilds merged code.
           return block!(already_merged_reason) if approved_pull_request_merged?
 
-          workflow.update!(autopilot_started_at: nil, autopilot_completed_at: nil, autopilot_approved_at: nil,
-                           autopilot_approved_by_id: nil, closer_staging_started_at: nil,
-                           candidate_verified_at: nil, review_candidate_id: nil,
-                           **Agents::Workflow.cleared_block)
+          workflow.update!(**Agents::Workflow.autopilot_rework)
         end
 
         def approved_pull_request_merged?

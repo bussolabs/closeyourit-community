@@ -433,6 +433,13 @@ production: &schedule
     queue: maintenance
     schedule: every minute
 
+  # CYRA-1154 — after main moves, the delivered proposals still waiting are asked whether they merge.
+  # The push enqueues the job itself; this round reads again the rows GitHub had not computed yet.
+  check_agent_merge_conflicts:
+    class: Agents::ConflictCheckJob
+    queue: maintenance
+    schedule: every minute
+
   close_already_released_agent_work:
     class: Agents::AlreadyReleasedSweepJob
     queue: maintenance

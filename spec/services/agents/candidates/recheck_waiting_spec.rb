@@ -47,6 +47,7 @@ RSpec.describe Agents::Candidates::RecheckWaiting do
 
     expect(workflow.reload).to have_attributes(autopilot_started_at: nil, autopilot_completed_at: nil, blocked_at: nil)
     expect(workflow.conflict_resolution_requested_at).to be_present
+    expect(workflow.conflict_resolution_used_at).to be_present
   end
 
   it "stops with the reason when the resolution round was already used" do
@@ -55,6 +56,15 @@ RSpec.describe Agents::Candidates::RecheckWaiting do
     described_class.call(client: client(mergeable: "CONFLICTING"))
 
     expect(workflow.reload.blocked_reason).to include("merge_conflict")
+  end
+
+  it "leaves a delivery a person refused where it is, even in conflict" do
+    Ticketing::Event.create!(organization:, ticket:, action: "review_rejected", actor_name: "Ada", data: { "mode" => "hold" })
+
+    described_class.call(client: client(mergeable: "CONFLICTING"))
+
+    expect(workflow.reload).to have_attributes(autopilot_completed_at: be_present, conflict_resolution_requested_at: nil,
+                                               blocked_at: nil)
   end
 
   it "asks the automatic yes again for a delivery that merges" do

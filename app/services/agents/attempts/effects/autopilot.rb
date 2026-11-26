@@ -84,7 +84,7 @@ module Agents
         # A second conflict blocks as before; the resolved branch still goes to a person's review.
         def resolve_conflict!
           workflow.reopen_execution_phase!(@attempt.phase)
-          workflow.update!(conflict_resolution_requested_at: Time.current, **Agents::Workflow.cleared_block)
+          workflow.update!(**Agents::Workflow.conflict_round, **Agents::Workflow.cleared_block)
         end
 
         # CYRA-1062 — the approved plan does not fit the code: rerunning it would fail the same way, and

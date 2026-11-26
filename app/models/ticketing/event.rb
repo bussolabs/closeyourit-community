@@ -32,7 +32,7 @@ module Ticketing
       branch_created pull_request_opened pull_request_merged pull_request_closed
       agent_eligibility_evaluated agent_eligibility_overridden clarification_requested
       work_context_captured dependency_added dependency_removed dependency_blocked
-      pull_request_autoclose_declined already_done
+      pull_request_autoclose_declined pull_request_conflict already_done
       question_asked question_answered question_closed
       autopilot_auto_approved plan_council_approved plan_supporter_approved plan_supporter_added_items plan_reopened_items_changed
       workflow_supporter_retried agent_safety_stopped release_resumed
