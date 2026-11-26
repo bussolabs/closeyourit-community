@@ -20,7 +20,8 @@ module Api
 
         # UN solo job per richiesta (CYRA-43): il batch raggruppa per fingerprint e applica gli
         # aggregati con un update per gruppo, invece di N job/N transazioni per N campioni.
-        Metrics::IngestJob.perform_later(project_id: Current.project.id, payload: list)
+        payload = list.map { |item| Metrics::Ingest::Scrub.call(payload: item) }
+        Metrics::IngestJob.perform_later(project_id: Current.project.id, payload: payload)
         render json: { data: { accepted: list.size } }, status: :accepted
       end
 

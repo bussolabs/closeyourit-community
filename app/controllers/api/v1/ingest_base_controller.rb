@@ -22,6 +22,9 @@ module Api
       include IngestAuthentication
       include RequestBodyLimit
 
+      # Ingest::PrivateRequest filters logging before instrumentation and these callbacks run.
+      # Authentication and validation must still see the original input (CYRA-1210).
+
       # Byte cap at the head of the chain, before authentication and parse (CYRA-1039): it counts the
       # bytes received when no size is declared, chunked bodies included (CYRA-1124). Events and
       # metrics keep their own limit and code by overriding byte_cap / byte_cap_error_code.

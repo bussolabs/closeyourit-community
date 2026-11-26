@@ -5,6 +5,7 @@ module Analytics
   # event_id); progetto cancellato → scarta senza errore. Il `context` contiene SOLO fatti anonimi
   # (visitor_hash/browser/os) — MAI IP o User-Agent raw: gli argomenti dei job vivono su Postgres.
   class IngestJob < ApplicationJob
+    include IngestContentLogging
     queue_as :ingest
 
     def perform(project_id:, context:, payload:)

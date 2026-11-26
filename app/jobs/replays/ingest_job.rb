@@ -5,6 +5,7 @@ module Replays
   # allega alla sessione (ActiveStorage). Fire-and-forget dal controller; se il progetto è stato
   # cancellato, scarta senza errore.
   class IngestJob < ApplicationJob
+    include IngestContentLogging
     queue_as :ingest
 
     def perform(project_id:, payload:)

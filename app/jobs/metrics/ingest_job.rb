@@ -5,6 +5,7 @@ module Metrics
   # (CYRA-43): Record.call_batch raggruppa per fingerprint e applica un update aggregato per gruppo.
   # Idempotente (dedup su sample_id); se il progetto è stato cancellato, scarta senza errore.
   class IngestJob < ApplicationJob
+    include IngestContentLogging
     queue_as :ingest
 
     # Tetto per progetto (CYRA-850): dentro `ingest` l'ordine è di arrivo, quindi un'applicazione

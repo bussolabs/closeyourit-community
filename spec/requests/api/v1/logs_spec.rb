@@ -20,6 +20,14 @@ RSpec.describe "Api::V1::Logs (ingest bearer)", type: :request do
       "timestamp" => Time.current.iso8601 }.merge(over)
   end
 
+  it_behaves_like "private ingest boundary", "logs", Logs::IngestJob, Logs::Ingest::Record, :call do
+    let(:privacy_payload) do
+      log("message" => "#{privacy_marker} #{privacy_email} token=#{privacy_token}",
+          "attributes" => { "nested" => [ privacy_email, { "password" => privacy_token } ] },
+          "unused" => privacy_email)
+    end
+  end
+
   it "bearer valido + array → 202 { data: { accepted } } e un solo IngestJob batch" do
     body = [ log, log, log ]
     expect do
@@ -43,6 +51,18 @@ RSpec.describe "Api::V1::Logs (ingest bearer)", type: :request do
       post "/api/v1/projects/#{project.id}/logs", params: [ log, log ].to_json, headers: headers
     end
     expect(project.logs_entries.count).to eq(2)
+  end
+
+  it "persists scrubbed messages and deduplicates a replayed delivery" do
+    body = log("message" => "User private-1210@example.test signed in", "trace_id" => "request-1210")
+    2.times do
+      perform_enqueued_jobs do
+        post "/api/v1/projects/#{project.id}/logs", params: body.to_json, headers: headers
+      end
+    end
+    expect(project.logs_entries.count).to eq(1)
+    expect(project.logs_entries.sole.message).to eq("User [FILTERED] signed in")
+    expect(project.logs_entries.sole.trace_id).to eq("request-1210")
   end
 
   # CYRA-214 / Scenario 2: la sanitizzazione PII è server-side (gira nel job d'ingest, non nel client),
@@ -113,10 +133,7 @@ RSpec.describe "Api::V1::Logs (ingest bearer)", type: :request do
     end
   end
 
-  # CYRA-58: il pre-check sincrono che conta gli item accettabili NON deve rieseguire la Normalize
-  # completa (deep_clean dell'intero payload + scrub ricorsivo degli attributes) di ogni item nel
-  # thread web — quel lavoro pesante lo rifà già il job. Prima del fix ogni batch veniva normalizzato
-  # due volte (nel controller e nel job); ora il controller fa solo un check di shape del message.
+  # Privacy scrubbing now precedes serialization; full normalization still runs only in the job.
   describe "CYRA-58: pre-check leggero (niente doppia Normalize)" do
     it "conta gli accettabili senza invocare Normalize completa nel thread web" do
       body = [ log("attributes" => { "deep" => { "token" => "s", "nested" => { "k" => "v" } } }), log, log ]

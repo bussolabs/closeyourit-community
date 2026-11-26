@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.257.2] - 2026-11-26
+
+### Security
+
+- **Dati ricevuti fuori dai registri interni**: log, misure e visite vengono ripuliti dai dati personali appena arrivano, prima di essere messi in lavorazione. Il contenuto ricevuto, registrazioni delle sessioni comprese, non viene più scritto nei registri interni del server.
+
 ## [0.257.1] - 2026-11-26
 
 ### Changed

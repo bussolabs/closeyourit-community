@@ -9,9 +9,8 @@ module Metrics
       # Date del campione con la regola di Logs/Analytics (CYRA-1216): epoch in millisecondi riconosciuto
       # e riportato in secondi, istante oltre un'ora nel futuro → adesso.
       include ::Ingest::EpochTime
-      # La ricorsione dello scrub e la redazione dei valori arrivano dal modulo condiviso (CYRA-735);
-      # questo canale ne sovrascrive i DUE criteri, per il motivo scritto sotto le costanti.
-      include ::Ingest::PiiScrubbing
+      # SQL templates and grouping share the queue boundary's scrubbing rules.
+      include Scrubbing
 
       Normalized = Data.define(
         :kind, :sample_id, :duration_ms, :occurred_at, :environment, :title, :signature, :payload,
@@ -19,37 +18,13 @@ module Metrics
       )
 
       KINDS = %w[slow_query slow_method performance_issue].freeze
-      UUID_RE = /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/i
       TITLE_MAX = 255
-
-      # Denylist canonica (Errors::Ingest::Normalize / SDK — vedi
-      # closeyourit-docs/decisions/2026-07-09-pii-scrub-parity.md) applicata come SEGMENTO INTERO della
-      # chiave, non come sottostringa: qui lo scrub gira su TUTTO il payload metriche (non solo su
-      # sezioni "libere" come in Errors) → una regex non ancorata redarebbe campi tecnici (`span_id`
-      # contiene `pan`, `mapping` contiene `pin`) rompendo la correlazione. Il segmento normalizza
-      # camelCase→snake così `authToken`/`userEmail` restano coperti. Vedi #sensitive_key?.
-      SENSITIVE_SEGMENT = /\A(?:password|passwd|pwd|secret|token|bearer|authorization|cookie|csrf|session|pin|cvv|pan|ssn|iban|email|mail|phone|telephone|mobile|dob|birth|passport|credit|card)\z/
-
-      # Composti senza separatore che i segmenti non catturano (`api_key`/`apiKey`/`x-api-key` → "apikey").
-      # NB: `key` da solo NON è sensibile (cache_key/sort_key/primary_key non vanno redatti).
-      SENSITIVE_COMPOUND = /apikey/
-
-      # Chiavi il cui valore è un URL: strippane la query (può contenere token/email). Include i campi
-      # http del payload metriche (http_url/http_path) oltre ai generici, quindi #url_key? sovrascrive
-      # quello condiviso: una costante ridefinita nella classe NON cambia il metodo del modulo, che la
-      # risolve dove è scritto.
-      URL_KEY = /\A(url|uri|href|http_url|http_path|location|referer|referrer)\z/i
-
-      # Chiavi il cui valore è testo SQL: nel payload conservato la query è templatizzata come la
-      # signature (via #templatize) — così spariscono anche i numeri sensibili e i dollar-quote PG,
-      # non solo i literal tra apici.
-      SQL_KEY = /\Asql\z/i
 
       def initialize(payload:)
         # Guard non-Hash (un elemento non-oggetto nel batch → {} gestito come kind-nil, niente crash) +
         # strip null-byte (Postgres li rifiuta in text/jsonb: un \0 in sql/label farebbe fallire l'INSERT
         # nel job → retry x3 → drop silenzioso del campione).
-        @payload = deep_clean(payload.is_a?(Hash) ? payload : {})
+        @payload = Scrub.call(payload: payload)
       end
 
       def call
@@ -152,48 +127,12 @@ module Metrics
         [ number, 0.0 ].max if number&.finite?
       end
 
-      # Numeri/uuid/hex/literal → placeholder: stesso SQL con literal diversi = stessa signature.
-      # Usato anche per scrubbare il payload conservato (CYRA-40): rimuove ogni valore letterale
-      # (stringhe tra apici E dollar-quote PostgreSQL $$…$$/$tag$…$tag$ E numeri) → nessuna PII
-      # (email/token/ssn) sopravvive, che sia stringa o numero nudo. Il dollar-quote va prima dei
-      # numeri: il tag può contenere cifre e verrebbe spezzato.
-      def templatize(text)
-        text.to_s
-            .gsub(/\$([a-z0-9_]*)\$.*?\$\1\$/mi, "<str>") # dollar-quoted PostgreSQL ($$…$$, $tag$…$tag$)
-            .gsub(/'(?:[^']|'')*'/, "<str>") # literal stringa (PII: email/token nei WHERE)
-            .gsub(UUID_RE, "<uuid>")
-            .gsub(/\b0x[0-9a-f]+\b/i, "<hex>")
-            .gsub(/\d+/, "<n>")
-      end
-
-      # Payload conservato scrubbato server-side (parità con Errors::Ingest::Normalize): redige i valori
-      # delle chiavi sensibili (ricorsivo su Hash E Array), strippa la query dagli URL (http_url) e i
-      # literal stringa dallo SQL. Restituisce una struttura nuova — @payload resta raw per gli altri
-      # campi derivati (signature/title lo templatizzano già).
+      # Preserve the validated job context in the already scrubbed diagnostic payload.
       def scrubbed_payload
-        cleaned = scrub_value(@payload)
+        cleaned = @payload.deep_dup
         cleaned["contexts"]["job"] = job_context if job_context
         cleaned
       end
-
-      # Ramo in più rispetto al modulo condiviso: il testo SQL non si redige, si templatizza (spariscono
-      # i valori letterali, resta la forma della query che fa da chiave di raggruppamento).
-      def scrub_entry(key, value)
-        return templatize(value) if SQL_KEY.match?(privacy_key(key)) && value.is_a?(String)
-
-        super
-      end
-
-      # Chiave sensibile = un SEGMENTO intero (camelCase→snake, split su non-alfanumerici) matcha la
-      # denylist, oppure la chiave compattata contiene un composto (apikey). Segmento intero, non
-      # sottostringa: `span_id`/`mapping`/`cache_key` non sono falsi positivi.
-      def sensitive_key?(key)
-        normalized = key.to_s.gsub(/([a-z\d])([A-Z])/, '\1_\2').downcase
-        normalized.split(/[^a-z\d]+/).any? { |segment| SENSITIVE_SEGMENT.match?(segment) } ||
-          SENSITIVE_COMPOUND.match?(normalized.gsub(/[^a-z\d]/, ""))
-      end
-
-      def url_key?(key) = URL_KEY.match?(privacy_key(key))
     end
   end
 end

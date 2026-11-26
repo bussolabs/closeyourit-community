@@ -102,9 +102,12 @@
       "level": 1,
       "parent": "rails",
       "kind": "area",
-      "summary": "Le porte d'ingresso dei segnali: errori, crash, log, metriche, tracce, visite, replay. Controlla credenziale e dimensione, pulisce i dati personali e passa tutto al lavoro in background.",
+      "summary": "Le porte d'ingresso dei segnali. Log, metriche e visite vengono ripuliti prima della coda; le registrazioni arrivano già mascherate dall'app e vanno in coda come ricevute. I contenuti delle richieste, anche rifiutate, e gli argomenti dei lavori sono esclusi dai registri. Restano identificativi operativi, conteggi, durate ed esiti.",
       "files": [
         "app/controllers/api/v1/ingest_base_controller.rb",
+        "lib/ingest/private_request.rb",
+        "app/jobs/ingest_content_logging.rb",
+        "config/initializers/filter_parameter_logging.rb",
         "app/controllers/api/ingest_controller.rb",
         "app/controllers/api/v1/events_controller.rb",
         "app/controllers/api/v1/logs_controller.rb",
@@ -400,9 +403,10 @@
       "level": 3,
       "parent": "ing_flow_cleaning",
       "kind": "step",
-      "summary": "Password, token, email, telefoni, carte e cookie vengono sostituiti da [FILTERED], anche dentro i testi. Lo fa il server anche se l'app l'ha già fatto.",
+      "summary": "Password, token, email, telefoni, carte e cookie vengono sostituiti da [FILTERED], anche dentro i testi. Lo fa il server anche se l'app l'ha già fatto, e per log, metriche e visite già prima della coda.",
       "files": [
-        "app/services/ingest/pii_scrubbing.rb"
+        "app/services/ingest/pii_scrubbing.rb",
+        "app/services/ingest/queue_scrubbing.rb"
       ]
     },
     {
@@ -1346,7 +1350,7 @@
       "level": 2,
       "parent": "area_replays",
       "kind": "flow",
-      "summary": "Il browser manda pezzi della visita già mascherati. Si registrano solo se il progetto ha acceso la funzione.",
+      "summary": "Il browser manda pezzi della visita. Se il progetto ha acceso la funzione, il server mette in coda gli eventi come li ha mascherati l'app e li salva compressi; dell'utente tiene solo un'impronta, della pagina il percorso senza query. Il contenuto non finisce nei registri.",
       "files": [
         "app/controllers/api/v1/replays_controller.rb",
         "app/jobs/replays/ingest_job.rb",
@@ -1612,9 +1616,10 @@
       "level": 3,
       "parent": "prf_flow_ingest",
       "kind": "step",
-      "summary": "Accetta una misura o un elenco. Rifiuta pacchetti troppo grandi. Mette in coda un solo lavoro per richiesta e risponde subito.",
+      "summary": "Accetta una misura o un elenco e rifiuta pacchetti troppo grandi. Ripulisce testi, indirizzi e valori delle query prima di accodare un solo lavoro. Date e durate vengono convertite nel lavoro successivo.",
       "files": [
         "app/controllers/api/v1/metrics_controller.rb",
+        "app/services/metrics/ingest/scrub.rb",
         "app/jobs/metrics/ingest_job.rb"
       ]
     },
@@ -1624,9 +1629,10 @@
       "level": 3,
       "parent": "prf_flow_ingest",
       "kind": "step",
-      "summary": "Toglie i dati personali e i valori dalle query. Ne ricava una firma: misure con la stessa firma sono lo stesso problema.",
+      "summary": "Usa le regole di pulizia condivise con la ricezione e ricava la firma dai dati già ripuliti: query con valori diversi mantengono la stessa forma. Conserva gli identificativi tecnici per collegare le misure.",
       "files": [
         "app/services/metrics/ingest/normalize.rb",
+        "app/services/metrics/ingest/scrubbing.rb",
         "app/services/metrics/ingest/job_context.rb",
         "app/services/metrics/fingerprint.rb"
       ]
@@ -1981,9 +1987,10 @@
       "level": 3,
       "parent": "log_flow_ingest",
       "kind": "step",
-      "summary": "Conta le righe valide. Se nessuna è valida risponde con un errore, altrimenti mette in coda un solo lavoro.",
+      "summary": "Conta le righe valide. Se nessuna è valida risponde con un errore. Prima della coda ripulisce messaggi e dati annidati, elimina campi inutilizzati e conserva i collegamenti tra eventi.",
       "files": [
         "app/controllers/api/v1/logs_controller.rb",
+        "app/services/logs/ingest/scrub.rb",
         "app/jobs/logs/ingest_job.rb"
       ]
     },
@@ -1993,7 +2000,7 @@
       "level": 3,
       "parent": "log_flow_ingest",
       "kind": "step",
-      "summary": "Toglie i dati personali e ricava il codice della richiesta anche dal testo del messaggio quando manca.",
+      "summary": "Normalizza i dati già ripuliti prima della coda: applica i limiti di lunghezza e ricava il codice della richiesta anche dal testo del messaggio quando manca. Mantiene una pulizia difensiva per le chiamate dirette.",
       "files": [
         "app/services/logs/ingest/normalize.rb"
       ]
@@ -3313,7 +3320,7 @@
       "level": 2,
       "parent": "area_analytics",
       "kind": "flow",
-      "summary": "Il sito manda una visita o un evento. Indirizzo e browser del visitatore diventano subito dati anonimi, poi la visita si salva.",
+      "summary": "Il sito manda una visita o un evento. Indirizzo e browser diventano subito dati anonimi; percorsi, provenienza, proprietà e altri testi vengono ripuliti prima della coda, conservando soltanto i campi utilizzati.",
       "files": [
         "app/controllers/api/v1/pageviews_controller.rb",
         "app/services/analytics/anonymize.rb",
@@ -3352,9 +3359,10 @@
       "level": 3,
       "parent": "ana_flow_pageview",
       "kind": "step",
-      "summary": "Tiene solo il percorso della pagina, riduce la provenienza al nome del sito e corregge le date nel futuro. Di un evento tiene al massimo 10 dettagli brevi e scarta quelli che sembrano dati personali.",
+      "summary": "Prima della coda tiene solo il percorso, riduce la provenienza al nome del sito e scarta le proprietà personali. Nel lavoro successivo normalizza le date e gli altri valori. L'identità anonima calcolata alla ricezione resta invariata.",
       "files": [
         "app/services/analytics/ingest/normalize.rb",
+        "app/services/analytics/ingest/scrub.rb",
         "app/services/analytics/ingest/properties.rb"
       ]
     },

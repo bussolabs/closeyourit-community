@@ -16,6 +16,12 @@ RSpec.describe Logs::IngestJob do
     expect(described_class.new.queue_name).to eq("ingest")
   end
 
+  it "disables argument logging for each content-bearing ingest job" do
+    [ Logs::IngestJob, Metrics::IngestJob, Analytics::IngestJob, Replays::IngestJob ].each do |job|
+      expect(job.log_arguments).to be(false)
+    end
+  end
+
   it "scarta senza errore se il progetto non esiste" do
     expect do
       described_class.perform_now(project_id: SecureRandom.uuid, payload: { "message" => "x" })

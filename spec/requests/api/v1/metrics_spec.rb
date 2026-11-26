@@ -22,6 +22,27 @@ RSpec.describe "Api::V1::Metrics (ingest bearer)", type: :request do
     }.merge(over)
   end
 
+  it_behaves_like "private ingest boundary", "metrics", Metrics::IngestJob, Metrics::Ingest::Record, :call_batch do
+    let(:privacy_payload) do
+      sample("sql" => "SELECT * FROM users WHERE email = '#{privacy_email}' AND token = '#{privacy_token}'",
+             "context" => { "note" => privacy_marker, "nested" => [ privacy_email ] })
+    end
+  end
+
+  it "keeps grouping, duplicates and trace links after queue scrubbing" do
+    first = sample("sql" => "SELECT * FROM users WHERE email = 'first-1210@example.test'", "trace_id" => "trace-1210")
+    second = sample("sql" => "SELECT * FROM users WHERE email = 'second-1210@example.test'", "trace_id" => "trace-1210")
+    perform_enqueued_jobs do
+      post "/api/v1/projects/#{project.id}/metrics", params: [ first, second, first ].to_json, headers: headers
+    end
+
+    expect(response.parsed_body.dig("data", "accepted")).to eq(3)
+    expect(project.metric_samples.count).to eq(2)
+    expect(project.metric_groups.sole.samples_count).to eq(2)
+    expect(project.metric_samples.pluck(:trace_id)).to eq([ "trace-1210", "trace-1210" ])
+    expect(project.metric_samples.pluck(:payload).to_json).not_to include("first-1210@example.test", "second-1210@example.test")
+  end
+
   it "bearer valido + array → 202 { data: { accepted } } e accoda UN SOLO IngestJob per richiesta (CYRA-43)" do
     body = [ sample("sample_id" => "a"), sample("sample_id" => "b") ]
     expect do

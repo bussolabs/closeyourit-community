@@ -12,11 +12,8 @@ module Logs
         @payload = payload
       end
 
-      # Predica di validità di un item (stessa logica di reject di #normalize_item): un Hash con message
-      # non vuoto. Esposta per il pre-check sincrono del controller (segnala un batch interamente
-      # scartato) senza divergere dal filtro applicato qui in fase di persistenza. Delega al predicato
-      # LEGGERO Normalize.message_present? (CYRA-58): il thread web non riesegue la Normalize completa
-      # — deep_clean + scrub ricorsivo degli attributes — di ogni item del batch; quel lavoro resta nel job.
+      # Count valid messages before enqueue. The controller separately scrubs the queue payload;
+      # timestamp conversion, truncation and derived fields still belong to normalization (CYRA-1210).
       def self.acceptable?(item)
         Normalize.message_present?(item)
       end

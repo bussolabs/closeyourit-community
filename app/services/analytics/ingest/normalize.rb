@@ -36,7 +36,7 @@ module Analytics
         # Strip ricorsivo dei null byte: Postgres li rifiuta in text/jsonb e UN pageview avvelenato
         # farebbe fallire l'insert_all dell'INTERO batch (fino a 100 pageview sani persi). Pattern
         # gemello di Logs/Errors/Metrics::Ingest::Normalize (CYRA-169).
-        @payload = deep_clean(payload.is_a?(Hash) ? payload : {})
+        @payload = Scrub.call(payload: payload)
       end
 
       def call
@@ -55,7 +55,7 @@ module Analytics
           screen_class: screen_class,
           environment: ::Ingest::Normalization.clean_text(@payload["environment"], FIELD_MAX).presence || DEFAULT_ENVIRONMENT,
           occurred_at: parse_time(@payload["occurred_at"]),
-          properties: Properties.call(raw: @payload["properties"])
+          properties: @payload.fetch("properties", {})
         )
       end
 

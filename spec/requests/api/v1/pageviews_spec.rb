@@ -27,6 +27,31 @@ RSpec.describe "Api::V1::Pageviews (ingest bearer)", type: :request do
       "occurred_at" => Time.current.iso8601 }.merge(over)
   end
 
+  it_behaves_like "private ingest boundary", "pageviews", Analytics::IngestJob, Analytics::Ingest::Record, :call do
+    let(:privacy_payload) do
+      pageview("path" => "/#{privacy_marker}?customer=#{privacy_email}",
+               "referrer" => "https://example.test/private?auth=#{privacy_token}",
+               "properties" => { "note" => privacy_email }, "unused" => privacy_token)
+    end
+  end
+
+  it "preserves the queued anonymous identity and deduplicates scrubbed visits" do
+    body = pageview("path" => "/checkout?email=private-1210@example.test",
+                    "referrer" => "https://referrer.test/private?token=private-secret",
+                    "properties" => { "email" => "private-1210@example.test", "plan" => "pro" })
+    post "/api/v1/projects/#{project.id}/pageviews", params: body.to_json, headers: headers
+    queued = enqueued_jobs.find { |item| item[:job] == Analytics::IngestJob }
+    context = ActiveJob::Arguments.deserialize(queued["arguments"]).first.fetch(:context)
+    # The same job runs twice on purpose: prosopite would read the repeated lookup as an N+1.
+    Prosopite.pause { 2.times { Analytics::IngestJob.deserialize(queued).perform_now } }
+
+    row = project.analytics_pageviews.sole
+    expect(row.visitor_hash).to eq(context.fetch(:visitor_hash))
+    expect(row.path).to eq("/checkout")
+    expect(row.referrer_host).to eq("referrer.test")
+    expect(row.properties).to eq("plan" => "pro")
+  end
+
   it "bearer valido + array → 202 { data: { accepted } } e un solo IngestJob batch" do
     body = [ pageview, pageview, pageview ]
     expect do

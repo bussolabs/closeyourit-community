@@ -4,6 +4,7 @@ module Logs
   # Persiste un batch di log in background (coda :ingest). Idempotente (Record deduplica su event_id);
   # se il progetto è stato cancellato, scarta senza errore.
   class IngestJob < ApplicationJob
+    include IngestContentLogging
     queue_as :ingest
 
     def perform(project_id:, payload:)

@@ -21,3 +21,8 @@ Rails.application.config.filter_parameters += [ :events, :lease_id ]
 # these the "Parameters:" line keeps every customer question. `prompt` is the hint text of audio
 # transcriptions (CYRA-1217). Spec: ai_gateway/log_privacy_spec.
 Rails.application.config.filter_parameters += [ :messages, :input, :query, :documents, :prompt ]
+
+# Whole ingest requests are private, even before authentication or body validation (CYRA-1210).
+require Rails.root.join("lib/ingest/private_request")
+ActionDispatch::Request.prepend(Ingest::PrivateRequest::Filtering)
+Rails.application.config.middleware.insert_before Rails::Rack::Logger, Ingest::PrivateRequest

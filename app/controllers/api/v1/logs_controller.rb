@@ -23,7 +23,8 @@ module Api
           return render_error("R422-LOG-004", "No valid log in the batch", status: :unprocessable_content)
         end
 
-        Logs::IngestJob.perform_later(project_id: Current.project.id, payload: list)
+        payload = list.map { |item| Logs::Ingest::Scrub.call(payload: item) }
+        Logs::IngestJob.perform_later(project_id: Current.project.id, payload: payload)
         render json: { data: { accepted: } }, status: :accepted
       end
 

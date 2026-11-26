@@ -47,7 +47,7 @@ module Api
             device_type: identity.device_type, browser_version: identity.browser_version,
             os_version: identity.os_version, country_code: country_code
           },
-          payload: list
+          payload: list.map { |item| Analytics::Ingest::Scrub.call(payload: item) }
         )
         render json: { data: { accepted: } }, status: :accepted
       end

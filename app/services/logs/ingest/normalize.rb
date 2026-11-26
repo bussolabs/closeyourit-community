@@ -63,12 +63,7 @@ module Logs
       # (i codici sono lunghi 32 o 36): si accorcia solo ciò che era già sbagliato.
       FIELD_MAX = 255
 
-      # Pre-check leggero (CYRA-58): un item ha un message persistibile? Applica SOLO la normalizzazione
-      # del message (strip dei null byte, come #call) — nessun deep_clean dell'intero payload né scrub
-      # ricorsivo degli `attributes`. È il filtro usato dal controller nel thread web (fino a 1000 item
-      # per batch): la Normalize completa, costosa su attributes annidati/grandi, resta nel job. Coerente
-      # col filtro di persistenza (#call scarta se `message.blank?`) — il caso limite del message di soli
-      # null byte incluso: un item accettato qui è esattamente uno persistito dal job.
+      # Count persistable messages before the separate queue scrub, including null-byte-only input.
       def self.message_present?(item)
         item.is_a?(Hash) && item["message"].to_s.delete(NULL_BYTE).present?
       end
@@ -91,7 +86,7 @@ module Logs
       def initialize(payload:)
         # Guard non-Hash + strip null-byte ricorsivo: Postgres li rifiuta in text/jsonb e UN log
         # avvelenato fa fallire l'insert_all dell'INTERO batch (retry x3 -> drop di fino a 1000 log sani).
-        @payload = deep_clean(payload.is_a?(Hash) ? payload : {})
+        @payload = Scrub.call(payload: payload)
       end
 
       def call
@@ -124,15 +119,9 @@ module Logs
         ::Ingest::Normalization.clean_text(value, FIELD_MAX).presence
       end
 
-      # CYRA-735 — il messaggio è testo libero e ci finisce dentro di tutto: un indirizzo con il token
-      # nella query, una riga di configurazione con la password. Il backend è l'autorità PII su tutti i
-      # canali, come già faceva sul testo dei breadcrumb degli errori: si redige il valore delle sole
-      # assegnazioni sensibili e la frase resta leggibile. Lo scrub viene PRIMA del taglio ai byte,
-      # perché sostituire un valore col segnaposto può allungare la stringa: tagliare dopo tiene buono
-      # il tetto. Non può svuotare un messaggio pieno, quindi il pre-filtro .message_present? del
-      # controller resta coerente con ciò che il job persiste.
+      # Truncate after scrubbing because replacement markers can increase the byte length.
       def scrubbed_message
-        scrub_message(@payload["message"].to_s).truncate_bytes(MESSAGE_MAX_BYTES)
+        @payload["message"].to_s.truncate_bytes(MESSAGE_MAX_BYTES)
       end
 
       # Identità del client dal filo (Sentry `sdk: {name, version}`) — alimenta la card Monitoring tools.
@@ -153,7 +142,7 @@ module Logs
 
       def scrubbed_data
         attrs = @payload["attributes"]
-        attrs.is_a?(Hash) ? cap_data(scrub_hash(attrs)) : {}
+        attrs.is_a?(Hash) ? cap_data(attrs) : {}
       end
 
       # Cap sulla dimensione serializzata degli attributes (CYRA-62). Non si può troncare un JSON a

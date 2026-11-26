@@ -32,4 +32,47 @@ RSpec.describe "Filtro dei parametri sensibili nei log" do
     expect(filtered["variables"]).to eq("[FILTERED]")
     expect(filtered.inspect).not_to include("s3cr3t")
   end
+
+  it "installs ingest privacy before Rails logs a request" do
+    stack = Rails.application.middleware.map(&:klass)
+    expect(stack.index(Ingest::PrivateRequest)).to be < stack.index(Rails::Rack::Logger)
+  end
+
+  %w[logs metrics pageviews replays].each do |channel|
+    it "filters the entire #{channel} body and query without changing parsed input" do
+      body = { "arbitrary" => { "nested" => "private-1210@example.test" } }
+      env = Rack::MockRequest.env_for("/api/v1/projects/project-id/#{channel}?arbitrary=private-query",
+        method: "POST", input: body.to_json, "CONTENT_TYPE" => "application/json")
+      app = lambda do |request_env|
+        request = ActionDispatch::Request.new(request_env)
+        expect(request.filtered_parameters).to eq("payload" => "[FILTERED]")
+        expect(request.filtered_path).not_to include("private-query")
+        expect(request.request_parameters).to eq(body)
+        [ 200, {}, [] ]
+      end
+      Ingest::PrivateRequest.new(app).call(env)
+    end
+  end
+
+  it "also hides field names and bare query strings on the formatted routes" do
+    body = { "private-1210@example.test" => "private-value" }
+    env = Rack::MockRequest.env_for("/api/v1/projects/project-id/logs.json?private-query",
+      method: "POST", input: body.to_json, "CONTENT_TYPE" => "application/json")
+    app = lambda do |request_env|
+      request = ActionDispatch::Request.new(request_env)
+      expect(request.filtered_parameters).to eq("payload" => "[FILTERED]")
+      expect(request.filtered_path).to eq("/api/v1/projects/project-id/logs.json?[FILTERED]")
+      expect(request.request_parameters).to eq(body)
+      [ 200, {}, [] ]
+    end
+    Ingest::PrivateRequest.new(app).call(env)
+  end
+
+  it "leaves parameter filtering on other endpoints unchanged" do
+    filters = Rails.application.config.filter_parameters
+    env = Rack::MockRequest.env_for("/api/v1/projects/project-id/events")
+    env["action_dispatch.parameter_filter"] = filters
+    app = ->(request_env) { expect(request_env["action_dispatch.parameter_filter"]).to equal(filters) }
+    Ingest::PrivateRequest.new(app).call(env)
+  end
 end
