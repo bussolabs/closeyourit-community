@@ -76,6 +76,9 @@ en:
         alerting_notifications:
           one: "A sent alert is removed."
           other: "%{count} sent alerts are removed."
+        alerting_slack_messages:
+          one: "A Slack alert message is removed."
+          other: "%{count} Slack alert messages are removed."
         agents_limit_reservations:
           one: "An agent limit reservation is removed."
           other: "%{count} agent limit reservations are removed."

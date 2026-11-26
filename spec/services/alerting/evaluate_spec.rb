@@ -624,6 +624,39 @@ RSpec.describe Alerting::Evaluate do
       expect { evaluate_error }
         .to change(Alerting::Notification.where(account: owner, via: :in_app), :count).by(1)
     end
+
+    # CYRA-1156 — a Slack app channel goes through the Slack app, with the rule that «Silenzia» acts on.
+    it "sends a Slack app channel through the Slack app, never through the webhook" do
+      channel.update!(kind: :slack_app, config: { "slack_channel" => "C0123ABCD" }, webhook_secret: nil)
+      allow(Alerting::Deliver).to receive(:slack).and_return(Result.ok(nil))
+      stub = stub_request(:post, "https://hooks.example.test/cyi").to_return(status: 200)
+
+      evaluate_error
+
+      expect(Alerting::Deliver).to have_received(:slack)
+        .with(hash_including(channel: channel, rule: rule, event_type: "error_new", subject: group))
+      expect(stub).not_to have_been_requested
+    end
+  end
+
+  describe "Slack messages when an alert recovers (CYRA-1156)" do
+    let(:monitor) { create(:uptime_monitor, project: project) }
+    let(:incident) { create(:uptime_incident, monitor: monitor) }
+
+    it "marks the open Slack message of the down alert as recovered, even without an up rule" do
+      message = create(:alerting_slack_message, organization: organization, project: project,
+                                                event_type: "uptime_down", subject: incident)
+      other = create(:alerting_slack_message, organization: organization, project: project)
+      allow(Alerting::SlackRefreshJob).to receive(:perform_later)
+
+      described_class.call(event_type: "uptime_up", subject_type: "Uptime::Incident", subject_id: incident.id,
+                           project_id: project.id, environment_id: monitor.environment_id)
+
+      expect(message.reload).to have_attributes(status: "recovered", version: 2)
+      expect(message.recovered_at).to be_present
+      expect(other.reload).to be_status_open
+      expect(Alerting::SlackRefreshJob).to have_received(:perform_later).with(message.id, 2).once
+    end
   end
 
   describe "localizzazione per-destinatario (snapshot notifiche)" do

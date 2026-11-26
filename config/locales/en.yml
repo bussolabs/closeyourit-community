@@ -70,6 +70,7 @@ en:
       epic_has_children: "cannot change while the epic has child tickets: detach them first"
       keyword_needs_body: "is not available with the HEAD method (no body)"
       webhook_url_invalid: "must have a valid public http(s) URL"
+      slack_channel_invalid: "must be the code of a Slack channel, for example C0123456789"
       cross_tenant: "belongs to another organization"
       host_already_linked: "is already linked to this environment"
       revoked_host: "is revoked and cannot be linked"

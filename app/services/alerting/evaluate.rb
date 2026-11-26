@@ -33,6 +33,8 @@ module Alerting
     def call
       return Result.ok(0) if subject.nil?
 
+      # A recovery updates the Slack messages of its alert even when no rule announces it (CYRA-1156).
+      Alerting::SlackRecovery.call(event_type: @event_type, subject: subject, at: @at)
       organization, rules, recipients = resolve_scope
       return Result.ok(0) if organization.nil? || rules.empty?
 
@@ -119,14 +121,16 @@ module Alerting
         key = "alerting:channel:#{channel.id}:#{@event_type}:#{identity}:#{throttle_bucket(rule)}"
         next unless Rails.cache.write(key, 1, unless_exist: true, expires_in: rule.throttle_seconds)
 
-        result = deliver_channel(channel, subject, content)
+        result = deliver_channel(channel, rule, subject, content)
         count += 1 if result.ok?
       end
       count
     end
 
-    def deliver_channel(channel, subject, content)
-      # Unico kind di canale esterno rimasto: webhook (Slack/Discord/HTTP). Telegram è per-utente.
+    # Webhook (Slack/Discord/HTTP) or the Slack app with its three buttons (CYRA-1156). Telegram è per-utente.
+    def deliver_channel(channel, rule, subject, content)
+      return Alerting::Deliver.slack(channel:, rule:, event_type: @event_type, subject:, content:) if channel.kind_slack_app?
+
       Alerting::Deliver.webhook(channel:, event_type: @event_type, subject:, content:)
     end
 

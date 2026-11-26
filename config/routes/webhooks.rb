@@ -13,3 +13,6 @@ post "github/webhook" => "github/webhooks#create", as: :github_webhook
 
 # Events of the Puckies' Slack app (CYRA-1019): the gate is the X-Slack-Signature over the raw body.
 post "slack/events" => "slack/events#create", as: :slack_events
+
+# Button clicks on the alerts posted by the same Slack app (CYRA-1156): same signature gate.
+post "slack/interactions" => "slack/interactions#create", as: :slack_interactions

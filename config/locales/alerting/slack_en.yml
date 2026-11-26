@@ -1,0 +1,21 @@
+en:
+  alerting:
+    slack:
+      card:
+        open_alert: Open in CloseYourIt
+        claim: I'm on it
+        mute: Mute 1 hour
+        ticket_button: Open ticket
+        view_ticket: "View %{code}"
+        open_page: Open the page
+        claimed: "👤 *%{name}* is on it"
+        muted: "🔕 *%{name}* muted the rule «%{rule}» until %{time}: no alert from this rule until then"
+        ticket: "🎫 Ticket %{code} opened by *%{name}*"
+        recovered: "✅ Recovered %{time}"
+      refusals:
+        not_member: "You are no longer in the organization of this alert: nothing changed."
+        forbidden: "You are not allowed to do this on this alert: nothing changed."
+        recovered: "The alert has already recovered: nothing to do."
+        rule_gone: "The rule of this alert no longer exists: there is nothing to mute."
+        no_ticket: "This alert cannot become a ticket: open the alert's page."
+        ticket_failed: "The ticket was not opened. Try again from the alert's page."

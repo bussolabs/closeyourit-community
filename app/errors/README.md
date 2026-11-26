@@ -258,6 +258,7 @@ Formato `R{HTTP_STATUS}-{DOMINIO}-{SEQ}` (rules/error-handling.md). Envelope API
 - `R422-ALERT-003` — update preferenze di alert personali fallito (validazione, canale CLI `Cli::V1::AlertPreferencesController`)
 - `R502-ALERT-001` — webhook irraggiungibile o HTTP non-2xx (fire-and-forget, loggato)
 - `R502-ALERT-002` — Telegram irraggiungibile o HTTP non-200 (fire-and-forget, loggato)
+- `R502-ALERT-003` — app Slack irraggiungibile o messaggio rifiutato da Slack (fire-and-forget, loggato)
 
 ### MILESTONE — milestone di progetto (`Projects::Milestone`, CRUD inline condiviso Member + CLI `Cli::V1::MilestonesController`)
 - `R422-MILESTONE-001` — create/update milestone fallito (validazione: code/label/color blank, code duplicato per progetto)

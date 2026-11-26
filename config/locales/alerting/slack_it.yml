@@ -1,0 +1,21 @@
+it:
+  alerting:
+    slack:
+      card:
+        open_alert: Apri in CloseYourIt
+        claim: Me ne occupo
+        mute: Silenzia 1 ora
+        ticket_button: Apri ticket
+        view_ticket: "Vedi %{code}"
+        open_page: Apri la pagina
+        claimed: "👤 Se ne occupa *%{name}*"
+        muted: "🔕 *%{name}* ha silenziato la regola «%{rule}» fino a %{time}: nessun avviso di questa regola fino ad allora"
+        ticket: "🎫 Ticket %{code} aperto da *%{name}*"
+        recovered: "✅ Rientrato %{time}"
+      refusals:
+        not_member: "Non fai più parte dell'organizzazione di questo avviso: niente è cambiato."
+        forbidden: "Non hai il permesso per questa azione su questo avviso: niente è cambiato."
+        recovered: "L'avviso è già rientrato: niente da fare."
+        rule_gone: "La regola di questo avviso non esiste più: non c'è niente da silenziare."
+        no_ticket: "Da questo avviso non si può aprire un ticket: apri la pagina dell'avviso."
+        ticket_failed: "Il ticket non è stato aperto. Riprova dalla pagina dell'avviso."

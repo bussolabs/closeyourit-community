@@ -33,6 +33,11 @@ module Notifications
       Webhook.call(channel: channel, event_type: event_type, subject: subject, content: content)
     end
 
+    # Slack app channel: the alert with its three buttons, remembered so clicks can change it (CYRA-1156).
+    def self.slack(channel:, rule:, event_type:, subject:, content:)
+      Slack.call(channel: channel, rule: rule, event_type: event_type, subject: subject, content: content)
+    end
+
     # The bell count pushed to every open tab of the account; also used by Notifications::MarkRead.
     # Same scope as the bell on page load, or the tab count would jump between the two (CYRA-1147).
     def self.broadcast_unread_count(account:, organization:)

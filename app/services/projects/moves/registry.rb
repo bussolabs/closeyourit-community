@@ -84,6 +84,8 @@ module Projects
       DETACH = {
         "alerting_rules" => :delete,
         "alerting_notifications" => :delete,
+        # A Slack message keeps the buttons of a rule and a channel the source organization keeps (CYRA-1156).
+        "alerting_slack_messages" => :delete,
         "agents_limit_reservations" => :delete,
         "agents_leases_tombstones" => :delete,
         "agents_ticket_queue_deferrals" => :delete,

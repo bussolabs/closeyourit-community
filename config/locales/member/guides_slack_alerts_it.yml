@@ -1,0 +1,37 @@
+---
+it:
+  member:
+    guides:
+      index:
+        slack_alerts:
+          title: Avvisi su Slack
+      slack_alerts:
+        title: Avvisi su Slack
+        subtitle: Gli avvisi arrivano in un canale Slack con tre pulsanti, e chi li preme agisce con i propri permessi.
+        what_title: A cosa serve
+        what_intro: "Un canale di consegna di tipo «App Slack» scrive ogni avviso in un canale Slack del team. Sotto l'avviso ci sono tre pulsanti: Me ne occupo, Silenzia 1 ora e Apri ticket."
+        what_b1: Dopo ogni clic il messaggio mostra chi se ne occupa, chi ha silenziato la regola e fino a quando, o il ticket aperto.
+        what_b2: "Quando l'avviso rientra, per esempio un sito torna raggiungibile, il messaggio lo dice e i pulsanti spariscono."
+        what_b3: Il canale webhook di sempre resta com'è, senza pulsanti. I due tipi possono convivere.
+        app_title: Preparare l'app Slack
+        app_intro: "Si usa l'app Slack dei Puck, già collegata a CloseYourIt. Prima di attivare il canale, chi amministra Slack le dà questi permessi."
+        app_b1: "In «Interactivity & Shortcuts» accendi l'interattività e come indirizzo scrivi https://www.closeyour.it/slack/interactions. Senza, i clic non arrivano."
+        app_b2: "In «OAuth & Permissions» l'app deve avere il permesso chat:write: serve a scrivere l'avviso, aggiornarlo e rispondere in privato a chi clicca."
+        app_b3: Dopo aver cambiato i permessi, reinstalla l'app nello spazio di lavoro, come Slack chiede.
+        app_b4: "Nel canale scelto invita l'app con /invite seguito dal nome dell'app. In un canale privato è obbligatorio."
+        channel_title: Creare il canale di consegna
+        channel_intro: "In Avvisi › Canali di consegna crea un canale nuovo, scegli il tipo «App Slack» e scrivi il codice del canale Slack."
+        channel_b1: "Il codice lo trovi in Slack aprendo i dettagli del canale: è in fondo e comincia con C, per esempio C0123456789."
+        channel_b2: Poi aggancia il canale alle regole di avviso che devono arrivare lì, come per un webhook.
+        channel_b3: "Il laboratorio di prova non scrive mai su Slack: gli avvisi lì restano intercettati."
+        people_title: Collegare le persone
+        people_intro: "Un clic vale solo se chi clicca ha collegato il proprio account Slack a CloseYourIt. Chi non l'ha fatto riceve in privato le istruzioni."
+        people_b1: "In Coworkers › Regole copia il codice di collegamento e scrivilo all'app in un messaggio privato: «link» seguito dal codice."
+        people_b2: Il collegamento vale per una sola organizzazione. Chi esce dall'organizzazione non può più agire dai pulsanti.
+        people_b3: Ogni rifiuto arriva solo a chi ha cliccato, mai a tutto il canale.
+        buttons_title: Cosa fanno i pulsanti
+        buttons_intro: "Ogni pulsante fa la stessa cosa della pagina, con gli stessi permessi. Premerlo due volte non fa due volte l'azione."
+        buttons_b1: "Me ne occupo: su un errore lo assegna a te, serve il permesso di assegnare gli errori. Sugli altri avvisi la presa in carico resta sul messaggio."
+        buttons_b2: "Silenzia 1 ora: zittisce tutta la regola, non solo quell'avviso, come dalla pagina delle regole. Serve il permesso di gestire gli avvisi."
+        buttons_b3: "Apri ticket: per errori, rallentamenti, log, vulnerabilità e controlli SEO crea il ticket, una volta sola. Per gli altri avvisi il pulsante apre la pagina."
+        buttons_b4: Il messaggio si aggiorna sempre con l'ultimo stato, anche se due persone cliccano quasi insieme.

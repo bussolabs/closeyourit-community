@@ -42,7 +42,7 @@
           <%= render Ui::TableComponent::RowComponent.new(faded: !channel.enabled?, test_id: "alerting-channel-row-#{channel.id}") do %>
             <%= render(Ui::TableComponent::CellComponent.new(header: true, class: "text-zinc-900 dark:text-zinc-100 font-medium")) { channel.name } %>
             <%= render(Ui::TableComponent::CellComponent.new(label: t("member.alerting.channels.col_kind"), class: "text-gray-500 dark:text-zinc-400")) { t("member.alerting.channels.kinds.#{channel.kind}") } %>
-            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.alerting.channels.col_target"), mono: true, class: "text-gray-500 dark:text-zinc-400 max-w-[280px] truncate")) { channel.webhook_url } %>
+            <%= render(Ui::TableComponent::CellComponent.new(label: t("member.alerting.channels.col_target"), mono: true, class: "text-gray-500 dark:text-zinc-400 max-w-[280px] truncate")) { channel.target } %>
             <%= render(Ui::TableComponent::CellComponent.new(label: t("member.alerting.channels.col_rules"), mono: true, class: "text-gray-500 dark:text-zinc-400")) { @rule_counts[channel.id].to_i.to_s } %>
             <%= render Ui::TableComponent::CellComponent.new(label: t("member.alerting.channels.col_status")) do %>
               <%= render Ui::BadgeComponent.new(label: channel.enabled? ? t("member.alerting.channels.enabled") : t("member.alerting.channels.disabled"), color: channel.enabled? ? "emerald" : "stone") %>

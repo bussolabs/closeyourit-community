@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Member
-  # Canali di consegna esterni (webhook Slack/Discord/HTTP) per gli alert. CRUD org-level gated da
+  # Canali di consegna esterni (webhook Slack/Discord/HTTP o app Slack) per gli alert. CRUD org-level gated da
   # alerts.manage. Controller flat per non ombreggiare il namespace di dominio ::Alerting.
   class AlertingChannelsController < Member::BaseController
     # Whitelist ordinamento (contratto Sortable#sorted). Target (config jsonb) resta statico.
@@ -64,11 +64,17 @@ module Member
     # La config del webhook si assembla dai campi piatti del form (mai jsonb crudo dal client).
     # url → config JSONB (non segreto); secret → colonna cifrata `webhook_secret`, assegnata solo se
     # fornita così l'update NON azzera il secret esistente (il form non lo ripopola: blank = invariato).
+    # CYRA-1156: a Slack app channel keeps only the Slack channel code; an unknown kind falls back to webhook.
     def channel_attributes
-      permitted = params.permit(:name, :kind, :enabled, :webhook_url, :webhook_secret)
-      attrs = permitted.slice(:name, :kind, :enabled).to_h
-      attrs[:config] = { "url" => permitted[:webhook_url].to_s }
-      attrs[:webhook_secret] = permitted[:webhook_secret] if permitted[:webhook_secret].present?
+      permitted = params.permit(:name, :kind, :enabled, :webhook_url, :webhook_secret, :slack_channel)
+      attrs = permitted.slice(:name, :enabled).to_h
+      attrs[:kind] = Alerting::Channel.kinds.key?(permitted[:kind]) ? permitted[:kind] : "webhook"
+      if attrs[:kind] == "slack_app"
+        attrs[:config] = { "slack_channel" => permitted[:slack_channel].to_s.strip.upcase }
+      else
+        attrs[:config] = { "url" => permitted[:webhook_url].to_s }
+        attrs[:webhook_secret] = permitted[:webhook_secret] if permitted[:webhook_secret].present?
+      end
       attrs
     end
   end

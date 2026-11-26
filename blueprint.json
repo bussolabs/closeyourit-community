@@ -8427,10 +8427,73 @@
       "level": 2,
       "parent": "area_alerting",
       "kind": "page",
-      "summary": "Gli indirizzi web (Slack, Discord o altro) dell'organizzazione dove possono arrivare gli avvisi. Solo indirizzi sicuri e pubblici.",
+      "summary": "Dove arrivano gli avvisi fuori dall'app: un indirizzo web (Slack, Discord o altro, solo sicuro e pubblico) o un canale Slack scritto dall'app Slack, con i pulsanti. Il modulo chiede il tipo e rimanda alla guida.",
       "files": [
         "app/controllers/member/alerting_channels_controller.rb",
-        "app/views/member/alerting_channels/**"
+        "app/views/member/alerting_channels/**",
+        "app/javascript/controllers/alerting/channel_kind_controller.js",
+        "app/views/member/guides/slack_alerts.html.erb"
+      ]
+    },
+    {
+      "id": "alr_flow_slack",
+      "name": "Avvisi su Slack con pulsanti",
+      "level": 2,
+      "parent": "area_alerting",
+      "kind": "flow",
+      "summary": "Un avviso su un canale di tipo app Slack arriva con Me ne occupo, Silenzia 1 ora e Apri ticket. Ogni clic rifà i controlli del sito e il messaggio si aggiorna, anche al rientro.",
+      "files": [
+        "app/services/notifications/deliver/slack.rb",
+        "app/services/alerting/slack_action.rb"
+      ]
+    },
+    {
+      "id": "alr_step_slack_post",
+      "name": "Scrive l'avviso con i pulsanti",
+      "level": 3,
+      "parent": "alr_flow_slack",
+      "kind": "step",
+      "summary": "L'app Slack scrive l'avviso nel canale scelto e si ricorda dove sta il messaggio. Il laboratorio di prova resta intercettato.",
+      "files": [
+        "app/services/notifications/deliver/slack.rb",
+        "app/services/alerting/slack_card.rb",
+        "app/services/coworkers/slack.rb"
+      ]
+    },
+    {
+      "id": "alr_step_slack_click",
+      "name": "Riceve il clic",
+      "level": 3,
+      "parent": "alr_flow_slack",
+      "kind": "step",
+      "summary": "Senza firma Slack valida il clic è respinto. Si risponde subito e il lavoro passa in coda; lo stesso clic arrivato due volte conta una volta.",
+      "files": [
+        "app/controllers/slack/interactions_controller.rb",
+        "app/jobs/alerting/slack_action_job.rb"
+      ]
+    },
+    {
+      "id": "alr_step_slack_act",
+      "name": "Agisce con i permessi di chi clicca",
+      "level": 3,
+      "parent": "alr_flow_slack",
+      "kind": "step",
+      "summary": "Serve un account Slack collegato, ancora nell'organizzazione e col permesso giusto; i rifiuti arrivano in privato. Assegna l'errore, silenzia la regola per un'ora o apre il ticket, una volta sola.",
+      "files": [
+        "app/services/alerting/slack_action.rb",
+        "app/services/alerting/slack_tickets.rb"
+      ]
+    },
+    {
+      "id": "alr_step_slack_refresh",
+      "name": "Aggiorna il messaggio",
+      "level": 3,
+      "parent": "alr_flow_slack",
+      "kind": "step",
+      "summary": "Dopo un clic o al rientro dell'avviso il messaggio mostra lo stato nuovo; al rientro perde i pulsanti. Un aggiornamento più vecchio dell'ultimo scritto si scarta.",
+      "files": [
+        "app/jobs/alerting/slack_refresh_job.rb",
+        "app/services/alerting/slack_recovery.rb"
       ]
     },
     {
@@ -8496,7 +8559,7 @@
       "level": 3,
       "parent": "alr_data",
       "kind": "data",
-      "summary": "Un indirizzo web dell'organizzazione con una chiave segreta per firmare i messaggi. Si aggancia a una o più regole.",
+      "summary": "Un indirizzo web dell'organizzazione con una chiave segreta per firmare i messaggi, oppure un canale Slack scritto dall'app Slack. Si aggancia a una o più regole.",
       "files": [
         "app/models/alerting/channel.rb",
         "app/models/alerting/rule_channel.rb"
@@ -8533,6 +8596,17 @@
       "summary": "Il gruppo Telegram con argomenti dove l'owner riceve i suoi avvisi, uno per organizzazione. Ogni tipo di avviso ha il suo argomento.",
       "files": [
         "app/models/alerting/telegram_group.rb"
+      ]
+    },
+    {
+      "id": "alr_data_slack_message",
+      "name": "Messaggio Slack di un avviso",
+      "level": 3,
+      "parent": "alr_data",
+      "kind": "data",
+      "summary": "Dove sta su Slack un avviso spedito, chi se ne occupa, il silenzio, il ticket e se è rientrato. Un numero di versione sale a ogni cambio.",
+      "files": [
+        "app/models/alerting/slack_message.rb"
       ]
     },
     {
@@ -15045,6 +15119,23 @@
     {
       "from": "ntf_step_slack_verify",
       "to": "ntf_step_slack_skip"
+    },
+    {
+      "from": "alr_step_slack_post",
+      "to": "alr_step_slack_click",
+      "label": "qualcuno preme"
+    },
+    {
+      "from": "alr_step_slack_click",
+      "to": "alr_step_slack_act"
+    },
+    {
+      "from": "alr_step_slack_act",
+      "to": "alr_step_slack_refresh"
+    },
+    {
+      "from": "alr_step_slack_refresh",
+      "to": "alr_data_slack_message"
     },
     {
       "from": "ntf_step_slack_skip",

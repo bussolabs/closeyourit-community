@@ -503,6 +503,8 @@ namespace :member do
   get "guides/assistant",   to: "guides#assistant",   as: :guides_assistant
   get "guides/helpdesk",    to: "guides#helpdesk",    as: :guides_helpdesk
   get "guides/uptime",      to: "guides#uptime",      as: :guides_uptime
+  # CYRA-1156 — alerts in a Slack channel with buttons: linking the app and the permissions it needs.
+  get "guides/slack-alerts", to: "guides#slack_alerts", as: :guides_slack_alerts
   get "guides/performance", to: "guides#performance", as: :guides_performance
   get "guides/logs",        to: "guides#logs",        as: :guides_logs
   # CYRA-376 — la registrazione delle sessioni non era nominata da nessuna guida: si scopriva

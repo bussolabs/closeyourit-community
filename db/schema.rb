@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_120009) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_120010) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -1031,6 +1031,43 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120009) do
     t.index ["project_id"], name: "index_alerting_rules_on_project_id"
     t.check_constraint "event_type <> 59 OR project_id IS NOT NULL", name: "measurement_rule_project"
     t.check_constraint "octet_length(measurement_config::text) <= 4096", name: "measurement_config_budget"
+  end
+
+  create_table "alerting_slack_messages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "organization_id", null: false
+    t.uuid "channel_id", null: false
+    t.uuid "rule_id"
+    t.uuid "project_id"
+    t.string "event_type", null: false
+    t.string "subject_type", null: false
+    t.uuid "subject_id", null: false
+    t.string "slack_channel", null: false
+    t.string "slack_ts", null: false
+    t.string "title", null: false
+    t.text "body"
+    t.string "url"
+    t.integer "status", default: 0, null: false
+    t.datetime "recovered_at"
+    t.uuid "claimed_by_id"
+    t.datetime "claimed_at"
+    t.uuid "muted_by_id"
+    t.datetime "muted_until"
+    t.uuid "ticket_id"
+    t.uuid "ticket_opened_by_id"
+    t.integer "version", default: 1, null: false
+    t.integer "rendered_version", default: 1, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["channel_id"], name: "index_alerting_slack_messages_on_channel_id"
+    t.index ["claimed_by_id"], name: "index_alerting_slack_messages_on_claimed_by_id"
+    t.index ["muted_by_id"], name: "index_alerting_slack_messages_on_muted_by_id"
+    t.index ["organization_id"], name: "index_alerting_slack_messages_on_organization_id"
+    t.index ["project_id"], name: "index_alerting_slack_messages_on_project_id"
+    t.index ["rule_id"], name: "index_alerting_slack_messages_on_rule_id"
+    t.index ["slack_channel", "slack_ts"], name: "index_alerting_slack_messages_on_slack_channel_and_slack_ts", unique: true
+    t.index ["subject_type", "subject_id", "status"], name: "idx_alerting_slack_messages_subject"
+    t.index ["ticket_id"], name: "index_alerting_slack_messages_on_ticket_id"
+    t.index ["ticket_opened_by_id"], name: "index_alerting_slack_messages_on_ticket_opened_by_id"
   end
 
   create_table "alerting_telegram_groups", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -4443,7 +4480,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120009) do
     t.index ["expires_at"], name: "index_undo_entries_on_expires_at"
     t.index ["organization_id"], name: "index_undo_entries_on_organization_id"
     t.check_constraint "jsonb_typeof(items) = 'array'::text", name: "undo_entries_items_array"
-    t.check_constraint "kind::text = ANY (ARRAY['error_groups'::character varying, 'metric_groups'::character varying, 'notifications'::character varying]::text[])", name: "undo_entries_kind_valid"
+    t.check_constraint "kind::text = ANY (ARRAY['error_groups'::character varying::text, 'metric_groups'::character varying::text, 'notifications'::character varying::text])", name: "undo_entries_kind_valid"
   end
 
   create_table "uptime_announcements", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -4905,6 +4942,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120009) do
   add_foreign_key "alerting_rules", "organizations", on_delete: :cascade
   add_foreign_key "alerting_rules", "projects", on_delete: :cascade
   add_foreign_key "alerting_rules", "types_environments", column: "environment_id", on_delete: :nullify
+  add_foreign_key "alerting_slack_messages", "accounts", column: "claimed_by_id", on_delete: :nullify
+  add_foreign_key "alerting_slack_messages", "accounts", column: "muted_by_id", on_delete: :nullify
+  add_foreign_key "alerting_slack_messages", "accounts", column: "ticket_opened_by_id", on_delete: :nullify
+  add_foreign_key "alerting_slack_messages", "alerting_channels", column: "channel_id", on_delete: :cascade
+  add_foreign_key "alerting_slack_messages", "alerting_rules", column: "rule_id", on_delete: :nullify
+  add_foreign_key "alerting_slack_messages", "organizations", on_delete: :cascade
+  add_foreign_key "alerting_slack_messages", "projects", on_delete: :nullify
+  add_foreign_key "alerting_slack_messages", "ticketing_tickets", column: "ticket_id", on_delete: :nullify
   add_foreign_key "alerting_telegram_groups", "accounts", on_delete: :cascade
   add_foreign_key "alerting_telegram_groups", "organizations", on_delete: :cascade
   add_foreign_key "analytics_event_definitions", "projects", on_delete: :cascade

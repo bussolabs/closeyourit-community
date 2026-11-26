@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.253.0] - 2026-11-25
+
+### Added
+
+- **Avvisi su Slack con pulsanti**: un nuovo tipo di canale scrive gli avvisi in un canale Slack con tre pulsanti: Me ne occupo, Silenzia 1 ora e Apri ticket. Chi clicca agisce con i propri permessi e il messaggio mostra cosa è successo, anche quando l'avviso rientra. ([Canali di consegna](/member/alerting/channels)) ([guida](/member/guides/slack-alerts))
+
 ## [0.252.0] - 2026-11-25
 
 ### Added

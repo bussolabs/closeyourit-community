@@ -51,6 +51,8 @@ guide_pages = {
   # CYRA-160 — il riepilogo periodico dei dati si accende dalle preferenze delle notifiche: da lì
   # si arriva alla guida che dice cosa contiene e quando arriva.
   "/member/preferences/notifications"  => "reports",
+  # CYRA-1156 — the alert channels open the guide on bringing alerts into Slack with buttons.
+  "/member/alerting/channels"          => "slack_alerts",
   # CYRA-441 — piattaforme e ambienti aprivano su una tabella senza una parola su cosa fossero: la
   # guida dei contenitori spiega dove vivono le cose, e da lì ci si arriva.
   "/member/platforms"                  => "structure",

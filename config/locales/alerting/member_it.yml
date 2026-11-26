@@ -111,12 +111,17 @@ it:
           body: "Le regole collegate smettono di consegnare qui. Non si può annullare."
         kinds:
           webhook: Webhook
+          slack_app: App Slack (con pulsanti)
         form:
           create: Crea canale
           save: Salva
           cancel: Annulla
           name: Nome
           kind: Tipo
+          slack_channel: Codice del canale Slack
+          slack_channel_hint: In Slack apri i dettagli del canale; il codice è in fondo e comincia con C.
+          slack_guide_intro: "Prima di accenderlo, l'app deve essere nel canale e avere i permessi giusti."
+          slack_guide_link: Leggi la guida
           webhook_url: URL webhook
           webhook_url_hint: Endpoint https pubblico che riceve il POST JSON firmato.
           webhook_secret: Secret firma (opzionale)

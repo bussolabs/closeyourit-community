@@ -2,6 +2,7 @@ require "net/http"
 
 module Coworkers
   # The Slack app of the Puckies (CYRA-1019): signature check, replies in threads and thread history.
+  # Alert channels post and edit their messages through it too (CYRA-1156).
   # Credentials come from the CYRA vault: SLACK_SIGNING_SECRET and SLACK_BOT_TOKEN.
   module Slack
     API = "https://slack.com/api/".freeze
@@ -32,6 +33,20 @@ module Coworkers
 
     def self.post(channel:, thread_ts:, text:)
       call("chat.postMessage", channel: channel, thread_ts: thread_ts, text: text.to_s.first(3900))
+    end
+
+    # A message with blocks (buttons included); Slack's answer carries the "ts" that locates it. CYRA-1156
+    def self.post_blocks(channel:, text:, blocks:)
+      call("chat.postMessage", channel: channel, text: text.to_s.first(3000), blocks: blocks)
+    end
+
+    def self.update(channel:, ts:, text:, blocks:)
+      call("chat.update", channel: channel, ts: ts, text: text.to_s.first(3000), blocks: blocks)
+    end
+
+    # Seen only by the person who clicked: refusals never reach the whole channel.
+    def self.post_ephemeral(channel:, user:, text:)
+      call("chat.postEphemeral", channel: channel, user: user, text: text.to_s.first(3000))
     end
 
     # The thread a mention lives in, so the Puck reads the discussion it was called into.

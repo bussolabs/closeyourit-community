@@ -89,6 +89,37 @@ RSpec.describe "Member::AlertingChannels", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
     end
 
+    # CYRA-1156 — the second kind: a Slack channel written by the Slack app.
+    it "offers the Slack app kind and links its guide" do
+      get new_member_alerting_channel_path
+      doc = Nokogiri::HTML(response.body)
+      expect(doc.css("select[name='kind'] option").map { _1["value"] }).to eq(%w[webhook slack_app])
+      expect(doc.at_css("[data-test='alerting-channel-slack-guide']")["href"]).to eq(member_guides_slack_alerts_path)
+    end
+
+    it "creates a Slack app channel with the channel code only" do
+      post member_alerting_channels_path, params: { name: "Ops Slack", kind: "slack_app", enabled: "1", slack_channel: " c0123abcd ",
+                                                    webhook_url: "https://hooks.example.test/ignored" }
+
+      channel = org.alerting_channels.find_by!(name: "Ops Slack")
+      expect(channel).to be_kind_slack_app
+      expect(channel.config).to eq("slack_channel" => "C0123ABCD")
+      expect(response).to redirect_to(member_alerting_channels_path)
+    end
+
+    it "refuses a Slack app channel without a valid channel code" do
+      post member_alerting_channels_path, params: { name: "Bad Slack", kind: "slack_app", enabled: "1", slack_channel: "general" }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(org.alerting_channels.where(name: "Bad Slack")).not_to exist
+    end
+
+    it "treats an unknown kind as a webhook instead of failing" do
+      post member_alerting_channels_path, params: { name: "Odd", kind: "pigeon", enabled: "1", webhook_url: "https://hooks.example.test/cyi" }
+
+      expect(org.alerting_channels.find_by!(name: "Odd")).to be_kind_webhook
+    end
+
     it "update con webhook_secret vuoto preserva il secret esistente (non lo azzera)" do
       channel = create(:alerting_channel, organization: org, webhook_secret: "keep-me")
 

@@ -174,6 +174,11 @@ class Rack::Attack
     req.ip if req.post? && req.path == "/slack/events"
   end
 
+  # CYRA-1156 — the button clicks of the Slack alerts: same app, same limit.
+  throttle("slack_interactions/ip", limit: 120, period: 1.minute) do |req|
+    req.ip if req.post? && req.path == "/slack/interactions"
+  end
+
   throttle("telegram_webhook/ip", limit: 60, period: 1.minute) do |req|
     req.ip if req.post? && req.path.start_with?("/telegram/webhook")
   end

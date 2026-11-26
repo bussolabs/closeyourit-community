@@ -35,4 +35,32 @@ RSpec.describe Coworkers::Slack do
       expect(a_request(:post, /slack\.com/)).not_to have_been_made
     end
   end
+
+  # CYRA-1156 — the alert channels post with buttons, edit their message and answer privately.
+  describe "alert messages" do
+    let(:blocks) { [ { type: "section", text: { type: "mrkdwn", text: "*Down*" } } ] }
+
+    before { configure }
+
+    it "posts a message with blocks and returns where it lives" do
+      stub_request(:post, "https://slack.com/api/chat.postMessage")
+        .with(body: { channel: "C1", text: "Down", blocks: blocks }.to_json)
+        .to_return(body: { ok: true, channel: "C1", ts: "1.5" }.to_json)
+      expect(described_class.post_blocks(channel: "C1", text: "Down", blocks: blocks)).to include("ts" => "1.5")
+    end
+
+    it "edits a message in place" do
+      stub = stub_request(:post, "https://slack.com/api/chat.update")
+        .with(body: { channel: "C1", ts: "1.5", text: "Down", blocks: blocks }.to_json).to_return(body: { ok: true }.to_json)
+      described_class.update(channel: "C1", ts: "1.5", text: "Down", blocks: blocks)
+      expect(stub).to have_been_requested
+    end
+
+    it "answers only the person who clicked" do
+      stub = stub_request(:post, "https://slack.com/api/chat.postEphemeral")
+        .with(body: { channel: "C1", user: "U1", text: "No" }.to_json).to_return(body: { ok: true }.to_json)
+      described_class.post_ephemeral(channel: "C1", user: "U1", text: "No")
+      expect(stub).to have_been_requested
+    end
+  end
 end

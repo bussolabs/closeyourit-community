@@ -107,12 +107,17 @@ en:
           body: "Linked rules stop delivering here. This cannot be undone."
         kinds:
           webhook: Webhook
+          slack_app: Slack app (with buttons)
         form:
           create: Create channel
           save: Save
           cancel: Cancel
           name: Name
           kind: Kind
+          slack_channel: Slack channel code
+          slack_channel_hint: In Slack open the channel details; the code is at the bottom and starts with C.
+          slack_guide_intro: "Before turning it on, the app must be in the channel and have the right permissions."
+          slack_guide_link: Read the guide
           webhook_url: Webhook URL
           webhook_url_hint: Public https endpoint receiving the signed JSON POST.
           webhook_secret: Signing secret (optional)

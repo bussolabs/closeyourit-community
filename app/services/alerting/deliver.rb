@@ -35,6 +35,11 @@ module Alerting
       ::Notifications::Deliver.webhook(channel: channel, event_type: event_type, subject: subject, content: content)
     end
 
+    # Slack app channel: the rule travels along because «Silenzia» acts on it (CYRA-1156).
+    def self.slack(channel:, rule:, event_type:, subject:, content:)
+      ::Notifications::Deliver.slack(channel: channel, rule: rule, event_type: event_type, subject: subject, content: content)
+    end
+
     def self.payload(rule:, account:, event_type:, subject:, content:, dedup_key:, mailer: nil)
       ::Notifications::Payload.new(
         organization: rule.organization, project: content.project, account: account,

@@ -149,6 +149,7 @@ it:
       epic_has_children: "non si può cambiare finché l'epic ha ticket figli: staccali prima"
       keyword_needs_body: "non è disponibile con il metodo HEAD (nessun body)"
       webhook_url_invalid: "deve avere una URL http(s) pubblica valida"
+      slack_channel_invalid: "deve indicare il codice di un canale Slack, per esempio C0123456789"
       cross_tenant: "appartiene a un'altra organizzazione"
       host_already_linked: "è già collegato a questo environment"
       revoked_host: "è revocato e non può essere collegato"

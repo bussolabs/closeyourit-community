@@ -33,6 +33,9 @@ module Member
 
     def uptime; end
 
+    # CYRA-1156 — how to bring alerts into a Slack channel with buttons, and what the app must be allowed.
+    def slack_alerts; end
+
     def questions; end
 
     # CYRA-940 — what a visitor's request is, how a project opts in and what is kept about the writer.

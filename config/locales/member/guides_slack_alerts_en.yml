@@ -1,0 +1,37 @@
+---
+en:
+  member:
+    guides:
+      index:
+        slack_alerts:
+          title: Alerts in Slack
+      slack_alerts:
+        title: Alerts in Slack
+        subtitle: Alerts reach a Slack channel with three buttons, and whoever presses them acts with their own permissions.
+        what_title: What it is for
+        what_intro: "A delivery channel of kind «Slack app» writes every alert in a Slack channel of the team. Under the alert there are three buttons: I'm on it, Mute 1 hour and Open ticket."
+        what_b1: After every click the message shows who is on it, who muted the rule and until when, or the ticket opened.
+        what_b2: "When the alert recovers, for example a site is reachable again, the message says so and the buttons disappear."
+        what_b3: The usual webhook channel stays as it is, without buttons. The two kinds can live side by side.
+        app_title: Preparing the Slack app
+        app_intro: "It uses the Puckies' Slack app, already connected to CloseYourIt. Before turning the channel on, whoever manages Slack gives it these permissions."
+        app_b1: "In «Interactivity & Shortcuts» turn interactivity on and set the address https://www.closeyour.it/slack/interactions. Without it, clicks never arrive."
+        app_b2: "In «OAuth & Permissions» the app needs the chat:write permission: it writes the alert, updates it and answers privately to whoever clicks."
+        app_b3: After changing the permissions, reinstall the app in the workspace, as Slack asks.
+        app_b4: "In the chosen channel invite the app with /invite followed by its name. In a private channel this is required."
+        channel_title: Creating the delivery channel
+        channel_intro: "In Alerts › Delivery channels create a new channel, choose the kind «Slack app» and write the code of the Slack channel."
+        channel_b1: "You find the code in Slack by opening the channel details: it is at the bottom and starts with C, for example C0123456789."
+        channel_b2: Then attach the channel to the alert rules that must arrive there, as for a webhook.
+        channel_b3: "The test lab never writes to Slack: its alerts stay intercepted."
+        people_title: Linking people
+        people_intro: "A click counts only if whoever clicks has linked their Slack account to CloseYourIt. Who has not receives the instructions privately."
+        people_b1: "In Coworkers › Rules copy the link code and send it to the app in a private message: «link» followed by the code."
+        people_b2: The link is valid for one organization. Whoever leaves the organization can no longer act from the buttons.
+        people_b3: Every refusal reaches only whoever clicked, never the whole channel.
+        buttons_title: What the buttons do
+        buttons_intro: "Every button does the same as the page, with the same permissions. Pressing it twice does not do the action twice."
+        buttons_b1: "I'm on it: on an error it assigns it to you, and needs the permission to assign errors. On other alerts taking it stays on the message."
+        buttons_b2: "Mute 1 hour: silences the whole rule, not only that alert, as from the rules page. It needs the permission to manage alerts."
+        buttons_b3: "Open ticket: for errors, slowdowns, logs, vulnerabilities and SEO checks it creates the ticket, only once. For other alerts the button opens the page."
+        buttons_b4: The message always shows the latest state, even when two people click almost together.

@@ -75,6 +75,8 @@ module Guides
       # CYRA-160 — dalla pagina in cui si sceglie ogni quanto arriva il riepilogo dei dati si va
       # alla guida che dice cosa contiene e perché non è la stessa cosa degli avvisi.
       [ %r{\A/member/preferences/notifications\b},                         "reports" ],
+      # CYRA-1156 — the alert channels open the guide on the Slack app channel, the one that needs setup.
+      [ %r{\A/member/alerting/channels\b},                                 "slack_alerts" ],
       # CYRA-441 — i contenitori: l'Amministrazione era un elenco nudo di voci, e piattaforme e
       # ambienti aprivano su una tabella senza una parola su cosa fossero. Dopo la regola della
       # guidance, così le istruzioni per gli assistenti restano sulla propria guida.

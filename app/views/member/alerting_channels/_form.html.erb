@@ -28,17 +28,22 @@
     <% end %>
 
     <div class="mt-6 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-5">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-controller="alerting--channel-kind">
         <%= render Ui::InputComponent.new(name: "name", label: t("member.alerting.channels.form.name"), required: true,
               value: channel.name, test_id: "alerting-channel-name", error: @errors&.dig(:name)&.first) %>
 
-        <%# Unico kind di canale esterno rimasto: webhook (Telegram è per-utente). Kind implicito. %>
-        <input type="hidden" name="kind" value="webhook">
+        <%# CYRA-1156 — two kinds: a webhook address or a channel of the Slack app (with buttons). %>
+        <%= render Ui::SelectComponent.new(name: "kind", label: t("member.alerting.channels.form.kind"),
+              options: ::Alerting::Channel.kinds.keys.map { |kind| [ t("member.alerting.channels.kinds.#{kind}"), kind ] },
+              selected: channel.kind, test_id: "alerting-channel-kind",
+              select_data: { "alerting--channel-kind-target": "kind", action: "change->alerting--channel-kind#refresh" }) %>
 
-        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <%= render "member/alerting_channels/slack_fields", channel: channel %>
+
+        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4" data-kind="webhook" data-alerting--channel-kind-target="field" <%= "hidden" unless channel.kind_webhook? %>>
           <%= render Ui::InputComponent.new(name: "webhook_url", label: t("member.alerting.channels.form.webhook_url"),
                 value: channel.webhook_url, hint: t("member.alerting.channels.form.webhook_url_hint"),
-                test_id: "alerting-channel-webhook-url", error: @errors&.dig(:config)&.first) %>
+                test_id: "alerting-channel-webhook-url", error: (@errors&.dig(:config)&.first if channel.kind_webhook?)) %>
           <%# Secret cifrato: mai ripopolato nel form (value vuoto). Se già impostato, il placeholder
               dice che lasciandolo vuoto si mantiene quello attuale (blank = invariato lato controller). %>
           <%= render Ui::InputComponent.new(name: "webhook_secret", label: t("member.alerting.channels.form.webhook_secret"),

@@ -26,6 +26,14 @@ RSpec.describe Alerting::Channel, type: :model do
       expect(build(:alerting_channel, config: { "url" => "ftp://x.test/hook" })).not_to be_valid
     end
 
+    # CYRA-1156 — the Slack app kind wants a Slack channel code and no address.
+    it "a Slack app channel needs a Slack channel code, not a webhook address" do
+      expect(build(:alerting_channel, :slack_app)).to be_valid
+      expect(build(:alerting_channel, :slack_app, config: { "slack_channel" => "general" })).not_to be_valid
+      expect(build(:alerting_channel, :slack_app, config: { "slack_channel" => "GENERAL" })).not_to be_valid
+      expect(build(:alerting_channel, :slack_app).target).to eq("C0123ABCD")
+    end
+
     it "nome duplicato nella stessa org → invalido; stessa org, nome diverso → ok" do
       existing = create(:alerting_channel, name: "Ops")
       dup = build(:alerting_channel, organization: existing.organization, name: "Ops")

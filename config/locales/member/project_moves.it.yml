@@ -76,6 +76,9 @@ it:
         alerting_notifications:
           one: "Un avviso inviato viene tolto."
           other: "%{count} avvisi inviati vengono tolti."
+        alerting_slack_messages:
+          one: "Un messaggio di avviso su Slack viene tolto."
+          other: "%{count} messaggi di avviso su Slack vengono tolti."
         agents_limit_reservations:
           one: "Una prenotazione dei limiti degli agent viene tolta."
           other: "%{count} prenotazioni dei limiti degli agent vengono tolte."

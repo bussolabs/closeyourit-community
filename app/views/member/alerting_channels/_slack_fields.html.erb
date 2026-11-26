@@ -1,0 +1,13 @@
+<%# locals: (channel:) %>
+<%# CYRA-1156 — the Slack channel the app writes in, by its code; the guide says how to find it and
+    which permissions the app needs. %>
+<div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4" data-kind="slack_app" data-alerting--channel-kind-target="field" data-test="alerting-channel-slack-fields" <%= "hidden" unless channel.kind_slack_app? %>>
+  <%= render Ui::InputComponent.new(name: "slack_channel", label: t("member.alerting.channels.form.slack_channel"),
+        value: channel.slack_channel, placeholder: "C0123456789", hint: t("member.alerting.channels.form.slack_channel_hint"),
+        test_id: "alerting-channel-slack-channel", error: (@errors&.dig(:config)&.first if channel.kind_slack_app?)) %>
+  <p class="self-end text-[12px] text-gray-500 dark:text-zinc-400 leading-relaxed">
+    <%= t("member.alerting.channels.form.slack_guide_intro") %>
+    <%= link_to t("member.alerting.channels.form.slack_guide_link"), member_guides_slack_alerts_path,
+          class: "font-medium text-indigo-600 dark:text-indigo-400 hover:underline", data: { test: "alerting-channel-slack-guide" } %>
+  </p>
+</div>
