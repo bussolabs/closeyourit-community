@@ -224,20 +224,18 @@ RSpec.describe Agents::Supporters::JudgePlan do
     expect(workflow.reload).to have_attributes(planned_at: nil, approved_at: nil, blocked_at: nil)
   end
 
-  it "still sends a plan back after two revisions" do
-    2.times do |i|
-      Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
-                                        target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 5)
-    end
+  it "does not send a plan back a second time" do
+    Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
+                                      target_digest: "old", outcome: "retried", engine: "codex", risk_score: 5)
 
-    expect(judge(recommendation: "revise").value[:outcome]).to eq("retried")
+    expect(judge(recommendation: "revise").value[:outcome]).not_to eq("retried")
   end
 
-  # CYRA-1345 — after three revisions the plan is not sent back again: it goes ahead with the gaps as
+  # CYRA-1345 — after the allowed revision the plan is not sent back again: it goes ahead with the gaps as
   # notes and a warning, whatever its risk. The budget is settled by the server (CYRA-1327) only where the
   # plan still waits for a person.
-  it "approves the plan with a warning after three revisions asked by the supporter" do
-    3.times do |i|
+  it "approves the plan with a warning after the revision asked by the supporter" do
+    described_class::MAX_REVISIONS.times do |i|
       Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
                                         target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 5)
     end
@@ -255,7 +253,7 @@ RSpec.describe Agents::Supporters::JudgePlan do
   # AC-3, AC-7 — a reserved topic, a suspected bypass or a risk above the line keep the hand-over: the
   # budget is not the only reason a person is wanted.
   it "leaves an exhausted plan to a person when something else also wants one" do
-    3.times do |i|
+    described_class::MAX_REVISIONS.times do |i|
       Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
                                         target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 5)
     end
@@ -266,8 +264,8 @@ RSpec.describe Agents::Supporters::JudgePlan do
 
   # CYRA-1197 — after three rounds the remaining gaps of a low-risk plan travel to the implementer as notes;
   # review, CI and the staging soak still stand between the work and production.
-  it "approves a low-risk plan after three revisions and keeps the gaps as notes for the implementer" do
-    3.times do |i|
+  it "approves a low-risk plan after the revision and keeps the gaps as notes for the implementer" do
+    described_class::MAX_REVISIONS.times do |i|
       Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
                                         target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 4)
     end
@@ -282,7 +280,7 @@ RSpec.describe Agents::Supporters::JudgePlan do
   # CYRA-1299 — a project with strict caps keeps that plan for a person.
   it "leaves an exhausted low-risk plan to a person when the project has strict caps" do
     project.update!(strict_caps: "1")
-    3.times do |i|
+    described_class::MAX_REVISIONS.times do |i|
       Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
                                         target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 4)
     end
@@ -296,7 +294,7 @@ RSpec.describe Agents::Supporters::JudgePlan do
   end
 
   it "never approves an exhausted plan that proposes to skip the system's gates" do
-    3.times do |i|
+    described_class::MAX_REVISIONS.times do |i|
       Agents::SupporterDecision.create!(organization:, workflow:, target_type: "plan", target_id: SecureRandom.uuid,
                                         target_digest: "old-#{i}", outcome: "retried", engine: "codex", risk_score: 4)
     end

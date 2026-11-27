@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.258.4] - 2026-11-27
+
+### Changed
+
+- **Il piano torna a chi lo scrive una volta sola.** Il giudice dei piani può chiedere un solo rifacimento, non tre: dopo, il piano va avanti con le note per chi fa il lavoro. (CYRA-1369)
+
 ## [0.258.3] - 2026-11-27
 
 ### Fixed

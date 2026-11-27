@@ -14,7 +14,8 @@ module Agents
 
       CONFIDENT = %w[medium high].freeze
       # CYRA-1197 — how many times the supporter may send a plan back before a person decides.
-      MAX_REVISIONS = 3
+      # CYRA-1369 — once: with three the planner rewrote every large plan four times before it went ahead.
+      MAX_REVISIONS = 1
       # CYRA-1197 — after the last revision a plan up to this risk is approved and its remaining gaps travel to the
       # implementer as notes: review, CI and the staging soak still stand before production.
       ACCEPT_WITH_NOTES_MAX = 5
