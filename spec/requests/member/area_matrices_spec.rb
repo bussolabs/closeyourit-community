@@ -159,6 +159,22 @@ RSpec.describe "Member — area landings as project tables", type: :request do
     end
   end
 
+  # CYRA-1372 — the one number of the week: work that reached production with no person approving a step.
+  describe "Automation, the work that arrived alone" do
+    it "counts the runs finished in the last 7 days that reached production with no person's approval" do
+      create(:agent_workflow, ticket: create(:ticket, project:), completed_at: 1.day.ago)
+      create(:agent_workflow, ticket: create(:ticket, project:), completed_at: 2.days.ago, approved_by: owner, approved_at: 3.days.ago)
+      create(:agent_workflow, ticket: create(:ticket, project:), cancelled_at: 1.day.ago)
+      create(:agent_workflow, ticket: create(:ticket, project:), completed_at: 9.days.ago)
+      sign_in(owner)
+
+      get member_automation_path
+
+      expect(value("automation", project.id, "alone")).to eq("1")
+      expect(cell("automation", project.id, "alone").text).to include("3")
+    end
+  end
+
   describe "SEO" do
     let(:environment) { create(:environment, organization:) }
 

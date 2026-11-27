@@ -17,27 +17,35 @@ module Agents
     # code diverse, e quella rimasta indietro proporrebbe lavoro che l'altra rifiuta — un ticket che
     # gira a vuoto senza che nessuno capisca perché.
     class ProductionLock
-      # «Produzione aperta»: avviata e non conclusa, oppure ferma su un blocco di quella fase.
-      #
-      # Il secondo ramo non è un di più. Quando un rilascio va male, `ReportFailure` e `MarkStale`
-      # RIAPRONO la fase — azzerano l'avvio — e solo dopo scrivono il blocco. Senza quel ramo, un
-      # rilascio fallito e in attesa di una persona smetterebbe di trattenere la fila, e il rilascio
-      # successivo partirebbe proprio mentre quello prima è rotto.
-      SQL = <<~SQL.squish.freeze
-        agents_workflows.cancelled_at IS NULL
-        AND agents_workflows.completed_at IS NULL
-        AND (
-          agents_workflows.closer_production_started_at IS NOT NULL
-          OR (agents_workflows.blocked_at IS NOT NULL AND agents_workflows.blocked_phase = 'closer_production')
-        )
-      SQL
+      # Open production: started and not stopped, or stopped on that phase (a failed release reopens the phase
+      # before the stop is written, so the stop itself must hold the lane).
+      # CYRA-1371 — a machine stop holds the lane for this long, then the next release goes: it is cut from main
+      # and carries the stopped work too. A release a person holds keeps it; a wait for the go-ahead never does.
+      MACHINE_STOP_HOLD = 1.hour
+      PERSON_HOLD_KIND = "held_by_person"
+      NEVER_HOLDS_KIND = "production_approval"
+
+      def self.sql(now: Time.current)
+        since = ActiveRecord::Base.connection.quote((now - MACHINE_STOP_HOLD).utc.to_fs(:db))
+        <<~SQL.squish
+          agents_workflows.cancelled_at IS NULL
+          AND agents_workflows.completed_at IS NULL
+          AND (
+            (agents_workflows.closer_production_started_at IS NOT NULL AND agents_workflows.blocked_at IS NULL)
+            OR (agents_workflows.blocked_at IS NOT NULL AND agents_workflows.blocked_phase = 'closer_production'
+                AND (agents_workflows.blocked_kind = '#{PERSON_HOLD_KIND}'
+                     OR (agents_workflows.blocked_kind IS DISTINCT FROM '#{NEVER_HOLDS_KIND}'
+                         AND agents_workflows.blocked_at > #{since})))
+          )
+        SQL
+      end
 
       # Le lavorazioni che trattengono la fila su questo repository, escluso il workflow dato.
       def self.holders(project:, except: nil)
         scope = Agents::Workflow
                 .joins(ticket: :project)
                 .where(projects: { id: project.id })
-                .where(SQL)
+                .where(sql)
         except ? scope.where.not(agents_workflows: { id: except.id }) : scope
       end
 
@@ -56,8 +64,14 @@ module Agents
       def self.open?(workflow)
         return false if workflow.cancelled_at? || workflow.completed_at?
 
-        workflow.closer_production_started_at? ||
-          (workflow.blocked_at? && workflow.blocked_phase == "closer_production")
+        workflow.blocked_at? ? stop_holds?(workflow) : workflow.closer_production_started_at?
+      end
+
+      def self.stop_holds?(workflow, now: Time.current)
+        return false unless workflow.blocked_phase == "closer_production"
+        return true if workflow.blocked_kind == PERSON_HOLD_KIND
+
+        workflow.blocked_kind != NEVER_HOLDS_KIND && workflow.blocked_at > now - MACHINE_STOP_HOLD
       end
     end
   end

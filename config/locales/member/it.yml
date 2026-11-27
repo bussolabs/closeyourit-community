@@ -297,6 +297,9 @@ it:
             one: ferma e in attesa di aiuto
             other: ferme e in attesa di aiuto
           zero: niente di bloccato
+        alone:
+          label: Da soli
+          caption: "in produzione senza una persona, su %{total} finiti in 7 giorni"
         datasets:
           label: Dataset
           caption:

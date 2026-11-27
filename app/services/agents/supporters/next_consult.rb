@@ -9,7 +9,8 @@ module Agents
     class NextConsult < ApplicationService
       # A held release waits for the person who held it. CYRA-1197 — a red proposal that already had its fix round
       # (CYRA-1195) is served too: the supporter reads the failure and may send it back with guidance.
-      CONSULTABLE_KINDS = %w[agent_blocked attempt_limit release_probe candidate_check].freeze
+      # CYRA-1370 — a review that kept failing and a trial release that did not arrive are machine stops too.
+      CONSULTABLE_KINDS = %w[agent_blocked attempt_limit release_probe candidate_check review_fault staging_deploy].freeze
       # Counted over the workflow's life. Each stop is judged once, so this is how many separate stops the
       # supporter may send back: enough for a conflict, then a red CI, then a review, without looping forever.
       MAX_RETRIES = 4
@@ -27,10 +28,13 @@ module Agents
       # 11: stops left by unreadable reports, review refusals and missing local databases are read once more (CYRA-1197).
       DIGEST_VERSION = 11
 
-      def self.digest(workflow)
+      # CYRA-1370 — the latest skills release is part of what was read: a stop judged before it is read again.
+      def self.digest(workflow, skills: latest_skills)
         "sha256:" + Digest::SHA256.hexdigest(JSON.generate([ DIGEST_VERSION, workflow.id, workflow.blocked_at&.to_i,
-                                                             workflow.blocked_kind, workflow.blocked_reason ]))
+                                                             workflow.blocked_kind, workflow.blocked_reason, skills ].compact))
       end
+
+      def self.latest_skills = Agents::SkillRelease.available.order(published_at: :desc, version: :desc).pick(:version)
 
       # What the supporter reads about the stop: the reason and the last attempts on the stopped phase.
       def self.stop(workflow)
@@ -68,10 +72,11 @@ module Agents
                                      .pluck(:workflow_id, :target_digest, :outcome)
         judged = decisions.to_set { |workflow_id, digest, _| [ workflow_id, digest ] }
         retries = decisions.select { |_, _, outcome| outcome == "retried" }.map(&:first).tally
+        skills = self.class.latest_skills
         workflows.each do |workflow|
           next if retries.fetch(workflow.id, 0) >= MAX_RETRIES
 
-          digest = self.class.digest(workflow)
+          digest = self.class.digest(workflow, skills:)
           next if judged.include?([ workflow.id, digest ]) || OfferLimit.resting?(@host, digest)
 
           OfferLimit.offered!(@host, digest)

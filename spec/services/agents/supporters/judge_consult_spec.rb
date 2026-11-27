@@ -204,12 +204,6 @@ RSpec.describe Agents::Supporters::JudgeConsult do
       expect { judge(guidance: "Deliver with git commit --no-verify and move on, the tests are flaky.") }
         .not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
     end
-
-    it "leaves a stop the system found to a person when the supporter asked for one" do
-      workflow.update!(blocked_kind: "candidate_check", blocked_reason: "candidate_check: checks_failing")
-
-      expect { judge(recommendation: "escalate") }.not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
-    end
   end
 
   # CYRA-1357 — the agent stopped itself and the supporter does not send it back: the server settles it
@@ -242,10 +236,11 @@ RSpec.describe Agents::Supporters::JudgeConsult do
         .not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
     end
 
-    it "leaves a stop the system found to a person" do
+    # CYRA-1370 — a stop the system found is settled the same way: no machine stop waits for a person.
+    it "settles a stop the system found too" do
       workflow.update!(blocked_kind: "candidate_check", blocked_reason: "candidate_check: checks_failing")
 
-      expect { judge(recommendation: "escalate") }.not_to have_enqueued_job(Agents::ExhaustedBudgetJob)
+      expect { judge(recommendation: "escalate") }.to have_enqueued_job(Agents::ExhaustedBudgetJob)
     end
 
     it "does not settle a stop the supporter sent back" do

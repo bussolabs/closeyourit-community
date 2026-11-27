@@ -288,6 +288,9 @@ en:
             one: stopped and waiting for help
             other: stopped and waiting for help
           zero: nothing stuck
+        alone:
+          label: Alone
+          caption: "in production with no person, out of %{total} finished in 7 days"
         datasets:
           label: Datasets
           caption:

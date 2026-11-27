@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.259.0] - 2026-11-27
+
+### Added
+
+- **Il numero della settimana.** La pagina Automazione mostra, per progetto e in totale, quanti lavori finiti negli ultimi 7 giorni sono arrivati in produzione senza l'approvazione di una persona. [Automazione](/member/automation)
+
+### Changed
+
+- **Un rilascio fermo non blocca più gli altri.** Se il rilascio di un lavoro si ferma, dopo un'ora i lavori dietro ripartono e portano in produzione anche quello fermo. Un lavoro che aspetta il tuo via non tiene fermi quelli che il via l'hanno già.
+- **Un lavoro fermato da un controllo non aspetta più una persona.** Se l'agente di supporto non lo rimanda indietro, il lavoro riparte una volta e poi viene messo da parte da solo. Dopo ogni aggiornamento delle istruzioni i lavori fermi vengono riletti. Restano a te soldi, segreti e cancellazioni. [Decisioni](/member/home/approvals)
+
 ## [0.258.4] - 2026-11-27
 
 ### Changed

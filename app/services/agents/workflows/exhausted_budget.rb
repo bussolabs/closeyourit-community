@@ -76,8 +76,9 @@ module Agents
       # exhausted budget instead of waiting for a person. A reason only a person owns keeps the hand-over.
       PERSON_OWNED_REASONS = %w[reserved_topic bypass_suspected ticket_concluded].freeze
 
+      # CYRA-1370 — the same for every stop a machine or the system left: none of them waits for a person.
       def self.settle_later_if_the_agent_gave_up(workflow:, reasons:)
-        return false unless workflow.blocked_kind == "agent_blocked"
+        return false unless Agents::Supporters::NextConsult::CONSULTABLE_KINDS.include?(workflow.blocked_kind)
         return false if reasons.empty? || (reasons & PERSON_OWNED_REASONS).any?
 
         settle_later(workflow)

@@ -47,6 +47,36 @@ RSpec.describe Agents::Workflows::ProductionLock do
       expect(described_class).to be_locked(project:)
     end
 
+    # CYRA-1371 — a machine stop holds the lane for one hour, then the next release goes: it is cut from main
+    # and carries the stopped work too.
+    it "a machine stop on production older than one hour no longer holds the lane" do
+      lavorazione(blocked_at: 61.minutes.ago, blocked_phase: "closer_production", blocked_kind: "release_probe",
+                  blocked_reason: "release_probe: release_proof_timeout")
+
+      expect(described_class).not_to be_locked(project:)
+    end
+
+    it "a release that started and then stopped is freed after the hour too" do
+      lavorazione(closer_production_started_at: 3.hours.ago, blocked_at: 2.hours.ago, blocked_phase: "closer_production",
+                  blocked_kind: "release_probe", blocked_reason: "release_probe: release_proof_timeout")
+
+      expect(described_class).not_to be_locked(project:)
+    end
+
+    it "a release a person is holding keeps the lane whatever its age" do
+      lavorazione(blocked_at: 3.days.ago, blocked_phase: "closer_production", blocked_kind: "held_by_person",
+                  blocked_reason: "held_by_person: Alessio")
+
+      expect(described_class).to be_locked(project:)
+    end
+
+    it "a release waiting for a person's go-ahead does not hold the ones that have it" do
+      lavorazione(blocked_at: Time.current, blocked_phase: "closer_production", blocked_kind: "production_approval",
+                  blocked_reason: "production_approval")
+
+      expect(described_class).not_to be_locked(project:)
+    end
+
     it "un blocco su un'altra fase non la trattiene" do
       lavorazione(closer_production_started_at: nil, blocked_at: Time.current,
                   blocked_phase: "autopilot", blocked_kind: "attempt_limit", blocked_reason: "attempt_limit: autopilot failed 2 times")
@@ -89,9 +119,17 @@ RSpec.describe Agents::Workflows::ProductionLock do
         blocked_reason: "attempt_limit: closer_production failed 2 times" },
       { blocked_at: Time.current, blocked_phase: "autopilot", blocked_kind: "attempt_limit",
         blocked_reason: "attempt_limit: autopilot failed 2 times" },
+      { blocked_at: 2.hours.ago, blocked_phase: "closer_production", blocked_kind: "release_probe",
+        blocked_reason: "release_probe: release_proof_timeout" },
+      { closer_production_started_at: 3.hours.ago, blocked_at: 2.hours.ago, blocked_phase: "closer_production",
+        blocked_kind: "agent_blocked", blocked_reason: "agent_blocked: release.sh failed" },
+      { blocked_at: 2.hours.ago, blocked_phase: "closer_production", blocked_kind: "held_by_person",
+        blocked_reason: "held_by_person: Alessio" },
+      { blocked_at: Time.current, blocked_phase: "closer_production", blocked_kind: "production_approval",
+        blocked_reason: "production_approval" },
       {}
     ].each do |attributi|
-      it "combaciano su #{attributi.keys.join(', ').presence || 'una lavorazione appena nata'}" do
+      it "combaciano su #{attributi.except(:blocked_reason).map { |key, value| value.is_a?(String) ? value : key }.join(', ').presence || 'una lavorazione appena nata'}" do
         workflow = lavorazione(**attributi)
 
         da_sql = described_class.holders(project:).exists?(id: workflow.id)

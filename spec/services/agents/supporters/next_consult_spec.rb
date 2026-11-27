@@ -53,6 +53,28 @@ RSpec.describe Agents::Supporters::NextConsult do
     expect(described_class.call(host:).value[:workflow_id]).to eq(workflow.id)
   end
 
+  # CYRA-1370 — a stop judged before a skills release is read again: the cause may be gone with it.
+  it "serves again a stop judged before the latest skills release" do
+    workflow = stopped
+    Agents::SupporterDecision.create!(organization:, workflow:, target_type: "consult", target_id: workflow.id,
+                                      target_digest: described_class.digest(workflow), outcome: "escalated",
+                                      engine: "codex", risk_score: 10, evidence: {})
+    expect(described_class.call(host:).value).to be_nil
+
+    create(:skill_release, version: "9.9.9")
+
+    expect(described_class.call(host: create(:agent_host, organization:)).value[:workflow_id]).to eq(workflow.id)
+  end
+
+  it "serves a review that kept failing and a trial release that did not arrive" do
+    faulty = stopped(kind: "review_fault", at: 2.hours.ago)
+    missing = stopped(kind: "staging_deploy", at: 1.hour.ago)
+
+    expect(described_class.call(host:).value).to include(workflow_id: faulty.id)
+    expect(described_class.call(host: create(:agent_host, organization:)).value).to be_present
+    expect(missing.blocked_kind).to be_in(described_class::CONSULTABLE_KINDS)
+  end
+
   it "skips stops on tickets already concluded" do
     concluded = stopped(at: 2.hours.ago)
     concluded.ticket.update_columns(status_id: create(:ticket_status, organization:, category: :done).id)

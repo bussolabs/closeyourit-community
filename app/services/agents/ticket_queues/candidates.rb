@@ -204,7 +204,7 @@ module Agents
           .from("agents_workflows AS altri")
           .joins("INNER JOIN ticketing_tickets ON ticketing_tickets.id = altri.ticket_id")
           .where("ticketing_tickets.project_id = ?", @project.id)
-          .where(Agents::Workflows::ProductionLock::SQL.gsub("agents_workflows.", "altri."))
+          .where(Agents::Workflows::ProductionLock.sql(now: @now).gsub("agents_workflows.", "altri."))
           .where("altri.id <> agents_workflows.id")
       end
 
