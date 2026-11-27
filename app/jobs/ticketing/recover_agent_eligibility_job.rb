@@ -47,14 +47,15 @@ module Ticketing
 
     private
 
-    # CYRA-1197 — open tickets whose advice is in but whose decision still waits: on projects with the supporter on,
-    # the advice becomes the decision (Ticketing::AutoDecideAgentEligibility), so the backlog does not wait for a person.
+    # CYRA-1197, CYRA-1219 — open team tickets whose favourable advice is in but whose decision still waits: on
+    # projects with the automatic go-ahead on, the same rule as right after the advice applies
+    # (Ticketing::AutoDecideAgentEligibility), so the backlog does not wait for a person.
     def decide_waiting_advice
       Ticketing::Ticket.joins(:status, :project)
                        .where(types_ticket_statuses: { category: Types::TicketStatus.categories.fetch("open") })
                        .where(agent_eligibility: :pending, agent_eligibility_source: :automatic)
-                       .where.not(agent_eligibility_advice: :unknown)
-                       .where(projects: { supporter_enabled: true })
+                       .where(agent_eligibility_advice: :allowed, origin: Ticketing::Ticket::TEAM_ORIGINS)
+                       .where(projects: { auto_go_ahead_enabled: true })
                        .find_each { |ticket| Ticketing::AutoDecideAgentEligibility.call(ticket:) }
     end
 

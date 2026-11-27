@@ -8,14 +8,17 @@ module Ticketing
   # the creator (CYRA-1086).
   # `notify: false` keeps the team quiet (a bulk first import of GitHub issues); `default_assignee: false`
   # leaves a ticket without an explicit assignee unassigned instead of inheriting one (CYRA-1055).
+  # `origin:` names the channel (Ticketing::Ticket::ORIGINS); the ticket keeps it with the account that
+  # typed it, `true_actor` before `reporter` (CYRA-1219). No origin is never a team ticket.
   class CreateTicket < ApplicationService
-    def initialize(organization:, reporter:, params:, true_actor: nil, use_project_owner: false,
+    def initialize(organization:, reporter:, params:, true_actor: nil, use_project_owner: false, origin: nil,
                    notify: true, default_assignee: true)
       @organization = organization
       @reporter = reporter
       @params = params
       @true_actor = true_actor
       @use_project_owner = use_project_owner
+      @origin = origin&.to_s
       @notify = notify
       @default_assignee = default_assignee
     end
@@ -27,7 +30,8 @@ module Ticketing
       named_reporter = resolve_reporter
       return err("R422-TICKET-023", :reporter_not_allowed) if named_reporter.nil?
 
-      ticket = @project.tickets.new(attributes.merge(reporter: named_reporter))
+      ticket = @project.tickets.new(attributes.merge(reporter: named_reporter, origin: @origin,
+                                                     created_by: @true_actor || @reporter))
       event = nil
       ApplicationRecord.transaction do
         ticket.save!
@@ -85,7 +89,7 @@ module Ticketing
     end
 
     def created_data(ticket)
-      data = { status: ticket.status&.label, priority: ticket.priority&.label }
+      data = { status: ticket.status&.label, priority: ticket.priority&.label, origin: @origin }.compact
       data[:on_behalf_of] = ticket.reporter.name if ticket.reporter_id != @reporter.id
       data
     end

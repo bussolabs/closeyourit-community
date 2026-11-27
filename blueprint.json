@@ -4199,7 +4199,7 @@
       "level": 3,
       "parent": "tkt_flow_eligibility",
       "kind": "step",
-      "summary": "Parte poco dopo creazione o modifica, e dopo il commento di una persona su un ticket non ancora consentito: una raffica di correzioni costa una sola valutazione. Salta se il testo non è cambiato o se ha deciso una persona. Col supporter acceso — come nasce ogni progetto — il parere diventa la decisione, salvo temi riservati o tentativi di aggirare i controlli: allora il ticket aspetta una persona e il motivo lo dice.",
+      "summary": "Parte poco dopo creazione o modifica di testo, allegati e commenti delle persone: una raffica di correzioni costa una sola valutazione. Una decisione manuale rimane invariata. Con il via libera automatico acceso, un parere favorevole aggiornato può autorizzare un ticket del team; temi riservati e tentativi di aggirare i controlli richiedono una persona.",
       "files": [
         "app/services/ticketing/agent_eligibility_queue.rb",
         "app/jobs/ticketing/evaluate_agent_eligibility_job.rb",
@@ -4223,10 +4223,23 @@
       "level": 3,
       "parent": "tkt_flow_eligibility",
       "kind": "step",
-      "summary": "Il parere dell'AI e la decisione sono due cose separate. La coda degli agenti guarda solo la decisione.",
+      "summary": "Parere e decisione restano separati. Il via libera automatico, spento di partenza, richiede il suo interruttore acceso, un ticket nato dal modulo, dalla riga di comando o da Telegram, un creatore umano del team (non il referente indicato) e parere favorevole sul contenuto corrente. Ogni canale di creazione dichiara la sua origine; help desk, consiglio, guasti al rilascio, figli di un epic, promozioni e ticket senza origine aspettano una persona. Non scrive mai «bloccato». Il salvataggio ricontrolla contenuto e decisione sotto lock, rispettando temi riservati e scelte manuali. Modifiche a testo, aggiunta e cancellazione di commenti o allegati ritirano il via libera automatico nella stessa transazione della cronologia: un errore annulla tutto. I file rimossi vengono eliminati fisicamente solo dopo il commit. Risposte superate vengono scartate. Spegnere l’interruttore impedisce nuovi via libera senza ritirare quelli precedenti; una successiva modifica del contenuto li ritira comunque. La cronologia registra origine, motivazione e impronta del parere utilizzato.",
       "files": [
         "app/services/ticketing/set_agent_eligibility.rb",
-        "app/services/ticketing/auto_decide_agent_eligibility.rb"
+        "app/services/ticketing/auto_decide_agent_eligibility.rb",
+        "app/services/ticketing/create_ticket.rb",
+        "app/services/ticketing/update_ticket.rb",
+        "app/services/ticketing/attach_to_ticket.rb",
+        "app/services/ticketing/remove_attachment.rb",
+        "app/services/ticketing/add_comment.rb",
+        "app/services/ticketing/delete_comment.rb",
+        "app/services/ticketing/archive_technical_analysis.rb",
+        "app/jobs/ticketing/compact_comment_job.rb",
+        "app/jobs/ticketing/relabel_analysis_job.rb",
+        "app/services/github/issues/comments.rb",
+        "app/models/ticketing/ticket.rb",
+        "app/presenters/ticketing/activity_presenter.rb",
+        "db/migrate/20261127090100_switch_the_automatic_go_ahead_on_for_supporter_projects.rb"
       ]
     },
     {
@@ -4247,7 +4260,7 @@
       "level": 3,
       "parent": "tkt_flow_eligibility",
       "kind": "step",
-      "summary": "Ogni ora, al minuto 50, si rivalutano i ticket rimasti senza parere per un guasto del server AI, con un tetto per giro. Nei progetti con il supporter acceso, i ticket con un parere ma ancora senza decisione la ricevono dal parere.",
+      "summary": "Ogni ora, al minuto 50, si rivalutano i ticket rimasti senza parere per un guasto del server AI, con un tetto per giro. Nei progetti con il via libera automatico acceso, i ticket del team con un parere favorevole ma ancora senza decisione ricevono il via libera, con le stesse regole del parere appena arrivato.",
       "files": [
         "app/jobs/ticketing/recover_agent_eligibility_job.rb",
         "config/recurring.yml"

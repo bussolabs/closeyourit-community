@@ -49,6 +49,18 @@ RSpec.describe Github::Issues::Comments do
     expect(link.ticket.comments.find_by(github_comment_id: 555).body).to eq("Anzi no, era la cache")
   end
 
+  # CYRA-1219 — the edit changes what the advice read: the automatic go-ahead goes back at once.
+  it "takes back an automatic go-ahead when a GitHub comment is edited" do
+    described_class.import(link:, comment:, account:)
+    ticket = link.ticket.reload
+    ticket.update!(agent_eligibility: :allowed, agent_eligibility_source: :automatic, agent_eligibility_advice: :allowed,
+                   agent_eligibility_checksum: Ticketing::AgentEligibilityText.checksum(ticket:))
+
+    described_class.edit(link:, comment: comment("body" => "Anzi no, era la cache"))
+
+    expect(ticket.reload).to be_agent_eligibility_pending
+  end
+
   it "an empty comment, or one without an id, lands nowhere" do
     expect(described_class.import(link:, comment: comment("body" => "  "), account:)).to be_nil
     expect(described_class.import(link:, comment: comment("id" => nil), account:)).to be_nil

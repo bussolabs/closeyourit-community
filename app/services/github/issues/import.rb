@@ -62,7 +62,7 @@ module Github
 
       def create_ticket(description, assignee)
         Ticketing::CreateTicket.call(
-          organization:, reporter: @account, notify: @notify, default_assignee: false,
+          organization:, reporter: @account, notify: @notify, default_assignee: false, origin: :github_import,
           params: {
             project_id: project.id, title: Text.title(@issue["title"]), description:,
             kind: @repository.kind_for_labels(remote["labels"]) || DEFAULT_KIND,

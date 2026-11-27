@@ -128,8 +128,12 @@ module Ticketing
       @visible_ticket_ids = visible_ticket_ids
     end
 
+    # CYRA-1219 — the automatic go-ahead, its withdrawal and the rollout's reopening never look like a person's choice.
+    GO_AHEAD_ICONS = { "automatic" => "badge-check", "withdrawn" => "shield-off", "rollout_reopened" => "rotate-ccw" }.freeze
+
     def icon
-      ICONS.fetch(@event.action, "info")
+      go_ahead = @event.data["go_ahead"] if @event.action == "agent_eligibility_overridden"
+      GO_AHEAD_ICONS[go_ahead] || ICONS.fetch(@event.action, "info")
     end
 
     # L'attore reale è un'automazione (agente/host) quando è un service account. È il segnale che
@@ -205,9 +209,27 @@ module Ticketing
     # PARERE, quello umano la DECISIONE. La vecchia chiave resta letta per seconda — gli eventi
     # scritti prima della separazione sono nel database e devono continuare a leggersi.
     def agent_eligibility_sentence
+      return go_ahead_sentence if @event.data["go_ahead"].present?
+
       to = (dig("agent_eligibility_advice", "to") || dig("agent_eligibility", "to")).to_s
       value = I18n.t("member.tickets.activity.agent_eligibility_value.#{to}", default: to)
       I18n.t("member.tickets.activity.#{@event.action}", actor: actor_name, to: value)
+    end
+
+    # CYRA-1219 — the automatic go-ahead says so, and on which advice; taking it back says why the ticket waits
+    # again. Events written before it carry no `go_ahead` and keep the sentence above.
+    def go_ahead_sentence
+      case @event.data["go_ahead"]
+      when "withdrawn"
+        key = @event.data["withdrawn_because"] == "content_changed" ? "_on_change" : ""
+        return I18n.t("member.tickets.activity.agent_eligibility_go_ahead_withdrawn#{key}", actor: actor_name)
+      when "rollout_reopened" then return I18n.t("member.tickets.activity.agent_eligibility_rollout_reopened", actor: actor_name)
+      end
+
+      reason = @event.data["advice_reason"].to_s.strip.truncate(240)
+      return I18n.t("member.tickets.activity.agent_eligibility_auto_go_ahead", actor: actor_name) if reason.empty?
+
+      I18n.t("member.tickets.activity.agent_eligibility_auto_go_ahead_with_reason", actor: actor_name, reason:)
     end
 
     # CYRA-789 — il collegamento fra ticket attraversa i progetti di proposito (il gate duplicati lo

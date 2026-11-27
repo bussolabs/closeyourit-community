@@ -23,7 +23,7 @@ module Projects
           next Result.ok(Outcome.new(ticket: existing, created: false)) if existing
 
           created = Ticketing::CreateTicket.call(organization: @project.organization, reporter: cto,
-                                                 params: ticket_params)
+                                                 params: ticket_params, origin: :deploy_failure)
           created.ok? ? Result.ok(Outcome.new(ticket: created.value, created: true)) : created
         end
       end

@@ -19,7 +19,7 @@ module Ticketing
     def enqueue(ticket:, wait: Ticketing::Constants::AGENT_ELIGIBILITY_DEBOUNCE)
       job = Ticketing::EvaluateAgentEligibilityJob
       job = job.set(wait: wait) if wait
-      job.perform_later(ticket_id: ticket.id)
+      ActiveRecord.after_all_transactions_commit { job.perform_later(ticket_id: ticket.id) }
       true
     end
   end

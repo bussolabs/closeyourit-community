@@ -63,6 +63,13 @@ en:
           no_reply: "If you do not reply nothing happens: that job stays exactly where it is. Whoever asked tries again later, finds the same silence and keeps waiting."
           no_deadline: "No request expires and none approves itself. Without an answer that ticket goes nowhere, and nobody carries it forward in your place."
           cta: Go to Approvals
+        go_ahead_title: The automatic go-ahead
+        go_ahead:
+          intro: "A ticket reaches the agents' queue only with the go-ahead. A person usually gives it; with «Automatic go-ahead» on in the project settings the AI's opinion gives it, but only when it is favourable."
+          team: "It applies to tickets written by a person of the team, from the form, the command line or Telegram. Customers, machine accounts, the help desk and tickets created automatically always wait for a person."
+          hold: "If the ticket is about money, secrets, access or deleting data, or proposes to skip the checks, it waits and says why."
+          change: "If the text changes, the go-ahead is taken back at once and comes back by itself only with a new favourable opinion."
+          person: "A choice made by a person is never changed. The ticket's history shows when the go-ahead was automatic."
         certification_title: Clearing a machine to run, and taking it back
         certification:
           intro: "A machine that has just connected does no work: first a person has to say it may. The choice can be undone at any time."

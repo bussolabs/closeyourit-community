@@ -13,16 +13,17 @@ module Ticketing
     end
 
     def call
-      attachment = @ticket.files.find(@attachment_id)
-      filename = attachment.filename.to_s
-      # Log nella transazione; purge DOPO il commit: il file fisico NON è transazionale, un
-      # rollback dopo il purge perderebbe il binario. Se il purge fallisse, il male minore è
-      # un evento "rimosso" con file ancora presente (recuperabile), non un file perso.
-      ApplicationRecord.transaction do
+      @ticket.with_lock do
+        attachment = @ticket.files.find(@attachment_id)
+        filename = attachment.filename.to_s
+        blob = attachment.blob
+        attachment.destroy!
+        SetAgentEligibility.call(ticket: @ticket, source: :invalidate, locked: true)
         RecordActivity.call(ticket: @ticket, actor: @actor, true_actor: @true_actor,
                             action: "attachment_removed", data: { filename: filename })
+        # Detach and withdraw atomically; physical storage is touched only after commit. CYRA-1219.
+        ActiveRecord.after_all_transactions_commit { blob.purge_later }
       end
-      attachment.purge
       # Il fingerprint degli allegati entra nel checksum del gate agenti (CYRA-184): togliere un
       # allegato cambia ciò che il modello vedrebbe, quindi va rivalutato. `files.reload` è
       # necessario: senza, l'associazione in memoria porta ancora l'allegato appena purgato e il

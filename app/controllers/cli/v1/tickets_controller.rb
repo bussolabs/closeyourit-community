@@ -55,7 +55,7 @@ module Cli
           organization: Current.organization,
           reporter: Current.account,
           true_actor: Current.account,
-          params: ticket_params,
+          params: ticket_params, origin: :cli,
           # CYRA-1086 — a person typing a ticket names the project owner; a machine does not.
           use_project_owner: Current.account.human?
         )

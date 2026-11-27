@@ -1,0 +1,12 @@
+<%# CYRA-1219 — when a ticket reaches the agents without a click, and what keeps it waiting for a person. %>
+<div class="rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900" data-test="member-guide-agents-go-ahead">
+  <div class="px-4 py-3 border-b border-stone-200 dark:border-zinc-800"><h2 class="font-display text-[14px] font-semibold text-zinc-900 dark:text-zinc-100"><%= t("member.guides.agents.go_ahead_title") %></h2></div>
+  <div class="px-4 py-4 space-y-3">
+    <p class="text-[13px] text-gray-600 dark:text-zinc-400 leading-relaxed"><%= t("member.guides.agents.go_ahead.intro") %></p>
+    <ul class="space-y-2 text-[12.5px] text-gray-600 dark:text-zinc-400">
+      <% %w[team hold change person].each do |key| %>
+        <li class="flex items-start gap-2.5"><%= render Ui::IconComponent.new(name: "badge-check", class: "text-indigo-500 dark:text-indigo-400 text-[12px] mt-0.5 w-4 text-center") %><span><%= t("member.guides.agents.go_ahead.#{key}") %></span></li>
+      <% end %>
+    </ul>
+  </div>
+</div>

@@ -15,7 +15,7 @@ module Helpdesk
       return already_handled unless @request.open?
 
       result = Ticketing::CreateTicket.call(
-        organization: organization, reporter: @reporter, true_actor: @true_actor, params: ticket_params
+        organization: organization, reporter: @reporter, true_actor: @true_actor, params: ticket_params, origin: :helpdesk
       )
       @request.update!(ticket: result.value, status: :converted) if result.ok?
       result

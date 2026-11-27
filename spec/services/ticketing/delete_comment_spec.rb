@@ -30,10 +30,16 @@ RSpec.describe Ticketing::DeleteComment do
 
   it "blocca ticket prima del commento secondo il protocollo del claim queue" do
     comment
-    expect(ticket).to receive(:lock!).ordered.and_call_original
-    expect(comment).to receive(:lock!).ordered.and_call_original
+    locks = []
+    allow(ticket).to receive(:lock!).and_wrap_original { |original, *args| locks << :ticket && original.call(*args) }
+    allow(comment).to receive(:lock!).and_wrap_original { |original, *args| locks << :comment && original.call(*args) }
 
     described_class.call(comment:, actor: author)
+
+    # Il ritiro del via libera (CYRA-1219) rientra nel lock del ticket già tenuto: conta l'ordine
+    # delle prime acquisizioni, ticket prima del commento.
+    expect(locks.first(2)).to eq(%i[ticket comment])
+    expect(locks.drop(2)).to all(eq(:ticket))
   end
 
   it "registra un evento `comment_deleted` con attore e nome autore snapshottato (audit)" do

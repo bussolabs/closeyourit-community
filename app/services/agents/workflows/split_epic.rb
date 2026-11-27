@@ -45,7 +45,7 @@ module Agents
 
       def create_child!(child)
         result = Ticketing::CreateTicket.call(organization: @workflow.organization, reporter: @actor,
-                                              true_actor: @actor, params: child_params(child))
+                                              true_actor: @actor, params: child_params(child), origin: :epic_split)
         raise Failed, result.error if result.err?
 
         result.value

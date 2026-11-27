@@ -55,6 +55,12 @@ FactoryBot.define do
       ticket.create_agent_workflow!(triage_requested_at: Time.current) if evaluator.with_agent_workflow && !ticket.agent_workflow
     end
 
+    # CYRA-1219 — typed in the form by the reporter, as Ticketing::CreateTicket records it.
+    trait :team_created do
+      origin { "form" }
+      created_by { reporter }
+    end
+
     # Ticket "da testo semplice": solo la description libera, nessuno scenario.
     trait :plain_bug do
       kind { :bug }

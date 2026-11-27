@@ -25,12 +25,14 @@ module Ticketing
         ticket.lock!
         @comment.lock!
         @comment.destroy!
+        SetAgentEligibility.call(ticket: ticket, source: :invalidate, locked: true)
         RecordActivity.call(ticket: ticket, actor: @actor, true_actor: @true_actor,
                             action: "comment_deleted", data: { author_name: author_name })
       end
       # Realtime dopo il commit (destroy persistito): rimuove la bolla dalla timeline e aggiorna il
       # contatore. L'evento `comment_deleted` entra in timeline via RecordActivity (after-commit).
       broadcast_removal(ticket)
+      AgentEligibilityQueue.enqueue(ticket:) if ticket.agent_eligibility_stale?
       # Its twin on the linked issue goes too (CYRA-1055).
       ::Github::Issues::Outbound.comment_removed(@comment)
       Result.ok(@comment)

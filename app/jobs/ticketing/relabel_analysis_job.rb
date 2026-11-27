@@ -67,8 +67,9 @@ module Ticketing
       previous = ticket.technical_analysis
       embedding_before = Ticketing::EmbeddingText.checksum(ticket: ticket)
 
-      ApplicationRecord.transaction do
+      ticket.with_lock do
         ticket.update!(technical_analysis: analysis, analysis_relabeled_at: Time.current)
+        withdraw_go_ahead(ticket)
         # Stessa forma del diff di Ticketing::UpdateTicket#log_changes — coppia [prima, dopo] sotto
         # la chiave della colonna — così la cronologia lo rende come ogni altra modifica del corpo,
         # senza un ramo dedicato nel presenter. Non l'ha deciso una persona: l'autore è dichiarato
@@ -84,6 +85,14 @@ module Ticketing
       return if Ticketing::EmbeddingText.checksum(ticket: ticket) == embedding_before
 
       Ticketing::EmbedTicketJob.perform_later(ticket_id: ticket.id)
+    end
+
+    # CYRA-1219 — a rewritten analysis takes back an automatic go-ahead at once; only those tickets are
+    # assessed again, so a relabel run still costs no call for the others.
+    def withdraw_go_ahead(ticket)
+      was_allowed = ticket.agent_eligibility_allowed?
+      Ticketing::SetAgentEligibility.call(ticket:, source: :invalidate)
+      Ticketing::AgentEligibilityQueue.enqueue(ticket:) if was_allowed && ticket.agent_eligibility_pending?
     end
   end
 end

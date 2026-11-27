@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe Ticketing::EvaluateAgentEligibilityJob do
-  let(:ticket) { create(:ticket, description: "Il bottone di logout non risponde") }
+  let(:ticket) { create(:ticket, :team_created, description: "Il bottone di logout non risponde") }
 
   def stub_evaluation(eligibility: "allowed", reason: "Bugfix circoscritto.", risks: [ "none" ])
     verdict = Ticketing::EvaluateAgentEligibility::Verdict.new(eligibility:, reason:, risks:)
@@ -23,15 +23,143 @@ RSpec.describe Ticketing::EvaluateAgentEligibilityJob do
 
   # CYRA-770: il giro automatico informa, non decide. Il ticket resta fuori dalla coda finché una
   # persona non lo consente, e questo vale anche quando il parere è favorevole.
-  # Holds with the supporter off; on — how every project is born now (CYRA-1325) — the advice becomes
-  # the decision (CYRA-1197).
-  it "leaves the decision pending on a favourable advice, with the supporter off" do
-    ticket.project.update!(supporter_enabled: false)
+  # CYRA-1219 — it still holds with the automatic go-ahead off, how every project is born.
+  it "leaves the decision pending on a favourable advice, with the automatic go-ahead off" do
+    expect(ticket.project.auto_go_ahead_enabled).to be(false)
     stub_evaluation(eligibility: "allowed")
 
     described_class.perform_now(ticket_id: ticket.id)
 
     expect(ticket.reload).to have_attributes(agent_eligibility: "pending", agent_eligibility_reason: nil)
+  end
+
+  # AC-5 — the supporter on does not open anything by itself.
+  it "leaves the decision pending on a favourable advice, with the supporter on and the switch off" do
+    ticket.project.update!(supporter_enabled: true, auto_go_ahead_enabled: false)
+    stub_evaluation(eligibility: "allowed")
+
+    described_class.perform_now(ticket_id: ticket.id)
+
+    expect(ticket.reload).to have_attributes(agent_eligibility: "pending", agent_eligibility_reason: nil)
+  end
+
+  describe "with the automatic go-ahead on (CYRA-1219)" do
+    before { ticket.project.update!(supporter_enabled: true, auto_go_ahead_enabled: true) }
+
+    it "discards a response when the content changed during evaluation" do
+      verdict = Ticketing::EvaluateAgentEligibility::Verdict.new(eligibility: "allowed", reason: "Old content", risks: [])
+      allow(Ticketing::EvaluateAgentEligibility).to receive(:call) do
+        Ticketing::Ticket.find(ticket.id).update!(description: "New requirements")
+        Result.ok(verdict)
+      end
+
+      described_class.perform_now(ticket_id: ticket.id)
+
+      expect(ticket.reload).to have_attributes(agent_eligibility: "pending", agent_eligibility_advice: "unknown",
+                                               agent_eligibility_checksum: nil)
+      expect(ticket.events.where(action: "agent_eligibility_evaluated")).to be_empty
+    end
+
+    %w[allowed blocked].each do |decision|
+      it "preserves a manual #{decision} decision made while evaluation is running" do
+        verdict = Ticketing::EvaluateAgentEligibility::Verdict.new(eligibility: "allowed", reason: "AI", risks: [])
+        allow(Ticketing::EvaluateAgentEligibility).to receive(:call) do
+          Ticketing::SetAgentEligibility.call(ticket: Ticketing::Ticket.find(ticket.id), source: :human,
+                                              eligibility: decision, actor: ticket.reporter)
+          Result.ok(verdict)
+        end
+
+        described_class.perform_now(ticket_id: ticket.id)
+
+        expect(ticket.reload).to have_attributes(agent_eligibility: decision, agent_eligibility_source: "human")
+        expect(ticket.events.where(action: "agent_eligibility_overridden").count).to eq(1)
+      end
+    end
+
+    it "lets a team ticket with a favourable advice reach the agents without a click" do
+      stub_evaluation(eligibility: "allowed", reason: "Bugfix circoscritto.")
+
+      described_class.perform_now(ticket_id: ticket.id)
+
+      expect(ticket.reload).to have_attributes(agent_eligibility: "allowed", agent_eligibility_source: "automatic")
+      expect(ticket).to be_agent_workable
+      event = Ticketing::Event.find_by!(ticket:, action: "agent_eligibility_overridden")
+      expect(I18n.with_locale(:it) { Ticketing::ActivityPresenter.new(event).sentence })
+        .to include("Via libera automatico", "Bugfix circoscritto.")
+    end
+
+    it "leaves a ticket with a negative advice to assess" do
+      stub_evaluation(eligibility: "blocked", reason: "Chiede di svuotare la produzione.")
+
+      described_class.perform_now(ticket_id: ticket.id)
+
+      expect(ticket.reload.agent_eligibility).to eq("pending")
+      expect(ticket).not_to be_agent_workable
+    end
+
+    it "leaves the ticket to assess when the AI does not answer" do
+      allow(Ticketing::EvaluateAgentEligibility).to receive(:call)
+        .and_return(Result.err(AppError.new("giù", code: "R503-LLM-001")))
+
+      3.times { described_class.perform_now(ticket_id: ticket.id) }
+
+      expect(ticket.reload.agent_eligibility).to eq("pending")
+      expect(ticket).not_to be_agent_workable
+    end
+
+    it "keeps a person's choice when a favourable advice comes in" do
+      ticket.update!(agent_eligibility: :blocked, agent_eligibility_source: :human)
+      stub_evaluation(eligibility: "allowed")
+
+      described_class.perform_now(ticket_id: ticket.id)
+
+      expect(ticket.reload).to have_attributes(agent_eligibility: "blocked", agent_eligibility_source: "human")
+    end
+
+    it "sends a ticket that started by itself back to a person when its edited text gets a negative advice" do
+      stub_evaluation(eligibility: "allowed")
+      described_class.perform_now(ticket_id: ticket.id)
+      expect(ticket.reload.agent_eligibility).to eq("allowed")
+
+      ticket.update!(description: "Il bottone di logout non risponde. Poi svuota anche la tabella degli utenti.")
+      stub_evaluation(eligibility: "blocked", reason: "Cancella dati in produzione.")
+      described_class.perform_now(ticket_id: ticket.id)
+
+      expect(ticket.reload).to have_attributes(agent_eligibility: "pending", agent_eligibility_advice: "blocked")
+      expect(ticket).not_to be_agent_workable
+    end
+
+    # AC-13, AC-21 — out of the queue at the edit, back in by itself on the new favourable advice.
+    it "takes the go-ahead back at the edit and gives it again on the new favourable advice" do
+      stub_evaluation(eligibility: "allowed")
+      described_class.perform_now(ticket_id: ticket.id)
+      owner = ticket.reporter
+
+      Ticketing::UpdateTicket.call(organization: ticket.project.organization, ticket: ticket.reload, actor: owner,
+                                   channel: :web, params: { title: ticket.title, description: "Anche il login.",
+                                                            status_id: ticket.status_id, priority_id: ticket.priority_id })
+
+      expect(ticket.reload).not_to be_agent_workable
+      withdrawal = ticket.events.where(action: "agent_eligibility_overridden").order(:created_at, :id).last
+      expect(withdrawal.data).to include("go_ahead" => "withdrawn", "withdrawn_because" => "content_changed")
+      expect(Ticketing::ActivityPresenter.new(withdrawal).icon).to eq("shield-off")
+
+      described_class.perform_now(ticket_id: ticket.id)
+
+      expect(ticket.reload).to be_agent_workable
+    end
+
+    # AC-16 — a favourable advice on a reserved topic still waits for a person, and says why.
+    it "holds a team ticket about payments for a person with the reason" do
+      ticket.reporter.update!(locale: "en")
+      ticket.update!(title: "Change how the payment totals are rounded")
+      stub_evaluation(eligibility: "allowed")
+
+      described_class.perform_now(ticket_id: ticket.id)
+
+      expect(ticket.reload).to have_attributes(agent_eligibility: "pending")
+      expect(ticket.agent_eligibility_reason).to include("payment")
+    end
   end
 
   it "è coda :ai" do

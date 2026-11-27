@@ -30,6 +30,7 @@ en:
         consult_not_found: Workflow not found.
         consult_stale: The workflow moved or was already decided. Take the updated one.
       activity_actor: Supporter
+      go_ahead_withdrawn: "The go-ahead was automatic, but the AI's new opinion no longer allows it: a person decides before the machines work on it."
       held_for_person:
         reserved: "The check would allow it, but the ticket is about %{topics} (%{words}): a person decides before the machines work on it."
         bypass: "The check would allow it, but the ticket proposes to skip the system's checks: a person decides before the machines work on it."

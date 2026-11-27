@@ -43,6 +43,9 @@ RSpec.describe "Api::V1::DeployFailures", type: :request do
     expect(ticket.reporter).to eq(cto)
     expect(ticket).to be_kind_bug
     expect(ticket.priority.code).to eq("high")
+    # CYRA-1219 AC-20 — born in the CTO's name, written by the machine: never the team's.
+    expect(ticket).to have_attributes(origin: "deploy_failure", created_by: cto)
+    expect(ticket).not_to be_team_authored
   end
 
   it "la stessa versione due volte non duplica il ticket" do

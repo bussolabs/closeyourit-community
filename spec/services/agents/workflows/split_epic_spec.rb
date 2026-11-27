@@ -54,6 +54,15 @@ RSpec.describe Agents::Workflows::SplitEpic do
     expect(Ticketing::Event.where(ticket: last, action: "dependency_added", actor: cto).count).to eq(2)
   end
 
+  # CYRA-1219 AC-20 — an agent wrote the children's text, so a person of the team approving does not make them the team's.
+  it "creates children that wait for a person even with the automatic go-ahead on" do
+    project.update!(auto_go_ahead_enabled: true)
+    approve
+
+    expect(epic.children.map(&:origin)).to all(eq("epic_split"))
+    expect(epic.children).to all(satisfy { |created| !created.team_authored? })
+  end
+
   it "ends the epic's run instead of moving on to writing code" do
     expect(approve).to be_ok
 

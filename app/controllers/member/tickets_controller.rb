@@ -68,7 +68,7 @@ module Member
       result = Ticketing::CreateTicket.call(
         organization: Current.organization, reporter: Current.account,
         true_actor: Current.true_account, params: create_params,
-        use_project_owner: true
+        use_project_owner: true, origin: :form
       )
       if result.ok?
         linked = link_selected(result.value, targets)

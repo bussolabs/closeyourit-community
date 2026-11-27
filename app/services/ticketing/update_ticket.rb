@@ -20,6 +20,12 @@ module Ticketing
     end
 
     def call
+      @ticket.with_lock { update_locked }
+    end
+
+    private
+
+    def update_locked
       return body_locked if body_change_requested? && @ticket.agent_workflow&.body_locked?
 
       # Snapshot PRIMA dell'assign: per priority/parent servono label/codice di partenza; le platforms
@@ -47,7 +53,7 @@ module Ticketing
       # (re-embed, gate agenti) restano fuori dalla transazione, dopo il commit riuscito.
       semantic_changed = false
       typed_change = nil
-      ApplicationRecord.transaction do
+      ApplicationRecord.transaction(requires_new: true) do
         @ticket.save!
         # The one list reads the same rows as the two formats just saved: drop what it had loaded (CYRA-1318).
         @ticket.acceptance_items.reset
@@ -63,13 +69,17 @@ module Ticketing
         # risale al chiamante.
         typed_change = apply_typed_changes
         raise ActiveRecord::Rollback if typed_change
+
+        SetAgentEligibility.call(ticket: @ticket, source: :invalidate, locked: true)
       end
       return typed_change if typed_change
 
-      # Fuori transazione, mai after_commit.
-      Ticketing::EmbedTicketJob.perform_later(ticket_id: @ticket.id) if semantic_changed
-      # CYRA-1163 — new links, or cards expired since the last save: read again in the background.
-      Ticketing::LinkPreviews::RefreshJob.enqueue_for(@ticket)
+      # Jobs are deferred until the outer ticket lock transaction commits.
+      if semantic_changed
+        ActiveRecord.after_all_transactions_commit { Ticketing::EmbedTicketJob.perform_later(ticket_id: @ticket.id) }
+      end
+      # New links and expired cards are refreshed after the locked save commits (CYRA-1163, CYRA-1219).
+      ActiveRecord.after_all_transactions_commit { Ticketing::LinkPreviews::RefreshJob.enqueue_for(@ticket) }
       Agents::Workflows::ReopenPlanForItems.call(ticket: @ticket) if items_changed?(before)
       # Rivalutazione del gate agenti (CYRA-184). La condizione è `stale?` e NON una seconda lista di
       # colonne osservate: quella di EmbeddingText esclude le condizioni DoD e ignora gli allegati,

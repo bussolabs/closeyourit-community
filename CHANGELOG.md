@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.258.0] - 2026-11-27
+
+### Changed
+
+- **Via libera automatico**: nelle impostazioni del progetto un interruttore fa partire da soli i ticket scritti dal team, quando l'AI dà un parere favorevole. Argomenti delicati e testi cambiati aspettano una persona, e le scelte delle persone restano. Acceso dove il supporter era attivo. ([guida](/member/guides/agents))
+
 ## [0.257.2] - 2026-11-26
 
 ### Security

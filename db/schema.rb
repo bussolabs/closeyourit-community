@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_26_120006) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_27_090100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -3020,6 +3020,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120006) do
     t.boolean "council_enabled", default: false, null: false
     t.boolean "automator_live_code_enabled", default: false, null: false
     t.boolean "production_approval_required", default: false, null: false
+    t.boolean "auto_go_ahead_enabled", default: false, null: false
     t.index ["created_by_id"], name: "index_projects_on_created_by_id"
     t.index ["cto_id"], name: "index_projects_on_cto_id"
     t.index ["default_assignee_id"], name: "index_projects_on_default_assignee_id"
@@ -4349,9 +4350,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120006) do
     t.integer "weight"
     t.integer "last_acceptance_item_number", default: 0, null: false
     t.jsonb "github_issue_publication", default: {}, null: false, comment: "Publication claim and received issue: retries never create a second issue."
+    t.string "origin"
+    t.uuid "created_by_id"
     t.index ["agent_eligibility_decided_by_id"], name: "index_ticketing_tickets_on_agent_eligibility_decided_by"
     t.index ["assignee_id"], name: "index_ticketing_tickets_on_assignee_id"
     t.index ["closed_at"], name: "index_ticketing_tickets_on_closed_at"
+    t.index ["created_by_id"], name: "index_ticketing_tickets_on_created_by_id"
     t.index ["due_at"], name: "index_ticketing_tickets_on_due_at"
     t.index ["embedding"], name: "index_ticketing_tickets_on_embedding", opclass: :vector_cosine_ops, using: :hnsw
     t.index ["embedding_version"], name: "index_ticketing_tickets_on_embedding_version"
@@ -5466,6 +5470,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120006) do
   add_foreign_key "ticketing_ticket_moves", "ticketing_tickets", column: "ticket_id", on_delete: :cascade
   add_foreign_key "ticketing_tickets", "accounts", column: "agent_eligibility_decided_by_id", on_delete: :nullify
   add_foreign_key "ticketing_tickets", "accounts", column: "assignee_id"
+  add_foreign_key "ticketing_tickets", "accounts", column: "created_by_id", on_delete: :nullify
   add_foreign_key "ticketing_tickets", "accounts", column: "reporter_id"
   add_foreign_key "ticketing_tickets", "accounts", column: "reviewer_id", on_delete: :nullify
   add_foreign_key "ticketing_tickets", "projects"

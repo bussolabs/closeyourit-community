@@ -18,7 +18,8 @@ module Ideas
       return locked if @idea.locked?
 
       result = Ticketing::CreateTicket.call(
-        organization: organization, reporter: @reporter, true_actor: @true_actor, params: ticket_params
+        organization: organization, reporter: @reporter, true_actor: @true_actor, params: ticket_params,
+        origin: :ideas
       )
       @idea.update!(ticket: result.value, status: :converted, converted_at: Time.current) if result.ok?
       result

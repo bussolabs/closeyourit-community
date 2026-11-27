@@ -50,4 +50,5 @@ en:
       automator_live_code_enabled: automator live code
       council_enabled: Council enabled
       production_approval_required: Go-ahead before production
+      auto_go_ahead_enabled: automatic go-ahead
       supporter_reserved_topics: supporter reserved topics

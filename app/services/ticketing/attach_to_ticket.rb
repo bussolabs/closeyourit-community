@@ -17,8 +17,10 @@ module Ticketing
       return err(:invalid_attachment) unless @files.all? { |file| allowed?(file) }
 
       filenames = @files.map(&:original_filename)
-      ApplicationRecord.transaction do
+      @ticket.with_lock do
         @ticket.files.attach(@files)
+        # Under this lock already: a second lock would reload the ticket and lose the upload. CYRA-1219.
+        SetAgentEligibility.call(ticket: @ticket, source: :invalidate, locked: true)
         RecordActivity.call(ticket: @ticket, actor: @actor, true_actor: @true_actor,
                             action: "attached", data: { filenames: filenames })
       end

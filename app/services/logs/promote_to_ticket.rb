@@ -31,7 +31,7 @@ module Logs
 
       result = Ticketing::CreateTicket.call(
         organization: @entry.project.organization, reporter: @reporter,
-        true_actor: @true_actor, params: ticket_params
+        true_actor: @true_actor, params: ticket_params, origin: :logs
       )
       return result unless result.ok?
 

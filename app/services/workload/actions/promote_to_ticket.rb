@@ -22,7 +22,7 @@ module Workload
 
         result = Ticketing::CreateTicket.call(
           organization: project.organization, reporter: @reporter, true_actor: @true_actor,
-          params: ticket_params(project)
+          params: ticket_params(project), origin: :workload
         )
         @action.update!(ticket: result.value) if result.ok?
         result

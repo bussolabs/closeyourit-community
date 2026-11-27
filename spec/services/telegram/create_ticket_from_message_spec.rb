@@ -32,6 +32,20 @@ RSpec.describe Telegram::CreateTicketFromMessage do
     expect(Telegram::Send).to have_received(:call).with(hash_including(text: include(ticket.code)))
   end
 
+  # CYRA-1219 AC-19 — the person writes from their linked account: a team ticket, as from the form.
+  it "starts by itself on a favourable advice with the automatic go-ahead on" do
+    project.update!(auto_go_ahead_enabled: true)
+    run("DRRA ordina la lista per nome")
+    ticket = Ticketing::Ticket.last
+    expect(ticket).to have_attributes(origin: "telegram", created_by: account)
+    verdict = Ticketing::EvaluateAgentEligibility::Verdict.new(eligibility: "allowed", reason: "Circoscritto.", risks: [])
+    allow(Ticketing::EvaluateAgentEligibility).to receive(:call).and_return(Result.ok(verdict))
+
+    Ticketing::EvaluateAgentEligibilityJob.perform_now(ticket_id: ticket.id)
+
+    expect(ticket.reload).to be_agent_eligibility_allowed
+  end
+
   it "senza chiave usa il progetto attivo dell'account" do
     account.update!(telegram_project_id: project.id)
     expect { run("il checkout crasha su Safari") }.to change(Ticketing::Ticket, :count).by(1)

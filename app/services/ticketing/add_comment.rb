@@ -17,14 +17,20 @@ module Ticketing
     end
 
     def call
+      @ticket.with_lock { add_locked }
+    end
+
+    private
+
+    def add_locked
       comment = @ticket.comments.new(body: @params[:body], author: @author, **@github)
       comment.files.attach(files) if files.present?
       if comment.save
+        SetAgentEligibility.call(ticket: @ticket, source: :invalidate, locked: true)
         capture_legacy_answer(comment)
         enqueue_agent_eligibility(comment)
         notify(comment) if @notify
-        # `comment.save` ha già committato (l'action non apre transazioni esterne) → siamo dopo il commit.
-        Ticketing::BroadcastComment.call(comment: comment)
+        ActiveRecord.after_all_transactions_commit { Ticketing::BroadcastComment.call(comment:) }
         ::Github::Issues::Outbound.comment_added(comment)
         return Result.ok(comment)
       end
@@ -106,7 +112,7 @@ module Ticketing
     end
 
     # CYRA-1343 — a person's comment may answer what kept an open ticket from the agents: evaluated again.
-    # An allowed ticket is left alone, so a lively thread does not pay one evaluation per comment.
+    # Manual approvals survive content changes; automatic approvals are withdrawn before this check.
     def enqueue_agent_eligibility(comment)
       return if comment.automation_generated? || !@ticket.status.category_open? || @ticket.agent_eligibility_allowed?
       return unless @ticket.agent_eligibility_stale?
@@ -122,7 +128,9 @@ module Ticketing
       Subscription.ensure_for(ticket: @ticket, account: @author, source: :commenter) unless comment.from_github?
       mentioned = Mentions::Parse.call(text: comment.body, organization: organization) - [ @author ]
       mentioned.each { |account| Subscription.ensure_for(ticket: @ticket, account: account, source: :mentioned) }
-      Ticketing::CommentNotifyJob.perform_later(comment_id: comment.id, mentioned_ids: mentioned.map(&:id))
+      ActiveRecord.after_all_transactions_commit do
+        Ticketing::CommentNotifyJob.perform_later(comment_id: comment.id, mentioned_ids: mentioned.map(&:id))
+      end
     end
 
     # Scarta i placeholder blank del form (hidden "" dell'input file array).

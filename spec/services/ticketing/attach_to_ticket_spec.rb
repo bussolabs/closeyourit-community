@@ -15,6 +15,20 @@ RSpec.describe Ticketing::AttachToTicket do
     expect(ticket.reload.files).to be_attached
   end
 
+  # CYRA-1219 — the withdrawal runs under the same lock: a second lock reloaded the ticket and the
+  # bytes never reached storage, while the attachment row was written.
+  it "carica davvero i byte anche quando ritira un via libera automatico" do
+    ticket.update_columns(agent_eligibility: "allowed", agent_eligibility_source: "automatic",
+                          agent_eligibility_advice: "allowed", agent_eligibility_checksum: "testo-di-prima")
+
+    result = described_class.call(ticket: ticket, files: [ upload("screenshot.png", "image/png") ])
+
+    expect(result).to be_ok
+    blob = ticket.reload.files.last.blob
+    expect(blob.service.exist?(blob.key)).to be(true)
+    expect(ticket.agent_eligibility).to eq("pending")
+  end
+
   it "ritorna err R422-ATTACHMENT-001 quando non vengono forniti file" do
     result = described_class.call(ticket: ticket, files: [])
 

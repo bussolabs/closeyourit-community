@@ -48,6 +48,10 @@ RSpec.describe "Member::HelpdeskRequests tickets", type: :request do
       expect(ticket).to have_attributes(title: "Card payment fails", reporter: owner, project: project)
       expect(request_record.reload).to be_status_converted
       expect(request_record.ticket).to eq(ticket)
+      expect(ticket.events.find_by!(action: "created").data).to include("origin" => "helpdesk")
+      # AC-12 — a team member converts it, but the visitor wrote it: it never counts as the team's.
+      expect(ticket).to have_attributes(origin: "helpdesk", created_by: owner)
+      expect(ticket).not_to be_team_authored
     end
 
     it "shows the form again when the ticket is not valid" do

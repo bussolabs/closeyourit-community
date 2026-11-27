@@ -75,6 +75,8 @@ en:
       supporter_hint: The supporter answers the machines' questions and approves plans up to risk 8 of 10. Every decision it takes stays on the ticket.
       supporter_enabled_label: Supporter on
       supporter_enabled_hint: When off, every question and plan goes to a person.
+      auto_go_ahead_enabled_label: Automatic go-ahead
+      auto_go_ahead_enabled_hint: Only for tickets written by the team, from the form, the command line or Telegram. With a favourable opinion the ticket starts by itself, unless it touches a reserved topic or a person decided. If the text changes, the go-ahead is taken back. Switching it off keeps the go-aheads already given.
       supporter_reserved_topics_label: Project reserved topics
       supporter_reserved_topics_placeholder: "mailchimp\napp/services/payments/"
       supporter_reserved_topics_hint: One per line. They add to the organization's and the built-in topics, never remove them. A line with a slash (/) is a code folder.

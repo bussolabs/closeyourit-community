@@ -37,6 +37,9 @@ RSpec.describe Agents::Council::Settle do
     expect(record).to have_attributes(outcome: "ticket", suggested_engine: "codex", suggested_model: "gpt-6-astra")
     expect(record.ticket).to have_attributes(project:, kind: "task")
     expect(record.ticket.description).to include("Add an index")
+    expect(record.ticket.events.find_by!(action: "created").data).to include("origin" => "council")
+    expect(record.ticket).to have_attributes(origin: "council")
+    expect(record.ticket).not_to be_team_authored # AC-12
     expect(run.reload).to have_attributes(status: "completed")
   end
 

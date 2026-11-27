@@ -4,19 +4,20 @@ require "rails_helper"
 
 RSpec.describe Ticketing::SetAgentEligibility do
   let(:ticket) { create(:ticket, description: "corpo") }
+  let(:checksum) { Ticketing::AgentEligibilityText.checksum(ticket:) }
   let(:actor) { ticket.reporter }
 
   describe "parere automatico" do
     it "scrive parere, motivo del parere, checksum e istante di valutazione" do
       result = described_class.call(ticket:, source: :automatic, eligibility: "blocked",
                                     reason: "Chiede di svuotare il database di produzione.",
-                                    risks: %w[destructive_production], checksum: "abc123")
+                                    risks: %w[destructive_production], checksum: checksum)
 
       expect(result).to be_ok
       expect(ticket.reload).to have_attributes(
         agent_eligibility_advice: "blocked",
         agent_eligibility_advice_reason: "Chiede di svuotare il database di produzione.",
-        agent_eligibility_checksum: "abc123"
+        agent_eligibility_checksum: checksum
       )
       expect(ticket.agent_eligibility_evaluated_at).to be_present
     end
@@ -25,7 +26,7 @@ RSpec.describe Ticketing::SetAgentEligibility do
     # nessuno ha ancora guardato, dove prima il verdetto del modello diventava direttamente lo stato.
     it "non muove la decisione nemmeno su un ticket ancora in attesa" do
       described_class.call(ticket:, source: :automatic, eligibility: "allowed",
-                           reason: "Bugfix circoscritto.", checksum: "abc")
+                           reason: "Bugfix circoscritto.", checksum: checksum)
 
       expect(ticket.reload).to have_attributes(
         agent_eligibility: "pending",
@@ -38,7 +39,7 @@ RSpec.describe Ticketing::SetAgentEligibility do
     it "registra un evento di cronologia SENZA attore (l'ha dato il modello, non una persona)" do
       expect do
         described_class.call(ticket:, source: :automatic, eligibility: "allowed",
-                             reason: "Bugfix circoscritto.", risks: %w[none], checksum: "abc")
+                             reason: "Bugfix circoscritto.", risks: %w[none], checksum: checksum)
       end.to change { ticket.events.where(action: "agent_eligibility_evaluated").count }.by(1)
 
       event = ticket.events.find_by(action: "agent_eligibility_evaluated")
@@ -51,7 +52,7 @@ RSpec.describe Ticketing::SetAgentEligibility do
     # L'evento non deve parlare della decisione: chi legge la cronologia vedrebbe un cambio di stato
     # che non è avvenuto, e il ticket sembrerebbe entrato in coda.
     it "non racconta la decisione nei dati dell'evento" do
-      described_class.call(ticket:, source: :automatic, eligibility: "allowed", reason: "ok", checksum: "abc")
+      described_class.call(ticket:, source: :automatic, eligibility: "allowed", reason: "ok", checksum: checksum)
 
       event = ticket.events.find_by(action: "agent_eligibility_evaluated")
       expect(event.data).not_to have_key("agent_eligibility")
@@ -96,7 +97,7 @@ RSpec.describe Ticketing::SetAgentEligibility do
     end
 
     it "lascia intatto un parere già dato" do
-      described_class.call(ticket:, source: :automatic, eligibility: "blocked", reason: "Rischioso.", checksum: "x")
+      described_class.call(ticket:, source: :automatic, eligibility: "blocked", reason: "Rischioso.", checksum: checksum)
 
       described_class.call(ticket:, source: :human, eligibility: "allowed", reason: "Lo seguo io.", actor:)
 
@@ -115,7 +116,7 @@ RSpec.describe Ticketing::SetAgentEligibility do
       described_class.call(ticket:, source: :human, eligibility: "allowed", reason: "So che è sicuro.", actor:)
 
       result = described_class.call(ticket:, source: :automatic, eligibility: "blocked",
-                                    reason: "Il modello dice di no.", checksum: "nuovo")
+                                    reason: "Il modello dice di no.", checksum: checksum)
 
       expect(result).to be_ok
       expect(ticket.reload).to have_attributes(agent_eligibility: "allowed", agent_eligibility_source: "human",
@@ -147,7 +148,7 @@ RSpec.describe Ticketing::SetAgentEligibility do
     end
 
     it "pulisce anche il parere: si riparte da un ticket che nessuno ha ancora guardato" do
-      described_class.call(ticket:, source: :automatic, eligibility: "allowed", reason: "ok", checksum: "abc")
+      described_class.call(ticket:, source: :automatic, eligibility: "allowed", reason: "ok", checksum: checksum)
 
       described_class.call(ticket:, source: :reset, actor:)
 
@@ -162,7 +163,7 @@ RSpec.describe Ticketing::SetAgentEligibility do
       described_class.call(ticket:, source: :reset, actor:)
 
       described_class.call(ticket:, source: :automatic, eligibility: "blocked",
-                           reason: "In realtà è pericoloso.", checksum: "nuovo")
+                           reason: "In realtà è pericoloso.", checksum: checksum)
 
       expect(ticket.reload.agent_eligibility_advice).to eq("blocked")
     end
@@ -189,10 +190,10 @@ RSpec.describe Ticketing::SetAgentEligibility do
 
   describe "idempotenza" do
     it "non registra un secondo evento se nulla cambia" do
-      described_class.call(ticket:, source: :automatic, eligibility: "allowed", reason: "ok", checksum: "abc")
+      described_class.call(ticket:, source: :automatic, eligibility: "allowed", reason: "ok", checksum: checksum)
 
       expect do
-        described_class.call(ticket:, source: :automatic, eligibility: "allowed", reason: "ok", checksum: "abc")
+        described_class.call(ticket:, source: :automatic, eligibility: "allowed", reason: "ok", checksum: checksum)
       end.not_to change(Ticketing::Event, :count)
     end
   end
@@ -211,7 +212,7 @@ RSpec.describe Ticketing::SetAgentEligibility do
     end
 
     it "riporta il ticket in attesa e cancella sia la decisione sia il parere" do
-      described_class.call(ticket:, source: :automatic, eligibility: "allowed", reason: "Sembra fattibile.", checksum: "abc")
+      described_class.call(ticket:, source: :automatic, eligibility: "allowed", reason: "Sembra fattibile.", checksum: checksum)
       described_class.call(ticket:, source: :human, eligibility: "blocked", reason: "Non ora.", actor:)
 
       described_class.call(ticket:, source: :reset, actor:)

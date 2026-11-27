@@ -63,6 +63,13 @@ it:
           no_reply: "Se non rispondi non succede niente: quel lavoro resta fermo dov'è. Chi aveva chiesto riprova più tardi, trova ancora silenzio e continua ad aspettare."
           no_deadline: "Nessuna richiesta scade e nessuna si approva da sola. Senza una risposta quel ticket non va avanti, e nessuno lo porta avanti al posto tuo."
           cta: Vai alle Approvazioni
+        go_ahead_title: Il via libera automatico
+        go_ahead:
+          intro: "Un ticket entra nella coda degli agenti solo con il via libera. Di solito lo dà una persona; con «Via libera automatico» acceso nelle impostazioni del progetto lo dà il parere dell'AI, ma solo se è favorevole."
+          team: "Vale per i ticket scritti da una persona del team, dal modulo, dalla riga di comando o da Telegram. Clienti, account delle macchine, help desk e ticket creati in automatico aspettano sempre una persona."
+          hold: "Se il ticket parla di soldi, segreti, accessi o cancellazione di dati, o propone di saltare i controlli, resta in attesa e dice perché."
+          change: "Se il testo cambia, il via libera si ritira subito e torna da solo solo con un parere nuovo favorevole."
+          person: "Una scelta fatta da una persona non viene mai cambiata. Nella storia del ticket si vede quando il via libera è stato automatico."
         certification_title: Dare e togliere il via libera a una macchina
         certification:
           intro: "Una macchina appena collegata non lavora: prima una persona deve dire che può farlo. È una scelta reversibile, in qualsiasi momento."

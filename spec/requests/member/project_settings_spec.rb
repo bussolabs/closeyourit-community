@@ -493,6 +493,28 @@ RSpec.describe "Member::ProjectSettings", type: :request do
   end
 
   describe "gate projects.edit (visibile ma senza permesso)" do
+    it "does not let a visible member enable automatic approval" do
+      member = create(:account)
+      create(:membership, account: member, organization: org, role: :member)
+      create(:project_membership, account: member, project:)
+      sign_in(member)
+
+      patch member_project_settings_path(project), params: { auto_go_ahead_enabled: "1" }, as: :json
+
+      expect(project.reload.auto_go_ahead_enabled).to be(false)
+      expect(response).not_to have_http_status(:no_content)
+    end
+
+    it "cannot enable automatic approval for another organization" do
+      other_project = create(:project, organization: create(:organization))
+      sign_in(owner)
+
+      patch member_project_settings_path(other_project), params: { auto_go_ahead_enabled: "1" }, as: :json
+
+      expect(response).to have_http_status(:not_found)
+      expect(other_project.reload.auto_go_ahead_enabled).to be(false)
+    end
+
     it "member assegnato al progetto ma senza projects.edit → bloccato, nessuna modifica" do
       member = create(:account)
       create(:membership, account: member, organization: org, role: :member)
@@ -665,6 +687,18 @@ RSpec.describe "Member::ProjectSettings", type: :request do
 
       patch member_project_settings_path(project), params: { supporter_enabled: "1" }, as: :json
       expect(project.reload.supporter_enabled).to be(true)
+    end
+
+    # CYRA-1219 — the automatic go-ahead has its own switch, off when the project is born.
+    it "shows the automatic go-ahead switch, off, and switches it on by itself" do
+      get member_project_settings_path(project)
+      expect(response.body).to include('data-test="project-auto-go-ahead-toggle"')
+      expect(project.auto_go_ahead_enabled).to be(false)
+
+      patch member_project_settings_path(project), params: { auto_go_ahead_enabled: "1" }, as: :json
+      expect(response).to have_http_status(:no_content)
+      expect(project.reload.auto_go_ahead_enabled).to be(true)
+      expect(project.supporter_enabled).to be(true)
     end
 
     it "saves the project's reserved topics and returns to the supporter panel" do

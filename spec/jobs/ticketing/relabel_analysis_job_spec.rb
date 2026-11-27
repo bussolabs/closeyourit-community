@@ -54,6 +54,24 @@ RSpec.describe Ticketing::RelabelAnalysisJob do
     it "riaccoda l'embedding, che fuori da UpdateTicket non arriva da solo" do
       expect { run }.to have_enqueued_job(Ticketing::EmbedTicketJob)
     end
+
+    # CYRA-1219 — plan R-2: a rewritten analysis takes an automatic go-ahead back until the new advice.
+    it "ritira il via libera automatico e chiede il parere solo per quel ticket" do
+      ticket.update!(agent_eligibility: :allowed, agent_eligibility_source: :automatic, agent_eligibility_advice: :allowed,
+                     agent_eligibility_checksum: Ticketing::AgentEligibilityText.checksum(ticket:))
+
+      expect { run }.to have_enqueued_job(Ticketing::EvaluateAgentEligibilityJob).with(ticket_id: ticket.id)
+
+      expect(ticket.reload).to be_agent_eligibility_pending
+    end
+
+    it "non tocca il via libera dato da una persona" do
+      ticket.update!(agent_eligibility: :allowed, agent_eligibility_source: :human)
+
+      expect { run }.not_to have_enqueued_job(Ticketing::EvaluateAgentEligibilityJob)
+
+      expect(ticket.reload).to be_agent_eligibility_allowed
+    end
   end
 
   describe "quando non c'è niente da fare" do

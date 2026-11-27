@@ -23,7 +23,8 @@ module Observability
         next already_promoted if @group.promoted?
 
         result = Ticketing::CreateTicket.call(
-          organization: organization, reporter: @reporter, true_actor: @true_actor, params: ticket_params
+          organization: organization, reporter: @reporter, true_actor: @true_actor, params: ticket_params,
+          origin: :observability
         )
         @group.update!(ticket: result.value) if result.ok?
         result

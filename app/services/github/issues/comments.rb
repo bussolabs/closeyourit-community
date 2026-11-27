@@ -31,8 +31,18 @@ module Github
         return nil if record.nil?
 
         body, cut = Text.comment(comment["body"], comment["html_url"].presence || link.html_url)
-        record.update!(body:, github_truncated: cut) if body.present?
+        edit_body(record, body, cut) if body.present?
         record
+      end
+
+      # CYRA-1219 — an edited comment changes what the advice read: the automatic go-ahead goes back at once.
+      def edit_body(record, body, cut)
+        ticket = record.ticket
+        ticket.with_lock do
+          record.update!(body:, github_truncated: cut)
+          Ticketing::SetAgentEligibility.call(ticket:, source: :invalidate, locked: true)
+        end
+        Ticketing::AgentEligibilityQueue.enqueue(ticket:) if ticket.agent_eligibility_stale?
       end
 
       def delete(comment:, link:, account:)

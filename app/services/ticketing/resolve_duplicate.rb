@@ -63,7 +63,7 @@ module Ticketing
 
       result = CreateTicket.call(
         organization: @organization, reporter: @reporter, true_actor: @true_actor,
-        use_project_owner: @use_project_owner,
+        use_project_owner: @use_project_owner, origin: :form,
         params: @params.to_h.symbolize_keys.merge(description: description)
       )
       return result if fits || result.err?
@@ -102,7 +102,7 @@ module Ticketing
       end
 
       result = CreateTicket.call(organization: @organization, reporter: @reporter, true_actor: @true_actor,
-                                 use_project_owner: @use_project_owner, params: @params)
+                                 use_project_owner: @use_project_owner, origin: :form, params: @params)
       return result if result.err?
 
       ticket = result.value

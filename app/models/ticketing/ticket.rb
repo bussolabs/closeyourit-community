@@ -47,6 +47,18 @@ module Ticketing
                class_name: "Projects::Milestone",
                inverse_of: :tickets,
                optional: true
+    # CYRA-1219 — who typed the ticket, not the reporter they named; emptied when the account goes.
+    belongs_to :created_by,
+               class_name: "Accounts::Account",
+               inverse_of: false,
+               optional: true
+
+    # CYRA-1219 — the channel a ticket was born from, declared by each caller of Ticketing::CreateTicket.
+    # Only the first three are typed by a person from their own account; nil is a ticket born before.
+    TEAM_ORIGINS = %w[form cli telegram].freeze
+    ORIGINS = (TEAM_ORIGINS + %w[helpdesk council deploy_failure epic_split logs ideas observability workload
+                                 assistant github_import]).freeze
+    validates :origin, inclusion: { in: ORIGINS }, allow_nil: true
 
     # Epic padre (CYRA-223): un ticket qualsiasi può stare sotto UN epic dello stesso progetto, e
     # la gerarchia si ferma lì — un epic non sta sotto un altro epic. Alla destroy dell'epic i figli
@@ -387,6 +399,13 @@ module Ticketing
       return false if agent_eligibility_source_human?
 
       agent_eligibility_checksum != Ticketing::AgentEligibilityText.checksum(ticket: self)
+    end
+
+    # CYRA-1219 — written by the team: born from a channel a person types into, by a person of the
+    # organization who is not a customer. The named reporter never counts.
+    def team_authored?
+      TEAM_ORIGINS.include?(origin) && created_by&.human? &&
+        Connections::Membership.internal_actor?(account: created_by, organization: project.organization)
     end
 
     # Dipendenze non soddisfatte: i blocker non in uno status done (category dell'enum, mai per code),

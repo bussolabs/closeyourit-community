@@ -22,6 +22,17 @@ RSpec.describe Ticketing::CompactCommentJob, type: :job do
   end
 
   describe "compattazione" do
+    it "withdraws automatic approval when a person's evaluated comment is rewritten" do
+      comment
+      ticket.reload.update!(agent_eligibility: :allowed, agent_eligibility_source: :automatic,
+                            agent_eligibility_checksum: Ticketing::AgentEligibilityText.checksum(ticket:))
+      stub_summary("A shorter explanation")
+
+      described_class.perform_now(comment_id: comment.id)
+
+      expect(ticket.reload).to be_agent_eligibility_pending
+    end
+
     it "sostituisce il corpo col riassunto e conserva l'integrale" do
       stub_summary("Coperti i rami scoperti. (resoconto v1)")
 

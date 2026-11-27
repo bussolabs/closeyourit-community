@@ -14,6 +14,14 @@
         hint: t("member.project_settings.supporter_enabled_hint"),
         test_id: "project-supporter-toggle") %>
 
+  <%# CYRA-1219 — a switch of its own, off when the project is born, independent of the supporter's. %>
+  <%= render Ui::SwitchComponent.new(
+        name: "auto_go_ahead_enabled", url: member_project_settings_path(@project),
+        checked: @project.auto_go_ahead_enabled?, icon: "bot",
+        label: t("member.project_settings.auto_go_ahead_enabled_label"),
+        hint: t("member.project_settings.auto_go_ahead_enabled_hint"),
+        test_id: "project-auto-go-ahead-toggle") %>
+
   <%= form_with url: member_project_settings_path(@project), method: :patch, class: "block px-4 py-4",
         data: { test: "project-settings-form-supporter" } do %>
     <label for="supporter_reserved_topics" class="block text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mb-1.5"><%= t("member.project_settings.supporter_reserved_topics_label") %></label>

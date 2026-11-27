@@ -62,13 +62,20 @@ module Ticketing
     end
 
     def attach_markdown(groups)
-      return if @ticket.files.any? { |file| file.filename.to_s == attachment_name }
+      @ticket.with_lock do
+        return if @ticket.files.any? { |file| file.filename.to_s == attachment_name }
 
-      @ticket.files.attach(
-        io: StringIO.new(markdown(groups)),
-        filename: attachment_name,
-        content_type: "text/markdown"
-      )
+        # Upload before the eligibility writer reloads the ticket and clears pending uploads.
+        # The archive must remain readable when the summary replaces its source. CYRA-1219.
+        blob = ActiveStorage::Blob.create_and_upload!(
+          io: StringIO.new(markdown(groups)),
+          filename: attachment_name,
+          content_type: "text/markdown"
+        )
+        @ticket.files.attach(blob)
+        SetAgentEligibility.call(ticket: @ticket, source: :invalidate, locked: true)
+        AgentEligibilityQueue.enqueue(ticket: @ticket) if @ticket.agent_eligibility_stale?
+      end
     end
 
     def write_summary(groups)
@@ -117,9 +124,11 @@ module Ticketing
     # The overwrite and its history row go together, in the shape UpdateTicket#log_changes writes,
     # signed by the system: no person decided it. CYRA-1309
     def replace_analysis(summary)
-      before = @ticket.technical_analysis
-      ApplicationRecord.transaction do
+      @ticket.with_lock do
+        before = @ticket.technical_analysis
         @ticket.update!(technical_analysis: summary, analysis_recomposed_at: Time.current)
+        SetAgentEligibility.call(ticket: @ticket, source: :invalidate, locked: true)
+        AgentEligibilityQueue.enqueue(ticket: @ticket) if @ticket.agent_eligibility_stale?
         Ticketing::RecordActivity.call(ticket: @ticket, action: "updated",
                                        actor_name: I18n.t("member.tickets.activity.system.analysis"),
                                        data: { "technical_analysis" => [ before, summary ] })

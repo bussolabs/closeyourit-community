@@ -13,6 +13,23 @@ RSpec.describe Agents::TicketQueues::Next do
   # service account dell'host). Nessun agente/comando nel percorso.
   let(:host) { host_seeing(project) }
 
+  it "offers an automatically approved team ticket and stops offering it after a content change" do
+    project.update!(supporter_enabled: true, auto_go_ahead_enabled: true)
+    ticket = create(:ticket, :team_created, organization:, project:, with_agent_workflow: true,
+                     title: "Sort the list", description: "Sort names alphabetically")
+    expect(described_class.call(organization:, project_key:, host:).value).to be_nil
+
+    Ticketing::SetAgentEligibility.call(ticket:, source: :automatic, eligibility: :allowed, reason: "Contained change",
+                                        checksum: Ticketing::AgentEligibilityText.checksum(ticket:))
+    Ticketing::AutoDecideAgentEligibility.call(ticket:)
+
+    expect(described_class.call(organization:, project_key:, host:).value).to eq(ticket)
+
+    Ticketing::AddComment.call(ticket:, author: ticket.reporter, params: { body: "Also reverse the date order" })
+
+    expect(described_class.call(organization:, project_key:, host:).value).to be_nil
+  end
+
   it "restituisce nil quando la coda non contiene ticket lavorabili" do
     expect(result).to be_ok
     expect(result.value).to be_nil

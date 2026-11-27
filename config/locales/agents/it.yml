@@ -30,6 +30,7 @@ it:
         consult_not_found: Lavorazione non trovata.
         consult_stale: La lavorazione si è mossa o è già stata decisa. Riprendi quella aggiornata.
       activity_actor: Supporter
+      go_ahead_withdrawn: "Il via libera era automatico, ma il parere nuovo dell'AI non lo consente più: prima di farlo lavorare alle macchine decide una persona."
       held_for_person:
         reserved: "Il controllo lo consentirebbe, ma il ticket parla di %{topics} (%{words}): prima di farlo lavorare alle macchine decide una persona."
         bypass: "Il controllo lo consentirebbe, ma il ticket propone di saltare i controlli del sistema: prima di farlo lavorare alle macchine decide una persona."

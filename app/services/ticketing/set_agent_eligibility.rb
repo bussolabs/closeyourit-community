@@ -1,30 +1,17 @@
 # frozen_string_literal: true
 
 module Ticketing
-  # Punto di scrittura UNICO dell'eleggibilità agenti (CYRA-184, CYRA-770). Ogni percorso — parere del
-  # server AI, decisione umana, ritorno allo stato iniziale — passa da qui.
-  #
-  # PARERE e DECISIONE sono due cose distinte, su due coppie di colonne distinte. `agent_eligibility`
-  # è la decisione, ed è il campo che la coda degli agenti interroga; `agent_eligibility_advice` è il
-  # parere dell'AI, che nessuna coda legge. Prima condividevano la stessa colonna, e serviva una
-  # regola di stickiness per impedire al percorso automatico di sovrascrivere una decisione umana.
-  # Quella regola non c'è più perché non c'è più niente da proteggere: il percorso automatico non
-  # scrive nella colonna della decisione, e questo lo garantisce la STRUTTURA, non una guardia che
-  # qualcuno può dimenticare di applicare in un percorso nuovo.
-  #
-  # Modalità (`source`):
-  #   :automatic → parere dell'AI. Scrive parere, motivo del parere, checksum del contenuto valutato
-  #                e istante. NON tocca la decisione né la sua sorgente.
-  #   :human     → decisione. Registra decisore e istante; NON tocca il checksum, così un eventuale
-  #                reset successivo riparte da una valutazione vera e non da una stale.
-  #   :reset     → azzera decisione E parere: il ticket torna com'era prima che qualcuno lo guardasse.
-  #                Il chiamante ri-accoda il job.
+  # Single locked writer for advice, human decisions, automatic approval and withdrawal.
+  # Advice must match current content; automatic decisions never override a person. CYRA-1219.
+  # `locked: true` is for a caller that already holds the ticket's row lock: locking again would
+  # reload the ticket and drop the uploads of files it has just attached.
   class SetAgentEligibility < ApplicationService
-    SOURCES = %i[automatic human reset].freeze
+    SOURCES = %i[automatic human reset go_ahead invalidate].freeze
 
     def initialize(ticket:, source:, eligibility: nil, reason: nil, risks: [], checksum: nil,
-                   actor: nil, true_actor: nil)
+                   actor: nil, true_actor: nil, locked: false)
       @ticket = ticket
+      @locked = locked
       @source = source.to_sym
       @eligibility = eligibility&.to_s
       @reason = reason
@@ -37,6 +24,16 @@ module Ticketing
     def call
       return invalid_source unless SOURCES.include?(@source)
 
+      return write_locked if @locked
+
+      @ticket.with_lock { write_locked }
+    end
+
+    private
+
+    def write_locked
+      return Result.ok(@ticket) if @source == :automatic && @checksum != AgentEligibilityText.checksum(ticket: @ticket)
+
       attributes = attributes_for_source
       return invalid_eligibility if attributes.nil?
       return Result.ok(@ticket) if no_change?(attributes)
@@ -45,13 +42,14 @@ module Ticketing
       ApplicationRecord.transaction do
         @ticket.update!(attributes)
         RecordActivity.call(ticket: @ticket, actor: @actor, true_actor: @true_actor,
-                            action: event_action, data: event_data(from))
+                            actor_name: (I18n.t("agents.supporter.activity_actor") if automatic_decision?),
+                            action: event_action, data: event_data(from)) unless from == tracked_field_value && automatic_decision?
       end
-      broadcast_eligibility
+      ActiveRecord.after_all_transactions_commit { broadcast_eligibility }
       Result.ok(@ticket)
     end
 
-    private
+    def automatic_decision? = %i[go_ahead invalidate].include?(@source)
 
     # Il percorso automatico racconta il PARERE, gli altri la DECISIONE: sono due campi diversi, e un
     # evento che dicesse «il ticket è passato a lavorabile» per un parere mentirebbe a chi legge la
@@ -64,12 +62,26 @@ module Ticketing
 
     def event_data(from)
       reason = @source == :automatic ? @ticket.agent_eligibility_advice_reason : @ticket.agent_eligibility_reason
-      { tracked_field => { from: from, to: tracked_field_value },
-        reason: reason, risks: @risks.presence }.compact
+      data = { tracked_field => { from: from, to: tracked_field_value }, reason: reason, risks: @risks.presence }.compact
+      if automatic_decision?
+        data.merge!(go_ahead: @ticket.agent_eligibility_allowed? ? "automatic" : "withdrawn",
+                    advice_reason: @ticket.agent_eligibility_advice_reason,
+                    advice_checksum: @ticket.agent_eligibility_checksum,
+                    advice_evaluated_at: @ticket.agent_eligibility_evaluated_at)
+        data[:withdrawn_because] = withdrawn_because unless @ticket.agent_eligibility_allowed?
+      end
+      data
     end
+
+    # CYRA-1219 — a change to the text takes it back before any new advice; otherwise the advice did.
+    def withdrawn_because = @source == :invalidate ? "content_changed" : "advice"
 
     def attributes_for_source
       case @source
+      when :go_ahead
+        AutoDecideAgentEligibility.new(ticket: @ticket).attributes
+      when :invalidate
+        invalidation_attributes
       when :reset
         { agent_eligibility: :pending, agent_eligibility_source: :automatic,
           agent_eligibility_reason: nil, agent_eligibility_checksum: nil,
@@ -88,6 +100,13 @@ module Ticketing
           agent_eligibility_reason: @reason, agent_eligibility_decided_at: Time.current,
           agent_eligibility_decided_by: @actor }
       end
+    end
+
+    def invalidation_attributes
+      return {} unless @ticket.agent_eligibility_source_automatic? && @ticket.agent_eligibility_allowed? && @ticket.agent_eligibility_stale?
+
+      { agent_eligibility: :pending, agent_eligibility_reason: nil,
+        agent_eligibility_decided_at: nil, agent_eligibility_decided_by: nil }
     end
 
     # Un umano può portare un ticket a pending? No: per quello c'è :reset, che pulisce anche il

@@ -26,6 +26,15 @@ RSpec.describe Ticketing::ArchiveTechnicalAnalysis do
   describe "archiviazione" do
     before { comment("Continuazione dell'analisi. #{"x" * 400}") }
 
+    it "withdraws automatic approval when archiving changes the evaluated content" do
+      ticket.reload.update!(agent_eligibility: :allowed, agent_eligibility_source: :automatic,
+                            agent_eligibility_checksum: Ticketing::AgentEligibilityText.checksum(ticket:))
+
+      expect(archive).to be_ok
+
+      expect(ticket.reload).to be_agent_eligibility_pending
+    end
+
     it "allega il markdown col codice del ticket nel nome" do
       expect(archive).to be_ok
       expect(attachment).to be_present

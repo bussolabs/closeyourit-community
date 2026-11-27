@@ -66,7 +66,12 @@ module Ticketing
     # allegato di un tipo non più ammesso farebbe fallire la compattazione di quel commento senza che
     # il messaggio spieghi perché. Bypassa anche qualunque callback futuro, che qui è ciò che si vuole.
     def write(comment, body)
-      comment.update_columns(body: body, original_body: comment.body, compacted_at: Time.current)
+      ticket = comment.ticket
+      ticket.with_lock do
+        comment.update_columns(body: body, original_body: comment.body, compacted_at: Time.current)
+        SetAgentEligibility.call(ticket:, source: :invalidate, locked: true)
+        AgentEligibilityQueue.enqueue(ticket:) if ticket.agent_eligibility_stale?
+      end
     end
 
     def mark_done(comment)

@@ -3,8 +3,8 @@
 module Ticketing
   # Chiede al server AI un PARERE sull'eleggibilità agenti di un ticket (CYRA-184, CYRA-770) e lo
   # scrive nelle colonne del parere.
-  # With the supporter on — how every project is born (CYRA-1325) — that advice becomes the decision
-  # (CYRA-1197); with it off, a person decides.
+  # With the supporter and the automatic go-ahead on, a favourable advice on a team ticket becomes the
+  # decision (CYRA-1197, CYRA-1219); otherwise a person decides.
   #
   # A differenza di Ai::RunJob, questo job MANTIENE il retry di ApplicationJob (3 tentativi). Lì c'è
   # un utente che sta pollando un esito già mostrato come fallito, e ritentare pagherebbe una
@@ -69,7 +69,7 @@ module Ticketing
         ticket: ticket, source: :automatic, eligibility: verdict.eligibility,
         reason: verdict.reason, risks: verdict.risks, checksum: checksum
       )
-      # CYRA-1197 — with the supporter on, the advice becomes the decision unless the server's checks need a person.
+      # CYRA-1197, CYRA-1219 — the automatic go-ahead: given on a favourable advice, taken back on a later one that is not.
       Ticketing::AutoDecideAgentEligibility.call(ticket: ticket.reload)
     end
   end

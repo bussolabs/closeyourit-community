@@ -56,8 +56,10 @@ module Ticketing
     # con gli stessi file caricati in ordine diverso non divergono per caso; `blob.checksum` fa da
     # identità del contenuto, quindi ri-caricare lo stesso file con un nome nuovo cambia il
     # fingerprint (giusto: il nome è un indizio che il modello legge).
+    # `files_attachments` and not `files`: with an upload still pending (AttachToTicket, before commit)
+    # `files` answers with a plain array, not a relation. Same rows otherwise. CYRA-1219.
     def self.attachments_fingerprint(ticket:)
-      ticket.files.includes(:blob).sort_by { |file| [ file.created_at, file.id ] }.map do |file|
+      ticket.files_attachments.includes(:blob).sort_by { |file| [ file.created_at, file.id ] }.map do |file|
         blob = file.blob
         [ blob&.filename.to_s, blob&.content_type.to_s, blob&.byte_size.to_i, blob&.checksum.to_s, pdf_marker(blob) ]
           .compact.join("\0")

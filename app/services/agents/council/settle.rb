@@ -106,7 +106,7 @@ module Agents
 
       def open_ticket(record)
         result = Ticketing::CreateTicket.call(
-          organization: run.organization, reporter: author,
+          organization: run.organization, reporter: author, origin: :council,
           params: ticket_params(record)
         )
         return "create_failed" if result.err?
