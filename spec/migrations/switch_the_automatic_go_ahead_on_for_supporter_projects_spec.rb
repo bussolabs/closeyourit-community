@@ -51,6 +51,18 @@ RSpec.describe SwitchTheAutomaticGoAheadOnForSupporterProjects do
       expect { migrate(:up) }.to raise_error(described_class::StoppedWithoutLegalBloom)
       expect(on.reload.auto_go_ahead_enabled).to be(false)
     end
+
+    # CYRA-1365 — the staging server also runs with the production environment and has no LegalBloom
+    # project: stopping there kept the application from starting, and no release reached production.
+    it "goes on where the server is the staging one, which has no LegalBloom to protect" do
+      in_the_group.group.update!(name: "Other")
+      by_name.update!(name: "Other")
+      allow(Rails.env).to receive(:production?).and_return(true)
+      stub_const("ENV", ENV.to_h.merge("APP_HOSTS" => "closeyourit.staging.example.test"))
+
+      expect { migrate(:up) }.not_to raise_error
+      expect(on.reload.auto_go_ahead_enabled).to be(true)
+    end
   end
 
   describe "the tickets" do

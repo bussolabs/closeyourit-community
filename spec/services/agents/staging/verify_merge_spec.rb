@@ -60,8 +60,9 @@ RSpec.describe Agents::Staging::VerifyMerge do
 
     described_class.call(workflow:, client: client_che_risponde(true, true))
 
+    # CYRA-1366 — the next check left is the watch on the trial release, until production starts.
     expect(workflow.reload).to have_attributes(closer_staging_verified_at: be_present,
-                                               closer_staging_next_check_at: nil,
+                                               closer_staging_next_check_at: be_within(5.seconds).of(3.minutes.from_now),
                                                closer_staging_last_error_code: nil)
     # CYRA-629 — la prova aperta apre la produzione davvero: non c'è più un pulsante in mezzo.
     expect(workflow.phase).to eq("closer_production_queued")
@@ -233,6 +234,14 @@ RSpec.describe Agents::Staging::VerifyMerge do
       expect(client).not_to have_received(:workflow_runs)
     end
 
+    # CYRA-1366 — with the rule off the trial release is still watched until production starts.
+    it "arms the watch on the trial release while the rule is off" do
+      described_class.call(workflow:, client: client_with_run(nil, []))
+
+      expect(workflow.reload.closer_staging_next_check_at).to be_within(5.seconds).of(3.minutes.from_now)
+      expect(workflow.ready_execution_phase).to eq("closer_production")
+    end
+
     context "when the project switched the rule on" do
       before { project.update!(staging_deploy_proof: "1") }
 
@@ -240,6 +249,39 @@ RSpec.describe Agents::Staging::VerifyMerge do
         described_class.call(workflow:, client: client_with_run("success", green_jobs))
 
         expect(workflow.reload.closer_staging_verified_at).to be_present
+        expect(workflow.closer_staging_next_check_at).to be_nil
+      end
+
+      # CYRA-1366 AC-1 — a cancelled trial release keeps production shut, and the card says why in words.
+      it "stops before production on a cancelled trial release, with a readable reason" do
+        cancelled = [ job("ci / deploy-staging", "cancelled"), job("ci / smoke-staging", "skipped") ]
+
+        described_class.call(workflow:, client: client_with_run("cancelled", cancelled))
+
+        expect(workflow.reload).to have_attributes(closer_staging_verified_at: nil, blocked_kind: "staging_deploy",
+                                                   blocked_phase: "closer_staging")
+        expect(workflow.ready_execution_phase).to be_nil
+        stopped = I18n.with_locale(:it) do
+          Member::AutomationSummary.new(workflow:, attempts: [], decides: true, pending_questions: 0,
+                                        cto_name: "Alessio").stopped
+        end
+        expect(stopped).to include("rilascio di prova è fallito o è stato annullato")
+        expect(stopped).not_to include("staging_run_failed")
+      end
+
+      # CYRA-1366 AC-2 — a tag sent again after a cancelled run: the run that went fine counts.
+      it "opens production when a later run on the same commit went fine after a cancelled one" do
+        client = client_che_risponde(true, true)
+        allow(client).to receive(:workflow_runs)
+          .and_return([ { "id" => 1, "conclusion" => "cancelled" }, { "id" => 2, "conclusion" => "success" } ])
+        allow(client).to receive(:workflow_run_jobs).with(anything, anything, 1)
+          .and_return([ job("ci / deploy-staging", "cancelled"), job("ci / smoke-staging", "skipped") ])
+        allow(client).to receive(:workflow_run_jobs).with(anything, anything, 2).and_return(green_jobs)
+
+        described_class.call(workflow:, client:)
+
+        expect(workflow.reload).to have_attributes(closer_staging_verified_at: be_present, blocked_at: nil)
+        expect(workflow.ready_execution_phase).to eq("closer_production")
       end
 
       it "waits while the trial release has not finished" do
@@ -257,6 +299,7 @@ RSpec.describe Agents::Staging::VerifyMerge do
 
         expect(workflow.reload.closer_staging_verified_at).to be_nil
         expect(workflow.blocked_reason).to include("staging_run_failed")
+        expect(workflow.blocked_kind).to eq("staging_deploy")
       end
 
       it "calls a person when the trial release never shows up" do
@@ -265,15 +308,21 @@ RSpec.describe Agents::Staging::VerifyMerge do
         described_class.call(workflow:, client: client_with_run(nil, []))
 
         expect(workflow.reload.blocked_reason).to include("staging_not_deployed")
+        expect(workflow.blocked_kind).to eq("staging_deploy")
       end
 
+      # CYRA-1366 — every piece of work goes to production (CYRA-1193): a merge proof of done waits too.
       context "when the merge is the proof of done" do
         let(:proof) { { kind: "merge" } }
 
-        it "does not wait for a trial release" do
-          described_class.call(workflow:, client: client_with_run(nil, []))
+        it "waits for the trial release as well" do
+          client = client_with_run(nil, [])
 
-          expect(workflow.reload.closer_staging_verified_at).to be_present
+          described_class.call(workflow:, client:)
+
+          expect(workflow.reload).to have_attributes(closer_staging_verified_at: nil,
+                                                     closer_staging_last_error_code: "staging_run_pending")
+          expect(client).to have_received(:workflow_runs)
         end
       end
     end

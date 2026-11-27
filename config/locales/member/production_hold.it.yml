@@ -13,7 +13,7 @@ it:
       staging_deploy_proof_label: Prova del rilascio in staging
       staging_deploy_proof_off: Spenta
       staging_deploy_proof_on: Accesa
-      staging_deploy_proof_hint: Accesa, lo staging risulta verificato solo dopo che il rilascio di prova e il suo controllo finale sono finiti bene. Se falliscono, o non arrivano entro 90 minuti, decide una persona.
+      staging_deploy_proof_hint: Accesa, lo staging risulta verificato solo dopo che il rilascio di prova e il suo controllo finale sono finiti bene. Se falliscono, o non arrivano entro 90 minuti, decide una persona. Spenta, basta il codice unito, ma un rilascio di prova fallito o annullato ferma comunque il lavoro prima della produzione.
       production_watch_label: Sorveglianza dopo il rilascio
       production_watch_hint: Accesa, un errore nuovo e ancora aperto nato nella versione in linea tiene fermi i rilasci successivi in produzione. Ripartono quando l'errore viene risolto o ignorato.
       browser_proof_label: Prove in browser

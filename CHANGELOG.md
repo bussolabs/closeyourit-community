@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.258.1] - 2026-11-27
+
+### Fixed
+
+- **Niente produzione dopo una prova fallita**: se il rilascio di prova fallisce o viene annullato, il lavoro si ferma prima della produzione e la scheda dice perché, in parole semplici. Una persona decide come proseguire. Con la prova del rilascio in staging accesa, ogni lavoro aspetta l'esito della prova. (CYRA-1366)
+
+## [0.258.1-beta.1] - 2026-11-27
+
+### Fixed
+
+- **Rilasci di nuovo possibili**: la versione nuova non partiva sull'ambiente di prova e fermava ogni rilascio. Ora parte. (CYRA-1365)
+
 ## [0.258.0] - 2026-11-27
 
 ### Changed

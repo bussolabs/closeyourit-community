@@ -267,6 +267,10 @@ module Member
       # proposta e da una revisione bocciata, e chiamarlo con le loro parole manderebbe a cercare nel
       # posto sbagliato.
       return t("stopped.release_probe", reason: agent_reason) if @workflow.blocked_kind == "release_probe"
+      # CYRA-1366 — the trial release failed or never came: said in words, not as a quoted code.
+      if @workflow.blocked_kind == ::Agents::Staging::VerifyMerge::DEPLOY_STOP_KIND
+        return t("stopped.staging_deploy.#{::Agents::Staging::VerifyMerge.deploy_stop_key(@workflow)}")
+      end
       return t("stopped.held_by_person", name: @workflow.held_by_name) if @workflow.held_by_name
       # CYRA-1278 — the project or its group wants a person's go-ahead before production.
       if @workflow.blocked_kind == ::Agents::Workflows::RequestProductionApproval::KIND
@@ -287,7 +291,6 @@ module Member
     def agent_reason
       @workflow.agent_block_reason || t("stopped.agent_blocked_no_reason")
     end
-
     # CYRA-618 — la regola sta sul workflow, in un punto solo: due calcoli identici in due file
     # divergono, e il primo a divergere è proprio il numero che chi legge usa per decidere.
     def blocked_failures = @workflow.stopped_failures(@attempts)

@@ -65,6 +65,7 @@ module Agents
       when "production_approval" then t("production_approval")
       when "agent_blocked" then t("agent_blocked", phase: phase_label, reason: written_reason)
       when "review_fault" then t("review_fault", phase: phase_label)
+      when "staging_deploy" then t("staging_deploy.#{Agents::Staging::VerifyMerge.deploy_stop_key(@workflow)}")
       else t(@workflow.blocked_kind, reason: written_reason, default: written_reason)
       end
     end

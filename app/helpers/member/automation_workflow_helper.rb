@@ -26,12 +26,16 @@ module Member
       workflow.agent_block_reason || t("member.tickets.automation.stopped.agent_blocked_no_reason")
     end
 
-    CHECK_STOP_KINDS = %w[candidate_check release_probe].freeze
+    CHECK_STOP_KINDS = %w[candidate_check release_probe staging_deploy].freeze
 
     # The sentence for a stop written by the server's own checks, or nil: those reject no attempt,
     # so the attempt-cap sentence would read «0 times in a row». CYRA-1098
     def automation_check_stop_text(workflow)
       return unless workflow&.blocked_at? && CHECK_STOP_KINDS.include?(workflow.blocked_kind)
+      # CYRA-1366 — the trial release is told in words, without the technical code.
+      if workflow.blocked_kind == ::Agents::Staging::VerifyMerge::DEPLOY_STOP_KIND
+        return t("member.tickets.automation.blocked.body_staging_deploy.#{::Agents::Staging::VerifyMerge.deploy_stop_key(workflow)}")
+      end
 
       t("member.tickets.automation.blocked.body_#{workflow.blocked_kind}",
         reason: automation_agent_block_reason(workflow))

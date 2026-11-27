@@ -74,6 +74,9 @@ en:
       agent_blocked: "It stopped itself on the «%{phase}» step: %{reason}"
       candidate_check: "The proposal check did not pass: %{reason}"
       release_probe: "The release check did not pass: %{reason}"
+      staging_deploy:
+        failed: "The trial release failed or was cancelled: production does not start."
+        missing: "The trial release never came: production does not start."
       held_by_person: "%{name} held it before the live site release."
       production_approval: "It is waiting for a person's go-ahead before the live site release."
       safety_stop: "Stopped for safety: %{reason} Only a person can release it."

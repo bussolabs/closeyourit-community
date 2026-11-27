@@ -99,6 +99,16 @@ RSpec.describe Agents::StopReason, type: :model do
     end
   end
 
+  # CYRA-1366 — the trial release is told in words, never as the quoted code of the audit line.
+  it "tells a failed trial release from one that never came" do
+    block!(kind: "staging_deploy", reason: "staging_proof: staging_run_failed")
+    failed = note.reason
+    workflow.update!(blocked_reason: "staging_proof: staging_not_deployed")
+
+    expect(failed).to eq(I18n.t("agents.stop_reason.staging_deploy.failed"))
+    expect(note.reason).to eq(I18n.t("agents.stop_reason.staging_deploy.missing"))
+  end
+
   it "says nothing about a cancelled or completed piece of work" do
     workflow.update!(cancelled_at: Time.current, cancellation_reason: "no longer needed")
 

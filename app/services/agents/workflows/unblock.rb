@@ -46,6 +46,9 @@ module Agents
           stalled = @workflow.stopped_execution_phase
           rearm = @workflow.blocked_kind == "candidate_check"
           go_ahead = @workflow.blocked_kind == RequestProductionApproval::KIND
+          # CYRA-1366 — a trial release stopped before the staging check is looked at again (a tag sent again).
+          recheck_staging = @workflow.blocked_kind == Staging::VerifyMerge::DEPLOY_STOP_KIND &&
+                            @workflow.blocked_phase == "closer_staging"
           # Non è un errore sbloccare ciò che non è bloccato: due click ravvicinati sono la stessa
           # decisione presa una volta, non un conflitto da mostrare a chi l'ha presa.
           # CYRA-1197 — a person releasing a safety stop is the one way out of it.
@@ -56,6 +59,7 @@ module Agents
           # fa il recovery degli orfani — è la stessa fase interrotta, con un'altra causa.
           @workflow.reload if stalled && @workflow.reopen_execution_phase!(stalled)
           rearm_candidate! if rearm
+          @workflow.update!(closer_staging_next_check_at: Time.current) if recheck_staging
           settle_production_approval(go_ahead)
         end
         Result.ok(@workflow)

@@ -76,6 +76,10 @@ it:
       agent_blocked: "Si è fermata da sola sul passo «%{phase}»: %{reason}"
       candidate_check: "Il controllo della proposta non è andato a buon fine: %{reason}"
       release_probe: "Il controllo del rilascio non è andato a buon fine: %{reason}"
+      # CYRA-1366 — il rilascio di prova fallito, annullato o mai arrivato: detto a parole, senza codice.
+      staging_deploy:
+        failed: "Il rilascio di prova è fallito o è stato annullato: la produzione non parte."
+        missing: "Il rilascio di prova non è mai arrivato: la produzione non parte."
       held_by_person: "L'ha fermata %{name} prima del rilascio sul sito vero."
       production_approval: "Aspetta il via libera di una persona prima del rilascio sul sito vero."
       safety_stop: "Fermata per sicurezza: %{reason} Riparte solo se una persona la sblocca."

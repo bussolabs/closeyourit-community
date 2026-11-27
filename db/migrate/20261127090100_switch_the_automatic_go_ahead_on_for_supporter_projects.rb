@@ -39,13 +39,19 @@ class SwitchTheAutomaticGoAheadOnForSupporterProjects < ActiveRecord::Migration[
 
   def switch_projects_on
     excluded = excluded_projects
-    if excluded.empty? && Rails.env.production?
+    if excluded.empty? && real_production?
       raise StoppedWithoutLegalBloom, "no LegalBloom project found: the automatic go-ahead was not switched on"
     end
 
     say("left off (LegalBloom): #{excluded.map { |project| project.key || project.name }.join(", ").presence || "none"}")
     Project.where(supporter_enabled: true, auto_go_ahead_enabled: false).where.not(id: excluded.map(&:id))
            .update_all(auto_go_ahead_enabled: true, updated_at: Time.current)
+  end
+
+  # CYRA-1365 — the staging server runs with the production environment too, and has no LegalBloom project:
+  # stopping there kept the application from starting. Only its host name tells it apart.
+  def real_production?
+    Rails.env.production? && !ENV.fetch("APP_HOSTS", "").include?(".staging.")
   end
 
   # A group or a project whose name, letters only, reads «legalbloom».

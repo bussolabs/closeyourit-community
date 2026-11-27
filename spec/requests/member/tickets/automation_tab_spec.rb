@@ -296,6 +296,18 @@ RSpec.describe "Member ticket automation tab", type: :request do
       end
     end
 
+    # CYRA-1366 AC-1 — a cancelled trial release: the card says it in words, never the quoted code.
+    it "names the trial release stop in words instead of its code" do
+      workflow.update!(blocked_kind: "staging_deploy", blocked_phase: "closer_production",
+                       blocked_reason: "staging_proof: staging_run_failed")
+
+      get member_ticket_path(ticket, tab: "automation")
+
+      expected = I18n.t("member.tickets.automation.blocked.body_staging_deploy.failed")
+      expect(response.body).to include(CGI.escapeHTML(expected))
+      expect(response.body).not_to include("staging_run_failed")
+    end
+
     it "e la frase del tetto resta quella di prima quando a fermarla è stato il tetto" do
       get member_ticket_path(ticket, tab: "automation")
 

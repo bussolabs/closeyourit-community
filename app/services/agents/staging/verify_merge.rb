@@ -25,6 +25,23 @@ module Agents
       # past this window from the delivery a person is called.
       DEPLOY_RETRY_EVERY = 3.minutes
       DEPLOY_GRACE_WINDOW = 90.minutes
+      # CYRA-1366 — a trial release that failed or never came is told as such, not as a proposal check.
+      DEPLOY_STOP_KIND = "staging_deploy"
+      DEPLOY_STOP_CODES = %w[staging_run_failed staging_not_deployed].freeze
+
+      # Which trial-release stop it is, for the sentence: it failed (or was cancelled), or it never came.
+      def self.deploy_stop_key(workflow)
+        workflow.blocked_reason.to_s.end_with?("staging_not_deployed") ? "missing" : "failed"
+      end
+
+      # The commit the closer declares it prepared. It sits in the attempt's result, an immutable audit:
+      # it is never taken from the branch, which moves.
+      def self.declared_commit(workflow)
+        workflow.attempts.where(phase: "closer_staging")
+                .where("result ->> 'state' = ?", "staging-released")
+                .order(created_at: :desc)
+                .pick(Arel.sql("result ->> 'commit'"))
+      end
 
       def initialize(workflow:, client: nil, now: Time.current)
         @workflow = workflow
@@ -49,14 +66,7 @@ module Agents
 
       def client = @client ||= Github::Client.new
 
-      # Il commit che il closer dichiara di aver preparato. Sta nel result del tentativo, che è audit
-      # immutabile: non si prende dal ramo, che si muove.
-      def declared_commit
-        @workflow.attempts.where(phase: "closer_staging")
-                 .where("result ->> 'state' = ?", "staging-released")
-                 .order(created_at: :desc)
-                 .pick(Arel.sql("result ->> 'commit'"))
-      end
+      def declared_commit = self.class.declared_commit(@workflow)
 
       def landed?(candidate, declared)
         installation = candidate.repository&.github_installation_id
@@ -69,8 +79,9 @@ module Agents
 
       # CYRA-1294 — where the project asks for it, the merge is not enough: the trial release must have gone
       # through. A failed one calls a person at once; one that never shows up, past the window.
+      # CYRA-1366 — with the rule off the merge is enough, and the trial release is watched until production.
       def after_merge(candidate, declared)
-        return verified! unless deploy_proof_required?(candidate)
+        return verified!(watch_deploy: candidate.repository.present?) unless deploy_proof_required?(candidate)
 
         case DeployRun.outcome(client:, installation: candidate.repository.github_installation_id,
                                repository: candidate.repository_full_name, commit: declared)
@@ -80,17 +91,17 @@ module Agents
         end
       end
 
-      # Only work whose frozen proof of done is a deploy has a trial release to look at.
+      # CYRA-1366 — every piece of work goes to production (CYRA-1193), whatever its proof of done: all wait.
       def deploy_proof_required?(candidate)
-        @workflow.ticket.project.staging_deploy_proof? && candidate.repository.present? &&
-          @workflow.frozen_plan&.completion_probe.to_h["kind"] == "deploy_smoke"
+        @workflow.ticket.project.staging_deploy_proof? && candidate.repository.present?
       end
 
       def deploy_overdue? = @workflow.closer_staging_completed_at < @now - DEPLOY_GRACE_WINDOW
 
-      def verified!
-        @workflow.update!(closer_staging_verified_at: @now, closer_staging_next_check_at: nil,
-                          closer_staging_last_error_code: nil)
+      # `watch_deploy`: the next check belongs to Agents::Staging::WatchDeploy, until production starts.
+      def verified!(watch_deploy: false)
+        @workflow.update!(closer_staging_verified_at: @now, closer_staging_last_error_code: nil,
+                          closer_staging_next_check_at: (@now + DEPLOY_RETRY_EVERY if watch_deploy))
         # CYRA-1050 — a missing review status does not stop the release: the merge was seen anyway.
         # CYRA-1193 — production always follows, even when the merge is the proof of done: a beta tag
         # is not a release, and closing the work here left the stable release undone.
@@ -125,7 +136,8 @@ module Agents
       def escalate_to_human(code)
         @workflow.update!(closer_staging_next_check_at: nil, closer_staging_last_error_code: code)
         Agents::Workflows::BlockExhaustedPhase.call(
-          workflow: @workflow, phase: "closer_staging", source: "staging_proof", reason: code
+          workflow: @workflow, phase: "closer_staging", source: "staging_proof", reason: code,
+          kind: DEPLOY_STOP_CODES.include?(code) ? DEPLOY_STOP_KIND : "candidate_check"
         )
         Result.ok(@workflow)
       end

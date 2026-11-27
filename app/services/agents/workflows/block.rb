@@ -33,8 +33,9 @@ module Agents
       # CYRA-1278 — `production_approval`: the project or its group wants a person's go-ahead before production.
       # CYRA-1330 — `review_fault`: the review of the phase kept producing no verdict for a technical fault.
       # Told as `attempt_limit` the sentence would count rejections that are zero: nothing was ever judged.
+      # CYRA-1366 — `staging_deploy`: the trial release failed, was cancelled or never came.
       KINDS = %w[attempt_limit agent_blocked candidate_check release_probe held_by_person safety_stop
-                 production_approval review_fault].freeze
+                 production_approval review_fault staging_deploy].freeze
 
       def initialize(workflow:, phase:, reason:, kind:)
         @workflow = workflow

@@ -92,6 +92,17 @@ RSpec.describe Agents::Workflows::Unblock do
     end
   end
 
+  # CYRA-1366 — a trial release stopped before the staging check is looked at again: a tag sent again counts.
+  it "looks at the trial release again when it stopped the staging check" do
+    workflow.update!(closer_staging_completed_at: 10.minutes.ago, closer_staging_next_check_at: nil,
+                     blocked_phase: "closer_staging", blocked_kind: "staging_deploy",
+                     blocked_reason: "staging_proof: staging_run_failed")
+
+    described_class.call(workflow:, actor: cto)
+
+    expect(workflow.reload).to have_attributes(blocked_at: nil, closer_staging_next_check_at: be_present)
+  end
+
   it "decide solo il CTO effettivo, come per il piano" do
     stranger = create(:account).tap { |account| create(:membership, account:, organization:) }
 

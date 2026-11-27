@@ -23,10 +23,31 @@ module Agents
       rescue StandardError => e
         Rails.logger.error("Agents::StagingProofJob: #{workflow.id} #{e.class}: #{e.message}")
       end
-      request_production_approvals unless workflow_id
+      return if workflow_id
+
+      watch_deploys
+      request_production_approvals
     end
 
     private
+
+    # CYRA-1366 — with the trial-release rule off, the verified ones waiting for production are watched too.
+    def watch_deploys
+      deploy_watch_records.each do |workflow|
+        Agents::Staging::WatchDeploy.call(workflow:)
+      rescue StandardError => e
+        Rails.logger.error("Agents::StagingProofJob: watch #{workflow.id} #{e.class}: #{e.message}")
+      end
+    end
+
+    def deploy_watch_records
+      Agents::Workflow.where.not(closer_staging_verified_at: nil)
+                      .where(blocked_at: nil, cancelled_at: nil, completed_at: nil,
+                             closer_production_started_at: nil, closer_production_completed_at: nil)
+                      .where(closer_staging_next_check_at: ..Time.current)
+                      .order(:closer_staging_next_check_at)
+                      .limit(BATCH)
+    end
 
     # CYRA-1278 — a switch turned on after the staging check still stops the releases already waiting.
     def request_production_approvals

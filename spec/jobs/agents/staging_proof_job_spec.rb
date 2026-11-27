@@ -71,6 +71,21 @@ RSpec.describe Agents::StagingProofJob do
     expect(waiting.reload.blocked_kind).to eq("production_approval")
   end
 
+  # CYRA-1366 — the verified ones waiting for production keep their trial release watched, until it starts.
+  it "watches the trial release of the verified ones still waiting for production" do
+    watched = lavorazione(verificata: 10.minutes.ago)
+    started = lavorazione(verificata: 10.minutes.ago).tap { |w| w.update!(closer_production_started_at: 1.minute.ago) }
+    later = lavorazione(verificata: 10.minutes.ago, prossimo_controllo: 2.minutes.from_now)
+    seen = []
+    allow(Agents::Staging::VerifyMerge).to receive(:call)
+    allow(Agents::Staging::WatchDeploy).to receive(:call) { |workflow:| seen << workflow.id }
+
+    described_class.perform_now
+
+    expect(seen).to eq([ watched.id ])
+    expect(seen).not_to include(started.id, later.id)
+  end
+
   it "prende al massimo un lotto per volta" do
     expect(described_class::BATCH).to eq(25)
   end

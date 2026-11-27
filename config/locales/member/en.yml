@@ -2144,6 +2144,9 @@ en:
             agent_blocked_no_reason: "it did not write the reason"
             candidate_check: "It stopped while checking the pull request: \"%{reason}\" It will not retry on its own."
             release_probe: "It stopped while checking the release: «%{reason}» It will not retry by itself."
+            staging_deploy:
+              failed: "The trial release failed or was cancelled: production does not start. A person decides how to go on."
+              missing: "The trial release never came: production does not start. A person decides how to go on."
             held_by_person: "Held before production: %{name} stopped it. No release of this repository goes to production until it resumes."
             production_approval: "Waiting for the go-ahead to production: this project asks for it. Retry gives the go-ahead. No release of this repository goes to production until it resumes."
             safety_stop: "Stopped for safety: «%{reason}» An agent tried to skip the checks or to touch production. It resumes only when a person releases it."
@@ -2219,6 +2222,9 @@ en:
           body_agent: "The machine stopped by itself on %{phase}: «%{reason}» The work will not retry on its own."
           body_candidate_check: "It stopped while checking the pull request: «%{reason}» The work will not retry on its own."
           body_release_probe: "It stopped while checking the release: «%{reason}» The work will not retry on its own."
+          body_staging_deploy:
+            failed: "The trial release failed or was cancelled, and no other run on the same code went through. Production does not start and the work will not retry on its own."
+            missing: "The trial release never came. Production does not start and the work will not retry on its own."
           body_held: "%{name} stopped the release before production. The code is already on main: while it stays stopped, no release of this repository goes to production."
           retry: Unblock and retry
           retried: Work put back in the queue.
