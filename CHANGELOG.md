@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.258.2] - 2026-11-27
+
+### Fixed
+
+- **Un rilascio in produzione fallito si può riprendere**: rilancia il rilascio su GitHub e premi «Sblocca e riprova». Il controllo guarda di nuovo il rilascio per un'ora e, se è riuscito, il ticket diventa «Fatto». Se rimandi il lavoro allo staging e la versione era già uscita, la nuova prova prende la versione successiva. (CYRA-1367)
+
 ## [0.258.1] - 2026-11-27
 
 ### Fixed

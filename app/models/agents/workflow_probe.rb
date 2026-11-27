@@ -36,6 +36,12 @@ module Agents
 
     def expired?(now = Time.current) = live? && bound_at + GRACE_WINDOW <= now
 
+    # CYRA-1367 — a person's retry after a release stop: a full hour again from now, checked at once.
+    def rearm!(now = Time.current)
+      update!(bound_at: now, next_check_at: now, checks_count: 0, last_error_code: nil,
+              evidence: evidence.to_h.merge("rearmed_at" => now))
+    end
+
     def expected_version = expected["version"]
     def expected_sha = expected["sha"]
     def expected_repo = expected["repo"]

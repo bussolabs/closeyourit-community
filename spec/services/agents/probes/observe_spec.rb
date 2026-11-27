@@ -207,13 +207,51 @@ RSpec.describe Agents::Probes::Observe do
         allow(c).to receive(:tag_commit).and_return(sealed_sha)
         allow(c).to receive(:workflow_runs)
           .and_return([ { "id" => 8, "conclusion" => "success" }, { "id" => 7, "conclusion" => "cancelled" } ])
-        allow(c).to receive(:workflow_run_jobs).with(anything, anything, 8).and_return(passaggi_riusciti)
-        allow(c).to receive(:workflow_run_jobs).with(anything, anything, 7).and_return(cancelled)
+        allow(c).to receive(:workflow_run_jobs).with(anything, anything, 8, filter: "all").and_return(passaggi_riusciti)
+        allow(c).to receive(:workflow_run_jobs).with(anything, anything, 7, filter: "all").and_return(cancelled)
       end
 
       expect(osserva(client)).to be_ok
       expect(workflow.reload.blocked_at).to be_nil
       expect(ticket.reload.status).to eq(fatto)
+    end
+
+    # CYRA-1367 — R-1: a rerun on GitHub updates the same run; each step counts with its latest attempt.
+    it "reads every attempt of the run" do
+      client = client_che
+
+      osserva(client)
+
+      expect(client).to have_received(:workflow_run_jobs).with(anything, anything, 7, filter: "all")
+    end
+
+    it "closes after a full rerun that succeeded where the first attempt failed" do
+      jobs = [ { "name" => "deploy / deploy-production", "conclusion" => "failure", "run_attempt" => 1 },
+               { "name" => "deploy / smoke-prod", "conclusion" => "skipped", "run_attempt" => 1 },
+               { "name" => "deploy / deploy-production", "conclusion" => "success", "run_attempt" => 2 },
+               { "name" => "deploy / smoke-prod", "conclusion" => "success", "run_attempt" => 2 } ]
+
+      expect(osserva(client_che(jobs:, run_conclusion: "success"))).to be_ok
+      expect(ticket.reload.status).to eq(fatto)
+    end
+
+    it "closes after a rerun of the failed step only, keeping the step that already succeeded" do
+      jobs = [ { "name" => "deploy / deploy-production", "conclusion" => "success", "run_attempt" => 1 },
+               { "name" => "deploy / smoke-prod", "conclusion" => "failure", "run_attempt" => 1 },
+               { "name" => "deploy / smoke-prod", "conclusion" => "success", "run_attempt" => 2 } ]
+
+      expect(osserva(client_che(jobs:, run_conclusion: "success"))).to be_ok
+      expect(ticket.reload.status).to eq(fatto)
+    end
+
+    it "does not count an earlier success when the latest attempt of that step failed" do
+      jobs = [ { "name" => "deploy / deploy-production", "conclusion" => "success", "run_attempt" => 1 },
+               { "name" => "deploy / smoke-prod", "conclusion" => "success", "run_attempt" => 1 },
+               { "name" => "deploy / smoke-prod", "conclusion" => "failure", "run_attempt" => 2 } ]
+
+      osserva(client_che(jobs:, run_conclusion: "failure"))
+
+      expect(workflow.reload).to have_attributes(blocked_kind: "release_probe", completed_at: nil)
     end
   end
 

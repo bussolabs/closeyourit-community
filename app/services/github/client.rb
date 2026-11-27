@@ -514,9 +514,10 @@ module Github
 
     # I passaggi di un giro, con l'esito di ciascuno. Non basta l'esito del GIRO: un giro con i
     # passaggi saltati resta verde, e verde lì dentro vuol dire «non ho fatto niente».
-    def workflow_run_jobs(installation_id, repo_full_name, run_id)
+    # CYRA-1367 — `filter: "all"` also returns the jobs of earlier attempts, each with its `run_attempt`.
+    def workflow_run_jobs(installation_id, repo_full_name, run_id, filter: "latest")
       data = token_request(Net::HTTP::Get, installation_id,
-                           "/repos/#{repo_full_name}/actions/runs/#{run_id}/jobs?per_page=100")
+                           "/repos/#{repo_full_name}/actions/runs/#{run_id}/jobs?filter=#{filter}&per_page=100")
       Array(data && data["jobs"])
     end
 

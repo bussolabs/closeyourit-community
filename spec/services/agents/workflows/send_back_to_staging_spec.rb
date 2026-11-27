@@ -66,6 +66,42 @@ RSpec.describe Agents::Workflows::SendBackToStaging do
       .to eq("v0.89.0-beta.2")
   end
 
+  # CYRA-1367 — AC-3: a published stable tag never moves, so the new staging and production take the next patch.
+  describe "when the stable tag is already published" do
+    before { versioni_uscite("v0.88.0", "v0.89.0-beta.1", "v0.89.0") }
+
+    it "moves the staging number to the next free patch, with no heading on the main line yet" do
+      workflow = ferma_in_produzione
+
+      expect(described_class.call(workflow:, actor: cto)).to be_ok
+
+      expect(Agents::ReleaseAssignment.find_by(workflow:, execution_phase: "closer_staging"))
+        .to have_attributes(version: "v0.89.1-beta.1", landed_at: nil)
+    end
+
+    it "makes the next production release use the new number" do
+      workflow = ferma_in_produzione
+      described_class.call(workflow:, actor: cto)
+      commit_verificato!(workflow.reload, sha: "b" * 40)
+
+      production = Agents::Releases::Assign.call(workflow:, execution_phase: "closer_production")
+
+      expect(production.value).to have_attributes(version: "v0.89.1", sha: "b" * 40)
+    end
+
+    it "skips a patch another workflow or a tag already uses" do
+      versioni_uscite("v0.88.0", "v0.89.0", "v0.89.1", "v0.89.2-beta.1")
+      altro = create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true).agent_workflow
+      assigned_version(altro, "closer_staging", version: "v0.89.3-beta.1")
+      workflow = ferma_in_produzione
+
+      described_class.call(workflow:, actor: cto)
+
+      expect(Agents::ReleaseAssignment.find_by(workflow:, execution_phase: "closer_staging").version)
+        .to eq("v0.89.4-beta.1")
+    end
+  end
+
   it "salta un numero di prova già preso nello stesso repository" do
     workflow = ferma_in_produzione(staging: "v0.89.0-beta.1")
     altro = create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true).agent_workflow

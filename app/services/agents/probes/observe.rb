@@ -149,7 +149,7 @@ module Agents
       # e saltato vuol dire che non è stato fatto niente.
       def release_runs(commit)
         client.workflow_runs(installation, repo, commit).filter_map do |run|
-          jobs = client.workflow_run_jobs(installation, repo, run["id"])
+          jobs = latest_attempts(client.workflow_run_jobs(installation, repo, run["id"], filter: "all"))
           ours = jobs.select { |job| STEPS.include?(name_tail(job["name"])) }
           next if ours.empty?
 
@@ -158,6 +158,12 @@ module Agents
           end
           [ succeeded, run["conclusion"] ]
         end
+      end
+
+      # CYRA-1367 — a rerun of the failed jobs only: each step counts with its latest attempt, and a step
+      # that was not run again keeps the outcome of the attempt that ran it.
+      def latest_attempts(jobs)
+        jobs.group_by { |job| job["name"] }.values.map { |same| same.max_by { |job| job["run_attempt"].to_i } }
       end
 
       def name_tail(name)

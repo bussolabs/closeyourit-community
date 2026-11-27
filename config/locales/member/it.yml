@@ -2206,7 +2206,7 @@ it:
             agent_blocked: "Si è fermata da sola su %{phase} e ha scritto perché: «%{reason}» Non riprova più da sola."
             agent_blocked_no_reason: "non ha scritto il motivo"
             candidate_check: "Si è fermata sul controllo della proposta: «%{reason}» Non riprova più da sola."
-            release_probe: "Si è fermata sul controllo del rilascio: «%{reason}» Non riprova più da sola."
+            release_probe: "Si è fermata sul controllo del rilascio: «%{reason}» Non riprova più da sola. Per ripartire rilancia il rilascio su GitHub e poi premi Riprova, oppure rimandala allo staging."
             staging_deploy:
               failed: "Il rilascio di prova è fallito o è stato annullato: la produzione non parte. Decide una persona come proseguire."
               missing: "Il rilascio di prova non è mai arrivato: la produzione non parte. Decide una persona come proseguire."
@@ -2287,7 +2287,7 @@ it:
           body: "Si è fermata su %{phase} %{count} volte di fila. La lavorazione non riprova da sola."
           body_agent: "La macchina si è fermata da sola su %{phase}: «%{reason}» La lavorazione non riprova da sola."
           body_candidate_check: "Si è fermata sul controllo della proposta: «%{reason}» La lavorazione non riprova da sola."
-          body_release_probe: "Si è fermata sul controllo del rilascio: «%{reason}» La lavorazione non riprova da sola."
+          body_release_probe: "Si è fermata sul controllo del rilascio: «%{reason}» La lavorazione non riprova da sola. Rilancia il rilascio su GitHub e poi premi «Sblocca e riprova»: il controllo guarda di nuovo il rilascio per un'ora. Oppure rimandala allo staging."
           body_staging_deploy:
             failed: "Il rilascio di prova è fallito o è stato annullato, e nessun altro giro sullo stesso codice è riuscito. La produzione non parte e la lavorazione non riprova da sola."
             missing: "Il rilascio di prova non è mai arrivato. La produzione non parte e la lavorazione non riprova da sola."
@@ -2295,7 +2295,7 @@ it:
           retry: Sblocca e riprova
           retried: Lavorazione rimessa in coda.
           send_back: Rimanda allo staging
-          sent_back: "Rimandata allo staging: la prova rifà il codice con un nuovo numero di prova, e la fila dei rilasci è libera."
+          sent_back: "Rimandata allo staging: la prova rifà il codice con un nuovo numero di prova, e la fila dei rilasci è libera. Se la versione era già uscita, prende la successiva."
           waiting_on_cto: "Può decidere solo %{name}."
           retrying_title: In revisione — riprova da sola
           retrying_body: "La fase %{phase} è stata respinta ed è già in un nuovo tentativo. Nessuna azione necessaria."

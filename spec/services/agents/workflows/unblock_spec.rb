@@ -103,6 +103,82 @@ RSpec.describe Agents::Workflows::Unblock do
     expect(workflow.reload).to have_attributes(blocked_at: nil, closer_staging_next_check_at: be_present)
   end
 
+  # CYRA-1367 — a retry after a failed production release looks at the release again, for a full hour.
+  describe "when the release check stopped the work" do
+    let!(:repository) { create(:github_repository, project:, full_name: "bussolabs/closeyourit-rails") }
+    let!(:done) { create(:ticket_status, :done, organization:) }
+    let(:sealed_sha) { "3f2a91c0d4e6b8079a1c5f3d2e7b4a6c8d0f1e29" }
+    let!(:probe) do
+      workflow.probes.create!(kind: "deploy_smoke", bound_at: 2.hours.ago, next_check_at: 1.minute.ago, checks_count: 30,
+                              expected: { "version" => "v0.30.0", "sha" => sealed_sha, "repo" => repository.full_name })
+    end
+
+    def release_client(deploy:, smoke:, run_conclusion:)
+      jobs = [ { "name" => "deploy / deploy-production", "conclusion" => deploy, "run_attempt" => 1 },
+               { "name" => "deploy / smoke-prod", "conclusion" => smoke, "run_attempt" => 1 } ]
+      instance_double(Github::Client).tap do |client|
+        allow(client).to receive_messages(tag_commit: sealed_sha, commit_contained?: false, workflow_run_jobs: jobs,
+                                          workflow_runs: [ { "id" => 7, "conclusion" => run_conclusion } ])
+      end
+    end
+
+    def observe(client) = Agents::Probes::Observe.call(probe: probe.reload, client:)
+
+    let(:ticket) { create(:ticket, :agent_workable, organization:, project:, with_agent_workflow: true) }
+
+    before do
+      workflow.update!(**Agents::Workflow.cleared_block)
+      pronta_per!(workflow, "closer_production")
+      workflow.update!(closer_production_started_at: 3.hours.ago, closer_production_completed_at: 2.hours.ago)
+      observe(release_client(deploy: "failure", smoke: "skipped", run_conclusion: "failure"))
+      workflow.reload
+    end
+
+    it "starts the check again with a full hour and no attempts counted" do
+      expect(workflow).to have_attributes(blocked_kind: "release_probe", blocked_phase: "closer_production")
+
+      freeze_time do
+        described_class.call(workflow:, actor: cto)
+
+        expect(probe.reload).to have_attributes(bound_at: Time.current, next_check_at: Time.current,
+                                                checks_count: 0, last_error_code: nil, closed_at: nil)
+      end
+      expect(workflow.reload.blocked_at).to be_nil
+    end
+
+    # AC-1
+    it "closes the ticket once the rerun on GitHub succeeded" do
+      described_class.call(workflow:, actor: cto)
+      project.releases.create!(version: "v0.30.0", environment: "production", sha: sealed_sha, proved_at: Time.current)
+
+      observe(release_client(deploy: "success", smoke: "success", run_conclusion: "success"))
+
+      expect(workflow.reload).to have_attributes(completed_at: be_present, blocked_at: nil)
+      expect(ticket.reload.status).to eq(done)
+    end
+
+    # AC-2: without the new hour the expired check would stop the work at its first look.
+    it "waits for a rerun still in progress instead of stopping again" do
+      described_class.call(workflow:, actor: cto)
+
+      observe(release_client(deploy: nil, smoke: nil, run_conclusion: nil))
+
+      expect(workflow.reload.blocked_at).to be_nil
+      expect(probe.reload).to have_attributes(closed_at: nil, last_error_code: "release_run_missing")
+    end
+
+    # AC-4: nothing was rerun, so the same stop comes back and nothing is done.
+    it "stops again for the same reason when nobody reran the release" do
+      described_class.call(workflow:, actor: cto)
+
+      observe(release_client(deploy: "failure", smoke: "skipped", run_conclusion: "failure"))
+
+      expect(workflow.reload).to have_attributes(blocked_kind: "release_probe", completed_at: nil)
+      expect(workflow.blocked_reason).to include("release_run_failed")
+      expect(ticket.reload.status).not_to eq(done)
+    end
+  end
+
   it "decide solo il CTO effettivo, come per il piano" do
     stranger = create(:account).tap { |account| create(:membership, account:, organization:) }
 

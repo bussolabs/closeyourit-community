@@ -82,6 +82,7 @@ module Agents
       # avanza (beta.1 → beta.2): quello vecchio è già pubblicato e verrebbe rifiutato. Il numero
       # definitivo resta: l'intestazione delle novità sul codice già unito lo usa, e `landed_at` lo dice a
       # Releases::Assign, che altrimenti lo rinumererebbe se un rilascio più alto fosse già stato unito.
+      # CYRA-1367 — unless its stable tag is already published: a tag never moves, so the next free patch.
       def release_numbers!(landed_at)
         Agents::ReleaseAssignment.where(workflow: @workflow, execution_phase: "closer_production").destroy_all
 
@@ -94,10 +95,14 @@ module Agents
       # salvataggio, perché il nome rifiutato non annulli tutto il rimando.
       def advance_beta!(staging, landed_at)
         attempt_number = 0
+        current = staging_base(staging)
         begin
           attempt_number += 1
-          version = next_beta(staging)
-          ApplicationRecord.transaction(requires_new: true) { staging.update!(version:, landed_at:) }
+          base = free_base(staging, current)
+          # A new number has no heading on the main line yet: the new staging writes it.
+          landed = base == current ? landed_at : nil
+          version = next_beta(staging, base)
+          ApplicationRecord.transaction(requires_new: true) { staging.update!(version:, landed_at: landed) }
           true
         rescue ActiveRecord::RecordNotUnique
           staging.restore_attributes
@@ -111,13 +116,28 @@ module Agents
       # Il successivo al più alto già preso per quella versione, non solo al proprio: un nome già
       # assegnato altrove violerebbe l'indice unico del repository. CYRA-1092 — e al più alto già nel
       # deposito, anche fatto a mano: quel tag esiste già e la pubblicazione verrebbe respinta.
-      def next_beta(staging)
-        base = staging.version.sub(/-beta\.\d+\z/, "")
+      def next_beta(staging, base)
         taken = Agents::ReleaseAssignment.where(github_repository_id: staging.github_repository_id)
                                          .where("version LIKE ?", "#{base}-beta.%").pluck(:version)
                                          .map { |version| version[/-beta\.(\d+)\z/, 1].to_i }
         published = Agents::Releases::NextVersion.highest_beta(@tags, base)
         "#{base}-beta.#{[ taken.max.to_i, published ].max + 1}"
+      end
+
+      def staging_base(staging) = staging.version.sub(/-beta\.\d+\z/, "")
+
+      # CYRA-1367 — the stable number stays while its tag is not published. Once published, the next patch
+      # nobody uses: no tag (stable or trial) and no other workflow of this repository holding it.
+      def free_base(staging, base)
+        return base unless @tags.include?(base)
+
+        held = Agents::ReleaseAssignment.where(github_repository_id: staging.github_repository_id)
+                                        .where.not(workflow: @workflow).pluck(:version)
+                                        .map { |version| version.sub(/-beta\.\d+\z/, "") }
+        used = held + @tags.map { |tag| tag.sub(/-beta\.\d+\z/, "") }
+        major, minor, patch = base.delete_prefix("v").split(".").map(&:to_i)
+        patch += 1 while used.include?("v#{major}.#{minor}.#{patch}")
+        "v#{major}.#{minor}.#{patch}"
       end
 
       # I tag del repository del progetto; nil se GitHub non risponde. Nessun repository collegato:
