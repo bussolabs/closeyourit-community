@@ -1833,6 +1833,7 @@ it:
         reporter_not_allowed: Il segnalatore deve essere una persona dell'organizzazione che vede questo progetto.
         invalid_status: Stato non valido.
         workflow_owns_status: Lo stato di questo ticket lo decide la lavorazione automatica finché non è conclusa. Per spostarlo a mano prendi in carico il ticket dalla sua pagina; se una macchina ci sta lavorando, annulla prima la lavorazione.
+        closing_run_awaits_go_ahead: "La macchina sta ancora provando il rilascio in staging. Poi la produzione aspetta il via libera di una persona: da lì «Accetta» lo dà, e il ticket si risolve quando il rilascio è in piedi in produzione."
         closing_run_owns_review: "La macchina sta ancora rilasciando questo ticket: si risolve da solo quando il rilascio è in piedi in produzione."
         release_not_interrupted: "Questo rilascio non è fermo: non c'è niente da riprendere."
         invalid_milestone: Milestone non valida.

@@ -588,23 +588,42 @@ RSpec.describe Alerting::Evaluate do
       allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new)
     end
 
-    it "consegna sul webhook agganciato alla regola" do
+    # CYRA-1227: l'invio non parte più qui dentro, va in coda (Alerting::DeliverChannelJob) e ritenta.
+    def deliver_channels(&) = perform_enqueued_jobs(only: Alerting::DeliverChannelJob, &)
+
+    # Epoch FISSO (non Time.current): il bucket throttle è `at.to_i / throttle_seconds` — con un `at`
+    # casuale due eventi possono cadere ai due lati di un boundary (~1/throttle_seconds) → 2 consegne
+    # invece di 1 (flaky in CI). 1_700_000_000 non è su un boundary.
+    let(:at) { Time.zone.at(1_700_000_000) }
+
+    it "queues the linked webhook on dedicated workers" do
       stub = stub_request(:post, "https://hooks.example.test/cyi").to_return(status: 200)
 
-      evaluate_error
+      expect { evaluate_error }.to have_enqueued_job(Alerting::DeliverChannelJob).on_queue("alert_webhooks")
+        .with(hash_including(channel_id: channel.id, event_type: "error_new", subject_id: group.id,
+                             delivery_id: kind_of(String),
+                             window_expires_at: be_within(5.seconds).of(rule.throttle_seconds.seconds.from_now)))
+      expect(stub).not_to have_been_requested # il giro degli avvisi non aspetta il destinatario
 
+      perform_enqueued_jobs(only: Alerting::DeliverChannelJob)
       expect(stub).to have_been_requested
+    end
+
+    it "does not count a queued external attempt as a successful delivery" do
+      stub_request(:post, "https://hooks.example.test/cyi").to_timeout
+
+      result = evaluate_error
+
+      expect(result.value).to eq(Alerting::Notification.where(account: owner).count)
     end
 
     it "throttle: la stessa (regola, canale, evento, subject) nella finestra consegna UNA volta" do
       stub = stub_request(:post, "https://hooks.example.test/cyi").to_return(status: 200)
 
-      # Epoch FISSO (non Time.current): il bucket throttle è `at.to_i / throttle_seconds` — con un `at`
-      # casuale i due eventi possono cadere ai due lati di un boundary (~1/throttle_seconds) → 2 consegne
-      # invece di 1 (flaky in CI). 1_700_000_000 non è su un boundary.
-      at = Time.zone.at(1_700_000_000)
-      evaluate_error(at: at)
-      evaluate_error(at: at + 1.second)
+      deliver_channels do
+        evaluate_error(at: at)
+        evaluate_error(at: at + 1.second)
+      end
 
       expect(stub).to have_been_requested.once
     end
@@ -613,16 +632,87 @@ RSpec.describe Alerting::Evaluate do
       channel.update!(enabled: false)
       stub = stub_request(:post, "https://hooks.example.test/cyi").to_return(status: 200)
 
-      evaluate_error
-
+      expect { evaluate_error }.not_to have_enqueued_job(Alerting::DeliverChannelJob)
       expect(stub).not_to have_been_requested
     end
 
-    it "il fallimento del webhook non blocca le consegne umane" do
-      stub_request(:post, "https://hooks.example.test/cyi").to_timeout
+    it "AC-5: il canale esterno che scade non ritarda campanella ed email" do
+      stub = stub_request(:post, "https://hooks.example.test/cyi").to_timeout
 
       expect { evaluate_error }
         .to change(Alerting::Notification.where(account: owner, via: :in_app), :count).by(1)
+        .and have_enqueued_mail(Alerting::AlertsMailer, :triggered)
+        .and have_enqueued_job(Alerting::DeliverChannelJob)
+      expect(stub).not_to have_been_requested
+    end
+
+    it "AC-3: tentativi esauriti → il prossimo evento sullo stesso problema, nella stessa finestra, riavvisa" do
+      stub = stub_request(:post, "https://hooks.example.test/cyi").to_timeout
+
+      deliver_channels { evaluate_error(at: at) }
+      expect(stub).to have_been_requested.times(Alerting::DeliverChannelJob::MAX_ATTEMPTS)
+
+      expect { evaluate_error(at: at + 1.second) }.to have_enqueued_job(Alerting::DeliverChannelJob)
+    end
+
+    it "AC-4: rifiuto definitivo → un solo tentativo, e il prossimo evento può riprovare" do
+      stub = stub_request(:post, "https://hooks.example.test/cyi").to_return(status: 404)
+
+      deliver_channels { evaluate_error(at: at) }
+      expect(stub).to have_been_requested.once
+
+      expect { evaluate_error(at: at + 1.second) }.to have_enqueued_job(Alerting::DeliverChannelJob)
+    end
+
+    it "mentre si ritenta la finestra resta occupata: nessun secondo invio accodato" do
+      stub_request(:post, "https://hooks.example.test/cyi").to_timeout
+
+      evaluate_error(at: at)
+      # Solo il primo tentativo: scade e torna in coda (perform_enqueued_jobs li farebbe tutti).
+      first = enqueued_jobs.find { |job| job[:job] == Alerting::DeliverChannelJob }
+      ActiveJob::Base.execute(first)
+      expect(Rails.cache.exist?(enqueued_jobs.last.dig("arguments", 0, "throttle_key"))).to be(true)
+
+      expect { evaluate_error(at: at + 1.second) }.not_to have_enqueued_job(Alerting::DeliverChannelJob)
+    end
+
+    it "delivers personal alerts for multiple rules while external jobs remain queued" do
+      second = create(:alerting_rule, organization:, event_type: :error_new, name: "Second rule")
+      create(:alerting_rule_channel, rule: second, channel:)
+      stub = stub_request(:post, "https://hooks.example.test/cyi").to_timeout
+
+      expect { evaluate_error }
+        .to change(Alerting::Notification.where(account: owner, via: :in_app), :count).by(2)
+        .and have_enqueued_mail(Alerting::AlertsMailer, :triggered).exactly(2).times
+      expect(enqueued_jobs.count { |job| job[:job] == Alerting::DeliverChannelJob }).to eq(1)
+      expect(stub).not_to have_been_requested
+    end
+
+    it "releases the reservation when enqueueing raises" do
+      allow(Alerting::DeliverChannelJob).to receive(:perform_later).and_raise(ActiveJob::EnqueueError, "queue unavailable")
+      expect { evaluate_error(at:) }.to raise_error(ActiveJob::EnqueueError)
+      allow(Alerting::DeliverChannelJob).to receive(:perform_later).and_call_original
+
+      expect { evaluate_error(at:) }.to have_enqueued_job(Alerting::DeliverChannelJob)
+    end
+
+    it "releases the reservation when enqueueing is aborted" do
+      allow(Alerting::DeliverChannelJob).to receive(:perform_later).and_return(false)
+      result = evaluate_error(at:)
+      expect(result.value).to eq(Alerting::Notification.where(account: owner).count)
+      allow(Alerting::DeliverChannelJob).to receive(:perform_later).and_call_original
+
+      expect { evaluate_error(at:) }.to have_enqueued_job(Alerting::DeliverChannelJob)
+    end
+
+    it "allows a new delivery in the next time window after success" do
+      stub = stub_request(:post, "https://hooks.example.test/cyi").to_return(status: 200)
+      deliver_channels { evaluate_error(at:) }
+      expect { evaluate_error(at: at + 1.second) }.not_to have_enqueued_job(Alerting::DeliverChannelJob)
+
+      deliver_channels { evaluate_error(at: at + rule.throttle_seconds.seconds) }
+
+      expect(stub).to have_been_requested.twice
     end
 
     # CYRA-1156 — a Slack app channel goes through the Slack app, with the rule that «Silenzia» acts on.
@@ -631,7 +721,9 @@ RSpec.describe Alerting::Evaluate do
       allow(Alerting::Deliver).to receive(:slack).and_return(Result.ok(nil))
       stub = stub_request(:post, "https://hooks.example.test/cyi").to_return(status: 200)
 
-      evaluate_error
+      expect { evaluate_error }.to have_enqueued_job(Alerting::DeliverChannelJob)
+      expect(Alerting::Deliver).not_to have_received(:slack)
+      perform_enqueued_jobs(only: Alerting::DeliverChannelJob)
 
       expect(Alerting::Deliver).to have_received(:slack)
         .with(hash_including(channel: channel, rule: rule, event_type: "error_new", subject: group))

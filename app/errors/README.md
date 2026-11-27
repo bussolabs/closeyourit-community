@@ -260,9 +260,11 @@ Formato `R{HTTP_STATUS}-{DOMINIO}-{SEQ}` (rules/error-handling.md). Envelope API
 - `R422-ALERT-001` — create/update regola fallito (validazione: name blank, event_type non ammesso, project/environment di un'altra org — anti-BOLA)
 - `R422-ALERT-002` — webhook URL non sicura a delivery-time (guard anti-SSRF, `Notifications::Deliver::Webhook`)
 - `R422-ALERT-003` — update preferenze di alert personali fallito (validazione, canale CLI `Cli::V1::AlertPreferencesController`)
-- `R502-ALERT-001` — webhook irraggiungibile o HTTP non-2xx (fire-and-forget, loggato)
+- `R422-ALERT-004` — webhook rifiutato in modo definitivo: HTTP non-2xx fuori da `TransientFailure::RETRYABLE_STATUSES` (es. 404, 403), risposta troppo grande o URL non valida. `Alerting::DeliverChannelJob` non ritenta e libera la finestra (CYRA-1227)
+- `R422-ALERT-005` — app Slack: messaggio rifiutato da Slack (canale inesistente, app tolta, token revocato: tutto tranne `ratelimited`), app senza credenziali o errore non transitorio. `Alerting::DeliverChannelJob` non ritenta e libera la finestra (CYRA-1227)
+- `R502-ALERT-001` — webhook irraggiungibile (timeout, connessione rifiutata, host irrisolvibile) o HTTP ritentabile (5xx, 408, 429): `Alerting::DeliverChannelJob` ritenta fino a 3 tentativi con attese crescenti, poi libera la finestra (CYRA-1227)
 - `R502-ALERT-002` — Telegram irraggiungibile o HTTP non-200 (fire-and-forget, loggato)
-- `R502-ALERT-003` — app Slack irraggiungibile o messaggio rifiutato da Slack (fire-and-forget, loggato)
+- `R502-ALERT-003` — app Slack irraggiungibile o `ratelimited`: `Alerting::DeliverChannelJob` ritenta come per `R502-ALERT-001` (CYRA-1227)
 
 ### MILESTONE — milestone di progetto (`Projects::Milestone`, CRUD inline condiviso Member + CLI `Cli::V1::MilestonesController`)
 - `R422-MILESTONE-001` — create/update milestone fallito (validazione: code/label/color blank, code duplicato per progetto)

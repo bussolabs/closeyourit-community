@@ -41,22 +41,85 @@ RSpec.describe Alerting::Deliver, type: :service do
     expect(stub.with { |req| req.headers["X-Closeyourit-Signature"].nil? }).to have_been_requested
   end
 
-  it "HTTP non-2xx → Result.err R502-ALERT-001 (loggato, non solleva)" do
-    stub_request(:post, "https://hooks.example.test/cyi").to_return(status: 500)
+  # CYRA-1227 — il lavoro in coda ritenta solo ciò che TransientFailure riconosce: l'errore deve dire
+  # se il canale è caduto per un momento o ha detto di no per sempre.
+  describe "guasto passeggero o rifiuto definitivo" do
+    it "exposes programming errors instead of treating them as delivery failures" do
+      stub_request(:post, "https://hooks.example.test/cyi").to_raise(NoMethodError)
 
-    result = described_class.webhook(channel:, event_type: "error_new", subject: group, content:)
+      expect { described_class.webhook(channel:, event_type: "error_new", subject: group, content:) }
+        .to raise_error(NoMethodError)
+    end
 
-    expect(result).to be_err
-    expect(result.error.code).to eq("R502-ALERT-001")
+    [ 500, 503, 429, 408 ].each do |status|
+      it "HTTP #{status} → R502-ALERT-001, ritentabile (loggato, non solleva)" do
+        stub_request(:post, "https://hooks.example.test/cyi").to_return(status:)
+
+        result = described_class.webhook(channel:, event_type: "error_new", subject: group, content:)
+
+        expect(result).to be_err
+        expect(result.error.code).to eq("R502-ALERT-001")
+        expect(TransientFailure === result.error).to be(true)
+      end
+    end
+
+    [ 404, 410, 403, 401, 400 ].each do |status|
+      it "HTTP #{status} → R422-ALERT-004, definitivo: non si ritenta" do
+        stub_request(:post, "https://hooks.example.test/cyi").to_return(status:)
+
+        result = described_class.webhook(channel:, event_type: "error_new", subject: group, content:)
+
+        expect(result.error.code).to eq("R422-ALERT-004")
+        expect(TransientFailure === result.error).to be(false)
+      end
+    end
+
+    it "timeout → R502-ALERT-001 ritentabile, nessun raise" do
+      stub_request(:post, "https://hooks.example.test/cyi").to_timeout
+
+      expect do
+        result = described_class.webhook(channel:, event_type: "error_new", subject: group, content:)
+        expect(result.error.code).to eq("R502-ALERT-001")
+        expect(TransientFailure === result.error).to be(true)
+      end.not_to raise_error
+    end
+
+    it "connessione rifiutata → R502-ALERT-001 ritentabile" do
+      stub_request(:post, "https://hooks.example.test/cyi").to_raise(Errno::ECONNREFUSED)
+
+      result = described_class.webhook(channel:, event_type: "error_new", subject: group, content:)
+
+      expect(TransientFailure === result.error).to be(true)
+    end
+
+    it "host che il resolver non risolve → R502-ALERT-001 ritentabile, nessuna richiesta" do
+      channel # creato mentre il DNS risponde (config-time valido)
+      allow(NetworkGuard).to receive(:resolve).and_return([])
+
+      result = described_class.webhook(channel:, event_type: "error_new", subject: group, content:)
+
+      expect(result.error.code).to eq("R502-ALERT-001")
+      expect(TransientFailure === result.error).to be(true)
+      expect(WebMock).not_to have_requested(:post, "https://hooks.example.test/cyi")
+    end
+
+    it "eccezione che non guarisce da sé (risposta oltre il limite) → R422-ALERT-004, nessun raise" do
+      stub_request(:post, "https://hooks.example.test/cyi").to_raise(BoundedHttp::ResponseTooLarge)
+
+      result = described_class.webhook(channel:, event_type: "error_new", subject: group, content:)
+
+      expect(result.error.code).to eq("R422-ALERT-004")
+      expect(TransientFailure === result.error).to be(false)
+    end
   end
 
-  it "timeout/eccezione → Result.err, nessun raise" do
-    stub_request(:post, "https://hooks.example.test/cyi").to_timeout
+  it "il payload porta l'ora dell'evento, non solo quella dell'invio (CYRA-1227)" do
+    stub = stub_request(:post, "https://hooks.example.test/cyi").to_return(status: 200)
+    occurred_at = Time.zone.at(1_700_000_000)
 
-    expect do
-      result = described_class.webhook(channel:, event_type: "error_new", subject: group, content:)
-      expect(result).to be_err
-    end.not_to raise_error
+    described_class.webhook(channel:, event_type: "error_new", subject: group, content:, occurred_at:)
+
+    expect(stub.with { |req| JSON.parse(req.body)["occurred_at"] == occurred_at.iso8601 }).to have_been_requested
   end
 
   it "URL diventata interna a delivery-time → R422-ALERT-002, nessuna richiesta" do

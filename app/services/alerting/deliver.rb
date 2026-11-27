@@ -31,13 +31,15 @@ module Alerting
     end
 
     # Canale esterno della regola: nessun destinatario, nessuna riga — passa dal motore senza payload.
-    def self.webhook(channel:, event_type:, subject:, content:)
-      ::Notifications::Deliver.webhook(channel: channel, event_type: event_type, subject: subject, content: content)
+    def self.webhook(channel:, event_type:, subject:, content:, occurred_at: nil, delivery_id: nil)
+      ::Notifications::Deliver.webhook(channel: channel, event_type: event_type, subject: subject, content: content,
+                                       occurred_at: occurred_at, delivery_id: delivery_id)
     end
 
     # Slack app channel: the rule travels along because «Silenzia» acts on it (CYRA-1156).
-    def self.slack(channel:, rule:, event_type:, subject:, content:)
-      ::Notifications::Deliver.slack(channel: channel, rule: rule, event_type: event_type, subject: subject, content: content)
+    def self.slack(channel:, rule:, event_type:, subject:, content:, delivery_id: nil)
+      ::Notifications::Deliver.slack(channel: channel, rule: rule, event_type: event_type, subject: subject, content: content,
+                                     delivery_id: delivery_id)
     end
 
     def self.payload(rule:, account:, event_type:, subject:, content:, dedup_key:, mailer: nil)

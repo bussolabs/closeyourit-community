@@ -29,13 +29,15 @@ module Notifications
 
     # Canale ESTERNO della regola (Slack/Discord/HTTP): va per canale e non per destinatario, non ha
     # una riga da scrivere né uno stato da segnare. Stesso punto d'ingresso, motore suo.
-    def self.webhook(channel:, event_type:, subject:, content:)
-      Webhook.call(channel: channel, event_type: event_type, subject: subject, content: content)
+    def self.webhook(channel:, event_type:, subject:, content:, occurred_at: nil, delivery_id: nil)
+      Webhook.call(channel: channel, event_type: event_type, subject: subject, content: content,
+                   occurred_at: occurred_at, delivery_id: delivery_id)
     end
 
     # Slack app channel: the alert with its three buttons, remembered so clicks can change it (CYRA-1156).
-    def self.slack(channel:, rule:, event_type:, subject:, content:)
-      Slack.call(channel: channel, rule: rule, event_type: event_type, subject: subject, content: content)
+    def self.slack(channel:, rule:, event_type:, subject:, content:, delivery_id: nil)
+      Slack.call(channel: channel, rule: rule, event_type: event_type, subject: subject, content: content,
+                 delivery_id: delivery_id)
     end
 
     # The bell count pushed to every open tab of the account; also used by Notifications::MarkRead.

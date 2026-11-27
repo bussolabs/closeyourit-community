@@ -4033,7 +4033,7 @@
       "level": 3,
       "parent": "tkt_flow_review",
       "kind": "step",
-      "summary": "La firma la mette solo una persona, mai una macchina. Porta il ticket al primo stato concluso, salvo prerequisiti aperti. Se il lavoro l'ha consegnato il pilota automatico, passa ai rilasci.",
+      "summary": "La firma la mette solo una persona, mai una macchina. Porta il ticket al primo stato concluso, salvo prerequisiti aperti. Se il lavoro l'ha consegnato il pilota automatico, passa ai rilasci. Se il rilascio aspetta una persona prima della produzione, la firma del CTO è il suo via libera.",
       "files": [
         "app/services/ticketing/approve_review.rb",
         "app/controllers/member/tickets/review/approvals_controller.rb",
@@ -8538,9 +8538,13 @@
       "level": 3,
       "parent": "alr_flow_evaluate",
       "kind": "step",
-      "summary": "Se la regola ha canali agganciati (Slack, Discord, indirizzo web), l'avviso parte anche lì, una volta per finestra di tempo.",
+      "summary": "Gli invii esterni hanno due posti per processo, con processi configurabili tramite ALERT_WEBHOOK_JOB_CONCURRENCY (uno predefinito), separati da campanella ed email, e non entrano nel conteggio delle consegne personali. Testo, progetto e ora originali restano in coda, senza essere copiati nei log. La scadenza è fissata alla creazione più l'intervallo della regola e non riparte. La pulizia oraria elimina i lavori conclusi da oltre un'ora: normalmente dopo una–due ore più eventuali ritardi, senza garantire la cancellazione entro un'ora. Quella giornaliera elimina i falliti da oltre sette giorni. I segreti non sono copiati nella coda. Ogni tentativo verifica oggetto e genitori attivi, progetto, regola, organizzazione e collegamento. Un indirizzo modificato annulla il vecchio invio e libera la sua prenotazione; una chiave ruotata firma il contenuto originale con la chiave corrente.",
       "files": [
         "app/services/alerting/evaluate.rb",
+        "app/jobs/alerting/deliver_channel_job.rb",
+        "app/services/alerting/channel_reservation.rb",
+        "app/services/alerting/channel_subject.rb",
+        "docs/alert-channel-delivery.md",
         "app/models/alerting/channel.rb"
       ]
     },
@@ -8670,8 +8674,9 @@
       "level": 3,
       "parent": "alr_flow_slack",
       "kind": "step",
-      "summary": "L'app Slack scrive l'avviso nel canale scelto e si ricorda dove sta il messaggio. Il laboratorio di prova resta intercettato.",
+      "summary": "Il lavoro dei canali esterni passa il testo fissato all'app Slack, che scrive l'avviso con i pulsanti e ricorda dove sta il messaggio. Un cambio di destinazione annulla l'invio in attesa. Il laboratorio di prova resta intercettato.",
       "files": [
+        "app/jobs/alerting/deliver_channel_job.rb",
         "app/services/notifications/deliver/slack.rb",
         "app/services/alerting/slack_card.rb",
         "app/services/coworkers/slack.rb"
@@ -8923,9 +8928,12 @@
       "level": 3,
       "parent": "ntf_flow_deliver",
       "kind": "step",
-      "summary": "Per i canali esterni: invia i dati firmati a un indirizzo pubblico verificato. Un solo tentativo, senza fermare il resto se fallisce.",
+      "summary": "Invia i dati firmati con indirizzo pubblico verificato a ogni tentativo, con lo stesso identificativo d'invio per scartare i doppioni. L'ora dell'evento resta originale; l'ora d'invio e la firma sono del singolo tentativo. Ritenta solo i guasti temporanei, inclusi risposte malformate, connessioni interrotte e nomi non risolti, fino a tre tentativi con attesa crescente. Errori definitivi, tentativi esauriti e accodamenti falliti liberano solo la propria prenotazione; il successo la mantiene fino alla scadenza. Un tentativo arrivato dopo la scadenza della finestra non invia niente. Anche l'app Slack riceve l'identificativo d'invio. I rilievi SEO verificano l'appartenenza passando dal sito al progetto.",
       "files": [
-        "app/services/notifications/deliver/webhook.rb"
+        "app/services/notifications/deliver/webhook.rb",
+        "app/jobs/alerting/deliver_channel_job.rb",
+        "app/services/alerting/channel_reservation.rb",
+        "config/queue.yml"
       ]
     },
     {

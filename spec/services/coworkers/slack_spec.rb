@@ -49,6 +49,15 @@ RSpec.describe Coworkers::Slack do
       expect(described_class.post_blocks(channel: "C1", text: "Down", blocks: blocks)).to include("ts" => "1.5")
     end
 
+    it "sends the delivery id of a queued alert as message metadata (CYRA-1227)" do
+      metadata = { event_type: "closeyourit_alert", event_payload: { delivery_id: "delivery-1" } }
+      stub = stub_request(:post, "https://slack.com/api/chat.postMessage")
+        .with(body: { channel: "C1", text: "Down", blocks: blocks, metadata: metadata }.to_json)
+        .to_return(body: { ok: true, channel: "C1", ts: "1.5" }.to_json)
+      described_class.post_blocks(channel: "C1", text: "Down", blocks: blocks, delivery_id: "delivery-1")
+      expect(stub).to have_been_requested
+    end
+
     it "edits a message in place" do
       stub = stub_request(:post, "https://slack.com/api/chat.update")
         .with(body: { channel: "C1", ts: "1.5", text: "Down", blocks: blocks }.to_json).to_return(body: { ok: true }.to_json)

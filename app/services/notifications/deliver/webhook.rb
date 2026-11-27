@@ -2,21 +2,25 @@
 
 require "net/http"
 require "openssl"
+require "zlib"
 
 module Notifications
   class Deliver
-    # Consegna su webhook generico: POST JSON firmato (HMAC-SHA256 del body con il secret del canale,
-    # header X-CloseYourIt-Signature) — il ricevente verifica la firma prima di fidarsi. Fire-and-forget:
-    # timeout corto, nessun retry, l'errore viene loggato e non blocca il resto della pipeline.
+    # One bounded, signed request; the caller owns retries. Temporary failures are R502-ALERT-001,
+    # definitive refusals are R422-ALERT-004, and programming errors propagate. CYRA-1227
     class Webhook < ApplicationService
       OPEN_TIMEOUT = 3
       READ_TIMEOUT = 5
+      TRANSPORT_FAILURES = [ EOFError, Net::HTTPBadResponse, Net::ProtocolError,
+                             Errno::EADDRNOTAVAIL, Zlib::Error ].freeze
 
-      def initialize(channel:, event_type:, subject:, content:)
+      def initialize(channel:, event_type:, subject:, content:, occurred_at: nil, delivery_id: nil)
         @channel = channel
         @event_type = event_type
         @subject = subject
         @content = content
+        @occurred_at = occurred_at
+        @delivery_id = delivery_id
       end
 
       def call
@@ -28,26 +32,45 @@ module Notifications
         uri = URI.parse(@channel.webhook_url)
         # Ri-verifica a delivery-time E risolve UNA volta l'IP pubblico da pinnare: la validazione
         # config-time non copre i cambi DNS, e ri-risolvere l'host al connect riaprirebbe il TOCTOU.
-        address = safe_public_address(uri)
-        return Result.err(AppError.new("Webhook URL non sicura", code: "R422-ALERT-002")) if address.nil?
+        addresses = resolved_addresses(uri)
+        return unsafe if addresses.nil? || addresses.any? { |addr| NetworkGuard.blocked_address?(addr) }
+        # A resolver that does not answer is the network failing for a moment, not a refusal. CYRA-1227
+        return transient("Webhook host irrisolvibile") if addresses.empty?
+
+        address = addresses.first
 
         body = payload.to_json
         response = post(uri, address, body)
-        if response.code.to_i.between?(200, 299)
-          Result.ok(response.code.to_i)
-        else
-          Rails.logger.warn("Alerting webhook #{@channel.id} → HTTP #{response.code}")
-          Result.err(AppError.new("Webhook HTTP #{response.code}", code: "R502-ALERT-001", status: :bad_gateway))
-        end
+        status = response.code.to_i
+        return Result.ok(status) if status.between?(200, 299)
+
+        Rails.logger.warn("Alerting webhook #{@channel.id} → HTTP #{response.code}")
+        return transient("Webhook HTTP #{response.code}") if TransientFailure::RETRYABLE_STATUSES.include?(status)
+
+        definitive("Webhook HTTP #{response.code}")
+      rescue BoundedHttp::ResponseTooLarge, URI::InvalidURIError => e
+        definitive("Webhook fallito: #{e.class}")
       rescue StandardError => e
+        raise unless TransientFailure === e || TRANSPORT_FAILURES.any? { |type| e.is_a?(type) }
+
         Rails.logger.warn("Alerting webhook #{@channel.id} fallito: #{e.class} #{e.message}")
-        Result.err(AppError.new("Webhook irraggiungibile", code: "R502-ALERT-001", status: :bad_gateway))
+        transient("Webhook irraggiungibile")
       end
 
       private
 
+      def transient(message)
+        Result.err(AppError.new(message, code: "R502-ALERT-001", status: :bad_gateway))
+      end
+
+      def definitive(message)
+        Result.err(AppError.new(message, code: "R422-ALERT-004"))
+      end
+
       def payload
         {
+          # Same id on every attempt of one queued delivery: a receiver drops the duplicate. CYRA-1227
+          delivery_id: @delivery_id,
           event_type: @event_type,
           title: @content.title,
           body: @content.body,
@@ -57,6 +80,8 @@ module Notifications
           # mai consegnato). Il ricevente gestisce l'assenza del campo.
           project: project_payload,
           subject: { type: @subject.class.name, id: @subject.id },
+          # Event time is frozen; send time and its signature describe this attempt. CYRA-1227
+          occurred_at: (@occurred_at || Time.current).iso8601,
           sent_at: Time.current.iso8601
         }
       end
@@ -67,11 +92,18 @@ module Notifications
         { id: @content.project.id, key: @content.project.key, name: @content.project.name }
       end
 
-      # Ritorna l'IP pubblico da pinnare, o nil se lo schema non è http(s) o l'host è interno/irrisolvibile.
-      def safe_public_address(uri)
-        return nil unless %w[http https].include?(uri.scheme)
+      def unsafe
+        Result.err(AppError.new("Webhook URL non sicura", code: "R422-ALERT-002"))
+      end
 
-        NetworkGuard.resolved_public_address(uri.host)
+      # Indirizzi dell'host risolti UNA volta (il primo viene pinnato), nil se schema o host non sono
+      # contattabili. Stesso criterio di NetworkGuard.resolved_public_address: un solo indirizzo interno
+      # basta a rifiutare; la lista vuota resta distinta per poter ritentare.
+      def resolved_addresses(uri)
+        return nil unless %w[http https].include?(uri.scheme) && uri.host.present?
+        return [ uri.host ] if NetworkGuard.ip_literal?(uri.host)
+
+        NetworkGuard.resolve(uri.host)
       end
 
       def post(uri, address, body)
@@ -84,6 +116,7 @@ module Notifications
         request = Net::HTTP::Post.new(uri.request_uri)
         request["Content-Type"] = "application/json"
         request["X-CloseYourIt-Event"] = @event_type
+        request["X-CloseYourIt-Delivery"] = @delivery_id if @delivery_id.present?
         if @channel.webhook_secret.present?
           request["X-CloseYourIt-Signature"] =
             "sha256=#{OpenSSL::HMAC.hexdigest("SHA256", @channel.webhook_secret, body)}"

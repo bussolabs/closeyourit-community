@@ -1779,6 +1779,7 @@ en:
         reporter_not_allowed: The reporter must be a person in the organization who can see this project.
         invalid_status: Invalid status.
         workflow_owns_status: The automated run owns this ticket's status until it finishes. To move it by hand, take the ticket over from its page; if a machine is working on it, cancel the run first.
+        closing_run_awaits_go_ahead: "The machine is still trying the release on staging. Then production waits for a person's go-ahead: from there «Accept» gives it, and the ticket resolves once the release is up in production."
         closing_run_owns_review: "The machine is still releasing this ticket: it resolves itself once the release is up in production."
         release_not_interrupted: "This release is not on hold: there is nothing to resume."
         invalid_milestone: Invalid milestone.

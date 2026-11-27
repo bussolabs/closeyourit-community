@@ -4,6 +4,8 @@ require "rails_helper"
 
 # Branch org-scoped di Evaluate (eventi server_*: nessun progetto, recipients per permesso org).
 RSpec.describe Alerting::Evaluate do
+  include ActiveJob::TestHelper
+
   let(:org) { create(:organization) }
   let(:owner) { create(:account) }
   let(:host) { create(:server_host, organization: org, name: "apps", cpu_pct: 95.0) }
@@ -220,13 +222,15 @@ RSpec.describe Alerting::Evaluate do
       expect(notification.body).to include("70%")
     end
 
+    # CYRA-1227 — the channel is reached by the queued job, which accepts the measurement's rule (WI-4).
     it "reaches the measurement rule's external channels" do
       allow(NetworkGuard).to receive(:resolve).and_return([ "93.184.216.34" ])
+      allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new)
       channel = create(:alerting_channel, organization: org)
       create(:alerting_rule_channel, rule: rule, channel: channel)
       allow(Alerting::Deliver).to receive(:webhook).and_return(Result.ok(nil))
 
-      recover(metric: "server_disk")
+      perform_enqueued_jobs(only: Alerting::DeliverChannelJob) { recover(metric: "server_disk") }
 
       expect(Alerting::Deliver).to have_received(:webhook)
         .with(hash_including(channel: channel, event_type: "server_threshold_recovered"))
@@ -277,9 +281,12 @@ RSpec.describe Alerting::Evaluate do
       channel = create(:alerting_channel, organization: org)
       create(:alerting_rule_channel, rule: rule, channel: channel)
       allow(Alerting::Deliver).to receive(:webhook).and_return(Result.ok(nil))
+      allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new)
 
-      cross(value: 95.0, breach: "2026-07-02T10:00:00Z@80.0")
-      cross(value: 95.0, breach: "2026-07-02T10:01:00Z@80.0", at: Time.zone.parse("2026-07-02T10:01:10Z"))
+      perform_enqueued_jobs(only: Alerting::DeliverChannelJob) do # CYRA-1227: channels go through the queue
+        cross(value: 95.0, breach: "2026-07-02T10:00:00Z@80.0")
+        cross(value: 95.0, breach: "2026-07-02T10:01:00Z@80.0", at: Time.zone.parse("2026-07-02T10:01:10Z"))
+      end
 
       expect(crossings(rule).count).to eq(2)
       expect(Alerting::Deliver).to have_received(:webhook).twice

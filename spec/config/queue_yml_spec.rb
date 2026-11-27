@@ -46,6 +46,26 @@ RSpec.describe "config/queue.yml" do
     ApplicationJob.descendants.map { |klass| klass.new.queue_name }.uniq
   end
 
+  it "isolates external alert deliveries from every other queue" do
+    pools = workers.select { |worker| pool_queues(worker).include?("alert_webhooks") }
+    expect(pools.size).to eq(1)
+    pool = pools.sole
+    expect(pool.fetch("queues")).to eq([ "alert_webhooks" ])
+    expect(pool.fetch("threads")).to eq(2)
+    expect(pool.fetch("processes")).to eq(ENV.fetch("ALERT_WEBHOOK_JOB_CONCURRENCY", 1).to_i)
+    expect(Alerting::DeliverChannelJob.new.queue_name).to eq("alert_webhooks")
+  end
+
+  it "scales external delivery processes independently through the environment" do
+    allow(ENV).to receive(:fetch).and_call_original
+    allow(ENV).to receive(:fetch).with("ALERT_WEBHOOK_JOB_CONCURRENCY", 1).and_return("4")
+
+    pool = workers.find { |worker| pool_queues(worker).include?("alert_webhooks") }
+    expect(pool.fetch("processes")).to eq(4)
+    expect(pool.fetch("threads")).to eq(2)
+    expect(realtime_pool.fetch("processes")).to eq(ENV.fetch("JOB_CONCURRENCY", 1).to_i)
+  end
+
   it "nessun pool usa il jolly '*': vanificherebbe l'isolamento dell'AI" do
     expect(configured_queues).not_to include("*")
   end

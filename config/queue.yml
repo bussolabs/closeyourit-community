@@ -3,6 +3,11 @@ default: &default
     - polling_interval: 1
       batch_size: 500
   workers:
+    # External destinations cannot occupy bell/email workers. CYRA-1227
+    - queues: [alert_webhooks]
+      threads: 2
+      processes: <%= ENV.fetch("ALERT_WEBHOOK_JOB_CONCURRENCY", 1) %>
+      polling_interval: 0.1
     # Corsia real-time del monitoraggio (CYRA-246): controlli siti, avvisi, notifiche, email, controllo
     # server e job di sistema (default = ActiveStorage/fallback). 3 slot, ISOLATA dall'AI: un
     # addestramento lungo non può più rubarle i posti e fermare il monitoraggio.

@@ -292,6 +292,49 @@ RSpec.describe Ticketing::ApproveReview do
       expect(approve).to be_ok
       expect(ticket.reload.status).to eq(resolved)
     end
+
+    # The project waits for a person before production: the refusal must say so, not promise it resolves alone.
+    it "names the go-ahead still owed when the project asks for one" do
+      project.update!(production_approval_required: true)
+
+      result = approve
+
+      expect(result.error.code).to eq("R409-TICKET-022")
+      expect(result.error.message).to eq(I18n.t("member.tickets.errors.closing_run_awaits_go_ahead"))
+    end
+
+    # A release stopped before production for a person: approving the review is that person's yes.
+    context "when the release waits for a person before production" do
+      let(:cto) do
+        create(:account).tap do |account|
+          create(:membership, account:, organization: org)
+          create(:project_membership, account:, project:)
+        end
+      end
+
+      before do
+        org.update!(cto:)
+        ticket.agent_workflow.update!(closer_staging_completed_at: 20.minutes.ago,
+                                      closer_staging_verified_at: 10.minutes.ago,
+                                      blocked_at: Time.current, blocked_phase: "closer_production",
+                                      blocked_kind: Agents::Workflows::RequestProductionApproval::KIND,
+                                      blocked_reason: Agents::Workflows::RequestProductionApproval::KIND)
+      end
+
+      it "gives the production go-ahead and leaves the ticket to the release" do
+        result = nil
+        expect { result = approve(actor: cto) }.not_to(change { ticket.reload.status_id })
+
+        expect(result).to be_ok
+        expect(ticket.agent_workflow.reload).to have_attributes(blocked_at: nil, closer_production_approved_by: cto,
+                                                                closer_production_approved_at: be_present)
+      end
+
+      it "refuses whoever cannot give the go-ahead" do
+        expect(approve.error.code).to eq("R403-WORKFLOW-001")
+        expect(ticket.agent_workflow.reload.blocked_at).to be_present
+      end
+    end
   end
 
   it "un ticket review-gate il cui workflow NON è post-autopilot va a resolved come prima" do

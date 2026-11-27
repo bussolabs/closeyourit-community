@@ -9,6 +9,8 @@ module Ticketing
     include StatusBroadcasts
     include ::Agents::Workflows::ConcludedTicketGate
 
+    GO_AHEAD_KINDS = [ Agents::Workflows::RequestProductionApproval::KIND, Agents::Workflows::HoldProduction::KIND ].freeze
+
     # `broadcast_dependents: false` quando l'approvazione è una di tante nella stessa richiesta
     # (Home::Approvals::BulkApprove): il refresh delle board dei dependents lo fa il chiamante sul lotto
     # intero con UNA query, invece di una per ticket dentro il loop. Vedi StatusBroadcasts.
@@ -116,6 +118,7 @@ module Ticketing
     # in staging only, the yes sends it to production instead of resolving. Nil when neither. CYRA-1285
     def release_in_charge(workflow)
       return if workflow.nil?
+      return give_go_ahead(workflow) if workflow.closing? && GO_AHEAD_KINDS.include?(workflow.blocked_kind)
       return closing_run if workflow.closing?
 
       resume_release(workflow) if workflow.release_interrupted? && closer_pipeline_configured?
@@ -129,9 +132,20 @@ module Ticketing
       Result.ok(@ticket)
     end
 
+    # Stops before production that only a person lifts: there, approving the review is that person's yes,
+    # given through Unblock so the same CTO gate decides. The ticket resolves once production is up.
+    def give_go_ahead(workflow)
+      lifted = Agents::Workflows::Unblock.call(workflow:, actor: @actor)
+      return lifted if lifted.err?
+
+      broadcast_status_change(ticket: @ticket, dependents: @broadcast_dependents)
+      Result.ok(@ticket)
+    end
+
+    # Where the project asks for a person before production, the release never ends on its own.
     def closing_run
-      Result.err(AppError.new(I18n.t("member.tickets.errors.closing_run_owns_review"),
-                              code: "R409-TICKET-022", status: :conflict))
+      key = @ticket.project.production_approval_required_active? ? "closing_run_awaits_go_ahead" : "closing_run_owns_review"
+      Result.err(AppError.new(I18n.t("member.tickets.errors.#{key}"), code: "R409-TICKET-022", status: :conflict))
     end
 
     # Il messaggio nomina l'identità che sta chiamando: senza, chi si è collegato alla macchina e sta

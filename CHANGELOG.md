@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.258.3] - 2026-11-27
+
+### Fixed
+
+- **Avvisi verso i canali esterni**: se il canale non risponde, l'invio viene ritentato entro la finestra dell'avviso, fino a tre tentativi. Dopo un fallimento definitivo, il prossimo evento può riprovare. Campanella ed email proseguono senza aspettare i canali esterni.
+
+## [0.258.3-beta.1] - 2026-11-27
+
+### Fixed
+
+- **«Accetta» dà il via libera per la produzione**: sui progetti che chiedono il sì di una persona prima della produzione, «Accetta» ora lo dà invece di rifiutare. Se il rilascio è ancora in staging, il messaggio dice che dopo servirà quel sì. (CYRA-1368)
+
 ## [0.258.2] - 2026-11-27
 
 ### Fixed

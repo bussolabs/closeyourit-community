@@ -3,7 +3,8 @@
 module Alerting
   # Cuore della pipeline: dato un evento (errore/uptime), trova le regole che matchano, calcola i
   # destinatari (Recipients ∩ preferenze) e consegna in-app + email con throttle/dedup. Idempotente e
-  # difensiva: subject/project spariti → no-op. Restituisce il numero di consegne riuscite.
+  # difensiva: subject/project spariti → no-op. The result counts personal deliveries only;
+  # queued external attempts are not successful deliveries. CYRA-1227
   class Evaluate < ApplicationService
     def self.call(...) = new(...).call
 
@@ -57,7 +58,7 @@ module Alerting
         # Platform alerts never reach an organization's shared webhooks (CYRA-875).
         next if Alerting::PlatformAlert.event_type?(@event_type)
 
-        delivered += deliver_channels(rule, subject, content_for[I18n.default_locale])
+        deliver_channels(rule, subject, content_for[I18n.default_locale])
       end
       Result.ok(delivered)
     end
@@ -112,27 +113,37 @@ module Alerting
       )
     end
 
-    # Canali esterni della regola (webhook Slack/Discord/HTTP): consegna per-CANALE, non per-account (nessuna
-    # preferenza utente). Throttle con lo stesso bucket delle consegne umane, via cache atomica
-    # (unless_exist): il job :alerts gira sul worker → nessuna corsa tra processi.
+    # Reserve once per window; external I/O runs on dedicated workers. CYRA-1227
     def deliver_channels(rule, subject, content)
-      count = 0
-      rule.channels.enabled.each do |channel|
+      rule.channels.enabled.sum do |channel|
         identity = @event_type == "measurement_threshold" ? "#{rule.id}:#{dedup_subject}" : dedup_subject
         key = "alerting:channel:#{channel.id}:#{@event_type}:#{identity}:#{throttle_bucket(rule)}"
-        next unless Rails.cache.write(key, 1, unless_exist: true, expires_in: rule.throttle_seconds)
+        window_expires_at = rule.throttle_seconds.seconds.from_now
+        token = ChannelReservation.acquire(channel:, key:, expires_in: rule.throttle_seconds)
+        next 0 unless token
 
-        result = deliver_channel(channel, rule, subject, content)
-        count += 1 if result.ok?
+        enqueue_channel(rule, channel, subject, content, key, token, window_expires_at) ? 1 : 0
       end
-      count
     end
 
-    # Webhook (Slack/Discord/HTTP) or the Slack app with its three buttons (CYRA-1156). Telegram è per-utente.
-    def deliver_channel(channel, rule, subject, content)
-      return Alerting::Deliver.slack(channel:, rule:, event_type: @event_type, subject:, content:) if channel.kind_slack_app?
-
-      Alerting::Deliver.webhook(channel:, event_type: @event_type, subject:, content:)
+    # Snapshot project labels too; destination changes cancel queued events rather than reroute them.
+    # The window's end travels with the job: an attempt that starts after it sends nothing. CYRA-1227
+    def enqueue_channel(rule, channel, subject, content, throttle_key, reservation_token, window_expires_at)
+      job = Alerting::DeliverChannelJob.perform_later(
+        channel_id: channel.id, rule_id: rule.id, organization_id: rule.organization_id,
+        link_id: Alerting::RuleChannel.find_by!(rule_id: rule.id, channel_id: channel.id).id,
+        destination_digest: Digest::SHA256.hexdigest(channel.target),
+        event_type: @event_type, subject_type: subject.class.name, subject_id: subject.id,
+        content: { title: content.title, body: content.body, url: content.url,
+                   project: content.project&.attributes&.slice("id", "key", "name")&.symbolize_keys },
+        occurred_at: @at, throttle_key:, reservation_token:, window_expires_at:, metric: @metric,
+        delivery_id: SecureRandom.uuid
+      )
+      ChannelReservation.release(channel_id: channel.id, key: throttle_key, token: reservation_token) unless job
+      job
+    rescue StandardError
+      ChannelReservation.release(channel_id: channel.id, key: throttle_key, token: reservation_token)
+      raise
     end
 
     # Il bucket nel dedup_key implementa il throttle: stesso (account, canale, evento, subject) nella

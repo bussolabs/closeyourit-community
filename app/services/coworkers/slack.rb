@@ -36,8 +36,10 @@ module Coworkers
     end
 
     # A message with blocks (buttons included); Slack's answer carries the "ts" that locates it. CYRA-1156
-    def self.post_blocks(channel:, text:, blocks:)
-      call("chat.postMessage", channel: channel, text: text.to_s.first(3000), blocks: blocks)
+    # A queued alert passes its delivery id as message metadata, the same on every attempt. CYRA-1227
+    def self.post_blocks(channel:, text:, blocks:, delivery_id: nil)
+      metadata = { event_type: "closeyourit_alert", event_payload: { delivery_id: delivery_id } } if delivery_id.present?
+      call("chat.postMessage", channel: channel, text: text.to_s.first(3000), blocks: blocks, metadata: metadata)
     end
 
     def self.update(channel:, ts:, text:, blocks:)
