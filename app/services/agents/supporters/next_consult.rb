@@ -26,7 +26,8 @@ module Agents
       # 9: a gate listed after a forbidden one ("do not use --no-verify or [skip ci]") is no longer a bypass.
       # 10: a workflow may be sent back after four stops, not two (CYRA-1197).
       # 11: stops left by unreadable reports, review refusals and missing local databases are read once more (CYRA-1197).
-      DIGEST_VERSION = 11
+      # 12: every machine stop is settled by the server now (CYRA-1370), so the stops judged before that are read once more.
+      DIGEST_VERSION = 12
 
       # CYRA-1370 — the latest skills release is part of what was read: a stop judged before it is read again.
       def self.digest(workflow, skills: latest_skills)

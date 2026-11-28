@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.259.1] - 2026-11-28
+
+### Fixed
+
+- **I lavori fermi da giorni vengono riletti.** L'agente di supporto rilegge una volta i fermi già giudicati, così anche loro ripartono o vengono messi da parte da soli. (CYRA-1373)
+
 ## [0.259.0] - 2026-11-27
 
 ### Added
